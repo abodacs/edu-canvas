@@ -30,6 +30,7 @@ The memorable contrast:
 - Real A2UI v0.9.1 messages rendered through a custom, allowlisted Edu-Canvas catalog.
 - GPT-5.6 generates a constrained lesson draft; the server validates and compiles it into A2UI.
 - No generated HTML or JavaScript execution.
+- Core lesson interaction uses semantic DOM/A2UI. Experimental HTML-in-Canvas is optional polish only and must have a normal DOM fallback.
 - Server-authoritative answer key and deterministic scoring.
 - Recursive adaptive decision trace backed by a curated prerequisite graph.
 - Codex-built, working end-to-end slice with a readable repository and tests.
@@ -105,6 +106,7 @@ State the safety boundary: teacher approval, server-only answer key, no student 
 - GPT-5.6 server call with structured lesson draft output.
 - Normalized lesson model separate from A2UI.
 - A2UI v0.9.1 custom catalog and SSE transport.
+- Semantic DOM renderer that works without experimental browser flags; optional canvas enhancement is not part of the critical path.
 - Teacher composer and bulk approval screen.
 - Four activity variants with one scaffold and one review/challenge variant.
 - Student source-first multi-select interaction.
@@ -142,6 +144,7 @@ These remain production-roadmap items unless they are already effortless:
 - Spending the demo on GDPR architecture instead of showing the product’s learning impact.
 - Using decorative gamification instead of the connection reveal.
 - Showing a broken mobile layout or inaccessible canvas-only interaction.
+- Requiring judges to enable Chrome flags, use Canary, or rely on experimental HTML-in-Canvas for the core demo.
 - Failing to show exactly where Codex and GPT-5.6 were used.
 
 ## Evidence to collect before submission
@@ -245,6 +248,7 @@ Cut immediately if unfinished:
 - full recursive graph traversal
 - four genuinely different generated variants
 - generic A2UI catalog negotiation
+- requiring HTML-in-Canvas or another experimental browser renderer
 - sound, confetti, advanced ink tools, and broad dashboards
 
 Use seeded fixtures or deterministic fallbacks for anything not central to the demo. Never fake the core GPT-5.6 → A2UI → approval → student → score path.

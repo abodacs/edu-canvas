@@ -91,7 +91,7 @@ Connection pools are deliberately small for this slice, health checks have bound
 
 ## UI guardrails
 
-The foundation shell uses current shadcn Base UI components and keeps the visual surface small. CSS uses logical properties (`padding-inline`, `margin-block`, `inset-inline`, `border-block`, and `border-inline`) so the layout can move to Arabic RTL without a second stylesheet. It also preserves browser zoom, uses semantic document order, keeps primary targets at least 48px on narrow screens, and honors `prefers-reduced-motion`.
+The foundation shell uses current shadcn Base UI components and keeps the visual surface small. CSS uses logical properties (`padding-inline`, `margin-block`, `inset-inline`, `border-block`, and `border-inline`) so the layout can move to Arabic RTL without a second stylesheet. It also preserves browser zoom, uses semantic document order, keeps primary targets at least 48px on narrow screens, and honors `prefers-reduced-motion`. Core lesson interactions will use semantic DOM/A2UI components; HTML-in-Canvas is optional enhancement only and must never be required for the demo or accessibility path.
 
 These choices follow Google’s responsive/accessibility guidance and Core Web Vitals priorities:
 

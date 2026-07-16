@@ -7,6 +7,7 @@ Adaptive, bilingual (**English / Arabic, RTL**) visual-learning platform for **G
 ## Why it's different
 
 - **Generative UI, not a chat wrapper.** GPT-5.6 produces a structured _lesson draft_; the server validates it and compiles it into **A2UI v0.9.1** messages from a fixed, allowlisted Edu-Canvas catalog. No generated HTML or JavaScript executes.
+- **Browser-safe rendering.** Core lesson interaction uses semantic DOM components through A2UI. Experimental HTML-in-Canvas is optional visual polish and never required for authoring, accessibility, sharing, or grading.
 - **Teacher-gated.** Every generated variant is teacher-approved in a bulk review flow before any student sees it.
 - **Server-authoritative grading.** The answer key never leaves the server; the client cannot submit a score.
 - **Adaptive + explainable.** A curated prerequisite graph drives the next activity; teachers see the reason and can override.
@@ -53,6 +54,58 @@ Start from the delivery module, then follow the domain-named server module:
 | Operator seed entry point              | `scripts/db-seed.ts`                             |
 
 The route should stay a delivery module. Domain rules, tenant checks, persistence choice, and public projection belong behind the named server seams. The shared seam contains only data the browser is allowed to receive.
+
+## End-to-end demo sequence
+
+The planned walking skeleton is one deterministic, seeded path. The current foundation covers the role-limited delivery and persistence path; generation, A2UI rendering, grading, and adaptation are the next slices.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Teacher
+    participant TeacherUI as Teacher browser
+    participant Server as Edu-Canvas server
+    participant GPT as GPT-5.6
+    participant Catalog as Validator + A2UI catalog
+    participant Store as Seeded repo / PostgreSQL
+    actor Student
+    participant StudentUI as Student browser
+    participant Adapt as Grader + adaptation
+
+    Teacher->>TeacherUI: Enter prompt, grade, standard, language
+    TeacherUI->>Server: Submit generation request (HTTPS)
+    Server->>GPT: Request constrained lesson draft
+    GPT-->>Server: Return structured draft
+    Server->>Catalog: Validate domain model and compile
+    alt Draft is invalid
+        Catalog-->>Server: Validation errors
+        Server-->>TeacherUI: Show warning and retry state
+    else Draft is valid
+        Catalog-->>TeacherUI: Stream allowlisted A2UI variants (SSE)
+        Teacher->>TeacherUI: Review, edit, and approve four variants
+        TeacherUI->>Server: Publish approved pack (HTTPS)
+        Server->>Store: Persist immutable activity/version
+        Store-->>Server: Return published pack
+        Server-->>TeacherUI: Confirm pack is ready
+
+        Student->>StudentUI: Open assigned activity
+        StudentUI->>Server: Request public activity (HTTPS)
+        Server->>Store: Load approved activity/version
+        Store-->>Server: Return public activity data
+        Server-->>StudentUI: Render allowlisted A2UI activity (SSE)
+        Student->>StudentUI: Select matching targets and submit
+        StudentUI->>Server: Send selection events only (HTTPS)
+        Server->>Adapt: Grade using private answer key
+        Adapt->>Store: Store immutable attempt and version references
+        Adapt->>Store: Read prerequisite graph
+        Adapt-->>Server: Score, reveal, and deterministic next activity
+        Server-->>StudentUI: Show score, connection reveal, next activity
+        Server-->>TeacherUI: Show mastery state and adaptation reason
+    end
+
+    Note over Server,Adapt: Answer key, mastery, and permissions stay server-side.
+    Note over StudentUI,Server: Client never sends a score; no student images or identifying data go to GPT-5.6.
+```
 
 ## Quick start
 
