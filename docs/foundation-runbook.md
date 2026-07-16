@@ -13,6 +13,21 @@ pnpm dev
 
 The app starts in deterministic `seeded-demo` mode when no environment file is present. It serves the role-limited teacher and student demo views using synthetic fixtures only.
 
+## Local Git worktrees
+
+Keep parallel working branches inside the ignored `.worktrees/` directory:
+
+```bash
+git fetch origin main
+git worktree add -b feature/my-change .worktrees/my-change origin/main
+```
+
+Remove the linked worktree when the branch is no longer needed:
+
+```bash
+git worktree remove .worktrees/my-change
+```
+
 The release-shaped check is:
 
 ```bash
