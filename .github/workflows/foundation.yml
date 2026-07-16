@@ -52,6 +52,9 @@ jobs:
       - name: Run release checks
         run: pnpm check
 
+      - name: Run tests with coverage
+        run: pnpm test:coverage
+
       - name: Apply and repeat the database seed
         run: |
           pnpm db:setup
