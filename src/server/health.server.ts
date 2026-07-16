@@ -1,5 +1,5 @@
-import { readDemoCounts, checkPersistence } from './persistence.server'
 import { readServerConfig, safeConfigSummary } from './config'
+import { createFoundationPersistence } from './persistence'
 
 export function getHealthPayload() {
   return {
@@ -29,7 +29,7 @@ export async function getReadinessPayload(
     }
   }
 
-  const persistence = await checkPersistence(config)
+  const persistence = await createFoundationPersistence(config).check()
   return {
     status:
       persistence.status === 'ready'
@@ -48,6 +48,6 @@ export async function getReadinessWithSeedSummary(
   if (readiness.status !== 'ready') return readiness
 
   const config = readServerConfig(env)
-  const counts = await readDemoCounts(config)
+  const counts = await createFoundationPersistence(config).readDemoCounts()
   return { ...readiness, seededCounts: counts }
 }

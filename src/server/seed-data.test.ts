@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { buildDemoSnapshot } from './demo'
-import { readServerConfig } from './config'
+import { readDemoSnapshot } from './demo/read-model'
 import { assertSeedIntegrity, demoSeed, getDemoSeedCounts } from './seed-data'
-import { getDemoSession } from './tenant'
 
 describe('synthetic seed', () => {
   it('has stable unique identifiers and expected fixture counts', () => {
@@ -20,17 +18,8 @@ describe('synthetic seed', () => {
     })
   })
 
-  it('does not expose the private answer key through the public snapshot', () => {
-    const snapshot = buildDemoSnapshot({
-      config: readServerConfig({}),
-      counts: getDemoSeedCounts(),
-      session: getDemoSession('student'),
-      standard: {
-        id: demoSeed.standard.id,
-        name: demoSeed.standard.name,
-        graphVersion: demoSeed.activityVersion.graphVersion,
-      },
-    })
+  it('does not expose the private answer key through the public snapshot', async () => {
+    const snapshot = await readDemoSnapshot('student', {})
 
     expect(JSON.stringify(snapshot)).not.toContain('answerKey')
     expect(JSON.stringify(snapshot)).not.toContain(

@@ -1,4 +1,4 @@
-import type { DemoCounts, DemoRole } from '@/shared/demo'
+import type { DemoCounts, DemoRole } from '@/shared/demo-contract'
 
 export const demoSeed = {
   tenant: {

@@ -13,3 +13,4 @@ dist-ssr
 __unconfig*
 coverage
 data/*.json
+teaching/

@@ -1,7 +1,12 @@
-import { demoCapabilities } from '@/shared/demo'
-import type { DemoCapability, DemoRole } from '@/shared/demo'
+import type { DemoRole } from '@/shared/demo-contract'
+import { demoSeed, getSeedIdentity } from '../seed-data'
 
-import { demoSeed, getSeedIdentity } from './seed-data'
+const demoCapabilities = {
+  teacher: ['view_seeded_environment', 'view_demo_activity_fixtures'],
+  student: ['view_seeded_environment', 'view_assigned_demo_activity'],
+} as const satisfies Record<DemoRole, readonly string[]>
+
+export type DemoCapability = (typeof demoCapabilities)[DemoRole][number]
 
 export interface DemoSession {
   identityId: string

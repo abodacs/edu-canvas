@@ -30,9 +30,29 @@ Adaptive, bilingual (**English / Arabic, RTL**) visual-learning platform for **G
 | `DEVPOST_WINNING_STRATEGY.md`   | Competition cut + 48-hour execution plan                            |
 | `docs/walking-skeleton.md`      | The thinnest end-to-end demo slice (the build contract)             |
 | `docs/foundation-runbook.md`    | Operator/developer setup, redeploy, and handoff checks for issue #2 |
+| `docs/architecture-harness.md`  | Guardrails for state ownership, layer imports, and contract drift   |
 | `docs/agdr/`                    | Agent Decision Records (architecture decisions)                     |
 | `docs/security/threat-model.md` | STRIDE threat model                                                 |
 | `.impeccable.md`                | Design context                                                      |
+
+## Runtime navigation
+
+Start from the delivery module, then follow the domain-named server module:
+
+| Behavior                               | Start here                                       |
+| -------------------------------------- | ------------------------------------------------ |
+| Seeded teacher/student demo            | `src/routes/demo/$role.tsx` → `src/server/demo/` |
+| Demo role policy and tenant assertion  | `src/server/demo/policy.ts`                      |
+| Public demo read model                 | `src/server/demo/read-model.ts`                  |
+| Server-function delivery seam          | `src/server/demo/server-function.ts`             |
+| Persistence choice and interface       | `src/server/persistence.ts`                      |
+| Seeded/PostgreSQL persistence adapters | `src/server/persistence/`                        |
+| Browser-safe demo contract             | `src/shared/demo-contract.ts`                    |
+| Canonical synthetic curriculum fixture | `src/server/seed-data.ts`                        |
+| PostgreSQL seed implementation         | `src/server/persistence/seed-postgres.ts`        |
+| Operator seed entry point              | `scripts/db-seed.ts`                             |
+
+The route should stay a delivery module. Domain rules, tenant checks, persistence choice, and public projection belong behind the named server seams. The shared seam contains only data the browser is allowed to receive.
 
 ## Quick start
 

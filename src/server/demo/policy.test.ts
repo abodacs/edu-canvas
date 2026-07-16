@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { demoSeed } from './seed-data'
-import { assertTenantAccess, canAccess, getDemoSession } from './tenant'
+import { demoSeed } from '../seed-data'
 
-describe('demo tenant boundary', () => {
+import { assertTenantAccess, canAccess, getDemoSession } from './policy'
+
+describe('demo policy', () => {
   it('gives each seeded role only its intended capabilities', () => {
     const teacher = getDemoSession('teacher')
     const student = getDemoSession('student')

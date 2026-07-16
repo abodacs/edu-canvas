@@ -51,11 +51,24 @@ pnpm db:seed
 
 `pnpm db:migrate` applies files in `migrations/` in lexical order and records each applied filename in `app_migrations`. Migrations are forward-only: do not edit an applied file or add a destructive reset command. Add a new numbered migration for schema changes.
 
-`pnpm db:seed` uses stable IDs and `ON CONFLICT` upserts inside one transaction. It can be run repeatedly without duplicating the synthetic tenant, seeded identities, equivalent-fractions standard, prerequisite graph, activity version, or attempt fixture.
+`pnpm db:seed` is a thin operator entry point over `src/server/persistence/seed-postgres.ts`. The seed adapter uses stable IDs and `ON CONFLICT` upserts inside one transaction. It can be run repeatedly without duplicating the synthetic tenant, seeded identities, equivalent-fractions standard, prerequisite graph, activity version, or attempt fixture.
 
 Migration and seed processes take the same non-blocking PostgreSQL advisory lock and use bounded statement, lock, and idle-in-transaction timeouts. If another bootstrap process is running, the command fails quickly so a deploy cannot wait indefinitely behind a hidden database lock.
 
 The PostgreSQL schema includes tenant columns on every tenant-owned table, forced row-level policies keyed by the transaction-local `app.tenant_id`, and same-tenant foreign keys for tenant-owned relationships. Published activity versions and attempts are immutable at the database seam; rerunning the seed leaves existing immutable rows untouched. Application code also asserts the tenant at the server boundary.
+
+## Module navigation
+
+For a request to `/demo/student`, use the file names as the trace:
+
+1. `src/routes/demo/$role.tsx` validates the delivery path.
+2. `src/server/demo/server-function.ts` validates server-function input.
+3. `src/server/demo/read-model.ts` assembles the public snapshot.
+4. `src/server/demo/policy.ts` resolves the seeded role and tenant policy.
+5. `src/server/persistence.ts` selects the persistence seam.
+6. `src/server/persistence/seeded.ts` or `src/server/persistence/postgres.ts` implements the selected adapter.
+
+The browser-safe contract is `src/shared/demo-contract.ts`. The private answer key remains in `src/server/seed-data.ts` and the PostgreSQL adapter; it is not part of the public snapshot.
 
 ## Health and readiness
 

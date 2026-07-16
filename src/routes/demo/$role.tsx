@@ -15,8 +15,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { isDemoRole } from '@/shared/demo'
-import { getDemoSnapshot } from '@/server/demo.functions'
+import { isDemoRole } from '@/shared/demo-contract'
+import { getDemoSnapshot } from '@/server/demo/server-function'
 
 export const Route = createFileRoute('/demo/$role')({
   loader: ({ params }) => {

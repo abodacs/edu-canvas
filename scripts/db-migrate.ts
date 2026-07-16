@@ -5,7 +5,7 @@ import postgres from 'postgres'
 
 import { readServerConfig } from '@/server/config'
 
-import { withFoundationBootstrapLock } from './db-lock'
+import { withFoundationBootstrapLock } from '@/server/persistence/bootstrap-lock'
 
 function getDatabaseUrl(): string {
   const config = readServerConfig(process.env)
