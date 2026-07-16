@@ -2,10 +2,16 @@ import postgres from 'postgres'
 
 import type { DemoCounts } from '@/shared/demo-contract'
 
+import { serverObservability } from '../observability.server'
+import type { ServerObservability } from '../observability.server'
 import type { FoundationPersistence } from '../persistence'
 import { demoSeed } from '../seed-data'
 
 type SqlClient = ReturnType<typeof postgres>
+
+export interface PostgresPersistenceOptions {
+  observability?: ServerObservability
+}
 
 function createSqlClient(databaseUrl: string): SqlClient {
   return postgres(databaseUrl, {
@@ -32,7 +38,10 @@ async function withDatabase<T>(
 
 export function createPostgresPersistence(
   databaseUrl: string,
+  options: PostgresPersistenceOptions = {},
 ): FoundationPersistence {
+  const observability = options.observability ?? serverObservability
+
   return {
     kind: 'postgres',
 
@@ -48,7 +57,14 @@ export function createPostgresPersistence(
           code: 'READY',
           message: 'PostgreSQL responded to the bounded readiness query.',
         }
-      } catch {
+      } catch (error) {
+        observability.captureError(error, {
+          operation: 'persistence.readiness',
+          dependency: 'postgres',
+          reason: 'persistence_unavailable',
+          code: 'PERSISTENCE_UNAVAILABLE',
+        })
+
         return {
           status: 'failed',
           kind: 'postgres',
@@ -59,35 +75,45 @@ export function createPostgresPersistence(
     },
 
     async readDemoCounts(): Promise<DemoCounts> {
-      const rows = await withDatabase(databaseUrl, async (sql) => {
-        return sql.begin(async (transaction) => {
-          await transaction`select set_config('app.tenant_id', ${demoSeed.tenant.id}, true)`
+      try {
+        const rows = await withDatabase(databaseUrl, async (sql) => {
+          return sql.begin(async (transaction) => {
+            await transaction`select set_config('app.tenant_id', ${demoSeed.tenant.id}, true)`
 
-          return transaction`
-            select
-              (select count(*)::int from tenants where id = ${demoSeed.tenant.id}) as tenants,
-              (select count(*)::int from identities where tenant_id = ${demoSeed.tenant.id}) as identities,
-              (select count(*)::int from standards where tenant_id = ${demoSeed.tenant.id}) as standards,
-              (select count(*)::int from prerequisite_nodes where tenant_id = ${demoSeed.tenant.id}) as "graphNodes",
-              (select count(*)::int from prerequisite_edges where tenant_id = ${demoSeed.tenant.id}) as "graphEdges",
-              (select count(*)::int from activities where tenant_id = ${demoSeed.tenant.id}) as activities,
-              (select count(*)::int from activity_versions where tenant_id = ${demoSeed.tenant.id}) as "activityVersions",
-              (select count(*)::int from attempts where tenant_id = ${demoSeed.tenant.id}) as attempts
-          `
+            return transaction`
+              select
+                (select count(*)::int from tenants where id = ${demoSeed.tenant.id}) as tenants,
+                (select count(*)::int from identities where tenant_id = ${demoSeed.tenant.id}) as identities,
+                (select count(*)::int from standards where tenant_id = ${demoSeed.tenant.id}) as standards,
+                (select count(*)::int from prerequisite_nodes where tenant_id = ${demoSeed.tenant.id}) as "graphNodes",
+                (select count(*)::int from prerequisite_edges where tenant_id = ${demoSeed.tenant.id}) as "graphEdges",
+                (select count(*)::int from activities where tenant_id = ${demoSeed.tenant.id}) as activities,
+                (select count(*)::int from activity_versions where tenant_id = ${demoSeed.tenant.id}) as "activityVersions",
+                (select count(*)::int from attempts where tenant_id = ${demoSeed.tenant.id}) as attempts
+            `
+          })
         })
-      })
 
-      const row = rows[0]
+        const row = rows[0]
 
-      return {
-        tenants: Number(row.tenants),
-        identities: Number(row.identities),
-        standards: Number(row.standards),
-        graphNodes: Number(row.graphNodes),
-        graphEdges: Number(row.graphEdges),
-        activities: Number(row.activities),
-        activityVersions: Number(row.activityVersions),
-        attempts: Number(row.attempts),
+        return {
+          tenants: Number(row.tenants),
+          identities: Number(row.identities),
+          standards: Number(row.standards),
+          graphNodes: Number(row.graphNodes),
+          graphEdges: Number(row.graphEdges),
+          activities: Number(row.activities),
+          activityVersions: Number(row.activityVersions),
+          attempts: Number(row.attempts),
+        }
+      } catch (error) {
+        observability.captureError(error, {
+          operation: 'persistence.read-demo-counts',
+          dependency: 'postgres',
+          reason: 'persistence_read_failed',
+          code: 'PERSISTENCE_UNAVAILABLE',
+        })
+        throw error
       }
     },
   }

@@ -50,8 +50,11 @@ Copy `.env.example` to `.env` only when you need local overrides. Unprefixed val
 | `DEMO_MODE`           | `true` outside production | Keeps the seeded demo path explicit                       |
 | `SYNTHETIC_DATA_ONLY` | `true`                    | Real-student mode is blocked by the foundation            |
 | `DATABASE_URL`        | unset                     | Optional `postgres://` or `postgresql://` persistence URL |
+| `SENTRY_DSN`          | unset                     | Optional server-only Sentry delivery for scrubbed errors  |
 
 Invalid configuration fails readiness with field-level, secret-free diagnostics. The server never returns a database URL, API key, or private answer key in an error response.
+
+Health/readiness and PostgreSQL persistence failures produce a structured error event through the observability seam. A valid `SENTRY_DSN` adds scrubbed delivery to Sentry; without it, structured logs remain the fallback. The DSN, Sentry SDK, student identifiers, and server-only observability markers must never enter the client bundle. See [AgDR-0003](agdr/AgDR-0003-server-observability.md) for the PII policy and fallback decision.
 
 ## PostgreSQL migration and seed
 

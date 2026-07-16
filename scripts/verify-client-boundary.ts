@@ -10,6 +10,13 @@ const forbiddenTokens = [
   'OPENAI_API_KEY',
   'DATABASE_URL',
   'postgresql://',
+  'SENTRY_DSN',
+  'SENTRY_AUTH_TOKEN',
+  '@sentry/node',
+  'observability.server',
+  'edu-canvas.server-error.v1',
+  'sendDefaultPii',
+  'identity_demo_student',
 ]
 const entries = await readdir(publicDirectory, { recursive: true })
 

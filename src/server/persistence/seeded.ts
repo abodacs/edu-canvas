@@ -1,12 +1,32 @@
 import type { FoundationPersistence } from '../persistence'
+import { serverObservability } from '../observability.server'
+import type { ServerObservability } from '../observability.server'
 import { getDemoSeedCounts } from '../seed-data'
 
-export function createSeededPersistence(): FoundationPersistence {
+export interface SeededPersistenceOptions {
+  observability?: ServerObservability
+}
+
+export function createSeededPersistence(
+  options: SeededPersistenceOptions = {},
+): FoundationPersistence {
+  const observability = options.observability ?? serverObservability
+
   return {
     kind: 'seeded-demo',
 
     async check() {
-      getDemoSeedCounts()
+      try {
+        getDemoSeedCounts()
+      } catch (error) {
+        observability.captureError(error, {
+          operation: 'persistence.seeded.check',
+          dependency: 'seeded-demo',
+          reason: 'seed_integrity_failed',
+          code: 'PERSISTENCE_UNAVAILABLE',
+        })
+        throw error
+      }
 
       return {
         status: 'ready',
@@ -17,7 +37,17 @@ export function createSeededPersistence(): FoundationPersistence {
     },
 
     async readDemoCounts() {
-      return getDemoSeedCounts()
+      try {
+        return getDemoSeedCounts()
+      } catch (error) {
+        observability.captureError(error, {
+          operation: 'persistence.seeded.read-demo-counts',
+          dependency: 'seeded-demo',
+          reason: 'seed_integrity_failed',
+          code: 'PERSISTENCE_UNAVAILABLE',
+        })
+        throw error
+      }
     },
   }
 }

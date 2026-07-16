@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { readServerConfig } from './config'
+import { readServerConfig, safeConfigSummary } from './config'
 
 describe('server configuration', () => {
   it('defaults to a ready synthetic repository for a clean checkout', () => {
@@ -13,6 +13,45 @@ describe('server configuration', () => {
       mode: 'seeded-demo',
       issues: [],
     })
+    expect(config.sentryDsn).toBeUndefined()
+    expect(safeConfigSummary(config)).toMatchObject({
+      observability: { sentry: 'structured-log-only' },
+    })
+  })
+
+  it('enables Sentry only for a valid server-side DSN without exposing it', () => {
+    const dsn = 'https://public@example.ingest.sentry.io/123'
+    const config = readServerConfig({ SENTRY_DSN: dsn })
+
+    expect(config.sentryDsn).toBe(dsn)
+    expect(safeConfigSummary(config)).toMatchObject({
+      observability: { sentry: 'configured' },
+    })
+    expect(JSON.stringify(safeConfigSummary(config))).not.toContain(dsn)
+  })
+
+  it('fails safe for an invalid Sentry DSN without echoing its value', () => {
+    const dsn = 'https://not-a-sentry-dsn'
+    const config = readServerConfig({ SENTRY_DSN: dsn })
+
+    expect(config.sentryDsn).toBeUndefined()
+    expect(config.issues).toContainEqual({
+      code: 'INVALID_SENTRY_DSN',
+      field: 'SENTRY_DSN',
+      message: 'SENTRY_DSN must be a valid Sentry DSN URL.',
+    })
+    expect(JSON.stringify(config.issues)).not.toContain(dsn)
+  })
+
+  it('rejects a non-TLS Sentry DSN', () => {
+    const config = readServerConfig({
+      SENTRY_DSN: 'http://public@example.ingest.sentry.io/123',
+    })
+
+    expect(config.sentryDsn).toBeUndefined()
+    expect(config.issues).toContainEqual(
+      expect.objectContaining({ code: 'INVALID_SENTRY_DSN' }),
+    )
   })
 
   it('requires persistence when demo mode is disabled', () => {
