@@ -1,6 +1,7 @@
 import type { DemoCounts } from '@/shared/demo-contract'
 
 import type { ServerConfig } from './config'
+import type { GenerationPersistence } from './generation/types'
 import { serverObservability } from './observability.server'
 import type { ServerObservability } from './observability.server'
 import { createPostgresPersistence } from './persistence/postgres'
@@ -13,7 +14,7 @@ export interface PersistenceCheck {
   message: string
 }
 
-export interface FoundationPersistence {
+export interface FoundationPersistence extends GenerationPersistence {
   readonly kind: ServerConfig['mode']
   check: () => Promise<PersistenceCheck>
   readDemoCounts: () => Promise<DemoCounts>
@@ -22,6 +23,11 @@ export interface FoundationPersistence {
 export interface FoundationPersistenceOptions {
   observability?: ServerObservability
 }
+
+const seededGenerationStore = new Map<
+  string,
+  Parameters<GenerationPersistence['saveGeneration']>[0]
+>()
 
 export function createFoundationPersistence(
   config: ServerConfig,
@@ -42,7 +48,10 @@ export function createFoundationPersistence(
   }
 
   if (config.mode === 'seeded-demo') {
-    return createSeededPersistence({ observability })
+    return createSeededPersistence({
+      generationStore: seededGenerationStore,
+      observability,
+    })
   }
 
   if (!config.databaseUrl) {

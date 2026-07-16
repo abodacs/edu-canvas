@@ -98,4 +98,40 @@ describe('server configuration', () => {
       message: 'SYNTHETIC_DATA_ONLY must be true or false.',
     })
   })
+
+  it('requires a server provider credential outside seeded demo mode', () => {
+    const config = readServerConfig({
+      APP_ENV: 'production',
+      DEMO_MODE: 'false',
+      DATABASE_URL: 'postgresql://demo:secret@db.invalid:5432/app',
+    })
+
+    expect(config.issues).toContainEqual({
+      code: 'OPENAI_API_KEY_REQUIRED',
+      field: 'OPENAI_API_KEY',
+      message: 'Set OPENAI_API_KEY for server-side lesson generation.',
+    })
+  })
+
+  it('keeps the provider credential out of the safe configuration summary', async () => {
+    const config = readServerConfig({ OPENAI_API_KEY: 'server-secret' })
+
+    expect(JSON.stringify(safeConfigSummary(config))).not.toContain(
+      'server-secret',
+    )
+  })
+
+  it('rejects a non-HTTPS provider endpoint outside local development', () => {
+    const config = readServerConfig({
+      OPENAI_BASE_URL: 'ftp://untrusted.invalid',
+    })
+
+    expect(config.issues).toContainEqual({
+      code: 'INVALID_OPENAI_BASE_URL',
+      field: 'OPENAI_BASE_URL',
+      message:
+        'OPENAI_BASE_URL must use HTTPS, or HTTP for a local loopback test server.',
+    })
+    expect(config.openAiBaseUrl).toBe('https://api.openai.com/v1')
+  })
 })

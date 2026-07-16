@@ -30,6 +30,7 @@ describe('readiness', () => {
       APP_ENV: 'production',
       DEMO_MODE: 'false',
       DATABASE_URL: 'not-a-url',
+      OPENAI_API_KEY: 'test-server-key',
     })
 
     expect(payload.status).toBe('not_ready')
@@ -49,6 +50,7 @@ describe('readiness', () => {
         APP_ENV: 'production',
         DEMO_MODE: 'false',
         DATABASE_URL: 'not-a-url',
+        OPENAI_API_KEY: 'test-server-key',
       },
       { observability },
     )
