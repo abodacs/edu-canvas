@@ -14,3 +14,4 @@ __unconfig*
 coverage
 data/*.json
 teaching/
+.worktrees/
