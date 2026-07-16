@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { createServerObservability } from './observability.server'
 import { readDemoSnapshot } from './demo/read-model'
 import { assertSeedIntegrity, demoSeed, getDemoSeedCounts } from './seed-data'
 
@@ -25,5 +26,34 @@ describe('synthetic seed', () => {
     expect(JSON.stringify(snapshot)).not.toContain(
       JSON.stringify(demoSeed.activityVersion.answerKey),
     )
+  })
+
+  it('observes demo snapshot configuration failures', async () => {
+    const events: unknown[] = []
+    const observability = createServerObservability({
+      logger: (event) => events.push(event),
+      sentry: null,
+    })
+
+    await expect(
+      readDemoSnapshot(
+        'student',
+        {
+          APP_ENV: 'production',
+          DEMO_MODE: 'false',
+          DATABASE_URL: 'not-a-url',
+        },
+        { observability },
+      ),
+    ).rejects.toThrow('Demo environment configuration is invalid.')
+
+    expect(events).toHaveLength(1)
+    expect(events[0]).toMatchObject({
+      operation: 'demo.snapshot',
+      context: {
+        reason: 'invalid_configuration',
+        issueCodes: ['INVALID_DATABASE_URL'],
+      },
+    })
   })
 })

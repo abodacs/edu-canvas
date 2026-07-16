@@ -11,6 +11,7 @@ export interface ConfigIssue {
     | 'INVALID_DEMO_MODE'
     | 'INVALID_SYNTHETIC_DATA_ONLY'
     | 'INVALID_DATABASE_URL'
+    | 'INVALID_SENTRY_DSN'
     | 'DATABASE_REQUIRED'
     | 'REAL_DATA_DISABLED'
   field: string
@@ -23,6 +24,7 @@ export interface ServerConfig {
   syntheticDataOnly: true
   mode: PersistenceMode
   databaseUrl?: string
+  sentryDsn?: string
   issues: readonly ConfigIssue[]
 }
 
@@ -34,6 +36,20 @@ const databaseUrlSchema = z.string().refine((value) => {
     return false
   }
 }, 'DATABASE_URL must be a postgres:// or postgresql:// URL.')
+
+export function isValidSentryDsn(value: string): boolean {
+  try {
+    const url = new URL(value)
+    return (
+      url.protocol === 'https:' &&
+      url.username.length > 0 &&
+      url.hostname.length > 0 &&
+      url.pathname.length > 1
+    )
+  } catch {
+    return false
+  }
+}
 
 function parseBoolean(
   value: string | undefined,
@@ -101,6 +117,19 @@ export function readServerConfig(
     })
   }
 
+  const sentryDsnValue = env.SENTRY_DSN?.trim() || undefined
+  const sentryDsn =
+    sentryDsnValue && isValidSentryDsn(sentryDsnValue)
+      ? sentryDsnValue
+      : undefined
+  if (sentryDsnValue && !sentryDsn) {
+    issues.push({
+      code: 'INVALID_SENTRY_DSN',
+      field: 'SENTRY_DSN',
+      message: 'SENTRY_DSN must be a valid Sentry DSN URL.',
+    })
+  }
+
   if (!demoMode && !databaseUrl) {
     issues.push({
       code: 'DATABASE_REQUIRED',
@@ -115,6 +144,7 @@ export function readServerConfig(
     syntheticDataOnly: true,
     mode: databaseUrl ? 'postgres' : 'seeded-demo',
     ...(databaseUrl ? { databaseUrl } : {}),
+    ...(sentryDsn ? { sentryDsn } : {}),
     issues,
   }
 }
@@ -125,6 +155,9 @@ export function safeConfigSummary(config: ServerConfig) {
     demoMode: config.demoMode,
     syntheticDataOnly: config.syntheticDataOnly,
     persistence: config.mode,
+    observability: {
+      sentry: config.sentryDsn ? 'configured' : 'structured-log-only',
+    },
     issues: config.issues,
   }
 }
