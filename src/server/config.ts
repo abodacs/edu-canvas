@@ -13,6 +13,8 @@ export interface ConfigIssue {
     | 'INVALID_DATABASE_URL'
     | 'INVALID_SENTRY_DSN'
     | 'DATABASE_REQUIRED'
+    | 'OPENAI_API_KEY_REQUIRED'
+    | 'INVALID_OPENAI_BASE_URL'
     | 'REAL_DATA_DISABLED'
   field: string
   message: string
@@ -25,6 +27,9 @@ export interface ServerConfig {
   mode: PersistenceMode
   databaseUrl?: string
   sentryDsn?: string
+  openAiApiKey?: string
+  openAiModel: string
+  openAiBaseUrl: string
   issues: readonly ConfigIssue[]
 }
 
@@ -50,6 +55,19 @@ export function isValidSentryDsn(value: string): boolean {
     return false
   }
 }
+
+const openAiBaseUrlSchema = z.string().refine((value) => {
+  try {
+    const url = new URL(value)
+    return (
+      url.protocol === 'https:' ||
+      (url.protocol === 'http:' &&
+        (url.hostname === 'localhost' || url.hostname === '127.0.0.1'))
+    )
+  } catch {
+    return false
+  }
+}, 'OPENAI_BASE_URL must use HTTPS, or HTTP for a local loopback test server.')
 
 function parseBoolean(
   value: string | undefined,
@@ -138,6 +156,28 @@ export function readServerConfig(
     })
   }
 
+  const openAiApiKey = env.OPENAI_API_KEY?.trim() || undefined
+  const openAiModel = env.OPENAI_MODEL?.trim() || 'gpt-5.6'
+  let openAiBaseUrl = env.OPENAI_BASE_URL?.trim() || 'https://api.openai.com/v1'
+
+  if (!openAiBaseUrlSchema.safeParse(openAiBaseUrl).success) {
+    issues.push({
+      code: 'INVALID_OPENAI_BASE_URL',
+      field: 'OPENAI_BASE_URL',
+      message:
+        'OPENAI_BASE_URL must use HTTPS, or HTTP for a local loopback test server.',
+    })
+    openAiBaseUrl = 'https://api.openai.com/v1'
+  }
+
+  if (!demoMode && !openAiApiKey) {
+    issues.push({
+      code: 'OPENAI_API_KEY_REQUIRED',
+      field: 'OPENAI_API_KEY',
+      message: 'Set OPENAI_API_KEY for server-side lesson generation.',
+    })
+  }
+
   return {
     appEnv,
     demoMode,
@@ -145,6 +185,9 @@ export function readServerConfig(
     mode: databaseUrl ? 'postgres' : 'seeded-demo',
     ...(databaseUrl ? { databaseUrl } : {}),
     ...(sentryDsn ? { sentryDsn } : {}),
+    ...(openAiApiKey ? { openAiApiKey } : {}),
+    openAiModel,
+    openAiBaseUrl,
     issues,
   }
 }

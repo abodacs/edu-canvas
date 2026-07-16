@@ -1,3 +1,9 @@
+import { getDemoSession } from '@/server/demo/policy'
+import { createDeterministicLessonDraftProvider } from '@/server/generation/provider'
+import { createGenerationService } from '@/server/generation/service'
+import { createSeededPersistence } from '@/server/persistence/seeded'
+import { demoSeed } from '@/server/seed-data'
+
 export {}
 
 const baseUrl = process.env.SMOKE_URL ?? 'http://127.0.0.1:3000'
@@ -37,5 +43,49 @@ for (const result of results) {
 }
 
 if (results.some((result) => !result.ok)) {
+  process.exitCode = 1
+}
+
+const requestInput = {
+  prompt: 'equivalent fractions for grade 4',
+  grade: 4,
+  standardId: demoSeed.standard.id,
+  language: 'en' as const,
+  difficulty: 'on-level' as const,
+  idempotencyKey: 'smoke-generation-request',
+}
+const generationService = createGenerationService({
+  persistence: createSeededPersistence(),
+  provider: createDeterministicLessonDraftProvider(),
+  requestIdFactory: () => 'draft_req_smoke_generation',
+})
+const generation = await generationService.generate({
+  session: getDemoSession('teacher'),
+  input: requestInput,
+})
+const generationPassed =
+  generation.record.state === 'ready-for-review' &&
+  generation.record.draft?.variants.length === 4
+console.log(
+  `${generationPassed ? 'PASS' : 'FAIL'} teacher generation returns four reviewable variants`,
+)
+
+const recoveryService = createGenerationService({
+  persistence: createSeededPersistence(),
+  provider: createDeterministicLessonDraftProvider('timeout'),
+  requestIdFactory: () => 'draft_req_smoke_failure',
+})
+const recovery = await recoveryService.generate({
+  session: getDemoSession('teacher'),
+  input: { ...requestInput, idempotencyKey: 'smoke-generation-failure' },
+})
+const recoveryPassed =
+  recovery.record.state === 'failed-retryable' &&
+  recovery.publicResult.retry.available
+console.log(
+  `${recoveryPassed ? 'PASS' : 'FAIL'} forced provider failure exposes a retry state`,
+)
+
+if (!generationPassed || !recoveryPassed) {
   process.exitCode = 1
 }

@@ -1,6 +1,9 @@
-# Foundation runbook — issue #2
+# Foundation and lesson-generation runbook — issues #2–#3
 
-This runbook covers the deployable walking-skeleton foundation. It intentionally stops before lesson generation, A2UI compilation, grading, and adaptation.
+This runbook covers the deployable walking-skeleton foundation and the first
+teacher authoring slice. Lesson drafts are validated, persisted, and kept in a
+teacher-review state; A2UI compilation, approval, publication, grading, and
+adaptation remain later slices.
 
 ## Clean checkout
 
@@ -51,6 +54,9 @@ Copy `.env.example` to `.env` only when you need local overrides. Unprefixed val
 | `SYNTHETIC_DATA_ONLY` | `true`                    | Real-student mode is blocked by the foundation            |
 | `DATABASE_URL`        | unset                     | Optional `postgres://` or `postgresql://` persistence URL |
 | `SENTRY_DSN`          | unset                     | Optional server-only Sentry delivery for scrubbed errors  |
+| `OPENAI_API_KEY`      | unset in demo mode        | Server-only credential required when `DEMO_MODE=false`    |
+| `OPENAI_MODEL`        | `gpt-5.6`                 | Server-selected structured-output model                   |
+| `OPENAI_BASE_URL`     | OpenAI Responses API      | HTTPS provider endpoint; loopback HTTP is test-only       |
 
 Invalid configuration fails readiness with field-level, secret-free diagnostics. The server never returns a database URL, API key, or private answer key in an error response.
 
@@ -88,6 +94,21 @@ For a request to `/demo/student`, use the file names as the trace:
 
 The browser-safe contract is `src/shared/demo-contract.ts`. The private answer key remains in `src/server/seed-data.ts` and the PostgreSQL adapter; it is not part of the public snapshot.
 
+For teacher lesson generation, the trace is:
+
+1. `src/routes/demo/$role.tsx` collects prompt, grade, standard, language, and optional difficulty.
+2. `src/server/demo/server-function.ts` validates the server-function payload and resolves the seeded teacher session.
+3. `src/server/generation/service.ts` applies safety checks, idempotency, the one-shot correction rule, and the durable state machine.
+4. `src/server/generation/provider.ts` selects the deterministic fixture in seeded mode or the server-only GPT-5.6 adapter in PostgreSQL mode.
+5. `src/server/generation/validation.ts` validates the canonical lesson contract and separates warnings from blocking errors.
+6. `src/server/generation/projection.ts` strips private relationships before returning the browser-safe draft.
+7. `src/server/persistence/seeded.ts` or `src/server/persistence/postgres.ts` stores the request, attempts, diagnostics, and provenance.
+
+The seeded teacher demo accepts `equivalent fractions for grade 4` and returns
+exactly two standard variants, one scaffold, and one challenge variant. A
+browser retry with the same idempotency key returns the existing attempt;
+`Try this draft again` creates a new attempt on the same request history.
+
 ## Health and readiness
 
 - `GET /api/health` is a cheap liveness check. It does not touch PostgreSQL.
@@ -121,5 +142,5 @@ These choices follow Google’s responsive/accessibility guidance and Core Web V
 
 - Demo identities are seeded role fixtures, not production authentication. This is an explicit demo limitation.
 - PostgreSQL is optional in clean-demo mode; a deployed production environment should use managed PostgreSQL and verify the forced row-level policy path with a least-privilege database role.
-- No lesson generation, chat helper, A2UI catalog, grading, or adaptation code belongs in this issue. New requirements must become follow-up issues.
+- A2UI compilation, SSE transport, teacher approval/publication, grading, and adaptation remain follow-up slices. A generated lesson is never auto-published.
 - The real-student compliance gate (DPA, EU residency, security, and consent) remains closed.

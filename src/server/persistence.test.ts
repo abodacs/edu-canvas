@@ -16,6 +16,7 @@ describe('foundation persistence boundary', () => {
       APP_ENV: 'production',
       DEMO_MODE: 'false',
       DATABASE_URL: 'not-a-url',
+      OPENAI_API_KEY: 'test-server-key',
     })
 
     expect(() =>
@@ -42,6 +43,8 @@ describe('foundation persistence boundary', () => {
       demoMode: false,
       syntheticDataOnly: true,
       mode: 'postgres',
+      openAiModel: 'gpt-5.6',
+      openAiBaseUrl: 'https://api.openai.com/v1',
       issues: [],
     }
 

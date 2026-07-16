@@ -2,7 +2,11 @@ import type { DemoRole } from '@/shared/demo-contract'
 import { demoSeed, getSeedIdentity } from '../seed-data'
 
 const demoCapabilities = {
-  teacher: ['view_seeded_environment', 'view_demo_activity_fixtures'],
+  teacher: [
+    'view_seeded_environment',
+    'view_demo_activity_fixtures',
+    'generate_lesson_draft',
+  ],
   student: ['view_seeded_environment', 'view_assigned_demo_activity'],
 } as const satisfies Record<DemoRole, readonly string[]>
 
