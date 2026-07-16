@@ -19,6 +19,7 @@ This document records the decisions, contradictions, and unresolved questions di
 - Grading is deterministic and server-authoritative; student boards and ink are not sent to AI.
 - Adaptive learning uses a curated prerequisite graph and finite teacher-approved packs, with recursive remediation and lazy pack generation.
 - A2UI v0.9.1 is the UI wire protocol, using a versioned Edu-Canvas catalog; the canonical lesson model remains separate.
+- Core lesson rendering and interaction use semantic DOM components through A2UI. The experimental HTML-in-Canvas API (and screenshot-style canvas tools) is optional progressive enhancement only; the product must work fully without browser flags or experimental renderer support.
 - TanStack Start replaces Next.js; PostgreSQL is the system of record.
 - The primary student context is independent learning at home, in English or Arabic, with responsive light/dark UI and RTL support.
 - Real-student production data is gated on DPA, residency, security, and consent approval. A formal synthetic-data phase precedes that approval gate.
@@ -66,9 +67,9 @@ This document records the decisions, contradictions, and unresolved questions di
 | 37 | How can adaptation coexist with review? | **Superseded:** Runtime generation is not allowed; use finite pre-generated teacher-approved packs. |
 | 38 | Is the answer key separate? | **Locked:** Yes; server-only, separate from visual components. |
 | 39 | Where is score computed? | **Locked:** Backend only; client sends events, never trusted score fields. |
-| 40 | Must matching cards be rasterized onto Fabric? | **Locked:** No; semantic DOM cards are interactive. Fabric is for optional ink/export. |
+| 40 | Must matching cards be rasterized onto Fabric or HTML-in-Canvas? | **Locked:** No; semantic DOM/A2UI cards are interactive and remain the grading source of truth. Fabric may support optional ink; HTML-in-Canvas or html2canvas may support optional preview/export only. None is required for core rendering, accessibility, sharing, or grading. |
 | 41 | Can cards move/rotate/scale? | **Locked:** No in v1; matching cards are fixed and responsive. |
-| 42 | Is freehand ink included? | **Locked:** Yes, as optional ungraded annotation. |
+| 42 | Is freehand ink included? | **Locked:** Yes, as optional ungraded annotation; it must not replace semantic DOM interaction or become a canvas-only grading path. |
 | 43 | Is ink persisted? | **Locked:** Yes; saved with immutable attempts and visible to teachers; never sent to AI. |
 | 44 | Can students submit incomplete work? | **Locked:** Yes; partial credit and feedback are allowed. |
 | 45 | Where do hints come from? | **Locked:** Teacher-approved hints from the activity pack; no runtime invention. |
@@ -105,11 +106,11 @@ This document records the decisions, contradictions, and unresolved questions di
 | 76 | Minor authorization? | **Locked:** School authorization/consent status and timestamp are required before account activation; school/deployment handles required consent process. |
 | 77 | Authoritative validation? | **Locked:** Server-side; client validation is defense-in-depth only. |
 | 78 | Closed Shadow DOM? | **Locked:** Optional; not a security boundary. Use allowlisted renderer, CSP/Trusted Types, safe data, semantic DOM. |
-| 79 | Arbitrary CSS from model? | **Superseded by A2UI decision:** Styling is governed by the reviewed Edu-Canvas catalog; exact token set remains an implementation detail. |
+| 79 | Arbitrary CSS from model? | **Superseded by A2UI decision:** Styling is governed by the reviewed Edu-Canvas catalog; the model cannot emit arbitrary HTML/CSS or require HTML-in-Canvas. The exact token set remains an implementation detail. |
 | 80 | Adopt real A2UI? | **Locked:** Yes; replace the PRD’s custom “A2UI” claim with real A2UI plus a custom Edu-Canvas catalog. |
 | 81 | A2UI version? | **Locked:** v0.9.1. |
 | 82 | A2UI transport? | **Locked:** SSE for server-to-client streaming, HTTPS actions for client-to-server events. |
-| 83 | Catalog scope? | **Locked:** Fixed matching-focused catalog: layout, text/image, match cards, hint/feedback/progress, ink, semantic metadata. |
+| 83 | Catalog scope? | **Locked:** Fixed matching-focused semantic catalog: layout, text/image, match cards, hint/feedback/progress, ink, and accessibility metadata. The catalog must have a normal DOM renderer; experimental canvas rendering is not a dependency. |
 | 84 | Allowlisted actions? | **Locked:** `selectSource`, `selectTarget`, `clearSelection`, `requestHint`, `submitAttempt`, `undoInk`, `clearInk`, `saveProgress`. |
 | 85 | Catalog governance? | **Locked:** Versioned immutable catalogs; additive reviewed changes; new catalog ID for breaking changes; client advertises supported versions. |
 | 86 | Client data boundary? | **Locked:** Public IDs/labels, layout/assets, selections, hints/feedback, progress/connectivity, ink; answer key/mastery/permissions remain server-side. |
@@ -245,6 +246,7 @@ Only these should be asked next because confidence in the intended answer is bel
 ## External references consulted
 
 - [A2UI official site](https://a2ui.org/) and [A2UI catalogs](https://a2ui.org/concepts/catalogs/)
+- [Chrome: HTML-in-Canvas API origin trial](https://developer.chrome.com/blog/html-in-canvas-origin-trial?hl=en) — reviewed as an optional enhancement, not a core dependency
 - [Math Academy: how its AI works](https://mathacademy.com/how-our-ai-works)
 - [OpenAI API data controls](https://platform.openai.com/docs/models/default-usage-policies-by-endpoint)
 - [European Commission: controller vs processor](https://commission.europa.eu/law/law-topic/data-protection/rules-business-and-organisations/obligations/controllerprocessor/what-data-controller-or-data-processor_en)
