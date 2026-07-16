@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: edu_canvas
+      POSTGRES_USER: edu_canvas
+      POSTGRES_PASSWORD: edu_canvas_dev
+    ports:
+      - '5432:5432'
+    volumes:
+      - edu-canvas-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U edu_canvas -d edu_canvas']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  edu-canvas-postgres:
