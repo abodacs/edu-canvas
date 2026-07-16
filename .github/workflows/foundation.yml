@@ -1,0 +1,77 @@
+name: Foundation checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  foundation:
+    runs-on: ubuntu-latest
+    env:
+      APP_ENV: preview
+      DEMO_MODE: 'false'
+      SYNTHETIC_DATA_ONLY: 'true'
+      DATABASE_URL: postgresql://edu_canvas:edu_canvas_dev@127.0.0.1:5432/edu_canvas
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: edu_canvas
+          POSTGRES_USER: edu_canvas
+          POSTGRES_PASSWORD: edu_canvas_dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U edu_canvas -d edu_canvas"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run release checks
+        run: pnpm check
+
+      - name: Apply and repeat the database seed
+        run: |
+          pnpm db:setup
+          pnpm db:seed
+
+      - name: Smoke-test the built server
+        run: |
+          pnpm start > "$RUNNER_TEMP/edu-canvas-server.log" 2>&1 &
+          server_pid=$!
+          cleanup() {
+            kill "$server_pid" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:3000/api/health >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+
+          curl --fail --silent http://127.0.0.1:3000/api/readiness
+          pnpm smoke
