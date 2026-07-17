@@ -493,7 +493,7 @@ p {
 }
 
 .button:active:not(:disabled) {
-  transform: translateY(1px);
+  transform: translateY(1px) scale(0.97);
 }
 
 .button:disabled {
@@ -942,6 +942,9 @@ p {
   color: var(--accent-deep);
   font-size: 0.82rem;
   font-weight: 700;
+  transition:
+    transform 150ms var(--ease-out-expo),
+    color 160ms var(--ease-out-quart);
 }
 
 .hint-button svg {
@@ -953,10 +956,15 @@ p {
   color: var(--ink);
 }
 
+.hint-button:active {
+  transform: translateY(1px) scale(0.98);
+}
+
 .hint-copy {
   max-inline-size: 30ch;
   color: var(--ink-soft);
   font-size: 0.86rem;
+  animation: state-in 220ms var(--ease-out-expo) both;
 }
 
 .preview-note {
@@ -1052,6 +1060,10 @@ p {
   transform: translateY(-3px);
   border-color: var(--line-strong);
   box-shadow: 0 1rem 2rem -1.4rem var(--shadow-deep);
+}
+
+.target-card:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .target-card.is-selected {
@@ -1355,6 +1367,12 @@ p {
   z-index: 1;
 }
 
+.phase-panel__content {
+  display: grid;
+  gap: var(--space-xl);
+  animation: state-in 280ms var(--ease-out-expo) both;
+}
+
 .phase-panel__stamp {
   gap: var(--space-md);
   color: color-mix(in oklch, var(--paper) 65%, transparent);
@@ -1456,8 +1474,13 @@ p {
   font-size: 0.8rem;
   font-weight: 700;
   transition:
+    transform 150ms var(--ease-out-expo),
     background-color 180ms var(--ease-out-quart),
     color 180ms var(--ease-out-quart);
+}
+
+.role-switch button:active {
+  transform: scale(0.98);
 }
 
 .role-switch button[aria-pressed='true'] {
@@ -1785,6 +1808,19 @@ p {
   }
   to {
     opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes state-in {
+  from {
+    opacity: 0;
+    filter: blur(2px);
+    transform: translateY(0.45rem);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
     transform: translateY(0);
   }
 }
