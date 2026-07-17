@@ -48,3 +48,7 @@ The first structural pass reduced `LandingPage` but temporarily introduced eight
 The final `npx react-doctor@latest --verbose --scope changed` scan is clean: `100/100`, no issues found.
 
 The final verification also passed `pnpm build` and `pnpm smoke` against the built server: `/`, `/api/health`, `/api/readiness`, `/demo/teacher`, and `/demo/student` all returned `200`.
+
+The final full scan reports four warnings, all already triaged above: the two generated `postgres` bundle findings and the two deferred `pnpm-workspace.yaml` policy checks. No source-code React Doctor findings remain.
+
+The repository-wide `pnpm check` is also green: formatting, lint, typecheck, 11 tests, production build, client-boundary verification, and architecture verification.
