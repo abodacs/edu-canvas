@@ -70,6 +70,13 @@ const shaderFragmentSource = `
 
 export function InkField({ isDark }: { isDark: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const darkRef = useRef(isDark)
+  const redrawRef = useRef<(() => void) | null>(null)
+
+  useEffect(() => {
+    darkRef.current = isDark
+    redrawRef.current?.()
+  }, [isDark])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -189,10 +196,21 @@ export function InkField({ isDark }: { isDark: boolean }) {
       renderer.uniform1f(timeLocation, time)
       renderer.uniform2f(resolutionLocation, width, height)
       renderer.uniform2f(pointerLocation, pointer.x, pointer.y)
-      renderer.uniform1f(darkLocation, isDark ? 1 : 0)
+      renderer.uniform1f(darkLocation, darkRef.current ? 1 : 0)
       renderer.drawArrays(renderer.TRIANGLES, 0, 3)
       if (!reducedMotion) frame = requestAnimationFrame(render)
     }
+
+    function requestRender() {
+      if (!isVisible) return
+      if (reducedMotion) {
+        render(performance.now())
+      } else if (!frame) {
+        frame = requestAnimationFrame(render)
+      }
+    }
+
+    redrawRef.current = requestRender
 
     function handlePointerMove(event: PointerEvent) {
       const rect = surface.getBoundingClientRect()
@@ -203,8 +221,7 @@ export function InkField({ isDark }: { isDark: boolean }) {
     const resizeObserver = new ResizeObserver(resize)
     const visibilityObserver = new IntersectionObserver(([entry]) => {
       isVisible = entry.isIntersecting
-      if (isVisible && !reducedMotion && !frame)
-        frame = requestAnimationFrame(render)
+      if (isVisible) requestRender()
     })
     resizeObserver.observe(surface)
     visibilityObserver.observe(surface)
@@ -215,6 +232,7 @@ export function InkField({ isDark }: { isDark: boolean }) {
     render(0)
 
     return () => {
+      redrawRef.current = null
       cancelAnimationFrame(frame)
       resizeObserver.disconnect()
       visibilityObserver.disconnect()
@@ -224,7 +242,7 @@ export function InkField({ isDark }: { isDark: boolean }) {
       renderer.deleteShader(vertexShader)
       renderer.deleteShader(fragmentShader)
     }
-  }, [isDark])
+  }, [])
 
   return <canvas className="ink-field" ref={canvasRef} aria-hidden="true" />
 }

@@ -1,10 +1,11 @@
+import { memo } from 'react'
 import { ArrowDownRight, ArrowUpRight } from 'lucide-react'
 
 import type { LandingCopy } from './copy'
 import { InkField } from './ink-field'
 import type { Language } from './types'
 
-export function HeroSection({
+export const HeroSection = memo(function HeroSectionView({
   activeCopy,
   language,
   isDark,
@@ -106,4 +107,4 @@ export function HeroSection({
       </div>
     </section>
   )
-}
+})

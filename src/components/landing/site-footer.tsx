@@ -1,8 +1,13 @@
+import { memo } from 'react'
 import { ArrowUpRight } from 'lucide-react'
 
 import type { LandingCopy } from './copy'
 
-export function SiteFooter({ activeCopy }: { activeCopy: LandingCopy }) {
+export const SiteFooter = memo(function SiteFooterView({
+  activeCopy,
+}: {
+  activeCopy: LandingCopy
+}) {
   return (
     <footer className="site-footer page-width">
       <a className="brand-lockup" href="#top" aria-label="Edu-Canvas home">
@@ -24,4 +29,4 @@ export function SiteFooter({ activeCopy }: { activeCopy: LandingCopy }) {
       </a>
     </footer>
   )
-}
+})

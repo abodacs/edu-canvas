@@ -1,27 +1,42 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 
 import { HeroSection } from '@/components/landing/hero-section'
 import { LessonSection } from '@/components/landing/lesson-section'
+import {
+  LandingProvider,
+  useLandingContext,
+} from '@/components/landing/landing-provider'
 import { LoopSection } from '@/components/landing/loop-section'
 import { Masthead } from '@/components/landing/masthead'
 import { RolesSection } from '@/components/landing/roles-section'
 import { SiteFooter } from '@/components/landing/site-footer'
 import { TrustSection } from '@/components/landing/trust-section'
-import { copy } from '@/components/landing/copy'
-import type { Language, Phase, RoleView } from '@/components/landing/types'
 
 export const Route = createFileRoute('/')({ component: LandingPage })
 
 function LandingPage() {
-  const [language, setLanguage] = useState<Language>('en')
-  const [isDark, setIsDark] = useState(false)
-  const [selectedTargets, setSelectedTargets] = useState<string[]>([])
-  const [isRevealed, setIsRevealed] = useState(false)
-  const [hintVisible, setHintVisible] = useState(false)
-  const [activePhase, setActivePhase] = useState<Phase>('shape')
-  const [roleView, setRoleView] = useState<RoleView>('teacher')
-  const activeCopy = copy[language]
+  return (
+    <LandingProvider>
+      <LandingExperience />
+    </LandingProvider>
+  )
+}
+
+function LandingExperience() {
+  const {
+    state: {
+      language,
+      isDark,
+      selectedTargets,
+      isRevealed,
+      hintVisible,
+      activePhase,
+      roleView,
+    },
+    actions,
+    meta: { activeCopy },
+  } = useLandingContext()
 
   useEffect(() => {
     document.documentElement.lang = language
@@ -38,29 +53,6 @@ function LandingPage() {
       )
   }, [isDark])
 
-  function toggleLanguage() {
-    setLanguage((current) => (current === 'en' ? 'ar' : 'en'))
-  }
-
-  function toggleTheme() {
-    setIsDark((current) => !current)
-  }
-
-  function toggleTarget(id: string) {
-    setIsRevealed(false)
-    setSelectedTargets((current) =>
-      current.includes(id)
-        ? current.filter((targetId) => targetId !== id)
-        : [...current, id],
-    )
-  }
-
-  function resetLesson() {
-    setSelectedTargets([])
-    setIsRevealed(false)
-    setHintVisible(false)
-  }
-
   return (
     <main className="experience" data-language={language} id="top">
       <a className="skip-link" href="#lesson">
@@ -76,8 +68,8 @@ function LandingPage() {
         activeCopy={activeCopy}
         language={language}
         isDark={isDark}
-        onToggleLanguage={toggleLanguage}
-        onToggleTheme={toggleTheme}
+        onToggleLanguage={actions.toggleLanguage}
+        onToggleTheme={actions.toggleTheme}
       />
       <HeroSection
         activeCopy={activeCopy}
@@ -90,22 +82,22 @@ function LandingPage() {
         selectedTargets={selectedTargets}
         isRevealed={isRevealed}
         hintVisible={hintVisible}
-        onToggleHint={() => setHintVisible((current) => !current)}
-        onToggleTarget={toggleTarget}
-        onReveal={() => setIsRevealed(true)}
-        onReset={resetLesson}
+        onToggleHint={actions.toggleHint}
+        onToggleTarget={actions.toggleTarget}
+        onReveal={actions.reveal}
+        onReset={actions.resetLesson}
       />
       <LoopSection
         activeCopy={activeCopy}
         language={language}
         activePhase={activePhase}
-        onPhaseChange={setActivePhase}
+        onPhaseChange={actions.changePhase}
       />
       <RolesSection
         activeCopy={activeCopy}
         language={language}
         roleView={roleView}
-        onRoleChange={setRoleView}
+        onRoleChange={actions.changeRole}
       />
       <TrustSection activeCopy={activeCopy} />
       <SiteFooter activeCopy={activeCopy} />

@@ -5,6 +5,7 @@ import {
   RotateCcw,
   Sparkles,
 } from 'lucide-react'
+import { memo } from 'react'
 import type { CSSProperties } from 'react'
 
 import type { LandingCopy } from './copy'
@@ -39,7 +40,7 @@ type LessonSectionProps = {
   onReset: () => void
 }
 
-export function LessonSection({
+export const LessonSection = memo(function LessonSectionView({
   activeCopy,
   language,
   selectedTargets,
@@ -242,4 +243,4 @@ export function LessonSection({
       </div>
     </section>
   )
-}
+})
