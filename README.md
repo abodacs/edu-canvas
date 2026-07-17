@@ -25,18 +25,19 @@ Adaptive, bilingual (**English / Arabic, RTL**) visual-learning platform for **G
 
 ## Repo layout
 
-| Path                            | What                                                              |
-| ------------------------------- | ----------------------------------------------------------------- |
-| `PRD_GRILL_LOG.md`              | 170-question product decision log — the spec                      |
-| `DEVPOST_WINNING_STRATEGY.md`   | Competition cut + 48-hour execution plan                          |
-| `docs/product-strategy.md`      | North-star outcome, issue-driven loop, and seven-layer audit      |
-| `docs/observed-behaviour.md`    | Evidence boundary, job stories, and research plan                 |
-| `docs/walking-skeleton.md`      | The thinnest end-to-end demo slice (the build contract)           |
-| `docs/foundation-runbook.md`    | Operator/developer setup, generation trace, redeploy, and handoff |
-| `docs/architecture-harness.md`  | Guardrails for state ownership, layer imports, and contract drift |
-| `docs/agdr/`                    | Agent Decision Records (architecture decisions)                   |
-| `docs/security/threat-model.md` | STRIDE threat model                                               |
-| `.impeccable.md`                | Design context                                                    |
+| Path                            | What                                                                |
+| ------------------------------- | ------------------------------------------------------------------- |
+| `PRD_GRILL_LOG.md`              | 170-question product decision log — the spec                        |
+| `DEVPOST_WINNING_STRATEGY.md`   | Competition cut + 48-hour execution plan                            |
+| `docs/product-strategy.md`      | North-star outcome, issue-driven loop, and seven-layer audit        |
+| `docs/observed-behaviour.md`    | Evidence boundary, job stories, and research plan                   |
+| `docs/walking-skeleton.md`      | The thinnest end-to-end demo slice (the build contract)             |
+| `docs/foundation-runbook.md`    | Operator/developer setup, redeploy, and handoff checks for issue #2 |
+| `docs/release-fly-supabase.md`  | Fly.io + Supabase Postgres release procedure and launch gates       |
+| `docs/architecture-harness.md`  | Guardrails for state ownership, layer imports, and contract drift   |
+| `docs/agdr/`                    | Agent Decision Records (architecture decisions)                     |
+| `docs/security/threat-model.md` | STRIDE threat model                                                 |
+| `.impeccable.md`                | Design context                                                      |
 
 ## Runtime navigation
 
