@@ -1267,9 +1267,9 @@ p {
 }
 
 .phase-tab.is-active .phase-tab__number {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--surface);
+  border-color: var(--accent-deep);
+  background: var(--accent-deep);
+  color: var(--paper);
 }
 
 .phase-tab > svg {
