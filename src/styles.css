@@ -426,7 +426,7 @@ p {
 
 .hero-title-accent {
   display: inline-block;
-  color: var(--accent);
+  color: var(--accent-deep);
   font-size: 0.78em;
   font-style: italic;
   font-weight: 500;
@@ -1336,7 +1336,7 @@ p {
 
 .phase-panel__stamp {
   gap: var(--space-md);
-  color: color-mix(in oklch, var(--paper) 65%, transparent);
+  color: var(--paper);
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -1358,7 +1358,7 @@ p {
 
 .phase-panel > p {
   max-inline-size: 47ch;
-  color: color-mix(in oklch, var(--paper) 72%, transparent);
+  color: var(--paper);
   font-size: 1rem;
   line-height: 1.6;
 }
