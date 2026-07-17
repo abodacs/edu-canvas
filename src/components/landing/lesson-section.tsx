@@ -88,9 +88,11 @@ export const LessonSection = memo(function LessonSectionView({
           }
         >
           <div className="lesson-brief__topline">
-            <span className="step-count">01</span>
+            <span className="step-count">03</span>
             <span>
-              {language === 'en' ? 'Find the relationship' : 'اكتشف العلاقة'}
+              {language === 'en'
+                ? 'Student sees the idea'
+                : 'يرى المتعلّم الفكرة'}
             </span>
           </div>
           <h3>{activeCopy.lessonInstruction}</h3>
@@ -114,13 +116,14 @@ export const LessonSection = memo(function LessonSectionView({
               type="button"
               onClick={onToggleHint}
               aria-expanded={hintVisible}
+              aria-controls="lesson-hint"
             >
               <CircleHelp aria-hidden="true" />
               {activeCopy.lessonHintAction}
             </button>
-            {hintVisible && (
-              <p className="hint-copy">{activeCopy.lessonHint}</p>
-            )}
+            <p className="hint-copy" id="lesson-hint" hidden={!hintVisible}>
+              {activeCopy.lessonHint}
+            </p>
             <span className="preview-note">{activeCopy.lessonPreviewNote}</span>
           </div>
         </aside>

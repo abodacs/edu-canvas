@@ -17,7 +17,6 @@ export const HeroSection = memo(function HeroSectionView({
   return (
     <section
       className="hero page-width story-block"
-      id="idea"
       aria-labelledby="hero-title"
     >
       <div className="hero-copy">
@@ -35,7 +34,7 @@ export const HeroSection = memo(function HeroSectionView({
             {activeCopy.heroPrimary}
             <ArrowDownRight aria-hidden="true" />
           </a>
-          <a className="button button--quiet" href="#loop">
+          <a className="button button--quiet" href="#path">
             {activeCopy.heroSecondary}
             <ArrowUpRight aria-hidden="true" />
           </a>
@@ -62,7 +61,7 @@ export const HeroSection = memo(function HeroSectionView({
         <div className="stage-noise" aria-hidden="true" />
         <div className="stage-caption">
           <span>{activeCopy.stageLabel}</span>
-          <span>01 / 04</span>
+          <span>03 / 04</span>
         </div>
         <div className="stage-diagram">
           <div className="stage-orbit stage-orbit--outer" aria-hidden="true" />

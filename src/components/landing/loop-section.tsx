@@ -4,7 +4,7 @@ import { Check, ChevronRight } from 'lucide-react'
 import type { LandingCopy } from './copy'
 import type { Language, Phase } from './types'
 
-const phases: Phase[] = ['shape', 'match', 'adapt']
+const phases: Phase[] = ['shape', 'review', 'match', 'adapt']
 
 type LoopSectionProps = {
   activeCopy: LandingCopy
@@ -24,12 +24,12 @@ export const LoopSection = memo(function LoopSectionView({
   return (
     <section
       className="loop-section page-width story-block"
-      id="loop"
-      aria-labelledby="loop-title"
+      id="path"
+      aria-labelledby="path-title"
     >
       <div className="section-lead section-lead--wide">
         <p className="eyebrow">{activeCopy.journeyKicker}</p>
-        <h2 id="loop-title">{activeCopy.journeyTitle}</h2>
+        <h2 id="path-title">{activeCopy.journeyTitle}</h2>
         <p>{activeCopy.journeyDescription}</p>
       </div>
       <div className="phase-layout">
@@ -37,7 +37,7 @@ export const LoopSection = memo(function LoopSectionView({
           className="phase-rail"
           role="group"
           aria-label={
-            language === 'en' ? 'Lesson loop steps' : 'خطوات مسار الدرس'
+            language === 'en' ? 'Lesson path steps' : 'خطوات مسار الدرس'
           }
         >
           {phases.map((phase, index) => {
@@ -62,7 +62,7 @@ export const LoopSection = memo(function LoopSectionView({
           <div className="phase-panel__content" key={activePhase}>
             <div className="phase-panel__stamp">
               <span>{activePhaseCopy.number}</span>
-              <span>{activeCopy.journeyKicker.replace('02 · ', '')}</span>
+              <span>{activePhaseCopy.label}</span>
             </div>
             <h3>{activePhaseCopy.title}</h3>
             <p>{activePhaseCopy.body}</p>
