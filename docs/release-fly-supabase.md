@@ -10,6 +10,8 @@ approved launch scope.
 - Fly.io builds and runs the checked-in `Dockerfile`.
 - Supabase provides the hosted PostgreSQL database.
 - The server connects to PostgreSQL with the server-only `DATABASE_URL` secret.
+- Fly runs the idempotent migration runner as a release command before
+  replacing application Machines.
 - The app does not use `supabase-js`, Supabase Auth, or the Supabase Data API;
   no browser key or public table grant is required.
 - The existing `migrations/` directory and `pnpm db:migrate` runner remain the
@@ -65,9 +67,9 @@ Run these commands from the repository root or from the release worktree.
    docker build --tag edu-canvas:release .
    ```
 
-2. Apply the forward-only migration and idempotent synthetic seed to the
-   Supabase database before changing application traffic. Use the same
-   connection string that will be stored in Fly:
+2. For the first release, apply the forward-only migration and idempotent
+   synthetic seed to Supabase before changing application traffic. Use the
+   same connection string that is stored in Fly:
 
    ```bash
    export DATABASE_URL='postgresql://postgres:<password>@<host>:5432/postgres?sslmode=require'
@@ -77,8 +79,10 @@ Run these commands from the repository root or from the release worktree.
    ```
 
    The migration runner records applied files in `app_migrations` and takes a
-   non-blocking advisory lock. Never edit an already-applied migration; add a
-   new numbered file instead.
+   non-blocking advisory lock. On every later `fly deploy`, the Fly release
+   command runs the same migration logic in a temporary Machine and aborts the
+   deployment if it cannot complete. It never seeds or deletes data.
+   Never edit an already-applied migration; add a new numbered file instead.
 
 3. Deploy with a canary replacement and wait for Fly health checks:
 
@@ -88,7 +92,18 @@ Run these commands from the repository root or from the release worktree.
    fly checks list
    ```
 
-4. Verify the public service. Replace the hostname if the Fly app name was
+4. Keep at least two stateless Machines in the primary region for availability
+   once the app is live:
+
+   ```bash
+   fly scale count 2 --region ams --yes
+   fly scale show
+   ```
+
+   Replace `ams` if `primary_region` was changed. This app stores data in
+   Supabase and has no Fly volume, so Machines can be replaced independently.
+
+5. Verify the public service. Replace the hostname if the Fly app name was
    changed:
 
    ```bash
@@ -98,8 +113,9 @@ Run these commands from the repository root or from the release worktree.
    ```
 
 Readiness must report `status: "ready"`, `config.persistence: "postgres"`,
-and no configuration issues. Keep the previous release serving traffic if
-readiness fails; fix the secret or database separately and redeploy.
+and no configuration issues. Fly routes traffic only after both liveness and
+readiness checks pass. Keep the previous release serving traffic if readiness
+fails; fix the secret or database separately and redeploy.
 
 ## Operations
 
@@ -107,6 +123,7 @@ readiness fails; fix the secret or database separately and redeploy.
 fly logs
 fly releases
 fly secrets list
+fly scale show
 ```
 
 Fly only displays secret names and digests, not secret values. Rotate the
