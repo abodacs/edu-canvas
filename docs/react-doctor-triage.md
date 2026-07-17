@@ -32,7 +32,7 @@ The scan is treated as a set of hypotheses. Generated output and dependency code
 
 The requested `content-visibility: auto` check found no matching declaration in tracked source or generated output. No off-screen content is currently placed inside a `content-visibility: auto` boundary, so no accessibility remediation or new optimization is being introduced. Keep this as a regression check if a future performance change adds `content-visibility`.
 
-The motion pass will retain the existing `prefers-reduced-motion: reduce` fallback and will only add state feedback that supports comprehension.
+The motion pass retains the existing `prefers-reduced-motion: reduce` fallback and adds only comprehension-supporting feedback: current-value smoothing for the decorative pointer field, press response for lesson controls, and short state-entry transitions for hints and phase content. No `content-visibility` rule was added.
 
 ## Verification plan
 
@@ -46,3 +46,5 @@ The motion pass will retain the existing `prefers-reduced-motion: reduce` fallba
 The first structural pass reduced `LandingPage` but temporarily introduced eight `no-multi-comp` warnings because the extracted components still lived in `src/routes/index.tsx`. Those components now live in `src/components/landing/` with the route retained as a thin stateful composition root.
 
 The final `npx react-doctor@latest --verbose --scope changed` scan is clean: `100/100`, no issues found.
+
+The final verification also passed `pnpm build` and `pnpm smoke` against the built server: `/`, `/api/health`, `/api/readiness`, `/demo/teacher`, and `/demo/student` all returned `200`.

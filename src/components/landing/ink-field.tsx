@@ -161,6 +161,8 @@ export function InkField({ isDark }: { isDark: boolean }) {
     let frame = 0
     let isVisible = true
     const pointer = { x: 0, y: 0 }
+    const pointerTarget = { x: 0, y: 0 }
+    const pointerResponse = 0.14
     const reducedMotion = window.matchMedia(
       '(prefers-reduced-motion: reduce)',
     ).matches
@@ -178,7 +180,10 @@ export function InkField({ isDark }: { isDark: boolean }) {
     }
 
     function render(time: number) {
+      frame = 0
       if (!isVisible) return
+      pointer.x += (pointerTarget.x - pointer.x) * pointerResponse
+      pointer.y += (pointerTarget.y - pointer.y) * pointerResponse
       renderer.clearColor(0, 0, 0, 0)
       renderer.clear(renderer.COLOR_BUFFER_BIT)
       renderer.uniform1f(timeLocation, time)
@@ -191,8 +196,8 @@ export function InkField({ isDark }: { isDark: boolean }) {
 
     function handlePointerMove(event: PointerEvent) {
       const rect = surface.getBoundingClientRect()
-      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
-      pointer.y = ((event.clientY - rect.top) / rect.height) * 2 - 1
+      pointerTarget.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
+      pointerTarget.y = ((event.clientY - rect.top) / rect.height) * 2 - 1
     }
 
     const resizeObserver = new ResizeObserver(resize)
