@@ -40,14 +40,3 @@ export async function getReadinessPayload(
     persistence,
   }
 }
-
-export async function getReadinessWithSeedSummary(
-  env: Record<string, string | undefined> = process.env,
-) {
-  const readiness = await getReadinessPayload(env)
-  if (readiness.status !== 'ready') return readiness
-
-  const config = readServerConfig(env)
-  const counts = await createFoundationPersistence(config).readDemoCounts()
-  return { ...readiness, seededCounts: counts }
-}

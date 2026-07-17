@@ -28,24 +28,26 @@ export async function seedFoundationDatabase(
             synthetic_data_only = true
         `
 
-        for (const identity of demoSeed.identities) {
-          await transaction`
-            insert into identities (id, tenant_id, role, display_name, demo_handle, is_active)
-            values (
-              ${identity.id},
-              ${demoSeed.tenant.id},
-              ${identity.role},
-              ${identity.displayName},
-              ${identity.demoHandle},
-              true
-            )
-            on conflict (id) do update set
-              role = excluded.role,
-              display_name = excluded.display_name,
-              demo_handle = excluded.demo_handle,
-              is_active = true
-          `
-        }
+        await Promise.all(
+          demoSeed.identities.map(
+            (identity) => transaction`
+              insert into identities (id, tenant_id, role, display_name, demo_handle, is_active)
+              values (
+                ${identity.id},
+                ${demoSeed.tenant.id},
+                ${identity.role},
+                ${identity.displayName},
+                ${identity.demoHandle},
+                true
+              )
+              on conflict (id) do update set
+                role = excluded.role,
+                display_name = excluded.display_name,
+                demo_handle = excluded.demo_handle,
+                is_active = true
+            `,
+          ),
+        )
 
         await transaction`
           insert into standards (id, tenant_id, code, name, subject, grade_band)
@@ -64,30 +66,34 @@ export async function seedFoundationDatabase(
             grade_band = excluded.grade_band
         `
 
-        for (const node of demoSeed.graphNodes) {
-          await transaction`
-            insert into prerequisite_nodes (id, tenant_id, standard_id, label, sequence)
-            values (
-              ${node.id},
-              ${demoSeed.tenant.id},
-              ${demoSeed.standard.id},
-              ${node.label},
-              ${node.sequence}
-            )
-            on conflict (id) do update set
-              standard_id = excluded.standard_id,
-              label = excluded.label,
-              sequence = excluded.sequence
-          `
-        }
+        await Promise.all(
+          demoSeed.graphNodes.map(
+            (node) => transaction`
+              insert into prerequisite_nodes (id, tenant_id, standard_id, label, sequence)
+              values (
+                ${node.id},
+                ${demoSeed.tenant.id},
+                ${demoSeed.standard.id},
+                ${node.label},
+                ${node.sequence}
+              )
+              on conflict (id) do update set
+                standard_id = excluded.standard_id,
+                label = excluded.label,
+                sequence = excluded.sequence
+            `,
+          ),
+        )
 
-        for (const edge of demoSeed.graphEdges) {
-          await transaction`
-            insert into prerequisite_edges (tenant_id, prerequisite_id, successor_id)
-            values (${demoSeed.tenant.id}, ${edge.prerequisiteId}, ${edge.successorId})
-            on conflict (tenant_id, prerequisite_id, successor_id) do nothing
-          `
-        }
+        await Promise.all(
+          demoSeed.graphEdges.map(
+            (edge) => transaction`
+              insert into prerequisite_edges (tenant_id, prerequisite_id, successor_id)
+              values (${demoSeed.tenant.id}, ${edge.prerequisiteId}, ${edge.successorId})
+              on conflict (tenant_id, prerequisite_id, successor_id) do nothing
+            `,
+          ),
+        )
 
         await transaction`
           insert into activities (id, tenant_id, slug, standard_id, title, status)
