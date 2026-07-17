@@ -71,7 +71,7 @@ This audit used the repository and issue graph, not direct user research. “Par
 | Interaction flow             | **Partial**                  | The landing story is coherent and the target teacher → student loop is described in [the walking skeleton](walking-skeleton.md).                                  | Generation, recovery states, approval, grading, and adaptation still need to become one exercised flow across [issues #3–#11](https://github.com/abodacs/edu-canvas/issues).                                  |
 | Surface                      | **Partial, strongest slice** | PR #25 establishes a calm, bilingual, responsive, semantic, reduced-motion landing surface.                                                                       | [Issue #27](https://github.com/abodacs/edu-canvas/issues/27) reports a distractor-only selection that can produce a success reveal in the landing preview; do not call that preview learner-safe until fixed. |
 
-The lowest unresolved layer is observed behaviour. The next highest-value activity is therefore `/layers-observed-behaviour`: test the core teacher and student loop before investing in generalized transport, standards packs, or multi-page flows.
+The lowest unresolved layer is observed behaviour. The detailed [synthesis and research plan](observed-behaviour.md) records the evidence boundary. The next highest-value activity is to test the core teacher and student loop before investing in generalized transport, standards packs, or multi-page flows.
 
 ## Delivery sequence
 

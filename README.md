@@ -30,6 +30,7 @@ Adaptive, bilingual (**English / Arabic, RTL**) visual-learning platform for **G
 | `PRD_GRILL_LOG.md`              | 170-question product decision log — the spec                        |
 | `DEVPOST_WINNING_STRATEGY.md`   | Competition cut + 48-hour execution plan                            |
 | `docs/product-strategy.md`      | North-star outcome, issue-driven loop, and seven-layer audit        |
+| `docs/observed-behaviour.md`    | Evidence boundary, job stories, and research plan                   |
 | `docs/walking-skeleton.md`      | The thinnest end-to-end demo slice (the build contract)             |
 | `docs/foundation-runbook.md`    | Operator/developer setup, redeploy, and handoff checks for issue #2 |
 | `docs/architecture-harness.md`  | Guardrails for state ownership, layer imports, and contract drift   |
