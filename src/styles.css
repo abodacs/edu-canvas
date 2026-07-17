@@ -1355,6 +1355,11 @@ p {
   z-index: 1;
 }
 
+.phase-panel__content {
+  display: grid;
+  gap: var(--space-xl);
+}
+
 .phase-panel__stamp {
   gap: var(--space-md);
   color: color-mix(in oklch, var(--paper) 65%, transparent);

@@ -1,0 +1,216 @@
+export const copy = {
+  en: {
+    languageLabel: 'العربية',
+    brandTagline: 'learning, made legible',
+    nav: {
+      idea: 'The idea',
+      lesson: 'Try the lesson',
+      trust: 'Trust, built in',
+    },
+    heroEyebrow: 'Edu-Canvas · a learning instrument',
+    heroTitleStart: 'Make the moment of',
+    heroTitleAccent: 'understanding',
+    heroTitleEnd: 'visible.',
+    heroDescription:
+      'Turn a teacher’s plain-language idea into a focused, standards-aligned matching lesson — then give a learner the exact next step that helps the idea settle.',
+    heroPrimary: 'Try the matching moment',
+    heroSecondary: 'Follow the loop',
+    heroMeta: ['Grades 3–6', 'Equivalent fractions', 'English · العربية'],
+    stageLabel: 'A lesson in motion',
+    stageDescription: 'Different names. One portion of a whole.',
+    stageSource: 'one-half',
+    stageTarget: 'same portion',
+    stageDistractor: 'not the same portion',
+    lessonKicker: '01 · The student moment',
+    lessonTitle: 'One idea. Three names. One pattern.',
+    lessonDescription:
+      'Start with the source, then choose every fraction that represents the same portion of the whole. This preview is ungraded — it is here to make the “aha” visible.',
+    lessonInstruction: 'Which fractions still mean one-half?',
+    lessonSourceLabel: 'Source',
+    lessonSourceFraction: '1/2',
+    lessonSourceWords: 'one-half',
+    lessonTargetLabel: 'Choose the matching fractions',
+    lessonHint: 'A hint: imagine each fraction as part of a shaded whole.',
+    lessonHintAction: 'Open hint',
+    lessonRevealAction: 'Show the connection',
+    lessonResetAction: 'Try another path',
+    lessonEmptyStatus: 'Choose at least one name to begin.',
+    lessonSelectedStatus: 'selected — keep looking for the same portion.',
+    lessonRevealedStatus:
+      'There it is: the names change, but the portion stays the same.',
+    lessonRevealTitle: 'The denominator changes the cut, not the amount.',
+    lessonRevealDescription:
+      'Two fourths, three sixths, and four eighths each cover the same half. The next activity can now build from that relationship.',
+    lessonPreviewNote: 'No score is saved in this preview.',
+    journeyKicker: '02 · The loop',
+    journeyTitle: 'A short path from “make something” to “I see it.”',
+    journeyDescription:
+      'The system carries the busywork. People keep the judgment, the context, and the care.',
+    phases: [
+      {
+        id: 'shape' as const,
+        number: '01',
+        label: 'Teacher shapes',
+        title: 'A prompt becomes a lesson worth teaching.',
+        body: 'A teacher starts with intent — in English or Arabic — and reviews a small set of safe, standards-aligned variants before anything reaches a learner.',
+        note: 'Teacher-approved before publish',
+      },
+      {
+        id: 'match' as const,
+        number: '02',
+        label: 'Student matches',
+        title: 'The learner gets one clear next step.',
+        body: 'The activity keeps attention on the idea: source-first selection, a quiet board, immediate feedback, and a connection reveal that explains why the answer works.',
+        note: 'Semantic, keyboard-ready, touch-friendly',
+      },
+      {
+        id: 'adapt' as const,
+        number: '03',
+        label: 'The path adapts',
+        title: 'The next activity has a reason.',
+        body: 'A deterministic mastery signal points toward the next approved activity — forward when the idea is ready, back to a prerequisite when it is not.',
+        note: 'Explainable, teacher-visible, reversible',
+      },
+    ],
+    roleKicker: '03 · The human boundary',
+    roleTitle:
+      'AI can accelerate the draft. It cannot take the teacher’s seat.',
+    roleDescription:
+      'Edu-Canvas is designed around a simple division of labor: people decide what matters; the system makes the route through it clearer.',
+    teacherTab: 'For teachers',
+    studentTab: 'For students',
+    teacherQuote:
+      '“I can start with the way I already think about the lesson, then spend my time on the choice that matters: is this right for my class?”',
+    teacherPoint: 'A reviewable pack, not a black-box publish button.',
+    studentQuote:
+      '“I know what to do next — and when I get it, I can see why the names belong together.”',
+    studentPoint:
+      'One focused activity, with a next step that earns its place.',
+    trustKicker: '04 · Trust, built in',
+    trustTitle:
+      'The magic is allowed to be visible. The sensitive parts stay behind the curtain.',
+    trustItems: [
+      [
+        'Teacher approval',
+        'Every generated variant is reviewed before a learner sees it.',
+      ],
+      [
+        'Server-side scoring',
+        'The answer key and mastery decision never live in the browser.',
+      ],
+      [
+        'Synthetic by default',
+        'The demo uses safe fixtures; real student data stays gated until the right approvals are in place.',
+      ],
+    ],
+    footerLine: 'A calm interface for the hard work of learning.',
+    footerAction: 'Open the lesson moment',
+    themeToDark: 'Use dark theme',
+    themeToLight: 'Use light theme',
+  },
+  ar: {
+    languageLabel: 'English',
+    brandTagline: 'التعلّم بوضوح',
+    nav: {
+      idea: 'الفكرة',
+      lesson: 'جرّب الدرس',
+      trust: 'الثقة أولاً',
+    },
+    heroEyebrow: 'Edu-Canvas · أداة للتعلّم',
+    heroTitleStart: 'لنجعل لحظة',
+    heroTitleAccent: 'الفهم',
+    heroTitleEnd: 'مرئية.',
+    heroDescription:
+      'حوّل فكرة المعلّم كما يعبّر عنها بلغته الطبيعية إلى نشاط مطابقة واضح ومتوافق مع المعايير، ثم امنح المتعلّم الخطوة التالية التي تساعده على ترسيخ الفكرة.',
+    heroPrimary: 'جرّب لحظة المطابقة',
+    heroSecondary: 'تتبّع المسار',
+    heroMeta: ['الصفوف 3–6', 'الكسور المتكافئة', 'العربية · English'],
+    stageLabel: 'درس يتحرّك',
+    stageDescription: 'أسماء مختلفة. جزء واحد من الكل.',
+    stageSource: 'النصف',
+    stageTarget: 'الجزء نفسه',
+    stageDistractor: 'جزء مختلف',
+    lessonKicker: '01 · لحظة المتعلّم',
+    lessonTitle: 'فكرة واحدة. ثلاثة أسماء. نمط واحد.',
+    lessonDescription:
+      'ابدأ بالمصدر، ثم اختر كل كسر يمثّل الجزء نفسه من الكل. هذه معاينة بلا درجات — هدفها أن تجعل لحظة الفهم مرئية.',
+    lessonInstruction: 'أيّ الكسور تمثّل النصف؟',
+    lessonSourceLabel: 'المصدر',
+    lessonSourceFraction: '1/2',
+    lessonSourceWords: 'النصف',
+    lessonTargetLabel: 'اختر الكسور المطابقة',
+    lessonHint: 'تلميح: تخيّل كل كسر جزءاً مظلّلاً من شكل كامل.',
+    lessonHintAction: 'افتح التلميح',
+    lessonRevealAction: 'أظهر العلاقة',
+    lessonResetAction: 'ابدأ من جديد',
+    lessonEmptyStatus: 'اختر اسماً واحداً على الأقل للبدء.',
+    lessonSelectedStatus: 'تم الاختيار — واصل البحث عن الجزء نفسه.',
+    lessonRevealedStatus: 'ها هي العلاقة: تتغيّر الأسماء، لكن الجزء يبقى نفسه.',
+    lessonRevealTitle: 'المقام يغيّر عدد الأجزاء، لا الكمية التي نمثّلها.',
+    lessonRevealDescription:
+      'جزآن من أربعة، وثلاثة أجزاء من ستة، وأربعة أجزاء من ثمانية تمثّل النصف نفسه. يمكن للنشاط التالي أن يبني على هذه العلاقة.',
+    lessonPreviewNote: 'لا تُحفظ أي درجة في هذه المعاينة.',
+    journeyKicker: '02 · المسار',
+    journeyTitle: 'طريق قصير من «اصنع شيئاً» إلى «الآن أراه».',
+    journeyDescription:
+      'يتولى النظام الأعمال المتكررة. ويحتفظ البشر بالقرار والسياق والعناية.',
+    phases: [
+      {
+        id: 'shape' as const,
+        number: '01',
+        label: 'المعلّم يصوغ',
+        title: 'يتحوّل الطلب إلى درس جاهز للتدريس.',
+        body: 'يبدأ المعلّم بفكرته — بالعربية أو بالإنجليزية — ثم يراجع مجموعة صغيرة من البدائل الآمنة والمتوافقة مع المعايير قبل أن تصل إلى المتعلّم.',
+        note: 'اعتماد المعلّم قبل النشر',
+      },
+      {
+        id: 'match' as const,
+        number: '02',
+        label: 'المتعلّم يطابق',
+        title: 'يحصل المتعلّم على خطوة واضحة واحدة.',
+        body: 'يبقى النشاط مركزاً على الفكرة: اختيار المصدر أولاً، لوحة هادئة، استجابة فورية، وكشف للعلاقة يشرح لماذا تنجح الإجابة.',
+        note: 'دلالي، ملائم للوحة المفاتيح، مناسب للمس',
+      },
+      {
+        id: 'adapt' as const,
+        number: '03',
+        label: 'المسار يتكيّف',
+        title: 'للنشاط التالي سبب واضح.',
+        body: 'تشير إشارة إتقان واضحة إلى النشاط المعتمد التالي — إلى الأمام عندما تكون الفكرة جاهزة، أو إلى متطلب سابق عندما لا تكون كذلك.',
+        note: 'قابل للتفسير، ظاهر للمعلّم، قابل للتراجع',
+      },
+    ],
+    roleKicker: '03 · دور الإنسان',
+    roleTitle:
+      'يمكن للذكاء الاصطناعي تسريع المسودة. لكنه لا يأخذ مكان المعلّم.',
+    roleDescription:
+      'بُني Edu-Canvas على تقسيم بسيط للعمل: يقرر البشر ما المهم، ويجعل النظام الطريق إليه أوضح.',
+    teacherTab: 'للمعلّمين',
+    studentTab: 'للمتعلّمين',
+    teacherQuote:
+      '«أبدأ بالطريقة التي أفكر بها في الدرس، ثم أركّز وقتي على القرار المهم: هل هذا مناسب لصفّي؟»',
+    teacherPoint: 'حزمة قابلة للمراجعة، لا زر نشر غامض.',
+    studentQuote:
+      '«أعرف ما الذي أفعله بعد ذلك — وعندما أجيب بشكل صحيح، أرى لماذا تنتمي الكسور معاً.»',
+    studentPoint: 'نشاط واحد مركز، وخطوة تالية تستحق مكانها.',
+    trustKicker: '04 · الثقة أولاً',
+    trustTitle: 'يظهر السحر، وتبقى الأجزاء الحساسة خلف الستار.',
+    trustItems: [
+      ['اعتماد المعلّم', 'تُراجع كل صيغة مولّدة قبل أن يراها المتعلّم.'],
+      [
+        'التقييم على الخادم',
+        'لا يخرج مفتاح الإجابة وقرار الإتقان من الخادم إلى المتصفح.',
+      ],
+      [
+        'بيانات اصطناعية افتراضياً',
+        'تستخدم المعاينة بيانات آمنة؛ ولا تُستخدم بيانات المتعلمين الحقيقية حتى تكتمل الموافقات المناسبة.',
+      ],
+    ],
+    footerLine: 'واجهة هادئة للعمل الصعب الذي يتطلبه التعلّم.',
+    footerAction: 'افتح لحظة الدرس',
+    themeToDark: 'استخدم المظهر الداكن',
+    themeToLight: 'استخدم المظهر الفاتح',
+  },
+} as const
+
+export type LandingCopy = (typeof copy)[keyof typeof copy]

@@ -40,3 +40,9 @@ The motion pass will retain the existing `prefers-reduced-motion: reduce` fallba
 2. Run `pnpm check` and the existing smoke flow.
 3. Re-run `npx react-doctor@latest --verbose --scope changed` and the full verbose scan.
 4. Confirm the draft PR remains based on `implement` and contains only verified changes.
+
+## Follow-up scans
+
+The first structural pass reduced `LandingPage` but temporarily introduced eight `no-multi-comp` warnings because the extracted components still lived in `src/routes/index.tsx`. Those components now live in `src/components/landing/` with the route retained as a thin stateful composition root.
+
+The final `npx react-doctor@latest --verbose --scope changed` scan is clean: `100/100`, no issues found.
