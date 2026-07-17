@@ -56,7 +56,6 @@ export async function getReadinessPayload(
     persistence,
   }
 }
-
 export async function getReadinessWithSeedSummary(
   env: Record<string, string | undefined> = process.env,
   options: ReadinessOptions = {},

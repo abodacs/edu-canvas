@@ -1,9 +1,20 @@
 import { describe, expect, it } from 'vitest'
 
 import { createServerObservability } from './observability.server'
-import { getReadinessPayload } from './health.server'
+import { getHealthPayload, getReadinessPayload } from './health.server'
 
 describe('readiness', () => {
+  it('returns a liveness payload with an ISO timestamp', () => {
+    const payload = getHealthPayload()
+
+    expect(payload).toMatchObject({
+      status: 'ok',
+      service: 'edu-canvas',
+      check: 'liveness',
+    })
+    expect(Number.isNaN(Date.parse(payload.timestamp))).toBe(false)
+  })
+
   it('reports the default synthetic repository as ready', async () => {
     const payload = await getReadinessPayload({})
 
