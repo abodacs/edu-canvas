@@ -9,15 +9,17 @@ export const Route = createRootRoute({
       { charSet: 'utf-8' },
       {
         name: 'viewport',
-        content: 'width=device-width, initial-scale=1',
+        content: 'width=device-width, initial-scale=1, viewport-fit=cover',
       },
       {
-        title: 'Edu-Canvas · Synthetic foundation',
+        title: 'Edu-Canvas · Make understanding visible',
       },
       {
         name: 'description',
-        content: 'A deployable, synthetic-data-only foundation for Edu-Canvas.',
+        content:
+          'Edu-Canvas turns a teacher’s idea into a calm, standards-aligned matching lesson and makes the moment of understanding visible.',
       },
+      { name: 'theme-color', content: 'oklch(0.965 0.022 78)' },
     ],
     links: [{ rel: 'stylesheet', href: appCss }],
   }),
