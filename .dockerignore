@@ -1,0 +1,14 @@
+.git
+.worktrees
+node_modules
+.output
+.nitro
+.tanstack
+.vinxi
+coverage
+dist
+teaching
+docs
+.env
+.env.*
+!.env.example
