@@ -76,6 +76,12 @@ function LandingExperience() {
         language={language}
         isDark={isDark}
       />
+      <LoopSection
+        activeCopy={activeCopy}
+        language={language}
+        activePhase={activePhase}
+        onPhaseChange={actions.changePhase}
+      />
       <LessonSection
         activeCopy={activeCopy}
         language={language}
@@ -86,12 +92,6 @@ function LandingExperience() {
         onToggleTarget={actions.toggleTarget}
         onReveal={actions.reveal}
         onReset={actions.resetLesson}
-      />
-      <LoopSection
-        activeCopy={activeCopy}
-        language={language}
-        activePhase={activePhase}
-        onPhaseChange={actions.changePhase}
       />
       <RolesSection
         activeCopy={activeCopy}

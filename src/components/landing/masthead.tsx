@@ -39,7 +39,7 @@ export const Masthead = memo(function MastheadView({
           language === 'en' ? 'Primary navigation' : 'التنقّل الرئيسي'
         }
       >
-        <a href="#idea">{activeCopy.nav.idea}</a>
+        <a href="#path">{activeCopy.nav.path}</a>
         <a href="#lesson">{activeCopy.nav.lesson}</a>
         <a href="#trust">{activeCopy.nav.trust}</a>
       </nav>
