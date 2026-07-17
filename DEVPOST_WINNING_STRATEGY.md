@@ -1,8 +1,10 @@
 # Edu-Canvas — OpenAI Build Week Strategy
 
-Last verified: 2026-07-15
+Last verified: 2026-07-17
 
 This document is the persistent competition overlay for the master PRD. It does not delete production requirements; it defines the smallest credible build and demo that can win the Education track.
+
+> Current issue-driven status: the foundation slice in [issue #2](https://github.com/abodacs/edu-canvas/issues/2) is shipped, while the landing story is being refined in [PR #25](https://github.com/abodacs/edu-canvas/pull/25). Generation and the downstream teacher-to-student loop remain open in [issues #3–#11](https://github.com/abodacs/edu-canvas/issues/3). The product strategy, seven-layer orientation, and evidence gaps are recorded in [`docs/product-strategy.md`](docs/product-strategy.md). Treat the competition build cut below as the target contract, not a claim that every step has shipped; [issue #27](https://github.com/abodacs/edu-canvas/issues/27) is an open learner-safety blocker for the current landing preview.
 
 ## Competition facts
 

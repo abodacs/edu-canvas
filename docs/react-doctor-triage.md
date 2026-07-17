@@ -51,4 +51,4 @@ The final verification also passed `pnpm build` and `pnpm smoke` against the bui
 
 The final full scan reports four warnings, all already triaged above: the two generated `postgres` bundle findings and the two deferred `pnpm-workspace.yaml` policy checks. No source-code React Doctor findings remain.
 
-The repository-wide `pnpm check` is also green: formatting, lint, typecheck, 11 tests, production build, client-boundary verification, and architecture verification.
+The repository-wide `pnpm check` is also green: formatting, lint, typecheck, 26 tests, production build, client-boundary verification, and architecture verification.

@@ -21,7 +21,7 @@ Adaptive, bilingual (**English / Arabic, RTL**) visual-learning platform for **G
 
 ## Status
 
-🟡 **Foundation slice in progress.** Issue #2 now provides the TanStack Start runtime, synthetic demo repository, PostgreSQL migrations/seed, health/readiness endpoints, and role-limited demo views. Lesson generation remains in issue #3. Implementation is built with **Codex + GPT-5.6** (Devpost requirement).
+🟡 **Foundation shipped; the end-to-end loop is still being built.** [Issue #2](https://github.com/abodacs/edu-canvas/issues/2) provides the TanStack Start runtime, synthetic demo repository, PostgreSQL migrations/seed, health/readiness endpoints, and role-limited demo views. This branch carries the landing story work in [PR #25](https://github.com/abodacs/edu-canvas/pull/25); generation remains in [issue #3](https://github.com/abodacs/edu-canvas/issues/3), and [issue #27](https://github.com/abodacs/edu-canvas/issues/27) is an open correctness blocker before the landing preview can be called learner-safe. The issue-driven product strategy and seven-layer audit live in [`docs/product-strategy.md`](docs/product-strategy.md). Implementation is built with **Codex + GPT-5.6** (Devpost requirement).
 
 ## Repo layout
 
@@ -29,6 +29,7 @@ Adaptive, bilingual (**English / Arabic, RTL**) visual-learning platform for **G
 | ------------------------------- | ------------------------------------------------------------------- |
 | `PRD_GRILL_LOG.md`              | 170-question product decision log — the spec                        |
 | `DEVPOST_WINNING_STRATEGY.md`   | Competition cut + 48-hour execution plan                            |
+| `docs/product-strategy.md`      | North-star outcome, issue-driven loop, and seven-layer audit        |
 | `docs/walking-skeleton.md`      | The thinnest end-to-end demo slice (the build contract)             |
 | `docs/foundation-runbook.md`    | Operator/developer setup, redeploy, and handoff checks for issue #2 |
 | `docs/architecture-harness.md`  | Guardrails for state ownership, layer imports, and contract drift   |
@@ -57,7 +58,7 @@ The route should stay a delivery module. Domain rules, tenant checks, persistenc
 
 ## End-to-end demo sequence
 
-The planned walking skeleton is one deterministic, seeded path. The current foundation covers the role-limited delivery and persistence path; generation, A2UI rendering, grading, and adaptation are the next slices.
+The walking skeleton below is the target contract: one deterministic, seeded path from a teacher request to a student’s explainable next activity. The foundation currently covers role-limited delivery and persistence; generation, validation, A2UI preview, grading, and adaptation remain issue-driven follow-on slices. See [`docs/product-strategy.md`](docs/product-strategy.md) for the intended order and evidence gaps.
 
 ```mermaid
 sequenceDiagram
@@ -76,17 +77,26 @@ sequenceDiagram
     TeacherUI->>Server: Submit generation request (HTTPS)
     Server->>GPT: Request constrained lesson draft
     GPT-->>Server: Return structured draft
-    Server->>Catalog: Validate domain model and compile
-    alt Draft is invalid
-        Catalog-->>Server: Validation errors
-        Server-->>TeacherUI: Show warning and retry state
-    else Draft is valid
-        Catalog-->>TeacherUI: Stream allowlisted A2UI variants (SSE)
-        Teacher->>TeacherUI: Review, edit, and approve four variants
+    Server->>Catalog: Validate structure and bounded curriculum quality
+    alt Validation hard-blocks draft
+        Catalog-->>Server: hard_block with actionable errors
+        Server-->>TeacherUI: Keep draft out of preview and Share
+    else Validation passes or warns
+        Server->>Catalog: Build reverse prerequisite path and forward story
+        Server->>Catalog: Compile validated draft into A2UI
+        Catalog-->>TeacherUI: Stream allowlisted A2UI variants and visible warnings (SSE)
+        Teacher->>TeacherUI: Review variants, path, story, and warnings
+        Teacher->>TeacherUI: Edit and approve four variants
         TeacherUI->>Server: Publish approved pack (HTTPS)
-        Server->>Store: Persist immutable activity/version
-        Store-->>Server: Return published pack
-        Server-->>TeacherUI: Confirm pack is ready
+        Server->>Catalog: Re-run hard safety gate before Share
+        alt Share hard-blocked
+            Catalog-->>Server: hard_block with actionable errors
+            Server-->>TeacherUI: Keep pack unpublished and explain the block
+        else Safe to publish
+            Server->>Store: Persist immutable activity/version
+            Store-->>Server: Return published pack
+            Server-->>TeacherUI: Confirm pack is ready
+        end
 
         Student->>StudentUI: Open assigned activity
         StudentUI->>Server: Request public activity (HTTPS)
