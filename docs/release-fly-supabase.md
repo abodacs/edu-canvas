@@ -1,15 +1,16 @@
 # Release runbook — Fly.io + Supabase Postgres
 
-This is the release path for the current foundation slice. It deploys the
-server-rendered demo with synthetic data only. Real student data, production
-authentication, lesson generation, grading, and adaptation remain outside the
-approved launch scope.
+This is the release path for the current foundation and validated lesson
+generation slices. It deploys the server-rendered demo with synthetic data
+only. Real student data, production authentication, A2UI publication, grading,
+and adaptation remain outside the approved launch scope.
 
 ## Deployment shape
 
 - Fly.io builds and runs the checked-in `Dockerfile`.
 - Supabase provides the hosted PostgreSQL database.
 - The server connects to PostgreSQL with the server-only `DATABASE_URL` secret.
+- Validated lesson generation uses the server-only `OPENAI_API_KEY` secret.
 - Fly runs the idempotent migration runner as a release command before
   replacing application Machines.
 - The app does not use `supabase-js`, Supabase Auth, or the Supabase Data API;
@@ -26,8 +27,8 @@ dialog. Keep `sslmode=require` in the connection string.
 
 ## One-time setup
 
-Prerequisites: Docker, `pnpm`, the Fly CLI, a Supabase project, and access to
-the Fly organization that owns the app.
+Prerequisites: Docker, `pnpm`, the Fly CLI, a Supabase project, OpenAI API
+access, and access to the Fly organization that owns the app.
 
 1. Set the app name and `primary_region` in `fly.toml`. Keep the region close
    to the Supabase project when possible. The checked-in defaults are
@@ -45,15 +46,22 @@ the Fly organization that owns the app.
 
 3. Copy the PostgreSQL connection string from Supabase **Connect**. Use a
    database password managed in Supabase, never a value committed to this
-   repository. Store it in Fly's encrypted secret store:
+   repository. Store the database URL and OpenAI key in Fly's encrypted secret
+   store. Prefer `fly secrets import` from a protected terminal or secret
+   manager so the values do not enter shell history:
 
    ```bash
-   fly secrets set DATABASE_URL='postgresql://postgres:<password>@<host>:5432/postgres?sslmode=require'
+   read -r -s -p 'Supabase DATABASE_URL: ' DATABASE_URL; printf '\n'
+   read -r -s -p 'OpenAI API key: ' OPENAI_API_KEY; printf '\n'
+   export DATABASE_URL OPENAI_API_KEY
+   printf 'DATABASE_URL=%s\nOPENAI_API_KEY=%s\n' "$DATABASE_URL" "$OPENAI_API_KEY" | fly secrets import
+   unset DATABASE_URL OPENAI_API_KEY
    ```
 
-   A Supavisor session-mode URL is also valid. Do not put `DATABASE_URL` in
-   `fly.toml`, `.env.example`, Docker build arguments, or a client-side
-   `VITE_*` variable.
+   A Supavisor session-mode URL is also valid. `OPENAI_MODEL` and
+   `OPENAI_BASE_URL` are non-secret runtime settings in `fly.toml`. Do not put
+   `DATABASE_URL`, `OPENAI_API_KEY`, or `SENTRY_DSN` in Docker build arguments
+   or client-side `VITE_*` variables.
 
 ## Release procedure
 
@@ -73,9 +81,10 @@ Run these commands from the repository root or from the release worktree.
 
    ```bash
    export DATABASE_URL='postgresql://postgres:<password>@<host>:5432/postgres?sslmode=require'
+   export OPENAI_API_KEY='use-a-securely-injected-key-here'
    APP_ENV=preview DEMO_MODE=false SYNTHETIC_DATA_ONLY=true pnpm db:migrate
    APP_ENV=preview DEMO_MODE=false SYNTHETIC_DATA_ONLY=true pnpm db:seed
-   unset DATABASE_URL
+   unset DATABASE_URL OPENAI_API_KEY
    ```
 
    The migration runner records applied files in `app_migrations` and takes a
