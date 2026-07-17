@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Sparkles } from 'lucide-react'
 
 import type { LandingCopy } from './copy'
@@ -10,7 +11,7 @@ type RolesSectionProps = {
   onRoleChange: (role: RoleView) => void
 }
 
-export function RolesSection({
+export const RolesSection = memo(function RolesSectionView({
   activeCopy,
   language,
   roleView,
@@ -70,4 +71,4 @@ export function RolesSection({
       </div>
     </section>
   )
-}
+})

@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Check, ChevronRight } from 'lucide-react'
 
 import type { LandingCopy } from './copy'
@@ -12,7 +13,7 @@ type LoopSectionProps = {
   onPhaseChange: (phase: Phase) => void
 }
 
-export function LoopSection({
+export const LoopSection = memo(function LoopSectionView({
   activeCopy,
   language,
   activePhase,
@@ -81,4 +82,4 @@ export function LoopSection({
       </div>
     </section>
   )
-}
+})

@@ -1,6 +1,11 @@
+import { memo } from 'react'
 import type { LandingCopy } from './copy'
 
-export function TrustSection({ activeCopy }: { activeCopy: LandingCopy }) {
+export const TrustSection = memo(function TrustSectionView({
+  activeCopy,
+}: {
+  activeCopy: LandingCopy
+}) {
   return (
     <section
       className="trust-section page-width story-block"
@@ -24,4 +29,4 @@ export function TrustSection({ activeCopy }: { activeCopy: LandingCopy }) {
       </ul>
     </section>
   )
-}
+})

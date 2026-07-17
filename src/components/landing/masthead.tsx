@@ -1,9 +1,10 @@
+import { memo } from 'react'
 import { Moon, Sun } from 'lucide-react'
 
 import type { LandingCopy } from './copy'
 import type { Language } from './types'
 
-export function Masthead({
+export const Masthead = memo(function MastheadView({
   activeCopy,
   language,
   isDark,
@@ -65,4 +66,4 @@ export function Masthead({
       </div>
     </header>
   )
-}
+})
