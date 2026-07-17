@@ -4,6 +4,11 @@ primary_region = "ams"
 [build]
   dockerfile = "Dockerfile"
 
+[deploy]
+  strategy = "canary"
+  release_command = "node scripts/db-migrate-runtime.mjs"
+  release_command_timeout = "5m"
+
 [env]
   APP_ENV = "production"
   DEMO_MODE = "false"
@@ -30,3 +35,20 @@ primary_region = "ams"
     method = "GET"
     timeout = "5s"
     path = "/api/health"
+
+  [[http_service.checks]]
+    grace_period = "20s"
+    interval = "30s"
+    method = "GET"
+    timeout = "10s"
+    path = "/api/readiness"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+  cpus = 1
+  cpu_kind = "shared"
+
+[[restart]]
+  policy = "on-failure"
+  retries = 10
