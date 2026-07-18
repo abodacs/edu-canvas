@@ -73,7 +73,7 @@ pnpm db:migrate
 pnpm db:seed
 ```
 
-`pnpm db:migrate` applies files in `migrations/` in lexical order and records each applied filename in `app_migrations`. Migrations are forward-only: do not edit an applied file or add a destructive reset command. Add a new numbered migration for schema changes.
+`pnpm db:migrate` applies files in `migrations/` in lexical order and records each applied filename plus its SHA-256 checksum in `app_migrations`. Existing name-only ledger rows are baselined once; later edits to an applied file fail fast. Migrations are forward-only: do not edit an applied file or add a destructive reset command. Add a new numbered migration for schema changes.
 
 `pnpm db:seed` is a thin operator entry point over `src/server/persistence/seed-postgres.ts`. The seed adapter uses stable IDs and `ON CONFLICT` upserts inside one transaction. It can be run repeatedly without duplicating the synthetic tenant, seeded identities, equivalent-fractions standard, prerequisite graph, activity version, or attempt fixture.
 

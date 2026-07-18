@@ -81,16 +81,21 @@ Run these commands from the repository root or from the release worktree.
 
    ```bash
    export DATABASE_URL='postgresql://postgres:<password>@<host>:5432/postgres?sslmode=require'
-   export OPENAI_API_KEY='use-a-securely-injected-key-here'
    APP_ENV=preview DEMO_MODE=false SYNTHETIC_DATA_ONLY=true pnpm db:migrate
    APP_ENV=preview DEMO_MODE=false SYNTHETIC_DATA_ONLY=true pnpm db:seed
-   unset DATABASE_URL OPENAI_API_KEY
+   unset DATABASE_URL
    ```
 
-   The migration runner records applied files in `app_migrations` and takes a
-   non-blocking advisory lock. On every later `fly deploy`, the Fly release
-   command runs the same migration logic in a temporary Machine and aborts the
-   deployment if it cannot complete. It never seeds or deletes data.
+   Database bootstrap does not call the lesson-generation provider, so it does
+   not require `OPENAI_API_KEY`. The running Fly application still receives
+   that credential through its server-only secret store.
+
+   The migration runner records each applied file and its SHA-256 checksum in
+   `app_migrations` and takes a non-blocking advisory lock. Existing
+   name-only ledger rows are baselined once; later edits to an applied file
+   fail the release. On every later `fly deploy`, the Fly release command runs
+   the same migration logic in a temporary Machine and aborts the deployment
+   if it cannot complete. It never seeds or deletes data.
    Never edit an already-applied migration; add a new numbered file instead.
 
 3. Deploy with a canary replacement and wait for Fly health checks:

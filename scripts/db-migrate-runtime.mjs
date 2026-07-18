@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { readdir, readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -39,24 +40,51 @@ export async function runDatabaseMigrations(databaseUrl) {
       await sql`
         create table if not exists app_migrations (
           name text primary key,
+          checksum text not null,
           applied_at timestamptz not null default now()
         )
       `
+      await sql`
+        alter table app_migrations
+        add column if not exists checksum text
+      `
 
       for (const name of migrationFiles) {
-        const applied = await sql`
-          select name from app_migrations where name = ${name}
-        `
-        if (applied.length > 0) continue
-
         const contents = await readFile(
           `${migrationsDirectory}/${name}`,
           'utf8',
         )
+        const checksum = createHash('sha256')
+          .update(contents, 'utf8')
+          .digest('hex')
+        const [applied] = await sql`
+          select checksum from app_migrations where name = ${name}
+        `
+
+        if (applied) {
+          if (applied.checksum === null) {
+            await sql`
+              update app_migrations
+              set checksum = ${checksum}
+              where name = ${name} and checksum is null
+            `
+            console.log(`Baselined migration checksum ${name}`)
+            continue
+          }
+
+          if (applied.checksum !== checksum) {
+            throw new Error(
+              `Migration checksum mismatch for ${name}; applied migrations are immutable.`,
+            )
+          }
+          continue
+        }
+
         await sql.begin(async (transaction) => {
           await transaction.unsafe(contents)
           await transaction`
-            insert into app_migrations (name) values (${name})
+            insert into app_migrations (name, checksum)
+            values (${name}, ${checksum})
           `
         })
         console.log(`Applied migration ${name}`)
