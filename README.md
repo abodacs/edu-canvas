@@ -21,7 +21,7 @@ Adaptive, bilingual (**English / Arabic, RTL**) visual-learning platform for **G
 
 ## Status
 
-🟡 **Foundation, structural generation, and bounded semantic validation are in place; the end-to-end loop is still being built.** [Issue #2](https://github.com/abodacs/edu-canvas/issues/2) provides the TanStack Start runtime, synthetic demo repository, PostgreSQL migrations/seed, health/readiness endpoints, and role-limited demo views. [Issue #3](https://github.com/abodacs/edu-canvas/issues/3) adds the server-side GPT-5.6 path, four structurally validated draft variants, persistence, diagnostics, and retry-safe generation. [Issue #18](https://github.com/abodacs/edu-canvas/issues/18) adds deterministic curriculum and learning-quality reviews with bounded advisory-agent retries; warnings remain teacher-visible and blocks keep drafts out of the public projection. [Issue #28](https://github.com/abodacs/edu-canvas/issues/28) owns the cross-cutting hard safety gate, and [issue #4](https://github.com/abodacs/edu-canvas/issues/4) consumes accepted drafts for allowlisted A2UI preview; approval/publication, grading, and adaptation remain later slices. [Issue #27](https://github.com/abodacs/edu-canvas/issues/27) remains an open correctness blocker before the landing preview can be called learner-safe. The issue-driven product strategy and observed-behaviour plan live in [`docs/product-strategy.md`](docs/product-strategy.md) and [`docs/observed-behaviour.md`](docs/observed-behaviour.md). Implementation is built with **Codex + GPT-5.6** (Devpost requirement).
+🟡 **Foundation, structural generation, bounded semantic validation, and the issue #4 teacher preview slice are in place; the full end-to-end loop is still being built.** [Issue #2](https://github.com/abodacs/edu-canvas/issues/2) provides the TanStack Start runtime, synthetic demo repository, PostgreSQL migrations/seed, health/readiness endpoints, and role-limited demo views. [Issue #3](https://github.com/abodacs/edu-canvas/issues/3) adds the server-side GPT-5.6 path, four structurally validated draft variants, persistence, diagnostics, and retry-safe generation. [Issue #18](https://github.com/abodacs/edu-canvas/issues/18) adds deterministic curriculum and learning-quality reviews with bounded advisory-agent retries; warnings remain teacher-visible and blocks keep drafts out of the public projection. [Issue #4](https://github.com/abodacs/edu-canvas/issues/4) now compiles accepted public drafts into a pinned, allowlisted A2UI v0.9.1 catalog and streams a semantic-DOM teacher preview with recoverable connection states. [Issue #28](https://github.com/abodacs/edu-canvas/issues/28) still owns the cross-cutting hard safety gate; approval/publication, grading, and adaptation remain later slices. [Issue #27](https://github.com/abodacs/edu-canvas/issues/27) remains an open correctness blocker before the landing preview can be called learner-safe. The issue-driven product strategy and observed-behaviour plan live in [`docs/product-strategy.md`](docs/product-strategy.md) and [`docs/observed-behaviour.md`](docs/observed-behaviour.md). Implementation is built with **Codex + GPT-5.6** (Devpost requirement).
 
 ## Repo layout
 
@@ -43,27 +43,31 @@ Adaptive, bilingual (**English / Arabic, RTL**) visual-learning platform for **G
 
 Start from the delivery module, then follow the domain-named server module:
 
-| Behavior                               | Start here                                             |
-| -------------------------------------- | ------------------------------------------------------ |
-| Seeded teacher/student demo            | `src/routes/demo/$role.tsx` → `src/server/demo/`       |
-| Teacher lesson generation              | `src/routes/demo/$role.tsx` → `src/server/generation/` |
-| Demo role policy and tenant assertion  | `src/server/demo/policy.ts`                            |
-| Public demo read model                 | `src/server/demo/read-model.ts`                        |
-| Server-function delivery seam          | `src/server/demo/server-function.ts`                   |
-| Semantic lesson validation             | `src/server/generation/semantic-validation.ts`         |
-| Persistence choice and interface       | `src/server/persistence.ts`                            |
-| Seeded/PostgreSQL persistence adapters | `src/server/persistence/`                              |
-| Browser-safe demo contract             | `src/shared/demo-contract.ts`                          |
-| Browser-safe generation contract       | `src/shared/generation-contract.ts`                    |
-| Canonical synthetic curriculum fixture | `src/server/seed-data.ts`                              |
-| PostgreSQL seed implementation         | `src/server/persistence/seed-postgres.ts`              |
-| Operator seed entry point              | `scripts/db-seed.ts`                                   |
+| Behavior                               | Start here                                                  |
+| -------------------------------------- | ----------------------------------------------------------- |
+| Seeded teacher/student demo            | `src/routes/demo/$role.tsx` → `src/server/demo/`            |
+| Teacher lesson generation              | `src/routes/demo/$role.tsx` → `src/server/generation/`      |
+| Demo role policy and tenant assertion  | `src/server/demo/policy.ts`                                 |
+| Public demo read model                 | `src/server/demo/read-model.ts`                             |
+| Server-function delivery seam          | `src/server/demo/server-function.ts`                        |
+| Semantic lesson validation             | `src/server/generation/semantic-validation.ts`              |
+| A2UI catalog contract and validation   | `src/shared/a2ui-contract.ts`                               |
+| A2UI preview delivery seam             | `src/server/a2ui/preview.server.ts`                         |
+| A2UI lesson compiler and SSE delivery  | `src/server/a2ui/compiler.ts` → `src/server/a2ui/stream.ts` |
+| Semantic A2UI preview renderer         | `src/components/a2ui/lesson-preview.tsx`                    |
+| Persistence choice and interface       | `src/server/persistence.ts`                                 |
+| Seeded/PostgreSQL persistence adapters | `src/server/persistence/`                                   |
+| Browser-safe demo contract             | `src/shared/demo-contract.ts`                               |
+| Browser-safe generation contract       | `src/shared/generation-contract.ts`                         |
+| Canonical synthetic curriculum fixture | `src/server/seed-data.ts`                                   |
+| PostgreSQL seed implementation         | `src/server/persistence/seed-postgres.ts`                   |
+| Operator seed entry point              | `scripts/db-seed.ts`                                        |
 
 The route should stay a delivery module. Domain rules, tenant checks, persistence choice, and public projection belong behind the named server seams. The shared seam contains only data the browser is allowed to receive.
 
 ## End-to-end demo sequence
 
-The walking skeleton below is the target contract: one deterministic, seeded path from a teacher request to a student’s explainable next activity. This branch covers role-limited delivery, persistence, structural teacher draft generation, and #18’s bounded curriculum/learning-quality checks; #28’s hard safety gate, #4’s allowlisted A2UI preview, approval/publication, grading, and adaptation remain issue-driven follow-on slices. See [`docs/product-strategy.md`](docs/product-strategy.md) for the intended order and evidence gaps.
+The walking skeleton below is the target contract: one deterministic, seeded path from a teacher request to a student’s explainable next activity. This branch covers role-limited delivery, persistence, structural teacher draft generation, #18’s bounded curriculum/learning-quality checks, and #4’s allowlisted A2UI teacher preview; #28’s hard safety gate, approval/publication, grading, and adaptation remain issue-driven follow-on slices. See [`docs/product-strategy.md`](docs/product-strategy.md) for the intended order and evidence gaps.
 
 ```mermaid
 sequenceDiagram

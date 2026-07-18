@@ -9,6 +9,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 
+import { LessonPreview } from '@/components/a2ui/lesson-preview'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -416,43 +417,8 @@ function GenerationResult({ result, onRetry }: GenerationResultProps) {
         </ul>
       ) : null}
 
-      {result.draft ? (
-        <div className="variant-list" aria-label="Generated lesson variants">
-          {result.draft.variants.map((variant) => (
-            <article className="variant-preview" key={variant.id}>
-              <div className="variant-preview__heading">
-                <div>
-                  <p className="eyebrow">{variant.kind}</p>
-                  <h4>{variant.title}</h4>
-                </div>
-                <span>{variant.sourceItems.length} sources</span>
-              </div>
-              <p>{variant.instructions}</p>
-              <div className="variant-preview__items">
-                <div>
-                  <strong>
-                    {variant.accessibilityMetadata.sourceGroupLabel}
-                  </strong>
-                  <ul>
-                    {variant.sourceItems.map((item) => (
-                      <li key={item.id}>{item.label}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <strong>
-                    {variant.accessibilityMetadata.targetGroupLabel}
-                  </strong>
-                  <ul>
-                    {variant.targetItems.map((item) => (
-                      <li key={item.id}>{item.label}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
+      {result.state === 'ready-for-review' && result.draft ? (
+        <LessonPreview key={result.requestId} requestId={result.requestId} />
       ) : null}
 
       {result.retry.available ? (
