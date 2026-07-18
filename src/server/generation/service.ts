@@ -311,7 +311,9 @@ export function createGenerationService(options: GenerationServiceOptions) {
       return persist(record)
     }
 
-    const firstValidation = validateProviderDraft(firstResponse.draft)
+    const firstValidation = validateProviderDraft(firstResponse.draft, {
+      expectedLanguage: input.language,
+    })
     if (firstValidation.ok) {
       return persistReadyDraft(
         record,
@@ -329,6 +331,7 @@ export function createGenerationService(options: GenerationServiceOptions) {
     )
     record = {
       ...record,
+      provenance: firstResponse.provenance,
       attempts: updateAttempt(record, attemptNumber, {
         correctionAttempted: true,
         diagnostics: correctionDiagnostics,
@@ -374,7 +377,9 @@ export function createGenerationService(options: GenerationServiceOptions) {
       return persist(record)
     }
 
-    const correctedValidation = validateProviderDraft(correctedResponse.draft)
+    const correctedValidation = validateProviderDraft(correctedResponse.draft, {
+      expectedLanguage: input.language,
+    })
     if (correctedValidation.ok) {
       return persistReadyDraft(
         record,

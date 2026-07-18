@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import type { LessonLanguage } from '@/shared/generation-contract'
+
 import { variantKindValues } from './types'
 import type {
   GenerationDiagnostic,
@@ -160,6 +162,7 @@ function validateVariant(
   variant: ProviderVariant,
   allIds: Set<string>,
   diagnostics: GenerationDiagnostic[],
+  expectedLanguage?: LessonLanguage,
 ): void {
   if (allIds.has(variant.id)) {
     addDiagnostic(diagnostics, {
@@ -319,6 +322,33 @@ function validateVariant(
       field: 'instructions',
     })
   }
+
+  if (
+    expectedLanguage &&
+    variant.languageMetadata.language !== expectedLanguage
+  ) {
+    addDiagnostic(diagnostics, {
+      severity: 'error',
+      code: 'LANGUAGE_MISMATCH',
+      message: 'Every variant must use the language requested by the teacher.',
+      variantId: variant.id,
+      field: 'languageMetadata',
+    })
+  }
+
+  const expectedDirection = expectedLanguage === 'ar' ? 'rtl' : 'ltr'
+  if (
+    expectedLanguage &&
+    variant.languageMetadata.direction !== expectedDirection
+  ) {
+    addDiagnostic(diagnostics, {
+      severity: 'error',
+      code: 'DIRECTION_MISMATCH',
+      message: 'Every variant must use the direction required by its language.',
+      variantId: variant.id,
+      field: 'languageMetadata',
+    })
+  }
 }
 
 function validateVariantKinds(
@@ -348,7 +378,10 @@ function validateVariantKinds(
   }
 }
 
-export function validateProviderDraft(input: unknown): ValidationResult {
+export function validateProviderDraft(
+  input: unknown,
+  options: { expectedLanguage?: LessonLanguage } = {},
+): ValidationResult {
   const diagnostics = collectExecutableContent(input)
   const parsed = providerDraftSchema.safeParse(input)
 
@@ -360,7 +393,7 @@ export function validateProviderDraft(input: unknown): ValidationResult {
   validateVariantKinds(parsed.data.variants, diagnostics)
   const allIds = new Set<string>()
   for (const variant of parsed.data.variants) {
-    validateVariant(variant, allIds, diagnostics)
+    validateVariant(variant, allIds, diagnostics, options.expectedLanguage)
   }
 
   const hasErrors = diagnostics.some(

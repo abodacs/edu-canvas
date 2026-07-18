@@ -97,6 +97,53 @@ describe('lesson generation service', () => {
     expect(result.publicResult.retry.available).toBe(true)
   })
 
+  it('blocks output whose language direction does not match the teacher request', async () => {
+    const service = createGenerationService({
+      persistence: createSeededPersistence(),
+      provider: {
+        async generate(request) {
+          return {
+            draft: createEquivalentFractionsDraft({
+              ...request,
+              language: 'en',
+            }),
+            provenance: {
+              provider: 'test-provider',
+              model: 'test-model',
+              promptTemplateVersion: 'test-prompt-v1',
+              validatorVersion: 'lesson-validator-v1',
+            },
+          }
+        },
+      },
+      requestIdFactory: () => 'draft_req_test_language_mismatch',
+    })
+
+    const result = await service.generate(
+      teacherCommand({
+        ...validInput,
+        language: 'ar',
+        idempotencyKey: 'request-language-mismatch',
+      }),
+    )
+
+    expect(result.record.state).toBe('blocked-by-validation')
+    expect(result.record.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'LANGUAGE_MISMATCH',
+          field: 'languageMetadata',
+        }),
+        expect.objectContaining({
+          code: 'DIRECTION_MISMATCH',
+          field: 'languageMetadata',
+        }),
+      ]),
+    )
+    expect(result.record.attempts[0]?.correctionAttempted).toBe(true)
+    expect(result.publicResult.draft).toBeNull()
+  })
+
   it('retains a retryable provider failure and allows one explicit teacher retry', async () => {
     let calls = 0
     const provider = {
@@ -141,6 +188,46 @@ describe('lesson generation service', () => {
     expect(retry.record.attempt).toBe(2)
     expect(retry.record.attempts).toHaveLength(2)
     expect(calls).toBe(2)
+  })
+
+  it('retains known provider provenance when correction fails retryably', async () => {
+    let calls = 0
+    const provenance = {
+      provider: 'test-provider',
+      model: 'test-model',
+      promptTemplateVersion: 'test-prompt-v1',
+      validatorVersion: 'lesson-validator-v1',
+    }
+    const service = createGenerationService({
+      persistence: createSeededPersistence(),
+      provider: {
+        async generate(request) {
+          calls += 1
+          if (calls === 1) {
+            const draft = createEquivalentFractionsDraft(request)
+            draft.variants[0].relationships[0].targetId = 'missing-target'
+            return { draft, provenance }
+          }
+
+          throw new LessonProviderError(
+            'timeout',
+            'The lesson provider timed out. Try again.',
+          )
+        },
+      },
+      requestIdFactory: () => 'draft_req_test_provenance_failure',
+    })
+
+    const result = await service.generate(
+      teacherCommand({
+        ...validInput,
+        idempotencyKey: 'request-provenance-failure',
+      }),
+    )
+
+    expect(result.record.state).toBe('failed-retryable')
+    expect(result.record.provenance).toEqual(provenance)
+    expect(result.record.attempts[0]?.provenance).toEqual(provenance)
   })
 
   it('rejects students, cross-tenant sessions, invalid metadata, and client provider settings', async () => {
