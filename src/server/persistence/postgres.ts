@@ -211,6 +211,136 @@ export function createPostgresPersistence(
       }
     },
 
+    async claimGeneration(record) {
+      const attempt = record.attempts.at(-1)
+      if (!attempt) {
+        throw new Error('A generation claim requires an attempt.')
+      }
+
+      const claim = await withDatabase(databaseUrl, async (sql) => {
+        return sql.begin(async (transaction) => {
+          await transaction`select set_config('app.tenant_id', ${record.tenantId}, true)`
+          await transaction`savepoint claim_generation`
+
+          await transaction`
+            insert into lesson_draft_requests (
+              id,
+              tenant_id,
+              teacher_id,
+              prompt,
+              grade,
+              standard_id,
+              language,
+              difficulty,
+              state,
+              attempt,
+              diagnostics,
+              draft,
+              provenance,
+              created_at,
+              updated_at
+            )
+            values (
+              ${record.requestId},
+              ${record.tenantId},
+              ${record.teacherId},
+              ${record.input.prompt},
+              ${record.input.grade},
+              ${record.input.standardId},
+              ${record.input.language},
+              ${record.input.difficulty},
+              ${record.state},
+              ${record.attempt},
+              ${JSON.stringify(record.diagnostics)}::jsonb,
+              ${JSON.stringify(record.draft ?? null)}::jsonb,
+              ${JSON.stringify(record.provenance ?? null)}::jsonb,
+              ${record.createdAt},
+              ${record.updatedAt}
+            )
+            on conflict (id) do nothing
+          `
+
+          const insertedAttempts = await transaction<{ request_id: string }[]>`
+            insert into lesson_generation_attempts (
+              request_id,
+              tenant_id,
+              attempt_number,
+              idempotency_key,
+              state,
+              correction_attempted,
+              diagnostics,
+              provenance,
+              created_at
+            )
+            values (
+              ${record.requestId},
+              ${record.tenantId},
+              ${attempt.attemptNumber},
+              ${attempt.idempotencyKey},
+              ${attempt.state},
+              ${attempt.correctionAttempted},
+              ${JSON.stringify(attempt.diagnostics)}::jsonb,
+              ${JSON.stringify(attempt.provenance ?? null)}::jsonb,
+              ${attempt.createdAt}
+            )
+            on conflict do nothing
+            returning request_id
+          `
+
+          if (insertedAttempts.length === 0) {
+            await transaction`rollback to savepoint claim_generation`
+            const existingAttempts = await transaction<
+              { request_id: string }[]
+            >`
+              select request_id
+              from lesson_generation_attempts
+              where tenant_id = ${record.tenantId}
+                and idempotency_key = ${attempt.idempotencyKey}
+              limit 1
+            `
+
+            return {
+              claimed: false,
+              requestId:
+                existingAttempts.length > 0
+                  ? existingAttempts[0].request_id
+                  : record.requestId,
+            }
+          }
+
+          await transaction`
+            update lesson_draft_requests
+            set
+              state = ${record.state},
+              attempt = ${record.attempt},
+              diagnostics = ${JSON.stringify(record.diagnostics)}::jsonb,
+              draft = ${JSON.stringify(record.draft ?? null)}::jsonb,
+              provenance = ${JSON.stringify(record.provenance ?? null)}::jsonb,
+              updated_at = ${record.updatedAt}
+            where tenant_id = ${record.tenantId} and id = ${record.requestId}
+          `
+
+          return { claimed: true, requestId: record.requestId }
+        })
+      })
+
+      if (claim.claimed) return { claimed: true, record }
+
+      const existing = await readGenerationByQuery(
+        databaseUrl,
+        record.tenantId,
+        claim.requestId,
+        true,
+      )
+      if (!existing) {
+        throw new Error(
+          'The generation idempotency claim could not be resolved.',
+        )
+      }
+
+      return { claimed: false, record: existing }
+    },
+
     async saveGeneration(record) {
       await withDatabase(databaseUrl, async (sql) => {
         await sql.begin(async (transaction) => {

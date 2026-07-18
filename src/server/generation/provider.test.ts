@@ -18,6 +18,16 @@ const request: NormalizedGenerationRequest = {
 }
 
 describe('lesson draft providers', () => {
+  it('records the validator version with language compatibility rules', async () => {
+    const provider = createDeterministicLessonDraftProvider()
+    const response = await provider.generate(request, {
+      correctionAttempt: false,
+      diagnostics: [],
+    })
+
+    expect(response.provenance.validatorVersion).toBe('lesson-validator-v2')
+  })
+
   it('generates a deterministic Arabic fixture with RTL metadata', async () => {
     const provider = createDeterministicLessonDraftProvider()
     const response = await provider.generate(

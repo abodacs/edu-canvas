@@ -115,8 +115,14 @@ export interface LessonGenerationRecord {
   updatedAt: string
 }
 
+export interface GenerationClaim {
+  claimed: boolean
+  record: LessonGenerationRecord
+}
+
 export interface GenerationPersistence {
   saveGeneration: (record: LessonGenerationRecord) => Promise<void>
+  claimGeneration: (record: LessonGenerationRecord) => Promise<GenerationClaim>
   findGenerationByIdempotencyKey: (
     tenantId: string,
     idempotencyKey: string,

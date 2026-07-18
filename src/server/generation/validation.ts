@@ -9,7 +9,7 @@ import type {
   ValidationResult,
 } from './types'
 
-export const validatorVersion = 'lesson-validator-v1'
+export const validatorVersion = 'lesson-validator-v2'
 
 const plainTextSchema = z.string().trim().min(1).max(400)
 

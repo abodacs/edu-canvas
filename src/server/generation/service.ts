@@ -257,7 +257,14 @@ export function createGenerationService(options: GenerationServiceOptions) {
       attempts: [...baseRecord.attempts, attempt],
       updatedAt: timestamp,
     }
-    await options.persistence.saveGeneration(record)
+    const claim = await options.persistence.claimGeneration(record)
+    if (!claim.claimed) {
+      return {
+        record: claim.record,
+        publicResult: toPublicGenerationResult(claim.record),
+      }
+    }
+    record = claim.record
 
     if (!safety.checkPrompt(input.prompt).allowed) {
       const diagnostics = [
@@ -464,14 +471,17 @@ export function createGenerationService(options: GenerationServiceOptions) {
     const failureDiagnostic = providerFailureDiagnostic(providerError)
     const diagnostics = [...priorDiagnostics, failureDiagnostic]
     const state = stateForProviderFailure(providerError.kind)
+    const provenance = providerError.provenance ?? baseRecord.provenance
     const record: LessonGenerationRecord = {
       ...baseRecord,
       state,
       diagnostics,
+      ...(provenance ? { provenance } : {}),
       updatedAt: nowValue(now),
       attempts: updateAttempt(baseRecord, attemptNumber, {
         state,
         diagnostics,
+        ...(provenance ? { provenance } : {}),
       }),
     }
     return persist(record)
@@ -543,7 +553,6 @@ export function createGenerationService(options: GenerationServiceOptions) {
         createdAt: timestamp,
         updatedAt: timestamp,
       }
-      await options.persistence.saveGeneration(record)
       return runAttempt(record, input)
     },
   }
