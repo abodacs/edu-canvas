@@ -1,6 +1,7 @@
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 
+import '@fontsource-variable/hanken-grotesk/index.css'
 import appCss from '../styles.css?url'
 
 export const Route = createRootRoute({
@@ -12,14 +13,13 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1, viewport-fit=cover',
       },
       {
-        title: 'Edu-Canvas · Make understanding visible',
+        title: 'Edu-Canvas · Lessons that land',
       },
       {
         name: 'description',
         content:
-          'Edu-Canvas turns a teacher’s idea into a calm, standards-aligned matching lesson and makes the moment of understanding visible.',
+          'Turn one sentence into a standards-aligned visual lesson your students understand. Teachers approve every variant; AI never grades or publishes unreviewed content.',
       },
-      { name: 'theme-color', content: 'oklch(0.965 0.022 78)' },
     ],
     links: [{ rel: 'stylesheet', href: appCss }],
   }),
