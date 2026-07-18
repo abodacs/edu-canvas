@@ -142,5 +142,5 @@ These choices follow Google’s responsive/accessibility guidance and Core Web V
 
 - Demo identities are seeded role fixtures, not production authentication. This is an explicit demo limitation.
 - PostgreSQL is optional in clean-demo mode; a deployed production environment should use managed PostgreSQL and verify the forced row-level policy path with a least-privilege database role.
-- A2UI compilation, SSE transport, teacher approval/publication, grading, and adaptation remain follow-up slices. A generated lesson is never auto-published.
+- Issue #18 adds bounded curriculum and learning-quality validation; issue #28 adds the hard safety gate; issue #4 consumes only accepted drafts for allowlisted A2UI preview. SSE transport, teacher approval/publication, grading, and adaptation remain follow-up slices. A generated lesson is never auto-published.
 - The real-student compliance gate (DPA, EU residency, security, and consent) remains closed.

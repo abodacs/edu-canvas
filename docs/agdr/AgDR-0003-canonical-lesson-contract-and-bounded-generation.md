@@ -31,6 +31,14 @@ Issue #3 needs a useful teacher authoring path without letting model output beco
 - − Generation has more explicit state and persistence code than a direct model-to-UI path.
 - − A teacher must retry a draft after the bounded correction fails; this is intentional and visible rather than hidden provider work.
 
+## Handoff
+
+Issue #18 consumes the normalized draft and adds bounded curriculum and
+learning-quality validation. Issue #28 places the cross-cutting hard safety
+gate before preview and Share. Issue #4 consumes only accepted public content
+for allowlisted A2UI preview; this decision does not authorize rendering,
+approval, publication, grading, or adaptation.
+
 ## Artifacts
 
 Issue #3 · `src/shared/generation-contract.ts` · `src/server/generation/validation.ts` · `src/server/generation/service.ts` · `src/server/generation/projection.ts` · `migrations/0002_lesson_generation.sql`
