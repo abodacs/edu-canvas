@@ -1,25 +1,13 @@
-import { readServerConfig } from '@/server/config'
-
 import { runDatabaseMigrations } from './db-migrate-runtime.mjs'
 
 function getDatabaseUrl(): string {
-  const config = readServerConfig(process.env)
-  if (config.issues.length > 0 || !config.databaseUrl) {
-    console.error(
-      JSON.stringify(
-        {
-          message:
-            'Database migration requires a valid DATABASE_URL and synthetic mode.',
-          issues: config.issues,
-        },
-        null,
-        2,
-      ),
-    )
+  const databaseUrl = process.env.DATABASE_URL?.trim()
+  if (!databaseUrl) {
+    console.error('Database migration requires DATABASE_URL.')
     throw new Error('Database migration configuration is invalid.')
   }
 
-  return config.databaseUrl
+  return databaseUrl
 }
 
 async function main() {

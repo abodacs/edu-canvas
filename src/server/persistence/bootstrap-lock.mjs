@@ -1,7 +1,3 @@
-import type postgres from 'postgres'
-
-export type SqlClient = ReturnType<typeof postgres>
-
 const bootstrapLockName = 'edu-canvas:foundation-bootstrap'
 
 /**
@@ -10,10 +6,7 @@ const bootstrapLockName = 'edu-canvas:foundation-bootstrap'
  * fast, actionable failure instead of a deploy hanging behind an invisible
  * database lock.
  */
-export async function withFoundationBootstrapLock<T>(
-  sql: SqlClient,
-  work: () => Promise<T>,
-): Promise<T> {
+export async function withFoundationBootstrapLock(sql, work) {
   await sql`
     select set_config('statement_timeout', '30000', false),
            set_config('lock_timeout', '5000', false),
