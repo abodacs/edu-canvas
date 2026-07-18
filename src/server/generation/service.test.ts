@@ -46,7 +46,7 @@ describe('lesson generation service', () => {
     expect(JSON.stringify(result.publicResult)).not.toContain('targetId')
     expect(result.publicResult.provenance).toMatchObject({
       provider: 'deterministic-fixture',
-      validatorVersion: 'lesson-validator-v1',
+      validatorVersion: 'lesson-validator-v2',
     })
   })
 
@@ -64,6 +64,25 @@ describe('lesson generation service', () => {
     expect(second.record.requestId).toBe(first.record.requestId)
     expect(second.record.attempts).toHaveLength(1)
     expect(provider.calls).toBe(1)
+  })
+
+  it('does not invoke the provider twice for concurrent duplicate submissions', async () => {
+    const provider = createDeterministicLessonDraftProvider()
+    let requestNumber = 0
+    const service = createGenerationService({
+      persistence: createSeededPersistence(),
+      provider,
+      requestIdFactory: () => `draft_req_concurrent_${++requestNumber}`,
+    })
+
+    const [first, second] = await Promise.all([
+      service.generate(teacherCommand()),
+      service.generate(teacherCommand()),
+    ])
+
+    expect(provider.calls).toBe(1)
+    expect(second.record.requestId).toBe(first.record.requestId)
+    expect(second.record.attempts).toHaveLength(1)
   })
 
   it('makes exactly one correction attempt and keeps a corrected draft reviewable', async () => {
@@ -188,6 +207,32 @@ describe('lesson generation service', () => {
     expect(retry.record.attempt).toBe(2)
     expect(retry.record.attempts).toHaveLength(2)
     expect(calls).toBe(2)
+  })
+
+  it('persists configured provider provenance for an initial retryable failure', async () => {
+    const service = createGenerationService({
+      persistence: createSeededPersistence(),
+      provider: createDeterministicLessonDraftProvider('timeout'),
+      requestIdFactory: () => 'draft_req_test_initial_provenance_failure',
+    })
+
+    const result = await service.generate(
+      teacherCommand({
+        ...validInput,
+        idempotencyKey: 'request-initial-provenance-failure',
+      }),
+    )
+
+    expect(result.record.state).toBe('failed-retryable')
+    expect(result.record.provenance).toEqual({
+      provider: 'deterministic-fixture',
+      model: 'equivalent-fractions-fixture-v1',
+      promptTemplateVersion: 'lesson-prompt-v1',
+      validatorVersion: 'lesson-validator-v2',
+    })
+    expect(result.record.attempts[0]?.provenance).toEqual(
+      result.record.provenance,
+    )
   })
 
   it('retains known provider provenance when correction fails retryably', async () => {

@@ -16,6 +16,24 @@ export function createSeededPersistence(
   const generationStore =
     options.generationStore ?? new Map<string, LessonGenerationRecord>()
 
+  function findStoredGenerationByIdempotencyKey(
+    tenantId: string,
+    idempotencyKey: string,
+  ): LessonGenerationRecord | undefined {
+    for (const record of generationStore.values()) {
+      if (
+        record.tenantId === tenantId &&
+        record.attempts.some(
+          (attempt) => attempt.idempotencyKey === idempotencyKey,
+        )
+      ) {
+        return record
+      }
+    }
+
+    return undefined
+  }
+
   return {
     kind: 'seeded-demo',
 
@@ -54,6 +72,27 @@ export function createSeededPersistence(
       }
     },
 
+    async claimGeneration(record) {
+      const attempt = record.attempts.at(-1)
+      if (!attempt) {
+        throw new Error('A generation claim requires an attempt.')
+      }
+
+      const existing = findStoredGenerationByIdempotencyKey(
+        record.tenantId,
+        attempt.idempotencyKey,
+      )
+      if (existing) {
+        return { claimed: false, record: structuredClone(existing) }
+      }
+
+      generationStore.set(
+        `${record.tenantId}:${record.requestId}`,
+        structuredClone(record),
+      )
+      return { claimed: true, record: structuredClone(record) }
+    },
+
     async saveGeneration(record) {
       generationStore.set(
         `${record.tenantId}:${record.requestId}`,
@@ -62,18 +101,11 @@ export function createSeededPersistence(
     },
 
     async findGenerationByIdempotencyKey(tenantId, idempotencyKey) {
-      for (const record of generationStore.values()) {
-        if (
-          record.tenantId === tenantId &&
-          record.attempts.some(
-            (attempt) => attempt.idempotencyKey === idempotencyKey,
-          )
-        ) {
-          return structuredClone(record)
-        }
-      }
-
-      return undefined
+      const record = findStoredGenerationByIdempotencyKey(
+        tenantId,
+        idempotencyKey,
+      )
+      return record ? structuredClone(record) : undefined
     },
 
     async readGeneration(tenantId, requestId) {

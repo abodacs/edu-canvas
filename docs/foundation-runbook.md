@@ -107,7 +107,9 @@ For teacher lesson generation, the trace is:
 The seeded teacher demo accepts `equivalent fractions for grade 4` and returns
 exactly two standard variants, one scaffold, and one challenge variant. A
 browser retry with the same idempotency key returns the existing attempt;
-`Try this draft again` creates a new attempt on the same request history.
+the claim is atomic in both persistence adapters, so concurrent duplicate
+submissions cannot invoke the provider twice. `Try this draft again` creates a
+new attempt on the same request history.
 
 ## Health and readiness
 
