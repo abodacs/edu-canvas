@@ -23,6 +23,7 @@ COPY --from=build --chown=node:node /app/.output ./.output
 COPY --from=build --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/migrations ./migrations
 COPY --from=build --chown=node:node /app/scripts/db-migrate-runtime.mjs ./scripts/db-migrate-runtime.mjs
+COPY --from=build --chown=node:node /app/src/server/persistence/bootstrap-lock.mjs ./src/server/persistence/bootstrap-lock.mjs
 
 USER node
 

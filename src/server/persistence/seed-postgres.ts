@@ -2,7 +2,7 @@ import postgres from 'postgres'
 
 import { demoSeed } from '../seed-data'
 
-import { withFoundationBootstrapLock } from './bootstrap-lock'
+import { withFoundationBootstrapLock } from './bootstrap-lock.mjs'
 
 export async function seedFoundationDatabase(
   databaseUrl: string,

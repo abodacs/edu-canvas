@@ -1,10 +1,10 @@
 import { readdir, readFile } from 'node:fs/promises'
-import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import postgres from 'postgres'
 
-const bootstrapLockName = 'edu-canvas:foundation-bootstrap'
+import { withFoundationBootstrapLock } from '../src/server/persistence/bootstrap-lock.mjs'
 
 function assertDatabaseUrl(databaseUrl) {
   try {
@@ -35,25 +35,7 @@ export async function runDatabaseMigrations(databaseUrl) {
   })
 
   try {
-    await sql`
-      select set_config('statement_timeout', '30000', false),
-             set_config('lock_timeout', '5000', false),
-             set_config('idle_in_transaction_session_timeout', '60000', false)
-    `
-
-    const [lock] = await sql`
-      select pg_try_advisory_lock(
-        hashtextextended(${bootstrapLockName}, 0)
-      ) as acquired
-    `
-
-    if (!lock.acquired) {
-      throw new Error(
-        'Another foundation migration or seed process is already running.',
-      )
-    }
-
-    try {
+    await withFoundationBootstrapLock(sql, async () => {
       await sql`
         create table if not exists app_migrations (
           name text primary key,
@@ -79,13 +61,7 @@ export async function runDatabaseMigrations(databaseUrl) {
         })
         console.log(`Applied migration ${name}`)
       }
-    } finally {
-      await sql`
-        select pg_advisory_unlock(
-          hashtextextended(${bootstrapLockName}, 0)
-        )
-      `
-    }
+    })
   } finally {
     await sql.end({ timeout: 3 })
   }
