@@ -2,10 +2,10 @@ import { z } from 'zod'
 
 const gradeValues = [3, 4, 5, 6] as const
 const gradeTextValues = ['3', '4', '5', '6'] as const
-const difficultyValues = ['support', 'on-level', 'stretch'] as const
-const languageValues = ['en', 'ar'] as const
+export const difficultyValues = ['support', 'on-level', 'stretch'] as const
+export const languageValues = ['en', 'ar'] as const
 const variantKindValues = ['standard', 'scaffold', 'challenge'] as const
-const generationStateValues = [
+export const generationStateValues = [
   'requested',
   'generating',
   'ready-for-review',

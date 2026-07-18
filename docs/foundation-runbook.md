@@ -47,16 +47,17 @@ pnpm smoke
 
 Copy `.env.example` to `.env` only when you need local overrides. Unprefixed values are server-only; do not add secrets to `VITE_*` variables or client code.
 
-| Variable              | Default                   | Meaning                                                   |
-| --------------------- | ------------------------- | --------------------------------------------------------- |
-| `APP_ENV`             | `development`             | `development`, `preview`, or `production`                 |
-| `DEMO_MODE`           | `true` outside production | Keeps the seeded demo path explicit                       |
-| `SYNTHETIC_DATA_ONLY` | `true`                    | Real-student mode is blocked by the foundation            |
-| `DATABASE_URL`        | unset                     | Optional `postgres://` or `postgresql://` persistence URL |
-| `SENTRY_DSN`          | unset                     | Optional server-only Sentry delivery for scrubbed errors  |
-| `OPENAI_API_KEY`      | unset in demo mode        | Server-only credential required when `DEMO_MODE=false`    |
-| `OPENAI_MODEL`        | `gpt-5.6`                 | Server-selected structured-output model                   |
-| `OPENAI_BASE_URL`     | OpenAI Responses API      | HTTPS provider endpoint; loopback HTTP is test-only       |
+| Variable              | Default                   | Meaning                                                        |
+| --------------------- | ------------------------- | -------------------------------------------------------------- |
+| `APP_ENV`             | `development`             | `development`, `preview`, or `production`                      |
+| `DEMO_MODE`           | `true` outside production | Keeps the seeded demo path explicit                            |
+| `SYNTHETIC_DATA_ONLY` | `true`                    | Real-student mode is blocked by the foundation                 |
+| `DATABASE_URL`        | unset                     | Optional `postgres://` or `postgresql://` persistence URL      |
+| `PERSISTENCE_ADAPTER` | `postgres`                | Server-only PostgreSQL implementation: `postgres` or `drizzle` |
+| `SENTRY_DSN`          | unset                     | Optional server-only Sentry delivery for scrubbed errors       |
+| `OPENAI_API_KEY`      | unset in demo mode        | Server-only credential required when `DEMO_MODE=false`         |
+| `OPENAI_MODEL`        | `gpt-5.6`                 | Server-selected structured-output model                        |
+| `OPENAI_BASE_URL`     | OpenAI Responses API      | HTTPS provider endpoint; loopback HTTP is test-only            |
 
 Invalid configuration fails readiness with field-level, secret-free diagnostics. The server never returns a database URL, API key, or private answer key in an error response.
 
@@ -76,6 +77,8 @@ pnpm db:seed
 `pnpm db:migrate` applies files in `migrations/` in lexical order and records each applied filename plus its SHA-256 checksum in `app_migrations`. Existing name-only ledger rows are baselined once; later edits to an applied file fail fast. Migrations are forward-only: do not edit an applied file or add a destructive reset command. Add a new numbered migration for schema changes.
 
 `pnpm db:seed` is a thin operator entry point over `src/server/persistence/seed-postgres.ts`. The seed adapter uses stable IDs and `ON CONFLICT` upserts inside one transaction. It can be run repeatedly without duplicating the synthetic tenant, seeded identities, equivalent-fractions standard, prerequisite graph, activity version, or attempt fixture.
+
+Drizzle is an incremental read/write adapter behind the existing persistence seam. Set `PERSISTENCE_ADAPTER=drizzle` to exercise it against the same PostgreSQL schema; omit the variable, or set it to `postgres`, to use the legacy adapter. The SQL migration runner remains authoritative for schema creation. Drizzle Kit uses the separate `drizzle` migration schema/table only for future ORM-owned migration metadata and must not be used to apply the existing `migrations/0001_foundation.sql` or `migrations/0002_lesson_generation.sql` files.
 
 Migration and seed processes take the same non-blocking PostgreSQL advisory lock and use bounded statement, lock, and idle-in-transaction timeouts. If another bootstrap process is running, the command fails quickly so a deploy cannot wait indefinitely behind a hidden database lock.
 

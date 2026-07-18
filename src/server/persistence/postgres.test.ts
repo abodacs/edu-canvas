@@ -71,13 +71,16 @@ describe('PostgreSQL persistence', () => {
       updatedAt: '2026-07-18T00:00:00.000Z',
     }
     const statements: string[] = []
-    const transaction = vi.fn((strings: TemplateStringsArray) => {
-      const statement = strings.join(' ')
-      statements.push(statement)
-      return statement.includes('insert into lesson_generation_attempts')
-        ? [{ request_id: record.requestId }]
-        : []
-    })
+    const transaction = Object.assign(
+      vi.fn((strings: TemplateStringsArray) => {
+        const statement = strings.join(' ')
+        statements.push(statement)
+        return statement.includes('insert into lesson_generation_attempts')
+          ? [{ request_id: record.requestId }]
+          : []
+      }),
+      { json: vi.fn((value: unknown) => JSON.stringify(value)) },
+    )
     const begin = vi.fn((callback: (query: typeof transaction) => unknown) =>
       callback(transaction),
     )
@@ -144,16 +147,19 @@ describe('PostgreSQL persistence', () => {
       createdAt: '2026-07-18T00:00:00.000Z',
       updatedAt: '2026-07-18T00:00:00.000Z',
     }
-    const claimTransaction = vi.fn((strings: TemplateStringsArray) => {
-      const statement = strings.join(' ')
-      if (statement.includes('insert into lesson_generation_attempts')) {
+    const claimTransaction = Object.assign(
+      vi.fn((strings: TemplateStringsArray) => {
+        const statement = strings.join(' ')
+        if (statement.includes('insert into lesson_generation_attempts')) {
+          return []
+        }
+        if (statement.includes('select request_id')) {
+          return [{ request_id: 'draft_req_winner' }]
+        }
         return []
-      }
-      if (statement.includes('select request_id')) {
-        return [{ request_id: 'draft_req_winner' }]
-      }
-      return []
-    })
+      }),
+      { json: vi.fn((value: unknown) => JSON.stringify(value)) },
+    )
     const claimClient = Object.assign(vi.fn(), {
       begin: vi.fn((callback: (query: typeof claimTransaction) => unknown) =>
         callback(claimTransaction),
@@ -257,17 +263,20 @@ describe('PostgreSQL persistence', () => {
       updatedAt: '2020-01-01T00:00:00.000Z',
     }
     const expiryStatements: string[] = []
-    const expiryTransaction = vi.fn((strings: TemplateStringsArray) => {
-      const statement = strings.join(' ')
-      expiryStatements.push(statement)
-      if (statement.includes('update lesson_draft_requests')) {
-        return [{ attempt: 1 }]
-      }
-      if (statement.includes('update lesson_generation_attempts')) {
-        return [{ request_id: record.requestId }]
-      }
-      return []
-    })
+    const expiryTransaction = Object.assign(
+      vi.fn((strings: TemplateStringsArray) => {
+        const statement = strings.join(' ')
+        expiryStatements.push(statement)
+        if (statement.includes('update lesson_draft_requests')) {
+          return [{ attempt: 1 }]
+        }
+        if (statement.includes('update lesson_generation_attempts')) {
+          return [{ request_id: record.requestId }]
+        }
+        return []
+      }),
+      { json: vi.fn((value: unknown) => JSON.stringify(value)) },
+    )
     const expiryBegin = vi.fn(
       (callback: (query: typeof expiryTransaction) => unknown) =>
         callback(expiryTransaction),

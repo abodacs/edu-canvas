@@ -51,6 +51,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Check Drizzle schema history
+        run: pnpm db:drizzle:check
+
       - name: Run release checks
         run: pnpm check
 
@@ -62,6 +65,9 @@ jobs:
           pnpm db:setup
           pnpm db:migrate
           pnpm db:seed
+
+      - name: Run PostgreSQL persistence parity tests
+        run: pnpm test:database
 
       - name: Build and smoke-test the release image
         run: |

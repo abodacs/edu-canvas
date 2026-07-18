@@ -43,6 +43,7 @@ describe('foundation persistence boundary', () => {
       demoMode: false,
       syntheticDataOnly: true,
       mode: 'postgres',
+      persistenceAdapter: 'postgres',
       openAiModel: 'gpt-5.6',
       openAiBaseUrl: 'https://api.openai.com/v1',
       issues: [],

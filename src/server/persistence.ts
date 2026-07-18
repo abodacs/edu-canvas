@@ -4,6 +4,7 @@ import type { ServerConfig } from './config'
 import type { GenerationPersistence } from './generation/types'
 import { serverObservability } from './observability.server'
 import type { ServerObservability } from './observability.server'
+import { createDrizzlePersistence } from './persistence/drizzle'
 import { createPostgresPersistence } from './persistence/postgres'
 import { createSeededPersistence } from './persistence/seeded'
 
@@ -62,6 +63,10 @@ export function createFoundationPersistence(
       code: 'DATABASE_REQUIRED',
     })
     throw error
+  }
+
+  if (config.persistenceAdapter === 'drizzle') {
+    return createDrizzlePersistence(config.databaseUrl, options)
   }
 
   return createPostgresPersistence(config.databaseUrl, options)
