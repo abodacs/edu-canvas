@@ -20,12 +20,12 @@ const request: NormalizedGenerationRequest = {
 describe('lesson draft providers', () => {
   it('records the validator version with language compatibility rules', async () => {
     const provider = createDeterministicLessonDraftProvider()
-    const response = await provider.generate(request, {
+    await provider.generate(request, {
       correctionAttempt: false,
       diagnostics: [],
     })
 
-    expect(response.provenance.validatorVersion).toBe('lesson-validator-v2')
+    expect(provider.provenance.validatorVersion).toBe('lesson-validator-v2')
   })
 
   it('generates a deterministic Arabic fixture with RTL metadata', async () => {
@@ -44,7 +44,7 @@ describe('lesson draft providers', () => {
         direction: 'rtl',
       })
     }
-    expect(response.provenance).toMatchObject({
+    expect(provider.provenance).toMatchObject({
       provider: 'deterministic-fixture',
       model: 'equivalent-fractions-fixture-v1',
       promptTemplateVersion: 'lesson-prompt-v1',

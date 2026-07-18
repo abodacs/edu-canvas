@@ -11,7 +11,6 @@ import { LessonProviderError } from './provider'
 import type {
   LessonDraftProvider,
   NormalizedGenerationRequest,
-  ProviderProvenance,
 } from './provider'
 import type {
   GenerationCommand,
@@ -23,6 +22,7 @@ import type {
   LessonGenerationRecord,
   ProviderLessonDraft,
 } from './types'
+import { generationDuplicateWaitMs, isGenerationClaimExpired } from './types'
 import { validateProviderDraft } from './validation'
 
 export class GenerationInputError extends Error {
@@ -216,14 +216,77 @@ export function createGenerationService(options: GenerationServiceOptions) {
   const requestIdFactory =
     options.requestIdFactory ?? (() => `draft_req_${randomUUID()}`)
 
-  async function persist(
-    record: LessonGenerationRecord,
-  ): Promise<GenerationServiceResult> {
-    await options.persistence.saveGeneration(record)
+  function resultFor(record: LessonGenerationRecord): GenerationServiceResult {
     return {
       record,
       publicResult: toPublicGenerationResult(record),
     }
+  }
+
+  async function persistOwned(
+    record: LessonGenerationRecord,
+    expectedUpdatedAt: string,
+  ): Promise<{ owned: boolean; record: LessonGenerationRecord }> {
+    const saved = await options.persistence.saveGeneration(record, {
+      attempt: record.attempt,
+      updatedAt: expectedUpdatedAt,
+    })
+    if (saved) return { owned: true, record }
+
+    const current = await options.persistence.readGeneration(
+      record.tenantId,
+      record.requestId,
+    )
+    if (!current) {
+      throw new GenerationRequestError(
+        'The generation attempt was superseded and could not be resolved.',
+      )
+    }
+    return { owned: false, record: current }
+  }
+
+  async function persist(
+    record: LessonGenerationRecord,
+    expectedUpdatedAt: string,
+  ): Promise<GenerationServiceResult> {
+    const persisted = await persistOwned(record, expectedUpdatedAt)
+    return resultFor(persisted.record)
+  }
+
+  async function resolveDuplicate(
+    initialRecord: LessonGenerationRecord,
+  ): Promise<LessonGenerationRecord> {
+    let record = initialRecord
+    if (record.state === 'generating' && !isGenerationClaimExpired(record)) {
+      const deadline = Date.now() + generationDuplicateWaitMs
+      while (Date.now() < deadline) {
+        await new Promise((resolve) => setTimeout(resolve, 25))
+        const refreshed = await options.persistence.readGeneration(
+          record.tenantId,
+          record.requestId,
+        )
+        if (!refreshed) break
+        record = refreshed
+        if (record.state !== 'generating') return record
+      }
+    }
+
+    if (!isGenerationClaimExpired(record)) return record
+
+    const expired = await options.persistence.expireGenerationClaim(
+      record.tenantId,
+      record.requestId,
+      record.updatedAt,
+      nowValue(now),
+    )
+    if (expired) return expired
+
+    return (
+      (await options.persistence.readGeneration(
+        record.tenantId,
+        record.requestId,
+      )) ?? record
+    )
   }
 
   async function runAttempt(
@@ -238,6 +301,7 @@ export function createGenerationService(options: GenerationServiceOptions) {
       state: 'generating',
       correctionAttempted: false,
       diagnostics: [],
+      provenance: options.provider.provenance,
       createdAt: timestamp,
     }
     let record: LessonGenerationRecord = {
@@ -252,16 +316,17 @@ export function createGenerationService(options: GenerationServiceOptions) {
       state: 'generating',
       attempt: attemptNumber,
       diagnostics: [],
-      provenance: undefined,
+      provenance: options.provider.provenance,
       draft: undefined,
       attempts: [...baseRecord.attempts, attempt],
       updatedAt: timestamp,
     }
     const claim = await options.persistence.claimGeneration(record)
     if (!claim.claimed) {
+      const resolved = await resolveDuplicate(claim.record)
       return {
-        record: claim.record,
-        publicResult: toPublicGenerationResult(claim.record),
+        record: resolved,
+        publicResult: toPublicGenerationResult(resolved),
       }
     }
     record = claim.record
@@ -283,7 +348,7 @@ export function createGenerationService(options: GenerationServiceOptions) {
           diagnostics,
         }),
       }
-      return persist(record)
+      return persist(record, claim.record.updatedAt)
     }
 
     let firstResponse: Awaited<ReturnType<LessonDraftProvider['generate']>>
@@ -307,15 +372,13 @@ export function createGenerationService(options: GenerationServiceOptions) {
         ...record,
         state: 'blocked-by-moderation',
         diagnostics,
-        provenance: firstResponse.provenance,
         updatedAt: nowValue(now),
         attempts: updateAttempt(record, attemptNumber, {
           state: 'blocked-by-moderation',
           diagnostics,
-          provenance: firstResponse.provenance,
         }),
       }
-      return persist(record)
+      return persist(record, claim.record.updatedAt)
     }
 
     const firstValidation = validateProviderDraft(firstResponse.draft, {
@@ -327,7 +390,6 @@ export function createGenerationService(options: GenerationServiceOptions) {
         attemptNumber,
         input,
         firstValidation.draft,
-        firstResponse.provenance,
         firstValidation.diagnostics,
         false,
       )
@@ -336,16 +398,19 @@ export function createGenerationService(options: GenerationServiceOptions) {
     const correctionDiagnostics = firstValidation.diagnostics.filter(
       (entry) => entry.severity === 'error',
     )
+    const expectedUpdatedAt = record.updatedAt
     record = {
       ...record,
-      provenance: firstResponse.provenance,
+      diagnostics: correctionDiagnostics,
+      updatedAt: nowValue(now),
       attempts: updateAttempt(record, attemptNumber, {
         correctionAttempted: true,
         diagnostics: correctionDiagnostics,
-        provenance: firstResponse.provenance,
       }),
     }
-    await options.persistence.saveGeneration(record)
+    const correctionProgress = await persistOwned(record, expectedUpdatedAt)
+    if (!correctionProgress.owned) return resultFor(correctionProgress.record)
+    record = correctionProgress.record
 
     let correctedResponse: Awaited<ReturnType<LessonDraftProvider['generate']>>
     try {
@@ -373,15 +438,13 @@ export function createGenerationService(options: GenerationServiceOptions) {
         ...record,
         state: 'blocked-by-moderation',
         diagnostics,
-        provenance: correctedResponse.provenance,
         updatedAt: nowValue(now),
         attempts: updateAttempt(record, attemptNumber, {
           state: 'blocked-by-moderation',
           diagnostics: [...correctionDiagnostics, ...diagnostics],
-          provenance: correctedResponse.provenance,
         }),
       }
-      return persist(record)
+      return persist(record, correctionProgress.record.updatedAt)
     }
 
     const correctedValidation = validateProviderDraft(correctedResponse.draft, {
@@ -393,7 +456,6 @@ export function createGenerationService(options: GenerationServiceOptions) {
         attemptNumber,
         input,
         correctedValidation.draft,
-        correctedResponse.provenance,
         correctedValidation.diagnostics,
         true,
       )
@@ -404,15 +466,13 @@ export function createGenerationService(options: GenerationServiceOptions) {
       ...record,
       state: 'blocked-by-validation',
       diagnostics,
-      provenance: correctedResponse.provenance,
       updatedAt: nowValue(now),
       attempts: updateAttempt(record, attemptNumber, {
         state: 'blocked-by-validation',
         diagnostics: [...correctionDiagnostics, ...diagnostics],
-        provenance: correctedResponse.provenance,
       }),
     }
-    return persist(record)
+    return persist(record, correctionProgress.record.updatedAt)
   }
 
   async function persistReadyDraft(
@@ -420,11 +480,11 @@ export function createGenerationService(options: GenerationServiceOptions) {
     attemptNumber: number,
     input: NormalizedCommandInput,
     providerDraft: ProviderLessonDraft,
-    provenance: ProviderProvenance,
     diagnostics: GenerationDiagnostic[],
     correctionAttempted: boolean,
   ): Promise<GenerationServiceResult> {
     const timestamp = nowValue(now)
+    const provenance = baseRecord.provenance ?? options.provider.provenance
     const draft = {
       ...providerDraft,
       requestId: baseRecord.requestId,
@@ -452,7 +512,7 @@ export function createGenerationService(options: GenerationServiceOptions) {
         provenance,
       }),
     }
-    return persist(record)
+    return persist(record, baseRecord.updatedAt)
   }
 
   async function persistProviderFailure(
@@ -471,20 +531,20 @@ export function createGenerationService(options: GenerationServiceOptions) {
     const failureDiagnostic = providerFailureDiagnostic(providerError)
     const diagnostics = [...priorDiagnostics, failureDiagnostic]
     const state = stateForProviderFailure(providerError.kind)
-    const provenance = providerError.provenance ?? baseRecord.provenance
+    const provenance = baseRecord.provenance ?? options.provider.provenance
     const record: LessonGenerationRecord = {
       ...baseRecord,
       state,
       diagnostics,
-      ...(provenance ? { provenance } : {}),
+      provenance,
       updatedAt: nowValue(now),
       attempts: updateAttempt(baseRecord, attemptNumber, {
         state,
         diagnostics,
-        ...(provenance ? { provenance } : {}),
+        provenance,
       }),
     }
-    return persist(record)
+    return persist(record, baseRecord.updatedAt)
   }
 
   return {
@@ -498,9 +558,10 @@ export function createGenerationService(options: GenerationServiceOptions) {
         input.idempotencyKey,
       )
       if (existing) {
+        const resolved = await resolveDuplicate(existing)
         return {
-          record: existing,
-          publicResult: toPublicGenerationResult(existing),
+          record: resolved,
+          publicResult: toPublicGenerationResult(resolved),
         }
       }
 
@@ -550,6 +611,7 @@ export function createGenerationService(options: GenerationServiceOptions) {
         attempt: 0,
         diagnostics: [],
         attempts: [],
+        provenance: options.provider.provenance,
         createdAt: timestamp,
         updatedAt: timestamp,
       }

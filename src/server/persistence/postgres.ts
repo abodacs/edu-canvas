@@ -9,9 +9,11 @@ import type {
   GenerationAttemptRecord,
   LessonGenerationRecord,
 } from '../generation/types'
+import { generationClaimExpiredDiagnostic } from '../generation/types'
 import { demoSeed } from '../seed-data'
 
 type SqlClient = ReturnType<typeof postgres>
+type SqlTransaction = postgres.TransactionSql
 
 export interface PostgresPersistenceOptions {
   observability?: ServerObservability
@@ -130,6 +132,147 @@ function hydrateGenerationRecord(
   }
 }
 
+async function insertGenerationRequest(
+  transaction: SqlTransaction,
+  record: LessonGenerationRecord,
+): Promise<void> {
+  await transaction`
+    insert into lesson_draft_requests (
+      id,
+      tenant_id,
+      teacher_id,
+      prompt,
+      grade,
+      standard_id,
+      language,
+      difficulty,
+      state,
+      attempt,
+      diagnostics,
+      draft,
+      provenance,
+      created_at,
+      updated_at
+    )
+    values (
+      ${record.requestId},
+      ${record.tenantId},
+      ${record.teacherId},
+      ${record.input.prompt},
+      ${record.input.grade},
+      ${record.input.standardId},
+      ${record.input.language},
+      ${record.input.difficulty},
+      ${record.state},
+      ${record.attempt},
+      ${JSON.stringify(record.diagnostics)}::jsonb,
+      ${JSON.stringify(record.draft ?? null)}::jsonb,
+      ${JSON.stringify(record.provenance ?? null)}::jsonb,
+      ${record.createdAt},
+      ${record.updatedAt}
+    )
+    on conflict (id) do nothing
+  `
+}
+
+async function insertGenerationAttempt(
+  transaction: SqlTransaction,
+  record: LessonGenerationRecord,
+  attempt: GenerationAttemptRecord,
+): Promise<{ request_id: string }[]> {
+  return transaction<{ request_id: string }[]>`
+    insert into lesson_generation_attempts (
+      request_id,
+      tenant_id,
+      attempt_number,
+      idempotency_key,
+      state,
+      correction_attempted,
+      diagnostics,
+      provenance,
+      created_at
+    )
+    values (
+      ${record.requestId},
+      ${record.tenantId},
+      ${attempt.attemptNumber},
+      ${attempt.idempotencyKey},
+      ${attempt.state},
+      ${attempt.correctionAttempted},
+      ${JSON.stringify(attempt.diagnostics)}::jsonb,
+      ${JSON.stringify(attempt.provenance ?? null)}::jsonb,
+      ${attempt.createdAt}
+    )
+    on conflict (tenant_id, idempotency_key) do nothing
+    returning request_id
+  `
+}
+
+async function upsertGenerationAttempt(
+  transaction: SqlTransaction,
+  record: LessonGenerationRecord,
+  attempt: GenerationAttemptRecord,
+): Promise<void> {
+  await transaction`
+    insert into lesson_generation_attempts (
+      request_id,
+      tenant_id,
+      attempt_number,
+      idempotency_key,
+      state,
+      correction_attempted,
+      diagnostics,
+      provenance,
+      created_at
+    )
+    values (
+      ${record.requestId},
+      ${record.tenantId},
+      ${attempt.attemptNumber},
+      ${attempt.idempotencyKey},
+      ${attempt.state},
+      ${attempt.correctionAttempted},
+      ${JSON.stringify(attempt.diagnostics)}::jsonb,
+      ${JSON.stringify(attempt.provenance ?? null)}::jsonb,
+      ${attempt.createdAt}
+    )
+    on conflict (request_id, attempt_number) do update set
+      state = excluded.state,
+      correction_attempted = excluded.correction_attempted,
+      diagnostics = excluded.diagnostics,
+      provenance = excluded.provenance
+  `
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === '23505'
+  )
+}
+
+async function findClaimConflict(
+  transaction: SqlTransaction,
+  record: LessonGenerationRecord,
+  attempt: GenerationAttemptRecord,
+): Promise<{ request_id: string }[]> {
+  return transaction<{ request_id: string }[]>`
+    select request_id
+    from lesson_generation_attempts
+    where tenant_id = ${record.tenantId}
+      and (
+        idempotency_key = ${attempt.idempotencyKey}
+        or (
+          request_id = ${record.requestId}
+          and attempt_number = ${attempt.attemptNumber}
+        )
+      )
+    limit 1
+  `
+}
+
 export function createPostgresPersistence(
   databaseUrl: string,
   options: PostgresPersistenceOptions = {},
@@ -222,89 +365,47 @@ export function createPostgresPersistence(
           await transaction`select set_config('app.tenant_id', ${record.tenantId}, true)`
           await transaction`savepoint claim_generation`
 
-          await transaction`
-            insert into lesson_draft_requests (
-              id,
-              tenant_id,
-              teacher_id,
-              prompt,
-              grade,
-              standard_id,
-              language,
-              difficulty,
-              state,
+          await insertGenerationRequest(transaction, record)
+
+          let insertedAttempts: { request_id: string }[]
+          try {
+            insertedAttempts = await insertGenerationAttempt(
+              transaction,
+              record,
               attempt,
-              diagnostics,
-              draft,
-              provenance,
-              created_at,
-              updated_at
             )
-            values (
-              ${record.requestId},
-              ${record.tenantId},
-              ${record.teacherId},
-              ${record.input.prompt},
-              ${record.input.grade},
-              ${record.input.standardId},
-              ${record.input.language},
-              ${record.input.difficulty},
-              ${record.state},
-              ${record.attempt},
-              ${JSON.stringify(record.diagnostics)}::jsonb,
-              ${JSON.stringify(record.draft ?? null)}::jsonb,
-              ${JSON.stringify(record.provenance ?? null)}::jsonb,
-              ${record.createdAt},
-              ${record.updatedAt}
-            )
-            on conflict (id) do nothing
-          `
+          } catch (error) {
+            if (!isUniqueViolation(error)) throw error
 
-          const insertedAttempts = await transaction<{ request_id: string }[]>`
-            insert into lesson_generation_attempts (
-              request_id,
-              tenant_id,
-              attempt_number,
-              idempotency_key,
-              state,
-              correction_attempted,
-              diagnostics,
-              provenance,
-              created_at
-            )
-            values (
-              ${record.requestId},
-              ${record.tenantId},
-              ${attempt.attemptNumber},
-              ${attempt.idempotencyKey},
-              ${attempt.state},
-              ${attempt.correctionAttempted},
-              ${JSON.stringify(attempt.diagnostics)}::jsonb,
-              ${JSON.stringify(attempt.provenance ?? null)}::jsonb,
-              ${attempt.createdAt}
-            )
-            on conflict do nothing
-            returning request_id
-          `
-
-          if (insertedAttempts.length === 0) {
             await transaction`rollback to savepoint claim_generation`
-            const existingAttempts = await transaction<
-              { request_id: string }[]
-            >`
-              select request_id
-              from lesson_generation_attempts
-              where tenant_id = ${record.tenantId}
-                and idempotency_key = ${attempt.idempotencyKey}
-              limit 1
-            `
+            const conflicts = await findClaimConflict(
+              transaction,
+              record,
+              attempt,
+            )
+            if (conflicts.length === 0) throw error
 
             return {
               claimed: false,
-              requestId:
-                existingAttempts.length > 0
-                  ? existingAttempts[0].request_id
-                  : record.requestId,
+              requestId: conflicts[0].request_id,
+            }
+          }
+
+          if (insertedAttempts.length === 0) {
+            const conflicts = await findClaimConflict(
+              transaction,
+              record,
+              attempt,
+            )
+            if (conflicts.length === 0) {
+              throw new Error(
+                'The generation idempotency claim conflict could not be resolved.',
+              )
+            }
+
+            return {
+              claimed: false,
+              requestId: conflicts[0].request_id,
             }
           }
 
@@ -341,85 +442,82 @@ export function createPostgresPersistence(
       return { claimed: false, record: existing }
     },
 
-    async saveGeneration(record) {
-      await withDatabase(databaseUrl, async (sql) => {
-        await sql.begin(async (transaction) => {
-          await transaction`select set_config('app.tenant_id', ${record.tenantId}, true)`
-          await transaction`
-            insert into lesson_draft_requests (
-              id,
-              tenant_id,
-              teacher_id,
-              prompt,
-              grade,
-              standard_id,
-              language,
-              difficulty,
-              state,
-              attempt,
-              diagnostics,
-              draft,
-              provenance,
-              created_at,
-              updated_at
-            )
-            values (
-              ${record.requestId},
-              ${record.tenantId},
-              ${record.teacherId},
-              ${record.input.prompt},
-              ${record.input.grade},
-              ${record.input.standardId},
-              ${record.input.language},
-              ${record.input.difficulty},
-              ${record.state},
-              ${record.attempt},
-              ${JSON.stringify(record.diagnostics)}::jsonb,
-              ${JSON.stringify(record.draft ?? null)}::jsonb,
-              ${JSON.stringify(record.provenance ?? null)}::jsonb,
-              ${record.createdAt},
-              ${record.updatedAt}
-            )
-            on conflict (id) do update set
-              state = excluded.state,
-              attempt = excluded.attempt,
-              diagnostics = excluded.diagnostics,
-              draft = excluded.draft,
-              provenance = excluded.provenance,
-              updated_at = excluded.updated_at
+    async expireGenerationClaim(
+      tenantId,
+      requestId,
+      expectedUpdatedAt,
+      updatedAt,
+    ) {
+      const diagnostics = [generationClaimExpiredDiagnostic()]
+      const expired = await withDatabase(databaseUrl, async (sql) => {
+        return sql.begin(async (transaction) => {
+          await transaction`select set_config('app.tenant_id', ${tenantId}, true)`
+          const requests = await transaction<{ attempt: number }[]>`
+            update lesson_draft_requests
+            set
+              state = 'failed-retryable',
+              diagnostics = diagnostics || ${JSON.stringify(diagnostics)}::jsonb,
+              updated_at = ${updatedAt}
+            where tenant_id = ${tenantId}
+              and id = ${requestId}
+              and state = 'generating'
+              and updated_at = ${expectedUpdatedAt}
+            returning attempt
           `
 
-          for (const attempt of record.attempts) {
-            await transaction`
-              insert into lesson_generation_attempts (
-                request_id,
-                tenant_id,
-                attempt_number,
-                idempotency_key,
-                state,
-                correction_attempted,
-                diagnostics,
-                provenance,
-                created_at
-              )
-              values (
-                ${record.requestId},
-                ${record.tenantId},
-                ${attempt.attemptNumber},
-                ${attempt.idempotencyKey},
-                ${attempt.state},
-                ${attempt.correctionAttempted},
-                ${JSON.stringify(attempt.diagnostics)}::jsonb,
-                ${JSON.stringify(attempt.provenance ?? null)}::jsonb,
-                ${attempt.createdAt}
-              )
-              on conflict (request_id, attempt_number) do update set
-                state = excluded.state,
-                correction_attempted = excluded.correction_attempted,
-                diagnostics = excluded.diagnostics,
-                provenance = excluded.provenance
-            `
+          if (requests.length === 0) return false
+
+          const attempts = await transaction<{ request_id: string }[]>`
+            update lesson_generation_attempts
+            set
+              state = 'failed-retryable',
+              diagnostics = diagnostics || ${JSON.stringify(diagnostics)}::jsonb
+            where tenant_id = ${tenantId}
+              and request_id = ${requestId}
+              and attempt_number = ${requests[0].attempt}
+            returning request_id
+          `
+          if (attempts.length === 0) {
+            throw new Error(
+              'The expired generation claim has no matching attempt history.',
+            )
           }
+
+          return true
+        })
+      })
+
+      if (!expired) return undefined
+
+      return readGenerationByQuery(databaseUrl, tenantId, requestId, true)
+    },
+
+    async saveGeneration(record, expected) {
+      return withDatabase(databaseUrl, async (sql) => {
+        return sql.begin(async (transaction) => {
+          await transaction`select set_config('app.tenant_id', ${record.tenantId}, true)`
+          const updated = await transaction<{ id: string }[]>`
+            update lesson_draft_requests
+            set
+              state = ${record.state},
+              attempt = ${record.attempt},
+              diagnostics = ${JSON.stringify(record.diagnostics)}::jsonb,
+              draft = ${JSON.stringify(record.draft ?? null)}::jsonb,
+              provenance = ${JSON.stringify(record.provenance ?? null)}::jsonb,
+              updated_at = ${record.updatedAt}
+            where tenant_id = ${record.tenantId}
+              and id = ${record.requestId}
+              and state = 'generating'
+              and attempt = ${expected.attempt}
+              and updated_at = ${expected.updatedAt}
+            returning id
+          `
+          if (updated.length === 0) return false
+
+          for (const attempt of record.attempts) {
+            await upsertGenerationAttempt(transaction, record, attempt)
+          }
+          return true
         })
       })
     },

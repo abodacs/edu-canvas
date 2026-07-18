@@ -1,4 +1,5 @@
 import type { FoundationPersistence } from '../persistence'
+import { generationClaimExpiredDiagnostic } from '../generation/types'
 import type { LessonGenerationRecord } from '../generation/types'
 import { serverObservability } from '../observability.server'
 import type { ServerObservability } from '../observability.server'
@@ -93,11 +94,55 @@ export function createSeededPersistence(
       return { claimed: true, record: structuredClone(record) }
     },
 
-    async saveGeneration(record) {
-      generationStore.set(
-        `${record.tenantId}:${record.requestId}`,
-        structuredClone(record),
-      )
+    async expireGenerationClaim(
+      tenantId,
+      requestId,
+      expectedUpdatedAt,
+      updatedAt,
+    ) {
+      const key = `${tenantId}:${requestId}`
+      const existing = generationStore.get(key)
+      if (
+        !existing ||
+        existing.state !== 'generating' ||
+        existing.updatedAt !== expectedUpdatedAt
+      ) {
+        return undefined
+      }
+
+      const diagnostics = [
+        ...existing.diagnostics,
+        generationClaimExpiredDiagnostic(),
+      ]
+      const expired: LessonGenerationRecord = {
+        ...existing,
+        state: 'failed-retryable',
+        diagnostics,
+        updatedAt,
+        attempts: existing.attempts.map((attempt) =>
+          attempt.attemptNumber === existing.attempt
+            ? { ...attempt, state: 'failed-retryable', diagnostics }
+            : attempt,
+        ),
+      }
+      generationStore.set(key, structuredClone(expired))
+      return structuredClone(expired)
+    },
+
+    async saveGeneration(record, expected) {
+      const key = `${record.tenantId}:${record.requestId}`
+      const existing = generationStore.get(key)
+      if (
+        !existing ||
+        existing.state !== 'generating' ||
+        existing.attempt !== expected.attempt ||
+        existing.updatedAt !== expected.updatedAt
+      ) {
+        return false
+      }
+
+      generationStore.set(key, structuredClone(record))
+      return true
     },
 
     async findGenerationByIdempotencyKey(tenantId, idempotencyKey) {

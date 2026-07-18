@@ -120,9 +120,44 @@ export interface GenerationClaim {
   record: LessonGenerationRecord
 }
 
+export interface GenerationWriteExpectation {
+  attempt: number
+  updatedAt: string
+}
+
+export const generationClaimLeaseMs = 30_000
+export const generationDuplicateWaitMs = 5_000
+
+export function isGenerationClaimExpired(
+  record: LessonGenerationRecord,
+  now = Date.now(),
+): boolean {
+  if (record.state !== 'generating') return false
+  const updatedAt = Date.parse(record.updatedAt)
+  return Number.isFinite(updatedAt) && now - updatedAt >= generationClaimLeaseMs
+}
+
+export function generationClaimExpiredDiagnostic(): GenerationDiagnostic {
+  return {
+    severity: 'error',
+    code: 'GENERATION_CLAIM_EXPIRED',
+    message:
+      'The previous generation attempt expired before completion. Try this draft again.',
+  }
+}
+
 export interface GenerationPersistence {
-  saveGeneration: (record: LessonGenerationRecord) => Promise<void>
+  saveGeneration: (
+    record: LessonGenerationRecord,
+    expected: GenerationWriteExpectation,
+  ) => Promise<boolean>
   claimGeneration: (record: LessonGenerationRecord) => Promise<GenerationClaim>
+  expireGenerationClaim: (
+    tenantId: string,
+    requestId: string,
+    expectedUpdatedAt: string,
+    updatedAt: string,
+  ) => Promise<LessonGenerationRecord | undefined>
   findGenerationByIdempotencyKey: (
     tenantId: string,
     idempotencyKey: string,

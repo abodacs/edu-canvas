@@ -10,6 +10,7 @@ import {
 } from './provider'
 import { createSeededPersistence } from '../persistence/seeded'
 import { createGenerationService, normalizeGenerationInput } from './service'
+import type { LessonGenerationRecord } from './types'
 
 const validInput = {
   prompt: 'equivalent fractions for grade 4',
@@ -24,6 +25,48 @@ function teacherCommand(input: Record<string, unknown> = validInput) {
   return {
     session: getDemoSession('teacher'),
     input,
+  }
+}
+
+function generatingRecord(
+  requestId: string,
+  idempotencyKey: string,
+  updatedAt: string,
+): LessonGenerationRecord {
+  const provenance = {
+    provider: 'deterministic-fixture',
+    model: 'equivalent-fractions-fixture-v1',
+    promptTemplateVersion: 'lesson-prompt-v1',
+    validatorVersion: 'lesson-validator-v2',
+  }
+  return {
+    requestId,
+    tenantId: demoSeed.tenant.id,
+    teacherId: 'identity_demo_teacher',
+    input: {
+      prompt: validInput.prompt,
+      grade: validInput.grade,
+      standardId: demoSeed.standard.id,
+      language: validInput.language,
+      difficulty: validInput.difficulty,
+    },
+    state: 'generating',
+    attempt: 1,
+    diagnostics: [],
+    provenance,
+    attempts: [
+      {
+        attemptNumber: 1,
+        idempotencyKey,
+        state: 'generating',
+        correctionAttempted: false,
+        diagnostics: [],
+        provenance,
+        createdAt: updatedAt,
+      },
+    ],
+    createdAt: updatedAt,
+    updatedAt,
   }
 }
 
@@ -85,6 +128,236 @@ describe('lesson generation service', () => {
     expect(second.record.attempts).toHaveLength(1)
   })
 
+  it('expires an abandoned generation claim into an explicit retry state', async () => {
+    const provenance = {
+      provider: 'deterministic-fixture',
+      model: 'equivalent-fractions-fixture-v1',
+      promptTemplateVersion: 'lesson-prompt-v1',
+      validatorVersion: 'lesson-validator-v2',
+    }
+    const staleRecord: LessonGenerationRecord = {
+      requestId: 'draft_req_stale_claim',
+      tenantId: demoSeed.tenant.id,
+      teacherId: 'identity_demo_teacher',
+      input: {
+        prompt: validInput.prompt,
+        grade: validInput.grade,
+        standardId: demoSeed.standard.id,
+        language: validInput.language,
+        difficulty: validInput.difficulty,
+      },
+      state: 'generating',
+      attempt: 1,
+      diagnostics: [],
+      provenance,
+      attempts: [
+        {
+          attemptNumber: 1,
+          idempotencyKey: 'request-stale-claim',
+          state: 'generating',
+          correctionAttempted: false,
+          diagnostics: [],
+          provenance,
+          createdAt: '2020-01-01T00:00:00.000Z',
+        },
+      ],
+      createdAt: '2020-01-01T00:00:00.000Z',
+      updatedAt: '2020-01-01T00:00:00.000Z',
+    }
+    const generationStore = new Map([
+      [`${staleRecord.tenantId}:${staleRecord.requestId}`, staleRecord],
+    ])
+    const provider = createDeterministicLessonDraftProvider()
+    const service = createGenerationService({
+      persistence: createSeededPersistence({ generationStore }),
+      provider,
+      now: () => '2026-07-18T00:00:00.000Z',
+    })
+
+    const result = await service.generate(
+      teacherCommand({
+        ...validInput,
+        idempotencyKey: 'request-stale-claim',
+      }),
+    )
+
+    expect(result.record.state).toBe('failed-retryable')
+    expect(result.record.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ code: 'GENERATION_CLAIM_EXPIRED' }),
+      ]),
+    )
+    expect(result.publicResult.retry.available).toBe(true)
+    expect(provider.calls).toBe(0)
+  })
+
+  it('returns the current record when another worker wins claim expiry', async () => {
+    const provenance = {
+      provider: 'deterministic-fixture',
+      model: 'equivalent-fractions-fixture-v1',
+      promptTemplateVersion: 'lesson-prompt-v1',
+      validatorVersion: 'lesson-validator-v2',
+    }
+    const staleRecord: LessonGenerationRecord = {
+      requestId: 'draft_req_cas_loser',
+      tenantId: demoSeed.tenant.id,
+      teacherId: 'identity_demo_teacher',
+      input: {
+        prompt: validInput.prompt,
+        grade: validInput.grade,
+        standardId: demoSeed.standard.id,
+        language: validInput.language,
+        difficulty: validInput.difficulty,
+      },
+      state: 'generating',
+      attempt: 1,
+      diagnostics: [],
+      provenance,
+      attempts: [
+        {
+          attemptNumber: 1,
+          idempotencyKey: 'request-cas-loser',
+          state: 'generating',
+          correctionAttempted: false,
+          diagnostics: [],
+          provenance,
+          createdAt: '2020-01-01T00:00:00.000Z',
+        },
+      ],
+      createdAt: '2020-01-01T00:00:00.000Z',
+      updatedAt: '2020-01-01T00:00:00.000Z',
+    }
+    const currentRecord: LessonGenerationRecord = {
+      ...staleRecord,
+      state: 'failed-retryable',
+      diagnostics: [
+        {
+          severity: 'error',
+          code: 'GENERATION_CLAIM_EXPIRED',
+          message: 'The previous generation attempt expired.',
+        },
+      ],
+      updatedAt: '2026-07-18T00:00:00.000Z',
+      attempts: [
+        {
+          ...staleRecord.attempts[0],
+          state: 'failed-retryable',
+        },
+      ],
+    }
+    const basePersistence = createSeededPersistence({
+      generationStore: new Map([
+        [`${staleRecord.tenantId}:${staleRecord.requestId}`, staleRecord],
+      ]),
+    })
+    const persistence = {
+      ...basePersistence,
+      async expireGenerationClaim() {
+        return undefined
+      },
+      async readGeneration() {
+        return structuredClone(currentRecord)
+      },
+    }
+    const service = createGenerationService({
+      persistence,
+      provider: createDeterministicLessonDraftProvider(),
+      now: () => '2026-07-18T00:00:00.000Z',
+    })
+
+    const result = await service.generate(
+      teacherCommand({
+        ...validInput,
+        idempotencyKey: 'request-cas-loser',
+      }),
+    )
+
+    expect(result.record.state).toBe('failed-retryable')
+    expect(result.record.diagnostics[0]?.code).toBe('GENERATION_CLAIM_EXPIRED')
+  })
+
+  it('stores configured provenance on the attempt before provider work', async () => {
+    const provenance = {
+      provider: 'test-provider',
+      model: 'test-model',
+      promptTemplateVersion: 'test-prompt-v1',
+      validatorVersion: 'lesson-validator-v2',
+    }
+    const basePersistence = createSeededPersistence()
+    let claimedRecord: LessonGenerationRecord | undefined
+    const persistence = {
+      ...basePersistence,
+      async claimGeneration(record: LessonGenerationRecord) {
+        claimedRecord = structuredClone(record)
+        return basePersistence.claimGeneration(record)
+      },
+    }
+    const service = createGenerationService({
+      persistence,
+      provider: {
+        provenance,
+        async generate() {
+          throw new Error('socket closed')
+        },
+      },
+      requestIdFactory: () => 'draft_req_claim_provenance',
+    })
+
+    await service.generate(
+      teacherCommand({
+        ...validInput,
+        idempotencyKey: 'request-claim-provenance',
+      }),
+    )
+
+    expect(claimedRecord?.provenance).toEqual(provenance)
+    expect(claimedRecord?.attempts[0]?.provenance).toEqual(provenance)
+  })
+
+  it('does not let an expired worker overwrite a later retry attempt', async () => {
+    const currentRecord = generatingRecord(
+      'draft_req_stale_worker',
+      'request-retry-attempt-2',
+      '2026-07-18T00:00:01.000Z',
+    )
+    currentRecord.attempt = 2
+    currentRecord.attempts = [
+      {
+        ...currentRecord.attempts[0],
+        state: 'failed-retryable',
+      },
+      {
+        ...currentRecord.attempts[0],
+        attemptNumber: 2,
+        idempotencyKey: 'request-retry-attempt-2',
+      },
+    ]
+    const staleWorkerRecord: LessonGenerationRecord = {
+      ...currentRecord,
+      state: 'ready-for-review',
+      attempt: 1,
+      updatedAt: '2026-07-18T00:00:00.000Z',
+    }
+    const persistence = createSeededPersistence({
+      generationStore: new Map([
+        [`${currentRecord.tenantId}:${currentRecord.requestId}`, currentRecord],
+      ]),
+    })
+
+    const saved = await persistence.saveGeneration(staleWorkerRecord, {
+      attempt: 1,
+      updatedAt: staleWorkerRecord.updatedAt,
+    })
+    const stored = await persistence.readGeneration(
+      currentRecord.tenantId,
+      currentRecord.requestId,
+    )
+
+    expect(saved).toBe(false)
+    expect(stored?.attempt).toBe(2)
+    expect(stored?.state).toBe('generating')
+  })
+
   it('makes exactly one correction attempt and keeps a corrected draft reviewable', async () => {
     const provider =
       createDeterministicLessonDraftProvider('invalid-then-valid')
@@ -120,18 +393,18 @@ describe('lesson generation service', () => {
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider: {
+        provenance: {
+          provider: 'test-provider',
+          model: 'test-model',
+          promptTemplateVersion: 'test-prompt-v1',
+          validatorVersion: 'lesson-validator-v2',
+        },
         async generate(request) {
           return {
             draft: createEquivalentFractionsDraft({
               ...request,
               language: 'en',
             }),
-            provenance: {
-              provider: 'test-provider',
-              model: 'test-model',
-              promptTemplateVersion: 'test-prompt-v1',
-              validatorVersion: 'lesson-validator-v1',
-            },
           }
         },
       },
@@ -166,6 +439,12 @@ describe('lesson generation service', () => {
   it('retains a retryable provider failure and allows one explicit teacher retry', async () => {
     let calls = 0
     const provider = {
+      provenance: {
+        provider: 'test-provider',
+        model: 'test-model',
+        promptTemplateVersion: 'test-prompt-v1',
+        validatorVersion: 'lesson-validator-v1',
+      },
       async generate(
         request: Parameters<typeof createEquivalentFractionsDraft>[0],
       ) {
@@ -178,12 +457,6 @@ describe('lesson generation service', () => {
         }
         return {
           draft: createEquivalentFractionsDraft(request),
-          provenance: {
-            provider: 'test-provider',
-            model: 'test-model',
-            promptTemplateVersion: 'test-prompt-v1',
-            validatorVersion: 'lesson-validator-v1',
-          },
         }
       },
     }
@@ -235,6 +508,36 @@ describe('lesson generation service', () => {
     )
   })
 
+  it('persists configured provenance when the provider fails unexpectedly', async () => {
+    const provenance = {
+      provider: 'test-provider',
+      model: 'test-model',
+      promptTemplateVersion: 'test-prompt-v1',
+      validatorVersion: 'lesson-validator-v2',
+    }
+    const service = createGenerationService({
+      persistence: createSeededPersistence(),
+      provider: {
+        provenance,
+        async generate() {
+          throw new Error('socket closed')
+        },
+      },
+      requestIdFactory: () => 'draft_req_test_unexpected_failure',
+    })
+
+    const result = await service.generate(
+      teacherCommand({
+        ...validInput,
+        idempotencyKey: 'request-unexpected-provider-failure',
+      }),
+    )
+
+    expect(result.record.state).toBe('failed-terminal')
+    expect(result.record.provenance).toEqual(provenance)
+    expect(result.record.attempts[0]?.provenance).toEqual(provenance)
+  })
+
   it('retains known provider provenance when correction fails retryably', async () => {
     let calls = 0
     const provenance = {
@@ -246,12 +549,13 @@ describe('lesson generation service', () => {
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider: {
+        provenance,
         async generate(request) {
           calls += 1
           if (calls === 1) {
             const draft = createEquivalentFractionsDraft(request)
             draft.variants[0].relationships[0].targetId = 'missing-target'
-            return { draft, provenance }
+            return { draft }
           }
 
           throw new LessonProviderError(
@@ -334,15 +638,15 @@ describe('lesson generation service', () => {
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider: {
+        provenance: {
+          provider: 'test-provider',
+          model: 'test-model',
+          promptTemplateVersion: 'test-prompt-v1',
+          validatorVersion: 'lesson-validator-v1',
+        },
         async generate() {
           return {
             draft: { unsafe: '<script>model output</script>' },
-            provenance: {
-              provider: 'test-provider',
-              model: 'test-model',
-              promptTemplateVersion: 'test-prompt-v1',
-              validatorVersion: 'lesson-validator-v1',
-            },
           }
         },
       },
