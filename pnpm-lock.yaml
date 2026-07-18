@@ -64,8 +64,8 @@ importers:
         specifier: 0.4.0
         version: 0.4.0(@typescript-eslint/utils@8.64.0(eslint@10.7.0(jiti@2.7.0))(typescript@6.0.2))(eslint@10.7.0(jiti@2.7.0))(typescript@6.0.2)
       '@tanstack/router-cli':
-        specifier: 1.167.19
-        version: 1.167.19
+        specifier: 1.167.21
+        version: 1.167.21
       '@types/node':
         specifier: 26.1.1
         version: 26.1.1
@@ -1068,8 +1068,8 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  '@tanstack/router-cli@1.167.19':
-    resolution: {integrity: sha512-QdgcIJ/BBaMD94RRnkUFrwOnDe5cO3fXbt3p3DklEqUCI1PpTkt7DssRsL0Hf01y0gJU7Jm1KHE4/Am72BcOZQ==}
+  '@tanstack/router-cli@1.167.21':
+    resolution: {integrity: sha512-VAWzT0f1XHJx1ORNBDCjgCRHhBck0UDBYx5yldUlZgPyuDw/ip1s9pcn8h8ZE3jdTQ5e/nF4brFE/RhRca7rRQ==}
     engines: {node: '>=20.19'}
     hasBin: true
 
@@ -1079,6 +1079,10 @@ packages:
 
   '@tanstack/router-generator@1.167.19':
     resolution: {integrity: sha512-db3AQGLinf8ZQ8AKMyxLVWwHIFZxtx+zLktvPXv/nFH/B793/Z7lKLl4dUWM3JpAluynDSVVKaTWQVTAgTYmVA==}
+    engines: {node: '>=20.19'}
+
+  '@tanstack/router-generator@1.167.21':
+    resolution: {integrity: sha512-m3oXZyienj8owialdyoZ0txHQrnEx/Ra+D9kWtar5fC2cWZr5Pvxl86VY2mX5RRLC5QLKLeRGT1x4HV95wHVDQ==}
     engines: {node: '>=20.19'}
 
   '@tanstack/router-plugin@1.168.20':
@@ -4381,9 +4385,9 @@ snapshots:
       react-dom: 19.2.7(react@19.2.7)
       use-sync-external-store: 1.6.0(react@19.2.7)
 
-  '@tanstack/router-cli@1.167.19':
+  '@tanstack/router-cli@1.167.21':
     dependencies:
-      '@tanstack/router-generator': 1.167.19
+      '@tanstack/router-generator': 1.167.21
       chokidar: 5.0.0
       yargs: 17.7.3
     transitivePeerDependencies:
@@ -4397,6 +4401,19 @@ snapshots:
       seroval-plugins: 1.5.5(seroval@1.5.5)
 
   '@tanstack/router-generator@1.167.19':
+    dependencies:
+      '@babel/types': 7.29.7
+      '@tanstack/router-core': 1.171.15
+      '@tanstack/router-utils': 1.162.2
+      '@tanstack/virtual-file-routes': 1.162.0
+      jiti: 2.7.0
+      magic-string: 0.30.21
+      prettier: 3.9.5
+      zod: 4.4.3
+    transitivePeerDependencies:
+      - supports-color
+
+  '@tanstack/router-generator@1.167.21':
     dependencies:
       '@babel/types': 7.29.7
       '@tanstack/router-core': 1.171.15
