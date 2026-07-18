@@ -22,7 +22,7 @@ This is not a generic worksheet generator or chat wrapper. The differentiator is
 
 ## The critical journey
 
-The issue graph describes one vertical slice. The sequence below is the intended order, not a claim that all steps are shipped. Issue #3’s canonical structural generation and recovery seam is shipped; the later gates and learner loop are not.
+The issue graph describes one vertical slice. The sequence below is the intended order, not a claim that all steps are shipped. Issue #3’s canonical structural generation and recovery seam and issue #18’s bounded semantic validation are shipped; the later gates and learner loop are not.
 
 ```mermaid
 flowchart LR
@@ -113,7 +113,7 @@ The lowest unresolved layer is observed behaviour. The detailed [synthesis and r
 ### Now
 
 - Treat [issue #27](https://github.com/abodacs/edu-canvas/issues/27) as a correctness blocker and keep the learner-safe claim out of the UI/docs until it is fixed.
-- [Issue #3](https://github.com/abodacs/edu-canvas/issues/3) / [PR #24](https://github.com/abodacs/edu-canvas/pull/24) is delivered; next is [issue #18](https://github.com/abodacs/edu-canvas/issues/18) for bounded curriculum and learning-quality validation.
+- [Issue #3](https://github.com/abodacs/edu-canvas/issues/3) / [PR #24](https://github.com/abodacs/edu-canvas/pull/24) and [issue #18](https://github.com/abodacs/edu-canvas/issues/18) are delivered; the semantic gate now persists actionable warnings and keeps blocked drafts out of the public projection.
 - Add [issue #28](https://github.com/abodacs/edu-canvas/issues/28)'s `pass` / `warning` / `hard_block` gate before preview and Share.
 - Once the #3 request shape is stable, run the one-day Knowledge Graph pilot alongside #18 and #28: pin the filtered fixture, resolve compact evidence context, validate returned evidence references, and show the teacher evidence card. Any KG or safety `hard_block` stops preview and Share; no external relationship bypasses the safety gate.
 

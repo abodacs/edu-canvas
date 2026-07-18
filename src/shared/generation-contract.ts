@@ -4,6 +4,15 @@ const gradeValues = [3, 4, 5, 6] as const
 const gradeTextValues = ['3', '4', '5', '6'] as const
 export const difficultyValues = ['support', 'on-level', 'stretch'] as const
 export const languageValues = ['en', 'ar'] as const
+export const semanticValidatorRoleValues = [
+  'curriculum',
+  'learning-quality',
+] as const
+export const semanticValidationVerdictValues = [
+  'pass',
+  'warning',
+  'block',
+] as const
 const variantKindValues = ['standard', 'scaffold', 'challenge'] as const
 export const generationStateValues = [
   'requested',
@@ -95,6 +104,11 @@ export const publicGenerationDiagnosticSchema = z
     message: z.string(),
     variantId: z.string().optional(),
     field: z.string().optional(),
+    nodeId: z.string().optional(),
+    validator: z.enum(semanticValidatorRoleValues).optional(),
+    verdict: z.enum(semanticValidationVerdictValues).optional(),
+    validatorVersion: z.string().optional(),
+    recommendation: z.string().optional(),
   })
   .strict()
 

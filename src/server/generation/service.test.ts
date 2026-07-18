@@ -8,8 +8,10 @@ import {
   createEquivalentFractionsDraft,
   LessonProviderError,
 } from './provider'
+import type { LessonDraftProvider } from './provider'
 import { createSeededPersistence } from '../persistence/seeded'
 import { createGenerationService, normalizeGenerationInput } from './service'
+import { validateSemanticLesson } from './semantic-validation'
 import type { LessonGenerationRecord } from './types'
 
 const validInput = {
@@ -91,6 +93,142 @@ describe('lesson generation service', () => {
       provider: 'deterministic-fixture',
       validatorVersion: 'lesson-validator-v2',
     })
+  })
+
+  it('keeps semantic quality warnings visible with validator provenance', async () => {
+    const service = createGenerationService({
+      persistence: createSeededPersistence(),
+      provider: createDeterministicLessonDraftProvider(),
+      requestIdFactory: () => 'draft_req_semantic_warning',
+    })
+
+    const result = await service.generate(
+      teacherCommand({
+        ...validInput,
+        idempotencyKey: 'request-semantic-warning',
+      }),
+    )
+
+    expect(result.record.state).toBe('ready-for-review')
+    expect(result.publicResult.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'VARIANT_NOT_MEANINGFULLY_DIFFERENT',
+          severity: 'warning',
+          validator: 'learning-quality',
+          verdict: 'warning',
+          validatorVersion: 'learning-quality-validator-v1',
+          recommendation: expect.any(String),
+        }),
+      ]),
+    )
+  })
+
+  it('keeps a semantically blocked draft out of the public preview seam', async () => {
+    const provider = {
+      provenance: {
+        provider: 'semantic-fixture',
+        model: 'equivalent-fractions-fixture-v1',
+        promptTemplateVersion: 'lesson-prompt-v1',
+        validatorVersion: 'lesson-validator-v2',
+      },
+      async generate(request: Parameters<LessonDraftProvider['generate']>[0]) {
+        const draft = createEquivalentFractionsDraft(request)
+        const firstVariant = draft.variants[0]
+        firstVariant.targetItems[0] = {
+          id: firstVariant.targetItems[0]?.id ?? 'target-1-1',
+          label: '3/4',
+        }
+        return { draft }
+      },
+    }
+    const service = createGenerationService({
+      persistence: createSeededPersistence(),
+      provider,
+      requestIdFactory: () => 'draft_req_semantic_block',
+    })
+
+    const result = await service.generate(
+      teacherCommand({
+        ...validInput,
+        idempotencyKey: 'request-semantic-block',
+      }),
+    )
+
+    expect(result.record.state).toBe('blocked-by-validation')
+    expect(result.record.draft).toBeUndefined()
+    expect(result.publicResult.draft).toBeNull()
+    expect(result.publicResult.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'ANSWER_MISMATCH',
+          severity: 'error',
+          validator: 'curriculum',
+          verdict: 'block',
+          validatorVersion: expect.any(String),
+        }),
+      ]),
+    )
+    expect(JSON.stringify(result.publicResult)).not.toContain('targetId')
+  })
+
+  it('keeps semantic timeout retryable and allows one explicit retry', async () => {
+    let validationCalls = 0
+    const service = createGenerationService({
+      persistence: createSeededPersistence(),
+      provider: createDeterministicLessonDraftProvider(),
+      requestIdFactory: () => 'draft_req_semantic_retry',
+      semanticValidation: async (input) => {
+        validationCalls += 1
+        if (validationCalls === 1) {
+          return {
+            status: 'retryable',
+            verdict: 'block',
+            reviews: [],
+            findings: [
+              {
+                validator: 'learning-quality',
+                validatorVersion: 'agent-timeout-fixture-v1',
+                verdict: 'block',
+                code: 'VALIDATION_TIMEOUT',
+                field: 'validation',
+                reason:
+                  'The semantic validator timed out before completing. Try this draft again.',
+              },
+            ],
+            retry: {
+              available: true,
+              message:
+                'Validation did not finish safely. Try this draft again.',
+            },
+          }
+        }
+        return validateSemanticLesson(input)
+      },
+    })
+
+    const first = await service.generate(
+      teacherCommand({
+        ...validInput,
+        idempotencyKey: 'request-semantic-timeout',
+      }),
+    )
+
+    expect(first.record.state).toBe('failed-retryable')
+    expect(first.publicResult.draft).toBeNull()
+    expect(first.publicResult.retry.available).toBe(true)
+
+    const second = await service.generate(
+      teacherCommand({
+        ...validInput,
+        idempotencyKey: 'request-semantic-retry-success',
+        retryOfRequestId: first.record.requestId,
+      }),
+    )
+
+    expect(second.record.state).toBe('ready-for-review')
+    expect(second.publicResult.draft?.variants).toHaveLength(4)
+    expect(validationCalls).toBe(2)
   })
 
   it('does not duplicate a draft when the same idempotency key is retried', async () => {

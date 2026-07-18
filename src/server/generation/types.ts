@@ -66,6 +66,11 @@ export interface GenerationDiagnostic {
   message: string
   variantId?: string
   field?: string
+  nodeId?: string
+  validator?: 'curriculum' | 'learning-quality'
+  verdict?: 'pass' | 'warning' | 'block'
+  validatorVersion?: string
+  recommendation?: string
 }
 
 export interface ValidationSuccess {

@@ -12,6 +12,15 @@ import type {
   LessonDraftProvider,
   NormalizedGenerationRequest,
 } from './provider'
+import {
+  createDemoCurriculumContext,
+  semanticValidationRunnerVersion,
+  validateSemanticLesson,
+} from './semantic-validation'
+import type {
+  SemanticValidationInput,
+  SemanticValidationReport,
+} from './semantic-validation'
 import type {
   GenerationCommand,
   GenerationDiagnostic,
@@ -54,6 +63,9 @@ export interface GenerationServiceOptions {
   safety?: ContentSafety
   now?: () => string
   requestIdFactory?: () => string
+  semanticValidation?: (
+    input: SemanticValidationInput,
+  ) => Promise<SemanticValidationReport>
 }
 
 interface NormalizedCommandInput extends NormalizedGenerationRequest {
@@ -177,6 +189,27 @@ function stateForProviderFailure(
     : 'failed-terminal'
 }
 
+function semanticValidationDiagnostics(
+  report: SemanticValidationReport,
+): GenerationDiagnostic[] {
+  return report.findings
+    .filter((finding) => finding.verdict !== 'pass')
+    .map((finding) => ({
+      severity: finding.verdict === 'warning' ? 'warning' : 'error',
+      code: finding.code,
+      message: finding.reason,
+      ...(finding.variantId ? { variantId: finding.variantId } : {}),
+      ...(finding.field ? { field: finding.field } : {}),
+      ...(finding.nodeId ? { nodeId: finding.nodeId } : {}),
+      validator: finding.validator,
+      verdict: finding.verdict,
+      validatorVersion: finding.validatorVersion,
+      ...(finding.recommendation
+        ? { recommendation: finding.recommendation }
+        : {}),
+    }))
+}
+
 function nowValue(now: () => string): string {
   return now()
 }
@@ -215,6 +248,8 @@ export function createGenerationService(options: GenerationServiceOptions) {
   const now = options.now ?? (() => new Date().toISOString())
   const requestIdFactory =
     options.requestIdFactory ?? (() => `draft_req_${randomUUID()}`)
+  const semanticValidation =
+    options.semanticValidation ?? validateSemanticLesson
 
   function resultFor(record: LessonGenerationRecord): GenerationServiceResult {
     return {
@@ -385,7 +420,7 @@ export function createGenerationService(options: GenerationServiceOptions) {
       expectedLanguage: input.language,
     })
     if (firstValidation.ok) {
-      return persistReadyDraft(
+      return persistSemanticallyValidatedDraft(
         record,
         attemptNumber,
         input,
@@ -451,7 +486,7 @@ export function createGenerationService(options: GenerationServiceOptions) {
       expectedLanguage: input.language,
     })
     if (correctedValidation.ok) {
-      return persistReadyDraft(
+      return persistSemanticallyValidatedDraft(
         record,
         attemptNumber,
         input,
@@ -473,6 +508,77 @@ export function createGenerationService(options: GenerationServiceOptions) {
       }),
     }
     return persist(record, correctionProgress.record.updatedAt)
+  }
+
+  async function persistSemanticallyValidatedDraft(
+    baseRecord: LessonGenerationRecord,
+    attemptNumber: number,
+    input: NormalizedCommandInput,
+    providerDraft: ProviderLessonDraft,
+    structuralDiagnostics: GenerationDiagnostic[],
+    correctionAttempted: boolean,
+  ): Promise<GenerationServiceResult> {
+    let report: SemanticValidationReport
+    try {
+      report = await semanticValidation({
+        draft: providerDraft,
+        context: createDemoCurriculumContext(input),
+      })
+    } catch {
+      const diagnostics = [
+        ...structuralDiagnostics,
+        {
+          ...diagnostic(
+            'SEMANTIC_VALIDATION_UNAVAILABLE',
+            'Semantic validation could not complete safely. Try this draft again.',
+          ),
+          validatorVersion: semanticValidationRunnerVersion,
+        },
+      ]
+      const record: LessonGenerationRecord = {
+        ...baseRecord,
+        state: 'failed-retryable',
+        diagnostics,
+        draft: undefined,
+        updatedAt: nowValue(now),
+        attempts: updateAttempt(baseRecord, attemptNumber, {
+          state: 'failed-retryable',
+          diagnostics,
+        }),
+      }
+      return persist(record, baseRecord.updatedAt)
+    }
+
+    const semanticDiagnostics = semanticValidationDiagnostics(report)
+    const diagnostics = [...structuralDiagnostics, ...semanticDiagnostics]
+    if (report.status === 'retryable' || report.verdict === 'block') {
+      const state: GenerationState =
+        report.status === 'retryable'
+          ? 'failed-retryable'
+          : 'blocked-by-validation'
+      const record: LessonGenerationRecord = {
+        ...baseRecord,
+        state,
+        diagnostics,
+        draft: undefined,
+        updatedAt: nowValue(now),
+        attempts: updateAttempt(baseRecord, attemptNumber, {
+          state,
+          correctionAttempted,
+          diagnostics,
+        }),
+      }
+      return persist(record, baseRecord.updatedAt)
+    }
+
+    return persistReadyDraft(
+      baseRecord,
+      attemptNumber,
+      input,
+      providerDraft,
+      diagnostics,
+      correctionAttempted,
+    )
   }
 
   async function persistReadyDraft(

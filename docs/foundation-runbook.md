@@ -1,7 +1,8 @@
-# Foundation and lesson-generation runbook — issues #2–#3
+# Foundation and lesson-generation runbook — issues #2–#3, #18
 
-This runbook covers the deployable walking-skeleton foundation and the first
-teacher authoring slice. Lesson drafts are validated, persisted, and kept in a
+This runbook covers the deployable walking-skeleton foundation, the first
+teacher authoring slice, and bounded semantic validation. Lesson drafts are
+structurally and semantically reviewed, persisted, and kept in a
 teacher-review state; A2UI compilation, approval, publication, grading, and
 adaptation remain later slices.
 
@@ -104,12 +105,15 @@ For teacher lesson generation, the trace is:
 3. `src/server/generation/service.ts` applies safety checks, idempotency, the one-shot correction rule, and the durable state machine.
 4. `src/server/generation/provider.ts` selects the deterministic fixture in seeded mode or the server-only GPT-5.6 adapter in PostgreSQL mode.
 5. `src/server/generation/validation.ts` validates the canonical lesson contract and separates warnings from blocking errors.
-6. `src/server/generation/projection.ts` strips private relationships before returning the browser-safe draft.
-7. `src/server/persistence/seeded.ts` or `src/server/persistence/postgres.ts` stores the request, attempts, diagnostics, and provenance.
+6. `src/server/generation/semantic-validation.ts` runs deterministic curriculum and learning-quality validators against the normalized draft and the pinned graph context. It checks answer relationships, graph/path direction, grade, language/RTL, accessibility, explanation quality, and meaningful variant differentiation.
+7. `src/server/generation/projection.ts` strips private relationships before returning the browser-safe draft. Semantic warnings are visible in the public diagnostics; semantic blocks and incomplete retryable validation return no draft.
+8. `src/server/persistence/seeded.ts` or `src/server/persistence/postgres.ts` stores the request, attempts, diagnostics, and provenance.
 
 The seeded teacher demo accepts `equivalent fractions for grade 4` and returns
-exactly two standard variants, one scaffold, and one challenge variant. A
-browser retry with the same idempotency key returns the existing attempt. The
+exactly two standard variants, one scaffold, and one challenge variant. The
+default fixture deliberately produces a teacher-visible quality warning when
+variants share the same interaction structure; this is not a rewrite of the
+canonical draft. A browser retry with the same idempotency key returns the existing attempt. The
 seeded adapter's claim is atomic within its single-process demo; the
 PostgreSQL adapter uses the database uniqueness constraint and transaction, so
 concurrent duplicate submissions cannot invoke the provider twice within the
@@ -152,5 +156,5 @@ These choices follow Google’s responsive/accessibility guidance and Core Web V
 
 - Demo identities are seeded role fixtures, not production authentication. This is an explicit demo limitation.
 - PostgreSQL is optional in clean-demo mode; a deployed production environment should use managed PostgreSQL and verify the forced row-level policy path with a least-privilege database role.
-- Issue #18 adds bounded curriculum and learning-quality validation; issue #28 adds the hard safety gate; issue #4 consumes only accepted drafts for allowlisted A2UI preview. SSE transport, teacher approval/publication, grading, and adaptation remain follow-up slices. A generated lesson is never auto-published.
+- Issue #18's bounded curriculum and learning-quality validation is shipped; issue #28 adds the cross-cutting hard safety gate; issue #4 consumes only accepted drafts for allowlisted A2UI preview. SSE transport, teacher approval/publication, grading, and adaptation remain follow-up slices. A generated lesson is never auto-published.
 - The real-student compliance gate (DPA, EU residency, security, and consent) remains closed.
