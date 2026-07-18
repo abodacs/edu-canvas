@@ -15,6 +15,7 @@ Edu-Canvas generates lesson UI from GPT-5.6 output. Letting the model emit arbit
 
 ## Decision
 **Option A.** The model emits a *lesson draft* (normalized domain model — Q25/Q87); the **server validates + compiles** it into A2UI v0.9.1 messages from a fixed Edu-Canvas catalog.
+
 - **Transport:** SSE server→client streaming; HTTPS client→server actions (Q82).
 - **Catalog:** versioned + immutable; breaking changes ship under a new catalog ID; client advertises supported versions (Q85).
 - **Allowlisted actions only:** `selectSource`, `selectTarget`, `clearSelection`, `requestHint`, `submitAttempt`, `undoInk`, `clearInk`, `saveProgress` (Q84).
@@ -32,3 +33,13 @@ Edu-Canvas generates lesson UI from GPT-5.6 output. Letting the model emit arbit
 
 ## Artifacts
 PRD grill log Q25, Q78–86, Q87 · `docs/security/threat-model.md` (A2UI trust boundary) · `docs/walking-skeleton.md` AC #3
+
+## Issue #4 implementation boundary
+
+The first catalog slice is intentionally narrow: `matching-v1` exposes
+`Column`, `Row`, `Card`, `Text`, `MatchCard`, `Button`, and `Status`, plus the
+matching-selection action allowlist. `GET /api/a2ui/preview` accepts only the
+seeded teacher's persisted `ready-for-review` draft, emits pinned `v0.9.1`
+messages over SSE, and the browser applies them through a semantic DOM
+renderer. The route is a preview seam, not approval, publication, grading, or
+student delivery; the hard safety gate remains issue #28 work.

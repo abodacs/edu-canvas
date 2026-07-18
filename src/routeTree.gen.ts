@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoRoleRouteImport } from './routes/demo/$role'
 import { Route as ApiReadinessRouteImport } from './routes/api/readiness'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as ApiA2uiPreviewRouteImport } from './routes/api/a2ui/preview'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +35,25 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
   path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiA2uiPreviewRoute = ApiA2uiPreviewRouteImport.update({
+  id: '/api/a2ui/preview',
+  path: '/api/a2ui/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/health': typeof ApiHealthRoute
   '/api/readiness': typeof ApiReadinessRoute
   '/demo/$role': typeof DemoRoleRoute
+  '/api/a2ui/preview': typeof ApiA2uiPreviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/health': typeof ApiHealthRoute
   '/api/readiness': typeof ApiReadinessRoute
   '/demo/$role': typeof DemoRoleRoute
+  '/api/a2ui/preview': typeof ApiA2uiPreviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,22 @@ export interface FileRoutesById {
   '/api/health': typeof ApiHealthRoute
   '/api/readiness': typeof ApiReadinessRoute
   '/demo/$role': typeof DemoRoleRoute
+  '/api/a2ui/preview': typeof ApiA2uiPreviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/health' | '/api/readiness' | '/demo/$role'
+  fullPaths:
+    '/' | '/api/health' | '/api/readiness' | '/demo/$role' | '/api/a2ui/preview'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/health' | '/api/readiness' | '/demo/$role'
-  id: '__root__' | '/' | '/api/health' | '/api/readiness' | '/demo/$role'
+  to:
+    '/' | '/api/health' | '/api/readiness' | '/demo/$role' | '/api/a2ui/preview'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/health'
+    | '/api/readiness'
+    | '/demo/$role'
+    | '/api/a2ui/preview'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +84,7 @@ export interface RootRouteChildren {
   ApiHealthRoute: typeof ApiHealthRoute
   ApiReadinessRoute: typeof ApiReadinessRoute
   DemoRoleRoute: typeof DemoRoleRoute
+  ApiA2uiPreviewRoute: typeof ApiA2uiPreviewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +117,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/a2ui/preview': {
+      id: '/api/a2ui/preview'
+      path: '/api/a2ui/preview'
+      fullPath: '/api/a2ui/preview'
+      preLoaderRoute: typeof ApiA2uiPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +132,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiHealthRoute: ApiHealthRoute,
   ApiReadinessRoute: ApiReadinessRoute,
   DemoRoleRoute: DemoRoleRoute,
+  ApiA2uiPreviewRoute: ApiA2uiPreviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

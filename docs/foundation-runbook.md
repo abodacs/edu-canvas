@@ -1,10 +1,10 @@
-# Foundation and lesson-generation runbook — issues #2–#3, #18
+# Foundation and lesson-generation runbook — issues #2–#4, #18
 
 This runbook covers the deployable walking-skeleton foundation, the first
-teacher authoring slice, and bounded semantic validation. Lesson drafts are
-structurally and semantically reviewed, persisted, and kept in a
-teacher-review state; A2UI compilation, approval, publication, grading, and
-adaptation remain later slices.
+teacher authoring slice, bounded semantic validation, and the allowlisted A2UI
+teacher preview. Lesson drafts are structurally and semantically reviewed,
+persisted, and kept in a teacher-review state; approval, publication, grading,
+and adaptation remain later slices.
 
 ## Clean checkout
 
@@ -123,6 +123,26 @@ abandoned `generating` claim transitions to `failed-retryable` through a
 tenant- and timestamp-scoped compare-and-swap, and final writes use the same
 ownership guard so an expired worker cannot overwrite a later retry.
 
+For a teacher preview, the route trace is:
+
+1. `src/routes/api/a2ui/preview.ts` delegates to
+   `src/server/a2ui/preview.server.ts`, which validates the teacher role,
+   request ID, pinned catalog version, tenant, and persisted ready-for-review
+   draft.
+2. `src/server/a2ui/compiler.ts` projects only the public lesson fields into
+   four A2UI v0.9.1 surfaces from the immutable `matching-v1` catalog.
+3. `src/server/a2ui/stream.ts` validates each message again and emits the
+   surfaces over `text/event-stream`, ending with a surface-count completion
+   event.
+4. `src/components/a2ui/preview-stream.ts` and
+   `src/components/a2ui/renderer.ts` validate and apply the stream before
+   `src/components/a2ui/lesson-preview.tsx` renders semantic DOM controls.
+
+The preview intentionally carries no answer key, mastery, permissions,
+provenance, or raw provider data. Unknown components/actions, unsupported
+catalog or protocol versions, executable markup, arbitrary styling, and
+duplicate component IDs produce a recoverable blocked state.
+
 ## Health and readiness
 
 - `GET /api/health` is a cheap liveness check. It does not touch PostgreSQL.
@@ -156,5 +176,5 @@ These choices follow Google’s responsive/accessibility guidance and Core Web V
 
 - Demo identities are seeded role fixtures, not production authentication. This is an explicit demo limitation.
 - PostgreSQL is optional in clean-demo mode; a deployed production environment should use managed PostgreSQL and verify the forced row-level policy path with a least-privilege database role.
-- Issue #18's bounded curriculum and learning-quality validation is shipped; issue #28 adds the cross-cutting hard safety gate; issue #4 consumes only accepted drafts for allowlisted A2UI preview. SSE transport, teacher approval/publication, grading, and adaptation remain follow-up slices. A generated lesson is never auto-published.
+- Issue #18's bounded curriculum and learning-quality validation and issue #4's allowlisted semantic A2UI preview are shipped; issue #28 still adds the cross-cutting hard safety gate. Teacher approval/publication, grading, and adaptation remain follow-up slices. A generated lesson is never auto-published.
 - The real-student compliance gate (DPA, EU residency, security, and consent) remains closed.
