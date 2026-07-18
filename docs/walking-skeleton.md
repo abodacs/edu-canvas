@@ -2,7 +2,7 @@
 
 > The thinnest end-to-end slice through **every architectural layer**. **Kept** — full SDLC, the product grows on top of it. Not a spike, not throwaway. This is the 48-hour Devpost competition cut; the full production PRD is explicitly out of scope here.
 
-> **Status note:** this is a target contract, not a claim that every step is shipped. The foundation in [issue #2](https://github.com/abodacs/edu-canvas/issues/2) and the canonical structural generation slice in [issue #3](https://github.com/abodacs/edu-canvas/issues/3) are shipped; curriculum-quality validation, hard safety, A2UI preview, and the downstream loop remain in the [open issue graph](https://github.com/abodacs/edu-canvas/issues). The current preview correctness blocker is recorded in [issue #27](https://github.com/abodacs/edu-canvas/issues/27). See [`docs/product-strategy.md`](product-strategy.md) for the issue-driven order and seven-layer audit.
+> **Status note:** this is a target contract, not a claim that every step is shipped. The foundation in [issue #2](https://github.com/abodacs/edu-canvas/issues/2), the canonical structural generation slice in [issue #3](https://github.com/abodacs/edu-canvas/issues/3), and bounded curriculum/learning-quality validation in [issue #18](https://github.com/abodacs/edu-canvas/issues/18) are shipped; the hard safety gate, A2UI preview, and downstream loop remain in the [open issue graph](https://github.com/abodacs/edu-canvas/issues). The current preview correctness blocker is recorded in [issue #27](https://github.com/abodacs/edu-canvas/issues/27). See [`docs/product-strategy.md`](product-strategy.md) for the issue-driven order and seven-layer audit.
 
 ## The one loop
 
@@ -47,7 +47,7 @@ connection reveal → next activity → teacher reason
 
 ## Current issue-driven gaps
 
-- [Issue #3](https://github.com/abodacs/edu-canvas/issues/3) ships the canonical structural generation and recovery seam; [issue #18](https://github.com/abodacs/edu-canvas/issues/18) adds bounded curriculum and learning-quality validation.
+- [Issue #3](https://github.com/abodacs/edu-canvas/issues/3) ships the canonical structural generation and recovery seam; [issue #18](https://github.com/abodacs/edu-canvas/issues/18) ships bounded curriculum and learning-quality validation.
 - [Issue #28](https://github.com/abodacs/edu-canvas/issues/28) adds the hard safety gates that must sit before preview and Share. [Issue #27](https://github.com/abodacs/edu-canvas/issues/27) is an open correctness bug in the landing preview: a distractor-only selection can produce a success reveal, so the preview is not yet learner-safe.
 - The reverse prerequisite path and forward story are tracked in [issues #17](https://github.com/abodacs/edu-canvas/issues/17) and [#19](https://github.com/abodacs/edu-canvas/issues/19). The teacher/student loop then proceeds through [#4–#11](https://github.com/abodacs/edu-canvas/issues/4).
 - Generalizing the catalog, standards packs, and bounded multi-page flows is later work in [issues #29–#31](https://github.com/abodacs/edu-canvas/issues/29); do not widen the demo before the core loop is trustworthy.
