@@ -40,7 +40,7 @@
     "@sentry/node": "10.66.0",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
-    "lucide-react": "1.24.0",
+    "lucide-react": "1.25.0",
     "nitro": "3.0.260610-beta",
     "postgres": "3.4.9",
     "react": "19.2.7",
