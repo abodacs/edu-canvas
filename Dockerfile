@@ -2,7 +2,7 @@ FROM node:26-bookworm-slim@sha256:2d49d876e96237d76de412761cf05dbfe5aee325cc4406
 
 WORKDIR /app
 
-RUN corepack enable && corepack install --global pnpm@10.17.1
+RUN npm install --global pnpm@10.17.1
 
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
