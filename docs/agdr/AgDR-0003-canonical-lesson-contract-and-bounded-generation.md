@@ -22,6 +22,7 @@ Issue #3 needs a useful teacher authoring path without letting model output beco
 - The service performs exactly one correction attempt after a validation error. A second validation failure remains `blocked-by-validation` and requires an explicit teacher retry.
 - Timeout, rate-limit, and transient provider failures retain safe diagnostics in retryable states. Moderation blocks retain request metadata but never return unsafe content.
 - Every attempt records provider/model/prompt-template/validator provenance and the idempotency key.
+- In-flight claims have a bounded lease. Duplicate resolution waits for a bounded window, expiry uses a tenant/request/timestamp compare-and-swap, and terminal writes retain the same ownership guard so an expired worker cannot overwrite a later retry.
 - The persistence seam claims an idempotency key atomically before provider work; concurrent duplicates reuse the persisted request rather than starting a second provider call.
 
 ## Consequences

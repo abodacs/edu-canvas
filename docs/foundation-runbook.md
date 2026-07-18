@@ -106,10 +106,15 @@ For teacher lesson generation, the trace is:
 
 The seeded teacher demo accepts `equivalent fractions for grade 4` and returns
 exactly two standard variants, one scaffold, and one challenge variant. A
-browser retry with the same idempotency key returns the existing attempt;
-the claim is atomic in both persistence adapters, so concurrent duplicate
-submissions cannot invoke the provider twice. `Try this draft again` creates a
-new attempt on the same request history.
+browser retry with the same idempotency key returns the existing attempt. The
+seeded adapter's claim is atomic within its single-process demo; the
+PostgreSQL adapter uses the database uniqueness constraint and transaction, so
+concurrent duplicate submissions cannot invoke the provider twice within the
+configured deployment. `Try this draft again` creates a new attempt on the
+same request history. Duplicate readers wait for a bounded window; an
+abandoned `generating` claim transitions to `failed-retryable` through a
+tenant- and timestamp-scoped compare-and-swap, and final writes use the same
+ownership guard so an expired worker cannot overwrite a later retry.
 
 ## Health and readiness
 

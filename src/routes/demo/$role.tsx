@@ -375,7 +375,9 @@ function GenerationResult({ result, onRetry }: GenerationResultProps) {
       <p className="sr-only" role="status">
         {result.state === 'ready-for-review'
           ? 'Four lesson variants are ready for teacher review.'
-          : `Generation state: ${result.state.replaceAll('-', ' ')}`}
+          : result.state === 'generating'
+            ? 'A duplicate request is still being completed.'
+            : `Generation state: ${result.state.replaceAll('-', ' ')}`}
       </p>
       <div className="generation-result__header">
         <div>
@@ -383,12 +385,18 @@ function GenerationResult({ result, onRetry }: GenerationResultProps) {
           <h3>
             {result.state === 'ready-for-review'
               ? 'Four variants are ready for teacher review.'
-              : result.state.replaceAll('-', ' ')}
+              : result.state === 'generating'
+                ? 'Generation is still in progress.'
+                : result.state.replaceAll('-', ' ')}
           </h3>
         </div>
         <Badge
           variant={
-            result.state === 'ready-for-review' ? 'default' : 'destructive'
+            result.state === 'ready-for-review'
+              ? 'default'
+              : result.state === 'generating'
+                ? 'secondary'
+                : 'destructive'
           }
         >
           Attempt {result.attempt}

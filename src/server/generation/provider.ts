@@ -36,7 +36,6 @@ export interface ProviderGenerationContext {
 
 export interface ProviderResponse {
   draft: unknown
-  provenance: ProviderProvenance
 }
 
 export type ProviderFailureKind =
@@ -45,22 +44,17 @@ export type ProviderFailureKind =
 export class LessonProviderError extends Error {
   readonly kind: ProviderFailureKind
   readonly safeMessage: string
-  readonly provenance?: ProviderProvenance
 
-  constructor(
-    kind: ProviderFailureKind,
-    safeMessage: string,
-    provenance?: ProviderProvenance,
-  ) {
+  constructor(kind: ProviderFailureKind, safeMessage: string) {
     super(safeMessage)
     this.name = 'LessonProviderError'
     this.kind = kind
     this.safeMessage = safeMessage
-    this.provenance = provenance
   }
 }
 
 export interface LessonDraftProvider {
+  readonly provenance: ProviderProvenance
   generate: (
     request: NormalizedGenerationRequest,
     context: ProviderGenerationContext,
@@ -201,6 +195,7 @@ export function createDeterministicLessonDraftProvider(
   }
 
   return {
+    provenance,
     get calls() {
       return calls
     },
@@ -212,7 +207,6 @@ export function createDeterministicLessonDraftProvider(
         throw new LessonProviderError(
           'timeout',
           'The lesson provider timed out. Try again.',
-          provenance,
         )
       }
 
@@ -220,7 +214,6 @@ export function createDeterministicLessonDraftProvider(
         throw new LessonProviderError(
           'rate-limit',
           'The lesson provider is busy. Try again in a moment.',
-          provenance,
         )
       }
 
@@ -236,7 +229,6 @@ export function createDeterministicLessonDraftProvider(
 
       return {
         draft,
-        provenance,
       }
     },
   }
@@ -302,6 +294,7 @@ export function createOpenAILessonDraftProvider(
   }
 
   return {
+    provenance,
     async generate(request, context) {
       let response: Response
       try {
@@ -332,7 +325,6 @@ export function createOpenAILessonDraftProvider(
         throw new LessonProviderError(
           'timeout',
           'The lesson provider could not be reached. Try again.',
-          provenance,
         )
       }
 
@@ -341,27 +333,23 @@ export function createOpenAILessonDraftProvider(
           throw new LessonProviderError(
             'timeout',
             'The lesson provider timed out. Try again.',
-            provenance,
           )
         }
         if (response.status === 429) {
           throw new LessonProviderError(
             'rate-limit',
             'The lesson provider is busy. Try again in a moment.',
-            provenance,
           )
         }
         if (response.status >= 500) {
           throw new LessonProviderError(
             'transient',
             'The lesson provider is temporarily unavailable. Try again.',
-            provenance,
           )
         }
         throw new LessonProviderError(
           'terminal',
           'The lesson provider rejected this generation request.',
-          provenance,
         )
       }
 
@@ -372,7 +360,6 @@ export function createOpenAILessonDraftProvider(
         throw new LessonProviderError(
           'terminal',
           'The lesson provider returned an unreadable response.',
-          provenance,
         )
       }
 
@@ -383,7 +370,6 @@ export function createOpenAILessonDraftProvider(
         throw new LessonProviderError(
           'terminal',
           'The lesson provider returned malformed lesson content.',
-          provenance,
         )
       }
 
@@ -391,13 +377,11 @@ export function createOpenAILessonDraftProvider(
         throw new LessonProviderError(
           'terminal',
           'The lesson provider returned no lesson content.',
-          provenance,
         )
       }
 
       return {
         draft,
-        provenance,
       }
     },
   }
