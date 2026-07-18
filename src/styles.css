@@ -288,7 +288,8 @@ h2 {
   color: var(--primary);
 }
 
-.fixture-section {
+.fixture-section,
+.generation-section {
   margin-block-start: clamp(4rem, 10vw, 8rem);
 }
 
@@ -314,7 +315,8 @@ h2 {
   text-decoration-color: currentColor;
 }
 
-.fixture-grid {
+.fixture-grid,
+.variant-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
   gap: 1rem;
@@ -863,6 +865,222 @@ h2 {
   text-transform: capitalize;
 }
 
+/* Demo: teacher lesson generation (issue #3). The shared section/fragment
+   selectors above pair this surface with the seeded-fixture proof it lands
+   into. */
+.generation-section {
+  padding-block-start: clamp(2rem, 5vw, 4rem);
+  border-block-start: 1px solid var(--border);
+}
+
+.generation-section .section-heading {
+  align-items: flex-start;
+}
+
+.section-description {
+  max-inline-size: 58ch;
+  margin-block-start: 0.85rem;
+  color: var(--muted-foreground);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.generation-form {
+  display: grid;
+  gap: 1.25rem;
+  padding-block: 1.5rem;
+  padding-inline: clamp(1rem, 3vw, 2rem);
+  border: 1px solid var(--border);
+  background: color-mix(in oklch, var(--card) 86%, var(--accent));
+}
+
+.generation-form__prompt,
+.field-group {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.generation-form label {
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.generation-form textarea,
+.generation-form select {
+  min-block-size: 2.75rem;
+  border: 1px solid var(--input);
+  border-radius: 0.55rem;
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+}
+
+.generation-form textarea {
+  inline-size: 100%;
+  min-block-size: 6rem;
+  padding-block: 0.75rem;
+  padding-inline: 0.85rem;
+  resize: vertical;
+}
+
+.generation-form select {
+  inline-size: 100%;
+  padding-inline: 0.75rem;
+}
+
+.generation-form select:disabled {
+  opacity: 1;
+}
+
+.generation-form__fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 1rem;
+}
+
+.generation-form__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+
+.field-hint {
+  color: var(--muted-foreground);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.generation-status {
+  min-block-size: 1.75rem;
+  padding-block-start: 0.75rem;
+  color: var(--muted-foreground);
+  font-size: 0.86rem;
+}
+
+.generation-status p {
+  margin: 0;
+}
+
+.generation-error {
+  color: var(--destructive);
+  font-weight: 700;
+}
+
+.generation-result {
+  display: grid;
+  gap: 1.5rem;
+  margin-block-start: 2rem;
+  padding-block-start: 1.5rem;
+  border-block-start: 1px solid var(--border);
+}
+
+.generation-result__header,
+.variant-preview__heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.generation-result h3,
+.variant-preview h4 {
+  margin: 0;
+  letter-spacing: -0.03em;
+}
+
+.generation-result h3 {
+  max-inline-size: 32ch;
+  font-size: clamp(1.25rem, 2.2vw, 1.8rem);
+}
+
+.variant-preview h4 {
+  font-size: 1.05rem;
+}
+
+.diagnostic-list,
+.variant-preview ul {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.diagnostic-list {
+  border-block: 1px solid var(--border);
+}
+
+.diagnostic-list li {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  padding-block: 0.75rem;
+}
+
+.diagnostic-list li + li {
+  border-block-start: 1px solid var(--border);
+}
+
+.diagnostic-list strong {
+  color: var(--primary);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.diagnostic-list span {
+  color: var(--muted-foreground);
+  font-size: 0.86rem;
+}
+
+.variant-list {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+}
+
+.variant-preview {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+  min-inline-size: 0;
+  padding-block: 1rem;
+  padding-inline: 1rem;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+
+.variant-preview__heading > span {
+  flex: none;
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+}
+
+.variant-preview > p {
+  color: var(--muted-foreground);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.variant-preview__items {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  min-inline-size: 0;
+}
+
+.variant-preview__items strong {
+  display: block;
+  margin-block-end: 0.5rem;
+  font-size: 0.76rem;
+}
+
+.variant-preview li {
+  overflow-wrap: anywhere;
+  color: var(--muted-foreground);
+  font-size: 0.82rem;
+}
+
 @media (max-width: 52rem) {
   .page-grid--hero,
   .page-grid--details {
@@ -909,6 +1127,20 @@ h2 {
 
   .site-footer {
     gap: 0.75rem;
+  }
+
+  .generation-form__actions,
+  .generation-form__actions > * {
+    inline-size: 100%;
+  }
+
+  .generation-result__header,
+  .variant-preview__heading {
+    flex-direction: column;
+  }
+
+  .variant-preview__items {
+    grid-template-columns: 1fr;
   }
 }
 
