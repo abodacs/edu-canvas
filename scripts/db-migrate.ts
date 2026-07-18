@@ -1,13 +1,25 @@
+import { readDatabaseBootstrapConfig } from '@/server/config'
+
 import { runDatabaseMigrations } from './db-migrate-runtime.mjs'
 
 function getDatabaseUrl(): string {
-  const databaseUrl = process.env.DATABASE_URL?.trim()
-  if (!databaseUrl) {
-    console.error('Database migration requires DATABASE_URL.')
+  const config = readDatabaseBootstrapConfig(process.env)
+  if (config.issues.length > 0 || !config.databaseUrl) {
+    console.error(
+      JSON.stringify(
+        {
+          message:
+            'Database migration requires a valid DATABASE_URL and synthetic data mode.',
+          issues: config.issues,
+        },
+        null,
+        2,
+      ),
+    )
     throw new Error('Database migration configuration is invalid.')
   }
 
-  return databaseUrl
+  return config.databaseUrl
 }
 
 async function main() {

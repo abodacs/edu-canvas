@@ -33,6 +33,12 @@ export interface ServerConfig {
   issues: readonly ConfigIssue[]
 }
 
+export interface DatabaseBootstrapConfig {
+  syntheticDataOnly: true
+  databaseUrl?: string
+  issues: readonly ConfigIssue[]
+}
+
 const databaseUrlSchema = z.string().refine((value) => {
   try {
     const url = new URL(value)
@@ -79,10 +85,50 @@ function parseBoolean(
   return { value: fallback, invalid: true }
 }
 
+export function readDatabaseBootstrapConfig(
+  env: Record<string, string | undefined> = process.env,
+): DatabaseBootstrapConfig {
+  const issues: ConfigIssue[] = []
+  const syntheticDataOnlyResult = parseBoolean(env.SYNTHETIC_DATA_ONLY, true)
+  const syntheticDataOnly = syntheticDataOnlyResult.value
+
+  if (syntheticDataOnlyResult.invalid) {
+    issues.push({
+      code: 'INVALID_SYNTHETIC_DATA_ONLY',
+      field: 'SYNTHETIC_DATA_ONLY',
+      message: 'SYNTHETIC_DATA_ONLY must be true or false.',
+    })
+  }
+  if (!syntheticDataOnly) {
+    issues.push({
+      code: 'REAL_DATA_DISABLED',
+      field: 'SYNTHETIC_DATA_ONLY',
+      message:
+        'Real-student mode is disabled until the compliance launch gate is approved.',
+    })
+  }
+
+  const databaseUrl = env.DATABASE_URL?.trim() || undefined
+  if (databaseUrl && !databaseUrlSchema.safeParse(databaseUrl).success) {
+    issues.push({
+      code: 'INVALID_DATABASE_URL',
+      field: 'DATABASE_URL',
+      message: 'DATABASE_URL must be a postgres:// or postgresql:// URL.',
+    })
+  }
+
+  return {
+    syntheticDataOnly: true,
+    ...(databaseUrl ? { databaseUrl } : {}),
+    issues,
+  }
+}
+
 export function readServerConfig(
   env: Record<string, string | undefined> = process.env,
 ): ServerConfig {
-  const issues: ConfigIssue[] = []
+  const databaseConfig = readDatabaseBootstrapConfig(env)
+  const issues: ConfigIssue[] = [...databaseConfig.issues]
   const requestedEnv =
     env.APP_ENV ??
     (env.NODE_ENV === 'production' ? 'production' : 'development')
@@ -108,32 +154,8 @@ export function readServerConfig(
     })
   }
 
-  const syntheticDataOnlyResult = parseBoolean(env.SYNTHETIC_DATA_ONLY, true)
-  const syntheticDataOnly = syntheticDataOnlyResult.value
-  if (syntheticDataOnlyResult.invalid) {
-    issues.push({
-      code: 'INVALID_SYNTHETIC_DATA_ONLY',
-      field: 'SYNTHETIC_DATA_ONLY',
-      message: 'SYNTHETIC_DATA_ONLY must be true or false.',
-    })
-  }
-  if (!syntheticDataOnly) {
-    issues.push({
-      code: 'REAL_DATA_DISABLED',
-      field: 'SYNTHETIC_DATA_ONLY',
-      message:
-        'Real-student mode is disabled until the compliance launch gate is approved.',
-    })
-  }
-
-  const databaseUrl = env.DATABASE_URL?.trim() || undefined
-  if (databaseUrl && !databaseUrlSchema.safeParse(databaseUrl).success) {
-    issues.push({
-      code: 'INVALID_DATABASE_URL',
-      field: 'DATABASE_URL',
-      message: 'DATABASE_URL must be a postgres:// or postgresql:// URL.',
-    })
-  }
+  const syntheticDataOnly = databaseConfig.syntheticDataOnly
+  const databaseUrl = databaseConfig.databaseUrl
 
   const sentryDsnValue = env.SENTRY_DSN?.trim() || undefined
   const sentryDsn =
@@ -181,7 +203,7 @@ export function readServerConfig(
   return {
     appEnv,
     demoMode,
-    syntheticDataOnly: true,
+    syntheticDataOnly,
     mode: databaseUrl ? 'postgres' : 'seeded-demo',
     ...(databaseUrl ? { databaseUrl } : {}),
     ...(sentryDsn ? { sentryDsn } : {}),

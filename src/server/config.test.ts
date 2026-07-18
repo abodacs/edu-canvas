@@ -1,8 +1,37 @@
 import { describe, expect, it } from 'vitest'
 
-import { readServerConfig, safeConfigSummary } from './config'
+import {
+  readDatabaseBootstrapConfig,
+  readServerConfig,
+  safeConfigSummary,
+} from './config'
 
 describe('server configuration', () => {
+  it('keeps synthetic database bootstrap independent of provider credentials', () => {
+    const config = readDatabaseBootstrapConfig({
+      APP_ENV: 'preview',
+      DEMO_MODE: 'false',
+      DATABASE_URL: 'postgresql://demo:secret@db.invalid:5432/app',
+    })
+
+    expect(config).toMatchObject({
+      databaseUrl: 'postgresql://demo:secret@db.invalid:5432/app',
+      syntheticDataOnly: true,
+      issues: [],
+    })
+  })
+
+  it('rejects real-student database bootstrap mode', () => {
+    const config = readDatabaseBootstrapConfig({
+      DATABASE_URL: 'postgresql://demo:secret@db.invalid:5432/app',
+      SYNTHETIC_DATA_ONLY: 'false',
+    })
+
+    expect(config.issues).toContainEqual(
+      expect.objectContaining({ code: 'REAL_DATA_DISABLED' }),
+    )
+  })
+
   it('defaults to a ready synthetic repository for a clean checkout', () => {
     const config = readServerConfig({})
 

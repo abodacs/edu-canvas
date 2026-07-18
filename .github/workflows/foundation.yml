@@ -16,6 +16,8 @@ jobs:
       DEMO_MODE: 'false'
       SYNTHETIC_DATA_ONLY: 'true'
       DATABASE_URL: postgresql://edu_canvas:edu_canvas_dev@127.0.0.1:5432/edu_canvas
+      # Test-only value: smoke covers deterministic generation and never calls OpenAI.
+      OPENAI_API_KEY: ci-test-key
     services:
       postgres:
         image: postgres:17-alpine
@@ -55,10 +57,44 @@ jobs:
       - name: Run tests with coverage
         run: pnpm test:coverage
 
-      - name: Apply and repeat the database seed
+      - name: Apply and repeat database bootstrap
         run: |
           pnpm db:setup
+          pnpm db:migrate
           pnpm db:seed
+
+      - name: Build and smoke-test the release image
+        run: |
+          docker build --tag edu-canvas:ci .
+          docker run --detach --rm --name edu-canvas-ci \
+            --publish 3010:3000 \
+            --add-host host.docker.internal:host-gateway \
+            --env APP_ENV=preview \
+            --env DEMO_MODE=false \
+            --env SYNTHETIC_DATA_ONLY=true \
+            --env OPENAI_API_KEY=ci-test-key \
+            --env DATABASE_URL=postgresql://edu_canvas:edu_canvas_dev@host.docker.internal:5432/edu_canvas \
+            edu-canvas:ci
+          cleanup() {
+            docker rm -f edu-canvas-ci >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          test "$(docker inspect --format '{{.Config.User}}' edu-canvas-ci)" = "node"
+          docker exec edu-canvas-ci node scripts/db-migrate-runtime.mjs
+
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:3010/api/health >/dev/null; then
+              break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              exit 1
+            fi
+            sleep 1
+          done
+
+          curl --fail --silent http://127.0.0.1:3010/api/readiness
+          SMOKE_URL=http://127.0.0.1:3010 pnpm smoke
 
       - name: Smoke-test the built server
         run: |
