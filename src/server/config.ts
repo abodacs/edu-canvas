@@ -4,6 +4,7 @@ const environmentValues = ['development', 'preview', 'production'] as const
 
 export type ServerEnvironment = (typeof environmentValues)[number]
 export type PersistenceMode = 'seeded-demo' | 'postgres'
+export type PostgresPersistenceAdapter = 'postgres' | 'drizzle'
 
 export interface ConfigIssue {
   code:
@@ -11,6 +12,7 @@ export interface ConfigIssue {
     | 'INVALID_DEMO_MODE'
     | 'INVALID_SYNTHETIC_DATA_ONLY'
     | 'INVALID_DATABASE_URL'
+    | 'INVALID_PERSISTENCE_ADAPTER'
     | 'INVALID_SENTRY_DSN'
     | 'DATABASE_REQUIRED'
     | 'OPENAI_API_KEY_REQUIRED'
@@ -25,6 +27,7 @@ export interface ServerConfig {
   demoMode: boolean
   syntheticDataOnly: true
   mode: PersistenceMode
+  persistenceAdapter: PostgresPersistenceAdapter
   databaseUrl?: string
   sentryDsn?: string
   openAiApiKey?: string
@@ -47,6 +50,8 @@ const databaseUrlSchema = z.string().refine((value) => {
     return false
   }
 }, 'DATABASE_URL must be a postgres:// or postgresql:// URL.')
+
+const persistenceAdapterSchema = z.enum(['postgres', 'drizzle'])
 
 export function isValidSentryDsn(value: string): boolean {
   try {
@@ -156,6 +161,22 @@ export function readServerConfig(
 
   const syntheticDataOnly = databaseConfig.syntheticDataOnly
   const databaseUrl = databaseConfig.databaseUrl
+  const requestedPersistenceAdapter =
+    env.PERSISTENCE_ADAPTER?.trim() || 'postgres'
+  const persistenceAdapterResult = persistenceAdapterSchema.safeParse(
+    requestedPersistenceAdapter,
+  )
+  const persistenceAdapter = persistenceAdapterResult.success
+    ? persistenceAdapterResult.data
+    : 'postgres'
+
+  if (!persistenceAdapterResult.success) {
+    issues.push({
+      code: 'INVALID_PERSISTENCE_ADAPTER',
+      field: 'PERSISTENCE_ADAPTER',
+      message: 'PERSISTENCE_ADAPTER must be postgres or drizzle.',
+    })
+  }
 
   const sentryDsnValue = env.SENTRY_DSN?.trim() || undefined
   const sentryDsn =
@@ -205,6 +226,7 @@ export function readServerConfig(
     demoMode,
     syntheticDataOnly,
     mode: databaseUrl ? 'postgres' : 'seeded-demo',
+    persistenceAdapter,
     ...(databaseUrl ? { databaseUrl } : {}),
     ...(sentryDsn ? { sentryDsn } : {}),
     ...(openAiApiKey ? { openAiApiKey } : {}),

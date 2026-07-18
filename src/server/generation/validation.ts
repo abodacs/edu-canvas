@@ -62,7 +62,7 @@ const providerVariantSchema = z
   })
   .strict()
 
-const providerDraftSchema = z
+export const providerDraftSchema = z
   .object({
     variants: z.array(providerVariantSchema).length(4),
   })

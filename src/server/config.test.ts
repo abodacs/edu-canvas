@@ -40,6 +40,7 @@ describe('server configuration', () => {
       demoMode: true,
       syntheticDataOnly: true,
       mode: 'seeded-demo',
+      persistenceAdapter: 'postgres',
       issues: [],
     })
     expect(config.sentryDsn).toBeUndefined()
@@ -162,5 +163,37 @@ describe('server configuration', () => {
         'OPENAI_BASE_URL must use HTTPS, or HTTP for a local loopback test server.',
     })
     expect(config.openAiBaseUrl).toBe('https://api.openai.com/v1')
+  })
+
+  it('keeps the legacy PostgreSQL adapter as the default', () => {
+    expect(
+      readServerConfig({
+        DATABASE_URL: 'postgresql://demo:secret@db.invalid:5432/app',
+      }).persistenceAdapter,
+    ).toBe('postgres')
+  })
+
+  it('allows the Drizzle adapter to be selected server-side', () => {
+    const config = readServerConfig({
+      DATABASE_URL: 'postgresql://demo:secret@db.invalid:5432/app',
+      PERSISTENCE_ADAPTER: 'drizzle',
+    })
+
+    expect(config).toMatchObject({
+      persistenceAdapter: 'drizzle',
+      issues: [],
+    })
+    expect(JSON.stringify(safeConfigSummary(config))).not.toContain('drizzle')
+  })
+
+  it('fails safe for an unknown persistence adapter', () => {
+    const config = readServerConfig({ PERSISTENCE_ADAPTER: 'unknown' })
+
+    expect(config.persistenceAdapter).toBe('postgres')
+    expect(config.issues).toContainEqual({
+      code: 'INVALID_PERSISTENCE_ADAPTER',
+      field: 'PERSISTENCE_ADAPTER',
+      message: 'PERSISTENCE_ADAPTER must be postgres or drizzle.',
+    })
   })
 })
