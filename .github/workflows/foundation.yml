@@ -54,6 +54,9 @@ jobs:
       - name: Check Drizzle schema history
         run: pnpm db:drizzle:check
 
+      - name: Prepare database for integration checks
+        run: pnpm db:setup
+
       - name: Run release checks
         run: pnpm check
 
