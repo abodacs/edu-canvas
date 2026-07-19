@@ -287,13 +287,13 @@ export function LessonPreview({ requestId }: LessonPreviewProps) {
                 lang={activeEntry.language}
                 aria-label={activeSurface.dataModel?.accessibilityDescription}
               >
-                {renderComponent(
-                  activeSurface,
-                  'root',
-                  activeSurfaceId ?? '',
-                  handleAction,
-                  activeSelection,
-                )}
+                <A2UIComponentRenderer
+                  surface={activeSurface}
+                  componentId="root"
+                  surfaceId={activeSurfaceId ?? ''}
+                  onAction={handleAction}
+                  selection={activeSelection}
+                />
                 <p className="a2ui-selection-feedback" aria-live="polite">
                   {activeSelection?.source && activeSelection.target
                     ? 'Preview selection captured. Clear selection to try another pair.'
@@ -349,14 +349,23 @@ function PreviewLoading() {
   )
 }
 
-function renderComponent(
-  surface: A2UIRenderSurface,
-  componentId: string,
-  surfaceId: string,
-  onAction: (surfaceId: string, action: string, itemId?: string) => void,
-  selection?: SelectionState,
+interface A2UIComponentRendererProps {
+  surface: A2UIRenderSurface
+  componentId: string
+  surfaceId: string
+  onAction: (surfaceId: string, action: string, itemId?: string) => void
+  selection?: SelectionState
+  visited?: ReadonlySet<string>
+}
+
+export function A2UIComponentRenderer({
+  surface,
+  componentId,
+  surfaceId,
+  onAction,
+  selection,
   visited = new Set<string>(),
-): ReactNode {
+}: A2UIComponentRendererProps): ReactNode {
   if (visited.has(componentId)) return null
   const component = surface.components[componentId]
   if (!component) return null
@@ -367,16 +376,17 @@ function renderComponent(
       component.component === 'Column' ? 'a2ui-column' : 'a2ui-row'
     return (
       <div className={className}>
-        {component.children.map((childId) =>
-          renderComponent(
-            surface,
-            childId,
-            surfaceId,
-            onAction,
-            selection,
-            nextVisited,
-          ),
-        )}
+        {component.children.map((childId) => (
+          <A2UIComponentRenderer
+            key={childId}
+            surface={surface}
+            componentId={childId}
+            surfaceId={surfaceId}
+            onAction={onAction}
+            selection={selection}
+            visited={nextVisited}
+          />
+        ))}
       </div>
     )
   }
@@ -386,14 +396,14 @@ function renderComponent(
       <section
         className={`a2ui-card a2ui-card--${component.tone ?? 'surface'}`}
       >
-        {renderComponent(
-          surface,
-          component.child,
-          surfaceId,
-          onAction,
-          selection,
-          nextVisited,
-        )}
+        <A2UIComponentRenderer
+          surface={surface}
+          componentId={component.child}
+          surfaceId={surfaceId}
+          onAction={onAction}
+          selection={selection}
+          visited={nextVisited}
+        />
       </section>
     )
   }
