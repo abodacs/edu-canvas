@@ -94,7 +94,15 @@ function cloneSemanticValidationInput(
       edges: input.context.edges.map((edge) => ({ ...edge })),
     },
     ...(input.path
-      ? { path: { ...input.path, nodeIds: [...input.path.nodeIds] } }
+      ? {
+          path: {
+            ...input.path,
+            nodeIds: [...input.path.nodeIds],
+            ...(input.path.screenPurposeIds
+              ? { screenPurposeIds: [...input.path.screenPurposeIds] }
+              : {}),
+          },
+        }
       : {}),
   }
 }

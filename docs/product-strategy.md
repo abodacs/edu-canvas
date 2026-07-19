@@ -22,7 +22,7 @@ This is not a generic worksheet generator or chat wrapper. The differentiator is
 
 ## The critical journey
 
-The issue graph describes one vertical slice. The sequence below is the intended order, not a claim that all steps are shipped. Issue #3’s canonical structural generation and recovery seam, issue #18’s bounded semantic validation, and issue #4’s teacher preview slice are shipped; the hard safety gate and learner loop are not.
+The issue graph describes one vertical slice. The sequence below is the intended order, not a claim that all steps are shipped. Issue #3’s canonical structural generation and recovery seam, issue #18’s bounded semantic validation, issue #4’s teacher preview slice, and issue #17’s validated prerequisite-path artifact are shipped; the hard safety gate and learner loop are not.
 
 ```mermaid
 flowchart LR
@@ -119,7 +119,7 @@ The lowest unresolved layer is observed behaviour. The detailed [synthesis and r
 
 ### Next
 
-- Extend the allowlisted preview in [issue #4](https://github.com/abodacs/edu-canvas/issues/4) with the hard safety gate, then make the reverse prerequisite path ([#17](https://github.com/abodacs/edu-canvas/issues/17)) and forward learning story ([#19](https://github.com/abodacs/edu-canvas/issues/19)) visible to the teacher.
+- Extend the allowlisted preview in [issue #4](https://github.com/abodacs/edu-canvas/issues/4) with the hard safety gate, then make the forward learning story ([#19](https://github.com/abodacs/edu-canvas/issues/19)) visible alongside the shipped reverse prerequisite path ([#17](https://github.com/abodacs/edu-canvas/issues/17)).
 - Close the trusted teacher-to-student loop through approval/publish ([#5](https://github.com/abodacs/edu-canvas/issues/5)), private grading ([#6](https://github.com/abodacs/edu-canvas/issues/6)), reveal/next activity ([#7](https://github.com/abodacs/edu-canvas/issues/7)), and the teacher/student hardening issues ([#8](https://github.com/abodacs/edu-canvas/issues/8), [#9](https://github.com/abodacs/edu-canvas/issues/9), [#10](https://github.com/abodacs/edu-canvas/issues/10)).
 - Use [issue #11](https://github.com/abodacs/edu-canvas/issues/11) as release proof, not as a substitute for exercising the loop.
 

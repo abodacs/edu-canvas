@@ -283,6 +283,17 @@ function getResultTitle(state: PublicGenerationResult['state']) {
   }
 }
 
+function isTeacherReviewDiagnostic(code: string): boolean {
+  return (
+    code === 'PREREQUISITE_PACK_MISSING' ||
+    code === 'PREREQUISITE_PATH_MISSING' ||
+    code === 'LEARNING_PATH_BLOCKED' ||
+    code === 'CURRICULUM_TENANT_MISMATCH' ||
+    code === 'CURRICULUM_CONTEXT_MISMATCH' ||
+    code === 'CURRICULUM_GRAPH_VERSION_UNSUPPORTED'
+  )
+}
+
 function PromptSignals({
   context,
   standardId,
@@ -675,6 +686,9 @@ interface GenerationResultProps {
 function GenerationResult({ result, onRetry }: GenerationResultProps) {
   const direction =
     result.draft?.variants[0]?.languageMetadata.direction ?? 'ltr'
+  const requiresTeacherReview = result.diagnostics.some((diagnostic) =>
+    isTeacherReviewDiagnostic(diagnostic.code),
+  )
   const stackRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -714,9 +728,11 @@ function GenerationResult({ result, onRetry }: GenerationResultProps) {
           <p className="studio-kicker">Your first pass</p>
           <h2>{getResultTitle(result.state)}</h2>
           <p className="teacher-result__description">
-            {result.state === 'ready-for-review'
-              ? 'Look for the version that sounds like your classroom. You can review every one before anything moves forward.'
-              : 'The draft remains private while we finish the safe, reviewable handoff.'}
+            {requiresTeacherReview
+              ? 'The approved prerequisite context is unavailable, so nothing has been prepared for students.'
+              : result.state === 'ready-for-review'
+                ? 'Look for the version that sounds like your classroom. You can review every one before anything moves forward.'
+                : 'The draft remains private while we finish the safe, reviewable handoff.'}
           </p>
         </div>
         <span className={`result-state result-state--${result.state}`}>
@@ -737,12 +753,29 @@ function GenerationResult({ result, onRetry }: GenerationResultProps) {
           {result.diagnostics.map((item, index) => (
             <li key={`${item.code}-${item.variantId ?? 'draft'}-${index}`}>
               <strong>
-                {item.severity === 'error' ? 'Review this' : 'Worth noticing'}
+                {isTeacherReviewDiagnostic(item.code)
+                  ? 'Teacher review'
+                  : item.severity === 'error'
+                    ? 'Review this'
+                    : 'Worth noticing'}
               </strong>
               <span>{item.message}</span>
             </li>
           ))}
         </ul>
+      ) : null}
+
+      {requiresTeacherReview ? (
+        <section
+          className="teacher-review-state"
+          aria-label="Teacher review required"
+        >
+          <strong>Teacher review required before continuing</strong>
+          <p>
+            Check that the approved prerequisite pack is available, then try the
+            draft again. No unreviewed student content was created.
+          </p>
+        </section>
       ) : null}
 
       {result.draft ? (

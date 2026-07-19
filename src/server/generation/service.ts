@@ -20,6 +20,7 @@ import {
 import type {
   SemanticValidationInput,
   SemanticValidationReport,
+  VersionedCurriculumContext,
 } from './semantic-validation'
 import type {
   GenerationCommand,
@@ -30,9 +31,15 @@ import type {
   GenerationAttemptRecord,
   LessonGenerationRecord,
   ProviderLessonDraft,
+  ValidatedLearningPath,
 } from './types'
 import { generationDuplicateWaitMs, isGenerationClaimExpired } from './types'
 import { validateProviderDraft } from './validation'
+import {
+  buildValidatedLearningPath,
+  LearningPathBuildError,
+  toNormalizedReasoningPath,
+} from './learning-path'
 
 export class GenerationInputError extends Error {
   constructor() {
@@ -63,6 +70,9 @@ export interface GenerationServiceOptions {
   safety?: ContentSafety
   now?: () => string
   requestIdFactory?: () => string
+  curriculumContext?: (
+    input: NormalizedGenerationRequest,
+  ) => VersionedCurriculumContext | undefined
   semanticValidation?: (
     input: SemanticValidationInput,
   ) => Promise<SemanticValidationReport>
@@ -226,6 +236,39 @@ function updateAttempt(
   )
 }
 
+function curriculumContextDiagnostic(
+  context: VersionedCurriculumContext,
+  record: LessonGenerationRecord,
+  input: NormalizedCommandInput,
+): GenerationDiagnostic | undefined {
+  if (context.tenantId !== record.tenantId) {
+    return diagnostic(
+      'CURRICULUM_TENANT_MISMATCH',
+      'The approved prerequisite graph belongs to a different classroom. Teacher review is required before student content can be generated.',
+    )
+  }
+
+  if (
+    context.standardId !== input.standardId ||
+    context.grade !== input.grade ||
+    context.language !== input.language
+  ) {
+    return diagnostic(
+      'CURRICULUM_CONTEXT_MISMATCH',
+      'The approved prerequisite graph does not match this lesson request. Teacher review is required before student content can be generated.',
+    )
+  }
+
+  if (context.graphVersion !== demoSeed.activityVersion.graphVersion) {
+    return diagnostic(
+      'CURRICULUM_GRAPH_VERSION_UNSUPPORTED',
+      'The approved prerequisite graph version is not available for this lesson. Teacher review is required before student content can be generated.',
+    )
+  }
+
+  return undefined
+}
+
 function isRetryableState(state: GenerationState): boolean {
   return state === 'failed-retryable' || state === 'blocked-by-validation'
 }
@@ -286,6 +329,27 @@ export function createGenerationService(options: GenerationServiceOptions) {
   ): Promise<GenerationServiceResult> {
     const persisted = await persistOwned(record, expectedUpdatedAt)
     return resultFor(persisted.record)
+  }
+
+  async function persistBlockedDraft(
+    baseRecord: LessonGenerationRecord,
+    attemptNumber: number,
+    diagnostics: GenerationDiagnostic[],
+    correctionAttempted: boolean,
+  ): Promise<GenerationServiceResult> {
+    const record: LessonGenerationRecord = {
+      ...baseRecord,
+      state: 'blocked-by-validation',
+      diagnostics,
+      draft: undefined,
+      updatedAt: nowValue(now),
+      attempts: updateAttempt(baseRecord, attemptNumber, {
+        state: 'blocked-by-validation',
+        correctionAttempted,
+        diagnostics,
+      }),
+    }
+    return persist(record, baseRecord.updatedAt)
   }
 
   async function resolveDuplicate(
@@ -518,11 +582,62 @@ export function createGenerationService(options: GenerationServiceOptions) {
     structuralDiagnostics: GenerationDiagnostic[],
     correctionAttempted: boolean,
   ): Promise<GenerationServiceResult> {
+    if (!providerDraft.learningPath) {
+      const diagnostics = [
+        ...structuralDiagnostics,
+        diagnostic(
+          'PREREQUISITE_PATH_MISSING',
+          'The approved prerequisite path is missing. Review the draft before trying again.',
+        ),
+      ]
+      return persistBlockedDraft(
+        baseRecord,
+        attemptNumber,
+        diagnostics,
+        correctionAttempted,
+      )
+    }
+
+    const curriculumContext = options.curriculumContext
+      ? options.curriculumContext(input)
+      : createDemoCurriculumContext(input)
+    if (!curriculumContext) {
+      const diagnostics = [
+        ...structuralDiagnostics,
+        diagnostic(
+          'PREREQUISITE_PACK_MISSING',
+          'The approved prerequisite graph is unavailable. Teacher review is required before student content can be generated.',
+        ),
+      ]
+      return persistBlockedDraft(
+        baseRecord,
+        attemptNumber,
+        diagnostics,
+        correctionAttempted,
+      )
+    }
+
+    const contextDiagnostic = curriculumContextDiagnostic(
+      curriculumContext,
+      baseRecord,
+      input,
+    )
+    if (contextDiagnostic) {
+      const diagnostics = [...structuralDiagnostics, contextDiagnostic]
+      return persistBlockedDraft(
+        baseRecord,
+        attemptNumber,
+        diagnostics,
+        correctionAttempted,
+      )
+    }
+
     let report: SemanticValidationReport
     try {
       report = await semanticValidation({
         draft: providerDraft,
-        context: createDemoCurriculumContext(input),
+        context: curriculumContext,
+        path: toNormalizedReasoningPath(providerDraft.learningPath),
       })
     } catch {
       const diagnostics = [
@@ -571,11 +686,40 @@ export function createGenerationService(options: GenerationServiceOptions) {
       return persist(record, baseRecord.updatedAt)
     }
 
+    let learningPath: ValidatedLearningPath
+    try {
+      learningPath = buildValidatedLearningPath({
+        proposal: providerDraft.learningPath,
+        context: curriculumContext,
+        draftId: baseRecord.requestId,
+        provenance: baseRecord.provenance ?? options.provider.provenance,
+        validatorVersion: semanticValidationRunnerVersion,
+      })
+    } catch (error) {
+      const pathDiagnostics = [
+        ...structuralDiagnostics,
+        ...semanticDiagnostics,
+        diagnostic(
+          'LEARNING_PATH_BLOCKED',
+          error instanceof LearningPathBuildError
+            ? error.message
+            : 'The learning path could not be accepted safely. Review the draft before trying again.',
+        ),
+      ]
+      return persistBlockedDraft(
+        baseRecord,
+        attemptNumber,
+        pathDiagnostics,
+        correctionAttempted,
+      )
+    }
+
     return persistReadyDraft(
       baseRecord,
       attemptNumber,
       input,
       providerDraft,
+      learningPath,
       diagnostics,
       correctionAttempted,
     )
@@ -586,6 +730,7 @@ export function createGenerationService(options: GenerationServiceOptions) {
     attemptNumber: number,
     input: NormalizedCommandInput,
     providerDraft: ProviderLessonDraft,
+    learningPath: ValidatedLearningPath,
     diagnostics: GenerationDiagnostic[],
     correctionAttempted: boolean,
   ): Promise<GenerationServiceResult> {
@@ -593,6 +738,7 @@ export function createGenerationService(options: GenerationServiceOptions) {
     const provenance = baseRecord.provenance ?? options.provider.provenance
     const draft = {
       ...providerDraft,
+      learningPath,
       requestId: baseRecord.requestId,
       input: {
         prompt: input.prompt,

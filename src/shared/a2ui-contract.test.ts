@@ -3,6 +3,74 @@ import { describe, expect, it } from 'vitest'
 import { A2UI_CATALOG_ID, validateA2UIMessage } from './a2ui-contract'
 
 describe('Edu-Canvas A2UI catalog contract', () => {
+  it('accepts the allowlisted semantic learning-path component and safe pins', () => {
+    const result = validateA2UIMessage({
+      version: 'v0.9.1',
+      updateComponents: {
+        surfaceId: 'preview-1',
+        components: [
+          {
+            id: 'learning-path',
+            component: 'LearningPath',
+          },
+        ],
+      },
+    })
+
+    expect(result).toMatchObject({ ok: true })
+
+    const dataModel = validateA2UIMessage({
+      version: 'v0.9.1',
+      updateDataModel: {
+        surfaceId: 'preview-1',
+        path: '/',
+        value: {
+          variantId: 'variant-1',
+          purpose: 'Teach the model',
+          accessibilityDescription: 'Match each fraction.',
+          scaffold: 'Core matching scaffold',
+          standardId: 'standard_ccss_4_nf_a_01',
+          grade: 4,
+          language: 'en',
+          direction: 'ltr',
+          validationState: 'ready-for-review',
+          selectedItemIds: [],
+          learningPath: {
+            direction: 'forward',
+            steps: [
+              {
+                nodeId: 'graph_node_equal_parts',
+                label: 'Understand equal parts',
+                role: 'prerequisite',
+                screenPurposeId: 'screen_purpose_equal_parts',
+                screenPurpose: 'Show equal parts.',
+              },
+              {
+                nodeId: 'graph_node_equivalent_fractions',
+                label: 'Recognize equivalent fractions',
+                role: 'target',
+                screenPurposeId: 'screen_purpose_equivalent_fractions',
+                screenPurpose: 'Match equivalent names.',
+              },
+            ],
+            rationale: 'The prerequisite makes the target easier to see.',
+            nextScreenRationale:
+              'The matching screen makes the connection visible.',
+            versionPins: {
+              draftId: 'draft-1',
+              graphVersion: 'equivalent-fractions-v1',
+              catalogVersion: 'matching-v1',
+              modelVersion: 'fixture-v1',
+              validatorVersion: 'semantic-validation-runner-v1',
+            },
+          },
+        },
+      },
+    })
+
+    expect(dataModel).toMatchObject({ ok: true })
+  })
+
   it('accepts the pinned catalog and rejects unknown components safely', () => {
     const accepted = validateA2UIMessage({
       version: 'v0.9.1',

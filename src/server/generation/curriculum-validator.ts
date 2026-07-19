@@ -148,6 +148,43 @@ function validatePath(
     }
   }
 
+  if (path.screenPurposeIds) {
+    if (path.screenPurposeIds.length !== path.nodeIds.length) {
+      findings.push(
+        finding('curriculum', curriculumValidatorVersion, {
+          verdict: 'block',
+          code: 'PATH_SCREEN_PURPOSE_MISMATCH',
+          field: 'path.screenPurposeIds',
+          reason:
+            'Every learning-path step must reference exactly one approved screen purpose.',
+          recommendation:
+            'Attach one approved screen purpose to each ordered path step.',
+        }),
+      )
+    } else {
+      path.screenPurposeIds.forEach((screenPurposeId, index) => {
+        const nodeId = path.nodeIds[index]
+        const node = input.context.nodes.find(
+          (candidate) => candidate.id === nodeId,
+        )
+        if (!node || node.screenPurposeId !== screenPurposeId) {
+          findings.push(
+            finding('curriculum', curriculumValidatorVersion, {
+              verdict: 'block',
+              code: 'UNAPPROVED_SCREEN_PURPOSE',
+              field: 'path.screenPurposeIds',
+              ...(nodeId ? { nodeId } : {}),
+              reason:
+                'The learning path references a screen purpose that is not approved for its curriculum node.',
+              recommendation:
+                'Use the pinned screen purpose for each approved prerequisite step.',
+            }),
+          )
+        }
+      })
+    }
+  }
+
   const targetNode =
     path.direction === 'forward' ? path.nodeIds.at(-1) : path.nodeIds.at(0)
   if (targetNode !== input.context.targetNodeId) {

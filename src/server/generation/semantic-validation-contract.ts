@@ -17,6 +17,10 @@ export interface CurriculumNode {
   id: string
   label: string
   sequence: number
+  screenPurposeId: string
+  screenPurpose: string
+  labelAr?: string
+  screenPurposeAr?: string
 }
 
 export interface CurriculumEdge {
@@ -39,6 +43,7 @@ export interface VersionedCurriculumContext {
 export interface NormalizedReasoningPath {
   direction: 'forward' | 'reverse'
   nodeIds: readonly string[]
+  screenPurposeIds?: readonly string[]
 }
 
 export interface SemanticValidationInput {

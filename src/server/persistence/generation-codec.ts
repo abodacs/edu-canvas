@@ -17,7 +17,10 @@ import type {
   NormalizedGenerationRequest,
   ProviderProvenance,
 } from '../generation/provider'
-import { providerDraftSchema } from '../generation/validation'
+import {
+  providerDraftSchema,
+  validatedLearningPathSchema,
+} from '../generation/validation'
 
 const normalizedGenerationRequestSchema: z.ZodType<NormalizedGenerationRequest> =
   z.object({
@@ -40,6 +43,7 @@ const provenanceSchema: z.ZodType<ProviderProvenance> = z
 
 const lessonDraftSchema: z.ZodType<LessonDraft> = providerDraftSchema
   .extend({
+    learningPath: validatedLearningPathSchema,
     requestId: z.string(),
     input: normalizedGenerationRequestSchema,
     provenance: provenanceSchema,
