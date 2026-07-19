@@ -11,7 +11,11 @@ import type {
   A2UIPreviewDataModel,
 } from '@/shared/a2ui-contract'
 
-import type { ProviderLessonDraft, ProviderVariant } from '../generation/types'
+import type {
+  ProviderLessonDraft,
+  ProviderVariant,
+  ValidatedLearningPath,
+} from '../generation/types'
 
 const purposeLabels = [
   'Teach the model',
@@ -32,6 +36,7 @@ export interface LessonPreviewCompileInput {
   standardId: string
   language: LessonLanguage
   draft: ProviderLessonDraft
+  learningPath: ValidatedLearningPath
 }
 
 export interface CompiledLessonPreview {
@@ -142,6 +147,7 @@ function previewMessagesForVariant(
         'purpose',
         'metadata',
         'instructions',
+        'learning-path',
         'matching-board',
         'preview-actions',
         'preview-status',
@@ -155,6 +161,10 @@ function previewMessagesForVariant(
       'label',
     ),
     text('instructions', variant.accessibilityMetadata.instructions, 'body'),
+    {
+      id: 'learning-path',
+      component: 'LearningPath',
+    },
     {
       id: 'matching-board',
       component: 'Row',
@@ -217,6 +227,7 @@ function previewMessagesForVariant(
     direction: variant.languageMetadata.direction,
     validationState: 'ready-for-review',
     selectedItemIds: [],
+    learningPath: input.learningPath,
   }
 
   const messages: A2UIMessage[] = [

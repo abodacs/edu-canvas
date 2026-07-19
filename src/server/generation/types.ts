@@ -47,11 +47,51 @@ export interface ProviderVariant {
   }
 }
 
-export interface ProviderLessonDraft {
-  variants: ProviderVariant[]
+export interface ProviderLearningPathStep {
+  nodeId: string
+  screenPurposeId: string
 }
 
-export interface LessonDraft extends ProviderLessonDraft {
+export interface ProviderLearningPath {
+  direction: 'forward' | 'reverse'
+  steps: ProviderLearningPathStep[]
+  rationale: string
+  nextScreenRationale: string
+}
+
+export type LearningPathStepRole = 'prerequisite' | 'target'
+
+export interface ValidatedLearningPathStep {
+  nodeId: string
+  label: string
+  role: LearningPathStepRole
+  screenPurposeId: string
+  screenPurpose: string
+}
+
+export interface LearningPathVersionPins {
+  draftId: string
+  graphVersion: string
+  catalogVersion: string
+  modelVersion: string
+  validatorVersion: string
+}
+
+export interface ValidatedLearningPath {
+  direction: 'forward'
+  steps: ValidatedLearningPathStep[]
+  rationale: string
+  nextScreenRationale: string
+  versionPins: LearningPathVersionPins
+}
+
+export interface ProviderLessonDraft {
+  variants: ProviderVariant[]
+  learningPath?: ProviderLearningPath
+}
+
+export interface LessonDraft extends Omit<ProviderLessonDraft, 'learningPath'> {
+  learningPath: ValidatedLearningPath
   requestId: string
   input: NormalizedGenerationRequest
   provenance: ProviderProvenance

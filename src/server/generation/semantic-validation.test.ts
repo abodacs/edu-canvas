@@ -202,6 +202,34 @@ describe('bounded semantic lesson validation', () => {
     )
   })
 
+  it('blocks a path that references an unapproved screen purpose', async () => {
+    const input = validInput()
+    const result = await validateSemanticLesson({
+      draft: createEquivalentFractionsDraft(input),
+      context: createDemoCurriculumContext(input),
+      path: {
+        direction: 'forward',
+        nodeIds: ['graph_node_equal_parts', 'graph_node_equivalent_fractions'],
+        screenPurposeIds: [
+          'screen_purpose_unapproved',
+          'screen_purpose_equivalent_fractions',
+        ],
+      },
+    })
+
+    expect(result.verdict).toBe('block')
+    expect(result.findings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'UNAPPROVED_SCREEN_PURPOSE',
+          field: 'path.screenPurposeIds',
+          nodeId: 'graph_node_equal_parts',
+          verdict: 'block',
+        }),
+      ]),
+    )
+  })
+
   it('blocks unknown path nodes and cycles in the pinned graph', async () => {
     const input = validInput()
     const context = createDemoCurriculumContext(input)

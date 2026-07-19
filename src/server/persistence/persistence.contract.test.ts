@@ -2,6 +2,8 @@ import postgres from 'postgres'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import { createEquivalentFractionsDraft } from '../generation/provider'
+import { buildValidatedLearningPath } from '../generation/learning-path'
+import { createDemoCurriculumContext } from '../generation/semantic-validation'
 import { getDemoSeedCounts } from '../seed-data'
 import type {
   GenerationAttemptRecord,
@@ -199,13 +201,22 @@ describe.skipIf(!runDatabaseTests)('PostgreSQL persistence parity', () => {
           promptTemplateVersion: 'lesson-prompt-v1',
           validatorVersion: 'lesson-validator-v2',
         } as const
+        const generatedDraft = createEquivalentFractionsDraft(retry.input)
+        const learningPath = buildValidatedLearningPath({
+          proposal: generatedDraft.learningPath!,
+          context: createDemoCurriculumContext(retry.input),
+          draftId: retry.requestId,
+          provenance,
+          validatorVersion: 'semantic-validation-runner-v1',
+        })
         const completed: LessonGenerationRecord = {
           ...retry,
           state: 'ready-for-review',
           updatedAt: '2026-07-18T00:24:00.000Z',
           provenance,
           draft: {
-            ...createEquivalentFractionsDraft(retry.input),
+            ...generatedDraft,
+            learningPath,
             requestId: retry.requestId,
             input: retry.input,
             provenance,

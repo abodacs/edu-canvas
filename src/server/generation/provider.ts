@@ -76,6 +76,34 @@ function localizedText(
   return language === 'ar' ? arabic : english
 }
 
+function createLearningPath(
+  request: NormalizedGenerationRequest,
+): NonNullable<ProviderLessonDraft['learningPath']> {
+  return {
+    direction: 'forward',
+    steps: [
+      {
+        nodeId: 'graph_node_equal_parts',
+        screenPurposeId: 'screen_purpose_equal_parts',
+      },
+      {
+        nodeId: 'graph_node_equivalent_fractions',
+        screenPurposeId: 'screen_purpose_equivalent_fractions',
+      },
+    ],
+    rationale: localizedText(
+      request.language,
+      'Start with equal parts so the lesson can connect the same whole to different fraction names.',
+      'نبدأ بالأجزاء المتساوية حتى يربط الدرس بين الكل نفسه وأسماء الكسور المختلفة.',
+    ),
+    nextScreenRationale: localizedText(
+      request.language,
+      'The matching screen makes that connection visible before teacher review.',
+      'تجعل شاشة المطابقة هذا الارتباط واضحًا قبل مراجعة المعلم.',
+    ),
+  }
+}
+
 function createVariant(
   request: NormalizedGenerationRequest,
   kind: VariantKind,
@@ -166,6 +194,7 @@ export function createEquivalentFractionsDraft(
   request: NormalizedGenerationRequest,
 ): ProviderLessonDraft {
   return {
+    learningPath: createLearningPath(request),
     variants: [
       createVariant(request, 'standard', 1),
       createVariant(request, 'standard', 2),
@@ -250,6 +279,7 @@ function buildPrompt(
     `Teacher request: ${request.prompt}`,
     `Grade: ${request.grade}. Primary standard: ${request.standardId}. Language: ${request.language}. Difficulty: ${request.difficulty}.`,
     'Create exactly two standard variants, one scaffold variant, and one challenge variant. Each variant needs 3–8 sources, matching targets, at most two bounded distractors, stable ids, hints, deterministic feedback, language metadata, and accessibility metadata.',
+    'Include one forward learningPath with 2–12 ordered graph steps. Each step must contain only the approved graph node id and screen-purpose id supplied by the curriculum context. Include concise learner-safe rationale and nextScreenRationale; do not include chain-of-thought or private learner data.',
     correction,
   ].join('\n')
 }
@@ -390,7 +420,7 @@ export function createOpenAILessonDraftProvider(
 const lessonDraftJsonSchema = {
   type: 'object',
   additionalProperties: false,
-  required: ['variants'],
+  required: ['variants', 'learningPath'],
   properties: {
     variants: {
       type: 'array',
@@ -456,6 +486,30 @@ const lessonDraftJsonSchema = {
             },
           },
         },
+      },
+    },
+    learningPath: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['direction', 'steps', 'rationale', 'nextScreenRationale'],
+      properties: {
+        direction: { type: 'string', enum: ['forward', 'reverse'] },
+        steps: {
+          type: 'array',
+          minItems: 2,
+          maxItems: 12,
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['nodeId', 'screenPurposeId'],
+            properties: {
+              nodeId: { type: 'string' },
+              screenPurposeId: { type: 'string' },
+            },
+          },
+        },
+        rationale: { type: 'string' },
+        nextScreenRationale: { type: 'string' },
       },
     },
   },

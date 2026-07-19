@@ -28,6 +28,60 @@ const relationshipSchema = z
   })
   .strict()
 
+const learningPathStepSchema = z
+  .object({
+    nodeId: z.string().trim().min(1).max(80),
+    screenPurposeId: z.string().trim().min(1).max(80),
+  })
+  .strict()
+
+const learningPathTextSchema = plainTextSchema.refine(
+  (value) =>
+    !/answer\s*key|api\s*key|secret|chain[- ]of[- ]thought|student\s+identity|\b(?:model|agent)\s+thoughts?\b/i.test(
+      value,
+    ),
+  {
+    message: 'Learning-path copy must be learner-safe and concise.',
+  },
+)
+
+const learningPathSchema = z
+  .object({
+    direction: z.enum(['forward', 'reverse']),
+    steps: z.array(learningPathStepSchema).min(2).max(12),
+    rationale: learningPathTextSchema,
+    nextScreenRationale: learningPathTextSchema,
+  })
+  .strict()
+
+const validatedLearningPathStepSchema = z
+  .object({
+    nodeId: z.string().trim().min(1).max(80),
+    label: plainTextSchema,
+    role: z.enum(['prerequisite', 'target']),
+    screenPurposeId: z.string().trim().min(1).max(80),
+    screenPurpose: plainTextSchema,
+  })
+  .strict()
+
+export const validatedLearningPathSchema = z
+  .object({
+    direction: z.literal('forward'),
+    steps: z.array(validatedLearningPathStepSchema).min(2).max(12),
+    rationale: learningPathTextSchema,
+    nextScreenRationale: learningPathTextSchema,
+    versionPins: z
+      .object({
+        draftId: z.string().trim().min(1).max(120),
+        graphVersion: z.string().trim().min(1).max(120),
+        catalogVersion: z.string().trim().min(1).max(120),
+        modelVersion: z.string().trim().min(1).max(120),
+        validatorVersion: z.string().trim().min(1).max(120),
+      })
+      .strict(),
+  })
+  .strict()
+
 const providerVariantSchema = z
   .object({
     id: z.string().trim().min(1).max(80),
@@ -65,6 +119,7 @@ const providerVariantSchema = z
 export const providerDraftSchema = z
   .object({
     variants: z.array(providerVariantSchema).length(4),
+    learningPath: learningPathSchema.optional(),
   })
   .strict()
 

@@ -118,4 +118,28 @@ describe('lesson draft providers', () => {
       expect(String(error)).not.toContain('provider details')
     }
   })
+
+  it('proposes the seeded prerequisite path with approved screen-purpose ids', async () => {
+    const provider = createDeterministicLessonDraftProvider()
+    const response = await provider.generate(request, {
+      correctionAttempt: false,
+      diagnostics: [],
+    })
+
+    expect(response.draft).toMatchObject({
+      learningPath: {
+        direction: 'forward',
+        steps: [
+          {
+            nodeId: 'graph_node_equal_parts',
+            screenPurposeId: 'screen_purpose_equal_parts',
+          },
+          {
+            nodeId: 'graph_node_equivalent_fractions',
+            screenPurposeId: 'screen_purpose_equivalent_fractions',
+          },
+        ],
+      },
+    })
+  })
 })

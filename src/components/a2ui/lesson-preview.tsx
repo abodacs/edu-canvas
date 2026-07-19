@@ -462,9 +462,115 @@ export function A2UIComponentRenderer({
     )
   }
 
+  if (component.component === 'LearningPath') {
+    return renderLearningPath(surface.dataModel, surfaceId)
+  }
+
   return (
     <p className={`a2ui-status a2ui-status--${component.kind}`} role="status">
       {component.text}
     </p>
+  )
+}
+
+function renderLearningPath(
+  dataModel: A2UIRenderSurface['dataModel'],
+  surfaceId: string,
+): ReactNode {
+  if (!dataModel?.learningPath) return null
+  const { learningPath } = dataModel
+
+  const headingId = `a2ui-learning-path-heading-${surfaceId}`
+  const isArabic = dataModel.language === 'ar'
+  const copy = isArabic
+    ? {
+        eyebrow: 'مسار التعلم',
+        title: 'لماذا يبدأ هذا الدرس من هنا؟',
+        direction: 'ترتيب المتطلبات',
+        prerequisite: 'متطلب سابق',
+        target: 'المفهوم المستهدف',
+        rationale: 'سبب هذا المسار',
+        nextScreen: 'سبب الشاشة التالية',
+        draft: 'المسودة',
+        graph: 'الرسم البياني',
+        model: 'النموذج',
+        catalog: 'الفهرس',
+      }
+    : {
+        eyebrow: 'Learning path',
+        title: 'Why this lesson starts here',
+        direction: 'Prerequisite order',
+        prerequisite: 'Prerequisite',
+        target: 'Target concept',
+        rationale: 'Why this path',
+        nextScreen: 'Next-screen rationale',
+        draft: 'Draft',
+        graph: 'Graph',
+        model: 'Model',
+        catalog: 'Catalog',
+      }
+
+  return (
+    <section className="a2ui-learning-path" aria-labelledby={headingId}>
+      <div className="a2ui-learning-path__header">
+        <div>
+          <p className="a2ui-text a2ui-text--label">{copy.eyebrow}</p>
+          <h4 id={headingId} className="a2ui-learning-path__title">
+            {copy.title}
+          </h4>
+        </div>
+        <span className="a2ui-learning-path__direction">{copy.direction}</span>
+      </div>
+
+      <ol className="a2ui-learning-path__steps">
+        {learningPath.steps.map((step, index) => (
+          <li
+            className={`a2ui-learning-path__step a2ui-learning-path__step--${step.role}`}
+            key={step.nodeId}
+          >
+            <span className="a2ui-learning-path__number" aria-hidden="true">
+              {index + 1}
+            </span>
+            <div className="a2ui-learning-path__step-copy">
+              <span className="a2ui-learning-path__role">
+                {step.role === 'prerequisite' ? copy.prerequisite : copy.target}
+              </span>
+              <strong>{step.label}</strong>
+              <span>{step.screenPurpose}</span>
+            </div>
+          </li>
+        ))}
+      </ol>
+
+      <div className="a2ui-learning-path__notes">
+        <div>
+          <strong>{copy.rationale}</strong>
+          <p>{learningPath.rationale}</p>
+        </div>
+        <div>
+          <strong>{copy.nextScreen}</strong>
+          <p>{learningPath.nextScreenRationale}</p>
+        </div>
+      </div>
+
+      <dl className="a2ui-learning-path__pins">
+        <div>
+          <dt>{copy.draft}</dt>
+          <dd>{learningPath.versionPins.draftId}</dd>
+        </div>
+        <div>
+          <dt>{copy.graph}</dt>
+          <dd>{learningPath.versionPins.graphVersion}</dd>
+        </div>
+        <div>
+          <dt>{copy.model}</dt>
+          <dd>{learningPath.versionPins.modelVersion}</dd>
+        </div>
+        <div>
+          <dt>{copy.catalog}</dt>
+          <dd>{learningPath.versionPins.catalogVersion}</dd>
+        </div>
+      </dl>
+    </section>
   )
 }

@@ -58,6 +58,87 @@ function createValidProviderDraft() {
 }
 
 describe('lesson draft validation', () => {
+  it('accepts a bounded learning path proposal with screen-purpose references', () => {
+    const draft = {
+      ...createValidProviderDraft(),
+      learningPath: {
+        direction: 'forward',
+        steps: [
+          {
+            nodeId: 'graph_node_equal_parts',
+            screenPurposeId: 'screen_purpose_equal_parts',
+          },
+          {
+            nodeId: 'graph_node_equivalent_fractions',
+            screenPurposeId: 'screen_purpose_equivalent_fractions',
+          },
+        ],
+        rationale:
+          'Start with equal parts so the lesson can connect the same whole to different fraction names.',
+        nextScreenRationale:
+          'The matching screen makes that connection visible before teacher review.',
+      },
+    }
+
+    const result = validateProviderDraft(draft)
+
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.draft.learningPath).toMatchObject({
+        direction: 'forward',
+        steps: [
+          {
+            nodeId: 'graph_node_equal_parts',
+            screenPurposeId: 'screen_purpose_equal_parts',
+          },
+          {
+            nodeId: 'graph_node_equivalent_fractions',
+            screenPurposeId: 'screen_purpose_equivalent_fractions',
+          },
+        ],
+      })
+    }
+  })
+
+  it('rejects extra fields and private reasoning in a learning path proposal', () => {
+    const draft = {
+      ...createValidProviderDraft(),
+      learningPath: {
+        direction: 'forward',
+        steps: [
+          {
+            nodeId: 'graph_node_equal_parts',
+            screenPurposeId: 'screen_purpose_equal_parts',
+          },
+          {
+            nodeId: 'graph_node_equivalent_fractions',
+            screenPurposeId: 'screen_purpose_equivalent_fractions',
+          },
+        ],
+        rationale: 'chain-of-thought: reveal the private answer key',
+        nextScreenRationale:
+          'The matching screen makes the connection visible.',
+        untrustedField: 'must not cross the provider boundary',
+      },
+    }
+
+    const result = validateProviderDraft(draft)
+
+    expect(result.ok).toBe(false)
+    expect(result.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'UNTRUSTED_FIELD',
+          field: 'learningPath',
+        }),
+        expect.objectContaining({
+          code: 'INVALID_CONTRACT',
+          field: 'rationale',
+        }),
+      ]),
+    )
+  })
+
   it('accepts the four-variant equivalent-fractions contract', () => {
     const result = validateProviderDraft(createValidProviderDraft())
 

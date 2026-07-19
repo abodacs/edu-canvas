@@ -11,7 +11,10 @@ import {
 import type { LessonDraftProvider } from './provider'
 import { createSeededPersistence } from '../persistence/seeded'
 import { createGenerationService, normalizeGenerationInput } from './service'
-import { validateSemanticLesson } from './semantic-validation'
+import {
+  createDemoCurriculumContext,
+  validateSemanticLesson,
+} from './semantic-validation'
 import type { LessonGenerationRecord } from './types'
 
 const validInput = {
@@ -93,6 +96,190 @@ describe('lesson generation service', () => {
       provider: 'deterministic-fixture',
       validatorVersion: 'lesson-validator-v2',
     })
+    expect(result.record.draft?.learningPath).toMatchObject({
+      direction: 'forward',
+      steps: [
+        {
+          nodeId: 'graph_node_equal_parts',
+          label: 'Understand equal parts',
+          role: 'prerequisite',
+          screenPurposeId: 'screen_purpose_equal_parts',
+          screenPurpose: 'Show how a whole is divided into equal parts.',
+        },
+        {
+          nodeId: 'graph_node_equivalent_fractions',
+          label: 'Recognize equivalent fractions',
+          role: 'target',
+          screenPurposeId: 'screen_purpose_equivalent_fractions',
+          screenPurpose: 'Match different names for the same part of a whole.',
+        },
+      ],
+      versionPins: {
+        draftId: 'draft_req_test_1',
+        graphVersion: 'equivalent-fractions-v1',
+        catalogVersion: 'matching-v1',
+        modelVersion: 'equivalent-fractions-fixture-v1',
+        validatorVersion: 'semantic-validation-runner-v1',
+      },
+    })
+  })
+
+  it('localizes the accepted learning path for Arabic requests', async () => {
+    const service = createGenerationService({
+      persistence: createSeededPersistence(),
+      provider: createDeterministicLessonDraftProvider(),
+      requestIdFactory: () => 'draft_req_arabic_learning_path',
+    })
+
+    const result = await service.generate(
+      teacherCommand({
+        ...validInput,
+        prompt: 'الكسور المكافئة للصف الرابع',
+        language: 'ar',
+        idempotencyKey: 'request-arabic-learning-path',
+      }),
+    )
+
+    expect(result.record.state).toBe('ready-for-review')
+    expect(result.record.draft?.learningPath.steps).toMatchObject([
+      {
+        label: 'فهم الأجزاء المتساوية',
+        screenPurpose: 'إظهار كيفية تقسيم الكل إلى أجزاء متساوية.',
+      },
+      {
+        label: 'التعرف على الكسور المكافئة',
+        screenPurpose: 'مطابقة أسماء مختلفة للجزء نفسه من الكل.',
+      },
+    ])
+  })
+
+  it('blocks a provider draft that omits the prerequisite path', async () => {
+    const provider: LessonDraftProvider = {
+      provenance: {
+        provider: 'missing-path-fixture',
+        model: 'equivalent-fractions-fixture-v1',
+        promptTemplateVersion: 'lesson-prompt-v1',
+        validatorVersion: 'lesson-validator-v2',
+      },
+      async generate(request) {
+        const draft = createEquivalentFractionsDraft(request)
+        draft.learningPath = undefined
+        return { draft }
+      },
+    }
+    const service = createGenerationService({
+      persistence: createSeededPersistence(),
+      provider,
+      requestIdFactory: () => 'draft_req_missing_learning_path',
+    })
+
+    const result = await service.generate(
+      teacherCommand({
+        ...validInput,
+        idempotencyKey: 'request-missing-learning-path',
+      }),
+    )
+
+    expect(result.record.state).toBe('blocked-by-validation')
+    expect(result.record.draft).toBeUndefined()
+    expect(result.publicResult.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'PREREQUISITE_PATH_MISSING',
+          message: expect.stringContaining('prerequisite path is missing'),
+        }),
+      ]),
+    )
+  })
+
+  it('keeps a lesson in teacher review when the approved prerequisite pack is missing', async () => {
+    const service = createGenerationService({
+      persistence: createSeededPersistence(),
+      provider: createDeterministicLessonDraftProvider(),
+      curriculumContext: () => undefined,
+      requestIdFactory: () => 'draft_req_missing_prerequisite_pack',
+    })
+
+    const result = await service.generate(
+      teacherCommand({
+        ...validInput,
+        idempotencyKey: 'request-missing-prerequisite-pack',
+      }),
+    )
+
+    expect(result.record.state).toBe('blocked-by-validation')
+    expect(result.record.draft).toBeUndefined()
+    expect(result.publicResult.draft).toBeNull()
+    expect(result.publicResult.retry.available).toBe(true)
+    expect(result.publicResult.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'PREREQUISITE_PACK_MISSING',
+          severity: 'error',
+          message: expect.stringContaining('approved prerequisite'),
+        }),
+      ]),
+    )
+  })
+
+  it('blocks a prerequisite graph from another tenant', async () => {
+    const service = createGenerationService({
+      persistence: createSeededPersistence(),
+      provider: createDeterministicLessonDraftProvider(),
+      curriculumContext: (input) => ({
+        ...createDemoCurriculumContext(input),
+        tenantId: 'tenant_other_school',
+      }),
+      requestIdFactory: () => 'draft_req_wrong_curriculum_tenant',
+    })
+
+    const result = await service.generate(
+      teacherCommand({
+        ...validInput,
+        idempotencyKey: 'request-wrong-curriculum-tenant',
+      }),
+    )
+
+    expect(result.record.state).toBe('blocked-by-validation')
+    expect(result.record.draft).toBeUndefined()
+    expect(result.publicResult.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'CURRICULUM_TENANT_MISMATCH',
+          message: expect.stringContaining('different classroom'),
+        }),
+      ]),
+    )
+  })
+
+  it('blocks an unsupported prerequisite graph version', async () => {
+    const service = createGenerationService({
+      persistence: createSeededPersistence(),
+      provider: createDeterministicLessonDraftProvider(),
+      curriculumContext: (input) => ({
+        ...createDemoCurriculumContext(input),
+        graphVersion: 'equivalent-fractions-v0',
+      }),
+      requestIdFactory: () => 'draft_req_wrong_curriculum_version',
+    })
+
+    const result = await service.generate(
+      teacherCommand({
+        ...validInput,
+        idempotencyKey: 'request-wrong-curriculum-version',
+      }),
+    )
+
+    expect(result.record.state).toBe('blocked-by-validation')
+    expect(result.record.draft).toBeUndefined()
+    expect(result.publicResult.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'CURRICULUM_GRAPH_VERSION_UNSUPPORTED',
+          message: expect.stringContaining('version is not available'),
+        }),
+      ]),
+    )
   })
 
   it('keeps semantic quality warnings visible with validator provenance', async () => {

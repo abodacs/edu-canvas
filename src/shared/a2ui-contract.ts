@@ -26,6 +26,7 @@ export const a2uiComponentNames = [
   'MatchCard',
   'Button',
   'Status',
+  'LearningPath',
 ] as const
 
 export type A2UIComponentName = (typeof a2uiComponentNames)[number]
@@ -120,6 +121,11 @@ const statusSchema = z.strictObject({
   kind: z.enum(['info', 'warning', 'error', 'success']),
 })
 
+const learningPathComponentSchema = z.strictObject({
+  id: componentIdSchema,
+  component: z.literal('LearningPath'),
+})
+
 export const a2uiComponentSchema = z.discriminatedUnion('component', [
   columnSchema,
   rowSchema,
@@ -128,6 +134,7 @@ export const a2uiComponentSchema = z.discriminatedUnion('component', [
   matchCardSchema,
   buttonSchema,
   statusSchema,
+  learningPathComponentSchema,
 ])
 
 const createSurfaceSchema = z.strictObject({
@@ -146,6 +153,28 @@ const updateComponentsSchema = z.strictObject({
   }),
 })
 
+const learningPathDataStepSchema = z.strictObject({
+  nodeId: componentIdSchema,
+  label: safeTextSchema,
+  role: z.enum(['prerequisite', 'target']),
+  screenPurposeId: componentIdSchema,
+  screenPurpose: safeTextSchema,
+})
+
+const learningPathDataSchema = z.strictObject({
+  direction: z.literal('forward'),
+  steps: z.array(learningPathDataStepSchema).min(2).max(12),
+  rationale: safeTextSchema,
+  nextScreenRationale: safeTextSchema,
+  versionPins: z.strictObject({
+    draftId: componentIdSchema,
+    graphVersion: componentIdSchema,
+    catalogVersion: componentIdSchema,
+    modelVersion: componentIdSchema,
+    validatorVersion: componentIdSchema,
+  }),
+})
+
 const previewDataModelSchema = z
   .strictObject({
     variantId: componentIdSchema,
@@ -158,6 +187,7 @@ const previewDataModelSchema = z
     direction: z.enum(['ltr', 'rtl']),
     validationState: z.literal('ready-for-review'),
     selectedItemIds: z.array(componentIdSchema).max(100),
+    learningPath: learningPathDataSchema.optional(),
   })
   .readonly()
 

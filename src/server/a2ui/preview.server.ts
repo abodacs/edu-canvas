@@ -105,6 +105,7 @@ export async function handleLessonPreviewRequest(
       standardId: record.input.standardId,
       language: record.input.language,
       draft: record.draft,
+      learningPath: record.draft.learningPath,
     })
 
     return new Response(

@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
 import { createEquivalentFractionsDraft } from '@/server/generation/provider'
+import { buildValidatedLearningPath } from '@/server/generation/learning-path'
+import { createDemoCurriculumContext } from '@/server/generation/semantic-validation'
 
 import { compileLessonPreview, LessonPreviewCompileError } from './compiler'
 import { validateA2UIMessage } from '@/shared/a2ui-contract'
 
-const request = {
+const baseRequest = {
   requestId: 'draft_req_preview_test',
   grade: 4,
   standardId: 'standard_ccss_4_nf_a_01',
@@ -16,6 +18,22 @@ const request = {
     standardId: 'standard_ccss_4_nf_a_01',
     language: 'en',
     difficulty: 'on-level',
+  }),
+}
+
+const request = {
+  ...baseRequest,
+  learningPath: buildValidatedLearningPath({
+    proposal: baseRequest.draft.learningPath!,
+    context: createDemoCurriculumContext(baseRequest),
+    draftId: baseRequest.requestId,
+    provenance: {
+      provider: 'deterministic-fixture',
+      model: 'equivalent-fractions-fixture-v1',
+      promptTemplateVersion: 'lesson-prompt-v1',
+      validatorVersion: 'lesson-validator-v2',
+    },
+    validatorVersion: 'semantic-validation-runner-v1',
   }),
 }
 
@@ -75,5 +93,37 @@ describe('lesson preview compiler', () => {
     expect(() => compileLessonPreview(duplicateRequest)).toThrow(
       'duplicate variant identifiers',
     )
+  })
+
+  it('compiles the accepted prerequisite path into every semantic preview surface', () => {
+    const preview = compileLessonPreview(request)
+    const pathComponents = preview.messages.flatMap((message) =>
+      'updateComponents' in message
+        ? message.updateComponents.components.filter(
+            (component) => component.component === 'LearningPath',
+          )
+        : [],
+    )
+    const dataModels = preview.messages.flatMap((message) =>
+      'updateDataModel' in message ? [message.updateDataModel.value] : [],
+    )
+
+    expect(pathComponents).toHaveLength(4)
+    expect(dataModels[0]?.learningPath).toMatchObject({
+      direction: 'forward',
+      steps: [
+        { role: 'prerequisite', nodeId: 'graph_node_equal_parts' },
+        {
+          role: 'target',
+          nodeId: 'graph_node_equivalent_fractions',
+        },
+      ],
+      versionPins: {
+        draftId: 'draft_req_preview_test',
+        graphVersion: 'equivalent-fractions-v1',
+        catalogVersion: 'matching-v1',
+        modelVersion: 'equivalent-fractions-fixture-v1',
+      },
+    })
   })
 })

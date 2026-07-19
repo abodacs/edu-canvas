@@ -1035,6 +1035,28 @@ h2 {
   font-size: 0.86rem;
 }
 
+.teacher-review-state {
+  display: grid;
+  gap: 0.45rem;
+  padding-block: 1rem;
+  padding-inline: 1rem;
+  border: 1px solid color-mix(in oklch, var(--destructive) 30%, var(--border));
+  border-radius: 0.7rem;
+  background: color-mix(in oklch, var(--destructive) 6%, var(--card));
+}
+
+.teacher-review-state strong {
+  color: var(--foreground);
+  font-size: 0.86rem;
+}
+
+.teacher-review-state p {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
 .variant-list {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
 }
@@ -1197,6 +1219,176 @@ h2 {
   display: grid;
   gap: 1.1rem;
   padding: clamp(1rem, 3vw, 2rem);
+}
+
+.a2ui-learning-path {
+  display: grid;
+  gap: 1rem;
+  padding-block: 1.1rem;
+  padding-inline: clamp(1rem, 2vw, 1.35rem);
+  border: 1px solid color-mix(in oklch, var(--primary) 24%, var(--border));
+  border-radius: 0.8rem;
+  background: color-mix(in oklch, var(--primary) 5%, var(--card));
+}
+
+.a2ui-learning-path__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.a2ui-learning-path__header .a2ui-text--label {
+  margin-block-end: 0.3rem;
+  color: var(--primary);
+}
+
+.a2ui-learning-path__title {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 1.15rem;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+}
+
+.a2ui-learning-path__direction {
+  flex: none;
+  padding-block: 0.35rem;
+  padding-inline: 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.a2ui-learning-path__steps {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: learning-path-step;
+}
+
+.a2ui-learning-path__step {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 0.75rem;
+  min-inline-size: 0;
+  padding-block: 0.8rem;
+  padding-inline: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  background: var(--background);
+}
+
+.a2ui-learning-path__step--target {
+  border-color: color-mix(in oklch, var(--primary) 46%, var(--border));
+  background: color-mix(in oklch, var(--primary) 10%, var(--background));
+}
+
+.a2ui-learning-path__number {
+  display: grid;
+  inline-size: 2rem;
+  block-size: 2rem;
+  place-items: center;
+  border: 1px solid color-mix(in oklch, var(--primary) 36%, var(--border));
+  border-radius: 50%;
+  color: var(--primary);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.a2ui-learning-path__step--target .a2ui-learning-path__number {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.a2ui-learning-path__step-copy {
+  display: grid;
+  gap: 0.22rem;
+  min-inline-size: 0;
+}
+
+.a2ui-learning-path__role {
+  color: var(--muted-foreground);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.a2ui-learning-path__step-copy strong {
+  overflow-wrap: anywhere;
+  color: var(--foreground);
+  font-size: 0.95rem;
+}
+
+.a2ui-learning-path__step-copy > span:last-child {
+  color: var(--muted-foreground);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.a2ui-learning-path__notes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  padding-block-start: 0.85rem;
+  border-block-start: 1px dashed var(--border);
+}
+
+.a2ui-learning-path__notes div {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.a2ui-learning-path__notes strong {
+  color: var(--foreground);
+  font-size: 0.78rem;
+}
+
+.a2ui-learning-path__notes p {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.a2ui-learning-path__pins {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin: 0;
+  padding-block-start: 0.85rem;
+  border-block-start: 1px solid var(--border);
+}
+
+.a2ui-learning-path__pins div {
+  display: grid;
+  gap: 0.2rem;
+  min-inline-size: 0;
+}
+
+.a2ui-learning-path__pins dt {
+  color: var(--muted-foreground);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.a2ui-learning-path__pins dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--foreground);
+  font-size: 0.72rem;
 }
 
 .a2ui-column {
@@ -1422,6 +1614,15 @@ h2 {
     flex-basis: auto;
   }
 
+  .a2ui-learning-path__steps,
+  .a2ui-learning-path__notes {
+    grid-template-columns: 1fr;
+  }
+
+  .a2ui-learning-path__pins {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .page-grid--hero,
   .page-grid--details {
     grid-template-columns: 1fr;
@@ -1452,6 +1653,18 @@ h2 {
 
   .a2ui-card .a2ui-text--label {
     grid-column: auto;
+  }
+
+  .a2ui-learning-path__header {
+    flex-direction: column;
+  }
+
+  .a2ui-learning-path__direction {
+    justify-self: start;
+  }
+
+  .a2ui-learning-path__pins {
+    grid-template-columns: 1fr;
   }
 
   .site-header,
