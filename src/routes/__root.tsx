@@ -21,7 +21,10 @@ export const Route = createRootRoute({
           'Turn one sentence into a standards-aligned visual lesson your students understand. Teachers approve every variant; AI never grades or publishes unreviewed content.',
       },
     ],
-    links: [{ rel: 'stylesheet', href: appCss }],
+    links: [
+      { rel: 'stylesheet', href: appCss },
+      { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
+    ],
   }),
   shellComponent: RootDocument,
 })
