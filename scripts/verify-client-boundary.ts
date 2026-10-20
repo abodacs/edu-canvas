@@ -4,9 +4,8 @@ import { fileURLToPath } from "node:url";
 
 const { join } = path;
 
-const publicDirectory = fileURLToPath(
-  new URL("../.output/public/", import.meta.url)
-);
+const projectRoot = fileURLToPath(new URL("..", import.meta.url));
+const publicDirectory = join(projectRoot, ".output", "public");
 const forbiddenTokens = [
   "answerKey",
   "OPENAI_API_KEY",
