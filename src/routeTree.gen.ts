@@ -8,122 +8,130 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiHealthRouteImport } from './routes/api/health'
-import { Route as ApiReadinessRouteImport } from './routes/api/readiness'
-import { Route as DemoRoleRouteImport } from './routes/demo/$role'
-import { Route as ApiA2uiPreviewRouteImport } from './routes/api/a2ui/preview'
+import { Route as rootRouteImport } from "./routes/__root";
+import { Route as IndexRouteImport } from "./routes/index";
+import { Route as ApiHealthRouteImport } from "./routes/api/health";
+import { Route as ApiReadinessRouteImport } from "./routes/api/readiness";
+import { Route as DemoRoleRouteImport } from "./routes/demo/$role";
+import { Route as ApiA2uiPreviewRouteImport } from "./routes/api/a2ui/preview";
 
 const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ApiHealthRoute = ApiHealthRouteImport.update({
-  id: '/api/health',
-  path: '/api/health',
+  id: "/api/health",
+  path: "/api/health",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ApiReadinessRoute = ApiReadinessRouteImport.update({
-  id: '/api/readiness',
-  path: '/api/readiness',
+  id: "/api/readiness",
+  path: "/api/readiness",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const DemoRoleRoute = DemoRoleRouteImport.update({
-  id: '/demo/$role',
-  path: '/demo/$role',
+  id: "/demo/$role",
+  path: "/demo/$role",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ApiA2uiPreviewRoute = ApiA2uiPreviewRouteImport.update({
-  id: '/api/a2ui/preview',
-  path: '/api/a2ui/preview',
+  id: "/api/a2ui/preview",
+  path: "/api/a2ui/preview",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/api/health': typeof ApiHealthRoute
-  '/api/readiness': typeof ApiReadinessRoute
-  '/demo/$role': typeof DemoRoleRoute
-  '/api/a2ui/preview': typeof ApiA2uiPreviewRoute
+  "/": typeof IndexRoute;
+  "/api/health": typeof ApiHealthRoute;
+  "/api/readiness": typeof ApiReadinessRoute;
+  "/demo/$role": typeof DemoRoleRoute;
+  "/api/a2ui/preview": typeof ApiA2uiPreviewRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/api/health': typeof ApiHealthRoute
-  '/api/readiness': typeof ApiReadinessRoute
-  '/demo/$role': typeof DemoRoleRoute
-  '/api/a2ui/preview': typeof ApiA2uiPreviewRoute
+  "/": typeof IndexRoute;
+  "/api/health": typeof ApiHealthRoute;
+  "/api/readiness": typeof ApiReadinessRoute;
+  "/demo/$role": typeof DemoRoleRoute;
+  "/api/a2ui/preview": typeof ApiA2uiPreviewRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/api/health': typeof ApiHealthRoute
-  '/api/readiness': typeof ApiReadinessRoute
-  '/demo/$role': typeof DemoRoleRoute
-  '/api/a2ui/preview': typeof ApiA2uiPreviewRoute
+  __root__: typeof rootRouteImport;
+  "/": typeof IndexRoute;
+  "/api/health": typeof ApiHealthRoute;
+  "/api/readiness": typeof ApiReadinessRoute;
+  "/demo/$role": typeof DemoRoleRoute;
+  "/api/a2ui/preview": typeof ApiA2uiPreviewRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
+  fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
-    '/' | '/api/health' | '/api/readiness' | '/demo/$role' | '/api/a2ui/preview'
-  fileRoutesByTo: FileRoutesByTo
+    | "/"
+    | "/api/health"
+    | "/api/readiness"
+    | "/demo/$role"
+    | "/api/a2ui/preview";
+  fileRoutesByTo: FileRoutesByTo;
   to:
-    '/' | '/api/health' | '/api/readiness' | '/demo/$role' | '/api/a2ui/preview'
+    | "/"
+    | "/api/health"
+    | "/api/readiness"
+    | "/demo/$role"
+    | "/api/a2ui/preview";
   id:
-    | '__root__'
-    | '/'
-    | '/api/health'
-    | '/api/readiness'
-    | '/demo/$role'
-    | '/api/a2ui/preview'
-  fileRoutesById: FileRoutesById
+    | "__root__"
+    | "/"
+    | "/api/health"
+    | "/api/readiness"
+    | "/demo/$role"
+    | "/api/a2ui/preview";
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  ApiHealthRoute: typeof ApiHealthRoute
-  ApiReadinessRoute: typeof ApiReadinessRoute
-  DemoRoleRoute: typeof DemoRoleRoute
-  ApiA2uiPreviewRoute: typeof ApiA2uiPreviewRoute
+  IndexRoute: typeof IndexRoute;
+  ApiHealthRoute: typeof ApiHealthRoute;
+  ApiReadinessRoute: typeof ApiReadinessRoute;
+  DemoRoleRoute: typeof DemoRoleRoute;
+  ApiA2uiPreviewRoute: typeof ApiA2uiPreviewRoute;
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/health': {
-      id: '/api/health'
-      path: '/api/health'
-      fullPath: '/api/health'
-      preLoaderRoute: typeof ApiHealthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/readiness': {
-      id: '/api/readiness'
-      path: '/api/readiness'
-      fullPath: '/api/readiness'
-      preLoaderRoute: typeof ApiReadinessRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/$role': {
-      id: '/demo/$role'
-      path: '/demo/$role'
-      fullPath: '/demo/$role'
-      preLoaderRoute: typeof DemoRoleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/a2ui/preview': {
-      id: '/api/a2ui/preview'
-      path: '/api/a2ui/preview'
-      fullPath: '/api/a2ui/preview'
-      preLoaderRoute: typeof ApiA2uiPreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+    "/": {
+      id: "/";
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/health": {
+      id: "/api/health";
+      path: "/api/health";
+      fullPath: "/api/health";
+      preLoaderRoute: typeof ApiHealthRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/readiness": {
+      id: "/api/readiness";
+      path: "/api/readiness";
+      fullPath: "/api/readiness";
+      preLoaderRoute: typeof ApiReadinessRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/demo/$role": {
+      id: "/demo/$role";
+      path: "/demo/$role";
+      fullPath: "/demo/$role";
+      preLoaderRoute: typeof DemoRoleRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/a2ui/preview": {
+      id: "/api/a2ui/preview";
+      path: "/api/a2ui/preview";
+      fullPath: "/api/a2ui/preview";
+      preLoaderRoute: typeof ApiA2uiPreviewRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
   }
 }
 
@@ -133,16 +141,16 @@ const rootRouteChildren: RootRouteChildren = {
   ApiReadinessRoute: ApiReadinessRoute,
   DemoRoleRoute: DemoRoleRoute,
   ApiA2uiPreviewRoute: ApiA2uiPreviewRoute,
-}
+};
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+  ._addFileTypes<FileRouteTypes>();
 
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
+import type { getRouter } from "./router.tsx";
+import type { createStart } from "@tanstack/react-start";
+declare module "@tanstack/react-start" {
   interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
+    ssr: true;
+    router: Awaited<ReturnType<typeof getRouter>>;
   }
 }
