@@ -61,7 +61,7 @@ Start from the delivery module, then follow the domain-named server module:
 | Browser-safe generation contract | `src/shared/generation-contract.ts` |
 | Canonical synthetic curriculum fixture | `src/server/seed-data.ts` |
 | PostgreSQL seed implementation | `src/server/persistence/seed-postgres.ts` |
-| Operator seed entry point | `scripts/db-seed.ts` |
+| Operator seed entry point | `scripts/database-seed.ts` |
 
 The route should stay a delivery module. Domain rules, tenant checks, persistence choice, and public projection belong behind the named server seams. The shared seam contains only data the browser is allowed to receive.
 
