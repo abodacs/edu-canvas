@@ -6,7 +6,7 @@ primary_region = "ams"
 
 [deploy]
   strategy = "canary"
-  release_command = "node scripts/db-migrate-runtime.mjs"
+  release_command = "node scripts/database-migrate-runtime.mjs"
   release_command_timeout = "5m"
 
 [env]
