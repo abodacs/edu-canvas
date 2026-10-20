@@ -1,10 +1,10 @@
 name: Bug report
 description: Report a bug or regression
-labels: ['bug']
+labels: ["bug"]
 body:
   - type: markdown
     attributes:
-      value: 'Thanks for reporting a bug. Please include as much detail as possible.'
+      value: "Thanks for reporting a bug. Please include as much detail as possible."
   - type: textarea
     id: summary
     attributes:
@@ -49,4 +49,4 @@ body:
     attributes:
       label: Environment
       description: OS, browser, Node.js and pnpm versions, etc.
-      placeholder: 'macOS 14.5, Chrome 123, Node.js 22, pnpm 10'
+      placeholder: "macOS 14.5, Chrome 123, Node.js 22, pnpm 10"

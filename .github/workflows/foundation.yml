@@ -13,8 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       APP_ENV: preview
-      DEMO_MODE: 'false'
-      SYNTHETIC_DATA_ONLY: 'true'
+      DEMO_MODE: "false"
+      SYNTHETIC_DATA_ONLY: "true"
       DATABASE_URL: postgresql://edu_canvas:edu_canvas_dev@127.0.0.1:5432/edu_canvas
       # Test-only value: smoke covers deterministic generation and never calls OpenAI.
       OPENAI_API_KEY: ci-test-key
@@ -28,10 +28,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U edu_canvas -d edu_canvas"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 10
+          --health-cmd "pg_isready -U edu_canvas -d edu_canvas" --health-interval 5s --health-timeout 3s --health-retries 10
 
     steps:
       - name: Check out repository
@@ -90,7 +87,7 @@ jobs:
           trap cleanup EXIT
 
           test "$(docker inspect --format '{{.Config.User}}' edu-canvas-ci)" = "node"
-          docker exec edu-canvas-ci node scripts/db-migrate-runtime.mjs
+          docker exec edu-canvas-ci node scripts/database-migrate-runtime.mjs
 
           for attempt in $(seq 1 30); do
             if curl --fail --silent http://127.0.0.1:3010/api/health >/dev/null; then

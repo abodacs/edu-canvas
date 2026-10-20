@@ -1,9 +1,13 @@
-import type { DemoRole } from './demo-contract.schema'
+import { demoRoles } from "./demo-contract.schema";
+import type { DemoRole } from "./demo-contract.schema";
 
-export const demoRoles = ['teacher', 'student'] as const
+export { demoRoles } from "./demo-contract.schema";
 
-export type { DemoCounts, DemoRole, DemoSnapshot } from './demo-contract.schema'
+export type {
+  DemoCounts,
+  DemoRole,
+  DemoSnapshot,
+} from "./demo-contract.schema";
 
-export function isDemoRole(value: string): value is DemoRole {
-  return demoRoles.includes(value as DemoRole)
-}
+export const isDemoRole = (value: string): value is DemoRole =>
+  demoRoles.includes(value as DemoRole);

@@ -1,52 +1,54 @@
-import type { DemoRole, DemoSnapshot } from '@/shared/demo-contract'
-import { demoSnapshotSchema } from '@/shared/demo-contract.schema'
+import { demoSnapshotSchema } from "@/shared/demo-contract.schema";
 
-import { readServerConfig } from '../config'
-import { serverObservability } from '../observability.server'
-import type { ServerObservability } from '../observability.server'
-import { createFoundationPersistence } from '../persistence'
-import { demoSeed } from '../seed-data'
+import { readServerConfig } from "../config";
+import { serverObservability } from "../observability.server";
+import { createFoundationPersistence } from "../persistence";
+import { demoSeed } from "../seed-data";
 
-import { assertTenantAccess, getDemoSession } from './policy'
+import { assertTenantAccess, getDemoSession } from "./policy";
+import type { ServerObservability } from "../observability.server";
+import type { DemoRole, DemoSnapshot } from "@/shared/demo-contract";
+
+const DEMO_SNAPSHOT_OPERATION = "demo.snapshot";
 
 export interface ReadDemoSnapshotOptions {
-  observability?: ServerObservability
+  observability?: ServerObservability;
 }
 
-export async function readDemoSnapshot(
+export const readDemoSnapshot = async (
   role: DemoRole,
-  env: Record<string, string | undefined> = process.env,
-  options: ReadDemoSnapshotOptions = {},
-): Promise<DemoSnapshot> {
-  const config = readServerConfig(env)
-  const observability = options.observability ?? serverObservability
+  environment: Record<string, string | undefined> = process.env,
+  options: ReadDemoSnapshotOptions = {}
+): Promise<DemoSnapshot> => {
+  const config = readServerConfig(environment);
+  const observability = options.observability ?? serverObservability;
   if (config.issues.length > 0) {
     observability.captureError(
-      new Error('Demo environment configuration is invalid.'),
+      new Error("Demo environment configuration is invalid."),
       {
-        operation: 'demo.snapshot',
-        reason: 'invalid_configuration',
+        operation: DEMO_SNAPSHOT_OPERATION,
+        reason: "invalid_configuration",
         issueCodes: config.issues.map((issue) => issue.code),
-      },
-    )
-    throw new Error('Demo environment configuration is invalid.')
+      }
+    );
+    throw new Error("Demo environment configuration is invalid.");
   }
 
-  let session
+  let session;
   try {
-    session = getDemoSession(role)
-    assertTenantAccess(session, demoSeed.tenant.id)
+    session = getDemoSession(role);
+    assertTenantAccess(session, demoSeed.tenant.id);
   } catch (error) {
     observability.captureError(error, {
-      operation: 'demo.snapshot',
-      reason: 'access_denied',
-    })
-    throw error
+      operation: DEMO_SNAPSHOT_OPERATION,
+      reason: "access_denied",
+    });
+    throw error;
   }
 
   const counts = await createFoundationPersistence(config, {
     observability,
-  }).readDemoCounts()
+  }).readDemoCounts();
 
   try {
     return demoSnapshotSchema.parse({
@@ -69,12 +71,12 @@ export async function readDemoSnapshot(
         graphVersion: demoSeed.activityVersion.graphVersion,
       },
       seededCounts: counts,
-    })
+    });
   } catch (error) {
     observability.captureError(error, {
-      operation: 'demo.snapshot',
-      reason: 'contract_violation',
-    })
-    throw error
+      operation: DEMO_SNAPSHOT_OPERATION,
+      reason: "contract_violation",
+    });
+    throw error;
   }
-}
+};

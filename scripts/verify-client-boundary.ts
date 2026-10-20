@@ -1,39 +1,45 @@
-import { readFile, readdir } from 'node:fs/promises'
-import { join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { readFile, readdir } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const { join } = path;
 
 const publicDirectory = fileURLToPath(
-  new URL('../.output/public/', import.meta.url),
-)
+  new URL("../.output/public/", import.meta.url)
+);
 const forbiddenTokens = [
-  'answerKey',
-  'OPENAI_API_KEY',
-  'DATABASE_URL',
-  'postgresql://',
-  'SENTRY_DSN',
-  'SENTRY_AUTH_TOKEN',
-  '@sentry/node',
-  'observability.server',
-  'edu-canvas.server-error.v1',
-  'sendDefaultPii',
-  'identity_demo_student',
-]
-const entries = await readdir(publicDirectory, { recursive: true })
+  "answerKey",
+  "OPENAI_API_KEY",
+  "DATABASE_URL",
+  "postgresql://",
+  "SENTRY_DSN",
+  "SENTRY_AUTH_TOKEN",
+  "@sentry/node",
+  "observability.server",
+  "edu-canvas.server-error.v1",
+  "sendDefaultPii",
+  "identity_demo_student",
+];
+const entries = await readdir(publicDirectory, { recursive: true });
 
-for (const entry of entries) {
-  const path = join(publicDirectory, entry)
-  let contents: string
-  try {
-    contents = await readFile(path, 'utf8')
-  } catch {
-    continue
-  }
-
-  for (const token of forbiddenTokens) {
-    if (contents.includes(token)) {
-      throw new Error(`Client boundary violation: ${token} found in ${entry}.`)
+await Promise.all(
+  entries.map(async (entry) => {
+    const entryPath = join(publicDirectory, entry);
+    let contents: string;
+    try {
+      contents = await readFile(entryPath, "utf-8");
+    } catch {
+      return;
     }
-  }
-}
 
-console.log('PASS client bundle contains no server-only secret/key markers.')
+    for (const token of forbiddenTokens) {
+      if (contents.includes(token)) {
+        throw new Error(
+          `Client boundary violation: ${token} found in ${entry}.`
+        );
+      }
+    }
+  })
+);
+
+console.log("PASS client bundle contains no server-only secret/key markers.");

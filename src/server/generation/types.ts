@@ -1,224 +1,228 @@
-import type { DemoSession } from '@/server/demo/policy'
-import type { PublicGenerationResult } from '@/shared/generation-contract'
+import type { DemoSession } from "@/server/demo/policy";
+import type { PublicGenerationResult } from "@/shared/generation-contract";
 
 import type {
   NormalizedGenerationRequest,
   ProviderProvenance,
-} from './provider'
+} from "./provider";
 
-export const variantKindValues = ['standard', 'scaffold', 'challenge'] as const
+export const variantKindValues = ["standard", "scaffold", "challenge"] as const;
 
-export type VariantKind = (typeof variantKindValues)[number]
+export type VariantKind = (typeof variantKindValues)[number];
 
 export interface ProviderItem {
-  id: string
-  label: string
+  id: string;
+  label: string;
 }
 
 export interface ProviderRelationship {
-  id: string
-  sourceId: string
-  targetId: string
+  id: string;
+  sourceId: string;
+  targetId: string;
 }
 
 export interface ProviderVariant {
-  id: string
-  kind: VariantKind
-  title: string
-  instructions: string
-  sourceItems: ProviderItem[]
-  targetItems: ProviderItem[]
-  distractorItems: ProviderItem[]
-  relationships: ProviderRelationship[]
-  hints: string[]
+  id: string;
+  kind: VariantKind;
+  title: string;
+  instructions: string;
+  sourceItems: ProviderItem[];
+  targetItems: ProviderItem[];
+  distractorItems: ProviderItem[];
+  relationships: ProviderRelationship[];
+  hints: string[];
   feedback: {
-    correct: string
-    incorrect: string
-  }
+    correct: string;
+    incorrect: string;
+  };
   languageMetadata: {
-    language: 'en' | 'ar'
-    direction: 'ltr' | 'rtl'
-    locale: string
-  }
+    language: "en" | "ar";
+    direction: "ltr" | "rtl";
+    locale: string;
+  };
   accessibilityMetadata: {
-    instructions: string
-    sourceGroupLabel: string
-    targetGroupLabel: string
-  }
+    instructions: string;
+    sourceGroupLabel: string;
+    targetGroupLabel: string;
+  };
 }
 
 export interface ProviderLearningPathStep {
-  nodeId: string
-  screenPurposeId: string
+  nodeId: string;
+  screenPurposeId: string;
 }
 
 export interface ProviderLearningPath {
-  direction: 'forward' | 'reverse'
-  steps: ProviderLearningPathStep[]
-  rationale: string
-  nextScreenRationale: string
+  direction: "forward" | "reverse";
+  steps: ProviderLearningPathStep[];
+  rationale: string;
+  nextScreenRationale: string;
 }
 
-export type LearningPathStepRole = 'prerequisite' | 'target'
+export type LearningPathStepRole = "prerequisite" | "target";
 
 export interface ValidatedLearningPathStep {
-  nodeId: string
-  label: string
-  role: LearningPathStepRole
-  screenPurposeId: string
-  screenPurpose: string
+  nodeId: string;
+  label: string;
+  role: LearningPathStepRole;
+  screenPurposeId: string;
+  screenPurpose: string;
 }
 
 export interface LearningPathVersionPins {
-  draftId: string
-  graphVersion: string
-  catalogVersion: string
-  modelVersion: string
-  validatorVersion: string
+  draftId: string;
+  graphVersion: string;
+  catalogVersion: string;
+  modelVersion: string;
+  validatorVersion: string;
 }
 
 export interface ValidatedLearningPath {
-  direction: 'forward'
-  steps: ValidatedLearningPathStep[]
-  rationale: string
-  nextScreenRationale: string
-  versionPins: LearningPathVersionPins
+  direction: "forward";
+  steps: ValidatedLearningPathStep[];
+  rationale: string;
+  nextScreenRationale: string;
+  versionPins: LearningPathVersionPins;
 }
 
 export interface ProviderLessonDraft {
-  variants: ProviderVariant[]
-  learningPath?: ProviderLearningPath
+  variants: ProviderVariant[];
+  learningPath?: ProviderLearningPath;
 }
 
-export interface LessonDraft extends Omit<ProviderLessonDraft, 'learningPath'> {
-  learningPath: ValidatedLearningPath
-  requestId: string
-  input: NormalizedGenerationRequest
-  provenance: ProviderProvenance
-  createdAt: string
+export interface LessonDraft extends Omit<ProviderLessonDraft, "learningPath"> {
+  learningPath: ValidatedLearningPath;
+  requestId: string;
+  input: NormalizedGenerationRequest;
+  provenance: ProviderProvenance;
+  createdAt: string;
 }
 
-export type DiagnosticSeverity = 'warning' | 'error'
+export type DiagnosticSeverity = "warning" | "error";
 
 export interface GenerationDiagnostic {
-  severity: DiagnosticSeverity
-  code: string
-  message: string
-  variantId?: string
-  field?: string
-  nodeId?: string
-  validator?: 'curriculum' | 'learning-quality'
-  verdict?: 'pass' | 'warning' | 'block'
-  validatorVersion?: string
-  recommendation?: string
+  severity: DiagnosticSeverity;
+  code: string;
+  message: string;
+  variantId?: string;
+  field?: string;
+  nodeId?: string;
+  validator?: "curriculum" | "learning-quality";
+  verdict?: "pass" | "warning" | "block";
+  validatorVersion?: string;
+  recommendation?: string;
 }
 
 export interface ValidationSuccess {
-  ok: true
-  draft: ProviderLessonDraft
-  diagnostics: GenerationDiagnostic[]
+  ok: true;
+  draft: ProviderLessonDraft;
+  diagnostics: GenerationDiagnostic[];
 }
 
 export interface ValidationFailure {
-  ok: false
-  diagnostics: GenerationDiagnostic[]
+  ok: false;
+  diagnostics: GenerationDiagnostic[];
 }
 
-export type ValidationResult = ValidationSuccess | ValidationFailure
+export type ValidationResult = ValidationSuccess | ValidationFailure;
 
 export type GenerationState =
-  | 'requested'
-  | 'generating'
-  | 'ready-for-review'
-  | 'blocked-by-validation'
-  | 'blocked-by-moderation'
-  | 'failed-retryable'
-  | 'failed-terminal'
+  | "requested"
+  | "generating"
+  | "ready-for-review"
+  | "blocked-by-validation"
+  | "blocked-by-moderation"
+  | "failed-retryable"
+  | "failed-terminal";
 
 export interface GenerationAttemptRecord {
-  attemptNumber: number
-  idempotencyKey: string
-  state: GenerationState
-  correctionAttempted: boolean
-  diagnostics: GenerationDiagnostic[]
-  provenance?: ProviderProvenance
-  createdAt: string
+  attemptNumber: number;
+  idempotencyKey: string;
+  state: GenerationState;
+  correctionAttempted: boolean;
+  diagnostics: GenerationDiagnostic[];
+  provenance?: ProviderProvenance;
+  createdAt: string;
 }
 
 export interface LessonGenerationRecord {
-  requestId: string
-  tenantId: string
-  teacherId: string
-  input: NormalizedGenerationRequest
-  state: GenerationState
-  attempt: number
-  diagnostics: GenerationDiagnostic[]
-  provenance?: ProviderProvenance
-  draft?: LessonDraft
-  attempts: GenerationAttemptRecord[]
-  createdAt: string
-  updatedAt: string
+  requestId: string;
+  tenantId: string;
+  teacherId: string;
+  input: NormalizedGenerationRequest;
+  state: GenerationState;
+  attempt: number;
+  diagnostics: GenerationDiagnostic[];
+  provenance?: ProviderProvenance;
+  draft?: LessonDraft | null;
+  attempts: GenerationAttemptRecord[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface GenerationClaim {
-  claimed: boolean
-  record: LessonGenerationRecord
+  claimed: boolean;
+  record: LessonGenerationRecord;
 }
 
 export interface GenerationWriteExpectation {
-  attempt: number
-  updatedAt: string
+  attempt: number;
+  updatedAt: string;
 }
 
-export const generationClaimLeaseMs = 30_000
-export const generationDuplicateWaitMs = 5_000
+export const generationClaimLeaseMs = 30_000;
+export const generationDuplicateWaitMs = 5000;
 
-export function isGenerationClaimExpired(
+export const isGenerationClaimExpired = (
   record: LessonGenerationRecord,
-  now = Date.now(),
-): boolean {
-  if (record.state !== 'generating') return false
-  const updatedAt = Date.parse(record.updatedAt)
-  return Number.isFinite(updatedAt) && now - updatedAt >= generationClaimLeaseMs
-}
-
-export function generationClaimExpiredDiagnostic(): GenerationDiagnostic {
-  return {
-    severity: 'error',
-    code: 'GENERATION_CLAIM_EXPIRED',
-    message:
-      'The previous generation attempt expired before completion. Try this draft again.',
+  now = Date.now()
+): boolean => {
+  if (record.state !== "generating") {
+    return false;
   }
-}
+  const updatedAt = Date.parse(record.updatedAt);
+  return (
+    Number.isFinite(updatedAt) && now - updatedAt >= generationClaimLeaseMs
+  );
+};
+
+export const generationClaimExpiredDiagnostic = (): GenerationDiagnostic => {
+  return {
+    severity: "error",
+    code: "GENERATION_CLAIM_EXPIRED",
+    message:
+      "The previous generation attempt expired before completion. Try this draft again.",
+  };
+};
 
 export interface GenerationPersistence {
   saveGeneration: (
     record: LessonGenerationRecord,
-    expected: GenerationWriteExpectation,
-  ) => Promise<boolean>
-  claimGeneration: (record: LessonGenerationRecord) => Promise<GenerationClaim>
+    expected: GenerationWriteExpectation
+  ) => Promise<boolean>;
+  claimGeneration: (record: LessonGenerationRecord) => Promise<GenerationClaim>;
   expireGenerationClaim: (
     tenantId: string,
     requestId: string,
     expectedUpdatedAt: string,
-    updatedAt: string,
-  ) => Promise<LessonGenerationRecord | undefined>
+    updatedAt: string
+  ) => Promise<LessonGenerationRecord | undefined>;
   findGenerationByIdempotencyKey: (
     tenantId: string,
-    idempotencyKey: string,
-  ) => Promise<LessonGenerationRecord | undefined>
+    idempotencyKey: string
+  ) => Promise<LessonGenerationRecord | undefined>;
   readGeneration: (
     tenantId: string,
-    requestId: string,
-  ) => Promise<LessonGenerationRecord | undefined>
+    requestId: string
+  ) => Promise<LessonGenerationRecord | undefined>;
 }
 
 export interface GenerationCommand {
-  session: DemoSession
-  input: unknown
+  session: DemoSession;
+  input: unknown;
 }
 
 export interface GenerationServiceResult {
-  record: LessonGenerationRecord
-  publicResult: PublicGenerationResult
+  record: LessonGenerationRecord;
+  publicResult: PublicGenerationResult;
 }

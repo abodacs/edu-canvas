@@ -1,16 +1,16 @@
 name: Task
 description: Track a discrete piece of work
-labels: ['task']
+labels: ["task"]
 body:
   - type: markdown
     attributes:
-      value: 'Use this for a single, well-scoped task. One issue = one task.'
+      value: "Use this for a single, well-scoped task. One issue = one task."
   - type: input
     id: summary
     attributes:
       label: Summary
       description: Short description of the task
-      placeholder: 'Implement X'
+      placeholder: "Implement X"
     validations:
       required: true
   - type: textarea
@@ -18,7 +18,7 @@ body:
     attributes:
       label: Problem / Context
       description: Why does this task exist?
-      placeholder: 'We need X because...'
+      placeholder: "We need X because..."
   - type: textarea
     id: scope
     attributes:
@@ -30,7 +30,7 @@ body:
     attributes:
       label: Acceptance Criteria
       description: What must be true for this to be done?
-      placeholder: '- [ ] ...'
+      placeholder: "- [ ] ..."
     validations:
       required: true
   - type: dropdown

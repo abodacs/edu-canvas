@@ -19,7 +19,7 @@ The foundation currently returns safe health/readiness payloads, but the Postgre
 ## Options considered
 
 | Option | Pros | Cons |
-|---|---|---|
+| --- | --- | --- |
 | **A. One scrubbed server seam with optional Sentry** | Consistent policy; structured logs work everywhere; vendor can be replaced; easy to test at the boundary | Requires maintaining the scrubber and a small adapter |
 | B. Call Sentry directly from each server module | Quick initial wiring | Duplicated policy; easy for one path to leak data or skip fallback |
 | C. Log raw errors and rely on vendor-side redaction | Preserves more debugging detail | Sends sensitive data outside the process before it can be controlled; rejected |
@@ -31,9 +31,9 @@ The event contract is diagnostic, not a copy of the request. Callers may provide
 
 ## Consequences
 
-- + A deliberate server failure produces a stable structured event for local logs and a scrubbed Sentry event when configured.
-- + PostgreSQL and readiness failures retain user-safe HTTP behavior while becoming diagnosable to operators.
-- + Client-boundary checks explicitly reject Sentry and observability markers, the DSN variable, and seeded identity markers in browser output.
+- - A deliberate server failure produces a stable structured event for local logs and a scrubbed Sentry event when configured.
+- - PostgreSQL and readiness failures retain user-safe HTTP behavior while becoming diagnosable to operators.
+- - Client-boundary checks explicitly reject Sentry and observability markers, the DSN variable, and seeded identity markers in browser output.
 - − Error messages and stacks may lose useful detail when they contain sensitive-looking values; operators should use operation names and safe codes for correlation.
 - − This is error visibility only. Metrics, alerting dashboards, product analytics, and vendor calls outside the seam remain out of scope.
 

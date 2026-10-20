@@ -27,7 +27,7 @@ This document records the decisions, contradictions, and unresolved questions di
 ## Question register
 
 | # | Topic / question | Recorded outcome |
-|---:|---|---|
+| --: | --- | --- |
 | 1 | What is the v1 workflow? | **Locked:** Product vision is natural-language generation of standards-aligned visual learning workspaces; later narrowed to matching first. |
 | 2 | Which activity ships first? | **Locked:** Matching only. |
 | 3 | Must teachers approve generated activities? | **Locked:** Mandatory teacher review. |

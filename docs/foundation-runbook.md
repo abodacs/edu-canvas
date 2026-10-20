@@ -1,10 +1,6 @@
 # Foundation and lesson-generation runbook — issues #2–#4, #18
 
-This runbook covers the deployable walking-skeleton foundation, the first
-teacher authoring slice, bounded semantic validation, and the allowlisted A2UI
-teacher preview. Lesson drafts are structurally and semantically reviewed,
-persisted, and kept in a teacher-review state; approval, publication, grading,
-and adaptation remain later slices.
+This runbook covers the deployable walking-skeleton foundation, the first teacher authoring slice, bounded semantic validation, and the allowlisted A2UI teacher preview. Lesson drafts are structurally and semantically reviewed, persisted, and kept in a teacher-review state; approval, publication, grading, and adaptation remain later slices.
 
 ## Clean checkout
 
@@ -48,17 +44,17 @@ pnpm smoke
 
 Copy `.env.example` to `.env` only when you need local overrides. Unprefixed values are server-only; do not add secrets to `VITE_*` variables or client code.
 
-| Variable              | Default                   | Meaning                                                        |
-| --------------------- | ------------------------- | -------------------------------------------------------------- |
-| `APP_ENV`             | `development`             | `development`, `preview`, or `production`                      |
-| `DEMO_MODE`           | `true` outside production | Keeps the seeded demo path explicit                            |
-| `SYNTHETIC_DATA_ONLY` | `true`                    | Real-student mode is blocked by the foundation                 |
-| `DATABASE_URL`        | unset                     | Optional `postgres://` or `postgresql://` persistence URL      |
-| `PERSISTENCE_ADAPTER` | `postgres`                | Server-only PostgreSQL implementation: `postgres` or `drizzle` |
-| `SENTRY_DSN`          | unset                     | Optional server-only Sentry delivery for scrubbed errors       |
-| `OPENAI_API_KEY`      | unset in demo mode        | Server-only credential required when `DEMO_MODE=false`         |
-| `OPENAI_MODEL`        | `gpt-5.6`                 | Server-selected structured-output model                        |
-| `OPENAI_BASE_URL`     | OpenAI Responses API      | HTTPS provider endpoint; loopback HTTP is test-only            |
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `APP_ENV` | `development` | `development`, `preview`, or `production` |
+| `DEMO_MODE` | `true` outside production | Keeps the seeded demo path explicit |
+| `SYNTHETIC_DATA_ONLY` | `true` | Real-student mode is blocked by the foundation |
+| `DATABASE_URL` | unset | Optional `postgres://` or `postgresql://` persistence URL |
+| `PERSISTENCE_ADAPTER` | `postgres` | Server-only PostgreSQL implementation: `postgres` or `drizzle` |
+| `SENTRY_DSN` | unset | Optional server-only Sentry delivery for scrubbed errors |
+| `OPENAI_API_KEY` | unset in demo mode | Server-only credential required when `DEMO_MODE=false` |
+| `OPENAI_MODEL` | `gpt-5.6` | Server-selected structured-output model |
+| `OPENAI_BASE_URL` | OpenAI Responses API | HTTPS provider endpoint; loopback HTTP is test-only |
 
 Invalid configuration fails readiness with field-level, secret-free diagnostics. The server never returns a database URL, API key, or private answer key in an error response.
 
@@ -109,39 +105,16 @@ For teacher lesson generation, the trace is:
 7. `src/server/generation/projection.ts` strips private relationships before returning the browser-safe draft. Semantic warnings are visible in the public diagnostics; semantic blocks and incomplete retryable validation return no draft.
 8. `src/server/persistence/seeded.ts` or `src/server/persistence/postgres.ts` stores the request, attempts, diagnostics, and provenance.
 
-The seeded teacher demo accepts `equivalent fractions for grade 4` and returns
-exactly two standard variants, one scaffold, and one challenge variant. The
-default fixture deliberately produces a teacher-visible quality warning when
-variants share the same interaction structure; this is not a rewrite of the
-canonical draft. A browser retry with the same idempotency key returns the existing attempt. The
-seeded adapter's claim is atomic within its single-process demo; the
-PostgreSQL adapter uses the database uniqueness constraint and transaction, so
-concurrent duplicate submissions cannot invoke the provider twice within the
-configured deployment. `Try this draft again` creates a new attempt on the
-same request history. Duplicate readers wait for a bounded window; an
-abandoned `generating` claim transitions to `failed-retryable` through a
-tenant- and timestamp-scoped compare-and-swap, and final writes use the same
-ownership guard so an expired worker cannot overwrite a later retry.
+The seeded teacher demo accepts `equivalent fractions for grade 4` and returns exactly two standard variants, one scaffold, and one challenge variant. The default fixture deliberately produces a teacher-visible quality warning when variants share the same interaction structure; this is not a rewrite of the canonical draft. A browser retry with the same idempotency key returns the existing attempt. The seeded adapter's claim is atomic within its single-process demo; the PostgreSQL adapter uses the database uniqueness constraint and transaction, so concurrent duplicate submissions cannot invoke the provider twice within the configured deployment. `Try this draft again` creates a new attempt on the same request history. Duplicate readers wait for a bounded window; an abandoned `generating` claim transitions to `failed-retryable` through a tenant- and timestamp-scoped compare-and-swap, and final writes use the same ownership guard so an expired worker cannot overwrite a later retry.
 
 For a teacher preview, the route trace is:
 
-1. `src/routes/api/a2ui/preview.ts` delegates to
-   `src/server/a2ui/preview.server.ts`, which validates the teacher role,
-   request ID, pinned catalog version, tenant, and persisted ready-for-review
-   draft.
-2. `src/server/a2ui/compiler.ts` projects only the public lesson fields into
-   four A2UI v0.9.1 surfaces from the immutable `matching-v1` catalog.
-3. `src/server/a2ui/stream.ts` validates each message again and emits the
-   surfaces over `text/event-stream`, ending with a surface-count completion
-   event.
-4. `src/components/a2ui/preview-stream.ts` and
-   `src/components/a2ui/renderer.ts` validate and apply the stream before
-   `src/components/a2ui/lesson-preview.tsx` renders semantic DOM controls.
+1. `src/routes/api/a2ui/preview.ts` delegates to `src/server/a2ui/preview.server.ts`, which validates the teacher role, request ID, pinned catalog version, tenant, and persisted ready-for-review draft.
+2. `src/server/a2ui/compiler.ts` projects only the public lesson fields into four A2UI v0.9.1 surfaces from the immutable `matching-v1` catalog.
+3. `src/server/a2ui/stream.ts` validates each message again and emits the surfaces over `text/event-stream`, ending with a surface-count completion event.
+4. `src/components/a2ui/preview-stream.ts` and `src/components/a2ui/renderer.ts` validate and apply the stream before `src/components/a2ui/lesson-preview.tsx` renders semantic DOM controls.
 
-The preview intentionally carries no answer key, mastery, permissions,
-provenance, or raw provider data. Unknown components/actions, unsupported
-catalog or protocol versions, executable markup, arbitrary styling, and
-duplicate component IDs produce a recoverable blocked state.
+The preview intentionally carries no answer key, mastery, permissions, provenance, or raw provider data. Unknown components/actions, unsupported catalog or protocol versions, executable markup, arbitrary styling, and duplicate component IDs produce a recoverable blocked state.
 
 ## Health and readiness
 

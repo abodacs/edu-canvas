@@ -1,19 +1,19 @@
-import { defineConfig } from 'vitest/config'
+import { defineConfig } from "vitest/config";
 
-export default defineConfig({
+const config = defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
   test: {
-    environment: 'node',
-    include: ['src/**/*.test.ts'],
-    reporters: ['default'],
+    environment: "node",
+    include: ["src/**/*.test.ts"],
+    reporters: ["default"],
     coverage: {
-      provider: 'v8',
-      include: ['src/**/*.ts'],
-      exclude: ['src/**/*.test.ts', 'src/routeTree.gen.ts'],
-      reporter: ['text', 'html'],
-      reportsDirectory: './coverage',
+      provider: "v8",
+      include: ["src/**/*.ts"],
+      exclude: ["src/**/*.test.ts", "src/routeTree.gen.ts"],
+      reporter: ["text", "html"],
+      reportsDirectory: "./coverage",
       thresholds: {
         // Ratcheted to the gated baseline measured on 2026-07-16 (ticket #13):
         // Stmts 50.68 / Branches 65.15 / Functions 46.34 / Lines 50.7 over src/**/*.ts.
@@ -27,4 +27,6 @@ export default defineConfig({
       },
     },
   },
-})
+});
+
+export default config;

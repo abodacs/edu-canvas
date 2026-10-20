@@ -16,18 +16,18 @@ connection reveal → next activity → teacher reason
 
 ## Every layer must be real (no stub across a boundary)
 
-| Layer                  | What must exist                                                                                                                                                                                                      | Stub OK?               |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| HTTP / server boundary | TanStack Start server function: receives teacher prompt, returns A2UI                                                                                                                                                | No                     |
-| GPT-5.6 call           | Real server-side OpenAI call producing a structured lesson draft                                                                                                                                                     | No                     |
-| Validation             | Server validates structure and bounded curriculum/learning quality → IDs, source/target, distractors, 4 variants, a11y metadata; returns `pass`, `warning`, or `hard_block`, with hard blocks stopping preview/Share | No                     |
-| A2UI compilation       | Server compiles validated draft → A2UI v0.9.1 messages from the allowlisted semantic catalog                                                                                                                         | No                     |
-| Persistence            | PostgreSQL (or production-shaped seeded repo): tenant, teacher, student, standards, graph, activity versions, attempts                                                                                               | Seeded OK; schema real |
-| Auth                   | Seeded judge demo account; real auth deferred                                                                                                                                                                        | Seeded OK              |
-| Teacher UI             | Composer + bulk-approval screen (4 variants, one edit, visible validator warning, reverse prerequisite path, and forward story)                                                                                      | No                     |
-| Student UI             | Responsive semantic-DOM matching screen, multi-select, EN/AR toggle, RTL, keyboard path, reduced motion; no experimental canvas dependency                                                                           | No                     |
-| Grading                | Server computes score from the private answer key; **client score ignored**                                                                                                                                          | No                     |
-| Reveal + adapt         | Connection reveal + one deterministic next-activity decision from a small prerequisite graph                                                                                                                         | No                     |
+| Layer | What must exist | Stub OK? |
+| --- | --- | --- |
+| HTTP / server boundary | TanStack Start server function: receives teacher prompt, returns A2UI | No |
+| GPT-5.6 call | Real server-side OpenAI call producing a structured lesson draft | No |
+| Validation | Server validates structure and bounded curriculum/learning quality → IDs, source/target, distractors, 4 variants, a11y metadata; returns `pass`, `warning`, or `hard_block`, with hard blocks stopping preview/Share | No |
+| A2UI compilation | Server compiles validated draft → A2UI v0.9.1 messages from the allowlisted semantic catalog | No |
+| Persistence | PostgreSQL (or production-shaped seeded repo): tenant, teacher, student, standards, graph, activity versions, attempts | Seeded OK; schema real |
+| Auth | Seeded judge demo account; real auth deferred | Seeded OK |
+| Teacher UI | Composer + bulk-approval screen (4 variants, one edit, visible validator warning, reverse prerequisite path, and forward story) | No |
+| Student UI | Responsive semantic-DOM matching screen, multi-select, EN/AR toggle, RTL, keyboard path, reduced motion; no experimental canvas dependency | No |
+| Grading | Server computes score from the private answer key; **client score ignored** | No |
+| Reveal + adapt | Connection reveal + one deterministic next-activity decision from a small prerequisite graph | No |
 
 ## Acceptance criteria
 

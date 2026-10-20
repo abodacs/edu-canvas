@@ -25,43 +25,43 @@ Adaptive, bilingual (**English / Arabic, RTL**) visual-learning platform for **G
 
 ## Repo layout
 
-| Path                            | What                                                                |
-| ------------------------------- | ------------------------------------------------------------------- |
-| `PRD_GRILL_LOG.md`              | 170-question product decision log — the spec                        |
-| `DEVPOST_WINNING_STRATEGY.md`   | Competition cut + 48-hour execution plan                            |
-| `docs/product-strategy.md`      | North-star outcome, issue-driven loop, and seven-layer audit        |
-| `docs/observed-behaviour.md`    | Evidence boundary, job stories, and research plan                   |
-| `docs/walking-skeleton.md`      | The thinnest end-to-end demo slice (the build contract)             |
-| `docs/foundation-runbook.md`    | Operator/developer setup, redeploy, and handoff checks for issue #2 |
-| `docs/release-fly-supabase.md`  | Fly.io + Supabase Postgres release procedure and launch gates       |
-| `docs/architecture-harness.md`  | Guardrails for state ownership, layer imports, and contract drift   |
-| `docs/agdr/`                    | Agent Decision Records (architecture decisions)                     |
-| `docs/security/threat-model.md` | STRIDE threat model                                                 |
-| `.impeccable.md`                | Design context                                                      |
+| Path | What |
+| --- | --- |
+| `PRD_GRILL_LOG.md` | 170-question product decision log — the spec |
+| `DEVPOST_WINNING_STRATEGY.md` | Competition cut + 48-hour execution plan |
+| `docs/product-strategy.md` | North-star outcome, issue-driven loop, and seven-layer audit |
+| `docs/observed-behaviour.md` | Evidence boundary, job stories, and research plan |
+| `docs/walking-skeleton.md` | The thinnest end-to-end demo slice (the build contract) |
+| `docs/foundation-runbook.md` | Operator/developer setup, redeploy, and handoff checks for issue #2 |
+| `docs/release-fly-supabase.md` | Fly.io + Supabase Postgres release procedure and launch gates |
+| `docs/architecture-harness.md` | Guardrails for state ownership, layer imports, and contract drift |
+| `docs/agdr/` | Agent Decision Records (architecture decisions) |
+| `docs/security/threat-model.md` | STRIDE threat model |
+| `.impeccable.md` | Design context |
 
 ## Runtime navigation
 
 Start from the delivery module, then follow the domain-named server module:
 
-| Behavior                               | Start here                                                  |
-| -------------------------------------- | ----------------------------------------------------------- |
-| Seeded teacher/student demo            | `src/routes/demo/$role.tsx` → `src/server/demo/`            |
-| Teacher lesson generation              | `src/routes/demo/$role.tsx` → `src/server/generation/`      |
-| Demo role policy and tenant assertion  | `src/server/demo/policy.ts`                                 |
-| Public demo read model                 | `src/server/demo/read-model.ts`                             |
-| Server-function delivery seam          | `src/server/demo/server-function.ts`                        |
-| Semantic lesson validation             | `src/server/generation/semantic-validation.ts`              |
-| A2UI catalog contract and validation   | `src/shared/a2ui-contract.ts`                               |
-| A2UI preview delivery seam             | `src/server/a2ui/preview.server.ts`                         |
-| A2UI lesson compiler and SSE delivery  | `src/server/a2ui/compiler.ts` → `src/server/a2ui/stream.ts` |
-| Semantic A2UI preview renderer         | `src/components/a2ui/lesson-preview.tsx`                    |
-| Persistence choice and interface       | `src/server/persistence.ts`                                 |
-| Seeded/PostgreSQL persistence adapters | `src/server/persistence/`                                   |
-| Browser-safe demo contract             | `src/shared/demo-contract.ts`                               |
-| Browser-safe generation contract       | `src/shared/generation-contract.ts`                         |
-| Canonical synthetic curriculum fixture | `src/server/seed-data.ts`                                   |
-| PostgreSQL seed implementation         | `src/server/persistence/seed-postgres.ts`                   |
-| Operator seed entry point              | `scripts/db-seed.ts`                                        |
+| Behavior | Start here |
+| --- | --- |
+| Seeded teacher/student demo | `src/routes/demo/$role.tsx` → `src/server/demo/` |
+| Teacher lesson generation | `src/routes/demo/$role.tsx` → `src/server/generation/` |
+| Demo role policy and tenant assertion | `src/server/demo/policy.ts` |
+| Public demo read model | `src/server/demo/read-model.ts` |
+| Server-function delivery seam | `src/server/demo/server-function.ts` |
+| Semantic lesson validation | `src/server/generation/semantic-validation.ts` |
+| A2UI catalog contract and validation | `src/shared/a2ui-contract.ts` |
+| A2UI preview delivery seam | `src/server/a2ui/preview.server.ts` |
+| A2UI lesson compiler and SSE delivery | `src/server/a2ui/compiler.ts` → `src/server/a2ui/stream.ts` |
+| Semantic A2UI preview renderer | `src/components/a2ui/lesson-preview.tsx` |
+| Persistence choice and interface | `src/server/persistence.ts` |
+| Seeded/PostgreSQL persistence adapters | `src/server/persistence/` |
+| Browser-safe demo contract | `src/shared/demo-contract.ts` |
+| Browser-safe generation contract | `src/shared/generation-contract.ts` |
+| Canonical synthetic curriculum fixture | `src/server/seed-data.ts` |
+| PostgreSQL seed implementation | `src/server/persistence/seed-postgres.ts` |
+| Operator seed entry point | `scripts/db-seed.ts` |
 
 The route should stay a delivery module. Domain rules, tenant checks, persistence choice, and public projection belong behind the named server seams. The shared seam contains only data the browser is allowed to receive.
 

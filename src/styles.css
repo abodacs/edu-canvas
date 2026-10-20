@@ -1,50 +1,61 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
-@import 'shadcn/tailwind.css';
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.965 0.018 86);
-  --foreground: oklch(0.235 0.028 65);
-  --card: oklch(0.985 0.012 86);
-  --card-foreground: oklch(0.235 0.028 65);
-  --popover: oklch(0.985 0.012 86);
-  --popover-foreground: oklch(0.235 0.028 65);
-  --primary: oklch(0.45 0.15 158);
-  --primary-foreground: oklch(0.98 0.015 86);
-  --secondary: oklch(0.89 0.045 87);
-  --secondary-foreground: oklch(0.28 0.035 67);
-  --muted: oklch(0.925 0.026 86);
-  --muted-foreground: oklch(0.48 0.035 68);
-  --accent: oklch(0.91 0.065 77);
-  --accent-foreground: oklch(0.3 0.04 62);
-  --destructive: oklch(0.55 0.18 28);
-  --border: oklch(0.86 0.034 82);
-  --input: oklch(0.86 0.034 82);
-  --ring: oklch(0.45 0.15 158);
+  --background: oklch(96.5% 0.018 86deg);
+  --foreground: oklch(23.5% 0.028 65deg);
+  --card: oklch(98.5% 0.012 86deg);
+  --card-foreground: oklch(23.5% 0.028 65deg);
+  --popover: oklch(98.5% 0.012 86deg);
+  --popover-foreground: oklch(23.5% 0.028 65deg);
+  --primary: oklch(45% 0.15 158deg);
+  --primary-foreground: oklch(98% 0.015 86deg);
+  --secondary: oklch(89% 0.045 87deg);
+  --secondary-foreground: oklch(28% 0.035 67deg);
+  --muted: oklch(92.5% 0.026 86deg);
+  --muted-foreground: oklch(48% 0.035 68deg);
+  --accent: oklch(91% 0.065 77deg);
+  --accent-foreground: oklch(30% 0.04 62deg);
+  --destructive: oklch(55% 0.18 28deg);
+  --border: oklch(86% 0.034 82deg);
+  --input: oklch(86% 0.034 82deg);
+  --ring: oklch(45% 0.15 158deg);
   --radius: 0.75rem;
+
+  /* Teacher studio palette. */
+  --teacher-paper: oklch(96.5% 0.018 86deg);
+  --teacher-ink: oklch(23.5% 0.028 65deg);
+  --teacher-forest: oklch(34% 0.11 158deg);
+  --teacher-mint: oklch(92.5% 0.045 158deg);
+  --teacher-butter: oklch(92.5% 0.065 77deg);
+  --teacher-sky: oklch(92.5% 0.04 228deg);
+  --teacher-clay: oklch(78% 0.095 40deg);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 .dark {
-  --background: oklch(0.19 0.025 70);
-  --foreground: oklch(0.94 0.025 86);
-  --card: oklch(0.235 0.027 70);
-  --card-foreground: oklch(0.94 0.025 86);
-  --popover: oklch(0.235 0.027 70);
-  --popover-foreground: oklch(0.94 0.025 86);
-  --primary: oklch(0.72 0.15 158);
-  --primary-foreground: oklch(0.19 0.025 70);
-  --secondary: oklch(0.31 0.035 70);
-  --secondary-foreground: oklch(0.92 0.025 86);
-  --muted: oklch(0.28 0.03 70);
-  --muted-foreground: oklch(0.75 0.025 86);
-  --accent: oklch(0.4 0.07 77);
-  --accent-foreground: oklch(0.94 0.025 86);
-  --destructive: oklch(0.7 0.15 28);
-  --border: oklch(0.36 0.032 70);
-  --input: oklch(0.36 0.032 70);
-  --ring: oklch(0.72 0.15 158);
+  --background: oklch(19% 0.025 70deg);
+  --foreground: oklch(94% 0.025 86deg);
+  --card: oklch(23.5% 0.027 70deg);
+  --card-foreground: oklch(94% 0.025 86deg);
+  --popover: oklch(23.5% 0.027 70deg);
+  --popover-foreground: oklch(94% 0.025 86deg);
+  --primary: oklch(72% 0.15 158deg);
+  --primary-foreground: oklch(19% 0.025 70deg);
+  --secondary: oklch(31% 0.035 70deg);
+  --secondary-foreground: oklch(92% 0.025 86deg);
+  --muted: oklch(28% 0.03 70deg);
+  --muted-foreground: oklch(75% 0.025 86deg);
+  --accent: oklch(40% 0.07 77deg);
+  --accent-foreground: oklch(94% 0.025 86deg);
+  --destructive: oklch(70% 0.15 28deg);
+  --border: oklch(36% 0.032 70deg);
+  --input: oklch(36% 0.032 70deg);
+  --ring: oklch(72% 0.15 158deg);
 }
 
 @theme inline {
@@ -71,7 +82,7 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 0.25rem);
   --font-sans:
-    'Hanken Grotesk Variable', 'Trebuchet MS', 'Segoe UI', system-ui, sans-serif;
+    "Hanken Grotesk Variable", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
 }
 
 * {
@@ -79,31 +90,31 @@
 }
 
 html {
-  min-block-size: 100%;
   color-scheme: light;
+  min-block-size: 100%;
 }
 
 body {
-  min-block-size: 100%;
   margin: 0;
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
-  text-rendering: optimizeLegibility;
+  min-block-size: 100%;
+  text-rendering: optimizelegibility;
 }
 
 /* Ambient warmth: a soft, fixed wash behind the canvas. Subtle on purpose. */
 body::before {
   position: fixed;
-  inset: 0;
   z-index: -1;
-  pointer-events: none;
   background: radial-gradient(
     120% 75% at 50% -12%,
     color-mix(in oklch, var(--accent) 50%, transparent),
     transparent 62%
   );
-  content: '';
+  content: "";
+  inset: 0;
+  pointer-events: none;
 }
 
 button:not(:disabled),
@@ -123,9 +134,9 @@ a {
 
 .app-shell {
   min-block-size: 100dvh;
+  overflow-x: clip;
   padding-block: clamp(1rem, 4vw, 3.5rem);
   padding-inline: clamp(1rem, 5vw, 5rem);
-  overflow-x: clip;
 }
 
 .page-frame {
@@ -157,15 +168,15 @@ a {
 
 .brand-mark {
   display: grid;
-  inline-size: 2.75rem;
-  block-size: 2.75rem;
-  place-items: center;
   border-radius: 0.9rem;
   background: var(--foreground);
+  block-size: 2.75rem;
   color: var(--background);
   font-size: 0.78rem;
   font-weight: 800;
+  inline-size: 2.75rem;
   letter-spacing: 0.08em;
+  place-items: center;
 }
 
 .brand-name,
@@ -180,10 +191,10 @@ a {
 }
 
 .brand-subtitle {
-  margin-block-start: 0.1rem;
   color: var(--muted-foreground);
   font-size: 0.7rem;
   letter-spacing: 0.03em;
+  margin-block-start: 0.1rem;
 }
 
 .page-grid {
@@ -192,8 +203,8 @@ a {
 }
 
 .page-grid--hero {
-  grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
   align-items: end;
+  grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
 }
 
 .hero-copy {
@@ -222,25 +233,25 @@ h2 {
 }
 
 h1 {
-  max-inline-size: 11ch;
   font-size: clamp(2.9rem, 7vw, 6.3rem);
   font-weight: 700;
   line-height: 0.94;
+  max-inline-size: 11ch;
 }
 
 h2 {
-  max-inline-size: 23ch;
   font-size: clamp(1.75rem, 3vw, 2.7rem);
   font-weight: 650;
   line-height: 1;
+  max-inline-size: 23ch;
 }
 
 .hero-description {
-  max-inline-size: 65ch;
-  margin-block-start: 1.5rem;
   color: var(--muted-foreground);
   font-size: clamp(1rem, 1.5vw, 1.18rem);
   line-height: 1.65;
+  margin-block-start: 1.5rem;
+  max-inline-size: 65ch;
 }
 
 .hero-actions {
@@ -250,27 +261,27 @@ h2 {
 }
 
 .supporting-note {
-  gap: 0.5rem;
-  margin-block-start: 1rem;
   color: var(--muted-foreground);
   font-size: 0.82rem;
+  gap: 0.5rem;
   line-height: 1.5;
+  margin-block-start: 1rem;
 }
 
 .supporting-note svg,
 .security-note svg,
 .text-link svg {
-  inline-size: 1rem;
-  block-size: 1rem;
   flex: none;
+  block-size: 1rem;
+  inline-size: 1rem;
 }
 
 /* Shared with the seeded demo route. */
 .capability-list {
   display: grid;
-  gap: 1rem;
-  margin: 0;
   padding: 0;
+  margin: 0;
+  gap: 1rem;
   list-style: none;
 }
 
@@ -281,11 +292,11 @@ h2 {
 }
 
 .capability-list svg {
-  inline-size: 1.15rem;
-  block-size: 1.15rem;
   flex: none;
-  margin-block-start: 0.1rem;
+  block-size: 1.15rem;
   color: var(--primary);
+  inline-size: 1.15rem;
+  margin-block-start: 0.1rem;
 }
 
 .fixture-section,
@@ -300,11 +311,11 @@ h2 {
 }
 
 .text-link {
-  inline-size: fit-content;
-  gap: 0.35rem;
   color: var(--primary);
   font-size: 0.86rem;
   font-weight: 700;
+  gap: 0.35rem;
+  inline-size: fit-content;
   line-height: 1.4;
   text-decoration: underline;
   text-decoration-color: color-mix(in oklch, var(--primary), transparent 55%);
@@ -312,41 +323,41 @@ h2 {
 }
 
 .text-link:hover {
-  text-decoration-color: currentColor;
+  text-decoration-color: currentcolor;
 }
 
 .fixture-grid,
 .variant-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
   gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
 }
 
 /* Landing: teacher-first hero. */
 .hero-headline {
-  max-inline-size: 24ch;
   font-size: clamp(2rem, 4.5vw, 3.25rem);
-  line-height: 1.03;
   letter-spacing: -0.04em;
+  line-height: 1.03;
+  max-inline-size: 24ch;
   text-wrap: balance;
 }
 
 .cta-primary {
-  min-block-size: 3rem;
   font-size: 1rem;
+  min-block-size: 3rem;
 }
 
 /* Landing: seeded connection-reveal preview (public illustration only). */
 .reveal {
   display: grid;
-  gap: 1rem;
   align-self: center;
-  margin: 0;
   padding: clamp(1.25rem, 2vw, 1.75rem);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+  margin: 0;
   background: var(--card);
   box-shadow: 0 1px 0 color-mix(in oklch, var(--foreground) 6%, transparent);
+  gap: 1rem;
 }
 
 .reveal__head {
@@ -382,8 +393,8 @@ h2 {
   color: var(--muted-foreground);
   font-size: 0.7rem;
   font-weight: 700;
-  text-transform: uppercase;
   letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .reveal__source {
@@ -394,10 +405,10 @@ h2 {
 
 .reveal__targets {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.6rem;
-  margin: 0;
   padding: 0;
+  margin: 0;
+  gap: 0.6rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   list-style: none;
 }
 
@@ -405,19 +416,19 @@ h2 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
   padding: 0.55rem 0.85rem;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--background);
   font-size: 1rem;
   font-weight: 600;
+  gap: 0.5rem;
 }
 
 .reveal__target svg {
-  inline-size: 1rem;
   block-size: 1rem;
   color: var(--primary);
+  inline-size: 1rem;
 }
 
 .reveal__target.is-correct {
@@ -438,50 +449,50 @@ h2 {
 
 .reveal__equal {
   display: grid;
+  border-block-start: 1px dashed var(--border);
   gap: 0.4rem;
   margin-block-start: 0.25rem;
   padding-block-start: 0.85rem;
-  border-block-start: 1px dashed var(--border);
 }
 
 .reveal__equal-labels {
   display: flex;
   justify-content: space-between;
-  inline-size: 50%;
   color: var(--muted-foreground);
   font-size: 0.72rem;
+  inline-size: 50%;
 }
 
 .reveal__equal-bar {
   position: relative;
-  block-size: 0.7rem;
+  overflow: hidden;
   border-radius: 999px;
   background: color-mix(in oklch, var(--foreground) 8%, transparent);
-  overflow: hidden;
+  block-size: 0.7rem;
 }
 
 .reveal__equal-fill {
   position: absolute;
-  inset-block: 0;
-  inset-inline-start: 0;
-  inline-size: 50%;
   border-radius: 999px;
   background: var(--primary);
+  inline-size: 50%;
+  inset-block: 0;
+  inset-inline-start: 0;
 }
 
 .reveal__equal-note {
   margin: 0;
-  text-align: center;
   color: var(--muted-foreground);
   font-size: 0.72rem;
+  text-align: center;
 }
 
 .reveal__why {
   margin: 0;
-  text-align: center;
   color: var(--primary);
   font-size: 0.95rem;
   font-weight: 600;
+  text-align: center;
 }
 
 .reveal__caption {
@@ -493,12 +504,12 @@ h2 {
 /* Landing: teacher-time metric (target, from the PRD). */
 .metric {
   display: grid;
-  gap: 0.85rem;
-  margin-block-start: clamp(3.5rem, 8vw, 5.5rem);
   padding: clamp(1.25rem, 2.5vw, 1.75rem);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: color-mix(in oklch, var(--card) 70%, var(--accent));
+  gap: 0.85rem;
+  margin-block-start: clamp(3.5rem, 8vw, 5.5rem);
 }
 
 .metric__lead {
@@ -539,10 +550,10 @@ h2 {
 }
 
 .metric__arrow {
-  inline-size: 1.5rem;
-  block-size: 1.5rem;
   flex: none;
+  block-size: 1.5rem;
   color: var(--primary);
+  inline-size: 1.5rem;
 }
 
 .metric__note {
@@ -562,17 +573,17 @@ h2 {
 
 .control__list {
   display: grid;
-  margin: 0;
   padding: 0;
+  margin: 0;
   list-style: none;
 }
 
 .control__list li {
   display: flex;
   align-items: flex-start;
+  border-block-start: 1px solid var(--border);
   gap: 0.85rem;
   padding-block: 1rem;
-  border-block-start: 1px solid var(--border);
 }
 
 .control__list li:last-child {
@@ -580,11 +591,11 @@ h2 {
 }
 
 .control__list svg {
-  inline-size: 1.25rem;
-  block-size: 1.25rem;
   flex: none;
-  margin-block-start: 0.1rem;
+  block-size: 1.25rem;
   color: var(--foreground);
+  inline-size: 1.25rem;
+  margin-block-start: 0.1rem;
 }
 
 .control__list span {
@@ -594,8 +605,8 @@ h2 {
 }
 
 .control__list strong {
-  font-weight: 700;
   color: var(--foreground);
+  font-weight: 700;
 }
 
 /* Landing: seeded demo entry. */
@@ -619,18 +630,18 @@ h2 {
 
 .demo-entry__grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .demo-entry__card {
   display: grid;
-  gap: 0.3rem;
   align-content: start;
   padding: clamp(1.1rem, 2vw, 1.4rem);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--card);
+  gap: 0.3rem;
   transition:
     border-color 0.2s ease,
     transform 0.2s ease;
@@ -642,16 +653,16 @@ h2 {
 }
 
 .demo-entry__card--teacher {
-  background: color-mix(in oklch, var(--primary) 8%, var(--card));
   border-color: color-mix(in oklch, var(--primary) 30%, var(--border));
+  background: color-mix(in oklch, var(--primary) 8%, var(--card));
 }
 
 .demo-entry__role {
   color: var(--muted-foreground);
   font-size: 0.72rem;
   font-weight: 700;
-  text-transform: uppercase;
   letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .demo-entry__name {
@@ -667,10 +678,10 @@ h2 {
 }
 
 .demo-entry__arrow {
-  inline-size: 1.1rem;
   block-size: 1.1rem;
-  margin-block-start: 0.4rem;
   color: var(--muted-foreground);
+  inline-size: 1.1rem;
+  margin-block-start: 0.4rem;
 }
 
 .footer-links {
@@ -691,28 +702,28 @@ h2 {
 
 .cta-final__inner {
   display: grid;
-  gap: 1rem;
-  justify-items: center;
-  text-align: center;
   padding: clamp(2rem, 5vw, 3.5rem);
   border: 1px solid color-mix(in oklch, var(--primary) 25%, var(--border));
   border-radius: var(--radius-xl);
   background: color-mix(in oklch, var(--primary) 7%, var(--card));
+  gap: 1rem;
+  justify-items: center;
+  text-align: center;
 }
 
 .cta-final__inner h2 {
-  max-inline-size: 20ch;
-  margin-inline: auto;
   font-size: clamp(1.8rem, 4vw, 2.7rem);
   line-height: 1.05;
+  margin-inline: auto;
+  max-inline-size: 20ch;
 }
 
 .cta-final__sub {
-  max-inline-size: 42ch;
   margin: 0;
   color: var(--muted-foreground);
   font-size: 1rem;
   line-height: 1.6;
+  max-inline-size: 42ch;
 }
 
 .cta-final .cta-primary {
@@ -726,8 +737,8 @@ h2 {
   @supports (animation-timeline: view()) {
     .reveal-in {
       animation: lp-rise linear both;
-      animation-timeline: view();
       animation-range: entry 6% cover 30%;
+      animation-timeline: view();
     }
 
     @keyframes lp-rise {
@@ -746,35 +757,35 @@ h2 {
 
 .site-footer {
   justify-content: space-between;
-  gap: 1rem;
-  margin-block-start: 5rem;
-  padding-block-start: 1rem;
   border-block-start: 1px solid var(--border);
   color: var(--muted-foreground);
   font-size: 0.78rem;
+  gap: 1rem;
+  margin-block-start: 5rem;
+  padding-block-start: 1rem;
 }
 
 .demo-intro {
   display: flex;
-  justify-content: space-between;
   align-items: end;
+  justify-content: space-between;
+  border-block-end: 1px solid var(--border);
   gap: 2rem;
   padding-block-end: 3rem;
-  border-block-end: 1px solid var(--border);
 }
 
 .demo-intro h1 {
-  max-inline-size: 16ch;
   font-size: clamp(2.4rem, 6vw, 5.4rem);
+  max-inline-size: 16ch;
 }
 
 .session-stamp {
   display: grid;
-  min-inline-size: 11rem;
+  border-inline-start: 1px solid var(--primary);
   gap: 0.35rem;
+  min-inline-size: 11rem;
   padding-block: 0.25rem;
   padding-inline: 1rem;
-  border-inline-start: 1px solid var(--primary);
 }
 
 .session-stamp span {
@@ -785,8 +796,8 @@ h2 {
 }
 
 .session-stamp strong {
-  margin-block-end: 0.4rem;
   font-size: 0.88rem;
+  margin-block-end: 0.4rem;
 }
 
 .page-grid--details {
@@ -795,32 +806,32 @@ h2 {
 }
 
 .security-note {
-  gap: 0.5rem;
-  margin-block-start: 1.5rem;
-  padding-block-start: 1rem;
   border-block-start: 1px solid var(--border);
   color: var(--muted-foreground);
   font-size: 0.78rem;
+  gap: 0.5rem;
   line-height: 1.5;
+  margin-block-start: 1.5rem;
+  padding-block-start: 1rem;
 }
 
 .data-list {
   display: grid;
-  gap: 1rem;
   margin: 0;
+  gap: 1rem;
 }
 
 .data-list div {
   display: flex;
   justify-content: space-between;
+  border-block-end: 1px solid var(--border);
   gap: 1rem;
   padding-block-end: 0.75rem;
-  border-block-end: 1px solid var(--border);
 }
 
 .data-list div:last-child {
-  padding-block-end: 0;
   border-block-end: 0;
+  padding-block-end: 0;
 }
 
 .data-list dt {
@@ -833,25 +844,25 @@ h2 {
   color: var(--foreground);
   font-size: 0.8rem;
   font-weight: 700;
-  text-align: end;
   overflow-wrap: anywhere;
+  text-align: end;
 }
 
 .fixture-section svg {
-  inline-size: 2rem;
   block-size: 2rem;
   color: var(--primary);
+  inline-size: 2rem;
 }
 
 .fixture-stat {
   display: grid;
+  align-content: end;
+  background: color-mix(in oklch, var(--card) 78%, var(--accent));
+  border-block-end: 2px solid var(--primary);
   gap: 0.3rem;
   min-block-size: 7.5rem;
-  align-content: end;
   padding-block: 1rem;
   padding-inline: 1rem;
-  border-block-end: 2px solid var(--primary);
-  background: color-mix(in oklch, var(--card) 78%, var(--accent));
 }
 
 .fixture-stat strong {
@@ -869,8 +880,8 @@ h2 {
    selectors above pair this surface with the seeded-fixture proof it lands
    into. */
 .generation-section {
-  padding-block-start: clamp(2rem, 5vw, 4rem);
   border-block-start: 1px solid var(--border);
+  padding-block-start: clamp(2rem, 5vw, 4rem);
 }
 
 .generation-section .section-heading {
@@ -878,20 +889,20 @@ h2 {
 }
 
 .section-description {
-  max-inline-size: 58ch;
-  margin-block-start: 0.85rem;
   color: var(--muted-foreground);
   font-size: 0.95rem;
   line-height: 1.6;
+  margin-block-start: 0.85rem;
+  max-inline-size: 58ch;
 }
 
 .generation-form {
   display: grid;
+  border: 1px solid var(--border);
+  background: color-mix(in oklch, var(--card) 86%, var(--accent));
   gap: 1.25rem;
   padding-block: 1.5rem;
   padding-inline: clamp(1rem, 3vw, 2rem);
-  border: 1px solid var(--border);
-  background: color-mix(in oklch, var(--card) 86%, var(--accent));
 }
 
 .generation-form__prompt,
@@ -907,12 +918,12 @@ h2 {
 
 .generation-form textarea,
 .generation-form select {
-  min-block-size: 2.75rem;
   border: 1px solid var(--input);
   border-radius: 0.55rem;
   background: var(--background);
   color: var(--foreground);
   font: inherit;
+  min-block-size: 2.75rem;
 }
 
 .generation-form textarea {
@@ -934,14 +945,14 @@ h2 {
 
 .generation-form__fields {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
   gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
 }
 
 .generation-form__actions {
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.85rem;
 }
 
@@ -952,10 +963,10 @@ h2 {
 }
 
 .generation-status {
-  min-block-size: 1.75rem;
-  padding-block-start: 0.75rem;
   color: var(--muted-foreground);
   font-size: 0.86rem;
+  min-block-size: 1.75rem;
+  padding-block-start: 0.75rem;
 }
 
 .generation-status p {
@@ -969,17 +980,17 @@ h2 {
 
 .generation-result {
   display: grid;
+  border-block-start: 1px solid var(--border);
   gap: 1.5rem;
   margin-block-start: 2rem;
   padding-block-start: 1.5rem;
-  border-block-start: 1px solid var(--border);
 }
 
 .generation-result__header,
 .variant-preview__heading {
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
+  justify-content: space-between;
   gap: 1rem;
 }
 
@@ -990,8 +1001,8 @@ h2 {
 }
 
 .generation-result h3 {
-  max-inline-size: 32ch;
   font-size: clamp(1.25rem, 2.2vw, 1.8rem);
+  max-inline-size: 32ch;
 }
 
 .variant-preview h4 {
@@ -1001,9 +1012,9 @@ h2 {
 .diagnostic-list,
 .variant-preview ul {
   display: grid;
-  gap: 0.65rem;
-  margin: 0;
   padding: 0;
+  margin: 0;
+  gap: 0.65rem;
   list-style: none;
 }
 
@@ -1013,8 +1024,8 @@ h2 {
 
 .diagnostic-list li {
   display: flex;
-  align-items: baseline;
   flex-wrap: wrap;
+  align-items: baseline;
   gap: 0.6rem;
   padding-block: 0.75rem;
 }
@@ -1037,12 +1048,12 @@ h2 {
 
 .teacher-review-state {
   display: grid;
-  gap: 0.45rem;
-  padding-block: 1rem;
-  padding-inline: 1rem;
   border: 1px solid color-mix(in oklch, var(--destructive) 30%, var(--border));
   border-radius: 0.7rem;
   background: color-mix(in oklch, var(--destructive) 6%, var(--card));
+  gap: 0.45rem;
+  padding-block: 1rem;
+  padding-inline: 1rem;
 }
 
 .teacher-review-state strong {
@@ -1064,12 +1075,12 @@ h2 {
 .variant-preview {
   display: grid;
   align-content: start;
+  border: 1px solid var(--border);
+  background: var(--card);
   gap: 1rem;
   min-inline-size: 0;
   padding-block: 1rem;
   padding-inline: 1rem;
-  border: 1px solid var(--border);
-  background: var(--card);
 }
 
 .variant-preview__heading > span {
@@ -1086,21 +1097,21 @@ h2 {
 
 .variant-preview__items {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   min-inline-size: 0;
 }
 
 .variant-preview__items strong {
   display: block;
-  margin-block-end: 0.5rem;
   font-size: 0.76rem;
+  margin-block-end: 0.5rem;
 }
 
 .variant-preview li {
-  overflow-wrap: anywhere;
   color: var(--muted-foreground);
   font-size: 0.82rem;
+  overflow-wrap: anywhere;
 }
 
 /* Issue #4: the A2UI stream resolves into a semantic, DOM-first teacher
@@ -1108,38 +1119,38 @@ h2 {
    the registered components a calm, responsive surface. */
 .a2ui-preview {
   display: grid;
+  border-block-start: 1px solid var(--border);
   gap: 1rem;
   margin-block-start: 0.5rem;
   padding-block-start: 1.5rem;
-  border-block-start: 1px solid var(--border);
 }
 
 .a2ui-preview__header {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(14rem, 22rem);
   align-items: end;
   gap: 1.5rem;
+  grid-template-columns: minmax(0, 1fr) minmax(14rem, 22rem);
 }
 
 .a2ui-preview__header h3 {
-  max-inline-size: 28ch;
   margin: 0;
   font-size: clamp(1.35rem, 2.4vw, 2rem);
   letter-spacing: -0.04em;
   line-height: 1.05;
+  max-inline-size: 28ch;
 }
 
 .a2ui-preview__status {
-  justify-self: end;
-  max-inline-size: 28ch;
-  padding-block: 0.7rem;
-  padding-inline: 0.85rem;
   border: 1px solid var(--border);
   border-radius: 0.65rem;
   background: color-mix(in oklch, var(--card) 78%, var(--accent));
   color: var(--muted-foreground);
   font-size: 0.78rem;
+  justify-self: end;
   line-height: 1.45;
+  max-inline-size: 28ch;
+  padding-block: 0.7rem;
+  padding-inline: 0.85rem;
 }
 
 .a2ui-preview__status--ready {
@@ -1157,24 +1168,24 @@ h2 {
 .a2ui-tabs {
   display: flex;
   gap: 0.5rem;
-  padding-block-end: 0.35rem;
   overflow-x: auto;
+  padding-block-end: 0.35rem;
   scrollbar-width: thin;
 }
 
 .a2ui-tab {
   display: grid;
   flex: 1 1 10rem;
-  gap: 0.25rem;
-  min-inline-size: 10rem;
-  min-block-size: 4.4rem;
-  padding-block: 0.75rem;
-  padding-inline: 0.85rem;
   border: 1px solid var(--border);
   border-radius: 0.7rem;
   background: var(--card);
   color: var(--foreground);
   font: inherit;
+  gap: 0.25rem;
+  min-block-size: 4.4rem;
+  min-inline-size: 10rem;
+  padding-block: 0.75rem;
+  padding-inline: 0.85rem;
   text-align: start;
   transition:
     border-color 0.2s cubic-bezier(0.25, 1, 0.5, 1),
@@ -1209,26 +1220,26 @@ h2 {
 }
 
 .a2ui-surface-panel {
-  min-inline-size: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: color-mix(in oklch, var(--card) 82%, var(--background));
+  min-inline-size: 0;
 }
 
 .a2ui-surface {
   display: grid;
-  gap: 1.1rem;
   padding: clamp(1rem, 3vw, 2rem);
+  gap: 1.1rem;
 }
 
 .a2ui-learning-path {
   display: grid;
-  gap: 1rem;
-  padding-block: 1.1rem;
-  padding-inline: clamp(1rem, 2vw, 1.35rem);
   border: 1px solid color-mix(in oklch, var(--primary) 24%, var(--border));
   border-radius: 0.8rem;
   background: color-mix(in oklch, var(--primary) 5%, var(--card));
+  gap: 1rem;
+  padding-block: 1.1rem;
+  padding-inline: clamp(1rem, 2vw, 1.35rem);
 }
 
 .a2ui-learning-path__header {
@@ -1239,8 +1250,8 @@ h2 {
 }
 
 .a2ui-learning-path__header .a2ui-text--label {
-  margin-block-end: 0.3rem;
   color: var(--primary);
+  margin-block-end: 0.3rem;
 }
 
 .a2ui-learning-path__title {
@@ -1253,38 +1264,38 @@ h2 {
 
 .a2ui-learning-path__direction {
   flex: none;
-  padding-block: 0.35rem;
-  padding-inline: 0.55rem;
   border: 1px solid var(--border);
   border-radius: 999px;
   color: var(--muted-foreground);
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.06em;
+  padding-block: 0.35rem;
+  padding-inline: 0.55rem;
   text-transform: uppercase;
 }
 
 .a2ui-learning-path__steps {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.7rem;
-  margin: 0;
   padding: 0;
-  list-style: none;
+  margin: 0;
   counter-reset: learning-path-step;
+  gap: 0.7rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  list-style: none;
 }
 
 .a2ui-learning-path__step {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
   align-items: start;
-  gap: 0.75rem;
-  min-inline-size: 0;
-  padding-block: 0.8rem;
-  padding-inline: 0.85rem;
   border: 1px solid var(--border);
   border-radius: 0.65rem;
   background: var(--background);
+  gap: 0.75rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  min-inline-size: 0;
+  padding-block: 0.8rem;
+  padding-inline: 0.85rem;
 }
 
 .a2ui-learning-path__step--target {
@@ -1294,14 +1305,14 @@ h2 {
 
 .a2ui-learning-path__number {
   display: grid;
-  inline-size: 2rem;
-  block-size: 2rem;
-  place-items: center;
   border: 1px solid color-mix(in oklch, var(--primary) 36%, var(--border));
   border-radius: 50%;
+  block-size: 2rem;
   color: var(--primary);
   font-size: 0.8rem;
   font-weight: 800;
+  inline-size: 2rem;
+  place-items: center;
 }
 
 .a2ui-learning-path__step--target .a2ui-learning-path__number {
@@ -1325,9 +1336,9 @@ h2 {
 }
 
 .a2ui-learning-path__step-copy strong {
-  overflow-wrap: anywhere;
   color: var(--foreground);
   font-size: 0.95rem;
+  overflow-wrap: anywhere;
 }
 
 .a2ui-learning-path__step-copy > span:last-child {
@@ -1338,10 +1349,10 @@ h2 {
 
 .a2ui-learning-path__notes {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-  padding-block-start: 0.85rem;
   border-block-start: 1px dashed var(--border);
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding-block-start: 0.85rem;
 }
 
 .a2ui-learning-path__notes div {
@@ -1363,11 +1374,11 @@ h2 {
 
 .a2ui-learning-path__pins {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.65rem;
   margin: 0;
-  padding-block-start: 0.85rem;
   border-block-start: 1px solid var(--border);
+  gap: 0.65rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding-block-start: 0.85rem;
 }
 
 .a2ui-learning-path__pins div {
@@ -1386,9 +1397,9 @@ h2 {
 
 .a2ui-learning-path__pins dd {
   margin: 0;
-  overflow-wrap: anywhere;
   color: var(--foreground);
   font-size: 0.72rem;
+  overflow-wrap: anywhere;
 }
 
 .a2ui-column {
@@ -1419,10 +1430,10 @@ h2 {
 }
 
 .a2ui-text--subheading {
-  margin-block-start: -0.45rem;
   color: var(--primary);
   font-size: 1rem;
   font-weight: 750;
+  margin-block-start: -0.45rem;
 }
 
 .a2ui-text--label {
@@ -1436,11 +1447,11 @@ h2 {
 
 .a2ui-card {
   flex: 1 1 19rem;
-  min-inline-size: min(100%, 19rem);
   padding: 1rem;
   border: 1px solid var(--border);
   border-radius: 0.75rem;
   background: var(--card);
+  min-inline-size: min(100%, 19rem);
 }
 
 .a2ui-card--accent {
@@ -1458,12 +1469,12 @@ h2 {
 .a2ui-match-card,
 .a2ui-action,
 .a2ui-retry {
-  min-block-size: 3rem;
   border: 1px solid var(--border);
   border-radius: 0.6rem;
   background: var(--background);
   color: var(--foreground);
   font: inherit;
+  min-block-size: 3rem;
   transition:
     border-color 0.16s cubic-bezier(0.25, 1, 0.5, 1),
     background-color 0.16s cubic-bezier(0.25, 1, 0.5, 1),
@@ -1504,10 +1515,10 @@ h2 {
 
 .a2ui-action,
 .a2ui-retry {
-  padding-block: 0.6rem;
-  padding-inline: 0.9rem;
   font-size: 0.8rem;
   font-weight: 750;
+  padding-block: 0.6rem;
+  padding-inline: 0.9rem;
 }
 
 .a2ui-action--quiet {
@@ -1516,29 +1527,27 @@ h2 {
 }
 
 .a2ui-status {
-  margin: 0;
-  padding-block: 0.75rem;
-  padding-inline: 0.85rem;
   border: 1px solid color-mix(in oklch, var(--primary) 22%, var(--border));
   border-radius: 0.65rem;
+  margin: 0;
   background: color-mix(in oklch, var(--primary) 7%, var(--card));
   color: var(--muted-foreground);
   font-size: 0.8rem;
   line-height: 1.5;
+  padding-block: 0.75rem;
+  padding-inline: 0.85rem;
 }
 
 .a2ui-selection-feedback {
   margin: 0;
-  min-block-size: 1.4rem;
   color: var(--muted-foreground);
   font-size: 0.82rem;
   line-height: 1.45;
+  min-block-size: 1.4rem;
 }
 
 .a2ui-loading {
   display: grid;
-  gap: 0.8rem;
-  min-block-size: 16rem;
   align-content: center;
   padding: clamp(1.25rem, 4vw, 2.5rem);
   border: 1px solid var(--border);
@@ -1546,47 +1555,49 @@ h2 {
   background: var(--card);
   color: var(--muted-foreground);
   font-size: 0.82rem;
+  gap: 0.8rem;
+  min-block-size: 16rem;
 }
 
 .a2ui-loading__line {
-  inline-size: min(65%, 22rem);
-  block-size: 0.8rem;
   border-radius: 999px;
   background: color-mix(in oklch, var(--foreground) 11%, var(--card));
+  block-size: 0.8rem;
+  inline-size: min(65%, 22rem);
 }
 
 .a2ui-loading__line--wide {
-  inline-size: min(82%, 34rem);
   block-size: 1.7rem;
+  inline-size: min(82%, 34rem);
 }
 
 .a2ui-loading__grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.55rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   margin-block: 0.6rem;
 }
 
 .a2ui-loading__grid div {
-  min-block-size: 4.5rem;
   border: 1px solid var(--border);
   border-radius: 0.6rem;
   background: color-mix(in oklch, var(--foreground) 5%, var(--card));
+  min-block-size: 4.5rem;
 }
 
 .a2ui-preview__recovery {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.75rem;
-  padding-block: 0.85rem;
-  padding-inline: 1rem;
   border: 1px solid color-mix(in oklch, var(--destructive) 28%, var(--border));
   border-radius: 0.7rem;
   background: color-mix(in oklch, var(--destructive) 6%, var(--card));
   color: var(--muted-foreground);
   font-size: 0.8rem;
+  gap: 0.75rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   line-height: 1.45;
+  padding-block: 0.85rem;
+  padding-inline: 1rem;
 }
 
 .a2ui-preview__recovery strong {
@@ -1597,7 +1608,7 @@ h2 {
   color: var(--destructive);
 }
 
-@media (max-width: 52rem) {
+@media (width <= 52rem) {
   .a2ui-preview__header {
     grid-template-columns: 1fr;
   }
@@ -1638,7 +1649,7 @@ h2 {
   }
 }
 
-@media (max-width: 38rem) {
+@media (width <= 38rem) {
   .a2ui-preview__recovery {
     grid-template-columns: 1fr;
   }
@@ -1671,8 +1682,8 @@ h2 {
   .section-heading,
   .site-footer,
   .demo-intro {
-    align-items: flex-start;
     flex-direction: column;
+    align-items: flex-start;
   }
 
   .site-header {
@@ -1688,9 +1699,9 @@ h2 {
   }
 
   .session-stamp {
-    inline-size: 100%;
     border-block-start: 1px solid var(--border);
     border-inline-start: 0;
+    inline-size: 100%;
     padding-block-start: 1rem;
   }
 
@@ -1717,9 +1728,9 @@ h2 {
   *,
   *::before,
   *::after {
-    scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
 }
@@ -1757,28 +1768,31 @@ h2 {
   }
 
   .reveal__target {
+    animation: reveal-settle 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     opacity: 0;
     transform: translateY(6px);
-    animation: reveal-settle 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   .reveal__target:nth-child(1) {
     animation-delay: 0.05s;
   }
+
   .reveal__target:nth-child(2) {
     animation-delay: 0.15s;
   }
+
   .reveal__target:nth-child(3) {
     animation-delay: 0.25s;
   }
+
   .reveal__target:nth-child(4) {
     animation-delay: 0.35s;
   }
 
   .reveal__equal-fill {
-    transform: scaleX(0);
-    transform-origin: inline-start;
     animation: reveal-fill 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+    transform: scaleX(0);
+    transform-origin: left;
   }
 
   @keyframes reveal-settle {
@@ -1797,18 +1811,6 @@ h2 {
 
 /* Teacher studio: a calm, asymmetric authoring surface built around one
    sentence and one meaningful next step. */
-:root {
-  --teacher-paper: oklch(0.965 0.018 86);
-  --teacher-ink: oklch(0.235 0.028 65);
-  --teacher-forest: oklch(0.34 0.11 158);
-  --teacher-mint: oklch(0.925 0.045 158);
-  --teacher-butter: oklch(0.925 0.065 77);
-  --teacher-sky: oklch(0.925 0.04 228);
-  --teacher-clay: oklch(0.78 0.095 40);
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
-}
-
 .app-shell--teacher {
   background:
     radial-gradient(
@@ -1858,15 +1860,15 @@ h2 {
 
 .studio-brand__mark {
   display: grid;
-  inline-size: 2.5rem;
-  block-size: 2.5rem;
-  place-items: center;
-  border-radius: 0.85rem 0.35rem 0.85rem 0.35rem;
+  border-radius: 0.85rem 0.35rem;
   background: var(--teacher-forest);
+  block-size: 2.5rem;
   color: var(--teacher-paper);
   font-size: 0.72rem;
   font-weight: 800;
+  inline-size: 2.5rem;
   letter-spacing: 0.08em;
+  place-items: center;
 }
 
 .studio-brand__name {
@@ -1881,10 +1883,10 @@ h2 {
 }
 
 .studio-nav__state {
-  gap: 0.5rem;
   color: color-mix(in oklch, var(--teacher-ink) 68%, transparent);
   font-size: 0.78rem;
   font-weight: 700;
+  gap: 0.5rem;
 }
 
 .studio-nav__dot,
@@ -1892,10 +1894,10 @@ h2 {
 .result-state > span,
 .status-pulse > span {
   display: inline-block;
-  inline-size: 0.45rem;
-  block-size: 0.45rem;
   border-radius: 50%;
   background: var(--primary);
+  block-size: 0.45rem;
+  inline-size: 0.45rem;
 }
 
 .studio-nav__dot {
@@ -1903,10 +1905,10 @@ h2 {
 }
 
 .studio-nav__exit {
-  gap: 0.3rem;
   color: var(--teacher-ink);
   font-size: 0.78rem;
   font-weight: 750;
+  gap: 0.3rem;
   text-decoration: underline;
   text-decoration-color: color-mix(
     in oklch,
@@ -1920,8 +1922,8 @@ h2 {
 }
 
 .studio-nav__exit svg {
-  inline-size: 0.9rem;
   block-size: 0.9rem;
+  inline-size: 0.9rem;
   transition: transform 180ms var(--ease-out);
 }
 
@@ -1932,9 +1934,9 @@ h2 {
 
 .teacher-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.12fr) minmax(19rem, 0.88fr);
   align-items: center;
   gap: clamp(2rem, 7vw, 7rem);
+  grid-template-columns: minmax(0, 1.12fr) minmax(19rem, 0.88fr);
   min-block-size: clamp(30rem, 55vw, 44rem);
   padding-block: clamp(1rem, 4vw, 3rem) clamp(2rem, 6vw, 5rem);
 }
@@ -1946,11 +1948,11 @@ h2 {
 .studio-kicker {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
   margin: 0 0 1rem;
   color: var(--primary);
   font-size: 0.72rem;
   font-weight: 800;
+  gap: 0.7rem;
   letter-spacing: 0.12em;
   line-height: 1.4;
   text-transform: uppercase;
@@ -1958,59 +1960,56 @@ h2 {
 
 .studio-kicker__line {
   display: inline-block;
-  inline-size: 2.2rem;
+  background: currentcolor;
   block-size: 1px;
-  background: currentColor;
+  inline-size: 2.2rem;
 }
 
 .teacher-hero h1 {
-  max-inline-size: 18ch;
   color: var(--teacher-ink);
   font-size: clamp(3.1rem, 7vw, 6.8rem);
   font-weight: 720;
   letter-spacing: -0.085em;
   line-height: 0.9;
+  max-inline-size: 18ch;
   text-wrap: balance;
 }
 
 .inline-fraction-art {
   display: inline-grid;
-  inline-size: 0.78em;
   block-size: 1.1em;
-  align-items: center;
-  justify-items: center;
-  margin-inline: 0.08em;
   color: var(--primary);
   font-size: 0.72em;
   font-weight: 800;
+  inline-size: 0.78em;
   line-height: 0.8;
+  margin-inline: 0.08em;
+  place-items: center center;
   vertical-align: -0.08em;
 }
 
 .inline-fraction-art i,
 .fraction-orbit i {
   display: block;
-  inline-size: 100%;
-  block-size: 0.09em;
   border-radius: 999px;
-  background: currentColor;
+  background: currentcolor;
+  block-size: 0.09em;
+  inline-size: 100%;
 }
 
 .teacher-hero__description {
-  max-inline-size: 48ch;
-  margin-block-start: clamp(1.5rem, 3vw, 2rem);
   color: color-mix(in oklch, var(--teacher-ink) 68%, transparent);
   font-size: clamp(1rem, 1.4vw, 1.2rem);
   line-height: 1.65;
+  margin-block-start: clamp(1.5rem, 3vw, 2rem);
+  max-inline-size: 48ch;
 }
 
 .teacher-hero__art {
   position: relative;
-  min-block-size: clamp(22rem, 39vw, 35rem);
   overflow: hidden;
-  isolation: isolate;
   border: 1px solid color-mix(in oklch, var(--teacher-forest) 35%, transparent);
-  border-radius: 3rem 1rem 3rem 1rem;
+  border-radius: 3rem 1rem;
   background:
     radial-gradient(
       circle at 30% 18%,
@@ -2018,6 +2017,8 @@ h2 {
       transparent 34%
     ),
     var(--teacher-forest);
+  isolation: isolate;
+  min-block-size: clamp(22rem, 39vw, 35rem);
 }
 
 .teacher-hero__art::before,
@@ -2025,29 +2026,28 @@ h2 {
   position: absolute;
   z-index: -1;
   border-radius: 50%;
-  content: '';
+  content: "";
 }
 
 .teacher-hero__art::before {
-  inline-size: 15rem;
+  background: color-mix(in oklch, var(--teacher-sky) 36%, transparent);
   block-size: 15rem;
+  filter: blur(1px);
+  inline-size: 15rem;
   inset-block-start: -5rem;
   inset-inline-end: -3rem;
-  background: color-mix(in oklch, var(--teacher-sky) 36%, transparent);
-  filter: blur(1px);
 }
 
 .teacher-hero__art::after {
-  inline-size: 21rem;
+  border: 1px solid color-mix(in oklch, var(--teacher-butter) 35%, transparent);
   block-size: 21rem;
+  inline-size: 21rem;
   inset-block-end: -9rem;
   inset-inline-start: -7rem;
-  border: 1px solid color-mix(in oklch, var(--teacher-butter) 35%, transparent);
 }
 
 .teacher-hero__art-image {
   position: absolute;
-  inset: 12% 11%;
   z-index: -1;
   border-radius: 52% 42% 49% 38%;
   background-image:
@@ -2056,10 +2056,11 @@ h2 {
       color-mix(in oklch, var(--teacher-forest) 16%, transparent),
       color-mix(in oklch, var(--teacher-butter) 28%, transparent)
     ),
-    url('https://picsum.photos/seed/fraction-classroom/900/1200');
+    url("https://picsum.photos/seed/fraction-classroom/900/1200");
   background-position: center;
   background-size: cover;
   filter: grayscale(100%) contrast(115%);
+  inset: 12% 11%;
   mix-blend-mode: screen;
   opacity: 0.28;
 }
@@ -2067,51 +2068,50 @@ h2 {
 .fraction-orbit {
   position: absolute;
   display: grid;
-  inline-size: clamp(5.6rem, 10vw, 8.5rem);
-  block-size: clamp(5.6rem, 10vw, 8.5rem);
-  place-items: center;
   align-content: center;
-  gap: 0.15rem;
   border: 1px solid color-mix(in oklch, var(--teacher-paper) 65%, transparent);
   border-radius: 50%;
+  block-size: clamp(5.6rem, 10vw, 8.5rem);
   color: var(--teacher-paper);
   font-size: clamp(1.25rem, 2.4vw, 2rem);
   font-weight: 700;
+  gap: 0.15rem;
+  inline-size: clamp(5.6rem, 10vw, 8.5rem);
   line-height: 0.8;
+  place-items: center;
 }
 
 .fraction-orbit i {
-  inline-size: 38%;
   block-size: 1px;
+  inline-size: 38%;
 }
 
 .fraction-orbit--one {
+  background: color-mix(in oklch, var(--teacher-forest) 45%, transparent);
   inset-block-start: 22%;
   inset-inline-start: 13%;
-  background: color-mix(in oklch, var(--teacher-forest) 45%, transparent);
 }
 
 .fraction-orbit--two {
+  background: color-mix(in oklch, var(--teacher-butter) 86%, transparent);
+  color: var(--teacher-ink);
   inset-block-end: 17%;
   inset-inline-end: 11%;
-  color: var(--teacher-ink);
-  background: color-mix(in oklch, var(--teacher-butter) 86%, transparent);
   transform: rotate(9deg);
 }
 
 .teacher-hero__art-note {
   position: absolute;
-  inset-block-end: 1.4rem;
-  inset-inline-start: 1.5rem;
   color: color-mix(in oklch, var(--teacher-paper) 75%, transparent);
   font-size: 0.72rem;
+  inset-block-end: 1.4rem;
+  inset-inline-start: 1.5rem;
   letter-spacing: 0.06em;
   text-transform: lowercase;
 }
 
 .prompt-composer {
   display: grid;
-  gap: 1.2rem;
   padding: clamp(1.2rem, 3vw, 2rem);
   border: 1px solid
     color-mix(in oklch, var(--teacher-forest) 22%, var(--border));
@@ -2119,6 +2119,7 @@ h2 {
   background: color-mix(in oklch, var(--card) 82%, var(--teacher-mint));
   box-shadow: 0 1.5rem 3.5rem
     color-mix(in oklch, var(--teacher-forest) 8%, transparent);
+  gap: 1.2rem;
 }
 
 .prompt-composer__heading {
@@ -2142,22 +2143,22 @@ h2 {
 }
 
 .prompt-composer textarea {
-  inline-size: 100%;
-  min-block-size: clamp(7.5rem, 15vw, 11rem);
-  resize: vertical;
   border: 0;
-  border-block-end: 1px solid
-    color-mix(in oklch, var(--teacher-forest) 20%, var(--border));
   border-radius: 0;
   background: transparent;
+  border-block-end: 1px solid
+    color-mix(in oklch, var(--teacher-forest) 20%, var(--border));
   color: var(--teacher-ink);
   font: inherit;
   font-size: clamp(1.2rem, 2.4vw, 1.85rem);
   font-weight: 520;
+  inline-size: 100%;
   letter-spacing: -0.035em;
   line-height: 1.2;
+  min-block-size: clamp(7.5rem, 15vw, 11rem);
   outline: 0;
   padding-block: 0.5rem 1rem;
+  resize: vertical;
 }
 
 .prompt-composer textarea::placeholder {
@@ -2178,20 +2179,20 @@ h2 {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.55rem 0.8rem;
   color: color-mix(in oklch, var(--teacher-ink) 62%, transparent);
   font-size: 0.75rem;
+  gap: 0.55rem 0.8rem;
 }
 
 .prompt-signals__label {
-  gap: 0.35rem;
   color: var(--primary);
   font-weight: 750;
+  gap: 0.35rem;
 }
 
 .prompt-signals__label svg {
-  inline-size: 0.9rem;
   block-size: 0.9rem;
+  inline-size: 0.9rem;
 }
 
 .prompt-signal {
@@ -2200,29 +2201,29 @@ h2 {
 }
 
 .prompt-signal svg {
-  inline-size: 0.8rem;
   block-size: 0.8rem;
   color: color-mix(in oklch, var(--teacher-ink) 55%, transparent);
+  inline-size: 0.8rem;
 }
 
 .prompt-signal__mark {
-  inline-size: 0.36rem;
-  block-size: 0.36rem;
   border-radius: 50%;
   background: var(--teacher-clay);
+  block-size: 0.36rem;
+  inline-size: 0.36rem;
 }
 
 .prompt-composer__submit {
-  min-block-size: 3.5rem;
-  gap: 0.7rem;
-  padding-inline: 1.25rem;
   border-radius: 0.85rem;
   background: var(--teacher-forest);
+  box-shadow: 0 0.8rem 1.6rem
+    color-mix(in oklch, var(--teacher-forest) 18%, transparent);
   color: var(--teacher-paper);
   font-size: 0.95rem;
   font-weight: 750;
-  box-shadow: 0 0.8rem 1.6rem
-    color-mix(in oklch, var(--teacher-forest) 18%, transparent);
+  gap: 0.7rem;
+  min-block-size: 3.5rem;
+  padding-inline: 1.25rem;
   transition:
     background-color 180ms ease,
     transform 140ms var(--ease-out),
@@ -2234,33 +2235,33 @@ h2 {
 }
 
 .prompt-composer__submit svg {
-  inline-size: 1.05rem;
   block-size: 1.05rem;
+  inline-size: 1.05rem;
 }
 
 .teacher-trust-line {
-  gap: 0.5rem;
-  padding-inline: 0.35rem;
   color: color-mix(in oklch, var(--teacher-ink) 58%, transparent);
   font-size: 0.78rem;
+  gap: 0.5rem;
   line-height: 1.5;
+  padding-inline: 0.35rem;
 }
 
 .teacher-trust-line svg {
-  inline-size: 1rem;
-  block-size: 1rem;
   flex: none;
+  block-size: 1rem;
   color: var(--primary);
+  inline-size: 1rem;
 }
 
 .teacher-guidance {
   display: grid;
-  grid-template-columns: minmax(16rem, 0.72fr) minmax(0, 1.28fr);
-  gap: clamp(2rem, 7vw, 8rem);
-  margin-block-start: clamp(4rem, 11vw, 9rem);
-  padding-block: clamp(2.5rem, 7vw, 6rem);
   border-block-start: 1px solid
     color-mix(in oklch, var(--teacher-ink) 15%, transparent);
+  gap: clamp(2rem, 7vw, 8rem);
+  grid-template-columns: minmax(16rem, 0.72fr) minmax(0, 1.28fr);
+  margin-block-start: clamp(4rem, 11vw, 9rem);
+  padding-block: clamp(2.5rem, 7vw, 6rem);
 }
 
 .teacher-guidance__rail {
@@ -2269,28 +2270,28 @@ h2 {
 }
 
 .teacher-guidance__rail h2 {
-  max-inline-size: 14ch;
   margin: 0;
   color: var(--teacher-ink);
   font-size: clamp(2rem, 4vw, 3.4rem);
   letter-spacing: -0.07em;
   line-height: 0.96;
+  max-inline-size: 14ch;
 }
 
 .teacher-guidance__rail > p:not(.studio-kicker) {
-  max-inline-size: 34ch;
-  margin-block-start: 1.2rem;
   color: color-mix(in oklch, var(--teacher-ink) 63%, transparent);
   font-size: 0.95rem;
   line-height: 1.65;
+  margin-block-start: 1.2rem;
+  max-inline-size: 34ch;
 }
 
 .teacher-guidance__signal {
-  gap: 0.55rem;
-  margin-block-start: 2rem;
   color: var(--primary);
   font-size: 0.75rem;
   font-weight: 750;
+  gap: 0.55rem;
+  margin-block-start: 2rem;
 }
 
 .teacher-guidance__signal-dot {
@@ -2303,21 +2304,21 @@ h2 {
 
 .insight-grid {
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  grid-auto-flow: dense;
   gap: 0.85rem;
+  grid-auto-flow: dense;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
 }
 
 .insight-card {
   display: grid;
-  grid-column: span 4;
-  gap: 1.2rem;
-  min-block-size: 14rem;
   align-content: space-between;
   padding: clamp(1.25rem, 2.5vw, 2rem);
   border: 1px solid color-mix(in oklch, var(--teacher-ink) 12%, transparent);
   border-radius: 1.25rem;
   background: color-mix(in oklch, var(--card) 80%, var(--teacher-mint));
+  gap: 1.2rem;
+  grid-column: span 4;
+  min-block-size: 14rem;
   transition:
     transform 220ms var(--ease-out),
     border-color 180ms ease,
@@ -2337,25 +2338,25 @@ h2 {
 }
 
 .insight-card--dark {
-  grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
   background: var(--teacher-forest);
   color: var(--teacher-paper);
+  grid-template-columns: minmax(0, 1fr) auto;
 }
 
 .insight-card__topline {
-  gap: 0.45rem;
   color: color-mix(in oklch, var(--teacher-ink) 58%, transparent);
   font-size: 0.68rem;
   font-weight: 800;
+  gap: 0.45rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .insight-card__topline svg {
-  inline-size: 0.9rem;
   block-size: 0.9rem;
   color: var(--primary);
+  inline-size: 0.9rem;
 }
 
 .insight-card__mark {
@@ -2371,20 +2372,20 @@ h2 {
 }
 
 .insight-card h3 {
-  max-inline-size: 25ch;
   color: var(--teacher-ink);
   font-size: clamp(1.35rem, 2.7vw, 2.4rem);
   letter-spacing: -0.055em;
   line-height: 0.98;
+  max-inline-size: 25ch;
   overflow-wrap: anywhere;
 }
 
 .insight-card > p,
 .insight-card > div > p {
-  max-inline-size: 42ch;
   color: color-mix(in oklch, var(--teacher-ink) 65%, transparent);
   font-size: 0.86rem;
   line-height: 1.55;
+  max-inline-size: 42ch;
 }
 
 .insight-card > strong {
@@ -2411,13 +2412,13 @@ h2 {
 }
 
 .insight-card__levels span {
-  padding-block: 0.4rem;
-  padding-inline: 0.65rem;
   border: 1px solid color-mix(in oklch, var(--teacher-paper) 30%, transparent);
   border-radius: 0.4rem;
   color: color-mix(in oklch, var(--teacher-paper) 82%, transparent);
   font-size: 0.68rem;
   font-weight: 750;
+  padding-block: 0.4rem;
+  padding-inline: 0.65rem;
   text-align: center;
 }
 
@@ -2429,17 +2430,17 @@ h2 {
 
 .guidance-panel {
   display: grid;
-  grid-template-columns: auto minmax(5rem, 0.35fr) minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.75rem;
-  min-block-size: 4.2rem;
-  padding-block: 0.7rem;
-  padding-inline: 0.75rem;
   border: 1px solid color-mix(in oklch, var(--teacher-ink) 13%, transparent);
   border-radius: 0.8rem;
   background: transparent;
   color: var(--teacher-ink);
   font: inherit;
+  gap: 0.75rem;
+  grid-template-columns: auto minmax(5rem, 0.35fr) minmax(0, 1fr) auto;
+  min-block-size: 4.2rem;
+  padding-block: 0.7rem;
+  padding-inline: 0.75rem;
   text-align: start;
   transition:
     transform 180ms var(--ease-out),
@@ -2459,18 +2460,18 @@ h2 {
 
 .guidance-panel__icon {
   display: grid;
-  inline-size: 2rem;
-  block-size: 2rem;
-  place-items: center;
   border-radius: 0.55rem;
   background: color-mix(in oklch, var(--teacher-butter) 72%, var(--card));
+  block-size: 2rem;
   color: var(--teacher-ink);
+  inline-size: 2rem;
+  place-items: center;
 }
 
 .guidance-panel__icon svg,
 .guidance-panel > svg {
-  inline-size: 0.95rem;
   block-size: 0.95rem;
+  inline-size: 0.95rem;
 }
 
 .guidance-panel__title {
@@ -2494,40 +2495,40 @@ h2 {
 }
 
 .teacher-marquee {
-  inline-size: 100%;
   overflow: hidden;
-  margin-block-start: 2.5rem;
-  padding-block: 0.8rem;
   border-block: 1px solid
     color-mix(in oklch, var(--teacher-ink) 13%, transparent);
   color: color-mix(in oklch, var(--teacher-ink) 62%, transparent);
+  inline-size: 100%;
+  margin-block-start: 2.5rem;
+  padding-block: 0.8rem;
   white-space: nowrap;
 }
 
 .teacher-marquee__track {
   display: inline-flex;
   align-items: center;
-  min-inline-size: max-content;
   animation: teacher-marquee 28s linear infinite;
+  min-inline-size: max-content;
 }
 
 .teacher-marquee__track span {
   display: inline-flex;
   align-items: center;
-  gap: 1rem;
-  padding-inline: 1rem;
   font-size: 0.7rem;
   font-weight: 750;
+  gap: 1rem;
   letter-spacing: 0.08em;
+  padding-inline: 1rem;
   text-transform: uppercase;
 }
 
 .teacher-marquee__track i {
   display: inline-block;
-  inline-size: 0.3rem;
-  block-size: 0.3rem;
   border-radius: 50%;
   background: var(--teacher-clay);
+  block-size: 0.3rem;
+  inline-size: 0.3rem;
 }
 
 @keyframes teacher-marquee {
@@ -2544,10 +2545,10 @@ h2 {
 .status-pulse {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
   color: var(--primary);
   font-size: 0.82rem;
   font-weight: 700;
+  gap: 0.55rem;
 }
 
 .status-pulse > span {
@@ -2571,11 +2572,11 @@ h2 {
   display: flex;
   align-items: end;
   justify-content: space-between;
+  border-block-start: 1px solid
+    color-mix(in oklch, var(--teacher-ink) 13%, transparent);
   gap: 1rem;
   margin-block-start: clamp(1.5rem, 4vw, 3rem);
   padding-block: 1.5rem;
-  border-block-start: 1px solid
-    color-mix(in oklch, var(--teacher-ink) 13%, transparent);
 }
 
 .teacher-action-band .studio-kicker {
@@ -2588,24 +2589,24 @@ h2 {
 }
 
 .teacher-action-band > span {
-  gap: 0.4rem;
   color: var(--primary);
   font-size: 0.75rem;
   font-weight: 750;
+  gap: 0.4rem;
 }
 
 .teacher-action-band > span svg,
 .teacher-result__footer svg {
-  inline-size: 1rem;
   block-size: 1rem;
+  inline-size: 1rem;
 }
 
 .teacher-result {
+  border-block-start: 1px solid
+    color-mix(in oklch, var(--teacher-ink) 18%, transparent);
   gap: clamp(1.5rem, 3vw, 2.5rem);
   margin-block-start: clamp(2rem, 5vw, 4.5rem);
   padding-block-start: clamp(2rem, 5vw, 4rem);
-  border-block-start: 1px solid
-    color-mix(in oklch, var(--teacher-ink) 18%, transparent);
 }
 
 .teacher-result__header {
@@ -2613,34 +2614,34 @@ h2 {
 }
 
 .teacher-result__header h2 {
-  max-inline-size: 21ch;
   color: var(--teacher-ink);
   font-size: clamp(2rem, 4.8vw, 4rem);
   letter-spacing: -0.075em;
   line-height: 0.95;
+  max-inline-size: 21ch;
 }
 
 .teacher-result__description {
-  max-inline-size: 58ch;
-  margin-block-start: 1rem;
   color: color-mix(in oklch, var(--teacher-ink) 64%, transparent);
   font-size: 0.93rem;
   line-height: 1.6;
+  margin-block-start: 1rem;
+  max-inline-size: 58ch;
 }
 
 .result-state {
   display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
   flex: none;
-  padding-block: 0.45rem;
-  padding-inline: 0.7rem;
+  align-items: center;
   border: 1px solid color-mix(in oklch, var(--primary) 28%, var(--border));
   border-radius: 999px;
   background: color-mix(in oklch, var(--teacher-mint) 72%, var(--card));
   color: var(--primary);
   font-size: 0.72rem;
   font-weight: 800;
+  gap: 0.45rem;
+  padding-block: 0.45rem;
+  padding-inline: 0.7rem;
 }
 
 .result-state--generating {
@@ -2687,49 +2688,49 @@ h2 {
 
 .teacher-review-layout {
   display: grid;
-  grid-template-columns: minmax(15rem, 0.6fr) minmax(0, 1.4fr);
   align-items: start;
   gap: clamp(1rem, 3vw, 2rem);
+  grid-template-columns: minmax(15rem, 0.6fr) minmax(0, 1.4fr);
 }
 
 .teacher-evidence-card {
   display: grid;
-  gap: 0.8rem;
   padding: clamp(1.25rem, 3vw, 2rem);
   border: 1px solid color-mix(in oklch, var(--teacher-forest) 45%, transparent);
   border-radius: 1.25rem;
   background: var(--teacher-forest);
   color: var(--teacher-paper);
+  gap: 0.8rem;
 }
 
 .teacher-evidence-card__topline {
   justify-content: space-between;
-  gap: 1rem;
   color: color-mix(in oklch, var(--teacher-paper) 72%, transparent);
   font-size: 0.7rem;
   font-weight: 800;
+  gap: 1rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .teacher-evidence-card__topline svg {
-  inline-size: 1.1rem;
   block-size: 1.1rem;
   color: var(--teacher-butter);
+  inline-size: 1.1rem;
 }
 
 .teacher-evidence-card > strong {
-  margin-block-start: 1rem;
   color: var(--teacher-butter);
   font-size: clamp(1.9rem, 4vw, 3.2rem);
   letter-spacing: -0.08em;
+  margin-block-start: 1rem;
 }
 
 .teacher-evidence-card > p {
-  max-inline-size: 26ch;
   color: color-mix(in oklch, var(--teacher-paper) 78%, transparent);
   font-size: 0.88rem;
   line-height: 1.5;
+  max-inline-size: 26ch;
 }
 
 .teacher-evidence-card dl {
@@ -2742,10 +2743,10 @@ h2 {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 1rem;
-  padding-block-start: 0.6rem;
   border-block-start: 1px solid
     color-mix(in oklch, var(--teacher-paper) 20%, transparent);
+  gap: 1rem;
+  padding-block-start: 0.6rem;
 }
 
 .teacher-evidence-card dt {
@@ -2762,11 +2763,11 @@ h2 {
 }
 
 .teacher-evidence-card__note {
-  margin-block-start: 1.2rem;
-  padding-block-start: 1rem;
   border-block-start: 1px solid
     color-mix(in oklch, var(--teacher-paper) 20%, transparent);
   font-size: 0.76rem !important;
+  margin-block-start: 1.2rem;
+  padding-block-start: 1rem;
 }
 
 .variant-stack {
@@ -2778,14 +2779,14 @@ h2 {
   position: relative;
   z-index: 1;
   display: grid;
-  gap: 0.85rem;
-  min-inline-size: 0;
   padding: clamp(1.15rem, 2.4vw, 1.75rem);
   border: 1px solid color-mix(in oklch, var(--teacher-ink) 14%, var(--border));
   border-radius: 1.15rem;
   background: var(--card);
   box-shadow: 0 1rem 2.2rem
     color-mix(in oklch, var(--teacher-ink) 7%, transparent);
+  gap: 0.85rem;
+  min-inline-size: 0;
   transition:
     transform 220ms var(--ease-out),
     border-color 180ms ease,
@@ -2820,23 +2821,23 @@ h2 {
 }
 
 .variant-kind {
-  min-block-size: 1.65rem;
-  padding-inline: 0.55rem;
   border-radius: 0.4rem;
   background: color-mix(in oklch, var(--teacher-mint) 75%, var(--card));
   color: var(--primary);
   font-size: 0.68rem;
   font-weight: 800;
+  min-block-size: 1.65rem;
+  padding-inline: 0.55rem;
 }
 
 .variant-kind--scaffold {
   background: color-mix(in oklch, var(--teacher-sky) 80%, var(--card));
-  color: color-mix(in oklch, var(--teacher-ink) 74%, oklch(0.4 0.1 228));
+  color: color-mix(in oklch, var(--teacher-ink) 74%, oklch(40% 0.1 228deg));
 }
 
 .variant-kind--challenge {
   background: color-mix(in oklch, var(--teacher-butter) 80%, var(--card));
-  color: color-mix(in oklch, var(--teacher-ink) 78%, oklch(0.42 0.13 40));
+  color: color-mix(in oklch, var(--teacher-ink) 78%, oklch(42% 0.13 40deg));
 }
 
 .variant-card h3,
@@ -2852,25 +2853,25 @@ h2 {
 }
 
 .variant-card > p {
-  max-inline-size: 62ch;
   color: color-mix(in oklch, var(--teacher-ink) 66%, transparent);
   font-size: 0.86rem;
   line-height: 1.55;
+  max-inline-size: 62ch;
 }
 
 .variant-card__items {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.6rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-block-start: 0.35rem;
 }
 
 .variant-card__items div {
   display: grid;
-  gap: 0.2rem;
-  padding-block-start: 0.6rem;
   border-block-start: 1px solid
     color-mix(in oklch, var(--teacher-ink) 13%, transparent);
+  gap: 0.2rem;
+  padding-block-start: 0.6rem;
 }
 
 .variant-card__items span {
@@ -2884,37 +2885,37 @@ h2 {
 }
 
 .retry-button {
-  min-block-size: 2.8rem;
   gap: 0.55rem;
+  min-block-size: 2.8rem;
 }
 
 .retry-button svg {
-  inline-size: 0.95rem;
   block-size: 0.95rem;
+  inline-size: 0.95rem;
 }
 
 .teacher-result__footer {
   justify-content: space-between;
-  gap: 1rem;
-  padding-block-start: 1rem;
   border-block-start: 1px solid
     color-mix(in oklch, var(--teacher-ink) 13%, transparent);
   color: color-mix(in oklch, var(--teacher-ink) 55%, transparent);
   font-size: 0.74rem;
+  gap: 1rem;
+  padding-block-start: 1rem;
 }
 
 .teacher-result__footer span:first-child {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
   color: var(--primary);
   font-weight: 750;
+  gap: 0.4rem;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .studio-nav__exit:hover {
     color: var(--primary);
-    text-decoration-color: currentColor;
+    text-decoration-color: currentcolor;
   }
 
   .studio-nav__exit:hover svg {
@@ -2956,19 +2957,19 @@ h2 {
   }
 }
 
-@media (max-width: 60rem) {
+@media (width <= 60rem) {
   .teacher-hero {
-    grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.75fr);
     gap: 2rem;
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.75fr);
   }
 
   .teacher-guidance {
-    grid-template-columns: minmax(14rem, 0.65fr) minmax(0, 1.35fr);
     gap: 2.5rem;
+    grid-template-columns: minmax(14rem, 0.65fr) minmax(0, 1.35fr);
   }
 }
 
-@media (max-width: 48rem) {
+@media (width <= 48rem) {
   .teacher-hero,
   .teacher-guidance,
   .teacher-review-layout {
@@ -3005,8 +3006,8 @@ h2 {
   .teacher-action-band,
   .teacher-result__header,
   .teacher-result__footer {
-    align-items: flex-start;
     flex-direction: column;
+    align-items: flex-start;
   }
 
   .prompt-composer__bottom {
@@ -3014,8 +3015,8 @@ h2 {
   }
 
   .prompt-composer__submit {
-    inline-size: 100%;
     justify-content: space-between;
+    inline-size: 100%;
   }
 
   .guidance-panel {
@@ -3027,7 +3028,7 @@ h2 {
   }
 }
 
-@media (max-width: 38rem) {
+@media (width <= 38rem) {
   .app-shell--teacher {
     padding-inline: 1rem;
   }
@@ -3045,14 +3046,14 @@ h2 {
   }
 
   .prompt-composer__heading {
-    align-items: flex-start;
     flex-direction: column;
+    align-items: flex-start;
     gap: 0.35rem;
   }
 
   .prompt-composer textarea {
-    min-block-size: 9rem;
     font-size: 1.25rem;
+    min-block-size: 9rem;
   }
 
   .insight-card,
@@ -3087,8 +3088,8 @@ h2 {
   }
 
   .variant-card__heading {
-    align-items: flex-start;
     flex-direction: column;
+    align-items: flex-start;
     gap: 0.45rem;
   }
 

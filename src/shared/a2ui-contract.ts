@@ -1,42 +1,49 @@
-import { z } from 'zod'
+import { z } from "zod";
 
-export const A2UI_PROTOCOL_VERSION = 'v0.9.1' as const
-export const A2UI_CATALOG_VERSION = 'matching-v1' as const
+export const A2UI_PROTOCOL_VERSION = "v0.9.1" as const;
+export const A2UI_CATALOG_VERSION = "matching-v1" as const;
 export const A2UI_CATALOG_ID =
-  'https://edu-canvas.app/a2ui/v0.9.1/catalogs/matching-v1' as const
+  "https://edu-canvas.app/a2ui/v0.9.1/catalogs/matching-v1" as const;
 
 export const a2uiActionNames = [
-  'selectSource',
-  'selectTarget',
-  'clearSelection',
-  'requestHint',
-  'submitAttempt',
-  'undoInk',
-  'clearInk',
-  'saveProgress',
-] as const
+  "selectSource",
+  "selectTarget",
+  "clearSelection",
+  "requestHint",
+  "submitAttempt",
+  "undoInk",
+  "clearInk",
+  "saveProgress",
+] as const;
 
-export type A2UIActionName = (typeof a2uiActionNames)[number]
+export type A2UIActionName = (typeof a2uiActionNames)[number];
 
 export const a2uiComponentNames = [
-  'Column',
-  'Row',
-  'Card',
-  'Text',
-  'MatchCard',
-  'Button',
-  'Status',
-  'LearningPath',
-] as const
+  "Column",
+  "Row",
+  "Card",
+  "Text",
+  "MatchCard",
+  "Button",
+  "Status",
+  "LearningPath",
+] as const;
 
-export type A2UIComponentName = (typeof a2uiComponentNames)[number]
+export type A2UIComponentName = (typeof a2uiComponentNames)[number];
+
+const unsupportedMarkupPatterns = [
+  /<\s{0,3}\/?\s{0,3}[a-z][^>]*>/iu,
+  /javascript\s*:/iu,
+  /data:text\/html/iu,
+  /\bon\w+\s*=/iu,
+];
 
 const componentIdSchema = z
   .string()
   .trim()
   .min(1)
   .max(120)
-  .regex(/^[A-Za-z0-9:_./-]+$/u)
+  .regex(/^[A-Za-z0-9:_./-]+$/u);
 
 const safeTextSchema = z
   .string()
@@ -45,88 +52,86 @@ const safeTextSchema = z
   .max(500)
   .refine(
     (value) =>
-      !/<\s*\/?\s*[a-z][^>]*>|javascript\s*:|data:text\/html|\bon\w+\s*=/iu.test(
-        value,
-      ),
+      unsupportedMarkupPatterns.every((pattern) => !pattern.test(value)),
     {
-      message: 'Text contains unsupported executable markup.',
-    },
-  )
+      message: "Text contains unsupported executable markup.",
+    }
+  );
 
-const childrenSchema = z.array(componentIdSchema).max(100)
+const childrenSchema = z.array(componentIdSchema).max(100);
 
 const actionContextSchema = z.strictObject({
   surfaceId: componentIdSchema,
   itemId: componentIdSchema.optional(),
   variantId: componentIdSchema.optional(),
-})
+});
 
 const actionSchema = z.strictObject({
   event: z.strictObject({
     name: z.enum(a2uiActionNames),
     context: actionContextSchema,
   }),
-})
+});
 
 const columnSchema = z.strictObject({
   id: componentIdSchema,
-  component: z.literal('Column'),
+  component: z.literal("Column"),
   children: childrenSchema,
-})
+});
 
 const rowSchema = z.strictObject({
   id: componentIdSchema,
-  component: z.literal('Row'),
+  component: z.literal("Row"),
   children: childrenSchema,
-})
+});
 
 const cardSchema = z.strictObject({
   id: componentIdSchema,
-  component: z.literal('Card'),
+  component: z.literal("Card"),
   child: componentIdSchema,
-  tone: z.enum(['surface', 'accent']).optional(),
-})
+  tone: z.enum(["surface", "accent"]).optional(),
+});
 
 const textSchema = z.strictObject({
   id: componentIdSchema,
-  component: z.literal('Text'),
+  component: z.literal("Text"),
   text: safeTextSchema,
   variant: z
-    .enum(['heading', 'subheading', 'body', 'label', 'caption'])
+    .enum(["heading", "subheading", "body", "label", "caption"])
     .optional(),
-})
+});
 
 const matchCardSchema = z.strictObject({
   id: componentIdSchema,
-  component: z.literal('MatchCard'),
+  component: z.literal("MatchCard"),
   itemId: componentIdSchema,
   label: safeTextSchema,
-  group: z.enum(['source', 'target']),
+  group: z.enum(["source", "target"]),
   description: safeTextSchema.optional(),
   action: actionSchema,
-})
+});
 
 const buttonSchema = z.strictObject({
   id: componentIdSchema,
-  component: z.literal('Button'),
+  component: z.literal("Button"),
   label: safeTextSchema,
-  variant: z.enum(['secondary', 'quiet']),
+  variant: z.enum(["secondary", "quiet"]),
   action: actionSchema,
-})
+});
 
 const statusSchema = z.strictObject({
   id: componentIdSchema,
-  component: z.literal('Status'),
+  component: z.literal("Status"),
   text: safeTextSchema,
-  kind: z.enum(['info', 'warning', 'error', 'success']),
-})
+  kind: z.enum(["info", "warning", "error", "success"]),
+});
 
 const learningPathComponentSchema = z.strictObject({
   id: componentIdSchema,
-  component: z.literal('LearningPath'),
-})
+  component: z.literal("LearningPath"),
+});
 
-export const a2uiComponentSchema = z.discriminatedUnion('component', [
+export const a2uiComponentSchema = z.discriminatedUnion("component", [
   columnSchema,
   rowSchema,
   cardSchema,
@@ -135,7 +140,7 @@ export const a2uiComponentSchema = z.discriminatedUnion('component', [
   buttonSchema,
   statusSchema,
   learningPathComponentSchema,
-])
+]);
 
 const createSurfaceSchema = z.strictObject({
   version: z.literal(A2UI_PROTOCOL_VERSION),
@@ -143,7 +148,7 @@ const createSurfaceSchema = z.strictObject({
     surfaceId: componentIdSchema,
     catalogId: z.literal(A2UI_CATALOG_ID),
   }),
-})
+});
 
 const updateComponentsSchema = z.strictObject({
   version: z.literal(A2UI_PROTOCOL_VERSION),
@@ -151,18 +156,18 @@ const updateComponentsSchema = z.strictObject({
     surfaceId: componentIdSchema,
     components: z.array(a2uiComponentSchema).min(1).max(500),
   }),
-})
+});
 
 const learningPathDataStepSchema = z.strictObject({
   nodeId: componentIdSchema,
   label: safeTextSchema,
-  role: z.enum(['prerequisite', 'target']),
+  role: z.enum(["prerequisite", "target"]),
   screenPurposeId: componentIdSchema,
   screenPurpose: safeTextSchema,
-})
+});
 
 const learningPathDataSchema = z.strictObject({
-  direction: z.literal('forward'),
+  direction: z.literal("forward"),
   steps: z.array(learningPathDataStepSchema).min(2).max(12),
   rationale: safeTextSchema,
   nextScreenRationale: safeTextSchema,
@@ -173,7 +178,7 @@ const learningPathDataSchema = z.strictObject({
     modelVersion: componentIdSchema,
     validatorVersion: componentIdSchema,
   }),
-})
+});
 
 const previewDataModelSchema = z
   .strictObject({
@@ -183,48 +188,47 @@ const previewDataModelSchema = z
     scaffold: safeTextSchema,
     standardId: componentIdSchema,
     grade: z.number().int().min(3).max(6),
-    language: z.enum(['en', 'ar']),
-    direction: z.enum(['ltr', 'rtl']),
-    validationState: z.literal('ready-for-review'),
+    language: z.enum(["en", "ar"]),
+    direction: z.enum(["ltr", "rtl"]),
+    validationState: z.literal("ready-for-review"),
     selectedItemIds: z.array(componentIdSchema).max(100),
     learningPath: learningPathDataSchema.optional(),
   })
-  .readonly()
+  .readonly();
 
 const updateDataModelSchema = z.strictObject({
   version: z.literal(A2UI_PROTOCOL_VERSION),
   updateDataModel: z.strictObject({
     surfaceId: componentIdSchema,
-    path: z.literal('/'),
+    path: z.literal("/"),
     value: previewDataModelSchema,
   }),
-})
+});
 
 const deleteSurfaceSchema = z.strictObject({
   version: z.literal(A2UI_PROTOCOL_VERSION),
   deleteSurface: z.strictObject({
     surfaceId: componentIdSchema,
   }),
-})
+});
 
 export const a2uiMessageSchema = z.union([
   createSurfaceSchema,
   updateComponentsSchema,
   updateDataModelSchema,
   deleteSurfaceSchema,
-])
+]);
 
-export type A2UIComponent = z.infer<typeof a2uiComponentSchema>
-export type A2UIMessage = z.infer<typeof a2uiMessageSchema>
-export type A2UIPreviewDataModel = z.infer<typeof previewDataModelSchema>
+export type A2UIComponent = z.infer<typeof a2uiComponentSchema>;
+export type A2UIMessage = z.infer<typeof a2uiMessageSchema>;
+export type A2UIPreviewDataModel = z.infer<typeof previewDataModelSchema>;
 
 export type A2UIValidationResult =
   | { ok: true; value: A2UIMessage }
-  | { ok: false; code: string; message: string }
+  | { ok: false; code: string; message: string };
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
-}
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
 
 // Keep server-only field markers out of the browser bundle while still
 // rejecting them if an untrusted stream tries to send one.
@@ -238,167 +242,181 @@ const privateFieldCodepoints = [
   [97, 112, 105, 107, 101, 121],
   [112, 114, 111, 118, 101, 110, 97, 110, 99, 101],
   [114, 97, 119, 112, 114, 111, 118, 105, 100, 101, 114, 100, 97, 116, 97],
-] as const
+] as const;
 
-function isPrivateFieldName(key: string): boolean {
-  return privateFieldCodepoints.some(
-    (codepoints) =>
+const isPrivateFieldName = (key: string): boolean => {
+  return privateFieldCodepoints.some((codepoints) => {
+    return (
       codepoints.length === key.length &&
       codepoints.every(
-        (codepoint, index) => (key.charCodeAt(index) | 32) === codepoint,
-      ),
-  )
-}
+        (codepoint, index) =>
+          key[index]?.toLowerCase().codePointAt(0) === codepoint
+      )
+    );
+  });
+};
 
-function hasUnsafeKey(value: unknown): boolean {
-  if (Array.isArray(value)) return value.some(hasUnsafeKey)
-  if (!isRecord(value)) return false
+const hasUnsafeKey = (value: unknown): boolean => {
+  if (Array.isArray(value)) {
+    return value.some(hasUnsafeKey);
+  }
+  return isRecord(value)
+    ? Object.entries(value).some(
+        ([key, child]) => isPrivateFieldName(key) || hasUnsafeKey(child)
+      )
+    : false;
+};
 
-  return Object.entries(value).some(([key, child]) => {
-    if (isPrivateFieldName(key)) return true
+const hasUnsupportedStyling = (value: unknown): boolean => {
+  if (Array.isArray(value)) {
+    return value.some(hasUnsupportedStyling);
+  }
+  return isRecord(value)
+    ? Object.entries(value).some(([key, child]) => {
+        return (
+          /^(?:style|styles|className|css|html|dangerouslySetInnerHTML)$/u.test(
+            key
+          ) || hasUnsupportedStyling(child)
+        );
+      })
+    : false;
+};
 
-    return hasUnsafeKey(child)
-  })
-}
-
-function hasUnsupportedStyling(value: unknown): boolean {
-  if (Array.isArray(value)) return value.some(hasUnsupportedStyling)
-  if (!isRecord(value)) return false
-
-  return Object.entries(value).some(([key, child]) => {
-    if (
-      /^(?:style|styles|className|css|html|dangerouslySetInnerHTML)$/u.test(key)
-    ) {
-      return true
-    }
-
-    return hasUnsupportedStyling(child)
-  })
-}
-
-function findUnknownComponent(value: unknown): boolean {
-  if (!isRecord(value)) return false
-  const components = value.updateComponents
-  if (!isRecord(components) || !Array.isArray(components.components))
-    return false
-
+const hasUnknownComponent = (value: unknown): boolean => {
+  if (!isRecord(value)) {
+    return false;
+  }
+  const components = value.updateComponents;
+  if (!isRecord(components) || !Array.isArray(components.components)) {
+    return false;
+  }
   return components.components.some((component) => {
-    if (!isRecord(component)) return false
     return (
-      typeof component.component === 'string' &&
+      isRecord(component) &&
+      typeof component.component === "string" &&
       !a2uiComponentNames.includes(component.component as A2UIComponentName)
-    )
-  })
-}
+    );
+  });
+};
 
-function findUnknownAction(value: unknown): boolean {
-  if (!isRecord(value)) return false
-  const components = value.updateComponents
-  if (!isRecord(components) || !Array.isArray(components.components))
-    return false
+const hasUnknownAction = (value: unknown): boolean => {
+  if (!isRecord(value)) {
+    return false;
+  }
+  const components = value.updateComponents;
+  if (!isRecord(components) || !Array.isArray(components.components)) {
+    return false;
+  }
 
   return components.components.some((component) => {
-    if (!isRecord(component) || !isRecord(component.action)) return false
-    const event = component.action.event
+    if (!isRecord(component) || !isRecord(component.action)) {
+      return false;
+    }
+    const { event } = component.action;
     return (
       isRecord(event) &&
-      typeof event.name === 'string' &&
+      typeof event.name === "string" &&
       !a2uiActionNames.includes(event.name as A2UIActionName)
-    )
-  })
-}
+    );
+  });
+};
 
-function findDuplicateComponentIds(value: unknown): boolean {
-  if (!isRecord(value)) return false
-  const components = value.updateComponents
-  if (!isRecord(components) || !Array.isArray(components.components))
-    return false
+const hasDuplicateComponentIds = (value: unknown): boolean => {
+  if (!isRecord(value)) {
+    return false;
+  }
+  const components = value.updateComponents;
+  if (!isRecord(components) || !Array.isArray(components.components)) {
+    return false;
+  }
 
   const ids = components.components.flatMap((component) => {
-    if (!isRecord(component) || typeof component.id !== 'string') return []
-    return [component.id]
-  })
+    return !isRecord(component) || typeof component.id !== "string"
+      ? []
+      : [component.id];
+  });
 
-  return new Set(ids).size !== ids.length
-}
+  const uniqueIds = new Set(ids);
+  return uniqueIds.size !== ids.length;
+};
 
-export function validateA2UIMessage(value: unknown): A2UIValidationResult {
+export const validateA2UIMessage = (value: unknown): A2UIValidationResult => {
   if (!isRecord(value)) {
     return {
       ok: false,
-      code: 'INVALID_MESSAGE',
-      message: 'The preview message is not a valid A2UI object.',
-    }
+      code: "INVALID_MESSAGE",
+      message: "The preview message is not a valid A2UI object.",
+    };
   }
 
   if (value.version !== A2UI_PROTOCOL_VERSION) {
     return {
       ok: false,
-      code: 'UNSUPPORTED_VERSION',
-      message: 'This preview uses an unsupported A2UI protocol version.',
-    }
+      code: "UNSUPPORTED_VERSION",
+      message: "This preview uses an unsupported A2UI protocol version.",
+    };
   }
 
-  if (findUnknownComponent(value)) {
+  if (hasUnknownComponent(value)) {
     return {
       ok: false,
-      code: 'UNKNOWN_COMPONENT',
-      message: 'The preview requested a component outside the trusted catalog.',
-    }
+      code: "UNKNOWN_COMPONENT",
+      message: "The preview requested a component outside the trusted catalog.",
+    };
   }
 
-  if (findUnknownAction(value)) {
+  if (hasUnknownAction(value)) {
     return {
       ok: false,
-      code: 'UNKNOWN_ACTION',
-      message: 'The preview requested an action outside the trusted catalog.',
-    }
+      code: "UNKNOWN_ACTION",
+      message: "The preview requested an action outside the trusted catalog.",
+    };
   }
 
-  if (findDuplicateComponentIds(value)) {
+  if (hasDuplicateComponentIds(value)) {
     return {
       ok: false,
-      code: 'DUPLICATE_COMPONENT',
+      code: "DUPLICATE_COMPONENT",
       message:
-        'The preview sent duplicate component identifiers and was stopped safely.',
-    }
+        "The preview sent duplicate component identifiers and was stopped safely.",
+    };
   }
 
   if (hasUnsafeKey(value)) {
     return {
       ok: false,
-      code: 'UNSAFE_PAYLOAD',
-      message: 'The preview contained private or unsafe data and was blocked.',
-    }
+      code: "UNSAFE_PAYLOAD",
+      message: "The preview contained private or unsafe data and was blocked.",
+    };
   }
 
   if (hasUnsupportedStyling(value)) {
     return {
       ok: false,
-      code: 'UNSUPPORTED_PROPERTY',
-      message: 'The preview requested styling outside the trusted catalog.',
-    }
+      code: "UNSUPPORTED_PROPERTY",
+      message: "The preview requested styling outside the trusted catalog.",
+    };
   }
 
-  const parsed = a2uiMessageSchema.safeParse(value)
+  const parsed = a2uiMessageSchema.safeParse(value);
   if (!parsed.success) {
     const catalogId = isRecord(value.createSurface)
       ? value.createSurface.catalogId
-      : undefined
+      : undefined;
     if (catalogId !== undefined && catalogId !== A2UI_CATALOG_ID) {
       return {
         ok: false,
-        code: 'UNSUPPORTED_CATALOG',
-        message: 'This preview catalog version is not supported.',
-      }
+        code: "UNSUPPORTED_CATALOG",
+        message: "This preview catalog version is not supported.",
+      };
     }
 
     return {
       ok: false,
-      code: 'INVALID_MESSAGE',
-      message: 'The preview message does not match the trusted A2UI catalog.',
-    }
+      code: "INVALID_MESSAGE",
+      message: "The preview message does not match the trusted A2UI catalog.",
+    };
   }
 
-  return { ok: true, value: parsed.data }
-}
+  return { ok: true, value: parsed.data };
+};

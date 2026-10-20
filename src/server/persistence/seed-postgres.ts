@@ -1,23 +1,23 @@
-import postgres from 'postgres'
+import postgres from "postgres";
 
-import { demoSeed } from '../seed-data'
+import { demoSeed } from "../seed-data";
 
-import { withFoundationBootstrapLock } from './bootstrap-lock.mjs'
+import { withFoundationBootstrapLock } from "./bootstrap-lock.mjs";
 
-export async function seedFoundationDatabase(
-  databaseUrl: string,
-): Promise<void> {
+export const seedFoundationDatabase = async (
+  databaseUrl: string
+): Promise<void> => {
   const sql = postgres(databaseUrl, {
     max: 1,
     connect_timeout: 5,
     idle_timeout: 5,
     prepare: false,
-  })
+  });
 
   try {
     await withFoundationBootstrapLock(sql, async () => {
       await sql.begin(async (transaction) => {
-        await transaction`select set_config('app.tenant_id', ${demoSeed.tenant.id}, true)`
+        await transaction`select set_config('app.tenant_id', ${demoSeed.tenant.id}, true)`;
 
         await transaction`
           insert into tenants (id, slug, name, synthetic_data_only)
@@ -26,11 +26,11 @@ export async function seedFoundationDatabase(
             slug = excluded.slug,
             name = excluded.name,
             synthetic_data_only = true
-        `
+        `;
 
         await Promise.all(
-          demoSeed.identities.map(
-            (identity) => transaction`
+          demoSeed.identities.map((identity) => {
+            return transaction`
               insert into identities (id, tenant_id, role, display_name, demo_handle, is_active)
               values (
                 ${identity.id},
@@ -45,9 +45,9 @@ export async function seedFoundationDatabase(
                 display_name = excluded.display_name,
                 demo_handle = excluded.demo_handle,
                 is_active = true
-            `,
-          ),
-        )
+            `;
+          })
+        );
 
         await transaction`
           insert into standards (id, tenant_id, code, name, subject, grade_band)
@@ -64,11 +64,11 @@ export async function seedFoundationDatabase(
             name = excluded.name,
             subject = excluded.subject,
             grade_band = excluded.grade_band
-        `
+        `;
 
         await Promise.all(
-          demoSeed.graphNodes.map(
-            (node) => transaction`
+          demoSeed.graphNodes.map((node) => {
+            return transaction`
               insert into prerequisite_nodes (id, tenant_id, standard_id, label, sequence)
               values (
                 ${node.id},
@@ -81,19 +81,19 @@ export async function seedFoundationDatabase(
                 standard_id = excluded.standard_id,
                 label = excluded.label,
                 sequence = excluded.sequence
-            `,
-          ),
-        )
+            `;
+          })
+        );
 
         await Promise.all(
-          demoSeed.graphEdges.map(
-            (edge) => transaction`
+          demoSeed.graphEdges.map((edge) => {
+            return transaction`
               insert into prerequisite_edges (tenant_id, prerequisite_id, successor_id)
               values (${demoSeed.tenant.id}, ${edge.prerequisiteId}, ${edge.successorId})
               on conflict (tenant_id, prerequisite_id, successor_id) do nothing
-            `,
-          ),
-        )
+            `;
+          })
+        );
 
         await transaction`
           insert into activities (id, tenant_id, slug, standard_id, title, status)
@@ -110,7 +110,7 @@ export async function seedFoundationDatabase(
             standard_id = excluded.standard_id,
             title = excluded.title,
             status = excluded.status
-        `
+        `;
 
         await transaction`
           insert into activity_versions (
@@ -134,7 +134,7 @@ export async function seedFoundationDatabase(
             ${JSON.stringify(demoSeed.activityVersion.answerKey)}::jsonb
           )
           on conflict (id) do nothing
-        `
+        `;
 
         await transaction`
           insert into attempts (
@@ -156,10 +156,10 @@ export async function seedFoundationDatabase(
             now()
           )
           on conflict (id) do nothing
-        `
-      })
-    })
+        `;
+      });
+    });
   } finally {
-    await sql.end({ timeout: 3 })
+    await sql.end({ timeout: 3 });
   }
-}
+};

@@ -1,25 +1,25 @@
-import type { ServerConfig } from '@/server/config'
-
 import {
   createDeterministicLessonDraftProvider,
   createOpenAILessonDraftProvider,
-} from './provider'
-import type { LessonDraftProvider } from './provider'
+} from "./provider";
+import type { ServerConfig } from "@/server/config";
 
-export function createConfiguredLessonDraftProvider(
-  config: ServerConfig,
-): LessonDraftProvider {
+import type { LessonDraftProvider } from "./provider";
+
+export const createConfiguredLessonDraftProvider = (
+  config: ServerConfig
+): LessonDraftProvider => {
   if (config.demoMode) {
-    return createDeterministicLessonDraftProvider()
+    return createDeterministicLessonDraftProvider();
   }
 
   if (!config.openAiApiKey) {
-    throw new Error('OpenAI provider configuration is incomplete.')
+    throw new Error("OpenAI provider configuration is incomplete.");
   }
 
   return createOpenAILessonDraftProvider({
     apiKey: config.openAiApiKey,
     model: config.openAiModel,
     baseUrl: config.openAiBaseUrl,
-  })
-}
+  });
+};
