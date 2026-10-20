@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.17.1",
+  "engines": {
+    "node": ">=26"
+  },
   "imports": {
     "#/*": "./src/*",
     "@/*": "./src/*"
@@ -19,11 +22,12 @@
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "lint": "eslint .",
-    "format": "prettier --write package.json components.json tsconfig.json tsr.config.json vite.config.ts eslint.config.js prettier.config.js vitest.config.ts drizzle.config.ts drizzle src scripts migrations README.md docs/foundation-runbook.md docs/release-fly-supabase.md docs/architecture-harness.md docs/agdr/AgDR-0003-nitro-beta-compatibility.md",
-    "format:check": "prettier --check package.json components.json tsconfig.json tsr.config.json vite.config.ts eslint.config.js prettier.config.js vitest.config.ts drizzle.config.ts drizzle src scripts migrations README.md docs/foundation-runbook.md docs/release-fly-supabase.md docs/architecture-harness.md docs/agdr/AgDR-0003-nitro-beta-compatibility.md",
+    "lint:styles": "stylelint \"src/**/*.css\"",
+    "format": "prettier --write package.json components.json tsconfig.json tsr.config.json vite.config.ts eslint.config.js prettier.config.js stylelint.config.mjs vitest.config.ts drizzle.config.ts drizzle src scripts migrations README.md docs/foundation-runbook.md docs/release-fly-supabase.md docs/architecture-harness.md docs/agdr/AgDR-0003-nitro-beta-compatibility.md",
+    "format:check": "prettier --check package.json components.json tsconfig.json tsr.config.json vite.config.ts eslint.config.js prettier.config.js stylelint.config.mjs vitest.config.ts drizzle.config.ts drizzle src scripts migrations README.md docs/foundation-runbook.md docs/release-fly-supabase.md docs/architecture-harness.md docs/agdr/AgDR-0003-nitro-beta-compatibility.md",
     "typecheck": "tsc --noEmit",
     "typecheck:tsrs": "tsrs --noEmit",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm typecheck:tsrs && pnpm test && pnpm build && pnpm verify:client-boundary && pnpm verify:architecture",
+    "check": "pnpm format:check && pnpm lint && pnpm lint:styles && pnpm typecheck && pnpm typecheck:tsrs && pnpm test && pnpm build && pnpm verify:client-boundary && pnpm verify:architecture",
     "db:migrate": "node --import tsx scripts/database-migrate.ts",
     "db:seed": "node --import tsx scripts/database-seed.ts",
     "db:setup": "pnpm db:migrate && pnpm db:seed",

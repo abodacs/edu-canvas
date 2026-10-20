@@ -640,6 +640,10 @@ const SurfacePanel = ({
       id={`a2ui-panel-${entry.variantId}`}
       role="tabpanel"
       aria-labelledby={`a2ui-tab-${entry.variantId}`}
+      // WAI-ARIA APG: a panel with no focusable control must itself be
+      // reachable by keyboard so screen-reader users can read its content.
+      // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- tabpanel is a valid tab stop.
+      tabIndex={0}
     >
       <section
         className="a2ui-surface"

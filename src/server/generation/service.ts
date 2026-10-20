@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
 
 import { lessonGenerationInputSchema } from "@/shared/generation-contract";
@@ -98,8 +98,16 @@ const supportedStandardIds: ReadonlySet<string> = new Set([
   demoSeed.standard.code,
 ]);
 
-const hashForIdempotency = (value: string): string =>
-  createHash("sha256").update(value).digest("hex").slice(0, 12);
+// Idempotency keys are persisted and looked up across deploys; keep FNV-1a so a retry that spans a deployment still matches its record.
+const hashForIdempotency = (value: string): string => {
+  let hash = 2_166_136_261;
+  for (const character of value) {
+    // eslint-disable-next-line no-bitwise -- FNV-1a mixing step.
+    hash ^= character.codePointAt(0) ?? 0;
+    hash = Math.imul(hash, 16_777_619);
+  }
+  return Math.abs(hash).toString(36);
+};
 
 const createImplicitIdempotencyKey = (
   input: Pick<
