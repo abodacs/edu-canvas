@@ -5,24 +5,22 @@ import {
   EyeOff,
   LockKeyhole,
   ShieldCheck,
-} from 'lucide-react'
-import { createFileRoute, Link } from '@tanstack/react-router'
+} from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { buttonVariants } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { buttonVariants } from "@/components/ui/button-variants";
+import { cn } from "@/lib/utilities";
 
 // Public marketing illustration of the seeded equivalent-fractions concept.
 // Mirrors only the public fixture content. Never imports the server seed
 // (the answer key is server-only and must not reach the client bundle).
 const REVEAL_PROMPT =
-  'Choose every fraction that names the same part of a whole.'
-const REVEAL_SOURCE = '1/2'
-const REVEAL_MATCHES = ['2/4', '3/6', '4/8']
-const REVEAL_DISTRACTOR = '2/3'
+  "Choose every fraction that names the same part of a whole.";
+const REVEAL_SOURCE = "1/2";
+const REVEAL_MATCHES = ["2/4", "3/6", "4/8"];
+const REVEAL_DISTRACTOR = "2/3";
 
-export const Route = createFileRoute('/')({ component: TeacherHome })
-
-function TeacherHome() {
+const TeacherHome = () => {
   return (
     <main className="app-shell" aria-labelledby="page-title">
       <div className="page-frame">
@@ -37,9 +35,9 @@ function TeacherHome() {
             </span>
           </Link>
           <Link
-            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
             to="/demo/$role"
-            params={{ role: 'teacher' }}
+            params={{ role: "teacher" }}
           >
             Draft a lesson
           </Link>
@@ -57,20 +55,20 @@ function TeacherHome() {
             </p>
             <div className="hero-actions">
               <Link
-                className={cn(buttonVariants({ size: 'lg' }), 'cta-primary')}
+                className={cn(buttonVariants({ size: "lg" }), "cta-primary")}
                 to="/demo/$role"
-                params={{ role: 'teacher' }}
+                params={{ role: "teacher" }}
               >
                 Draft a lesson
                 <ArrowRight aria-hidden="true" />
               </Link>
               <Link
                 className={cn(
-                  buttonVariants({ variant: 'outline', size: 'lg' }),
-                  'min-h-12',
+                  buttonVariants({ variant: "outline", size: "lg" }),
+                  "min-h-12"
                 )}
                 to="/demo/$role"
-                params={{ role: 'student' }}
+                params={{ role: "student" }}
               >
                 Watch a student solve
               </Link>
@@ -144,7 +142,7 @@ function TeacherHome() {
             <Link
               className="demo-entry__card demo-entry__card--teacher"
               to="/demo/$role"
-              params={{ role: 'teacher' }}
+              params={{ role: "teacher" }}
             >
               <span className="demo-entry__role">Teacher</span>
               <span className="demo-entry__name">Maya Hassan</span>
@@ -156,7 +154,7 @@ function TeacherHome() {
             <Link
               className="demo-entry__card demo-entry__card--student"
               to="/demo/$role"
-              params={{ role: 'student' }}
+              params={{ role: "student" }}
             >
               <span className="demo-entry__role">Student</span>
               <span className="demo-entry__name">Omar Nabil</span>
@@ -178,9 +176,9 @@ function TeacherHome() {
               One prompt. Four variants you approve. A student gets the idea.
             </p>
             <Link
-              className={cn(buttonVariants({ size: 'lg' }), 'cta-primary')}
+              className={cn(buttonVariants({ size: "lg" }), "cta-primary")}
               to="/demo/$role"
-              params={{ role: 'teacher' }}
+              params={{ role: "teacher" }}
             >
               Draft a lesson
               <ArrowRight aria-hidden="true" />
@@ -209,10 +207,10 @@ function TeacherHome() {
         </footer>
       </div>
     </main>
-  )
-}
+  );
+};
 
-function RevealPreview() {
+const RevealPreview = () => {
   return (
     <figure
       className="reveal"
@@ -231,12 +229,14 @@ function RevealPreview() {
       </div>
 
       <ul className="reveal__targets">
-        {REVEAL_MATCHES.map((target) => (
-          <li key={target} className="reveal__target is-correct">
-            <span>{target}</span>
-            <Check aria-hidden="true" />
-          </li>
-        ))}
+        {REVEAL_MATCHES.map((target) => {
+          return (
+            <li key={target} className="reveal__target is-correct">
+              <span>{target}</span>
+              <Check aria-hidden="true" />
+            </li>
+          );
+        })}
         <li className="reveal__target is-distractor">
           <span>{REVEAL_DISTRACTOR}</span>
         </li>
@@ -261,5 +261,7 @@ function RevealPreview() {
         Illustration of the seeded demo. Synthetic data only.
       </figcaption>
     </figure>
-  )
-}
+  );
+};
+
+export const Route = createFileRoute("/")({ component: TeacherHome });

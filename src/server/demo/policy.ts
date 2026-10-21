@@ -1,28 +1,28 @@
-import type { DemoRole } from '@/shared/demo-contract'
-import { demoSeed, getSeedIdentity } from '../seed-data'
+import { demoSeed, getSeedIdentity } from "../seed-data";
+import type { DemoRole } from "@/shared/demo-contract";
 
 const demoCapabilities = {
   teacher: [
-    'view_seeded_environment',
-    'view_demo_activity_fixtures',
-    'generate_lesson_draft',
+    "view_seeded_environment",
+    "view_demo_activity_fixtures",
+    "generate_lesson_draft",
   ],
-  student: ['view_seeded_environment', 'view_assigned_demo_activity'],
-} as const satisfies Record<DemoRole, readonly string[]>
+  student: ["view_seeded_environment", "view_assigned_demo_activity"],
+} as const satisfies Record<DemoRole, readonly string[]>;
 
-export type DemoCapability = (typeof demoCapabilities)[DemoRole][number]
+export type DemoCapability = (typeof demoCapabilities)[DemoRole][number];
 
 export interface DemoSession {
-  identityId: string
-  displayName: string
-  role: DemoRole
-  tenantId: string
-  tenantName: string
-  capabilities: readonly DemoCapability[]
+  identityId: string;
+  displayName: string;
+  role: DemoRole;
+  tenantId: string;
+  tenantName: string;
+  capabilities: readonly DemoCapability[];
 }
 
-export function getDemoSession(role: DemoRole): DemoSession {
-  const identity = getSeedIdentity(role)
+export const getDemoSession = (role: DemoRole): DemoSession => {
+  const identity = getSeedIdentity(role);
 
   return {
     identityId: identity.id,
@@ -31,21 +31,19 @@ export function getDemoSession(role: DemoRole): DemoSession {
     tenantId: demoSeed.tenant.id,
     tenantName: demoSeed.tenant.name,
     capabilities: demoCapabilities[role],
-  }
-}
+  };
+};
 
-export function assertTenantAccess(
+export const assertTenantAccess = (
   session: DemoSession,
-  tenantId: string,
-): void {
+  tenantId: string
+): void => {
   if (session.tenantId !== tenantId) {
-    throw new Error('Tenant access denied.')
+    throw new Error("Tenant access denied.");
   }
-}
+};
 
-export function canAccess(
+export const canAccess = (
   session: DemoSession,
-  capability: DemoCapability,
-): boolean {
-  return session.capabilities.includes(capability)
-}
+  capability: DemoCapability
+): boolean => session.capabilities.includes(capability);

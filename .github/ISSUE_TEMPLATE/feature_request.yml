@@ -1,10 +1,10 @@
 name: Feature request
 description: Suggest an idea or improvement
-labels: ['enhancement']
+labels: ["enhancement"]
 body:
   - type: markdown
     attributes:
-      value: 'Thanks for the suggestion. Please describe the problem and your proposed solution.'
+      value: "Thanks for the suggestion. Please describe the problem and your proposed solution."
   - type: textarea
     id: problem
     attributes:

@@ -14,7 +14,7 @@
       "#/*": ["./src/*"],
       "@/*": ["./src/*"]
     },
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "types": ["vite/client", "node"],
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,

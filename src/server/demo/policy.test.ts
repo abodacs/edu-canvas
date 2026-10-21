@@ -1,25 +1,25 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from "vitest";
 
-import { demoSeed } from '../seed-data'
+import { demoSeed } from "../seed-data";
 
-import { assertTenantAccess, canAccess, getDemoSession } from './policy'
+import { assertTenantAccess, canAccess, getDemoSession } from "./policy";
 
-describe('demo policy', () => {
-  it('gives each seeded role only its intended capabilities', () => {
-    const teacher = getDemoSession('teacher')
-    const student = getDemoSession('student')
+describe("demo policy", () => {
+  it("gives each seeded role only its intended capabilities", () => {
+    const teacher = getDemoSession("teacher");
+    const student = getDemoSession("student");
 
-    expect(canAccess(teacher, 'view_demo_activity_fixtures')).toBe(true)
-    expect(canAccess(student, 'view_demo_activity_fixtures')).toBe(false)
-    expect(canAccess(student, 'view_assigned_demo_activity')).toBe(true)
-  })
+    expect(canAccess(teacher, "view_demo_activity_fixtures")).toBeTruthy();
+    expect(canAccess(student, "view_demo_activity_fixtures")).toBeFalsy();
+    expect(canAccess(student, "view_assigned_demo_activity")).toBeTruthy();
+  });
 
-  it('rejects a session crossing tenant boundaries', () => {
-    const session = getDemoSession('student')
+  it("rejects a session crossing tenant boundaries", () => {
+    const session = getDemoSession("student");
 
-    expect(() => assertTenantAccess(session, demoSeed.tenant.id)).not.toThrow()
-    expect(() => assertTenantAccess(session, 'tenant_other_school')).toThrow(
-      'Tenant access denied.',
-    )
-  })
-})
+    expect(() => assertTenantAccess(session, demoSeed.tenant.id)).not.toThrow();
+    expect(() => assertTenantAccess(session, "tenant_other_school")).toThrow(
+      "Tenant access denied."
+    );
+  });
+});

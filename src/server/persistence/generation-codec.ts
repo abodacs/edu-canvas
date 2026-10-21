@@ -1,26 +1,26 @@
-import { z } from 'zod'
+import { z } from "zod";
 
 import {
   difficultyValues,
   generationStateValues,
   languageValues,
   publicGenerationDiagnosticSchema,
-} from '@/shared/generation-contract'
+} from "@/shared/generation-contract";
 
+import {
+  providerDraftSchema,
+  validatedLearningPathSchema,
+} from "../generation/validation";
 import type {
   GenerationAttemptRecord,
   GenerationDiagnostic,
   LessonDraft,
   LessonGenerationRecord,
-} from '../generation/types'
+} from "../generation/types";
 import type {
   NormalizedGenerationRequest,
   ProviderProvenance,
-} from '../generation/provider'
-import {
-  providerDraftSchema,
-  validatedLearningPathSchema,
-} from '../generation/validation'
+} from "../generation/provider";
 
 const normalizedGenerationRequestSchema: z.ZodType<NormalizedGenerationRequest> =
   z.object({
@@ -29,7 +29,7 @@ const normalizedGenerationRequestSchema: z.ZodType<NormalizedGenerationRequest> 
     standardId: z.string(),
     language: z.enum(languageValues),
     difficulty: z.enum(difficultyValues),
-  })
+  });
 
 const provenanceSchema: z.ZodType<ProviderProvenance> = z
   .object({
@@ -39,7 +39,7 @@ const provenanceSchema: z.ZodType<ProviderProvenance> = z
     validatorVersion: z.string(),
     catalogVersion: z.string().optional(),
   })
-  .strict()
+  .strict();
 
 const lessonDraftSchema: z.ZodType<LessonDraft> = providerDraftSchema
   .extend({
@@ -49,100 +49,104 @@ const lessonDraftSchema: z.ZodType<LessonDraft> = providerDraftSchema
     provenance: provenanceSchema,
     createdAt: z.string(),
   })
-  .strict()
+  .strict();
 
-const diagnosticsSchema = publicGenerationDiagnosticSchema.array()
-const stateSchema = z.enum(generationStateValues)
+const diagnosticsSchema = publicGenerationDiagnosticSchema.array();
+const stateSchema = z.enum(generationStateValues);
 
 export interface StoredGenerationRequestRow {
-  requestId: string
-  tenantId: string
-  teacherId: string
-  prompt: string
-  grade: number
-  standardId: string
-  language: string
-  difficulty: string
-  state: string
-  attempt: number
-  diagnostics: unknown
-  draft: unknown
-  provenance: unknown
-  createdAt: string | Date
-  updatedAt: string | Date
+  requestId: string;
+  tenantId: string;
+  teacherId: string;
+  prompt: string;
+  grade: number;
+  standardId: string;
+  language: string;
+  difficulty: string;
+  state: string;
+  attempt: number;
+  diagnostics: unknown;
+  draft: unknown;
+  provenance: unknown;
+  createdAt: string | Date;
+  updatedAt: string | Date;
 }
 
 export interface StoredGenerationAttemptRow {
-  attemptNumber: number
-  idempotencyKey: string
-  state: string
-  correctionAttempted: boolean
-  diagnostics: unknown
-  provenance: unknown
-  createdAt: string | Date
+  attemptNumber: number;
+  idempotencyKey: string;
+  state: string;
+  correctionAttempted: boolean;
+  diagnostics: unknown;
+  provenance: unknown;
+  createdAt: string | Date;
 }
 
-function decodeJson(value: unknown, field: string): unknown {
-  if (typeof value !== 'string') return value
+const decodeJson = (value: unknown, field: string): unknown => {
+  if (typeof value !== "string") {
+    return value;
+  }
 
   try {
-    return JSON.parse(value) as unknown
+    return JSON.parse(value) as unknown;
   } catch {
-    throw new Error(`Stored ${field} contains invalid JSON.`)
+    throw new Error(`Stored ${field} contains invalid JSON.`);
   }
-}
+};
 
-function parseStoredJson<T>(
+const parseStoredJson = <T>(
   value: unknown,
   schema: z.ZodType<T>,
-  field: string,
-): T | undefined {
-  if (value === null || value === undefined) return undefined
+  field: string
+): T | undefined => {
+  if (value === null || value === undefined) {
+    return undefined;
+  }
 
-  const parsed = schema.safeParse(decodeJson(value, field))
+  const parsed = schema.safeParse(decodeJson(value, field));
   if (!parsed.success) {
-    throw new Error(`Stored ${field} does not match its contract.`)
+    throw new Error(`Stored ${field} does not match its contract.`);
   }
 
-  return parsed.data
-}
+  return parsed.data;
+};
 
-function timestamp(value: string | Date, field: string): string {
-  const parsed = new Date(value)
+const timestamp = (value: string | Date, field: string): string => {
+  const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) {
-    throw new Error(`Stored ${field} is not a valid timestamp.`)
+    throw new TypeError(`Stored ${field} is not a valid timestamp.`);
   }
-  return parsed.toISOString()
-}
+  return parsed.toISOString();
+};
 
-export function hydrateGenerationRecord(
+export const hydrateGenerationRecord = (
   row: StoredGenerationRequestRow,
-  attempts: StoredGenerationAttemptRow[],
-): LessonGenerationRecord {
+  attempts: StoredGenerationAttemptRow[]
+): LessonGenerationRecord => {
   const diagnostics =
     parseStoredJson<GenerationDiagnostic[]>(
       row.diagnostics,
       diagnosticsSchema,
-      'request diagnostics',
-    ) ?? []
+      "request diagnostics"
+    ) ?? [];
   const draft = parseStoredJson<LessonDraft>(
     row.draft,
     lessonDraftSchema,
-    'lesson draft',
-  )
+    "lesson draft"
+  );
   const provenance = parseStoredJson<ProviderProvenance>(
     row.provenance,
     provenanceSchema,
-    'request provenance',
-  )
+    "request provenance"
+  );
   const input = normalizedGenerationRequestSchema.parse({
     prompt: row.prompt,
     grade: row.grade,
     standardId: row.standardId,
     language: row.language,
     difficulty: row.difficulty,
-  })
-  const state = stateSchema.parse(row.state)
+  });
+  const state = stateSchema.parse(row.state);
 
   return {
     requestId: row.requestId,
@@ -152,14 +156,14 @@ export function hydrateGenerationRecord(
     state,
     attempt: row.attempt,
     diagnostics,
-    ...(draft ? { draft } : {}),
-    ...(provenance ? { provenance } : {}),
+    ...(draft && { draft }),
+    ...(provenance && { provenance }),
     attempts: attempts.map<GenerationAttemptRecord>((attempt) => {
       const attemptProvenance = parseStoredJson<ProviderProvenance>(
         attempt.provenance,
         provenanceSchema,
-        'attempt provenance',
-      )
+        "attempt provenance"
+      );
 
       return {
         attemptNumber: attempt.attemptNumber,
@@ -170,13 +174,13 @@ export function hydrateGenerationRecord(
           parseStoredJson<GenerationDiagnostic[]>(
             attempt.diagnostics,
             diagnosticsSchema,
-            'attempt diagnostics',
+            "attempt diagnostics"
           ) ?? [],
-        ...(attemptProvenance ? { provenance: attemptProvenance } : {}),
-        createdAt: timestamp(attempt.createdAt, 'attempt created_at'),
-      }
+        ...(attemptProvenance && { provenance: attemptProvenance }),
+        createdAt: timestamp(attempt.createdAt, "attempt created_at"),
+      };
     }),
-    createdAt: timestamp(row.createdAt, 'request created_at'),
-    updatedAt: timestamp(row.updatedAt, 'request updated_at'),
-  }
-}
+    createdAt: timestamp(row.createdAt, "request created_at"),
+    updatedAt: timestamp(row.updatedAt, "request updated_at"),
+  };
+};

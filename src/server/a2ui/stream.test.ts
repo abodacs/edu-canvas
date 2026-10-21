@@ -1,53 +1,63 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from "vitest";
 
-import { createEquivalentFractionsDraft } from '@/server/generation/provider'
-import { buildValidatedLearningPath } from '@/server/generation/learning-path'
-import { createDemoCurriculumContext } from '@/server/generation/semantic-validation'
+import { createEquivalentFractionsDraft } from "@/server/generation/provider";
+import { buildValidatedLearningPath } from "@/server/generation/learning-path";
+import { createDemoCurriculumContext } from "@/server/generation/semantic-validation";
 
-import { compileLessonPreview } from './compiler'
-import { createPreviewSSEStream } from './stream'
+import { compileLessonPreview } from "./compiler";
+import { createPreviewSSEStream } from "./stream";
 
-describe('lesson preview SSE delivery', () => {
-  it('frames every A2UI message and closes with a completion event', async () => {
+const requireLearningPath = <T extends { learningPath?: unknown }>(
+  draft: T
+): NonNullable<T["learningPath"]> => {
+  if (!draft.learningPath) {
+    throw new Error("Expected the fixture draft to include a learning path.");
+  }
+  return draft.learningPath as NonNullable<T["learningPath"]>;
+};
+
+describe("lesson preview SSE delivery", () => {
+  it("frames every A2UI message and closes with a completion event", async () => {
     const draft = createEquivalentFractionsDraft({
-      prompt: 'equivalent fractions for grade 4',
+      prompt: "equivalent fractions for grade 4",
       grade: 4,
-      standardId: 'standard_ccss_4_nf_a_01',
-      language: 'en',
-      difficulty: 'on-level',
-    })
+      standardId: "standard_ccss_4_nf_a_01",
+      language: "en",
+      difficulty: "on-level",
+    });
     const learningPath = buildValidatedLearningPath({
-      proposal: draft.learningPath!,
+      proposal: requireLearningPath(draft),
       context: createDemoCurriculumContext({
         grade: 4,
-        standardId: 'standard_ccss_4_nf_a_01',
-        language: 'en',
+        standardId: "standard_ccss_4_nf_a_01",
+        language: "en",
       }),
-      draftId: 'draft_req_stream_test',
+      draftId: "draft_req_stream_test",
       provenance: {
-        provider: 'deterministic-fixture',
-        model: 'equivalent-fractions-fixture-v1',
-        promptTemplateVersion: 'lesson-prompt-v1',
-        validatorVersion: 'lesson-validator-v2',
+        provider: "deterministic-fixture",
+        model: "equivalent-fractions-fixture-v1",
+        promptTemplateVersion: "lesson-prompt-v1",
+        validatorVersion: "lesson-validator-v2",
       },
-      validatorVersion: 'semantic-validation-runner-v1',
-    })
+      validatorVersion: "semantic-validation-runner-v1",
+    });
     const preview = compileLessonPreview({
-      requestId: 'draft_req_stream_test',
+      requestId: "draft_req_stream_test",
       grade: 4,
-      standardId: 'standard_ccss_4_nf_a_01',
-      language: 'en',
+      standardId: "standard_ccss_4_nf_a_01",
+      language: "en",
       draft,
       learningPath,
-    })
+    });
 
-    const body = await new Response(
-      createPreviewSSEStream(preview.messages),
-    ).text()
+    const previewResponse = new Response(
+      createPreviewSSEStream(preview.messages)
+    );
+    const body = await previewResponse.text();
 
-    expect(body.match(/event: a2ui/g)).toHaveLength(12)
-    expect(body).toContain('event: complete')
-    expect(body).toContain('"surfaceCount":4')
-    expect(body).toMatch(/content-type|event:/)
-  })
-})
+    expect(body.match(/event: a2ui/gu)).toHaveLength(12);
+    expect(body).toContain("event: complete");
+    expect(body).toContain('"surfaceCount":4');
+    expect(body).toMatch(/content-type|event:/u);
+  });
+});

@@ -1,28 +1,28 @@
-import { z } from 'zod'
+import { z } from "zod";
 
-const gradeValues = [3, 4, 5, 6] as const
-const gradeTextValues = ['3', '4', '5', '6'] as const
-export const difficultyValues = ['support', 'on-level', 'stretch'] as const
-export const languageValues = ['en', 'ar'] as const
+const gradeValues = [3, 4, 5, 6] as const;
+const gradeTextValues = ["3", "4", "5", "6"] as const;
+export const difficultyValues = ["support", "on-level", "stretch"] as const;
+export const languageValues = ["en", "ar"] as const;
 export const semanticValidatorRoleValues = [
-  'curriculum',
-  'learning-quality',
-] as const
+  "curriculum",
+  "learning-quality",
+] as const;
 export const semanticValidationVerdictValues = [
-  'pass',
-  'warning',
-  'block',
-] as const
-const variantKindValues = ['standard', 'scaffold', 'challenge'] as const
+  "pass",
+  "warning",
+  "block",
+] as const;
+const variantKindValues = ["standard", "scaffold", "challenge"] as const;
 export const generationStateValues = [
-  'requested',
-  'generating',
-  'ready-for-review',
-  'blocked-by-validation',
-  'blocked-by-moderation',
-  'failed-retryable',
-  'failed-terminal',
-] as const
+  "requested",
+  "generating",
+  "ready-for-review",
+  "blocked-by-validation",
+  "blocked-by-moderation",
+  "failed-retryable",
+  "failed-terminal",
+] as const;
 
 export const lessonGenerationInputSchema = z
   .object({
@@ -37,20 +37,20 @@ export const lessonGenerationInputSchema = z
     idempotencyKey: z.string().trim().min(8).max(128).optional(),
     retryOfRequestId: z.string().trim().min(1).max(80).optional(),
   })
-  .strict()
+  .strict();
 
-export type LessonGenerationInput = z.infer<typeof lessonGenerationInputSchema>
-export type LessonLanguage = (typeof languageValues)[number]
-export type LessonDifficulty = (typeof difficultyValues)[number]
-export type PublicVariantKind = (typeof variantKindValues)[number]
-export type GenerationState = (typeof generationStateValues)[number]
+export type LessonGenerationInput = z.infer<typeof lessonGenerationInputSchema>;
+export type LessonLanguage = (typeof languageValues)[number];
+export type LessonDifficulty = (typeof difficultyValues)[number];
+export type PublicVariantKind = (typeof variantKindValues)[number];
+export type GenerationState = (typeof generationStateValues)[number];
 
 const publicItemSchema = z
   .object({
     id: z.string(),
     label: z.string(),
   })
-  .strict()
+  .strict();
 
 const publicVariantSchema = z
   .object({
@@ -71,7 +71,7 @@ const publicVariantSchema = z
     languageMetadata: z
       .object({
         language: z.enum(languageValues),
-        direction: z.enum(['ltr', 'rtl']),
+        direction: z.enum(["ltr", "rtl"]),
         locale: z.string(),
       })
       .strict(),
@@ -83,7 +83,7 @@ const publicVariantSchema = z
       })
       .strict(),
   })
-  .strict()
+  .strict();
 
 export const publicLessonDraftSchema = z
   .object({
@@ -95,11 +95,11 @@ export const publicLessonDraftSchema = z
     difficulty: z.enum(difficultyValues),
     variants: z.array(publicVariantSchema).length(4),
   })
-  .strict()
+  .strict();
 
 export const publicGenerationDiagnosticSchema = z
   .object({
-    severity: z.enum(['warning', 'error']),
+    severity: z.enum(["warning", "error"]),
     code: z.string(),
     message: z.string(),
     variantId: z.string().optional(),
@@ -110,7 +110,7 @@ export const publicGenerationDiagnosticSchema = z
     validatorVersion: z.string().optional(),
     recommendation: z.string().optional(),
   })
-  .strict()
+  .strict();
 
 export const publicGenerationResultSchema = z
   .object({
@@ -136,12 +136,12 @@ export const publicGenerationResultSchema = z
       })
       .strict(),
   })
-  .strict()
+  .strict();
 
-export type PublicLessonDraft = z.infer<typeof publicLessonDraftSchema>
+export type PublicLessonDraft = z.infer<typeof publicLessonDraftSchema>;
 export type PublicGenerationDiagnostic = z.infer<
   typeof publicGenerationDiagnosticSchema
->
+>;
 export type PublicGenerationResult = z.infer<
   typeof publicGenerationResultSchema
->
+>;

@@ -1,20 +1,22 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
 
-import { getHealthPayload } from '@/server/health.server'
+import { getHealthPayload } from "@/server/health.server";
 
-function jsonResponse(payload: unknown, status = 200) {
+const jsonResponse = (payload: unknown, status = 200) => {
   return Response.json(payload, {
     status,
     headers: {
-      'cache-control': 'no-store',
+      "cache-control": "no-store",
     },
-  })
-}
+  });
+};
 
-export const Route = createFileRoute('/api/health')({
+const handleGet = () => jsonResponse(getHealthPayload());
+
+export const Route = createFileRoute("/api/health")({
   server: {
     handlers: {
-      GET: () => jsonResponse(getHealthPayload()),
+      GET: handleGet,
     },
   },
-})
+});

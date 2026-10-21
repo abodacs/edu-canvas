@@ -17,11 +17,11 @@ The stable candidate's install and full `pnpm check` completed, but the install 
 
 ## Options considered
 
-| Option                                                    | Pros                                                                                                     | Cons                                                                                                                                                                             |
-| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **A. Replace Nitro with stable `3.0.0`**                  | Removes the beta label; the candidate build completes                                                    | Declared Vite peer is `^7`, package is deprecated, `3.0.1` is unavailable, and the lockfile changes substantially; not a compatible stable replacement for this Vite 8 toolchain |
-| **B. Keep the pinned `3.0.260610-beta`**                  | Matches Vite 8, preserves the known-good lockfile, and keeps the change limited to a documented decision | Retains prerelease compatibility and maintenance risk; requires a later reevaluation                                                                                             |
-| **C. Downgrade Vite or upgrade other toolchain packages** | Could make a different Nitro combination resolvable                                                      | Unrelated major dependency churn and explicitly outside issue #14's scope                                                                                                        |
+| Option | Pros | Cons |
+| --- | --- | --- |
+| **A. Replace Nitro with stable `3.0.0`** | Removes the beta label; the candidate build completes | Declared Vite peer is `^7`, package is deprecated, `3.0.1` is unavailable, and the lockfile changes substantially; not a compatible stable replacement for this Vite 8 toolchain |
+| **B. Keep the pinned `3.0.260610-beta`** | Matches Vite 8, preserves the known-good lockfile, and keeps the change limited to a documented decision | Retains prerelease compatibility and maintenance risk; requires a later reevaluation |
+| **C. Downgrade Vite or upgrade other toolchain packages** | Could make a different Nitro combination resolvable | Unrelated major dependency churn and explicitly outside issue #14's scope |
 
 ## Decision
 
@@ -29,12 +29,12 @@ The stable candidate's install and full `pnpm check` completed, but the install 
 
 The beta's compatibility is bounded by the frozen lockfile and the release-shaped checks:
 
-| Verification                                                | Result                                                                                                       |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `pnpm install --frozen-lockfile`                            | Pass                                                                                                         |
-| `pnpm install --frozen-lockfile --strict-peer-dependencies` | Pass                                                                                                         |
-| `pnpm check`                                                | Pass: formatting, lint, typecheck, 11 tests, production build, client-boundary check, and architecture check |
-| `pnpm audit --prod`                                         | No known vulnerabilities found                                                                               |
+| Verification | Result |
+| --- | --- |
+| `pnpm install --frozen-lockfile` | Pass |
+| `pnpm install --frozen-lockfile --strict-peer-dependencies` | Pass |
+| `pnpm check` | Pass: formatting, lint, typecheck, 11 tests, production build, client-boundary check, and architecture check |
+| `pnpm audit --prod` | No known vulnerabilities found |
 
 ## Security and operational consequences
 

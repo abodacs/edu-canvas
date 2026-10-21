@@ -12,53 +12,42 @@ import {
   ShieldCheck,
   Sparkles,
   WandSparkles,
-} from 'lucide-react'
-import { createFileRoute, Link } from '@tanstack/react-router'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { useEffect, useRef, useState } from 'react'
-import type { FormEvent } from 'react'
+} from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useEffect, useRef, useState } from "react";
 
-import { LessonPreview } from '@/components/a2ui/lesson-preview'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { LessonPreview } from "@/components/a2ui/lesson-preview";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
-import { isDemoRole } from '@/shared/demo-contract'
-import type { PublicGenerationResult } from '@/shared/generation-contract'
+} from "@/components/ui/card";
+import { isDemoRole } from "@/shared/demo-contract";
 import {
   generateLessonDraft,
   getDemoSnapshot,
-} from '@/server/demo/server-function'
+} from "@/server/demo/server-function";
+import type { PublicGenerationResult } from "@/shared/generation-contract";
+import type { SyntheticEvent } from "react";
 
-export const Route = createFileRoute('/demo/$role')({
-  loader: ({ params }) => {
-    if (!isDemoRole(params.role)) {
-      throw new Error('Unknown seeded demo role.')
-    }
-
-    return getDemoSnapshot({ data: { role: params.role } })
-  },
-  component: DemoPerspective,
-})
-
-function DemoPerspective() {
-  const snapshot = Route.useLoaderData()
-  const { session, environment, curriculum, seededCounts } = snapshot
-  const isTeacher = session.role === 'teacher'
+const DemoPerspective = () => {
+  const { session, environment, curriculum, seededCounts } =
+    Route.useLoaderData();
+  const isTeacher = session.role === "teacher";
 
   return (
     <main
-      className={isTeacher ? 'app-shell app-shell--teacher' : 'app-shell'}
-      aria-labelledby={isTeacher ? 'generation-heading' : 'demo-title'}
+      className={isTeacher ? "app-shell app-shell--teacher" : "app-shell"}
+      aria-labelledby={isTeacher ? "generation-heading" : "demo-title"}
     >
       <div
-        className={isTeacher ? 'page-frame page-frame--teacher' : 'page-frame'}
+        className={isTeacher ? "page-frame page-frame--teacher" : "page-frame"}
       >
         {isTeacher ? (
           <>
@@ -79,12 +68,12 @@ function DemoPerspective() {
                 <p className="eyebrow">{session.role} perspective</p>
                 <h1 id="demo-title">Welcome, {session.displayName}.</h1>
                 <p className="hero-description">
-                  You are viewing the isolated{' '}
+                  You are viewing the isolated{" "}
                   <strong>{session.tenantName}</strong> tenant. This foundation
                   exposes only the capabilities intended for this seeded role.
                 </p>
               </div>
-              <div className="session-stamp" aria-label="Current demo session">
+              <div className="session-stamp">
                 <span>Environment</span>
                 <strong>{environment.appEnv}</strong>
                 <span>Persistence</span>
@@ -102,12 +91,14 @@ function DemoPerspective() {
                 </CardHeader>
                 <CardContent>
                   <ul className="capability-list">
-                    {session.capabilities.map((capability) => (
-                      <li key={capability}>
-                        <ShieldCheck aria-hidden="true" />
-                        {capability.replaceAll('_', ' ')}
-                      </li>
-                    ))}
+                    {session.capabilities.map((capability) => {
+                      return (
+                        <li key={capability}>
+                          <ShieldCheck aria-hidden="true" />
+                          {capability.replaceAll("_", " ")}
+                        </li>
+                      );
+                    })}
                   </ul>
                   <p className="security-note">
                     <LockKeyhole aria-hidden="true" /> The private answer key is
@@ -154,17 +145,19 @@ function DemoPerspective() {
                 <Database aria-hidden="true" />
               </div>
               <div className="fixture-grid">
-                {Object.entries(seededCounts).map(([label, count]) => (
-                  <div className="fixture-stat" key={label}>
-                    <strong>{String(count)}</strong>
-                    <span>
-                      {label.replace(
-                        /[A-Z]/g,
-                        (letter) => ` ${letter.toLowerCase()}`,
-                      )}
-                    </span>
-                  </div>
-                ))}
+                {Object.entries(seededCounts).map(([label, count]) => {
+                  return (
+                    <div className="fixture-stat" key={label}>
+                      <strong>{String(count)}</strong>
+                      <span>
+                        {label.replaceAll(
+                          /[A-Z]/gu,
+                          (letter) => ` ${letter.toLowerCase()}`
+                        )}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
               <p className="supporting-note">
                 <Network aria-hidden="true" /> This seeded view stays
@@ -176,10 +169,10 @@ function DemoPerspective() {
         )}
       </div>
     </main>
-  )
-}
+  );
+};
 
-function TeacherStudioHeader() {
+const TeacherStudioHeader = () => {
   return (
     <header className="studio-nav">
       <Link
@@ -202,105 +195,192 @@ function TeacherStudioHeader() {
         </Link>
       </div>
     </header>
-  )
+  );
+};
+
+interface LessonComposerProperties {
+  readonly standardId: string;
 }
 
-interface LessonComposerProps {
-  standardId: string
-}
+const GRADES = ["3", "4", "5", "6"] as const;
 
-type PromptContext = {
-  grade: '3' | '4' | '5' | '6'
-  language: 'en' | 'ar'
-  difficulty: 'support' | 'on-level' | 'stretch'
+interface PromptContext {
+  grade: (typeof GRADES)[number];
+  language: "en" | "ar";
+  difficulty: "support" | "on-level" | "stretch";
 }
 
 const variantLabels = {
-  standard: 'Core idea',
-  scaffold: 'Extra support',
-  challenge: 'Stretch it',
-} as const
+  standard: "Core idea",
+  scaffold: "Extra support",
+  challenge: "Stretch it",
+} as const;
 
 const guidancePanels = [
   {
-    key: 'target',
-    title: 'Target',
-    short: 'Keep the goal precise',
-    detail: 'We will start with the clearest learning target we can find.',
+    key: "target",
+    title: "Target",
+    short: "Keep the goal precise",
+    detail: "We will start with the clearest learning target we can find.",
     Icon: BookOpen,
   },
   {
-    key: 'support',
-    title: 'Support',
-    short: 'Make room for every learner',
-    detail: 'The draft includes a gentler path and a way to stretch the idea.',
+    key: "support",
+    title: "Support",
+    short: "Make room for every learner",
+    detail: "The draft includes a gentler path and a way to stretch the idea.",
     Icon: Layers3,
   },
   {
-    key: 'review',
-    title: 'Review',
-    short: 'You decide what goes live',
-    detail: 'Every version stays private until you approve it for students.',
+    key: "review",
+    title: "Review",
+    short: "You decide what goes live",
+    detail: "Every version stays private until you approve it for students.",
     Icon: ShieldCheck,
   },
-] as const
+] as const;
 
-function getPromptContext(prompt: string): PromptContext {
-  const gradeMatch = prompt.match(/\b(?:grade|year|class)\s*([3-6])\b/i)
-  const lowerPrompt = prompt.toLowerCase()
+const getPromptContext = (prompt: string): PromptContext => {
+  const gradeMatch = prompt.match(
+    /\b(?:grade|year|class)\s*(?<grade>[3-6])\b/iu
+  );
+  const lowerPrompt = prompt.toLowerCase();
+  const matchedGrade = gradeMatch?.groups?.grade;
 
   return {
-    grade: (gradeMatch?.[1] ?? '4') as PromptContext['grade'],
-    language: /[\u0600-\u06ff]/.test(prompt) ? 'ar' : 'en',
-    difficulty: lowerPrompt.includes('challenge')
-      ? 'stretch'
-      : lowerPrompt.includes('support') || lowerPrompt.includes('scaffold')
-        ? 'support'
-        : 'on-level',
-  }
-}
+    grade: GRADES.find((grade) => grade === matchedGrade) ?? "4",
+    language: /[\u{600}-\u{6FF}]/u.test(prompt) ? "ar" : "en",
+    difficulty: getDifficulty(lowerPrompt),
+  };
+};
 
-function getDisplayStandardId(standardId: string) {
-  return standardId === 'standard_ccss_4_nf_a_01' ? '4.NF.A.1' : standardId
-}
+const DIFFICULTY_SIGNALS: readonly [string, PromptContext["difficulty"]][] = [
+  ["challenge", "stretch"],
+  ["support", "support"],
+  ["scaffold", "support"],
+];
 
-function getResultTitle(state: PublicGenerationResult['state']) {
-  switch (state) {
-    case 'ready-for-review':
-      return 'Choose the version that fits the room.'
-    case 'generating':
-      return 'Your idea is taking shape.'
-    case 'blocked-by-validation':
-      return 'This draft needs a little more care.'
-    case 'blocked-by-moderation':
-      return 'Let’s reshape that request.'
-    case 'failed-retryable':
-      return 'The first pass missed a beat.'
-    case 'failed-terminal':
-      return 'That draft could not be finished.'
-    default:
-      return 'Your lesson is taking shape.'
-  }
-}
-
-function isTeacherReviewDiagnostic(code: string): boolean {
+const getDifficulty = (lowerPrompt: string): PromptContext["difficulty"] => {
   return (
-    code === 'PREREQUISITE_PACK_MISSING' ||
-    code === 'PREREQUISITE_PATH_MISSING' ||
-    code === 'LEARNING_PATH_BLOCKED' ||
-    code === 'CURRICULUM_TENANT_MISMATCH' ||
-    code === 'CURRICULUM_CONTEXT_MISMATCH' ||
-    code === 'CURRICULUM_GRAPH_VERSION_UNSUPPORTED'
-  )
-}
+    DIFFICULTY_SIGNALS.find(([signal]) => lowerPrompt.includes(signal))?.[1] ??
+    "on-level"
+  );
+};
 
-function PromptSignals({
+const READY_FOR_REVIEW_STATE = "ready-for-review";
+
+const getDisplayStandardId = (standardId: string) =>
+  standardId === "standard_ccss_4_nf_a_01" ? "4.NF.A.1" : standardId;
+
+const getResultTitle = (state: PublicGenerationResult["state"]) => {
+  switch (state) {
+    case READY_FOR_REVIEW_STATE: {
+      return "Choose the version that fits the room.";
+    }
+    case "generating": {
+      return "Your idea is taking shape.";
+    }
+    case "blocked-by-validation": {
+      return "This draft needs a little more care.";
+    }
+    case "blocked-by-moderation": {
+      return "Let’s reshape that request.";
+    }
+    case "failed-retryable": {
+      return "The first pass missed a beat.";
+    }
+    case "failed-terminal": {
+      return "That draft could not be finished.";
+    }
+    default: {
+      return "Your lesson is taking shape.";
+    }
+  }
+};
+
+const TEACHER_REVIEW_DIAGNOSTIC_CODES: ReadonlySet<string> = new Set([
+  "PREREQUISITE_PACK_MISSING",
+  "PREREQUISITE_PATH_MISSING",
+  "LEARNING_PATH_BLOCKED",
+  "CURRICULUM_TENANT_MISMATCH",
+  "CURRICULUM_CONTEXT_MISMATCH",
+  "CURRICULUM_GRAPH_VERSION_UNSUPPORTED",
+]);
+
+const STATUS_ANNOUNCEMENTS: Partial<
+  Record<PublicGenerationResult["state"], string>
+> = {
+  [READY_FOR_REVIEW_STATE]:
+    "Four lesson variants are ready for teacher review.",
+  generating: "A duplicate request is still being completed.",
+};
+
+const getStatusAnnouncement = (
+  state: PublicGenerationResult["state"]
+): string => {
+  return (
+    STATUS_ANNOUNCEMENTS[state] ??
+    `Generation state: ${state.replaceAll("-", " ")}`
+  );
+};
+
+const RESULT_DESCRIPTIONS: Partial<
+  Record<PublicGenerationResult["state"], string>
+> = {
+  [READY_FOR_REVIEW_STATE]:
+    "Look for the version that sounds like your classroom. You can review every one before anything moves forward.",
+};
+
+const getResultDescription = (
+  result: PublicGenerationResult,
+  requiresTeacherReview: boolean
+): string => {
+  return requiresTeacherReview
+    ? "The approved prerequisite context is unavailable, so nothing has been prepared for students."
+    : (RESULT_DESCRIPTIONS[result.state] ??
+        "The draft remains private while we finish the safe, reviewable handoff.");
+};
+
+const getStateLabel = (state: PublicGenerationResult["state"]): string => {
+  switch (state) {
+    case READY_FOR_REVIEW_STATE: {
+      return "Ready to review";
+    }
+    case "generating": {
+      return "In progress";
+    }
+    default: {
+      return "Needs a look";
+    }
+  }
+};
+
+const DIAGNOSTIC_SEVERITY_LABELS: Record<
+  PublicGenerationResult["diagnostics"][number]["severity"],
+  string
+> = {
+  error: "Review this",
+  warning: "Worth noticing",
+};
+
+const getDiagnosticLabel = (
+  diagnostic: PublicGenerationResult["diagnostics"][number]
+): string => {
+  return TEACHER_REVIEW_DIAGNOSTIC_CODES.has(diagnostic.code)
+    ? "Teacher review"
+    : DIAGNOSTIC_SEVERITY_LABELS[diagnostic.severity];
+};
+
+const isTeacherReviewDiagnostic = (code: string): boolean =>
+  TEACHER_REVIEW_DIAGNOSTIC_CODES.has(code);
+
+const PromptSignals = ({
   context,
   standardId,
 }: {
-  context: PromptContext
-  standardId: string
-}) {
+  readonly context: PromptContext;
+  readonly standardId: string;
+}) => {
   return (
     <div className="prompt-signals" aria-live="polite">
       <span className="prompt-signals__label">
@@ -315,83 +395,95 @@ function PromptSignals({
       </span>
       <span className="prompt-signal">
         <Globe2 aria-hidden="true" />
-        {context.language === 'ar' ? 'Arabic / RTL' : 'English / LTR'}
+        {context.language === "ar" ? "Arabic / RTL" : "English / LTR"}
       </span>
     </div>
-  )
-}
+  );
+};
 
-function TeacherLessonComposer({ standardId }: LessonComposerProps) {
-  const [prompt, setPrompt] = useState('equivalent fractions for grade 4')
-  const [requestKey, setRequestKey] = useState('')
-  const [result, setResult] = useState<PublicGenerationResult | null>(null)
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [requestError, setRequestError] = useState<string | null>(null)
-  const studioRef = useRef<HTMLElement>(null)
-  const context = getPromptContext(prompt)
+const TeacherLessonComposer = ({ standardId }: LessonComposerProperties) => {
+  const [prompt, setPrompt] = useState("equivalent fractions for grade 4");
+  const requestKeyReference = useRef("");
+  const [result, setResult] = useState<PublicGenerationResult | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [requestError, setRequestError] = useState<string | null>(null);
+  const studioReference = useRef<HTMLElement>(null);
+  const context = getPromptContext(prompt);
 
   useEffect(() => {
-    const root = studioRef.current
-    if (!root || typeof window === 'undefined') return
+    const root = studioReference.current;
+    if (!root || typeof window === "undefined") {
+      return () => {
+        // Nothing was animated, so there is nothing to clean up.
+      };
+    }
 
-    gsap.registerPlugin(ScrollTrigger)
+    gsap.registerPlugin(ScrollTrigger);
 
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return () => {
+        // Nothing was animated, so there is nothing to clean up.
+      };
+    }
 
     const animationContext = gsap.context(() => {
-      gsap.from('.insight-card', {
+      gsap.from(".insight-card", {
         opacity: 0,
-        transform: 'translate3d(0, 18px, 0)',
+        transform: "translate3d(0, 18px, 0)",
         duration: 0.62,
-        ease: 'expo.out',
+        ease: "expo.out",
         stagger: 0.06,
         scrollTrigger: {
-          trigger: '.insight-grid',
-          start: 'top 80%',
+          trigger: ".insight-grid",
+          start: "top 80%",
           once: true,
         },
-      })
+      });
 
-      const guidance = root.querySelector<HTMLElement>('.teacher-guidance')
-      const rail = root.querySelector<HTMLElement>('.teacher-guidance__rail')
+      const guidance = root.querySelector<HTMLElement>(".teacher-guidance");
+      const rail = root.querySelector<HTMLElement>(".teacher-guidance__rail");
 
-      if (guidance && rail && window.matchMedia('(min-width: 60rem)').matches) {
+      if (guidance && rail && window.matchMedia("(min-width: 60rem)").matches) {
         ScrollTrigger.create({
           trigger: guidance,
-          start: 'top top+=96',
-          end: 'bottom bottom-=64',
+          start: "top top+=96",
+          end: "bottom bottom-=64",
           pin: rail,
           pinSpacing: false,
-        })
+        });
       }
-    }, root)
+    }, root);
 
-    return () => animationContext.revert()
-  }, [])
+    return () => animationContext.revert();
+  }, []);
 
-  function updateRequestKey() {
-    setRequestKey('')
-    setResult(null)
-    setRequestError(null)
-  }
+  const updateRequestKey = () => {
+    requestKeyReference.current = "";
+    setResult(null);
+    setRequestError(null);
+  };
 
-  async function submitGeneration(
-    event: FormEvent<HTMLFormElement>,
-    retryOfRequestId?: string,
-  ) {
-    event.preventDefault()
-    setIsGenerating(true)
-    setRequestError(null)
+  const submitGeneration = async (
+    event: SyntheticEvent<HTMLFormElement>,
+    retryOfRequestId?: string
+  ) => {
+    event.preventDefault();
+    setIsGenerating(true);
+    setRequestError(null);
 
     const idempotencyKey = retryOfRequestId
       ? crypto.randomUUID()
-      : requestKey || crypto.randomUUID()
-    if (!retryOfRequestId) setRequestKey(idempotencyKey)
+      : requestKeyReference.current || crypto.randomUUID();
+    if (!retryOfRequestId) {
+      requestKeyReference.current = idempotencyKey;
+    }
+
+    const retryField = retryOfRequestId ? { retryOfRequestId } : {};
 
     try {
       const nextResult = await generateLessonDraft({
         data: {
-          role: 'teacher',
+          role: "teacher",
           input: {
             prompt,
             grade: context.grade,
@@ -399,23 +491,22 @@ function TeacherLessonComposer({ standardId }: LessonComposerProps) {
             language: context.language,
             difficulty: context.difficulty,
             idempotencyKey,
-            ...(retryOfRequestId ? { retryOfRequestId } : {}),
+            ...retryField,
           },
         },
-      })
-      setResult(nextResult)
+      });
+      setResult(nextResult);
     } catch {
       setRequestError(
-        'The draft could not be generated. Check the request and try again.',
-      )
-    } finally {
-      setIsGenerating(false)
+        "The draft could not be generated. Check the request and try again."
+      );
     }
-  }
+    setIsGenerating(false);
+  };
 
   return (
     <section
-      ref={studioRef}
+      ref={studioReference}
       className="teacher-studio"
       aria-labelledby="generation-heading"
     >
@@ -426,12 +517,12 @@ function TeacherLessonComposer({ standardId }: LessonComposerProps) {
             way to begin
           </p>
           <h1 id="generation-heading">
-            Make the idea{' '}
+            Make the idea{" "}
             <span className="inline-fraction-art" aria-hidden="true">
               <span>1</span>
               <i />
               <span>2</span>
-            </span>{' '}
+            </span>{" "}
             click.
           </h1>
           <p className="teacher-hero__description">
@@ -455,10 +546,7 @@ function TeacherLessonComposer({ standardId }: LessonComposerProps) {
         </div>
       </div>
 
-      <form
-        className="prompt-composer"
-        onSubmit={(event) => void submitGeneration(event)}
-      >
+      <form className="prompt-composer" onSubmit={submitGeneration}>
         <div className="prompt-composer__heading">
           <label htmlFor="lesson-prompt">What should students practice?</label>
           <span>{prompt.length}/500</span>
@@ -466,14 +554,15 @@ function TeacherLessonComposer({ standardId }: LessonComposerProps) {
         <textarea
           id="lesson-prompt"
           name="prompt"
+          aria-label="What should students practice?"
           required
           maxLength={500}
           rows={3}
           value={prompt}
           placeholder="e.g. equivalent fractions for grade 4"
           onChange={(event) => {
-            setPrompt(event.target.value)
-            updateRequestKey()
+            setPrompt(event.target.value);
+            updateRequestKey();
           }}
         />
         <div className="prompt-composer__bottom">
@@ -485,8 +574,8 @@ function TeacherLessonComposer({ standardId }: LessonComposerProps) {
             disabled={isGenerating || !prompt.trim()}
           >
             <WandSparkles aria-hidden="true" />
-            {isGenerating ? 'Shaping the draft…' : 'Create lesson'}
-            {!isGenerating ? <ArrowRight aria-hidden="true" /> : null}
+            {isGenerating ? "Shaping the draft…" : "Create lesson"}
+            {isGenerating ? null : <ArrowRight aria-hidden="true" />}
           </Button>
         </div>
       </form>
@@ -504,10 +593,9 @@ function TeacherLessonComposer({ standardId }: LessonComposerProps) {
         standardId={standardId}
       />
 
-      <div
+      <output
         className="generation-status teacher-generation-status"
         aria-live="polite"
-        role="status"
       >
         {isGenerating ? (
           <p className="status-pulse">
@@ -518,12 +606,14 @@ function TeacherLessonComposer({ standardId }: LessonComposerProps) {
         {requestError ? (
           <p className="generation-error">{requestError}</p>
         ) : null}
-      </div>
+      </output>
 
       {result ? (
         <GenerationResult
           result={result}
-          onRetry={(event) => void submitGeneration(event, result.requestId)}
+          onRetry={(event) => {
+            submitGeneration(event, result.requestId);
+          }}
         />
       ) : (
         <div className="teacher-action-band">
@@ -538,20 +628,20 @@ function TeacherLessonComposer({ standardId }: LessonComposerProps) {
         </div>
       )}
     </section>
-  )
-}
+  );
+};
 
-function TeacherGuidance({
+const TeacherGuidance = ({
   context,
   prompt,
   standardId,
 }: {
-  context: PromptContext
-  prompt: string
-  standardId: string
-}) {
-  const [activePanel, setActivePanel] = useState('target')
-  const safePrompt = prompt.trim() || 'your learning idea'
+  readonly context: PromptContext;
+  readonly prompt: string;
+  readonly standardId: string;
+}) => {
+  const [activePanel, setActivePanel] = useState("target");
+  const safePrompt = prompt.trim() || "your learning idea";
 
   return (
     <section className="teacher-guidance" aria-labelledby="guidance-heading">
@@ -599,7 +689,7 @@ function TeacherGuidance({
               <span>Language</span>
             </div>
             <strong>
-              {context.language === 'ar' ? 'Arabic / RTL' : 'English / LTR'}
+              {context.language === "ar" ? "Arabic / RTL" : "English / LTR"}
             </strong>
             <p>We will keep the lesson readable in the language you use.</p>
           </article>
@@ -616,10 +706,7 @@ function TeacherGuidance({
                 more support, and a stretch for those ready to go further.
               </p>
             </div>
-            <div
-              className="insight-card__levels"
-              aria-label="Three lesson paths"
-            >
+            <div className="insight-card__levels">
               <span>Core</span>
               <span>Support</span>
               <span>Stretch</span>
@@ -627,17 +714,14 @@ function TeacherGuidance({
           </article>
         </div>
 
-        <div
-          className="guidance-accordion"
-          aria-label="How the draft takes shape"
-        >
+        <div className="guidance-accordion">
           {guidancePanels.map((panel) => {
-            const Icon = panel.Icon
-            const isActive = activePanel === panel.key
+            const { Icon } = panel;
+            const isActive = activePanel === panel.key;
 
             return (
               <button
-                className={`guidance-panel${isActive ? ' is-active' : ''}`}
+                className={`guidance-panel${isActive ? "is-active" : ""}`}
                 type="button"
                 key={panel.key}
                 aria-expanded={isActive}
@@ -652,96 +736,92 @@ function TeacherGuidance({
                 </span>
                 <ArrowRight aria-hidden="true" />
               </button>
-            )
+            );
           })}
         </div>
 
-        <div className="teacher-marquee" aria-label="Lesson design principles">
+        <div className="teacher-marquee" aria-hidden="true">
           <div className="teacher-marquee__track">
-            {[...Array(2)]
-              .flatMap(() => [
-                'clear target',
-                'visible support',
-                'teacher approval',
-                'a reason to continue',
-              ])
-              .map((item, index) => (
-                <span key={`${item}-${index}`}>
-                  {item}
-                  <i aria-hidden="true" />
-                </span>
-              ))}
+            {Array.from({ length: 2 }, () => {
+              return [
+                "clear target",
+                "visible support",
+                "teacher approval",
+                "a reason to continue",
+              ];
+            })
+              .flat()
+              .map((item, index) => {
+                return (
+                  <span key={`${item}-${index}`}>
+                    {item}
+                    <i aria-hidden="true" />
+                  </span>
+                );
+              })}
           </div>
         </div>
       </div>
     </section>
-  )
+  );
+};
+
+interface GenerationResultProperties {
+  readonly result: PublicGenerationResult;
+  readonly onRetry: (event: SyntheticEvent<HTMLFormElement>) => void;
 }
 
-interface GenerationResultProps {
-  result: PublicGenerationResult
-  onRetry: (event: FormEvent<HTMLFormElement>) => void
-}
-
-function GenerationResult({ result, onRetry }: GenerationResultProps) {
+const GenerationResult = ({ result, onRetry }: GenerationResultProperties) => {
   const direction =
-    result.draft?.variants[0]?.languageMetadata.direction ?? 'ltr'
+    result.draft?.variants[0]?.languageMetadata.direction ?? "ltr";
   const requiresTeacherReview = result.diagnostics.some((diagnostic) =>
-    isTeacherReviewDiagnostic(diagnostic.code),
-  )
-  const stackRef = useRef<HTMLDivElement>(null)
+    isTeacherReviewDiagnostic(diagnostic.code)
+  );
+  const stackReference = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    const stack = stackRef.current
-    if (!stack || typeof window === 'undefined') return
-
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const stack = stackReference.current;
+    if (
+      !stack ||
+      typeof window === "undefined" ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return () => {
+        // Nothing was animated, so there is nothing to clean up.
+      };
+    }
 
     const animationContext = gsap.context(() => {
-      gsap.from('.variant-card', {
+      gsap.from(".variant-card", {
         opacity: 0,
-        transform: 'translate3d(0, 24px, 0) scale(0.97)',
+        transform: "translate3d(0, 24px, 0) scale(0.97)",
         duration: 0.48,
-        ease: 'expo.out',
+        ease: "expo.out",
         stagger: 0.07,
-      })
-    }, stack)
+      });
+    }, stack);
 
-    return () => animationContext.revert()
-  }, [result.requestId])
+    return () => animationContext.revert();
+  }, [result.requestId]);
 
   return (
     <div
       className="generation-result teacher-result"
       dir={direction}
-      lang={result.draft?.language ?? 'en'}
+      lang={result.draft?.language ?? "en"}
     >
-      <p className="sr-only" role="status">
-        {result.state === 'ready-for-review'
-          ? 'Four lesson variants are ready for teacher review.'
-          : result.state === 'generating'
-            ? 'A duplicate request is still being completed.'
-            : `Generation state: ${result.state.replaceAll('-', ' ')}`}
-      </p>
+      <output className="sr-only">{getStatusAnnouncement(result.state)}</output>
       <div className="generation-result__header teacher-result__header">
         <div>
           <p className="studio-kicker">Your first pass</p>
           <h2>{getResultTitle(result.state)}</h2>
           <p className="teacher-result__description">
-            {requiresTeacherReview
-              ? 'The approved prerequisite context is unavailable, so nothing has been prepared for students.'
-              : result.state === 'ready-for-review'
-                ? 'Look for the version that sounds like your classroom. You can review every one before anything moves forward.'
-                : 'The draft remains private while we finish the safe, reviewable handoff.'}
+            {getResultDescription(result, requiresTeacherReview)}
           </p>
         </div>
         <span className={`result-state result-state--${result.state}`}>
           <span aria-hidden="true" />
-          {result.state === 'ready-for-review'
-            ? 'Ready to review'
-            : result.state === 'generating'
-              ? 'In progress'
-              : 'Needs a look'}
+          {getStateLabel(result.state)}
         </span>
       </div>
 
@@ -750,18 +830,16 @@ function GenerationResult({ result, onRetry }: GenerationResultProps) {
           className="diagnostic-list teacher-diagnostics"
           aria-label="Draft notes"
         >
-          {result.diagnostics.map((item, index) => (
-            <li key={`${item.code}-${item.variantId ?? 'draft'}-${index}`}>
-              <strong>
-                {isTeacherReviewDiagnostic(item.code)
-                  ? 'Teacher review'
-                  : item.severity === 'error'
-                    ? 'Review this'
-                    : 'Worth noticing'}
-              </strong>
-              <span>{item.message}</span>
-            </li>
-          ))}
+          {result.diagnostics.map((item) => {
+            return (
+              <li
+                key={`${item.code}-${item.variantId ?? "draft"}-${item.message}`}
+              >
+                <strong>{getDiagnosticLabel(item)}</strong>
+                <span>{item.message}</span>
+              </li>
+            );
+          })}
         </ul>
       ) : null}
 
@@ -807,43 +885,47 @@ function GenerationResult({ result, onRetry }: GenerationResultProps) {
               </p>
             </aside>
 
-            <div
+            <section
               className="variant-stack"
-              ref={stackRef}
+              ref={stackReference}
               aria-label="Generated lesson variants"
             >
-              {result.draft.variants.map((variant) => (
-                <article className="variant-card" key={variant.id}>
-                  <div className="variant-card__heading">
-                    <span
-                      className={`variant-kind variant-kind--${variant.kind}`}
-                    >
-                      {variantLabels[variant.kind]}
-                    </span>
-                    <span>{variant.sourceItems.length} matching pieces</span>
-                  </div>
-                  <h3>{variant.title}</h3>
-                  <p>{variant.instructions}</p>
-                  <div className="variant-card__items">
-                    <div>
-                      <span>
-                        {variant.accessibilityMetadata.sourceGroupLabel}
+              {result.draft.variants.map((variant) => {
+                return (
+                  <article className="variant-card" key={variant.id}>
+                    <div className="variant-card__heading">
+                      <span
+                        className={`variant-kind variant-kind--${variant.kind}`}
+                      >
+                        {variantLabels[variant.kind]}
                       </span>
-                      <strong>{variant.sourceItems.length} choices</strong>
+                      <span>{variant.sourceItems.length} matching pieces</span>
                     </div>
-                    <div>
-                      <span>
-                        {variant.accessibilityMetadata.targetGroupLabel}
-                      </span>
-                      <strong>{variant.targetItems.length} connections</strong>
+                    <h3>{variant.title}</h3>
+                    <p>{variant.instructions}</p>
+                    <div className="variant-card__items">
+                      <div>
+                        <span>
+                          {variant.accessibilityMetadata.sourceGroupLabel}
+                        </span>
+                        <strong>{variant.sourceItems.length} choices</strong>
+                      </div>
+                      <div>
+                        <span>
+                          {variant.accessibilityMetadata.targetGroupLabel}
+                        </span>
+                        <strong>
+                          {variant.targetItems.length} connections
+                        </strong>
+                      </div>
                     </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+                  </article>
+                );
+              })}
+            </section>
           </div>
 
-          {result.state === 'ready-for-review' ? (
+          {result.state === READY_FOR_REVIEW_STATE ? (
             <LessonPreview
               key={result.requestId}
               requestId={result.requestId}
@@ -869,5 +951,16 @@ function GenerationResult({ result, onRetry }: GenerationResultProps) {
         </div>
       ) : null}
     </div>
-  )
-}
+  );
+};
+
+export const Route = createFileRoute("/demo/$role")({
+  loader: ({ params }) => {
+    if (!isDemoRole(params.role)) {
+      throw new Error("Unknown seeded demo role.");
+    }
+
+    return getDemoSnapshot({ data: { role: params.role } });
+  },
+  component: DemoPerspective,
+});

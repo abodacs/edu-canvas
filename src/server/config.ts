@@ -1,250 +1,322 @@
-import { z } from 'zod'
+import { z } from "zod";
 
-const environmentValues = ['development', 'preview', 'production'] as const
+const environmentValues = ["development", "preview", "production"] as const;
 
-export type ServerEnvironment = (typeof environmentValues)[number]
-export type PersistenceMode = 'seeded-demo' | 'postgres'
-export type PostgresPersistenceAdapter = 'postgres' | 'drizzle'
+export type ServerEnvironment = (typeof environmentValues)[number];
+export type PersistenceMode = "seeded-demo" | "postgres";
+export type PostgresPersistenceAdapter = "postgres" | "drizzle";
+
+interface ConfigIssueCodes {
+  INVALID_APP_ENV: true;
+  INVALID_DEMO_MODE: true;
+  INVALID_SYNTHETIC_DATA_ONLY: true;
+  INVALID_DATABASE_URL: true;
+  INVALID_PERSISTENCE_ADAPTER: true;
+  INVALID_SENTRY_DSN: true;
+  DATABASE_REQUIRED: true;
+  OPENAI_API_KEY_REQUIRED: true;
+  INVALID_OPENAI_BASE_URL: true;
+  REAL_DATA_DISABLED: true;
+}
+
+export type ConfigIssueCode = keyof ConfigIssueCodes;
 
 export interface ConfigIssue {
-  code:
-    | 'INVALID_APP_ENV'
-    | 'INVALID_DEMO_MODE'
-    | 'INVALID_SYNTHETIC_DATA_ONLY'
-    | 'INVALID_DATABASE_URL'
-    | 'INVALID_PERSISTENCE_ADAPTER'
-    | 'INVALID_SENTRY_DSN'
-    | 'DATABASE_REQUIRED'
-    | 'OPENAI_API_KEY_REQUIRED'
-    | 'INVALID_OPENAI_BASE_URL'
-    | 'REAL_DATA_DISABLED'
-  field: string
-  message: string
+  code: ConfigIssueCode;
+  field: string;
+  message: string;
 }
 
 export interface ServerConfig {
-  appEnv: ServerEnvironment
-  demoMode: boolean
-  syntheticDataOnly: true
-  mode: PersistenceMode
-  persistenceAdapter: PostgresPersistenceAdapter
-  databaseUrl?: string
-  sentryDsn?: string
-  openAiApiKey?: string
-  openAiModel: string
-  openAiBaseUrl: string
-  issues: readonly ConfigIssue[]
+  appEnv: ServerEnvironment;
+  demoMode: boolean;
+  syntheticDataOnly: true;
+  mode: PersistenceMode;
+  persistenceAdapter: PostgresPersistenceAdapter;
+  databaseUrl?: string;
+  sentryDsn?: string;
+  openAiApiKey?: string;
+  openAiModel: string;
+  openAiBaseUrl: string;
+  issues: readonly ConfigIssue[];
 }
 
 export interface DatabaseBootstrapConfig {
-  syntheticDataOnly: true
-  databaseUrl?: string
-  issues: readonly ConfigIssue[]
+  syntheticDataOnly: true;
+  databaseUrl?: string;
+  issues: readonly ConfigIssue[];
 }
+
+const parseUrl = (value: string): URL | null => {
+  try {
+    return new URL(value);
+  } catch {
+    return null;
+  }
+};
+
+const postgresProtocols = new Set(["postgres:", "postgresql:"]);
 
 const databaseUrlSchema = z.string().refine((value) => {
-  try {
-    const url = new URL(value)
-    return url.protocol === 'postgres:' || url.protocol === 'postgresql:'
-  } catch {
-    return false
-  }
-}, 'DATABASE_URL must be a postgres:// or postgresql:// URL.')
+  const url = parseUrl(value);
+  return url !== null && postgresProtocols.has(url.protocol);
+}, "DATABASE_URL must be a postgres:// or postgresql:// URL.");
 
-const persistenceAdapterSchema = z.enum(['postgres', 'drizzle'])
+const persistenceAdapterSchema = z.enum(["postgres", "drizzle"]);
 
-export function isValidSentryDsn(value: string): boolean {
-  try {
-    const url = new URL(value)
-    return (
-      url.protocol === 'https:' &&
-      url.username.length > 0 &&
-      url.hostname.length > 0 &&
-      url.pathname.length > 1
-    )
-  } catch {
-    return false
-  }
-}
+export const isValidSentryDsn = (value: string): boolean => {
+  const url = parseUrl(value);
+  return (
+    url !== null &&
+    [
+      url.protocol === "https:",
+      url.username.length > 0,
+      url.hostname.length > 0,
+      url.pathname.length > 1,
+    ].every(Boolean)
+  );
+};
+
+const loopbackHosts = new Set(["localhost", "127.0.0.1"]);
+
+const isAllowedOpenAiBaseUrl = (url: URL): boolean => {
+  return (
+    url.protocol === "https:" ||
+    (url.protocol === "http:" && loopbackHosts.has(url.hostname))
+  );
+};
 
 const openAiBaseUrlSchema = z.string().refine((value) => {
-  try {
-    const url = new URL(value)
-    return (
-      url.protocol === 'https:' ||
-      (url.protocol === 'http:' &&
-        (url.hostname === 'localhost' || url.hostname === '127.0.0.1'))
-    )
-  } catch {
-    return false
-  }
-}, 'OPENAI_BASE_URL must use HTTPS, or HTTP for a local loopback test server.')
+  const url = parseUrl(value);
+  return url !== null && isAllowedOpenAiBaseUrl(url);
+}, "OPENAI_BASE_URL must use HTTPS, or HTTP for a local loopback test server.");
 
-function parseBoolean(
+const parseBoolean = (
   value: string | undefined,
-  fallback: boolean,
-): { value: boolean; invalid: boolean } {
-  if (value === undefined) return { value: fallback, invalid: false }
-  if (value === 'true') return { value: true, invalid: false }
-  if (value === 'false') return { value: false, invalid: false }
-  return { value: fallback, invalid: true }
-}
+  isFallback: boolean
+): { value: boolean; invalid: boolean } => {
+  if (value === undefined) {
+    return { value: isFallback, invalid: false };
+  }
+  if (value === "true") {
+    return { value: true, invalid: false };
+  }
+  return value === "false"
+    ? { value: false, invalid: false }
+    : { value: isFallback, invalid: true };
+};
 
-export function readDatabaseBootstrapConfig(
-  env: Record<string, string | undefined> = process.env,
-): DatabaseBootstrapConfig {
-  const issues: ConfigIssue[] = []
-  const syntheticDataOnlyResult = parseBoolean(env.SYNTHETIC_DATA_ONLY, true)
-  const syntheticDataOnly = syntheticDataOnlyResult.value
+export const readDatabaseBootstrapConfig = (
+  environment: Record<string, string | undefined> = process.env
+): DatabaseBootstrapConfig => {
+  const issues: ConfigIssue[] = [];
+  const syntheticDataOnlyResult = parseBoolean(
+    environment.SYNTHETIC_DATA_ONLY,
+    true
+  );
+  const syntheticDataOnly = syntheticDataOnlyResult.value;
 
   if (syntheticDataOnlyResult.invalid) {
     issues.push({
-      code: 'INVALID_SYNTHETIC_DATA_ONLY',
-      field: 'SYNTHETIC_DATA_ONLY',
-      message: 'SYNTHETIC_DATA_ONLY must be true or false.',
-    })
+      code: "INVALID_SYNTHETIC_DATA_ONLY",
+      field: "SYNTHETIC_DATA_ONLY",
+      message: "SYNTHETIC_DATA_ONLY must be true or false.",
+    });
   }
   if (!syntheticDataOnly) {
     issues.push({
-      code: 'REAL_DATA_DISABLED',
-      field: 'SYNTHETIC_DATA_ONLY',
+      code: "REAL_DATA_DISABLED",
+      field: "SYNTHETIC_DATA_ONLY",
       message:
-        'Real-student mode is disabled until the compliance launch gate is approved.',
-    })
+        "Real-student mode is disabled until the compliance launch gate is approved.",
+    });
   }
 
-  const databaseUrl = env.DATABASE_URL?.trim() || undefined
+  const databaseUrl = environment.DATABASE_URL?.trim() || undefined;
   if (databaseUrl && !databaseUrlSchema.safeParse(databaseUrl).success) {
     issues.push({
-      code: 'INVALID_DATABASE_URL',
-      field: 'DATABASE_URL',
-      message: 'DATABASE_URL must be a postgres:// or postgresql:// URL.',
-    })
+      code: "INVALID_DATABASE_URL",
+      field: "DATABASE_URL",
+      message: "DATABASE_URL must be a postgres:// or postgresql:// URL.",
+    });
   }
 
   return {
     syntheticDataOnly: true,
-    ...(databaseUrl ? { databaseUrl } : {}),
+    ...(databaseUrl && { databaseUrl }),
     issues,
+  };
+};
+
+const pushIssue = (
+  issues: ConfigIssue[],
+  code: ConfigIssueCode,
+  field: string,
+  message: string
+): void => {
+  issues.push({ code, field, message });
+};
+
+const readAppEnvironment = (
+  environment: Record<string, string | undefined>,
+  issues: ConfigIssue[]
+): ServerEnvironment => {
+  const requested =
+    environment.APP_ENV ??
+    (environment.NODE_ENV === "production" ? "production" : "development");
+  if (environmentValues.includes(requested as ServerEnvironment)) {
+    return requested as ServerEnvironment;
   }
-}
+  pushIssue(
+    issues,
+    "INVALID_APP_ENV",
+    "APP_ENV",
+    "APP_ENV must be development, preview, or production."
+  );
+  return "development";
+};
 
-export function readServerConfig(
-  env: Record<string, string | undefined> = process.env,
-): ServerConfig {
-  const databaseConfig = readDatabaseBootstrapConfig(env)
-  const issues: ConfigIssue[] = [...databaseConfig.issues]
-  const requestedEnv =
-    env.APP_ENV ??
-    (env.NODE_ENV === 'production' ? 'production' : 'development')
-  const appEnv = environmentValues.includes(requestedEnv as ServerEnvironment)
-    ? (requestedEnv as ServerEnvironment)
-    : 'development'
-
-  if (!environmentValues.includes(requestedEnv as ServerEnvironment)) {
-    issues.push({
-      code: 'INVALID_APP_ENV',
-      field: 'APP_ENV',
-      message: 'APP_ENV must be development, preview, or production.',
-    })
+const isDemoModeEnabled = (
+  environment: Record<string, string | undefined>,
+  appEnvironment: ServerEnvironment,
+  issues: ConfigIssue[]
+): boolean => {
+  const result = parseBoolean(
+    environment.DEMO_MODE,
+    appEnvironment !== "production"
+  );
+  if (result.invalid) {
+    pushIssue(
+      issues,
+      "INVALID_DEMO_MODE",
+      "DEMO_MODE",
+      "DEMO_MODE must be true or false."
+    );
   }
+  return result.value;
+};
 
-  const demoModeResult = parseBoolean(env.DEMO_MODE, appEnv !== 'production')
-  const demoMode = demoModeResult.value
-  if (demoModeResult.invalid) {
-    issues.push({
-      code: 'INVALID_DEMO_MODE',
-      field: 'DEMO_MODE',
-      message: 'DEMO_MODE must be true or false.',
-    })
+const readPersistenceAdapter = (
+  environment: Record<string, string | undefined>,
+  issues: ConfigIssue[]
+): PostgresPersistenceAdapter => {
+  const requested = environment.PERSISTENCE_ADAPTER?.trim() || "postgres";
+  const result = persistenceAdapterSchema.safeParse(requested);
+  if (result.success) {
+    return result.data;
   }
+  pushIssue(
+    issues,
+    "INVALID_PERSISTENCE_ADAPTER",
+    "PERSISTENCE_ADAPTER",
+    "PERSISTENCE_ADAPTER must be postgres or drizzle."
+  );
+  return "postgres";
+};
 
-  const syntheticDataOnly = databaseConfig.syntheticDataOnly
-  const databaseUrl = databaseConfig.databaseUrl
-  const requestedPersistenceAdapter =
-    env.PERSISTENCE_ADAPTER?.trim() || 'postgres'
-  const persistenceAdapterResult = persistenceAdapterSchema.safeParse(
-    requestedPersistenceAdapter,
-  )
-  const persistenceAdapter = persistenceAdapterResult.success
-    ? persistenceAdapterResult.data
-    : 'postgres'
-
-  if (!persistenceAdapterResult.success) {
-    issues.push({
-      code: 'INVALID_PERSISTENCE_ADAPTER',
-      field: 'PERSISTENCE_ADAPTER',
-      message: 'PERSISTENCE_ADAPTER must be postgres or drizzle.',
-    })
+const readSentryDsn = (
+  environment: Record<string, string | undefined>,
+  issues: ConfigIssue[]
+): string | undefined => {
+  const requested = environment.SENTRY_DSN?.trim() || undefined;
+  if (!requested) {
+    return undefined;
   }
-
-  const sentryDsnValue = env.SENTRY_DSN?.trim() || undefined
-  const sentryDsn =
-    sentryDsnValue && isValidSentryDsn(sentryDsnValue)
-      ? sentryDsnValue
-      : undefined
-  if (sentryDsnValue && !sentryDsn) {
-    issues.push({
-      code: 'INVALID_SENTRY_DSN',
-      field: 'SENTRY_DSN',
-      message: 'SENTRY_DSN must be a valid Sentry DSN URL.',
-    })
+  if (isValidSentryDsn(requested)) {
+    return requested;
   }
+  pushIssue(
+    issues,
+    "INVALID_SENTRY_DSN",
+    "SENTRY_DSN",
+    "SENTRY_DSN must be a valid Sentry DSN URL."
+  );
+  return undefined;
+};
 
-  if (!demoMode && !databaseUrl) {
-    issues.push({
-      code: 'DATABASE_REQUIRED',
-      field: 'DATABASE_URL',
-      message: 'Set DATABASE_URL when DEMO_MODE is false.',
-    })
+const defaultOpenAiBaseUrl = "https://api.openai.com/v1";
+
+const readOpenAiSettings = (
+  environment: Record<string, string | undefined>,
+  isDemoMode: boolean,
+  issues: ConfigIssue[]
+) => {
+  const apiKey = environment.OPENAI_API_KEY?.trim() || undefined;
+  const model = environment.OPENAI_MODEL?.trim() || "gpt-5.6";
+  const requestedBaseUrl =
+    environment.OPENAI_BASE_URL?.trim() || defaultOpenAiBaseUrl;
+  const baseUrlIsValid =
+    openAiBaseUrlSchema.safeParse(requestedBaseUrl).success;
+
+  if (!baseUrlIsValid) {
+    pushIssue(
+      issues,
+      "INVALID_OPENAI_BASE_URL",
+      "OPENAI_BASE_URL",
+      "OPENAI_BASE_URL must use HTTPS, or HTTP for a local loopback test server."
+    );
   }
-
-  const openAiApiKey = env.OPENAI_API_KEY?.trim() || undefined
-  const openAiModel = env.OPENAI_MODEL?.trim() || 'gpt-5.6'
-  let openAiBaseUrl = env.OPENAI_BASE_URL?.trim() || 'https://api.openai.com/v1'
-
-  if (!openAiBaseUrlSchema.safeParse(openAiBaseUrl).success) {
-    issues.push({
-      code: 'INVALID_OPENAI_BASE_URL',
-      field: 'OPENAI_BASE_URL',
-      message:
-        'OPENAI_BASE_URL must use HTTPS, or HTTP for a local loopback test server.',
-    })
-    openAiBaseUrl = 'https://api.openai.com/v1'
-  }
-
-  if (!demoMode && !openAiApiKey) {
-    issues.push({
-      code: 'OPENAI_API_KEY_REQUIRED',
-      field: 'OPENAI_API_KEY',
-      message: 'Set OPENAI_API_KEY for server-side lesson generation.',
-    })
+  if (!isDemoMode && !apiKey) {
+    pushIssue(
+      issues,
+      "OPENAI_API_KEY_REQUIRED",
+      "OPENAI_API_KEY",
+      "Set OPENAI_API_KEY for server-side lesson generation."
+    );
   }
 
   return {
-    appEnv,
-    demoMode,
-    syntheticDataOnly,
-    mode: databaseUrl ? 'postgres' : 'seeded-demo',
-    persistenceAdapter,
-    ...(databaseUrl ? { databaseUrl } : {}),
-    ...(sentryDsn ? { sentryDsn } : {}),
-    ...(openAiApiKey ? { openAiApiKey } : {}),
-    openAiModel,
-    openAiBaseUrl,
-    issues,
-  }
-}
+    apiKey,
+    model,
+    baseUrl: baseUrlIsValid ? requestedBaseUrl : defaultOpenAiBaseUrl,
+  };
+};
 
-export function safeConfigSummary(config: ServerConfig) {
+export const readServerConfig = (
+  environment: Record<string, string | undefined> = process.env
+): ServerConfig => {
+  const databaseConfig = readDatabaseBootstrapConfig(environment);
+  const issues: ConfigIssue[] = [...databaseConfig.issues];
+  const appEnvironment = readAppEnvironment(environment, issues);
+  const isDemoMode = isDemoModeEnabled(environment, appEnvironment, issues);
+  const persistenceAdapter = readPersistenceAdapter(environment, issues);
+  const sentryDsn = readSentryDsn(environment, issues);
+  const openAi = readOpenAiSettings(environment, isDemoMode, issues);
+  const { syntheticDataOnly, databaseUrl } = databaseConfig;
+
+  if (!isDemoMode && !databaseUrl) {
+    pushIssue(
+      issues,
+      "DATABASE_REQUIRED",
+      "DATABASE_URL",
+      "Set DATABASE_URL when DEMO_MODE is false."
+    );
+  }
+
+  return {
+    appEnv: appEnvironment,
+    demoMode: isDemoMode,
+    syntheticDataOnly,
+    mode: databaseUrl ? "postgres" : "seeded-demo",
+    persistenceAdapter,
+    ...(databaseUrl && { databaseUrl }),
+    ...(sentryDsn && { sentryDsn }),
+    ...(openAi.apiKey && { openAiApiKey: openAi.apiKey }),
+    openAiModel: openAi.model,
+    openAiBaseUrl: openAi.baseUrl,
+    issues,
+  };
+};
+
+export const safeConfigSummary = (config: ServerConfig) => {
   return {
     appEnv: config.appEnv,
     demoMode: config.demoMode,
     syntheticDataOnly: config.syntheticDataOnly,
     persistence: config.mode,
     observability: {
-      sentry: config.sentryDsn ? 'configured' : 'structured-log-only',
+      sentry: config.sentryDsn ? "configured" : "structured-log-only",
     },
     issues: config.issues,
-  }
-}
+  };
+};

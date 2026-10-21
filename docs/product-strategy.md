@@ -49,14 +49,14 @@ The hard safety gate is cross-cutting: a `hard_block` keeps unsafe content out o
 
 ## Product choices and non-choices
 
-| We choose                                                                      | We deliberately defer or reject                                                                              |
-| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| One polished equivalent-fractions wedge before broad curriculum coverage       | Multiple subjects, a full Grades 3–6 graph, and large activity browsing                                      |
-| Teacher review and approval of every generated variant                         | Runtime student generation or silent model changes after approval                                            |
-| A2UI/semantic DOM as the core interaction contract                             | Generated HTML/JavaScript and canvas-only accessibility                                                      |
-| A bounded prerequisite graph with a visible reason for the next activity       | An opaque “personalization” claim with no deterministic trace                                                |
-| Server-only answer keys, mastery, and permissions                              | Client-submitted scores or model-based grading of student identity/images                                    |
-| Synthetic data and seeded accounts for the demo                                | Real student data before DPA, residency, security, and consent gates                                         |
+| We choose | We deliberately defer or reject |
+| --- | --- |
+| One polished equivalent-fractions wedge before broad curriculum coverage | Multiple subjects, a full Grades 3–6 graph, and large activity browsing |
+| Teacher review and approval of every generated variant | Runtime student generation or silent model changes after approval |
+| A2UI/semantic DOM as the core interaction contract | Generated HTML/JavaScript and canvas-only accessibility |
+| A bounded prerequisite graph with a visible reason for the next activity | An opaque “personalization” claim with no deterministic trace |
+| Server-only answer keys, mastery, and permissions | Client-submitted scores or model-based grading of student identity/images |
+| Synthetic data and seeded accounts for the demo | Real student data before DPA, residency, security, and consent gates |
 | A pinned Learning Commons Knowledge Graph slice for evidence-grounded drafting | Live API/MCP dependency, a full imported graph, or treating external progression edges as hard prerequisites |
 
 The strategic moat is trust plus learning clarity: the teacher can see what will happen, the student can understand why it happened, and the system cannot bypass the safety boundary for speed.
@@ -77,16 +77,16 @@ It grounds the draft and makes the recommendation explainable; it does not diagn
 
 ### Pilot contract
 
-| Boundary   | Decision                                                                                                                                                                                    |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Source     | Pinned, filtered `nodes.jsonl` and `relationships.jsonl`; no runtime API or MCP call                                                                                                        |
-| Evidence   | Full upstream standard/component/relationship metadata retained in the fixture; GPT receives only a compact allowlisted projection                                                          |
-| Generation | The compact projection enters the GPT prompt; the lesson contract returns references to supplied evidence, not free-form source claims                                                      |
-| Validation | Unknown or mismatched evidence identifiers are a `hard_block`; missing valid component evidence is a `warning` with standards-only fallback                                                 |
-| Safety     | KG alignment validation and the generic `pass` / `warning` / `hard_block` safety gate run in parallel; either hard block stops preview and Share                                            |
-| Surface    | Teacher review shows the target standard, supporting context, component description when available, relationship type, release, and attribution; the student sees only the focused activity |
-| Ownership  | Edu-Canvas retains the local graph, approval policy, and adaptation decision; the external graph supplies evidence and provenance                                                           |
-| Timebox    | One focused workday (roughly 6–8 hours); no schema migration, full graph import, remote dependency, or student graph UI                                                                     |
+| Boundary | Decision |
+| --- | --- |
+| Source | Pinned, filtered `nodes.jsonl` and `relationships.jsonl`; no runtime API or MCP call |
+| Evidence | Full upstream standard/component/relationship metadata retained in the fixture; GPT receives only a compact allowlisted projection |
+| Generation | The compact projection enters the GPT prompt; the lesson contract returns references to supplied evidence, not free-form source claims |
+| Validation | Unknown or mismatched evidence identifiers are a `hard_block`; missing valid component evidence is a `warning` with standards-only fallback |
+| Safety | KG alignment validation and the generic `pass` / `warning` / `hard_block` safety gate run in parallel; either hard block stops preview and Share |
+| Surface | Teacher review shows the target standard, supporting context, component description when available, relationship type, release, and attribution; the student sees only the focused activity |
+| Ownership | Edu-Canvas retains the local graph, approval policy, and adaptation decision; the external graph supplies evidence and provenance |
+| Timebox | One focused workday (roughly 6–8 hours); no schema migration, full graph import, remote dependency, or student graph UI |
 
 The judge-visible moment is a compact evidence card beside the four generated variants: the teacher can see which standard the activity targets, which prior learning supports it, where that evidence came from, and what the system will do next. If the fixture cannot prove a component mapping, the card says so and falls back to standards-only alignment rather than inventing certainty.
 
@@ -96,15 +96,15 @@ This pilot is a thin vertical extension across `#3 Generate draft → pinned KG 
 
 This audit used the repository and issue graph, not direct user research. “Partial” means the product decision is coherent enough to build but still needs evidence or an explicit contract.
 
-| Layer                        | Current state                | What is known                                                                                                                                                                                          | What remains unknown or risky                                                                                                                                                                                                                       |
-| ---------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Observed behaviour           | **Assumed**                  | Issue reports, browser QA, and the demo brief describe a teacher authoring job and a student matching flow.                                                                                            | No teacher/student interviews, activation data, or moderated usability evidence. This is the current bottleneck.                                                                                                                                    |
-| Domain                       | **Partial**                  | Equivalent fractions, prerequisite nodes, activity versions, immutable packs, attempts, tenant boundaries, A2UI catalog rules, and a bounded external evidence mapping are clear for the seeded slice. | External CASE UUIDs and local IDs still need a deterministic mapping; Learning Component coverage and progression semantics do not justify a full Grade 3–6 graph claim.                                                                            |
-| User needs                   | **Partial**                  | Teachers need fast preparation with control and reasons; students need a focused activity, feedback, and a next step.                                                                                  | These needs are inferred from the brief and issues rather than observed in context.                                                                                                                                                                 |
-| Product and service strategy | **Partial**                  | The wedge, trust boundary, evidence-grounding boundary, bounded personalization claim, competition outcome, and issue sequence are now explicit in this document.                                      | The evidence layer still needs a small implementation proof and user testing; it must not distract from the open preview-correctness blocker.                                                                                                       |
-| Conceptual model             | **Partial**                  | Draft, validator result, alignment evidence, source manifest, activity pack, immutable version, attempt, prerequisite path, story beats, and next activity are emerging as the shared language.        | Shared semantics for page state and bounded multi-page flows remain open in [issue #31](https://github.com/abodacs/edu-canvas/issues/31).                                                                                                           |
-| Interaction flow             | **Partial**                  | The landing story, issue #3 generation/recovery seam, and issue #4 teacher preview seam are exercised, and the target teacher → student loop is described in [the walking skeleton](walking-skeleton.md). | Curriculum validation, hard safety, approval, grading, and adaptation still need to become one exercised flow across [issues #18 and #28](https://github.com/abodacs/edu-canvas/issues) and [#4–#11](https://github.com/abodacs/edu-canvas/issues). |
-| Surface                      | **Partial, strongest slice** | PR #25 establishes a calm, bilingual, responsive, semantic, reduced-motion landing surface; the planned teacher evidence card keeps provenance out of the student task.                                | [Issue #27](https://github.com/abodacs/edu-canvas/issues/27) reports a distractor-only selection that can produce a success reveal in the landing preview; do not call that preview learner-safe until fixed.                                       |
+| Layer | Current state | What is known | What remains unknown or risky |
+| --- | --- | --- | --- |
+| Observed behaviour | **Assumed** | Issue reports, browser QA, and the demo brief describe a teacher authoring job and a student matching flow. | No teacher/student interviews, activation data, or moderated usability evidence. This is the current bottleneck. |
+| Domain | **Partial** | Equivalent fractions, prerequisite nodes, activity versions, immutable packs, attempts, tenant boundaries, A2UI catalog rules, and a bounded external evidence mapping are clear for the seeded slice. | External CASE UUIDs and local IDs still need a deterministic mapping; Learning Component coverage and progression semantics do not justify a full Grade 3–6 graph claim. |
+| User needs | **Partial** | Teachers need fast preparation with control and reasons; students need a focused activity, feedback, and a next step. | These needs are inferred from the brief and issues rather than observed in context. |
+| Product and service strategy | **Partial** | The wedge, trust boundary, evidence-grounding boundary, bounded personalization claim, competition outcome, and issue sequence are now explicit in this document. | The evidence layer still needs a small implementation proof and user testing; it must not distract from the open preview-correctness blocker. |
+| Conceptual model | **Partial** | Draft, validator result, alignment evidence, source manifest, activity pack, immutable version, attempt, prerequisite path, story beats, and next activity are emerging as the shared language. | Shared semantics for page state and bounded multi-page flows remain open in [issue #31](https://github.com/abodacs/edu-canvas/issues/31). |
+| Interaction flow | **Partial** | The landing story, issue #3 generation/recovery seam, and issue #4 teacher preview seam are exercised, and the target teacher → student loop is described in [the walking skeleton](walking-skeleton.md). | Curriculum validation, hard safety, approval, grading, and adaptation still need to become one exercised flow across [issues #18 and #28](https://github.com/abodacs/edu-canvas/issues) and [#4–#11](https://github.com/abodacs/edu-canvas/issues). |
+| Surface | **Partial, strongest slice** | PR #25 establishes a calm, bilingual, responsive, semantic, reduced-motion landing surface; the planned teacher evidence card keeps provenance out of the student task. | [Issue #27](https://github.com/abodacs/edu-canvas/issues/27) reports a distractor-only selection that can produce a success reveal in the landing preview; do not call that preview learner-safe until fixed. |
 
 The lowest unresolved layer is observed behaviour. The detailed [synthesis and research plan](observed-behaviour.md) records the evidence boundary. The next highest-value activity is to test the core teacher and student loop before investing in generalized transport, standards packs, or multi-page flows.
 
@@ -134,12 +134,12 @@ Do not widen the surface area until the core loop is correct, observable, and tr
 
 ## Cheapest tests for the riskiest assumptions
 
-| Assumption                                                                          | Smallest useful test                                                                                                                                     | Evidence to keep                                                                                                      |
-| ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Teachers prefer a plain-language idea plus reviewable options to hand-authoring     | Five teacher interviews with a timed clickable composer; measure whether they can approve or correct four variants                                       | Time to first approved activity, correction count, and words used to explain trust                                    |
-| The reverse path and forward story increase trust without adding cognitive load     | Show teachers a raw variant set versus the same set with path/story context; ask which one they would publish and why                                    | Choice, confidence, and explanation quality                                                                           |
-| Students understand the reveal and can recover from a distractor                    | Five moderated student sessions on a 320px phone and desktop, including a distractor-first attempt                                                       | Selection accuracy, recovery time, and whether the student can explain the reveal                                     |
-| A deterministic reason is useful to teachers                                        | Replay fixed attempts and ask teachers to predict and approve the next activity before showing the system reason                                         | Prediction accuracy, approval rate, and reason comprehension                                                          |
+| Assumption | Smallest useful test | Evidence to keep |
+| --- | --- | --- |
+| Teachers prefer a plain-language idea plus reviewable options to hand-authoring | Five teacher interviews with a timed clickable composer; measure whether they can approve or correct four variants | Time to first approved activity, correction count, and words used to explain trust |
+| The reverse path and forward story increase trust without adding cognitive load | Show teachers a raw variant set versus the same set with path/story context; ask which one they would publish and why | Choice, confidence, and explanation quality |
+| Students understand the reveal and can recover from a distractor | Five moderated student sessions on a 320px phone and desktop, including a distractor-first attempt | Selection accuracy, recovery time, and whether the student can explain the reveal |
+| A deterministic reason is useful to teachers | Replay fixed attempts and ask teachers to predict and approve the next activity before showing the system reason | Prediction accuracy, approval rate, and reason comprehension |
 | Evidence-grounded context improves lesson trust or quality without slowing the loop | Replay the same `4.NF.A.1` prompt with and without the pinned evidence projection; compare alignment errors, teacher approval, and prompt-to-review time | Valid evidence references, fallback/block counts, approval choice, time, and the language teachers use for the source |
 
 Until these tests are run, optimize for one clear, safe, explainable loop rather than breadth. The strategy is strong enough to guide implementation; its main missing proof is real user behaviour.

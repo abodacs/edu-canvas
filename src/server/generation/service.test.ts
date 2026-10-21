@@ -1,53 +1,53 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from "vitest";
 
-import { getDemoSession } from '@/server/demo/policy'
-import { demoSeed } from '@/server/seed-data'
+import { getDemoSession } from "@/server/demo/policy";
+import { demoSeed } from "@/server/seed-data";
 
+import { createSeededPersistence } from "../persistence/seeded";
 import {
   createDeterministicLessonDraftProvider,
   createEquivalentFractionsDraft,
   LessonProviderError,
-} from './provider'
-import type { LessonDraftProvider } from './provider'
-import { createSeededPersistence } from '../persistence/seeded'
-import { createGenerationService, normalizeGenerationInput } from './service'
+} from "./provider";
+import { createGenerationService, normalizeGenerationInput } from "./service";
 import {
   createDemoCurriculumContext,
   validateSemanticLesson,
-} from './semantic-validation'
-import type { LessonGenerationRecord } from './types'
+} from "./semantic-validation";
+import type { LessonDraftProvider } from "./provider";
+import type { LessonGenerationRecord } from "./types";
 
 const validInput = {
-  prompt: 'equivalent fractions for grade 4',
+  prompt: "equivalent fractions for grade 4",
   grade: 4,
   standardId: demoSeed.standard.id,
-  language: 'en' as const,
-  difficulty: 'on-level' as const,
-  idempotencyKey: 'request-equivalent-fractions-1',
-}
+  language: "en" as const,
+  difficulty: "on-level" as const,
+  idempotencyKey: "request-equivalent-fractions-1",
+};
 
-function teacherCommand(input: Record<string, unknown> = validInput) {
+const teacherCommand = (input: Record<string, unknown> = validInput) => {
   return {
-    session: getDemoSession('teacher'),
+    session: getDemoSession("teacher"),
     input,
-  }
-}
+  };
+};
 
-function generatingRecord(
+const generatingRecord = (
   requestId: string,
   idempotencyKey: string,
-  updatedAt: string,
-): LessonGenerationRecord {
+  updatedAt: string
+): LessonGenerationRecord => {
   const provenance = {
-    provider: 'deterministic-fixture',
-    model: 'equivalent-fractions-fixture-v1',
-    promptTemplateVersion: 'lesson-prompt-v1',
-    validatorVersion: 'lesson-validator-v2',
-  }
+    provider: "deterministic-fixture",
+    model: "equivalent-fractions-fixture-v1",
+    promptTemplateVersion: "lesson-prompt-v1",
+    validatorVersion: "lesson-validator-v2",
+  };
   return {
     requestId,
     tenantId: demoSeed.tenant.id,
-    teacherId: 'identity_demo_teacher',
+    teacherId: "identity_demo_teacher",
     input: {
       prompt: validInput.prompt,
       grade: validInput.grade,
@@ -55,7 +55,7 @@ function generatingRecord(
       language: validInput.language,
       difficulty: validInput.difficulty,
     },
-    state: 'generating',
+    state: "generating",
     attempt: 1,
     diagnostics: [],
     provenance,
@@ -63,7 +63,7 @@ function generatingRecord(
       {
         attemptNumber: 1,
         idempotencyKey,
-        state: 'generating',
+        state: "generating",
         correctionAttempted: false,
         diagnostics: [],
         provenance,
@@ -72,398 +72,431 @@ function generatingRecord(
     ],
     createdAt: updatedAt,
     updatedAt,
-  }
-}
+  };
+};
 
-describe('lesson generation service', () => {
-  it('returns four safe variants for a seeded teacher', async () => {
+const expectPublicResultHidesPrivateData = (
+  firstVariant: unknown,
+  serializedPublicResult: string,
+  provenance: unknown
+) => {
+  expect(firstVariant).not.toHaveProperty("relationships");
+  expect(serializedPublicResult).not.toContain("targetId");
+  expect(provenance).toMatchObject({
+    provider: "deterministic-fixture",
+    validatorVersion: "lesson-validator-v2",
+  });
+};
+
+const expectRetryableTimeout = (
+  state: string,
+  draft: unknown,
+  isRetryAvailable: boolean
+) => {
+  expect(state).toBe("failed-retryable");
+  expect(draft).toBeNull();
+  expect(isRetryAvailable).toBeTruthy();
+};
+
+describe("lesson generation service", () => {
+  it("returns four safe variants for a seeded teacher", async () => {
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
-      requestIdFactory: () => 'draft_req_test_1',
-    })
+      requestIdFactory: () => "draft_req_test_1",
+    });
 
-    const result = await service.generate(teacherCommand())
+    const result = await service.generate(teacherCommand());
 
-    expect(result.record.state).toBe('ready-for-review')
-    expect(result.record.draft?.variants).toHaveLength(4)
-    expect(result.record.attempts).toHaveLength(1)
-    expect(result.publicResult.draft?.variants[0]).not.toHaveProperty(
-      'relationships',
-    )
-    expect(JSON.stringify(result.publicResult)).not.toContain('targetId')
-    expect(result.publicResult.provenance).toMatchObject({
-      provider: 'deterministic-fixture',
-      validatorVersion: 'lesson-validator-v2',
-    })
+    expect(result.record.state).toBe("ready-for-review");
+    expect(result.record.draft?.variants).toHaveLength(4);
+    expect(result.record.attempts).toHaveLength(1);
+
+    expectPublicResultHidesPrivateData(
+      result.publicResult.draft?.variants[0],
+      JSON.stringify(result.publicResult),
+      result.publicResult.provenance
+    );
+
     expect(result.record.draft?.learningPath).toMatchObject({
-      direction: 'forward',
+      direction: "forward",
       steps: [
         {
-          nodeId: 'graph_node_equal_parts',
-          label: 'Understand equal parts',
-          role: 'prerequisite',
-          screenPurposeId: 'screen_purpose_equal_parts',
-          screenPurpose: 'Show how a whole is divided into equal parts.',
+          nodeId: "graph_node_equal_parts",
+          label: "Understand equal parts",
+          role: "prerequisite",
+          screenPurposeId: "screen_purpose_equal_parts",
+          screenPurpose: "Show how a whole is divided into equal parts.",
         },
         {
-          nodeId: 'graph_node_equivalent_fractions',
-          label: 'Recognize equivalent fractions',
-          role: 'target',
-          screenPurposeId: 'screen_purpose_equivalent_fractions',
-          screenPurpose: 'Match different names for the same part of a whole.',
+          nodeId: "graph_node_equivalent_fractions",
+          label: "Recognize equivalent fractions",
+          role: "target",
+          screenPurposeId: "screen_purpose_equivalent_fractions",
+          screenPurpose: "Match different names for the same part of a whole.",
         },
       ],
       versionPins: {
-        draftId: 'draft_req_test_1',
-        graphVersion: 'equivalent-fractions-v1',
-        catalogVersion: 'matching-v1',
-        modelVersion: 'equivalent-fractions-fixture-v1',
-        validatorVersion: 'semantic-validation-runner-v1',
+        draftId: "draft_req_test_1",
+        graphVersion: "equivalent-fractions-v1",
+        catalogVersion: "matching-v1",
+        modelVersion: "equivalent-fractions-fixture-v1",
+        validatorVersion: "semantic-validation-runner-v1",
       },
-    })
-  })
+    });
+  });
 
-  it('localizes the accepted learning path for Arabic requests', async () => {
+  it("localizes the accepted learning path for Arabic requests", async () => {
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
-      requestIdFactory: () => 'draft_req_arabic_learning_path',
-    })
+      requestIdFactory: () => "draft_req_arabic_learning_path",
+    });
 
     const result = await service.generate(
       teacherCommand({
         ...validInput,
-        prompt: 'الكسور المكافئة للصف الرابع',
-        language: 'ar',
-        idempotencyKey: 'request-arabic-learning-path',
-      }),
-    )
+        prompt: "الكسور المكافئة للصف الرابع",
+        language: "ar",
+        idempotencyKey: "request-arabic-learning-path",
+      })
+    );
 
-    expect(result.record.state).toBe('ready-for-review')
+    expect(result.record.state).toBe("ready-for-review");
     expect(result.record.draft?.learningPath.steps).toMatchObject([
       {
-        label: 'فهم الأجزاء المتساوية',
-        screenPurpose: 'إظهار كيفية تقسيم الكل إلى أجزاء متساوية.',
+        label: "فهم الأجزاء المتساوية",
+        screenPurpose: "إظهار كيفية تقسيم الكل إلى أجزاء متساوية.",
       },
       {
-        label: 'التعرف على الكسور المكافئة',
-        screenPurpose: 'مطابقة أسماء مختلفة للجزء نفسه من الكل.',
+        label: "التعرف على الكسور المكافئة",
+        screenPurpose: "مطابقة أسماء مختلفة للجزء نفسه من الكل.",
       },
-    ])
-  })
+    ]);
+  });
 
-  it('blocks a provider draft that omits the prerequisite path', async () => {
+  it("blocks a provider draft that omits the prerequisite path", async () => {
     const provider: LessonDraftProvider = {
       provenance: {
-        provider: 'missing-path-fixture',
-        model: 'equivalent-fractions-fixture-v1',
-        promptTemplateVersion: 'lesson-prompt-v1',
-        validatorVersion: 'lesson-validator-v2',
+        provider: "missing-path-fixture",
+        model: "equivalent-fractions-fixture-v1",
+        promptTemplateVersion: "lesson-prompt-v1",
+        validatorVersion: "lesson-validator-v2",
       },
-      async generate(request) {
-        const draft = createEquivalentFractionsDraft(request)
-        draft.learningPath = undefined
-        return { draft }
+      generate(request) {
+        const draft = createEquivalentFractionsDraft(request);
+        delete draft.learningPath;
+        return Promise.resolve({ draft });
       },
-    }
+    };
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider,
-      requestIdFactory: () => 'draft_req_missing_learning_path',
-    })
+      requestIdFactory: () => "draft_req_missing_learning_path",
+    });
 
     const result = await service.generate(
       teacherCommand({
         ...validInput,
-        idempotencyKey: 'request-missing-learning-path',
-      }),
-    )
+        idempotencyKey: "request-missing-learning-path",
+      })
+    );
 
-    expect(result.record.state).toBe('blocked-by-validation')
-    expect(result.record.draft).toBeUndefined()
-    expect(result.publicResult.diagnostics).toEqual(
+    expect(result.record.state).toBe("blocked-by-validation");
+    expect(result.record.draft).toBeNull();
+    expect(result.publicResult.diagnostics).toStrictEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          code: 'PREREQUISITE_PATH_MISSING',
-          message: expect.stringContaining('prerequisite path is missing'),
+          code: "PREREQUISITE_PATH_MISSING",
+          message: expect.stringContaining("prerequisite path is missing"),
         }),
-      ]),
-    )
-  })
+      ])
+    );
+  });
 
-  it('keeps a lesson in teacher review when the approved prerequisite pack is missing', async () => {
+  it("keeps a lesson in teacher review when the approved prerequisite pack is missing", async () => {
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
-      curriculumContext: () => undefined,
-      requestIdFactory: () => 'draft_req_missing_prerequisite_pack',
-    })
+      curriculumContext: () => {
+        // Simulate a missing prerequisite pack for this path.
+      },
+      requestIdFactory: () => "draft_req_missing_prerequisite_pack",
+    });
 
     const result = await service.generate(
       teacherCommand({
         ...validInput,
-        idempotencyKey: 'request-missing-prerequisite-pack',
-      }),
-    )
+        idempotencyKey: "request-missing-prerequisite-pack",
+      })
+    );
 
-    expect(result.record.state).toBe('blocked-by-validation')
-    expect(result.record.draft).toBeUndefined()
-    expect(result.publicResult.draft).toBeNull()
-    expect(result.publicResult.retry.available).toBe(true)
-    expect(result.publicResult.diagnostics).toEqual(
+    expect(result.record.state).toBe("blocked-by-validation");
+    expect(result.record.draft).toBeNull();
+    expect(result.publicResult.draft).toBeNull();
+    expect(result.publicResult.retry.available).toBeTruthy();
+    expect(result.publicResult.diagnostics).toStrictEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          code: 'PREREQUISITE_PACK_MISSING',
-          severity: 'error',
-          message: expect.stringContaining('approved prerequisite'),
+          code: "PREREQUISITE_PACK_MISSING",
+          severity: "error",
+          message: expect.stringContaining("approved prerequisite"),
         }),
-      ]),
-    )
-  })
+      ])
+    );
+  });
 
-  it('blocks a prerequisite graph from another tenant', async () => {
+  it("blocks a prerequisite graph from another tenant", async () => {
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
-      curriculumContext: (input) => ({
-        ...createDemoCurriculumContext(input),
-        tenantId: 'tenant_other_school',
-      }),
-      requestIdFactory: () => 'draft_req_wrong_curriculum_tenant',
-    })
+      curriculumContext: (input) => {
+        return {
+          ...createDemoCurriculumContext(input),
+          tenantId: "tenant_other_school",
+        };
+      },
+      requestIdFactory: () => "draft_req_wrong_curriculum_tenant",
+    });
 
     const result = await service.generate(
       teacherCommand({
         ...validInput,
-        idempotencyKey: 'request-wrong-curriculum-tenant',
-      }),
-    )
+        idempotencyKey: "request-wrong-curriculum-tenant",
+      })
+    );
 
-    expect(result.record.state).toBe('blocked-by-validation')
-    expect(result.record.draft).toBeUndefined()
-    expect(result.publicResult.diagnostics).toEqual(
+    expect(result.record.state).toBe("blocked-by-validation");
+    expect(result.record.draft).toBeNull();
+    expect(result.publicResult.diagnostics).toStrictEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          code: 'CURRICULUM_TENANT_MISMATCH',
-          message: expect.stringContaining('different classroom'),
+          code: "CURRICULUM_TENANT_MISMATCH",
+          message: expect.stringContaining("different classroom"),
         }),
-      ]),
-    )
-  })
+      ])
+    );
+  });
 
-  it('blocks an unsupported prerequisite graph version', async () => {
+  it("blocks an unsupported prerequisite graph version", async () => {
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
-      curriculumContext: (input) => ({
-        ...createDemoCurriculumContext(input),
-        graphVersion: 'equivalent-fractions-v0',
-      }),
-      requestIdFactory: () => 'draft_req_wrong_curriculum_version',
-    })
+      curriculumContext: (input) => {
+        return {
+          ...createDemoCurriculumContext(input),
+          graphVersion: "equivalent-fractions-v0",
+        };
+      },
+      requestIdFactory: () => "draft_req_wrong_curriculum_version",
+    });
 
     const result = await service.generate(
       teacherCommand({
         ...validInput,
-        idempotencyKey: 'request-wrong-curriculum-version',
-      }),
-    )
+        idempotencyKey: "request-wrong-curriculum-version",
+      })
+    );
 
-    expect(result.record.state).toBe('blocked-by-validation')
-    expect(result.record.draft).toBeUndefined()
-    expect(result.publicResult.diagnostics).toEqual(
+    expect(result.record.state).toBe("blocked-by-validation");
+    expect(result.record.draft).toBeNull();
+    expect(result.publicResult.diagnostics).toStrictEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          code: 'CURRICULUM_GRAPH_VERSION_UNSUPPORTED',
-          message: expect.stringContaining('version is not available'),
+          code: "CURRICULUM_GRAPH_VERSION_UNSUPPORTED",
+          message: expect.stringContaining("version is not available"),
         }),
-      ]),
-    )
-  })
+      ])
+    );
+  });
 
-  it('keeps semantic quality warnings visible with validator provenance', async () => {
+  it("keeps semantic quality warnings visible with validator provenance", async () => {
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
-      requestIdFactory: () => 'draft_req_semantic_warning',
-    })
+      requestIdFactory: () => "draft_req_semantic_warning",
+    });
 
     const result = await service.generate(
       teacherCommand({
         ...validInput,
-        idempotencyKey: 'request-semantic-warning',
-      }),
-    )
+        idempotencyKey: "request-semantic-warning",
+      })
+    );
 
-    expect(result.record.state).toBe('ready-for-review')
-    expect(result.publicResult.diagnostics).toEqual(
+    expect(result.record.state).toBe("ready-for-review");
+    expect(result.publicResult.diagnostics).toStrictEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          code: 'VARIANT_NOT_MEANINGFULLY_DIFFERENT',
-          severity: 'warning',
-          validator: 'learning-quality',
-          verdict: 'warning',
-          validatorVersion: 'learning-quality-validator-v1',
+          code: "VARIANT_NOT_MEANINGFULLY_DIFFERENT",
+          severity: "warning",
+          validator: "learning-quality",
+          verdict: "warning",
+          validatorVersion: "learning-quality-validator-v1",
           recommendation: expect.any(String),
         }),
-      ]),
-    )
-  })
+      ])
+    );
+  });
 
-  it('keeps a semantically blocked draft out of the public preview seam', async () => {
+  it("keeps a semantically blocked draft out of the public preview seam", async () => {
     const provider = {
       provenance: {
-        provider: 'semantic-fixture',
-        model: 'equivalent-fractions-fixture-v1',
-        promptTemplateVersion: 'lesson-prompt-v1',
-        validatorVersion: 'lesson-validator-v2',
+        provider: "semantic-fixture",
+        model: "equivalent-fractions-fixture-v1",
+        promptTemplateVersion: "lesson-prompt-v1",
+        validatorVersion: "lesson-validator-v2",
       },
-      async generate(request: Parameters<LessonDraftProvider['generate']>[0]) {
-        const draft = createEquivalentFractionsDraft(request)
-        const firstVariant = draft.variants[0]
+      generate(request: Parameters<LessonDraftProvider["generate"]>[0]) {
+        const draft = createEquivalentFractionsDraft(request);
+        const [firstVariant] = draft.variants;
         firstVariant.targetItems[0] = {
-          id: firstVariant.targetItems[0]?.id ?? 'target-1-1',
-          label: '3/4',
-        }
-        return { draft }
+          id: firstVariant.targetItems[0]?.id ?? "target-1-1",
+          label: "3/4",
+        };
+        return Promise.resolve({ draft });
       },
-    }
+    };
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider,
-      requestIdFactory: () => 'draft_req_semantic_block',
-    })
+      requestIdFactory: () => "draft_req_semantic_block",
+    });
 
     const result = await service.generate(
       teacherCommand({
         ...validInput,
-        idempotencyKey: 'request-semantic-block',
-      }),
-    )
+        idempotencyKey: "request-semantic-block",
+      })
+    );
 
-    expect(result.record.state).toBe('blocked-by-validation')
-    expect(result.record.draft).toBeUndefined()
-    expect(result.publicResult.draft).toBeNull()
-    expect(result.publicResult.diagnostics).toEqual(
+    expect(result.record.state).toBe("blocked-by-validation");
+    expect(result.record.draft).toBeNull();
+    expect(result.publicResult.draft).toBeNull();
+    expect(result.publicResult.diagnostics).toStrictEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          code: 'ANSWER_MISMATCH',
-          severity: 'error',
-          validator: 'curriculum',
-          verdict: 'block',
+          code: "ANSWER_MISMATCH",
+          severity: "error",
+          validator: "curriculum",
+          verdict: "block",
           validatorVersion: expect.any(String),
         }),
-      ]),
-    )
-    expect(JSON.stringify(result.publicResult)).not.toContain('targetId')
-  })
+      ])
+    );
+    expect(JSON.stringify(result.publicResult)).not.toContain("targetId");
+  });
 
-  it('keeps semantic timeout retryable and allows one explicit retry', async () => {
-    let validationCalls = 0
+  it("keeps semantic timeout retryable and allows one explicit retry", async () => {
+    let validationCalls = 0;
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
-      requestIdFactory: () => 'draft_req_semantic_retry',
-      semanticValidation: async (input) => {
-        validationCalls += 1
+      requestIdFactory: () => "draft_req_semantic_retry",
+      semanticValidation: (input) => {
+        validationCalls += 1;
         if (validationCalls === 1) {
-          return {
-            status: 'retryable',
-            verdict: 'block',
+          return Promise.resolve({
+            status: "retryable",
+            verdict: "block",
             reviews: [],
             findings: [
               {
-                validator: 'learning-quality',
-                validatorVersion: 'agent-timeout-fixture-v1',
-                verdict: 'block',
-                code: 'VALIDATION_TIMEOUT',
-                field: 'validation',
+                validator: "learning-quality",
+                validatorVersion: "agent-timeout-fixture-v1",
+                verdict: "block",
+                code: "VALIDATION_TIMEOUT",
+                field: "validation",
                 reason:
-                  'The semantic validator timed out before completing. Try this draft again.',
+                  "The semantic validator timed out before completing. Try this draft again.",
               },
             ],
             retry: {
               available: true,
               message:
-                'Validation did not finish safely. Try this draft again.',
+                "Validation did not finish safely. Try this draft again.",
             },
-          }
+          });
         }
-        return validateSemanticLesson(input)
+        return validateSemanticLesson(input);
       },
-    })
+    });
 
     const first = await service.generate(
       teacherCommand({
         ...validInput,
-        idempotencyKey: 'request-semantic-timeout',
-      }),
-    )
+        idempotencyKey: "request-semantic-timeout",
+      })
+    );
 
-    expect(first.record.state).toBe('failed-retryable')
-    expect(first.publicResult.draft).toBeNull()
-    expect(first.publicResult.retry.available).toBe(true)
+    expectRetryableTimeout(
+      first.record.state,
+      first.publicResult.draft,
+      first.publicResult.retry.available
+    );
 
     const second = await service.generate(
       teacherCommand({
         ...validInput,
-        idempotencyKey: 'request-semantic-retry-success',
+        idempotencyKey: "request-semantic-retry-success",
         retryOfRequestId: first.record.requestId,
-      }),
-    )
+      })
+    );
 
-    expect(second.record.state).toBe('ready-for-review')
-    expect(second.publicResult.draft?.variants).toHaveLength(4)
-    expect(validationCalls).toBe(2)
-  })
+    expect(second.record.state).toBe("ready-for-review");
+    expect(second.publicResult.draft?.variants).toHaveLength(4);
+    expect(validationCalls).toBe(2);
+  });
 
-  it('does not duplicate a draft when the same idempotency key is retried', async () => {
-    const provider = createDeterministicLessonDraftProvider()
+  it("does not duplicate a draft when the same idempotency key is retried", async () => {
+    const provider = createDeterministicLessonDraftProvider();
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider,
-      requestIdFactory: () => 'draft_req_test_2',
-    })
+      requestIdFactory: () => "draft_req_test_2",
+    });
 
-    const first = await service.generate(teacherCommand())
-    const second = await service.generate(teacherCommand())
+    const first = await service.generate(teacherCommand());
+    const second = await service.generate(teacherCommand());
 
-    expect(second.record.requestId).toBe(first.record.requestId)
-    expect(second.record.attempts).toHaveLength(1)
-    expect(provider.calls).toBe(1)
-  })
+    expect(second.record.requestId).toBe(first.record.requestId);
+    expect(second.record.attempts).toHaveLength(1);
+    expect(provider.calls).toBe(1);
+  });
 
-  it('does not invoke the provider twice for concurrent duplicate submissions', async () => {
-    const provider = createDeterministicLessonDraftProvider()
-    let requestNumber = 0
+  it("does not invoke the provider twice for concurrent duplicate submissions", async () => {
+    const provider = createDeterministicLessonDraftProvider();
+    let requestNumber = 0;
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider,
-      requestIdFactory: () => `draft_req_concurrent_${++requestNumber}`,
-    })
+      requestIdFactory: () => {
+        requestNumber += 1;
+        return `draft_req_concurrent_${requestNumber}`;
+      },
+    });
 
     const [first, second] = await Promise.all([
       service.generate(teacherCommand()),
       service.generate(teacherCommand()),
-    ])
+    ]);
 
-    expect(provider.calls).toBe(1)
-    expect(second.record.requestId).toBe(first.record.requestId)
-    expect(second.record.attempts).toHaveLength(1)
-  })
+    expect(provider.calls).toBe(1);
+    expect(second.record.requestId).toBe(first.record.requestId);
+    expect(second.record.attempts).toHaveLength(1);
+  });
 
-  it('expires an abandoned generation claim into an explicit retry state', async () => {
+  it("expires an abandoned generation claim into an explicit retry state", async () => {
     const provenance = {
-      provider: 'deterministic-fixture',
-      model: 'equivalent-fractions-fixture-v1',
-      promptTemplateVersion: 'lesson-prompt-v1',
-      validatorVersion: 'lesson-validator-v2',
-    }
+      provider: "deterministic-fixture",
+      model: "equivalent-fractions-fixture-v1",
+      promptTemplateVersion: "lesson-prompt-v1",
+      validatorVersion: "lesson-validator-v2",
+    };
     const staleRecord: LessonGenerationRecord = {
-      requestId: 'draft_req_stale_claim',
+      requestId: "draft_req_stale_claim",
       tenantId: demoSeed.tenant.id,
-      teacherId: 'identity_demo_teacher',
+      teacherId: "identity_demo_teacher",
       input: {
         prompt: validInput.prompt,
         grade: validInput.grade,
@@ -471,62 +504,62 @@ describe('lesson generation service', () => {
         language: validInput.language,
         difficulty: validInput.difficulty,
       },
-      state: 'generating',
+      state: "generating",
       attempt: 1,
       diagnostics: [],
       provenance,
       attempts: [
         {
           attemptNumber: 1,
-          idempotencyKey: 'request-stale-claim',
-          state: 'generating',
+          idempotencyKey: "request-stale-claim",
+          state: "generating",
           correctionAttempted: false,
           diagnostics: [],
           provenance,
-          createdAt: '2020-01-01T00:00:00.000Z',
+          createdAt: "2020-01-01T00:00:00.000Z",
         },
       ],
-      createdAt: '2020-01-01T00:00:00.000Z',
-      updatedAt: '2020-01-01T00:00:00.000Z',
-    }
+      createdAt: "2020-01-01T00:00:00.000Z",
+      updatedAt: "2020-01-01T00:00:00.000Z",
+    };
     const generationStore = new Map([
       [`${staleRecord.tenantId}:${staleRecord.requestId}`, staleRecord],
-    ])
-    const provider = createDeterministicLessonDraftProvider()
+    ]);
+    const provider = createDeterministicLessonDraftProvider();
     const service = createGenerationService({
       persistence: createSeededPersistence({ generationStore }),
       provider,
-      now: () => '2026-07-18T00:00:00.000Z',
-    })
+      now: () => "2026-07-18T00:00:00.000Z",
+    });
 
     const result = await service.generate(
       teacherCommand({
         ...validInput,
-        idempotencyKey: 'request-stale-claim',
-      }),
-    )
+        idempotencyKey: "request-stale-claim",
+      })
+    );
 
-    expect(result.record.state).toBe('failed-retryable')
-    expect(result.record.diagnostics).toEqual(
+    expect(result.record.state).toBe("failed-retryable");
+    expect(result.record.diagnostics).toStrictEqual(
       expect.arrayContaining([
-        expect.objectContaining({ code: 'GENERATION_CLAIM_EXPIRED' }),
-      ]),
-    )
-    expect(result.publicResult.retry.available).toBe(true)
-    expect(provider.calls).toBe(0)
-  })
+        expect.objectContaining({ code: "GENERATION_CLAIM_EXPIRED" }),
+      ])
+    );
+    expect(result.publicResult.retry.available).toBeTruthy();
+    expect(provider.calls).toBe(0);
+  });
 
-  it('returns the current record when another worker wins claim expiry', async () => {
+  it("returns the current record when another worker wins claim expiry", async () => {
     const provenance = {
-      provider: 'deterministic-fixture',
-      model: 'equivalent-fractions-fixture-v1',
-      promptTemplateVersion: 'lesson-prompt-v1',
-      validatorVersion: 'lesson-validator-v2',
-    }
+      provider: "deterministic-fixture",
+      model: "equivalent-fractions-fixture-v1",
+      promptTemplateVersion: "lesson-prompt-v1",
+      validatorVersion: "lesson-validator-v2",
+    };
     const staleRecord: LessonGenerationRecord = {
-      requestId: 'draft_req_cas_loser',
+      requestId: "draft_req_cas_loser",
       tenantId: demoSeed.tenant.id,
-      teacherId: 'identity_demo_teacher',
+      teacherId: "identity_demo_teacher",
       input: {
         prompt: validInput.prompt,
         grade: validInput.grade,
@@ -534,481 +567,477 @@ describe('lesson generation service', () => {
         language: validInput.language,
         difficulty: validInput.difficulty,
       },
-      state: 'generating',
+      state: "generating",
       attempt: 1,
       diagnostics: [],
       provenance,
       attempts: [
         {
           attemptNumber: 1,
-          idempotencyKey: 'request-cas-loser',
-          state: 'generating',
+          idempotencyKey: "request-cas-loser",
+          state: "generating",
           correctionAttempted: false,
           diagnostics: [],
           provenance,
-          createdAt: '2020-01-01T00:00:00.000Z',
+          createdAt: "2020-01-01T00:00:00.000Z",
         },
       ],
-      createdAt: '2020-01-01T00:00:00.000Z',
-      updatedAt: '2020-01-01T00:00:00.000Z',
-    }
+      createdAt: "2020-01-01T00:00:00.000Z",
+      updatedAt: "2020-01-01T00:00:00.000Z",
+    };
     const currentRecord: LessonGenerationRecord = {
       ...staleRecord,
-      state: 'failed-retryable',
+      state: "failed-retryable",
       diagnostics: [
         {
-          severity: 'error',
-          code: 'GENERATION_CLAIM_EXPIRED',
-          message: 'The previous generation attempt expired.',
+          severity: "error",
+          code: "GENERATION_CLAIM_EXPIRED",
+          message: "The previous generation attempt expired.",
         },
       ],
-      updatedAt: '2026-07-18T00:00:00.000Z',
+      updatedAt: "2026-07-18T00:00:00.000Z",
       attempts: [
         {
           ...staleRecord.attempts[0],
-          state: 'failed-retryable',
+          state: "failed-retryable",
         },
       ],
-    }
+    };
     const basePersistence = createSeededPersistence({
       generationStore: new Map([
         [`${staleRecord.tenantId}:${staleRecord.requestId}`, staleRecord],
       ]),
-    })
+    });
     const persistence = {
       ...basePersistence,
-      async expireGenerationClaim() {
-        return undefined
-      },
-      async readGeneration() {
-        return structuredClone(currentRecord)
-      },
-    }
+      expireGenerationClaim: () => Promise.resolve(undefined),
+      readGeneration: () => Promise.resolve(structuredClone(currentRecord)),
+    };
     const service = createGenerationService({
       persistence,
       provider: createDeterministicLessonDraftProvider(),
-      now: () => '2026-07-18T00:00:00.000Z',
-    })
+      now: () => "2026-07-18T00:00:00.000Z",
+    });
 
     const result = await service.generate(
       teacherCommand({
         ...validInput,
-        idempotencyKey: 'request-cas-loser',
-      }),
-    )
+        idempotencyKey: "request-cas-loser",
+      })
+    );
 
-    expect(result.record.state).toBe('failed-retryable')
-    expect(result.record.diagnostics[0]?.code).toBe('GENERATION_CLAIM_EXPIRED')
-  })
+    expect(result.record.state).toBe("failed-retryable");
+    expect(result.record.diagnostics[0]?.code).toBe("GENERATION_CLAIM_EXPIRED");
+  });
 
-  it('stores configured provenance on the attempt before provider work', async () => {
+  it("stores configured provenance on the attempt before provider work", async () => {
     const provenance = {
-      provider: 'test-provider',
-      model: 'test-model',
-      promptTemplateVersion: 'test-prompt-v1',
-      validatorVersion: 'lesson-validator-v2',
-    }
-    const basePersistence = createSeededPersistence()
-    let claimedRecord: LessonGenerationRecord | undefined
+      provider: "test-provider",
+      model: "test-model",
+      promptTemplateVersion: "test-prompt-v1",
+      validatorVersion: "lesson-validator-v2",
+    };
+    const basePersistence = createSeededPersistence();
+    let claimedRecord: LessonGenerationRecord | undefined;
     const persistence = {
       ...basePersistence,
-      async claimGeneration(record: LessonGenerationRecord) {
-        claimedRecord = structuredClone(record)
-        return basePersistence.claimGeneration(record)
+      claimGeneration(record: LessonGenerationRecord) {
+        claimedRecord = structuredClone(record);
+        return basePersistence.claimGeneration(record);
       },
-    }
+    };
     const service = createGenerationService({
       persistence,
       provider: {
         provenance,
-        async generate() {
-          throw new Error('socket closed')
+        generate() {
+          throw new Error("socket closed");
         },
       },
-      requestIdFactory: () => 'draft_req_claim_provenance',
-    })
+      requestIdFactory: () => "draft_req_claim_provenance",
+    });
 
     await service.generate(
       teacherCommand({
         ...validInput,
-        idempotencyKey: 'request-claim-provenance',
-      }),
-    )
+        idempotencyKey: "request-claim-provenance",
+      })
+    );
 
-    expect(claimedRecord?.provenance).toEqual(provenance)
-    expect(claimedRecord?.attempts[0]?.provenance).toEqual(provenance)
-  })
+    expect(claimedRecord?.provenance).toStrictEqual(provenance);
+    expect(claimedRecord?.attempts[0]?.provenance).toStrictEqual(provenance);
+  });
 
-  it('does not let an expired worker overwrite a later retry attempt', async () => {
+  it("does not let an expired worker overwrite a later retry attempt", async () => {
     const currentRecord = generatingRecord(
-      'draft_req_stale_worker',
-      'request-retry-attempt-2',
-      '2026-07-18T00:00:01.000Z',
-    )
-    currentRecord.attempt = 2
+      "draft_req_stale_worker",
+      "request-retry-attempt-2",
+      "2026-07-18T00:00:01.000Z"
+    );
+    currentRecord.attempt = 2;
     currentRecord.attempts = [
       {
         ...currentRecord.attempts[0],
-        state: 'failed-retryable',
+        state: "failed-retryable",
       },
       {
         ...currentRecord.attempts[0],
         attemptNumber: 2,
-        idempotencyKey: 'request-retry-attempt-2',
+        idempotencyKey: "request-retry-attempt-2",
       },
-    ]
+    ];
     const staleWorkerRecord: LessonGenerationRecord = {
       ...currentRecord,
-      state: 'ready-for-review',
+      state: "ready-for-review",
       attempt: 1,
-      updatedAt: '2026-07-18T00:00:00.000Z',
-    }
+      updatedAt: "2026-07-18T00:00:00.000Z",
+    };
     const persistence = createSeededPersistence({
       generationStore: new Map([
         [`${currentRecord.tenantId}:${currentRecord.requestId}`, currentRecord],
       ]),
-    })
+    });
 
     const saved = await persistence.saveGeneration(staleWorkerRecord, {
       attempt: 1,
       updatedAt: staleWorkerRecord.updatedAt,
-    })
+    });
     const stored = await persistence.readGeneration(
       currentRecord.tenantId,
-      currentRecord.requestId,
-    )
+      currentRecord.requestId
+    );
 
-    expect(saved).toBe(false)
-    expect(stored?.attempt).toBe(2)
-    expect(stored?.state).toBe('generating')
-  })
+    expect(saved).toBeFalsy();
+    expect(stored?.attempt).toBe(2);
+    expect(stored?.state).toBe("generating");
+  });
 
-  it('makes exactly one correction attempt and keeps a corrected draft reviewable', async () => {
+  it("makes exactly one correction attempt and keeps a corrected draft reviewable", async () => {
     const provider =
-      createDeterministicLessonDraftProvider('invalid-then-valid')
+      createDeterministicLessonDraftProvider("invalid-then-valid");
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider,
-      requestIdFactory: () => 'draft_req_test_3',
-    })
+      requestIdFactory: () => "draft_req_test_3",
+    });
 
-    const result = await service.generate(teacherCommand())
+    const result = await service.generate(teacherCommand());
 
-    expect(result.record.state).toBe('ready-for-review')
-    expect(result.record.attempt).toBe(1)
-    expect(result.record.attempts[0]?.correctionAttempted).toBe(true)
-    expect(provider.calls).toBe(2)
-  })
+    expect(result.record.state).toBe("ready-for-review");
+    expect(result.record.attempt).toBe(1);
+    expect(result.record.attempts[0]?.correctionAttempted).toBeTruthy();
+    expect(provider.calls).toBe(2);
+  });
 
-  it('blocks a draft after the correction attempt is also invalid', async () => {
+  it("blocks a draft after the correction attempt is also invalid", async () => {
     const service = createGenerationService({
       persistence: createSeededPersistence(),
-      provider: createDeterministicLessonDraftProvider('invalid-then-invalid'),
-      requestIdFactory: () => 'draft_req_test_4',
-    })
+      provider: createDeterministicLessonDraftProvider("invalid-then-invalid"),
+      requestIdFactory: () => "draft_req_test_4",
+    });
 
-    const result = await service.generate(teacherCommand())
+    const result = await service.generate(teacherCommand());
 
-    expect(result.record.state).toBe('blocked-by-validation')
-    expect(result.record.draft).toBeUndefined()
-    expect(result.publicResult.retry.available).toBe(true)
-  })
+    expect(result.record.state).toBe("blocked-by-validation");
+    expect(result.record.draft).toBeNull();
+    expect(result.publicResult.retry.available).toBeTruthy();
+  });
 
-  it('blocks output whose language direction does not match the teacher request', async () => {
+  it("blocks output whose language direction does not match the teacher request", async () => {
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider: {
         provenance: {
-          provider: 'test-provider',
-          model: 'test-model',
-          promptTemplateVersion: 'test-prompt-v1',
-          validatorVersion: 'lesson-validator-v2',
+          provider: "test-provider",
+          model: "test-model",
+          promptTemplateVersion: "test-prompt-v1",
+          validatorVersion: "lesson-validator-v2",
         },
-        async generate(request) {
-          return {
+        generate: (request) => {
+          return Promise.resolve({
             draft: createEquivalentFractionsDraft({
               ...request,
-              language: 'en',
+              language: "en",
             }),
-          }
+          });
         },
       },
-      requestIdFactory: () => 'draft_req_test_language_mismatch',
-    })
+      requestIdFactory: () => "draft_req_test_language_mismatch",
+    });
 
     const result = await service.generate(
       teacherCommand({
         ...validInput,
-        language: 'ar',
-        idempotencyKey: 'request-language-mismatch',
-      }),
-    )
+        language: "ar",
+        idempotencyKey: "request-language-mismatch",
+      })
+    );
 
-    expect(result.record.state).toBe('blocked-by-validation')
-    expect(result.record.diagnostics).toEqual(
+    expect(result.record.state).toBe("blocked-by-validation");
+    expect(result.record.diagnostics).toStrictEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          code: 'LANGUAGE_MISMATCH',
-          field: 'languageMetadata',
+          code: "LANGUAGE_MISMATCH",
+          field: "languageMetadata",
         }),
         expect.objectContaining({
-          code: 'DIRECTION_MISMATCH',
-          field: 'languageMetadata',
+          code: "DIRECTION_MISMATCH",
+          field: "languageMetadata",
         }),
-      ]),
-    )
-    expect(result.record.attempts[0]?.correctionAttempted).toBe(true)
-    expect(result.publicResult.draft).toBeNull()
-  })
+      ])
+    );
+    expect(result.record.attempts[0]?.correctionAttempted).toBeTruthy();
+    expect(result.publicResult.draft).toBeNull();
+  });
 
-  it('retains a retryable provider failure and allows one explicit teacher retry', async () => {
-    let calls = 0
+  it("retains a retryable provider failure and allows one explicit teacher retry", async () => {
+    let calls = 0;
     const provider = {
       provenance: {
-        provider: 'test-provider',
-        model: 'test-model',
-        promptTemplateVersion: 'test-prompt-v1',
-        validatorVersion: 'lesson-validator-v1',
+        provider: "test-provider",
+        model: "test-model",
+        promptTemplateVersion: "test-prompt-v1",
+        validatorVersion: "lesson-validator-v1",
       },
-      async generate(
-        request: Parameters<typeof createEquivalentFractionsDraft>[0],
-      ) {
-        calls += 1
+      generate(request: Parameters<typeof createEquivalentFractionsDraft>[0]) {
+        calls += 1;
         if (calls === 1) {
           throw new LessonProviderError(
-            'timeout',
-            'The lesson provider timed out. Try again.',
-          )
+            "timeout",
+            "The lesson provider timed out. Try again."
+          );
         }
-        return {
+        return Promise.resolve({
           draft: createEquivalentFractionsDraft(request),
-        }
+        });
       },
-    }
+    };
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider,
-      requestIdFactory: () => 'draft_req_test_5',
-    })
+      requestIdFactory: () => "draft_req_test_5",
+    });
 
-    const first = await service.generate(teacherCommand())
+    const first = await service.generate(teacherCommand());
     const retry = await service.generate(
       teacherCommand({
         ...validInput,
-        idempotencyKey: 'request-equivalent-fractions-retry',
+        idempotencyKey: "request-equivalent-fractions-retry",
         retryOfRequestId: first.record.requestId,
-      }),
-    )
+      })
+    );
 
-    expect(first.record.state).toBe('failed-retryable')
-    expect(retry.record.state).toBe('ready-for-review')
-    expect(retry.record.attempt).toBe(2)
-    expect(retry.record.attempts).toHaveLength(2)
-    expect(calls).toBe(2)
-  })
+    expect(first.record.state).toBe("failed-retryable");
+    expect(retry.record.state).toBe("ready-for-review");
+    expect(retry.record.attempt).toBe(2);
+    expect(retry.record.attempts).toHaveLength(2);
+    expect(calls).toBe(2);
+  });
 
-  it('persists configured provider provenance for an initial retryable failure', async () => {
+  it("persists configured provider provenance for an initial retryable failure", async () => {
     const service = createGenerationService({
       persistence: createSeededPersistence(),
-      provider: createDeterministicLessonDraftProvider('timeout'),
-      requestIdFactory: () => 'draft_req_test_initial_provenance_failure',
-    })
+      provider: createDeterministicLessonDraftProvider("timeout"),
+      requestIdFactory: () => "draft_req_test_initial_provenance_failure",
+    });
 
     const result = await service.generate(
       teacherCommand({
         ...validInput,
-        idempotencyKey: 'request-initial-provenance-failure',
-      }),
-    )
+        idempotencyKey: "request-initial-provenance-failure",
+      })
+    );
 
-    expect(result.record.state).toBe('failed-retryable')
-    expect(result.record.provenance).toEqual({
-      provider: 'deterministic-fixture',
-      model: 'equivalent-fractions-fixture-v1',
-      promptTemplateVersion: 'lesson-prompt-v1',
-      validatorVersion: 'lesson-validator-v2',
-    })
-    expect(result.record.attempts[0]?.provenance).toEqual(
-      result.record.provenance,
-    )
-  })
+    expect(result.record.state).toBe("failed-retryable");
+    expect(result.record.provenance).toStrictEqual({
+      provider: "deterministic-fixture",
+      model: "equivalent-fractions-fixture-v1",
+      promptTemplateVersion: "lesson-prompt-v1",
+      validatorVersion: "lesson-validator-v2",
+    });
+    expect(result.record.attempts[0]?.provenance).toStrictEqual(
+      result.record.provenance
+    );
+  });
 
-  it('persists configured provenance when the provider fails unexpectedly', async () => {
+  it("persists configured provenance when the provider fails unexpectedly", async () => {
     const provenance = {
-      provider: 'test-provider',
-      model: 'test-model',
-      promptTemplateVersion: 'test-prompt-v1',
-      validatorVersion: 'lesson-validator-v2',
-    }
+      provider: "test-provider",
+      model: "test-model",
+      promptTemplateVersion: "test-prompt-v1",
+      validatorVersion: "lesson-validator-v2",
+    };
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider: {
         provenance,
-        async generate() {
-          throw new Error('socket closed')
+        generate() {
+          throw new Error("socket closed");
         },
       },
-      requestIdFactory: () => 'draft_req_test_unexpected_failure',
-    })
+      requestIdFactory: () => "draft_req_test_unexpected_failure",
+    });
 
     const result = await service.generate(
       teacherCommand({
         ...validInput,
-        idempotencyKey: 'request-unexpected-provider-failure',
-      }),
-    )
+        idempotencyKey: "request-unexpected-provider-failure",
+      })
+    );
 
-    expect(result.record.state).toBe('failed-terminal')
-    expect(result.record.provenance).toEqual(provenance)
-    expect(result.record.attempts[0]?.provenance).toEqual(provenance)
-  })
+    expect(result.record.state).toBe("failed-terminal");
+    expect(result.record.provenance).toStrictEqual(provenance);
+    expect(result.record.attempts[0]?.provenance).toStrictEqual(provenance);
+  });
 
-  it('retains known provider provenance when correction fails retryably', async () => {
-    let calls = 0
+  it("retains known provider provenance when correction fails retryably", async () => {
+    let calls = 0;
     const provenance = {
-      provider: 'test-provider',
-      model: 'test-model',
-      promptTemplateVersion: 'test-prompt-v1',
-      validatorVersion: 'lesson-validator-v1',
-    }
+      provider: "test-provider",
+      model: "test-model",
+      promptTemplateVersion: "test-prompt-v1",
+      validatorVersion: "lesson-validator-v1",
+    };
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider: {
         provenance,
-        async generate(request) {
-          calls += 1
+        generate(request) {
+          calls += 1;
           if (calls === 1) {
-            const draft = createEquivalentFractionsDraft(request)
-            draft.variants[0].relationships[0].targetId = 'missing-target'
-            return { draft }
+            const draft = createEquivalentFractionsDraft(request);
+            draft.variants[0].relationships[0].targetId = "missing-target";
+            return Promise.resolve({ draft });
           }
 
           throw new LessonProviderError(
-            'timeout',
-            'The lesson provider timed out. Try again.',
-          )
+            "timeout",
+            "The lesson provider timed out. Try again."
+          );
         },
       },
-      requestIdFactory: () => 'draft_req_test_provenance_failure',
-    })
+      requestIdFactory: () => "draft_req_test_provenance_failure",
+    });
 
     const result = await service.generate(
       teacherCommand({
         ...validInput,
-        idempotencyKey: 'request-provenance-failure',
-      }),
-    )
+        idempotencyKey: "request-provenance-failure",
+      })
+    );
 
-    expect(result.record.state).toBe('failed-retryable')
-    expect(result.record.provenance).toEqual(provenance)
-    expect(result.record.attempts[0]?.provenance).toEqual(provenance)
-  })
+    expect(result.record.state).toBe("failed-retryable");
+    expect(result.record.provenance).toStrictEqual(provenance);
+    expect(result.record.attempts[0]?.provenance).toStrictEqual(provenance);
+  });
 
-  it('rejects students, cross-tenant sessions, invalid metadata, and client provider settings', async () => {
+  it("rejects students, cross-tenant sessions, invalid metadata, and client provider settings", async () => {
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
-    })
+    });
 
     await expect(
       service.generate({
-        session: getDemoSession('student'),
+        session: getDemoSession("student"),
         input: validInput,
-      }),
-    ).rejects.toThrow('Only a seeded teacher can generate lesson drafts.')
+      })
+    ).rejects.toThrow("Only a seeded teacher can generate lesson drafts.");
 
     await expect(
       service.generate({
         session: {
-          ...getDemoSession('teacher'),
-          tenantId: 'tenant_other_school',
+          ...getDemoSession("teacher"),
+          tenantId: "tenant_other_school",
         },
         input: validInput,
-      }),
-    ).rejects.toThrow('Tenant access denied.')
+      })
+    ).rejects.toThrow("Tenant access denied.");
 
     expect(() => normalizeGenerationInput({ ...validInput, grade: 9 })).toThrow(
-      'Generation input is invalid.',
-    )
+      "Generation input is invalid."
+    );
     expect(() =>
-      normalizeGenerationInput({ ...validInput, provider: 'client-selected' }),
-    ).toThrow('Generation input is invalid.')
-  })
+      normalizeGenerationInput({ ...validInput, provider: "client-selected" })
+    ).toThrow("Generation input is invalid.");
+  });
 
-  it('blocks unsafe teacher prompts before calling the provider', async () => {
-    const provider = createDeterministicLessonDraftProvider()
+  it("blocks unsafe teacher prompts before calling the provider", async () => {
+    const provider = createDeterministicLessonDraftProvider();
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider,
-      requestIdFactory: () => 'draft_req_test_moderated_prompt',
-    })
+      requestIdFactory: () => "draft_req_test_moderated_prompt",
+    });
 
     const result = await service.generate(
       teacherCommand({
         ...validInput,
-        prompt: '<script>do not run</script>',
-        idempotencyKey: 'request-moderated-prompt',
-      }),
-    )
+        prompt: "<script>do not run</script>",
+        idempotencyKey: "request-moderated-prompt",
+      })
+    );
 
-    expect(result.record.state).toBe('blocked-by-moderation')
-    expect(result.publicResult.draft).toBeNull()
+    expect(result.record.state).toBe("blocked-by-moderation");
+    expect(result.publicResult.draft).toBeNull();
     expect(result.publicResult.diagnostics[0]?.message).not.toContain(
-      '<script>',
-    )
-    expect(provider.calls).toBe(0)
-  })
+      "<script>"
+    );
+    expect(provider.calls).toBe(0);
+  });
 
-  it('blocks unsafe provider output without exposing it or correcting it', async () => {
+  it("blocks unsafe provider output without exposing it or correcting it", async () => {
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider: {
         provenance: {
-          provider: 'test-provider',
-          model: 'test-model',
-          promptTemplateVersion: 'test-prompt-v1',
-          validatorVersion: 'lesson-validator-v1',
+          provider: "test-provider",
+          model: "test-model",
+          promptTemplateVersion: "test-prompt-v1",
+          validatorVersion: "lesson-validator-v1",
         },
-        async generate() {
-          return {
-            draft: { unsafe: '<script>model output</script>' },
-          }
+        generate: () => {
+          return Promise.resolve({
+            draft: { unsafe: "<script>model output</script>" },
+          });
         },
       },
-      requestIdFactory: () => 'draft_req_test_moderated_output',
-    })
+      requestIdFactory: () => "draft_req_test_moderated_output",
+    });
 
     const result = await service.generate(
       teacherCommand({
         ...validInput,
-        idempotencyKey: 'request-moderated-output',
-      }),
-    )
+        idempotencyKey: "request-moderated-output",
+      })
+    );
 
-    expect(result.record.state).toBe('blocked-by-moderation')
-    expect(result.publicResult.draft).toBeNull()
-    expect(JSON.stringify(result.publicResult)).not.toContain('model output')
-  })
+    expect(result.record.state).toBe("blocked-by-moderation");
+    expect(result.publicResult.draft).toBeNull();
+    expect(JSON.stringify(result.publicResult)).not.toContain("model output");
+  });
 
-  it('returns a retryable state for a rate-limited provider', async () => {
+  it("returns a retryable state for a rate-limited provider", async () => {
     const service = createGenerationService({
       persistence: createSeededPersistence(),
-      provider: createDeterministicLessonDraftProvider('rate-limit'),
-      requestIdFactory: () => 'draft_req_test_rate_limit',
-    })
+      provider: createDeterministicLessonDraftProvider("rate-limit"),
+      requestIdFactory: () => "draft_req_test_rate_limit",
+    });
 
     const result = await service.generate(
       teacherCommand({
         ...validInput,
-        idempotencyKey: 'request-rate-limit',
-      }),
-    )
+        idempotencyKey: "request-rate-limit",
+      })
+    );
 
-    expect(result.record.state).toBe('failed-retryable')
-    expect(result.publicResult.retry).toEqual({
+    expect(result.record.state).toBe("failed-retryable");
+    expect(result.publicResult.retry).toStrictEqual({
       available: true,
-      message: 'Review the diagnostics, then try this draft again.',
-    })
-    expect(result.publicResult.diagnostics[0]?.code).toBe('PROVIDER_RATE_LIMIT')
-  })
-})
+      message: "Review the diagnostics, then try this draft again.",
+    });
+    expect(result.publicResult.diagnostics[0]?.code).toBe(
+      "PROVIDER_RATE_LIMIT"
+    );
+  });
+});

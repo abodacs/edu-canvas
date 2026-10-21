@@ -8,11 +8,11 @@ Issue #3 needs a useful teacher authoring path without letting model output beco
 
 ## Options considered
 
-| Option                                                                | Pros                                                                                                                             | Cons                                                                                                                |
-| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| **A. Canonical server contract + strict validation + one correction** | Keeps domain truth separate from A2UI, makes safety and tests explicit, gives teachers actionable failures, bounds provider cost | Requires schemas, a private/public projection, and attempt persistence                                              |
-| B. Let the provider return UI/A2UI messages directly                  | Faster initial integration                                                                                                       | Expands the model trust boundary, risks executable content and answer-key leakage, couples generation to a renderer |
-| C. Retry until a valid draft is produced                              | May hide occasional model errors                                                                                                 | Unbounded cost/latency, poor auditability, and can turn a bad request into a server-side loop                       |
+| Option | Pros | Cons |
+| --- | --- | --- |
+| **A. Canonical server contract + strict validation + one correction** | Keeps domain truth separate from A2UI, makes safety and tests explicit, gives teachers actionable failures, bounds provider cost | Requires schemas, a private/public projection, and attempt persistence |
+| B. Let the provider return UI/A2UI messages directly | Faster initial integration | Expands the model trust boundary, risks executable content and answer-key leakage, couples generation to a renderer |
+| C. Retry until a valid draft is produced | May hide occasional model errors | Unbounded cost/latency, poor auditability, and can turn a bad request into a server-side loop |
 
 ## Decision
 
@@ -35,11 +35,7 @@ Issue #3 needs a useful teacher authoring path without letting model output beco
 
 ## Handoff
 
-Issue #18 consumes the normalized draft and adds bounded curriculum and
-learning-quality validation. Issue #28 places the cross-cutting hard safety
-gate before preview and Share. Issue #4 consumes only accepted public content
-for allowlisted A2UI preview; this decision does not authorize rendering,
-approval, publication, grading, or adaptation.
+Issue #18 consumes the normalized draft and adds bounded curriculum and learning-quality validation. Issue #28 places the cross-cutting hard safety gate before preview and Share. Issue #4 consumes only accepted public content for allowlisted A2UI preview; this decision does not authorize rendering, approval, publication, grading, or adaptation.
 
 ## Artifacts
 
