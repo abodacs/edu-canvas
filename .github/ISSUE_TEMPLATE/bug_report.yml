@@ -1,52 +1,62 @@
 name: Bug report
-description: Report a bug or regression
+description: Describe a reproducible failure and its impact
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
-      value: "Thanks for reporting a bug. Please include as much detail as possible."
+      value: |
+        Describe the failure with a small synthetic example. Remove credentials, student identifying data, and private answer keys from attachments.
+        See the [contribution guide](https://github.com/abodacs/edu-canvas/blob/main/CONTRIBUTING.md#write-an-issue-someone-can-act-on) for reporting guidance.
   - type: textarea
     id: summary
     attributes:
       label: Summary
-      description: What happened?
-      placeholder: Short, clear description
+      description: Describe the symptom and how it affects the user. Separate observations from suspected causes.
+      placeholder: "The teacher preview stays empty after reconnecting, so the teacher cannot review the lesson."
     validations:
       required: true
   - type: textarea
     id: steps
     attributes:
       label: Steps to reproduce
-      description: Step-by-step instructions
+      description: Include the smallest synthetic input, starting state, and actions that trigger the failure.
       placeholder: |
-        1. Go to ...
-        2. Click ...
-        3. See ...
+        1. Start the synthetic demo and open /demo/teacher.
+        2. Enter the synthetic lesson request that triggers the problem.
+        3. Describe the action after which the failure appears.
     validations:
       required: true
   - type: textarea
     id: expected
     attributes:
       label: Expected behavior
-      placeholder: What did you expect to happen?
+      description: State the observable result you expected after those steps.
+      placeholder: "The teacher preview displays the generated lesson after reconnecting."
     validations:
       required: true
   - type: textarea
     id: actual
     attributes:
       label: Actual behavior
-      placeholder: What actually happened?
+      description: State what you observed and how often it happens.
+      placeholder: "The preview remains empty on every reconnect. Refreshing the page restores it."
     validations:
       required: true
   - type: textarea
     id: logs
     attributes:
       label: Logs and screenshots
-      description: Paste logs or add screenshots if relevant
-      render: shell
+      description: Include exact error text or screenshots when useful. Redact sensitive content and summarize linked evidence.
   - type: input
     id: environment
     attributes:
       label: Environment
-      description: OS, browser, Node.js and pnpm versions, etc.
-      placeholder: "macOS 14.5, Chrome 123, Node.js 22, pnpm 10"
+      description: Include the commit or release, browser and OS, and relevant Node.js, pnpm, demo mode, or deployment details.
+      placeholder: "Commit SHA; browser and OS; Node.js 26; pnpm 10.17.1; synthetic demo"
+    validations:
+      required: true
+  - type: input
+    id: regression
+    attributes:
+      label: Last known working version
+      description: If known, name the last working release or the first failing commit.

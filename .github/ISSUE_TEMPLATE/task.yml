@@ -1,43 +1,67 @@
 name: Task
-description: Track a discrete piece of work
+description: Define one bounded change and how to verify it
 labels: ["task"]
 body:
   - type: markdown
     attributes:
-      value: "Use this for a single, well-scoped task. One issue = one task."
+      value: |
+        Describe one deliverable so another contributor can pick up the work.
+        See the [contribution guide](https://github.com/abodacs/edu-canvas/blob/main/CONTRIBUTING.md#write-an-issue-someone-can-act-on) for examples and writing guidance.
   - type: input
     id: summary
     attributes:
-      label: Summary
-      description: Short description of the task
-      placeholder: "Implement X"
+      label: Outcome
+      description: What will a user or contributor be able to do when this is complete?
+      placeholder: "Contributors can run the synthetic demo from a clean checkout."
     validations:
       required: true
   - type: textarea
     id: problem
     attributes:
-      label: Problem / Context
-      description: Why does this task exist?
-      placeholder: "We need X because..."
+      label: Problem and context
+      description: Explain the current limitation and why it matters. Summarize linked context.
+      placeholder: "The setup instructions assume an existing environment file, so a new contributor cannot follow them."
+    validations:
+      required: true
   - type: textarea
     id: scope
     attributes:
       label: Scope
-      description: What is in and out of scope?
-      placeholder: "In scope: ...\nOut of scope: ..."
+      description: State the work included and any related work excluded from this task.
+      placeholder: |
+        In scope: Document the clean-checkout setup and expected demo result.
+        Out of scope: Change provider configuration or deployment behavior.
+    validations:
+      required: true
   - type: textarea
     id: acceptance
     attributes:
-      label: Acceptance Criteria
-      description: What must be true for this to be done?
-      placeholder: "- [ ] ..."
+      label: Acceptance criteria
+      description: List observable results that let a reviewer decide whether the task is complete.
+      placeholder: |
+        - [ ] A fresh checkout starts the synthetic demo using the documented commands.
+        - [ ] The guide explains how to confirm the demo is ready.
     validations:
       required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification
+      description: Give the commands or manual steps and the result that demonstrates completion.
+      placeholder: "Follow the setup guide in a clean checkout. Open /demo/teacher and confirm the seeded lesson appears."
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints and open questions
+      description: Record boundaries that must hold and questions still needing an answer.
+      placeholder: "Use synthetic data. Is there a supported operating system the instructions must cover?"
   - type: dropdown
     id: status
     attributes:
       label: Status
-      description: Initial workflow status (project will track this too)
+      description: Choose the initial status; update the project as work progresses.
       options:
         - Backlog
         - Todo
@@ -60,5 +84,5 @@ body:
     id: dependencies
     attributes:
       label: Dependencies
-      description: Links to blocking issues or external dependencies
-      placeholder: "- #123\n- External: ..."
+      description: Link blocking work and explain what this task needs from it. Leave empty if none.
+      placeholder: "Blocked by #123 because it defines the supported local database setup."

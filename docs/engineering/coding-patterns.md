@@ -1,6 +1,6 @@
 # Coding patterns
 
-Use these patterns when implementing or reviewing domain rules, integrations, state transitions, and error handling. The [code standards](code-standards.md) contain the language and tooling checklist. The [architecture harness](../architecture-harness.md) defines the existing layer boundaries.
+Use these patterns when implementing or reviewing domain rules, integrations, state transitions, and error handling. The [code standards](../../CODING_STANDARDS.md) contain the language and tooling checklist. The [architecture harness](../architecture-harness.md) defines the existing layer boundaries.
 
 Adapted from CodeByUmar, _7 Coding Patterns I Stole From Senior Engineers_, published in Skill Stuff on Medium, June 8, 2026 (saved PDF, pages 1-2). The [research index](../research/README.md#local-reference-materials) records the local source. The examples below apply the ideas to Edu-Canvas; they describe design guidance, not implementation status.
 
