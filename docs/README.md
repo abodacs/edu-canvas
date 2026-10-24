@@ -18,18 +18,14 @@ Research, ideas, and references grouped by topic, imported from the hackathon-20
 | [Decision record](design/design-doc-questions.md) | Answers to design questions Q1–Q20 and UQ1–UQ5 |
 | [Reading guide](design/design-doc-reading-guide.md) | Terms and writing rules for the design documents |
 | [Software factory](engineering/software-factory.md) | Dated engineering-method notes; personal tooling sections are context, not contract |
-| [Research index](research/README.md) | Saved research and brainstorms, plus locally retained reference materials |
+| [Research index](research/README.md) | Registry of locally retained reference materials; raw research notes stay untracked |
 
 Documents that already lived in this repository (`docs/product-strategy.md`, `docs/walking-skeleton.md`, `docs/foundation-runbook.md`, `docs/release-fly-supabase.md`, `docs/architecture-harness.md`, `docs/observed-behaviour.md`, `docs/security/threat-model.md`, `docs/agdr/`) keep their current ownership. The [import plan](plans/hackathon-2026-pr-stack.md) schedules their reconciliation with the imported corpus.
 
 ## Saved research and notes
 
-The files below are saved research, brainstorms, and archived ideas. The [research index](research/README.md) records each file's type and provenance; they are inputs, not current requirements.
+The raw research notes behind the imported documents are not tracked in this repository; they are retained in the local notes workspace (`.worktrees/hackthon-docs/`). The [research index](research/README.md) records this decision and lists the locally retained reference materials. The one tracked exception is the hackathon archive:
 
 | Folder | Files |
 | --- | --- |
-| Education | [ChatGPT](research/education/chatgpt.txt), [Claude](research/education/claude.txt), [teacher research](research/education/teacher-research.txt), [direct instruction](research/education/direct-instruction.txt) |
-| UI | [Intelligent UI](research/ui/intelligent-ui.txt), [CopilotKit](research/ui/copilotkit.txt) |
-| Engineering | [Agent architecture](research/engineering/agent-architecture.txt), [design docs](research/engineering/design-docs.txt), [LLM wiki](research/engineering/llm-wiki.txt), [skills](research/engineering/skills.txt), [notes](research/engineering/notes.txt) |
-| Design | [Workflow](research/design/workflow.txt), [inspiration](research/design/inspiration.txt) |
 | Hackathon archive | [Archived ideas](hackathon/meta-global-2026/archive/ideas.txt) |

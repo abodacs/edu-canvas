@@ -1,6 +1,6 @@
 # Edu-Canvas roadmap: prove one useful teaching loop
 
-Revised 2026-10-24 from the [education notes](docs/research/education/), the existing product strategy, and the previous hackathon plan. This is the proposed product direction and delivery order for this notes workspace; it does not claim implementation is complete or change GitHub issue status. The [hackathon plan](docs/hackathon/meta-global-2026/README.md) translates it into the available sprint.
+Revised 2026-10-24 from the education notes (retained in the local notes workspace, `.worktrees/hackthon-docs/education/`), the existing product strategy, and the previous hackathon plan. This is the proposed product direction and delivery order for this notes workspace; it does not claim implementation is complete or change GitHub issue status. The [hackathon plan](docs/hackathon/meta-global-2026/README.md) translates it into the available sprint.
 
 **Latest scope update:** Abdullah selected the full first-version [teacher UI feature set](docs/product/teacher-ui.md) for the hackathon: Learning Commons grounding, evaluated Jev matching, PDF/TXT/MD recovery, source visibility, interactive fractions, rendered LaTeX, and section revision. Those explicit decisions supersede earlier exclusions of connected-source access. The [priority order](docs/product/delivery-priorities.md) is proposed; fit within 30 human hours is unproven. Ask for implementation approval and the verification skills before building. Do not silently cut agreed features to preserve an older schedule.
 
@@ -32,10 +32,10 @@ The instructional sequence is supported by Rosenshine’s discussion of modeling
 
 | Material | Useful implication | Evidence limit |
 | --- | --- | --- |
-| [ChatGPT for Teachers](docs/research/education/chatgpt.txt) | Planning, adapting materials, context, and teacher control are already described in a broad teacher workspace. | Saved vendor material, not a current feature audit or proof of our users’ needs. |
-| [Claude for Teachers](docs/research/education/claude.txt) | Curriculum grounding, differentiation, and instructional follow-up belong in the comparison. | Vendor claims do not establish Edu-Canvas demand or learning effects. |
-| [Teacher research](docs/research/education/teacher-research.txt) | Workload and mixed readiness are candidate problems worth investigating. | A compiled AI-style synthesis, not recorded interviews; its impact ratings are unvalidated. |
-| [Direct instruction](docs/research/education/direct-instruction.txt) | Put explanation and a worked example before unsupported exploration for beginners. | An unattributed argument, not sufficient evidence for a universal teaching rule. |
+| ChatGPT for Teachers | Planning, adapting materials, context, and teacher control are already described in a broad teacher workspace. | Saved vendor material, not a current feature audit or proof of our users’ needs. |
+| Claude for Teachers | Curriculum grounding, differentiation, and instructional follow-up belong in the comparison. | Vendor claims do not establish Edu-Canvas demand or learning effects. |
+| Teacher research | Workload and mixed readiness are candidate problems worth investigating. | A compiled AI-style synthesis, not recorded interviews; its impact ratings are unvalidated. |
+| Direct instruction | Put explanation and a worked example before unsupported exploration for beginners. | An unattributed argument, not sufficient evidence for a universal teaching rule. |
 
 Do not turn claims about engagement, burnout, behavior, or mental health into product promises. Do not treat free pricing, model availability, or vendor features in saved notes as permanently current. The comparison below tests the tools participants can actually access.
 

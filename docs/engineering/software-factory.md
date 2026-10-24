@@ -2,7 +2,7 @@
 
 Deliver features end-to-end with agents. One owner, one loop, minimum prose.
 
-Synthesizes [skills](../research/engineering/skills.txt) and [agent architecture](../research/engineering/agent-architecture.txt). This document absorbs the 2026-10-24 factory blind-spot review (formerly `factory-blindspots.md`, deleted on consolidation) and carries its probe results, re-verified the same day.
+Synthesizes the owner's skills and agent-architecture research notes, retained in the local notes workspace (`.worktrees/hackthon-docs/`), not tracked here. This document absorbs the 2026-10-24 factory blind-spot review (formerly `factory-blindspots.md`, deleted on consolidation) and carries its probe results, re-verified the same day.
 
 > **Dated context, 2026-10-24.** The "Harness and routing", "Skill roster", and "Apexyard" sections record the owner's personal tooling decisions on that date, as do the specific skills named inside the feature loop. They are not repository requirements. The repository guardrails ("The cage") and the feature loop's stages and gates are.
 

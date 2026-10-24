@@ -84,6 +84,5 @@ Official documentation reviewed 2026-10-24; no authenticated request, exact-stan
 
 ## Reference material
 
-- [Intelligent UI notes](../research/ui/intelligent-ui.txt): saved architectural inspiration, not a verified implementation specification.
-- [CopilotKit references](../research/ui/copilotkit.txt): candidates for investigation; no library or protocol selected.
+- Raw UI research notes (intelligent-UI analysis and CopilotKit candidates): saved architectural inspiration and investigation candidates, not a verified implementation specification; retained in the local notes workspace (`.worktrees/hackthon-docs/`), not tracked here.
 - [Product roadmap](../../ROADMAP.md) and [hackathon scope](../hackathon/meta-global-2026/README.md): existing scope and trust boundaries.
