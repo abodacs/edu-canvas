@@ -1,6 +1,6 @@
 # Edu-Canvas PRD Grill Log
 
-This document records the decisions, contradictions, and unresolved questions discovered while stress-testing the master PRD.
+> **Historical decision log (July 2026).** Answers that later decisions superseded keep their original wording below. Known superseded answers: Q58–Q61 and Q170 (bilingual EN/AR — the hackathon-2026 release is English-only, [C3](docs/design/design-doc-questions.md)); Q61 (offline-only grounding — superseded by the Learning Commons REST adapter with immutable snapshots, [Q5/C5 and UQ5](docs/design/design-doc-questions.md)); Q168 (GPT-5.6/Codex availability — the current event requires an allowed Meta model, [C2](docs/design/design-doc-questions.md)). Consult [`docs/design/design-doc-questions.md`](docs/design/design-doc-questions.md) before reusing any answer here. This document records the decisions, contradictions, and unresolved questions discovered while stress-testing the master PRD.
 
 ## Status
 

@@ -88,7 +88,7 @@ Personal roster, owner decision 2026-10-24. Stages name the owner's preferred sk
 Apexyard owns the repo-governance layer: AgDR records, hooks, golden-path CI. Wiring is live (verified 2026-10-24):
 
 - **Setup** ran 2026-10-20/21 in split-portfolio mode: the public ApexYard fork plus a private sibling holding the owner's project registry, onboarding profile, and agent-routing configuration. Ops-fork git hooks installed (`core.hooksPath = .githooks`).
-- **Handover** assessed edu-canvas 2026-10-20: registered `P0`, status `handover`, harnessability `moderate`. Status returns to `active` when #27 and #28 close.
+- **Handover** assessed edu-canvas 2026-10-20: registered `P0`, status `handover`, harnessability `moderate`. Status returns to `active` when #28 closes and #27's reported behavior is re-verified against the release candidate.
 - **Hooks** governing agent turns: block-git-add-all, block-main-push, check-secrets, pre-push-gate, validate-branch-name, validate-pr-create.
 - **AgDRs** 0001–0004 live under `docs/agdr/`; architectural decisions enter there, not prose.
 - **CI golden paths**: `foundation.yml` + `ai-code-review.yml` tracked; `security.yml` + `pr-title-check.yml` copied into the sprint worktree on 2026-10-24 (the #71 gap — commit them as the sprint's first governance PR).
@@ -117,7 +117,7 @@ Probes marked **ran** were executed. Numbering matches the original review so cr
 
 ### Blind spots
 
-**1. The plans are outside version control.** ROADMAP, hackathon plans, blind-spot reviews, the factory doc, and all notes live in a git-ignored directory. One `git clean -fdx` or disk event erases the sprint plan. *Status:* owner chose to keep it uncommitted on 2026-10-24. The standing fix — `git add -f .worktrees/hackthon-docs` on a `docs/hackathon-2026` branch, or move it under tracked `docs/` — remains the default the moment the owner reverses that call. *Update 2026-10-24:* resolved — the corpus was imported into tracked paths (PR 01 of `docs/plans/hackathon-2026-pr-stack.md`); the original directory stays local until the merged copy is verified from a clean checkout.
+**1. The plans are outside version control.** ROADMAP, hackathon plans, blind-spot reviews, the factory doc, and all notes live in a git-ignored directory. One `git clean -fdx` or disk event erases the sprint plan. _Status:_ owner chose to keep it uncommitted on 2026-10-24. The standing fix — `git add -f .worktrees/hackthon-docs` on a `docs/hackathon-2026` branch, or move it under tracked `docs/` — remains the default the moment the owner reverses that call. _Update 2026-10-24:_ resolved — the corpus was imported into tracked paths (PR 01 of `docs/plans/hackathon-2026-pr-stack.md`); the original directory stays local until the merged copy is verified from a clean checkout.
 
 **2. A green gate is not a working loop.** The DB contract suite is now proven (facts table), and web-gui-tester drives the stack, but no product-level E2E of the loop has run — the loop itself is unbuilt. The DB suite joins the pre-freeze run on Oct 31. Use a manual demo checklist until an E2E proves itself.
 

@@ -1,6 +1,6 @@
 # Observed behaviour — synthesis and research plan
 
-> Snapshot: 2026-07-17. This note separates what the current evidence shows from what Edu-Canvas hopes users will do. It uses the issue tracker, QA evidence, the product decision log, and authored interface copy; it does not contain direct user research.
+> Snapshot: 2026-07-17. This note separates what the current evidence shows from what Edu-Canvas hopes users will do. It uses the issue tracker, QA evidence, the product decision log, and authored interface copy; it does not contain direct user research. Status update 2026-10-25 ([#89](https://github.com/abodacs/edu-canvas/issues/89)): issue #27 is closed (2026-10-21); its reproduction records below stay valid as QA evidence, and the learner-safe claim stays blocked until the reported false-success behavior is re-verified against the release candidate.
 
 ## Mode: synthesise, then plan
 
@@ -32,7 +32,7 @@ Partial research exists. The issue tracker gives us a QA reproduction and detail
 
 ### Pattern: feedback can teach the wrong relationship
 
-**Confidence: high for system risk; unknown for learner frequency.** A visible distractor can be selected first, and the current reveal confirms the wrong interpretation. Fix [#27](https://github.com/abodacs/edu-canvas/issues/27) before exposing the flow to children or describing it as learner-safe.
+**Confidence: high for system risk; unknown for learner frequency.** A visible distractor can be selected first, and the current reveal confirms the wrong interpretation. Issue #27 is closed (2026-10-21); re-verify the reported behavior against the release candidate before exposing the flow to children or describing it as learner-safe.
 
 ### Pattern: trust is being designed around review and recovery
 
@@ -74,7 +74,7 @@ Capture one observation per note: context, action, exact quote, workaround, and 
 
 ### Student usability observation — six participants
 
-Use synthetic content and required consent. Do not expose children to the known-broken preview; fix [#27](https://github.com/abodacs/edu-canvas/issues/27) or use a patched research prototype first.
+Use synthetic content and required consent. Do not expose children to a preview whose reported false-success behavior is not re-verified; use a patched research prototype first.
 
 Observe, without leading:
 
@@ -91,7 +91,7 @@ Replay a small set of fixed attempts. Ask the teacher to predict, approve, pause
 ## Decision gates
 
 - Do not expand into [#29–#31](https://github.com/abodacs/edu-canvas/issues) until the core loop is correct and at least directionally validated.
-- Do not call the landing preview learner-safe until [#27](https://github.com/abodacs/edu-canvas/issues/27) is fixed and re-tested.
+- Do not call the landing preview learner-safe until #27's reported false-success behavior is re-verified against the release candidate (the issue itself is closed since 2026-10-21).
 - Do not label an authored quote, acceptance criterion, or PRD decision as an observed user finding.
 - Promote a job story from inferred to observed only when a note contains a specific situation, behaviour, and quotable evidence.
 

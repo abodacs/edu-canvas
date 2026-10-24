@@ -1,13 +1,14 @@
 # Release runbook — Fly.io + Supabase Postgres
 
-This is the release path for the current foundation and validated lesson generation slices. It deploys the server-rendered demo with synthetic data only. Real student data, production authentication, A2UI publication, grading, and adaptation remain outside the approved launch scope.
+This is the release path for the current foundation and validated lesson generation slices, updated 2026-10-25 to the [demo deployment design](design/design-doc.md#keep-the-deployment-small-and-controlled) ([#89](https://github.com/abodacs/edu-canvas/issues/89)). It deploys the server-rendered demo with synthetic data only. Real student data, production authentication, A2UI publication, grading, and adaptation remain outside the approved launch scope. This is a single-instance demo deployment; it is not a production-ready configuration.
 
 ## Deployment shape
 
 - Fly.io builds and runs the checked-in `Dockerfile`.
 - Supabase provides the hosted PostgreSQL database.
+- **One continuously running Fly.io instance.** The preview uses server-sent events, and the demo's request limits are process-local. Multiple instances would need shared request-limit state first, so scaling out is out of scope for the demo ([design decision Q12](design/design-doc-questions.md), [AgDR-0007](agdr/AgDR-0007-demo-access-and-deployment.md)).
 - The server connects to PostgreSQL with the server-only `DATABASE_URL` secret.
-- Validated lesson generation uses the server-only `OPENAI_API_KEY` secret.
+- Lesson generation uses the server-only provider key secret. The demo runs an event-allowed model behind the existing provider interface; see [AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md) for the provider selection and deadlines. The historical `OPENAI_API_KEY`/`OPENAI_MODEL` secret and setting names are kept until the provider migration lands ([AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md)).
 - Fly runs the idempotent migration runner as a release command before replacing application Machines.
 - The app does not use `supabase-js`, Supabase Auth, or the Supabase Data API; no browser key or public table grant is required.
 - The existing `migrations/` directory and `pnpm db:migrate` runner remain the migration source of truth. Do not run `supabase db push` against this checkout unless the repository is intentionally converted to the standard `supabase/migrations/` layout.
@@ -16,7 +17,7 @@ Supabase's direct Postgres connection is the preferred option for migrations and
 
 ## One-time setup
 
-Prerequisites: Docker, `pnpm`, the Fly CLI, a Supabase project, OpenAI API access, and access to the Fly organization that owns the app.
+Prerequisites: Docker, `pnpm`, the Fly CLI, a Supabase project, generation-provider API access (the selected event-allowed provider; see docs/agdr/AgDR-0006-provider-selection-and-deadlines.md), and access to the Fly organization that owns the app.
 
 1. Set the app name and `primary_region` in `fly.toml`. Keep the region close to the Supabase project when possible. The checked-in defaults are `edu-canvas` and `ams`; change them if the Fly app name is already taken or the database is elsewhere.
 2. Authenticate and create the Fly app if it does not already exist:
@@ -28,11 +29,11 @@ Prerequisites: Docker, `pnpm`, the Fly CLI, a Supabase project, OpenAI API acces
 
    Skip `fly apps create` when the app already exists in the selected Fly organization.
 
-3. Copy the PostgreSQL connection string from Supabase **Connect**. Use a database password managed in Supabase, never a value committed to this repository. Store the database URL and OpenAI key in Fly's encrypted secret store. Prefer `fly secrets import` from a protected terminal or secret manager so the values do not enter shell history:
+3. Copy the PostgreSQL connection string from Supabase **Connect**. Use a database password managed in Supabase, never a value committed to this repository. Store the database URL and generation-provider key in Fly's encrypted secret store. Prefer `fly secrets import` from a protected terminal or secret manager so the values do not enter shell history:
 
    ```bash
    read -r -s -p 'Supabase DATABASE_URL: ' DATABASE_URL; printf '\n'
-   read -r -s -p 'OpenAI API key: ' OPENAI_API_KEY; printf '\n'
+   read -r -s -p 'Provider API key (stored as OPENAI_API_KEY): ' OPENAI_API_KEY; printf '\n'
    export DATABASE_URL OPENAI_API_KEY
    printf 'DATABASE_URL=%s\nOPENAI_API_KEY=%s\n' "$DATABASE_URL" "$OPENAI_API_KEY" | fly secrets import
    unset DATABASE_URL OPENAI_API_KEY
@@ -73,14 +74,24 @@ Run these commands from the repository root or from the release worktree.
    fly checks list
    ```
 
-4. Keep at least two stateless Machines in the primary region for availability once the app is live:
+4. Keep exactly **one** application Machine in the primary region:
 
    ```bash
-   fly scale count 2 --region ams --yes
+   fly scale count 1 --region ams --yes
    fly scale show
    ```
 
-   Replace `ams` if `primary_region` was changed. This app stores data in Supabase and has no Fly volume, so Machines can be replaced independently.
+   Replace `ams` if `primary_region` was changed. This app stores data in Supabase and has no Fly volume, so the Machine can be replaced independently. Do not scale out: SSE preview delivery and the process-local burst limits assume a single instance ([Q12](design/design-doc-questions.md)); shared limit state would be a prerequisite for more than one Machine and is not built for the demo.
+
+### Demo access limits (required before public hosting)
+
+The [implementation contracts](design/design-doc-implementation.md#apply-access-limits-and-safe-release-changes) define the limits; the deployed demo must have them active. Verify each before opening the URL to judges:
+
+- Database-backed generation quotas in Postgres: at most 10 generation attempts per teacher per hour and 100 per tenant per day. Corrections count against the provider-call budget; all generation stops at 200 provider calls per tenant per day.
+- Process-local burst limits: at most 30 authoring requests per session per minute and at most one active generation per teacher. Rejected requests receive a stated retry interval.
+- Separate teacher and learner invitation credentials exchanged for signed, HttpOnly, Secure, SameSite session cookies; no invitation credential in client bundles or repository files.
+
+A rejected request surfaces `RATE_LIMITED` (HTTP 429) with the retry interval.
 
 5. Verify the public service. Replace the hostname if the Fly app name was changed:
 
@@ -103,7 +114,7 @@ fly scale show
 
 Fly only displays secret names and digests, not secret values. Rotate the Supabase database password in Supabase, update `DATABASE_URL` with `fly secrets set`, and rerun the readiness and smoke checks.
 
-Before opening this to real users, add a reviewed authentication model, least-privilege database role, backups/restore evidence, alerting, TLS/domain configuration, DPA/EU-residency approval, consent handling, and a separate production seed policy. The current app intentionally keeps `SYNTHETIC_DATA_ONLY=true`.
+Before opening this to real users, add a reviewed authentication model, least-privilege database role, backups/restore evidence, alerting, TLS/domain configuration, DPA/EU-residency approval, consent handling, and a separate production seed policy. The current app intentionally keeps `SYNTHETIC_DATA_ONLY=true`. This runbook describes the single-instance demo with bounded quotas — not a production deployment — and makes no production-readiness or availability claim.
 
 ## References
 

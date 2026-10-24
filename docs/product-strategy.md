@@ -1,6 +1,6 @@
 # Edu-Canvas product strategy
 
-> Snapshot: 2026-07-18. The GitHub issue tracker is the source of truth for delivery status; this document records the product decisions, sequencing, and evidence gaps behind those issues.
+> Snapshot: 2026-07-18. The GitHub issue tracker is the source of truth for delivery status; this document records the product decisions, sequencing, and evidence gaps behind those issues. Reconciled 2026-10-25 with the hackathon-2026 design ([#89](https://github.com/abodacs/edu-canvas/issues/89)): the grounding contract now follows the [Learning Commons REST adapter](design/design-doc-implementation.md) with immutable source snapshots, the hackathon release is English-only, and the forward story is brief next-step text. Superseded answers keep their original dates below.
 
 ## North-star outcome
 
@@ -10,7 +10,7 @@ Prove one trustworthy teacher-to-student loop in under three minutes:
 teacher's plain-language idea → safe visual lesson → student understanding → justified next step
 ```
 
-The competition outcome is a judge seeing that loop work end to end. It is not a production KPI. The initial wedge is a bilingual (English/Arabic, including RTL) equivalent-fractions experience for Grades 3–6, beginning with Common Core Math.
+The competition outcome is a judge seeing that loop work end to end. It is not a production KPI. The initial wedge (2026-07-18) was a bilingual (English/Arabic, including RTL) equivalent-fractions experience for Grades 3–6, beginning with Common Core Math. The hackathon-2026 release is English-only; Arabic is a deferred product goal ([decision C3](design/design-doc-questions.md), 2026-10-24).
 
 The product promise is deliberately narrow:
 
@@ -33,7 +33,7 @@ flowchart LR
     I28 --> GATE
     GATE --> I4["#4 Allowlisted A2UI preview"]
     I4 --> I17["#17 Reverse prerequisite path"]
-    I17 --> I19["#19 Forward learning story"]
+    I17 --> I19["#19 Forward learning story (brief next-step text)"]
     I19 --> I5["#5 Teacher approve + publish"]
     I5 --> I6["#6 Server-authoritative grading"]
     I6 --> I7["#7 Reveal + deterministic next activity"]
@@ -42,7 +42,7 @@ flowchart LR
     I8 --> I10["#10 Teacher hardening"]
     I9 --> I11["#11 Judge-ready demo"]
     I10 --> I11
-    I27["#27 Preview correctness blocker"] -. "must be resolved before learner-safe claim" .-> I4
+    I27["#27 Preview correctness (closed 2026-10-21)"] -. "re-verify false-success against release candidate before learner-safe claim" .-> I4
 ```
 
 The hard safety gate is cross-cutting: a `hard_block` keeps unsafe content out of preview and Share; a `warning` stays visible for teacher review; only a passing or explicitly accepted safe result can continue. The reverse path and forward story are product artifacts that make the learning decision inspectable, not hidden chain-of-thought.
@@ -63,7 +63,7 @@ The strategic moat is trust plus learning clarity: the teacher can see what will
 
 ## Knowledge Graph adoption boundary
 
-The hackathon use of the [Learning Commons Knowledge Graph](https://github.com/learning-commons-org/knowledge-graph) is a bounded evidence layer, not a second runtime graph or a remote service dependency. Pin the public `v1.11.0` JSONL export, filter it to the equivalent-fractions slice, and keep the source-shaped records in a checked-in fixture plus import manifest. The manifest records the release, upstream identifiers, relationship types, retrieval date, license, and required [CC BY 4.0 attribution](https://docs.learningcommons.org/knowledge-graph/resources/license).
+The hackathon use of the [Learning Commons Knowledge Graph](https://github.com/learning-commons-org/knowledge-graph) is a bounded evidence layer, not a second runtime graph or a full imported graph. Updated 2026-10-25: the release retrieves the selected standard, its learning components, and prerequisites at request time through the Learning Commons REST adapter, and stores an immutable source snapshot (source identifiers, retrieval time, version, content hash) with each generation ([design decision Q5/C5 and UQ5](design/design-doc-questions.md)). The 2026-07-18 pinned `v1.11.0` JSONL fixture and its import manifest remain the deterministic test path; the manifest records the release, upstream identifiers, relationship types, retrieval date, license, and required [CC BY 4.0 attribution](https://docs.learningcommons.org/knowledge-graph/resources/license). The older offline-only rule — no runtime API or MCP call — was superseded on 2026-10-24 by the design decision; MCP is a fallback transport, not the default.
 
 The target remains Edu-Canvas's local `4.NF.A.1` standard. The fixture may include `3.NF.A.1` as supporting context and Learning Components only when an explicit `supports` relationship connects them to a reviewed supporting standard. The external source's `buildsTowards` relationship describes directional learning support, not a guaranteed or immediate prerequisite; Edu-Canvas keeps its own curated, immutable graph as the runtime authority for remediation and next-activity decisions. See the Knowledge Graph definitions for [Learning Components](https://docs.learningcommons.org/knowledge-graph/graph-reference/learning-components) and [Learning Progressions](https://docs.learningcommons.org/knowledge-graph/graph-reference/learning-progressions).
 
@@ -79,7 +79,7 @@ It grounds the draft and makes the recommendation explainable; it does not diagn
 
 | Boundary | Decision |
 | --- | --- |
-| Source | Pinned, filtered `nodes.jsonl` and `relationships.jsonl`; no runtime API or MCP call |
+| Source | REST retrieval of the selected standard, components, and prerequisites at request time; immutable snapshot stored per generation; pinned fixture kept for deterministic tests. No full import and no MCP by default |
 | Evidence | Full upstream standard/component/relationship metadata retained in the fixture; GPT receives only a compact allowlisted projection |
 | Generation | The compact projection enters the GPT prompt; the lesson contract returns references to supplied evidence, not free-form source claims |
 | Validation | Unknown or mismatched evidence identifiers are a `hard_block`; missing valid component evidence is a `warning` with standards-only fallback |
@@ -104,7 +104,7 @@ This audit used the repository and issue graph, not direct user research. “Par
 | Product and service strategy | **Partial** | The wedge, trust boundary, evidence-grounding boundary, bounded personalization claim, competition outcome, and issue sequence are now explicit in this document. | The evidence layer still needs a small implementation proof and user testing; it must not distract from the open preview-correctness blocker. |
 | Conceptual model | **Partial** | Draft, validator result, alignment evidence, source manifest, activity pack, immutable version, attempt, prerequisite path, story beats, and next activity are emerging as the shared language. | Shared semantics for page state and bounded multi-page flows remain open in [issue #31](https://github.com/abodacs/edu-canvas/issues/31). |
 | Interaction flow | **Partial** | The landing story, issue #3 generation/recovery seam, and issue #4 teacher preview seam are exercised, and the target teacher → student loop is described in [the walking skeleton](walking-skeleton.md). | Curriculum validation, hard safety, approval, grading, and adaptation still need to become one exercised flow across [issues #18 and #28](https://github.com/abodacs/edu-canvas/issues) and [#4–#11](https://github.com/abodacs/edu-canvas/issues). |
-| Surface | **Partial, strongest slice** | PR #25 establishes a calm, bilingual, responsive, semantic, reduced-motion landing surface; the planned teacher evidence card keeps provenance out of the student task. | [Issue #27](https://github.com/abodacs/edu-canvas/issues/27) reports a distractor-only selection that can produce a success reveal in the landing preview; do not call that preview learner-safe until fixed. |
+| Surface | **Partial, strongest slice** | PR #25 establishes a calm, responsive, semantic, reduced-motion landing surface; the planned teacher evidence card keeps provenance out of the student task. | Issue #27 (closed 2026-10-21) reported a distractor-only selection that could produce a success reveal in the landing preview; re-verify against the release candidate before any learner-safe claim. |
 
 The lowest unresolved layer is observed behaviour. The detailed [synthesis and research plan](observed-behaviour.md) records the evidence boundary. The next highest-value activity is to test the core teacher and student loop before investing in generalized transport, standards packs, or multi-page flows.
 
@@ -112,14 +112,14 @@ The lowest unresolved layer is observed behaviour. The detailed [synthesis and r
 
 ### Now
 
-- Treat [issue #27](https://github.com/abodacs/edu-canvas/issues/27) as a correctness blocker and keep the learner-safe claim out of the UI/docs until it is fixed.
+- Issue #27 is closed (2026-10-21). Re-verify its reported false-success behavior against the release candidate and keep the learner-safe claim out of the UI/docs until that check passes.
 - [Issue #3](https://github.com/abodacs/edu-canvas/issues/3) / [PR #24](https://github.com/abodacs/edu-canvas/pull/24) and [issue #18](https://github.com/abodacs/edu-canvas/issues/18) are delivered; the semantic gate now persists actionable warnings and keeps blocked drafts out of the public projection.
 - Add [issue #28](https://github.com/abodacs/edu-canvas/issues/28)'s `pass` / `warning` / `hard_block` gate before the production preview and Share path.
 - Once the #3 request shape is stable, run the one-day Knowledge Graph pilot alongside #18 and #28: pin the filtered fixture, resolve compact evidence context, validate returned evidence references, and show the teacher evidence card. Any KG or safety `hard_block` stops preview and Share; no external relationship bypasses the safety gate.
 
 ### Next
 
-- Extend the allowlisted preview in [issue #4](https://github.com/abodacs/edu-canvas/issues/4) with the hard safety gate, then make the forward learning story ([#19](https://github.com/abodacs/edu-canvas/issues/19)) visible alongside the shipped reverse prerequisite path ([#17](https://github.com/abodacs/edu-canvas/issues/17)).
+- Extend the allowlisted preview in [issue #4](https://github.com/abodacs/edu-canvas/issues/4) with the hard safety gate, then show brief next-step text ([#19](https://github.com/abodacs/edu-canvas/issues/19)) alongside the shipped reverse prerequisite path ([#17](https://github.com/abodacs/edu-canvas/issues/17)); do not build a separate presentation artifact.
 - Close the trusted teacher-to-student loop through approval/publish ([#5](https://github.com/abodacs/edu-canvas/issues/5)), private grading ([#6](https://github.com/abodacs/edu-canvas/issues/6)), reveal/next activity ([#7](https://github.com/abodacs/edu-canvas/issues/7)), and the teacher/student hardening issues ([#8](https://github.com/abodacs/edu-canvas/issues/8), [#9](https://github.com/abodacs/edu-canvas/issues/9), [#10](https://github.com/abodacs/edu-canvas/issues/10)).
 - Use [issue #11](https://github.com/abodacs/edu-canvas/issues/11) as release proof, not as a substitute for exercising the loop.
 
@@ -149,9 +149,9 @@ Until these tests are run, optimize for one clear, safe, explainable loop rather
 The pilot is successful only if all of the following are true:
 
 - The fixture can be regenerated from the pinned release and its manifest preserves upstream identifiers, relationship types, release, license, and attribution.
-- The selected `4.NF.A.1` request produces a compact evidence context without a network call during the demo.
+- The selected `4.NF.A.1` request produces a compact evidence context through the bounded REST adapter during the demo, or from the pinned fixture when live access fails; the fallback is labeled.
 - A valid generated alignment reference resolves to the fixture; an unknown or mismatched reference is blocked before preview/Share.
 - Missing component coverage produces a visible warning and standards-only fallback rather than a fabricated learning claim.
 - The teacher can inspect the target standard, supporting context, source, and release before approval; the student payload contains no raw graph data.
 - Safety and alignment validation can run in parallel, but the combined result preserves the hard-stop rule.
-- The pilot remains within the one-day timebox and does not delay the core teacher → student loop or issue #27's correctness fix.
+- The pilot remains within the one-day timebox and does not delay the core teacher → student loop or the release-candidate re-verification of #27's reported failure.

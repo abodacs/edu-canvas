@@ -1,6 +1,6 @@
 # Edu-Canvas — OpenAI Build Week Strategy
 
-Last verified: 2026-07-17
+> **Historical document (July 2026).** This plan targeted the OpenAI Build Week / Devpost event and its GPT-5.6/Codex, bilingual, and four-variant-demo requirements. Those requirements do not apply to the Meta AI Developer Hackathon 2026 sprint; the current scope lives in [`docs/hackathon/meta-global-2026/README.md`](docs/hackathon/meta-global-2026/README.md) and [`docs/design/design-doc.md`](docs/design/design-doc.md). In particular: the event model rule, the bilingual demo criteria, and the "four variants as demo stages" presentation below are obsolete — variants are content options, not teaching stages. Kept unedited below for decision history. Last verified: 2026-07-17
 
 This document is the persistent competition overlay for the master PRD. It does not delete production requirements; it defines the smallest credible build and demo that can win the Education track.
 

@@ -164,7 +164,7 @@ The [implementation contracts](design-doc-implementation.md) define request fiel
 
 Use one continuously running Fly.io instance with Supabase Postgres. The server must support server-sent events, or SSE, for preview updates. Keep database access and provider keys on the server.
 
-This design uses process-local request limits. Multiple instances require shared limits first. The older [release runbook](../release-fly-supabase.md) instructs two instances; that instruction conflicts with this demo design. Update the runbook before release.
+This design uses process-local request limits. Multiple instances require shared limits first. The [release runbook](../release-fly-supabase.md) was updated on 2026-10-25 to this single-instance demo with database-backed quotas and process-local burst limits ([#89](https://github.com/abodacs/edu-canvas/issues/89)); deployment details are recorded in [AgDR-0007](../agdr/AgDR-0007-demo-access-and-deployment.md).
 
 Keep the current dependency lockfile. Select and pin any new parser or math renderer during the approved implementation. Reuse the generation interface and retain the fixture path for deterministic checks.
 
@@ -194,9 +194,9 @@ Use Sentry and the existing health/readiness routes. Database records hold autho
 
 Use the [implementation order](design-doc-implementation.md#implementation-order-and-exit-checks). Each unit has dependencies and a visible exit check. Run teacher review as soon as a reference lesson exists.
 
-The [sprint guide](../hackathon/meta-global-2026/README.md#ten-day-execution-budget) owns the existing schedule. The [validation tracker](../hackathon/meta-global-2026/validation-tracker.md) owns observed evidence. The earlier dates remain planning checkpoints: V3 October 27, V6 October 29, V8 October 31, and V11 November 4.
+The [sprint guide](../hackathon/meta-global-2026/README.md#ten-day-execution-budget) owns the existing schedule. The [validation tracker](../hackathon/meta-global-2026/validation-tracker.md) owns observed evidence. The earlier dates remain provisional planning checkpoints pending the capacity decision: V3 October 27, V6 October 29, V8 October 31, and V11 November 4.
 
-The expanded scope has no demonstrated fit within 30 human hours. The companion estimate shows the gap. Keep all agreed features in scope until Abdullah explicitly changes scope or capacity.
+The expanded scope exceeds the earlier 30-hour plan; the companion estimate shows the gap (36–57 hours, UQ3). Keep all agreed features in scope until Abdullah explicitly changes scope or capacity.
 
 ## Complete the remaining evidence and authorization tasks
 

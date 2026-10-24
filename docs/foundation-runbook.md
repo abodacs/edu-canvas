@@ -99,7 +99,7 @@ For teacher lesson generation, the trace is:
 1. `src/routes/demo/$role.tsx` collects prompt, grade, standard, language, and optional difficulty.
 2. `src/server/demo/server-function.ts` validates the server-function payload and resolves the seeded teacher session.
 3. `src/server/generation/service.ts` applies safety checks, idempotency, the one-shot correction rule, and the durable state machine.
-4. `src/server/generation/provider.ts` selects the deterministic fixture in seeded mode or the server-only GPT-5.6 adapter in PostgreSQL mode.
+4. `src/server/generation/provider.ts` selects the deterministic fixture in seeded mode or the server-only generation-provider adapter in PostgreSQL mode.
 5. `src/server/generation/validation.ts` validates the canonical lesson contract and separates warnings from blocking errors.
 6. `src/server/generation/semantic-validation.ts` runs deterministic curriculum and learning-quality validators against the normalized draft and the pinned graph context. It checks answer relationships, graph/path direction, grade, language/RTL, accessibility, explanation quality, and meaningful variant differentiation.
 7. `src/server/generation/projection.ts` strips private relationships before returning the browser-safe draft. Semantic warnings are visible in the public diagnostics; semantic blocks and incomplete retryable validation return no draft.

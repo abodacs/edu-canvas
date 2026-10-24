@@ -75,7 +75,7 @@ Yes. Cover source failure, Jev failure, incomplete extraction, invalid generatio
 
 Select one continuously running Fly.io instance and Supabase Postgres. Keep SSE support. Multiple instances require shared request limits first.
 
-The existing release runbook directs two instances. Reconcile that conflict before deployment. If Fly.io cannot meet the requirements, evaluate another persistent host against the same checks. Hosting availability remains untested.
+The release runbook was reconciled to this decision on 2026-10-25: it now directs one instance with database-backed quotas and process-local burst limits ([#89](https://github.com/abodacs/edu-canvas/issues/89)). If Fly.io cannot meet the requirements, evaluate another persistent host against the same checks. Hosting availability remains untested.
 
 ### Q13. Should the 30-second p95 target remain?
 
