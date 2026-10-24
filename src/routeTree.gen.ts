@@ -10,9 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DemoRoleRouteImport } from './routes/demo/$role'
-import { Route as ApiReadinessRouteImport } from './routes/api/readiness'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as ApiReadinessRouteImport } from './routes/api/readiness'
+import { Route as DemoRoleRouteImport } from './routes/demo/$role'
 import { Route as ApiA2uiPreviewRouteImport } from './routes/api/a2ui/preview'
 
 const IndexRoute = IndexRouteImport.update({
@@ -20,9 +20,9 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoRoleRoute = DemoRoleRouteImport.update({
-  id: '/demo/$role',
-  path: '/demo/$role',
+const ApiHealthRoute = ApiHealthRouteImport.update({
+  id: '/api/health',
+  path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiReadinessRoute = ApiReadinessRouteImport.update({
@@ -30,9 +30,9 @@ const ApiReadinessRoute = ApiReadinessRouteImport.update({
   path: '/api/readiness',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiHealthRoute = ApiHealthRouteImport.update({
-  id: '/api/health',
-  path: '/api/health',
+const DemoRoleRoute = DemoRoleRouteImport.update({
+  id: '/demo/$role',
+  path: '/demo/$role',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiA2uiPreviewRoute = ApiA2uiPreviewRouteImport.update({
@@ -96,11 +96,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo/$role': {
-      id: '/demo/$role'
-      path: '/demo/$role'
-      fullPath: '/demo/$role'
-      preLoaderRoute: typeof DemoRoleRouteImport
+    '/api/health': {
+      id: '/api/health'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/readiness': {
@@ -110,11 +110,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiReadinessRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/health': {
-      id: '/api/health'
-      path: '/api/health'
-      fullPath: '/api/health'
-      preLoaderRoute: typeof ApiHealthRouteImport
+    '/demo/$role': {
+      id: '/demo/$role'
+      path: '/demo/$role'
+      fullPath: '/demo/$role'
+      preLoaderRoute: typeof DemoRoleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/a2ui/preview': {

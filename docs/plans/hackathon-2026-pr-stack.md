@@ -30,9 +30,9 @@ The event scope is English, Common Core `4.NF.A.1`, teacher-supervised use, and 
 
 Keep worked example, guided practice, and independent check as distinct instructional stages. The existing four variants remain content options; they are not four stages. Record the first independent response separately from hints and retries. Report provisional evidence rather than mastery or a diagnosis.
 
-Use the later [design decisions](../../.worktrees/hackthon-docs/engineering/design-doc-questions.md) to reconcile earlier documents. Incomplete extraction stops generation. Jev automation requires the specified reviewed evaluation. These are technical design defaults; verification and implementation approval remain outstanding.
+Use the later [design decisions](../design/design-doc-questions.md) to reconcile earlier documents. Incomplete extraction stops generation. Jev automation requires the specified reviewed evaluation. These are technical design defaults; verification and implementation approval remain outstanding.
 
-The existing [UI implementation gate](../../.worktrees/hackthon-docs/ui/README.md#implementation-gate) requires explicit build approval and Abdullah's verification skills for content, pedagogy, rendering, and interaction. Documentation migration and tracker planning can proceed. Application changes, prototypes, dependency installation, and integration probes wait for that gate. Record capacity reconciliation before committing to delivery dates; retain the full feature target unless Abdullah explicitly changes it.
+The existing [UI implementation gate](../product/teacher-ui.md#implementation-gate) requires explicit build approval and Abdullah's verification skills for content, pedagogy, rendering, and interaction. Documentation migration and tracker planning can proceed. Application changes, prototypes, dependency installation, and integration probes wait for that gate. Record capacity reconciliation before committing to delivery dates; retain the full feature target unless Abdullah explicitly changes it.
 
 ## PR 01: put the project documents in tracked paths
 

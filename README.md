@@ -29,6 +29,8 @@ Adaptive, bilingual (**English / Arabic, RTL**) visual-learning platform for **G
 | --- | --- |
 | `PRD_GRILL_LOG.md` | 170-question product decision log — the spec |
 | `DEVPOST_WINNING_STRATEGY.md` | Competition cut + 48-hour execution plan |
+| [`ROADMAP.md`](ROADMAP.md) | Product direction, delivery order, and validation gates (imported hackathon-2026 roadmap) |
+| [`docs/README.md`](docs/README.md) | Documentation index and document ownership (imported hackathon-2026 corpus) |
 | [`docs/plans/hackathon-2026-pr-stack.md`](docs/plans/hackathon-2026-pr-stack.md) | Proposed hackathon document import, issue/Projects reconciliation, PR stack, and full product lifecycle roadmap |
 | `docs/product-strategy.md` | North-star outcome, issue-driven loop, and seven-layer audit |
 | `docs/observed-behaviour.md` | Evidence boundary, job stories, and research plan |
