@@ -97,36 +97,40 @@ const safeIdentifier = (value: string | undefined): string | undefined =>
 
 const cloneSemanticValidationInput = (
   input: SemanticValidationInput
-): SemanticValidationInput => ({
-  draft: {
-    variants: input.draft.variants.map((variant) => ({
-      ...variant,
-      sourceItems: variant.sourceItems.map((item) => ({ ...item })),
-      targetItems: variant.targetItems.map((item) => ({ ...item })),
-      distractorItems: variant.distractorItems.map((item) => ({ ...item })),
-      // Advisory agents review learning quality, not private answer keys.
-      relationships: [],
-      hints: [...variant.hints],
-      feedback: { ...variant.feedback },
-      languageMetadata: { ...variant.languageMetadata },
-      accessibilityMetadata: { ...variant.accessibilityMetadata },
-    })),
-  },
-  context: {
-    ...input.context,
-    nodes: input.context.nodes.map((node) => ({ ...node })),
-    edges: input.context.edges.map((edge) => ({ ...edge })),
-  },
-  ...(input.path && {
-    path: {
-      ...input.path,
-      nodeIds: [...input.path.nodeIds],
-      ...(input.path.screenPurposeIds && {
-        screenPurposeIds: [...input.path.screenPurposeIds],
+): SemanticValidationInput => {
+  return {
+    draft: {
+      variants: input.draft.variants.map((variant) => {
+        return {
+          ...variant,
+          sourceItems: variant.sourceItems.map((item) => ({ ...item })),
+          targetItems: variant.targetItems.map((item) => ({ ...item })),
+          distractorItems: variant.distractorItems.map((item) => ({ ...item })),
+          // Advisory agents review learning quality, not private answer keys.
+          relationships: [],
+          hints: [...variant.hints],
+          feedback: { ...variant.feedback },
+          languageMetadata: { ...variant.languageMetadata },
+          accessibilityMetadata: { ...variant.accessibilityMetadata },
+        };
       }),
     },
-  }),
-});
+    context: {
+      ...input.context,
+      nodes: input.context.nodes.map((node) => ({ ...node })),
+      edges: input.context.edges.map((edge) => ({ ...edge })),
+    },
+    ...(input.path && {
+      path: {
+        ...input.path,
+        nodeIds: [...input.path.nodeIds],
+        ...(input.path.screenPurposeIds && {
+          screenPurposeIds: [...input.path.screenPurposeIds],
+        }),
+      },
+    }),
+  };
+};
 
 const recommendationFindings = (
   agent: SemanticValidationAgent,
