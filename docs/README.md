@@ -17,6 +17,8 @@ Research, ideas, and references grouped by topic, imported from the hackathon-20
 | [Implementation contracts](design/design-doc-implementation.md) | Records, deadlines, commands, and acceptance checks AC01–AC24 |
 | [Decision record](design/design-doc-questions.md) | Answers to design questions Q1–Q20 and UQ1–UQ5 |
 | [Reading guide](design/design-doc-reading-guide.md) | Terms and writing rules for the design documents |
+| [Code standards](engineering/code-standards.md) | Coding and review rules, Ultracite commands, and documentation formatting |
+| [Coding patterns](engineering/coding-patterns.md) | Seven engineering patterns adapted to Edu-Canvas domain rules and boundaries |
 | [Software factory](engineering/software-factory.md) | Dated engineering-method notes; personal tooling sections are context, not contract |
 | [Research index](research/README.md) | Registry of locally retained reference materials; raw research notes stay untracked |
 
