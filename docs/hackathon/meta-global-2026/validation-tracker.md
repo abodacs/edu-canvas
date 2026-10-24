@@ -1,6 +1,6 @@
 # Validation tracker
 
-Updated 2026-10-24. Working evidence record for the [roadmap](../../../ROADMAP.md), [sprint](README.md), and [risk review](README.md#risks-and-decision-rules). All checks start pending: writing this tracker does not establish that a test ran or an implementation exists.
+Updated 2026-10-24; reframed 2026-10-25. Working evidence record for the [roadmap](../../../ROADMAP.md), [sprint](README.md), and [risk review](README.md#risks-and-decision-rules). All checks start pending: writing this tracker does not establish that a test ran or an implementation exists. Event evidence here feeds the production lifecycle gates; V12 is the production value gate — repeat teacher use, effort saved, and adoption path — and outranks every event award.
 
 ## Evidence gates
 

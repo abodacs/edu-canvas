@@ -4,13 +4,13 @@
 
 ## North-star outcome
 
-Prove one trustworthy teacher-to-student loop in under three minutes:
+Build one trustworthy teacher-to-student loop that teachers return to because it costs less total effort than their current method and keeps them in control:
 
 ```text
 teacher's plain-language idea → safe visual lesson → student understanding → justified next step
 ```
 
-The competition outcome is a judge seeing that loop work end to end. It is not a production KPI. The initial wedge (2026-07-18) was a bilingual (English/Arabic, including RTL) equivalent-fractions experience for Grades 3–6, beginning with Common Core Math. The hackathon-2026 release is English-only; Arabic is a deferred product goal ([decision C3](design/design-doc-questions.md), 2026-10-24).
+The product outcome is measured value, not a showcase: a teacher prepares, reviews, and follows up in less total time than the current method, can explain every learning decision, and can correct or reject any generated content. The first external validation of the loop is the hackathon event (October 26 – November 4, 2026); the five-teacher value gate and the production path follow it. The initial wedge (2026-07-18) was a bilingual (English/Arabic, including RTL) equivalent-fractions experience for Grades 3–6, beginning with Common Core Math. The current release is English-only; Arabic is a deferred product goal ([decision C3](design/design-doc-questions.md), 2026-10-24).
 
 The product promise is deliberately narrow:
 
@@ -56,7 +56,7 @@ The hard safety gate is cross-cutting: a `hard_block` keeps unsafe content out o
 | A2UI/semantic DOM as the core interaction contract | Generated HTML/JavaScript and canvas-only accessibility |
 | A bounded prerequisite graph with a visible reason for the next activity | An opaque “personalization” claim with no deterministic trace |
 | Server-only answer keys, mastery, and permissions | Client-submitted scores or model-based grading of student identity/images |
-| Synthetic data and seeded accounts for the demo | Real student data before DPA, residency, security, and consent gates |
+| Synthetic data and seeded accounts until the consent and residency gates pass | Real student data before DPA, residency, security, and consent approval |
 | A pinned Learning Commons Knowledge Graph slice for evidence-grounded drafting | Live API/MCP dependency, a full imported graph, or treating external progression edges as hard prerequisites |
 
 The strategic moat is trust plus learning clarity: the teacher can see what will happen, the student can understand why it happened, and the system cannot bypass the safety boundary for speed.
@@ -88,7 +88,7 @@ It grounds the draft and makes the recommendation explainable; it does not diagn
 | Ownership | Edu-Canvas retains the local graph, approval policy, and adaptation decision; the external graph supplies evidence and provenance |
 | Timebox | One focused workday (roughly 6–8 hours); no schema migration, full graph import, remote dependency, or student graph UI |
 
-The judge-visible moment is a compact evidence card beside the four generated variants: the teacher can see which standard the activity targets, which prior learning supports it, where that evidence came from, and what the system will do next. If the fixture cannot prove a component mapping, the card says so and falls back to standards-only alignment rather than inventing certainty.
+The teacher-visible value is a compact evidence card beside the four generated variants: the teacher can see which standard the activity targets, which prior learning supports it, where that evidence came from, and what the system will do next. If the fixture cannot prove a component mapping, the card says so and falls back to standards-only alignment rather than inventing certainty.
 
 This pilot is a thin vertical extension across `#3 Generate draft → pinned KG context → #18 Validate curriculum + learning quality`, while `#28 Hard safety gate` runs in parallel; both results must pass before `#4 Allowlisted preview`. It must not delay the core teacher-to-student loop. Generalized standards packs, source-aware persistence, broader coverage, and live synchronization remain issue #30 work.
 
@@ -98,10 +98,10 @@ This audit used the repository and issue graph, not direct user research. “Par
 
 | Layer | Current state | What is known | What remains unknown or risky |
 | --- | --- | --- | --- |
-| Observed behaviour | **Assumed** | Issue reports, browser QA, and the demo brief describe a teacher authoring job and a student matching flow. | No teacher/student interviews, activation data, or moderated usability evidence. This is the current bottleneck. |
+| Observed behaviour | **Assumed** | Issue reports, browser QA, and the product brief describe a teacher authoring job and a student matching flow. | No teacher/student interviews, activation data, or moderated usability evidence. This is the current bottleneck. |
 | Domain | **Partial** | Equivalent fractions, prerequisite nodes, activity versions, immutable packs, attempts, tenant boundaries, A2UI catalog rules, and a bounded external evidence mapping are clear for the seeded slice. | External CASE UUIDs and local IDs still need a deterministic mapping; Learning Component coverage and progression semantics do not justify a full Grade 3–6 graph claim. |
 | User needs | **Partial** | Teachers need fast preparation with control and reasons; students need a focused activity, feedback, and a next step. | These needs are inferred from the brief and issues rather than observed in context. |
-| Product and service strategy | **Partial** | The wedge, trust boundary, evidence-grounding boundary, bounded personalization claim, competition outcome, and issue sequence are now explicit in this document. | The evidence layer still needs a small implementation proof and user testing; it must not distract from the open preview-correctness blocker. |
+| Product and service strategy | **Partial** | The wedge, trust boundary, evidence-grounding boundary, bounded personalization claim, value outcome, and issue sequence are now explicit in this document. | The evidence layer still needs a small implementation proof and user testing; it must not distract from the open preview-correctness blocker. |
 | Conceptual model | **Partial** | Draft, validator result, alignment evidence, source manifest, activity pack, immutable version, attempt, prerequisite path, story beats, and next activity are emerging as the shared language. | Shared semantics for page state and bounded multi-page flows remain open in [issue #31](https://github.com/abodacs/edu-canvas/issues/31). |
 | Interaction flow | **Partial** | The landing story, issue #3 generation/recovery seam, and issue #4 teacher preview seam are exercised, and the target teacher → student loop is described in [the walking skeleton](walking-skeleton.md). | Curriculum validation, hard safety, approval, grading, and adaptation still need to become one exercised flow across [issues #18 and #28](https://github.com/abodacs/edu-canvas/issues) and [#4–#11](https://github.com/abodacs/edu-canvas/issues). |
 | Surface | **Partial, strongest slice** | PR #25 establishes a calm, responsive, semantic, reduced-motion landing surface; the planned teacher evidence card keeps provenance out of the student task. | Issue #27 (closed 2026-10-21) reported a distractor-only selection that could produce a success reveal in the landing preview; re-verify against the release candidate before any learner-safe claim. |
@@ -149,7 +149,7 @@ Until these tests are run, optimize for one clear, safe, explainable loop rather
 The pilot is successful only if all of the following are true:
 
 - The fixture can be regenerated from the pinned release and its manifest preserves upstream identifiers, relationship types, release, license, and attribution.
-- The selected `4.NF.A.1` request produces a compact evidence context through the bounded REST adapter during the demo, or from the pinned fixture when live access fails; the fallback is labeled.
+- The selected `4.NF.A.1` request produces a compact evidence context through the bounded REST adapter at run time, or from the pinned fixture when live access fails; the fallback is labeled.
 - A valid generated alignment reference resolves to the fixture; an unknown or mismatched reference is blocked before preview/Share.
 - Missing component coverage produces a visible warning and standards-only fallback rather than a fabricated learning claim.
 - The teacher can inspect the target standard, supporting context, source, and release before approval; the student payload contains no raw graph data.

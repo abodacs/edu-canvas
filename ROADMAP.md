@@ -1,6 +1,6 @@
-# Edu-Canvas roadmap: prove one useful teaching loop
+# Edu-Canvas roadmap: build one useful teaching loop
 
-Revised 2026-10-24 from the education notes (retained in the local notes workspace, `.worktrees/hackthon-docs/education/`), the existing product strategy, and the previous hackathon plan. This is the proposed product direction and delivery order for this notes workspace; it does not claim implementation is complete or change GitHub issue status. The [hackathon plan](docs/hackathon/meta-global-2026/README.md) translates it into the available sprint.
+Revised 2026-10-24 from the education notes (retained in the local notes workspace, `.worktrees/hackthon-docs/education/`), the existing product strategy, and the previous hackathon plan; reframed 2026-10-25 for production use ([#89](https://github.com/abodacs/edu-canvas/issues/89)). This is the production direction: product outcomes, delivery order, and lifecycle gates from first use through classroom validation. It does not claim implementation is complete or change GitHub issue status. The [hackathon plan](docs/hackathon/meta-global-2026/README.md) runs the October 26 – November 4, 2026 event as the first external validation milestone on this path — the event proves the loop publicly; it is not the product goal.
 
 **Latest scope update:** Abdullah selected the full first-version [teacher UI feature set](docs/product/teacher-ui.md) for the hackathon: Learning Commons grounding, evaluated Jev matching, PDF/TXT/MD recovery, source visibility, interactive fractions, rendered LaTeX, and section revision. Those explicit decisions supersede earlier exclusions of connected-source access. The [priority order](docs/product/delivery-priorities.md) is proposed; the preliminary estimate is 36–57 human hours ([UQ3](docs/design/design-doc-questions.md#answer-the-five-open-ui-design-topics)) versus the earlier 30-hour plan, and the capacity decision is pending. Ask for implementation approval and the verification skills before building. Do not silently cut agreed features to preserve an older schedule.
 
@@ -101,9 +101,9 @@ Make the model draft the bounded sequence, not invent its pedagogy or execute ar
 
 **Gate:** known bad cases are rejected or visibly flagged; teacher corrections persist; generation failure preserves the request and offers recovery. For the hackathon, prove a real allowed-model response reaches validation and preview early, then complete and evaluate generation here. Authentication alone is not an integration proof. A failed provider experiment must not drive a new product architecture.
 
-### 6. Prove the demo, then test classroom use separately
+### 6. Prove the loop publicly, then test classroom use separately
 
-For the event, demonstrate a real model draft, teacher approval, an incorrect synthetic attempt, useful feedback, an independent check, and the teacher’s next decision. Identify any seeded content or simulated attempts clearly.
+For the event milestone, demonstrate a real model draft, teacher approval, an incorrect synthetic attempt, useful feedback, an independent check, and the teacher’s next decision. Identify any seeded content or simulated attempts clearly. The same boundaries carry into production; only the audience and data policy change.
 
 **Demo gate:** repeatable end-to-end run in under three minutes, core boundary checks passing, and access/cost guards before public hosting. Use the [current demo script](docs/hackathon/meta-global-2026/demo-script.md); verify independent access and ask unfamiliar viewers to describe the distinctive action (V9/V10). A recorded fallback is labeled as a recording; it does not imply a live service exists.
 

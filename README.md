@@ -2,7 +2,7 @@
 
 > Turn a teacher's plain-English request into a safe, standards-aligned visual matching lesson in minutes — then give a student an adaptive "aha" moment. **Teachers approve every variant; AI never grades or publishes unreviewed content.**
 
-Adaptive visual-learning platform for **Grades 3–6**, starting with **Common Core Math**. Current sprint: **Meta AI Developer Hackathon 2026** — English-only release; Arabic is a deferred product goal. July 2026 OpenAI Build Week material is historical context.
+Adaptive visual-learning platform for **Grades 3–6**, starting with **Common Core Math**. This is a production product: the goal is teachers who return because preparation, review, and follow-up take less total effort with full control. The **Meta AI Developer Hackathon 2026** (October 26 – November 4) is the first external validation milestone on that path — English-only release; Arabic is a deferred product goal.
 
 ## Why it's different
 
@@ -27,8 +27,6 @@ Adaptive visual-learning platform for **Grades 3–6**, starting with **Common C
 
 | Path | What |
 | --- | --- |
-| `PRD_GRILL_LOG.md` | Historical (July 2026): 170-question product decision log; bilingual and GPT-5.6 answers superseded by `docs/design/design-doc-questions.md` |
-| `DEVPOST_WINNING_STRATEGY.md` | Historical (July 2026): OpenAI Build Week competition cut + 48-hour execution plan |
 | [`ROADMAP.md`](ROADMAP.md) | Product direction, delivery order, and validation gates (imported hackathon-2026 roadmap) |
 | [`docs/README.md`](docs/README.md) | Documentation index and document ownership (imported hackathon-2026 corpus) |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Local setup, issue reports, commit messages, and verification |
@@ -36,7 +34,7 @@ Adaptive visual-learning platform for **Grades 3–6**, starting with **Common C
 | [`docs/plans/hackathon-2026-pr-stack.md`](docs/plans/hackathon-2026-pr-stack.md) | Proposed hackathon document import, issue/Projects reconciliation, PR stack, and full product lifecycle roadmap |
 | `docs/product-strategy.md` | North-star outcome, issue-driven loop, and seven-layer audit |
 | `docs/observed-behaviour.md` | Evidence boundary, job stories, and research plan |
-| `docs/walking-skeleton.md` | The thinnest end-to-end demo slice (the build contract) |
+| `docs/walking-skeleton.md` | The thinnest end-to-end slice (the acceptance contract) |
 | `docs/foundation-runbook.md` | Operator/developer setup, redeploy, and handoff checks for issue #2 |
 | `docs/release-fly-supabase.md` | Fly.io + Supabase Postgres release procedure and launch gates |
 | `docs/architecture-harness.md` | Guardrails for state ownership, layer imports, and contract drift |

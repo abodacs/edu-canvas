@@ -2,7 +2,7 @@
 
 Raw research notes, brainstorms, and archived ideas were imported on 2026-10-24 with the hackathon-2026 document migration ([import plan](../plans/hackathon-2026-pr-stack.md), [change record](../plans/hackathon-2026-import-changes.md)); they are inputs and background, not current requirements, and their claims were not re-verified during import.
 
-The raw research notes (`education/`, `ui/`, `engineering/`, and `design/` `.txt` files) were removed from the repository the same day. They are retained, byte-identical, in the local notes workspace (`.worktrees/hackthon-docs/`). The [hackathon archive](../hackathon/meta-global-2026/archive/ideas.txt) — an explicitly unverified project-idea brainstorm — stays tracked under `docs/hackathon/`.
+The raw research notes (`education/`, `ui/`, `engineering/`, and `design/` `.txt` files) were removed from the repository the same day. They are retained, byte-identical, in the local notes workspace (`.worktrees/hackthon-docs/`). The hackathon idea-brainstorm archive was removed from the repository on 2026-10-25 and stays only in the local notes workspace.
 
 ## Local reference materials
 

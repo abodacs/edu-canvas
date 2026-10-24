@@ -2,7 +2,7 @@
 
 Revised 2026-10-24; reconciled 2026-10-25 with the [technical design](../../design/design-doc.md) ([#89](https://github.com/abodacs/edu-canvas/issues/89)). This replaces the earlier model-first sprint order with the [first-principles roadmap](../../../ROADMAP.md). English-only equivalent fractions and the existing architecture remain the working constraints. Capacity: the preliminary estimate for the full scope is 36–57 human hours ([UQ3](../../design/design-doc-questions.md#answer-the-five-open-ui-design-topics)); the earlier 30-hour calendar below is provisional and awaits Abdullah's capacity decision (E3). No implementation or submission status is asserted here.
 
-This is the source of truth for event scope, execution decisions, schedule, risks, and proposed experiments. The [project roadmap](../../../ROADMAP.md) defines the broader product direction.
+This is the source of truth for event scope, execution decisions, schedule, risks, and proposed experiments. The [project roadmap](../../../ROADMAP.md) owns the production direction; this event is its first external validation milestone. Build for the product, not the showcase: capabilities built for the event must carry into production use (protected sessions, quotas, real recovery paths), and anything that only works as a stage prop is cut.
 
 **Latest owner scope decision (UI interview Q29):** target the full agreed [teacher UI feature set](../../product/teacher-ui.md), including Learning Commons grounding, evaluated Jev matching, upload/recovery, source panel, interactive fractions with correct LaTeX, and section revision. [Product priorities](../../product/delivery-priorities.md) proposes the order. The 30-hour schedule below predates this expansion; the design estimate for the full scope is 36–57 hours (UQ3). Inventory and estimate remaining work, then ask Abdullah to resolve the capacity conflict (E3) before committing to any checkpoint; earlier cut rules do not authorize silently removing these features. The UI [implementation gate](../../product/teacher-ui.md#implementation-gate) applies before implementation and integration probes.
 
@@ -14,7 +14,7 @@ This is the source of truth for event scope, execution decisions, schedule, risk
 | [Teacher UI decisions](../../product/teacher-ui.md) | Latest UI requirements, provider findings, approval gate, and open decisions |
 | [Product priorities](../../product/delivery-priorities.md) | Proposed full-scope sequence, product/ticketing skill recommendations, and writing guidance |
 
-The early integration proof, specialist-tool comparison, judge-comprehension test, and protected failure buffer fit inside the earlier 30-hour plan; against the 36–57-hour estimate (UQ3) they require the capacity decision (E3) first. All validation remains pending until evidence is recorded in the tracker.
+The early integration proof, specialist-tool comparison, reviewer-comprehension test, and protected failure buffer fit inside the earlier 30-hour plan; against the 36–57-hour estimate (UQ3) they require the capacity decision (E3) first. All validation remains pending until evidence is recorded in the tracker.
 
 ## Demonstrate one useful teaching loop
 
@@ -125,7 +125,7 @@ ASSISTments publicly offers curriculum-aligned practice, immediate feedback, and
 
 ### 2. The event story lacks a memorable, visible difference
 
-**Risk:** trust boundaries may be invisible in a short presentation. The judge-comprehension test is planned under V10; no results are recorded.
+**Risk:** trust boundaries may be invisible in a short presentation. The reviewer-comprehension test is planned under V10; no results are recorded.
 
 **Probe:** show a 60-second rough recording to three people unfamiliar with the project. Ask each to describe the user, problem, distinctive action, and what they actually saw work. Avoid teaching them the answer first.
 

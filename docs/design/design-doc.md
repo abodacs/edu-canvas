@@ -7,11 +7,12 @@ This design is for the engineer who will build the lesson workflow. Start with t
 | Field | Value |
 | --- | --- |
 | Owner | Abdullah |
-| Revision | 2026-10-24 |
+| Revision | 2026-10-24; production framing 2026-10-25 ([#89](https://github.com/abodacs/edu-canvas/issues/89)) |
 | Design status | Questions answered; technical choices specified |
 | Build status | Awaiting the existing UI approval and verification skills |
 | Evidence status | Code inspected; new service calls and acceptance checks remain untested |
-| Planned demonstration | Under three minutes, by November 4, 2026 |
+| Product goal | Teachers return: lower total preparation/review effort with full teacher control (value gate V12) |
+| Planned milestone | Working loop demonstrated under three minutes by November 4, 2026 |
 
 The [UI implementation gate](../product/teacher-ui.md#implementation-gate) still applies. This document prepares implementation; it does not record approval that has not occurred.
 
@@ -160,29 +161,40 @@ Supabase Postgres is an external storage boundary. The server accesses Postgres 
 
 The [implementation contracts](design-doc-implementation.md) define request fields, state changes, errors, and acceptance checks for these rules.
 
-## Keep the deployment small and controlled
+## Deployment: milestone configuration and production path
 
-Use one continuously running Fly.io instance with Supabase Postgres. The server must support server-sent events, or SSE, for preview updates. Keep database access and provider keys on the server.
+This design serves one product in two stages. The same boundaries apply in both; the operational shape differs.
 
-This design uses process-local request limits. Multiple instances require shared limits first. The [release runbook](../release-fly-supabase.md) was updated on 2026-10-25 to this single-instance demo with database-backed quotas and process-local burst limits ([#89](https://github.com/abodacs/edu-canvas/issues/89)); deployment details are recorded in [AgDR-0007](../agdr/AgDR-0007-demo-access-and-deployment.md).
+**Event milestone (October 26 – November 4, 2026).** One continuously running Fly.io instance with Supabase Postgres, SSE preview delivery, and database-backed quotas with process-local burst limits. Database access and provider keys stay on the server. This shape is chosen for controllability during validation, not as the production architecture ([AgDR-0007](../agdr/AgDR-0007-demo-access-and-deployment.md)).
+
+**Production path (required before real users).** Each item below is a real requirement, none of it satisfied by the milestone configuration:
+
+- Protected authentication for every user; invitation credentials and seeded identities end before public availability ([Q16](design-doc-questions.md)).
+- Shared request-limit state (or equivalent) before horizontal scale; the process-local burst limits of the milestone cannot serve multiple instances.
+- Least-privilege database role, backups with restore evidence, alerting, and TLS/domain configuration.
+- DPA, EU-residency, security review, and consent handling before any real student data ([root README](../../README.md#safety-boundaries-non-negotiable-even-under-deadline-pressure)).
+- A production seed/data policy separate from synthetic validation data.
+- The production reference targets (10-second draft p95, 500-millisecond render p95, 99.9% published availability) measured, not asserted.
+
+The [release runbook](../release-fly-supabase.md) owns both procedures and keeps the milestone/production split explicit.
 
 Keep the current dependency lockfile. Select and pin any new parser or math renderer during the approved implementation. Reuse the generation interface and retain the fixture path for deterministic checks.
 
-Only synthetic learner data and approved demonstration materials enter this demo. Upload access requires a protected teacher session. Synthetic data alone does not settle provider terms, upload rights, or event eligibility.
+Only synthetic learner data and approved materials enter the milestone deployment. Upload access requires a protected teacher session. Synthetic data alone does not settle provider terms, upload rights, or event eligibility.
 
-## Measure the demonstration separately from production targets
+## Measure the milestone separately from production targets
 
 A service level objective, or SLO, is a measurable service target. These are proposed targets, not observed results.
 
-| Measurement | Demo target | Evidence |
+| Measurement | Milestone target | Evidence |
 | --- | --- | --- |
-| Complete demonstration | Under 180 seconds | Three consecutive rehearsals |
+| Complete milestone loop | Under 180 seconds | Three consecutive rehearsals |
 | Live generation to complete preview | p95 at most 30 seconds | At least 20 sequential requests after source confirmation |
 | Grounding and matching | Report separately | Duration, failures, and recovery results |
-| Demo access | Protected URL works during judging | Independent access check and manual checks |
+| Milestone access | Protected URL works for reviewers | Independent access check and manual checks |
 | Public usage | Access and cost limits active | Rejection and quota checks |
 
-For 20 durations, sort values from shortest to longest. The nineteenth value is the nearest-rank p95. Report sample size and failures alongside the result. Twenty requests provide a demo observation, not a production reliability claim.
+For 20 durations, sort values from shortest to longest. The nineteenth value is the nearest-rank p95. Report sample size and failures alongside the result. Twenty requests provide a milestone observation, not a production reliability claim.
 
 Earlier production targets remain reference values: 10-second draft p95, 500-millisecond render p95, and 99.9% published availability. This sprint does not establish those targets.
 

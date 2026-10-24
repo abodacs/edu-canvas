@@ -14,7 +14,7 @@
 
 ### Spoofing
 
-- **S1 — forged student/teacher identity.** Mitigations: invite-only + class-code (Q64/65); email magic-link + MFA for adults (Q74/75); school-authorization + consent before minor activation (Q76). _Demo uses seeded judge accounts; real auth deferred — document as a known demo gap._
+- **S1 — forged student/teacher identity.** Mitigations: invite-only + class-code (Q64/65); email magic-link + MFA for adults (Q74/75); school-authorization + consent before minor activation (Q76). _Validation-milestone deployments use seeded accounts with invitation sessions; production authentication is a release-runbook requirement, documented as an open gap until met._
 - **S2 — model output spoofing a valid lesson.** Mitigations: server validates the draft (Q77); A2UI compiler rejects unknowns (AgDR-0001).
 
 ### Tampering
