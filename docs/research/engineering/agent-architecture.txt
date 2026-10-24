@@ -1,0 +1,147 @@
+not against skills themselves or steering the agents, but opting for a weaker mechanism when one could deterministically enforce steering and close error paths. 100% agree!
+
+Dev tooling should enforce as many standards as possible, with skills and agents.md being only the glue or workflow guidance that can't be expressed with standard measures.
+
+I still see the value of educating our agents about our principles (ex. vertical slicing x horizontal layers, DI, type-safety), but the enforcement should come from them.
+
+ you’ve tried to scale a software factory or simply merge more agent PRs, you’ve probably seen what happens when the rate of change outpaces the architecture. Fallbacks on fallbacks get added, slop emerges, and each coding task makes the architecture even messier.
+Lately, a number of open-source skill packages and prompts have emerged to help agents make better coding decisions.
+These skills can be helpful, but they can also hide the fact that the application was probably never architected for agents in the first place. On top of that, the skills themselves are hard to maintain, often become outdated by model updates, and can obscure how capable models already are without them.
+So here’s the challenge: what if you architected your application so the models and agents working on it didn’t need skills or any special instructions to extend it properly?
+For anyone building software, that should be the bar now. If you want to achieve high-velocity development with agents, you can’t build software the way you used to. And you can’t expect a bunch of skills to bail you out.
+The goal is to encode more of the application’s architectural decisions into the application itself. The codebase should guide agents toward the right implementation automatically and make it difficult or impossible for them to introduce the wrong patterns.
+Let’s take a look at some of the best ways to do this.
+Canonical Implementations
+A number of these approaches have been discussed by Lauren Tan (@poteto) who architected Dune, the architecture behind the Grok Bot application layer. She points out that agents tend to copy patterns they encounter and take the shortest path to completing a task. Dune deliberately shapes those patterns in a way they are all but guaranteed to be copied by agents.
+When asked to add functionality, an agent searches for something similar, inspects how it works, and reproduces the pattern. This suggests that if you design your code correctly, you ensure its success in perpetuity.
+The implication is that every implementation in the repository is potentially an architectural example. If there are four ways to accomplish the same thing, the agent has four patterns to choose from. If there is one obvious way repeated consistently throughout the codebase, the decision has largely been made for it.
+This makes a strong case for canonical implementations inside your codebase. The same structure, naming, interfaces, error handling, and testing patterns should appear consistently across similar parts of the application. 
+It also makes old code more dangerous. Deprecated implementations, temporary workarounds, and one-off abstractions can all become patterns an agent discovers and reproduces. Cleaning them up is essential because it removes bad examples from the agent’s path.
+Vertical Slices
+Many applications are still organized by technical responsibility. Controllers live in one directory, services in another, database models somewhere else, and tests somewhere else still. That may be perfectly understandable to a developer who already knows the application, but it forces an agent to reconstruct a feature from files scattered across the repository.
+Instead, organize as much of the application as possible around vertical slices and keep the code required to understand each feature together. A structure might look something like this:
+plaintext
+src/
+  features/
+    invoices/
+      api.ts
+      schema.ts
+      service.ts
+      repository.ts
+      components/
+      tests/
+      index.ts
+    customers/
+      api.ts
+      schema.ts
+      service.ts
+      repository.ts
+      components/
+      tests/
+      index.ts
+An agent working on invoices now has most of what it needs directly in front of it. It can inspect the API, schema, persistence logic, components, and tests without searching across the entire application. When it needs to create a new feature, neighboring slices also provide obvious patterns to copy.
+This pattern is starting to appear explicitly in architecture designed around coding agents. ⁠Basti Ortiz argues for vertical slices because they let agents traverse a repository through narrow, self-contained feature modules instead of repeatedly searching across unrelated technical layers. 
+OpenAI’s ⁠agent-first application architecture follows a related approach by organizing code into business domains with predictable internal layers and tightly controlled dependencies. Dune also organizes related feature code together, giving agents a predictable and localized structure to work from.
+Constrained Extension Points
+Applications are often designed to give developers flexibility in how they implement new functionality. The same task might be accomplished by accessing the database directly, calling an internal service, or introducing another abstraction. An experienced developer may understand which path fits the architecture, but an agent has to make that decision from whatever code and context it encounters.
+A better approach is to give agents narrow, typed extension points that remove as many of those decisions as possible. For example, invoice functionality could receive a repository and event interface rather than having access to the underlying infrastructure:
+typescript
+interface InvoiceRepository {
+  find(id: InvoiceId): Promise<Invoice | null>;
+  save(invoice: Invoice): Promise<void>;
+}
+
+interface InvoiceDependencies {
+  repository: InvoiceRepository;
+  events: InvoiceEvents;
+}
+The agent can implement invoice behavior without creating another database client or inventing another persistence pattern. For something like tenant isolation, the repository itself could require tenant context while unrestricted database access remains unavailable to the feature.
+OpenAI uses this pattern in its agent-first application architecture. Every business domain has a fixed set of layers with controlled dependency directions. Cross-cutting capabilities such as authentication, telemetry, connectors, and feature flags enter through a single provider interface. Anything outside the permitted paths is rejected mechanically.
+Stripe built Sorbet partly to encourage modular code with explicit public interfaces and make relationships across its large Ruby codebase checkable in code. Strong types are particularly useful here because they reduce how much of the intended architecture an agent has to infer from surrounding code.
+The goal is to make these architectural choices once rather than asking every agent to make them again and again. 
+Convention-Based Discovery
+Many applications require developers to know about several registration steps when adding functionality. Creating an API endpoint might mean writing the handler, registering it with a router, updating dependency injection, adding authorization metadata, and connecting a validation schema. An agent has to discover every one of those relationships and remember to update them together.
+This can be avoided by using conventions that let the application discover new functionality automatically. Next.js App Router is one well-known example. Routes are derived from the filesystem, so putting a file in the right place connects it to the application without a separate registration step.
+The same pattern can be used for application-specific extension points:
+plaintext
+src/
+  commands/
+    create-invoice.command.ts
+    cancel-invoice.command.ts
+    send-reminder.command.ts
+A build step can discover these modules, validate their exported interfaces, and assemble the command registry automatically. The same approach works for event handlers, plugins, jobs, migrations, and other components that follow predictable conventions.
+The agent still has to implement the functionality correctly, but it no longer needs to understand how it connects to the rest of the application. This becomes particularly helpful when those connections would otherwise require edits far away from the feature being changed.
+These are the types of architectural knowledge that eventually end up in an AGENTS.md file or skill. But if the application can discover them instead, there is nothing for the agent to remember.
+Schema-Driven Development
+Applications often maintain several versions of the same contract. An API request might appear in an OpenAPI definition, a server-side validator, a TypeScript interface, a client SDK, and documentation. One change can require an agent to find and correctly update every representation.
+Instead, establish one authoritative definition and generate as much of the rest as possible. OpenAPI Generator can generate clients, server stubs, and documentation from an API specification. GraphQL Code Generator derives types and operation bindings from GraphQL schemas and documents, while Prisma generates typed database APIs from its schema.
+The same pattern can be applied to application-specific contracts. A typed feature definition could declare its inputs, outputs, permissions, and supported operations. Build tooling can then derive validators, registry entries, client interfaces, or other artifacts that would otherwise have to be kept synchronized manually.
+The key is making the direction of authority unmistakable. Generated files should look generated, be difficult to modify accidentally, and fail verification when they no longer match their source definition.
+This gives the agent fewer places to make the same decision. Instead of explaining in a skill that changing one contract requires edits to five other files, make the application derive those files from the contract automatically.
+Architectural Enforcement
+Some architectural rules cannot be captured through types, schemas, or extension points. Without mechanical enforcement, those rules usually end up as prose telling developers and agents what they should or should not do.
+It's better to turn important architectural rules into checks that run against the code itself. OpenAI’s Harness Engineering describes fixed architectural layers with enforced dependency directions and custom lint rules for prohibited relationships. Dune takes a similar approach with CI rules that reject patterns its architecture doesn’t allow, including React’s useEffect.
+These checks can be highly specific to the application. An AST rule can prohibit direct database access outside persistence modules. A structural test can reject handlers that bypass authorization. Dependency checks can prevent infrastructure packages from importing application-level modules. 
+This pattern is also starting to produce tooling specifically for coding agents. ⁠ts-archunit turns application architecture into executable TypeScript rules, catching things like direct database access, copy-pasted logic, generic errors, and skipped validation. 
+Behavioral contracts can be enforced the same way. Every repository implementation, for example, can be required to pass the same test suite:
+typescript
+runRepositoryContractTests(
+  () => createPostgresRepository()
+);
+
+runRepositoryContractTests(
+  () => createInMemoryRepository()
+);
+That suite might verify transaction behavior, pagination, tenant isolation, and error semantics. Property-based testing tools such as Hypothesis and fast-check can go further by checking domain invariants across generated inputs rather than a fixed set of examples.
+This idea has existed for years as architectural fitness functions. But with agents writing more of the code, relying on everyone to remember those rules makes even less sense.
+Deterministic Scaffolding
+Some extensions require a predictable set of files, interfaces, tests, and configuration. Even with good examples in the repository, asking an agent to reconstruct that structure introduces decisions that have already been made.
+Generate that structure deterministically. Rails generators are the classic example, creating models, controllers, tests, routes, and other supporting files from standardized templates. 
+Applications can provide the same capability for their own extension types:
+bash
+app generate feature invoices
+app generate provider stripe
+app generate event invoice-paid
+A feature generator might create the directory structure, public exports, typed interfaces, dependency declarations, and contract tests. A provider generator could start with the required interface and testing infrastructure already connected. The agent starts from a structurally valid implementation rather than recreating the application’s conventions from examples.
+The challenge is that generators can drift just like documentation. They should be tested by generating representative components, compiling them, running their contract tests, and applying the same architectural checks used against production code.
+What If It’s Still Not Enough?
+The truth is that not every requirement can be encoded into the application architecture, and it’s tempting to use skills to fill that void. Some decisions require judgment, depend on the task, or need evidence that an intended outcome was actually achieved.
+In those cases, model what’s left as a series of checkpoints rather than more prose in skills, docs, or prompts. Each checkpoint defines a goal and the criteria for validating it, while leaving the agent free to decide how to get there.
+A security-sensitive feature, for example, might have checkpoints for tenant isolation, authorization, and backward compatibility. Each requires the agent to provide evidence from its implementation that the goal was satisfied.
+Checkpoints provide visibility into the work while creating opportunities to validate and steer it. Validation can be deterministic where possible and model-based where judgment is required.
+This is the approach behind the checkpoint architecture being built at ThruWire. Encode as much as possible in the application first, then express what remains as goals with explicit validation rather than more procedural instructions.
+Architecture Is Part of the Harness
+As agents take on more software development, application architecture becomes part of the system that determines how well they perform. Two agents running the same model with the same tools can produce very different results depending on whether the application gives them one obvious path or forces them to reconstruct years of architectural decisions.
+Skills can compensate for that, but there is a limit to how much architecture should need to be explained outside the architecture itself. The more agent throughput increases, the more valuable it becomes to make the application opinionated, discoverable, and difficult to misuse by default.
+The best application for agents may ultimately be the one that needs the least explanation. Before writing another skill, ask whether the application should have made the decision instead.
+
+-----------
+
+The secret is an inverse pyramid of leverage: put most of your effort at the top, and the least at the bottom.
+
+> Everyone is trying to fix their agents by stuffing 500 lines of rules into AGENTS.md. That doesn't work, because prompts rely on "agent judgment," which is just a polite phrase for rolling the dice.
+
+Here is some supplements to Lauren's pyramid 🧵👇
+
+1. Codebase Improvements (Top of the pyramid)
+
+>> If your architecture is messy, agents won't just copy it, they will scale that mess at lightning speed.
+
+2. Static Analysis
+
+>> Why burn thousands of tokens explaining a rule in English when a linter or compiler can reject bad code in 5 milliseconds?
+
+3. Prose & 4. Human Review (Bottom of the pyramid)
+
+>> If a rule can be a linter check or a type constraint instead of a paragraph of English, move it up the pyramid. Don't review the code, design the cage.
+
+The ultimate meta-move: don't even audit the codebase yourself. Make the agent analyze its own past failures and build its own guardrails.
+
+
+----------------
+
+Per their writeup, one Claude Code PR ran 50+ rounds of review and fixes overnight, mostly re-flagging old code. After the cap, PRs needing 5+ rounds went from 8.9% to 1.5%
+
+for your REVIEW.md
+After 3 rounds, stop and ask the author to rethink the approac
+

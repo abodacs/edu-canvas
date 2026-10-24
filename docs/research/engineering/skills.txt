@@ -1,0 +1,7 @@
+https://github.com/cloudflare/security-audit-skill https://developer.chrome.com/docs/modern-web-guidance
+
+https://github.com/nutlope/hallmark
+
+/grill-me for research and planning /taste-review to let Codex make more tasteful design decisions by asking Claude (you'll need the claude CLI installed for this) / vercel-react-best-practices for improving the quality of React component these agents generated /simplify to improve code quality, reduce comment wordiness, and improve system architecture
+
+/find-animation-opportunities → /animate → /review-animations

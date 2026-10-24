@@ -1,0 +1,5 @@
+Read https://copilotkit.ai/onboarding-prompts/533cc766dc08 and help me get set up.
+
+https://www.copilotkit.ai/ag-ui-and-a2ui
+
+https://www.copilotkit.ai/ag-ui https://github.com/thesysdev/openui
