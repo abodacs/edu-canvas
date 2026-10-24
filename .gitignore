@@ -16,3 +16,4 @@ data/*.json
 teaching/
 .worktrees/
 .claude/settings.local.json
+.zcode/

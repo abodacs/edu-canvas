@@ -1,0 +1,346 @@
+{
+  "snapshot_date": "2026-10-24",
+  "repository": "abodacs/edu-canvas",
+  "observed_main_revision": "d3bd40975068dcb7441aced5b56cc89d67a2f6e9",
+  "source_root": ".worktrees/hackthon-docs",
+  "status": "planned; no source files copied or removed",
+  "summary": {
+    "source_files": 55,
+    "project_files_to_import": 26,
+    "personal_reference_files_retained_locally": 29
+  },
+  "import_policy": "Preserve requirements and research. Review sensitive/private text and rewrite links for tracked destinations. Record intentional changes; source hashes describe the pre-migration snapshot.",
+  "reference_policy": "Retain the two PDFs and generated book skill locally. Add a tracked reference index during PR 01. Establish repository scope and redistribution basis separately before any later reference-material import.",
+  "files": [
+    {
+      "source": "7-Coding-Patterns-I-Stole-From-Senior-Engineers-by-CodeByUmar-Skill-Stuff-Jun-2026-Medium-07-02-2026_12_47_AM.pdf",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "d051786e064744f31b7ad9b32014bf0bdc111a610e23ea18dc82562d63f29afc"
+    },
+    {
+      "source": "README.md",
+      "action": "import",
+      "destination": "docs/README.md",
+      "sha256": "616083630181f053efd0e931562a65886489213ed4897e6b906cf3b1f812910c"
+    },
+    {
+      "source": "ROADMAP.md",
+      "action": "import",
+      "destination": "ROADMAP.md",
+      "sha256": "9843e42255277dbc8f4e61ae40f7713dfdf729bc30790cc536d3f93985f4c39f"
+    },
+    {
+      "source": "Refactoring-English-1.0.4.pdf",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "6c7c6b131db6db9ec2e660106dc8095ad1886ce7d1ff21fdde7aa1fa6596f280"
+    },
+    {
+      "source": "design/inspiration.txt",
+      "action": "import",
+      "destination": "docs/research/design/inspiration.txt",
+      "sha256": "0581fbfb07f15e0cbb32059a51126f472dcb7e5b678a4388f2c25790d2a236f6"
+    },
+    {
+      "source": "design/workflow.txt",
+      "action": "import",
+      "destination": "docs/research/design/workflow.txt",
+      "sha256": "111cdbb478bd408392f2037a32fcb30d4a6c98e19d6bb1012d88d38a07d0b564"
+    },
+    {
+      "source": "education/chatgpt.txt",
+      "action": "import",
+      "destination": "docs/research/education/chatgpt.txt",
+      "sha256": "790f2374c3b02f9c7d4e241e888f00db8c78dadd190f13ab01513330fec0cc43"
+    },
+    {
+      "source": "education/claude.txt",
+      "action": "import",
+      "destination": "docs/research/education/claude.txt",
+      "sha256": "1fed2022d30fef13dfc3a77cbd62402cb0a197c26f982ebb788bfddf572f7af3"
+    },
+    {
+      "source": "education/direct-instruction.txt",
+      "action": "import",
+      "destination": "docs/research/education/direct-instruction.txt",
+      "sha256": "dc78d1098a3f843f01b982c3413b1f9157b71f2def534c8b53caeba2f316068f"
+    },
+    {
+      "source": "education/teacher-research.txt",
+      "action": "import",
+      "destination": "docs/research/education/teacher-research.txt",
+      "sha256": "7c999f068bd457be9a3d12aad69563b2dcf55f509a667cc4fedf168e729a53ed"
+    },
+    {
+      "source": "engineering/agent-architecture.txt",
+      "action": "import",
+      "destination": "docs/research/engineering/agent-architecture.txt",
+      "sha256": "9b78688e10aef6af6b63ee6b5403769024c808d83c8ac0c96183cf2c31cda3d0"
+    },
+    {
+      "source": "engineering/design-doc-implementation.md",
+      "action": "import",
+      "destination": "docs/design/design-doc-implementation.md",
+      "sha256": "bec2a8da43734615247d578ffa70b856218738a26f64be3ce603ab5db1153796"
+    },
+    {
+      "source": "engineering/design-doc-questions.md",
+      "action": "import",
+      "destination": "docs/design/design-doc-questions.md",
+      "sha256": "f55b215612893e6d37b75ea7b0dd67b6ff5ce18a6769add73995bbe7d2d0bdf0"
+    },
+    {
+      "source": "engineering/design-doc-reading-guide.md",
+      "action": "import",
+      "destination": "docs/design/design-doc-reading-guide.md",
+      "sha256": "c5a1086923ccce5dc725f48841548001575eb81ef232ce4ced145a8a7c6eb44c"
+    },
+    {
+      "source": "engineering/design-doc.md",
+      "action": "import",
+      "destination": "docs/design/design-doc.md",
+      "sha256": "0f0d3e1a3ccccc2ca35fbeafcda080529e584c953539c3cbde9e0ee69e253e87"
+    },
+    {
+      "source": "engineering/design-docs.txt",
+      "action": "import",
+      "destination": "docs/research/engineering/design-docs.txt",
+      "sha256": "424eff9bb5dc30c5b6dd8cc839a1fbfb894efaa57b97aebcf869cbd16eedcf18"
+    },
+    {
+      "source": "engineering/llm-wiki.txt",
+      "action": "import",
+      "destination": "docs/research/engineering/llm-wiki.txt",
+      "sha256": "0f9057d9afbaef65ef9dce5256e6faa3df270f49d8d512cde823818c993a0b18"
+    },
+    {
+      "source": "engineering/notes.txt",
+      "action": "import",
+      "destination": "docs/research/engineering/notes.txt",
+      "sha256": "60c25034ac8c565a5c967228d53edbbfb1571b7d602b7df64de3a308e20a0246"
+    },
+    {
+      "source": "engineering/skills.txt",
+      "action": "import",
+      "destination": "docs/research/engineering/skills.txt",
+      "sha256": "097f2615f353a674387f5bba24e039522429cab24403fb4165a7ee5b1fb3af52"
+    },
+    {
+      "source": "engineering/software-factory.md",
+      "action": "import",
+      "destination": "docs/engineering/software-factory.md",
+      "sha256": "ea47a4f34db24120b119180d1a5a00305cc603bc51671cd8fe5e2ff417d1ba9b"
+    },
+    {
+      "source": "hackathon/README.md",
+      "action": "import",
+      "destination": "docs/hackathon/meta-global-2026/README.md",
+      "sha256": "4e56847427a90ea9a03c9236c228954de5ca3c695ed0ff5c0e7825b2597dae0b"
+    },
+    {
+      "source": "hackathon/archive/ideas.txt",
+      "action": "import",
+      "destination": "docs/hackathon/meta-global-2026/archive/ideas.txt",
+      "sha256": "10f869a105e27d1979e6ed215d45227999fe074740fb7d05d6f897a79a04c851"
+    },
+    {
+      "source": "hackathon/demo-script.md",
+      "action": "import",
+      "destination": "docs/hackathon/meta-global-2026/demo-script.md",
+      "sha256": "677102b5824e2ce26bcd185d02e8355d1435474e2bbde7f68d4c2643ab8f5340"
+    },
+    {
+      "source": "hackathon/validation-tracker.md",
+      "action": "import",
+      "destination": "docs/hackathon/meta-global-2026/validation-tracker.md",
+      "sha256": "7e24c7a1ef396689ea19a0cd154272f3d53723be50a981ebbf52b4d2e4e19d7b"
+    },
+    {
+      "source": "refactoring-english/README.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "c8e0d648c420f8cb06d97e4efe3734f88d0dd18df78e11b06bd804d758377479"
+    },
+    {
+      "source": "refactoring-english/SKILL.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "1f7b48ad5e09abb6fd5f9926c7a9bbbc56c3d7193f35ff0615e16460a1a7f0ae"
+    },
+    {
+      "source": "refactoring-english/chapters/ch01-get-to-the-point.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "c0c7d7748660fb7adac5c4c9df00ec1559c75df73c023dc16d5e65d751c3cd89"
+    },
+    {
+      "source": "refactoring-english/chapters/ch02-sound-natural.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "daf5870c0eaa2820f5062bff0509cd82aed8b8cc1d532e174166866d12bf81a6"
+    },
+    {
+      "source": "refactoring-english/chapters/ch03-help-reader-reach-goal.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "8853271cbf0c65e85eb376f6220eb512b7154b14285e3987d734122a0faa3210"
+    },
+    {
+      "source": "refactoring-english/chapters/ch04-meet-reader-where-they-are.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "86711672fa84e23a5758b767658fc1aa444f99f9b56097f0baef747ba16bc03d"
+    },
+    {
+      "source": "refactoring-english/chapters/ch05-reader-mental-bandwidth.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "53832ff0aeaa1d77f7c5a81fa9be4d34e81109c312d9a6ef870dcb23c7b50a9d"
+    },
+    {
+      "source": "refactoring-english/chapters/ch06-headings-create-structure.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "aa4b4184f7ff82540d80e41d752fd181738726262b188a846a6ccc6bf3854ff7"
+    },
+    {
+      "source": "refactoring-english/chapters/ch07-verbs-drive-sentence.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "53a87a0dad7d8dbc5ef039913a102ee36916c9ea8663935b80a1eaed1622da00"
+    },
+    {
+      "source": "refactoring-english/chapters/ch08-positive-phrasing.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "28983bcf53f6e78b492ff395182a07a374ae20b489322c4946934eaa944e2409"
+    },
+    {
+      "source": "refactoring-english/chapters/ch09-passive-voice.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "7f1249d785861369a8807e25990e0b5d249f17bd4bc11d9b9963c3182be987d9"
+    },
+    {
+      "source": "refactoring-english/chapters/ch10-delete-aggressively.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "d906e31a54d6d49da8f5b5b4e42eb70d1f59b615dc3d1e4842603ba88771ca09"
+    },
+    {
+      "source": "refactoring-english/chapters/ch11-eliminate-ambiguity.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "b9849007df7a7c7ab8f7bc32a586c93419bf6d8899c70299d6ce70e5ca46d236"
+    },
+    {
+      "source": "refactoring-english/chapters/ch12-improve-writing-with-ai.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "aacc653bd90f9fd2954d132b486fde7d119d7c36ffea5472f9918a9bba87378e"
+    },
+    {
+      "source": "refactoring-english/chapters/ch13-overcome-writers-block.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "1695850ba3b3a164c3e77b21c862ebaee8f37b144819f4923aeae5798dc7c083"
+    },
+    {
+      "source": "refactoring-english/chapters/ch14-stay-in-flow-state.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "eac8601efbf895db42f8297b58dc95aa0349a318d83ab7d5497d03e6545ae14d"
+    },
+    {
+      "source": "refactoring-english/chapters/ch15-grammar-incrementally.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "2d31981525b9383e1fd79f25371453ae24234eb32f2f2b31db45da620b5def8e"
+    },
+    {
+      "source": "refactoring-english/chapters/ch16-write-emails-less-noise.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "187bf48775c2e89cac0e26ee9828da4c60067c90496904a518d8bdc96847212c"
+    },
+    {
+      "source": "refactoring-english/chapters/ch17-blog-posts-developers-read.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "3e29fb80d6cfeeaa0f1706aab8673a9a9c16eaf7d7972be0d65e1f540a125bd6"
+    },
+    {
+      "source": "refactoring-english/chapters/ch18-find-customers-blogging.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "0356aa0078123318ae98cc3316b64ebb3e31dcfd8159ad94cd6b7269e0bcab25"
+    },
+    {
+      "source": "refactoring-english/chapters/ch19-effective-design-docs.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "05ec5c8034a081ade680e3c604a3f40b6ce3c1b534539bdd8e31e614b85ecb9b"
+    },
+    {
+      "source": "refactoring-english/chapters/ch20-clear-pleasant-tutorials.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "29c6d3417e3f0ace13c992eb9b2648489fef727a0e222d086cb19a9e0c906a96"
+    },
+    {
+      "source": "refactoring-english/chapters/ch21-useful-commit-messages.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "e9c4e760847e233a758f9acf2125e67b697890cd8609268fdcc2d29701e23294"
+    },
+    {
+      "source": "refactoring-english/chapters/ch22-release-announcements.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "2216aecf54a11bb1715cbf9e2c732b24d8d74725c0a1c345ff38658f3aa57b69"
+    },
+    {
+      "source": "refactoring-english/cheatsheet.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "a8e6e5e52301f525d7b277e9d25910bb2f72f06ba3097b7f83b80a6d1e3e323f"
+    },
+    {
+      "source": "refactoring-english/glossary.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "45b046bcbf6e64b64e61ad7498aa09a270e05e6fc005f90d3f61041a43d7fc7a"
+    },
+    {
+      "source": "refactoring-english/patterns.md",
+      "action": "retain-local-reference",
+      "destination": null,
+      "sha256": "0807c67f42ea873348d925f283074bb8a038a22bc075f4160264f6ba9f148401"
+    },
+    {
+      "source": "ui/README.md",
+      "action": "import",
+      "destination": "docs/product/teacher-ui.md",
+      "sha256": "47ba210ee23b59cbf969460ce7d5919048f7e4937c6bf7f7a6b2c1be474bfa6d"
+    },
+    {
+      "source": "ui/copilotkit.txt",
+      "action": "import",
+      "destination": "docs/research/ui/copilotkit.txt",
+      "sha256": "1fb0c052a0d9db2e380a889b034cdfec6992415851d95fc0c303408ab5dda335"
+    },
+    {
+      "source": "ui/intelligent-ui.txt",
+      "action": "import",
+      "destination": "docs/research/ui/intelligent-ui.txt",
+      "sha256": "024606c6680f2914b318b754c09a436f542723d83e96ca090293a9cb251adc6d"
+    },
+    {
+      "source": "ui/product-priorities.md",
+      "action": "import",
+      "destination": "docs/product/delivery-priorities.md",
+      "sha256": "cba0de82ab1b236da0bd50f0366791d786da8f306f35d3e44c8a5ceaca44fee3"
+    }
+  ]
+}
