@@ -17,3 +17,4 @@ teaching/
 .worktrees/
 .claude/settings.local.json
 .zcode/
+.project-map/
