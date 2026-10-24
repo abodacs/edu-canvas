@@ -96,7 +96,7 @@
     "globals": "^17.13.0",
     "postcss-less": "^6.0.0",
     "postcss-scss": "^4.0.9",
-    "prettier": "^3.5.3",
+    "prettier": "^3.9.10",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "shadcn": "4.13.1",
     "stylelint": "^17.16.0",
