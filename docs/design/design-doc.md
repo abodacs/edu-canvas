@@ -206,7 +206,7 @@ Use Sentry and the existing health/readiness routes. Database records hold autho
 
 Use the [implementation order](design-doc-implementation.md#implementation-order-and-exit-checks). Each unit has dependencies and a visible exit check. Run teacher review as soon as a reference lesson exists.
 
-The [sprint guide](../hackathon/meta-global-2026/README.md#ten-day-execution-budget) owns the existing schedule. The [validation tracker](../hackathon/meta-global-2026/validation-tracker.md) owns observed evidence. The earlier dates remain provisional planning checkpoints pending the capacity decision: V3 October 27, V6 October 29, V8 October 31, and V11 November 4.
+The [sprint guide](../hackathon/meta-global-2026/README.md#ten-day-execution-budget-provisional) owns the existing schedule. The [validation tracker](../hackathon/meta-global-2026/validation-tracker.md) owns observed evidence. The earlier dates remain provisional planning checkpoints pending the capacity decision: V3 October 27, V6 October 29, V8 October 31, and V11 November 4.
 
 The expanded scope exceeds the earlier 30-hour plan; the companion estimate shows the gap (36–57 hours, UQ3). Keep all agreed features in scope until Abdullah explicitly changes scope or capacity.
 

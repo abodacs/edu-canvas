@@ -26,9 +26,15 @@ Edu-Canvas is a production product; these documents define and verify one trustw
 | [Coding patterns](engineering/coding-patterns.md) | Seven engineering patterns adapted to Edu-Canvas domain rules and boundaries |
 | [Software factory](engineering/software-factory.md) | Dated engineering-method notes; personal tooling sections are context, not contract |
 | [Research index](research/README.md) | Registry of locally retained reference materials; raw research notes stay untracked |
+| [Foundation runbook](foundation-runbook.md) | Local setup, configuration, readiness, and redeploy checks for the foundation |
+| [Release runbook](release-fly-supabase.md) | Deployment procedure, access and usage limits, and the production requirements list |
+| [Architecture harness](architecture-harness.md) | Guardrails for state ownership, layer imports, and contract drift |
+| [Observed behaviour](observed-behaviour.md) | Evidence boundary, job stories, and the research plan |
+| [Threat model](security/threat-model.md) | STRIDE pass and open security questions |
+| [Decision records](agdr/) | Architecture decisions AgDR-0001–0007 |
+| [React Doctor triage](react-doctor-triage.md) | Dated code-quality scan findings and dispositions |
+| [Plans](plans/hackathon-2026-pr-stack.md) | Historical import and reconciliation plan, file map, and change record |
 | GitHub issues and Projects | Work ownership, dependencies, priority, lifecycle state, and delivery evidence |
-
-Documents that already lived in this repository (`docs/foundation-runbook.md`, `docs/release-fly-supabase.md`, `docs/architecture-harness.md`, `docs/observed-behaviour.md`, `docs/security/threat-model.md`, `docs/agdr/`) keep their current ownership.
 
 ## Change log
 

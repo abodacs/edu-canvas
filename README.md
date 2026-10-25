@@ -162,7 +162,7 @@ See [`docs/foundation-runbook.md`](docs/foundation-runbook.md) for configuration
 
 - Answer key, mastery, and permissions are **server-only** — never present in any client bundle or A2UI message.
 - **No student images or identifying data** are sent to the model.
-- Real student data is blocked until **DPA + EU-residency + security + consent** approval; the demo uses **synthetic data only**.
+- Real student data is blocked until **DPA + EU-residency + security + consent** approval; milestone deployments use **synthetic data only**.
 
 ## Governance
 

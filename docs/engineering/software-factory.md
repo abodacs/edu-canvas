@@ -90,7 +90,7 @@ Apexyard owns the repo-governance layer: AgDR records, hooks, golden-path CI. Wi
 - **Setup** ran 2026-10-20/21 in split-portfolio mode: the public ApexYard fork plus a private sibling holding the owner's project registry, onboarding profile, and agent-routing configuration. Ops-fork git hooks installed (`core.hooksPath = .githooks`).
 - **Handover** assessed edu-canvas 2026-10-20: registered `P0`, status `handover`, harnessability `moderate`. Status returns to `active` when #28 closes and #27's reported behavior is re-verified against the release candidate.
 - **Hooks** governing agent turns: block-git-add-all, block-main-push, check-secrets, pre-push-gate, validate-branch-name, validate-pr-create.
-- **AgDRs** 0001–0004 live under `docs/agdr/`; architectural decisions enter there, not prose.
+- **AgDRs** 0001–0007 live under `docs/agdr/`; architectural decisions enter there, not prose.
 - **CI golden paths**: `foundation.yml` + `ai-code-review.yml` tracked; `security.yml` + `pr-title-check.yml` copied into the sprint worktree on 2026-10-24 (the #71 gap — commit them as the sprint's first governance PR).
 - **LSP**: `typescript-language-server` 6.0.2 installed, `ENABLE_LSP_TOOL=1` set; review and handover deep-dives get the cheap semantic path.
 

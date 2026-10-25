@@ -1,6 +1,6 @@
 # Observed behaviour — synthesis and research plan
 
-> Snapshot: 2026-07-17. This note separates what the current evidence shows from what Edu-Canvas hopes users will do. It uses the issue tracker, QA evidence, the product decision log, and authored interface copy; it does not contain direct user research. Status update 2026-10-25 ([#89](https://github.com/abodacs/edu-canvas/issues/89)): issue #27 is closed (2026-10-21); its reproduction records below stay valid as QA evidence, and the learner-safe claim stays blocked until the reported false-success behavior is re-verified against the release candidate.
+> Snapshot: 2026-07-17. This note separates what the current evidence shows from what Edu-Canvas hopes users will do. It uses the issue tracker, QA evidence, the July 2026 product decision log (removed 2026-10-25), and authored interface copy; it does not contain direct user research. Status update 2026-10-25 ([#89](https://github.com/abodacs/edu-canvas/issues/89)): issue #27 is closed (2026-10-21); its reproduction records below stay valid as QA evidence, and the learner-safe claim stays blocked until the reported false-success behavior is re-verified against the release candidate.
 
 ## Mode: synthesise, then plan
 

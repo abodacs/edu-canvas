@@ -4,7 +4,7 @@
 
 ## Context
 
-Issue #3 needs a useful teacher authoring path without letting model output become executable UI or a browser-trusted answer key. The provider must support a deterministic fixture for the seeded demo and a server-only GPT-5.6 adapter. Invalid content needs actionable diagnostics, while transient failures need recovery without silently retrying forever.
+Issue #3 needs a useful teacher authoring path without letting model output become executable UI or a browser-trusted answer key. The provider must support a deterministic fixture for the seeded demo and a server-only generation adapter (the July 2026 context named GPT-5.6; provider selection now belongs to [AgDR-0006](AgDR-0006-provider-selection-and-deadlines.md)). Invalid content needs actionable diagnostics, while transient failures need recovery without silently retrying forever.
 
 ## Options considered
 

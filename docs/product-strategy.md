@@ -80,8 +80,8 @@ It grounds the draft and makes the recommendation explainable; it does not diagn
 | Boundary | Decision |
 | --- | --- |
 | Source | REST retrieval of the selected standard, components, and prerequisites at request time; immutable snapshot stored per generation; pinned fixture kept for deterministic tests. No full import and no MCP by default |
-| Evidence | Full upstream standard/component/relationship metadata retained in the fixture; GPT receives only a compact allowlisted projection |
-| Generation | The compact projection enters the GPT prompt; the lesson contract returns references to supplied evidence, not free-form source claims |
+| Evidence | Full upstream standard/component/relationship metadata retained in the fixture; the model receives only a compact allowlisted projection |
+| Generation | The compact projection enters the generation prompt; the lesson contract returns references to supplied evidence, not free-form source claims |
 | Validation | Unknown or mismatched evidence identifiers are a `hard_block`; missing valid component evidence is a `warning` with standards-only fallback |
 | Safety | KG alignment validation and the generic `pass` / `warning` / `hard_block` safety gate run in parallel; either hard block stops preview and Share |
 | Surface | Teacher review shows the target standard, supporting context, component description when available, relationship type, release, and attribution; the student sees only the focused activity |

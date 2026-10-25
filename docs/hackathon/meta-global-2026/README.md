@@ -212,7 +212,7 @@ These are proposed probes, not completed tests. Builder owns technical probes; a
 | Expired/interrupted session | Reload after submission; double-submit | Duplicate attempts, lost work, false completion | Repair attempt recovery and idempotency within the core loop |
 | Revision after approval | Edit teacher draft while learner holds an older lesson | Grading/feedback changes under an active attempt | Preserve approved version references and reject invalid transitions |
 | Provider unavailable | Timeout, rejection, malformed output | Failure silently masquerades as a fresh generation | Clear recovery state; label any seeded fallback |
-| Independent access | Fresh browser, another device, no developer account | Judge cannot enter or repeat the demo | Simplify entry and verify reset without weakening guards |
+| Independent access | Fresh browser, another device, no developer account | Reviewer cannot enter or repeat the demo | Simplify entry and verify reset without weakening guards |
 | Multiple anonymous learners | Alternate sessions on one shared device | Cross-session state or misleading attribution | Fix isolation before any pilot |
 | Class-sized interpretation | 20 synthetic learners, mixed hint use and missing items | Teacher report creates more work or false grouping | Reduce to actionable evidence; defer automatic grouping |
 | Blind review | Hide model/product labels on comparable lesson outputs | Preference is driven by branding or novelty | Revisit claimed differentiation |

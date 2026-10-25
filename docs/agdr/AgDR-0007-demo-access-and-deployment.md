@@ -24,8 +24,8 @@ These defaults bound demo use; they are not measured production limits. Measure 
 ## Consequences
 
 - The deployment matches the design's limit model; no limit can be bypassed by a second Machine.
-- Judge access is reproducible from an independent browser or device, with reset and recovery rehearsed (V9).
-- A single Machine is a deliberate availability trade for the demo window, not a defect.
+- Reviewer access is reproducible from an independent browser or device, with reset and recovery rehearsed (V9).
+- A single Machine is a deliberate availability trade for the milestone window, not a defect.
 - The runbook makes no production-readiness or availability claim; the pre-production gate stays in the runbook.
 
 ## Handoff

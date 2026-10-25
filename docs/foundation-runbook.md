@@ -52,9 +52,9 @@ Copy `.env.example` to `.env` only when you need local overrides. Unprefixed val
 | `DATABASE_URL` | unset | Optional `postgres://` or `postgresql://` persistence URL |
 | `PERSISTENCE_ADAPTER` | `postgres` | Server-only PostgreSQL implementation: `postgres` or `drizzle` |
 | `SENTRY_DSN` | unset | Optional server-only Sentry delivery for scrubbed errors |
-| `OPENAI_API_KEY` | unset in demo mode | Server-only credential required when `DEMO_MODE=false` |
-| `OPENAI_MODEL` | `gpt-5.6` | Server-selected structured-output model |
-| `OPENAI_BASE_URL` | OpenAI Responses API | HTTPS provider endpoint; loopback HTTP is test-only |
+| `OPENAI_API_KEY` | unset in demo mode | Server-only provider credential required when `DEMO_MODE=false`; renamed with the provider migration ([AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md)) |
+| `OPENAI_MODEL` | `gpt-5.6` | Structured-output model code default. The value must change with the provider selection ([AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md)); it is not an asserted working model |
+| `OPENAI_BASE_URL` | OpenAI Responses API | HTTPS provider endpoint in the current code; moves with the provider selection; loopback HTTP is test-only |
 
 Invalid configuration fails readiness with field-level, secret-free diagnostics. The server never returns a database URL, API key, or private answer key in an error response.
 

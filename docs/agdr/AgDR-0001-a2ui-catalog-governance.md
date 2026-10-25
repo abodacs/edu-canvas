@@ -4,7 +4,7 @@
 
 ## Context
 
-Edu-Canvas generates lesson UI from GPT-5.6 output. Letting the model emit arbitrary HTML/CSS/JS is an unacceptable safety + correctness surface (XSS, unpredictable grading affordances, inaccessible output). The PRD grill settled this (Q80–86): use the **real** A2UI protocol — not a relabeled custom payload — with a custom catalog scoped to matching activities. A2UI is at v0.9.1 (pre-1.0); adoption carries protocol-maturity risk.
+Edu-Canvas generates lesson UI from model output (the July 2026 decision log named GPT-5.6; provider selection now belongs to [AgDR-0006](AgDR-0006-provider-selection-and-deadlines.md)). Letting the model emit arbitrary HTML/CSS/JS is an unacceptable safety + correctness surface (XSS, unpredictable grading affordances, inaccessible output). The July 2026 decision log settled this (Q80–86; log removed 2026-10-25): use the **real** A2UI protocol — not a relabeled custom payload — with a custom catalog scoped to matching activities. A2UI is at v0.9.1 (pre-1.0); adoption carries protocol-maturity risk.
 
 ## Options considered
 
@@ -37,7 +37,7 @@ Edu-Canvas generates lesson UI from GPT-5.6 output. Letting the model emit arbit
 
 ## Artifacts
 
-PRD grill log Q25, Q78–86, Q87 · `docs/security/threat-model.md` (A2UI trust boundary) · `docs/walking-skeleton.md` AC #3
+July 2026 decision log (removed 2026-10-25) Q25, Q78–86, Q87 · `docs/security/threat-model.md` (A2UI trust boundary) · `docs/walking-skeleton.md` AC #3
 
 ## Issue #4 implementation boundary
 
