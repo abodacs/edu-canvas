@@ -10,7 +10,7 @@ The following materials are retained on the owner's machine only. They are not t
 
 | Material | Where it lives | Notes |
 | --- | --- | --- |
-| *Refactoring English*, v1.0.4 (PDF) | Local notes workspace (`.worktrees/hackthon-docs/`) | Book by Michael Lynch; supplies the writing guidance cited in [delivery priorities](../product/delivery-priorities.md) and the design [reading guide](../design/design-doc-reading-guide.md) |
-| *7 Coding Patterns I Stole From Senior Engineers* (PDF) | Local notes workspace (`.worktrees/hackthon-docs/`) | Saved article; currently uncited in the corpus |
+| _Refactoring English_, v1.0.4 (PDF) | Local notes workspace (`.worktrees/hackthon-docs/`) | Book by Michael Lynch; supplies writing guidance for [contributions](../../CONTRIBUTING.md), [delivery priorities](../product/delivery-priorities.md), and the design [reading guide](../design/design-doc-reading-guide.md) |
+| _7 Coding Patterns I Stole From Senior Engineers_ (PDF) | Local notes workspace (`.worktrees/hackthon-docs/`) | Article by CodeByUmar, Skill Stuff on Medium, June 8, 2026; its seven patterns are summarized and adapted in [coding patterns](../engineering/coding-patterns.md) |
 | `refactoring-english/` generated skill | Local notes workspace (`.worktrees/hackthon-docs/refactoring-english/`), installed via a personal skills symlink | Book-to-skill output; not installed into this repository |
-| *The Learning Game* (PNG screenshot) | Owner's Downloads folder | Web-essay screenshot on learning and schooling; saved 2026-10-24, indexed here as a local reference only |
+| _The Learning Game_ (PNG screenshot) | Owner's Downloads folder | Web-essay screenshot on learning and schooling; saved 2026-10-24, indexed here as a local reference only |

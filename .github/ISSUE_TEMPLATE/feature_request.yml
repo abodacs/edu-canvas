@@ -1,33 +1,52 @@
 name: Feature request
-description: Suggest an idea or improvement
+description: Explain a user need and the outcome an improvement should deliver
 labels: ["enhancement"]
 body:
   - type: markdown
     attributes:
-      value: "Thanks for the suggestion. Please describe the problem and your proposed solution."
+      value: |
+        Start with the user's problem and the outcome that would help. An implementation proposal is optional.
+        See the [contribution guide](https://github.com/abodacs/edu-canvas/blob/main/CONTRIBUTING.md#write-an-issue-someone-can-act-on) for writing guidance.
   - type: textarea
     id: problem
     attributes:
       label: Problem statement
-      description: What problem are you trying to solve?
-      placeholder: "I'm always frustrated when..."
+      description: Who encounters the problem, when does it happen, and what does it prevent?
+      placeholder: "A teacher who loses the preview connection must reload the page before reviewing a lesson."
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Observations or evidence
+      description: Describe a concrete example or summarize linked evidence. Mark assumptions and unknowns.
+      placeholder: "A synthetic demo example, a redacted screenshot, or an observed user workflow."
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe observable success for the user without requiring a particular implementation.
+      placeholder: "After reconnecting, the teacher can resume reviewing the same lesson version."
     validations:
       required: true
   - type: textarea
     id: solution
     attributes:
-      label: Proposed solution
-      description: What would you like to see?
-      placeholder: "I'd like the product to..."
-    validations:
-      required: true
+      label: Suggested approach
+      description: Optionally suggest an approach and explain how it addresses the problem.
+      placeholder: "Offer a reconnect action that restores the teacher's current preview."
   - type: textarea
     id: alternatives
     attributes:
       label: Alternatives considered
-      description: Any alternatives or workarounds?
+      description: Describe workarounds tried or other approaches considered and their limitations.
   - type: textarea
     id: impact
     attributes:
       label: Impact
-      description: Who benefits and how?
+      description: Explain the expected benefit and any observations that support it. Mark estimates as estimates.
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Scope and open questions
+      description: Note important boundaries, dependencies, or decisions that need clarification.
