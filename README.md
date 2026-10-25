@@ -6,6 +6,8 @@ Adaptive visual-learning platform for **Grades 3–6**, starting with **Common C
 
 ## Why it's different
 
+Drafting standards-aligned materials is now a commodity: free teacher copilots — Claude for Teachers, ChatGPT for Teachers, MagicSchool — generate plans, differentiation, and checks. Edu-Canvas competes after the draft, in the gated loop those tools do not run: a teacher approves an immutable version, students work through it, the server grades privately, and the teacher sees the evidence behind the next step.
+
 - **Generative UI, not a chat wrapper.** The generation model produces a structured _lesson draft_; the server validates it and compiles it into **A2UI v0.9.1** messages from a fixed, allowlisted Edu-Canvas catalog. No generated HTML or JavaScript executes.
 - **Browser-safe rendering.** Core lesson interaction uses semantic DOM components through A2UI. Experimental HTML-in-Canvas is optional visual polish and never required for authoring, accessibility, sharing, or grading.
 - **Teacher-gated.** Every generated variant is teacher-approved in a bulk review flow before any student sees it. Variants are content options, not teaching stages.
@@ -32,7 +34,7 @@ Adaptive visual-learning platform for **Grades 3–6**, starting with **Common C
 | [`docs/README.md`](docs/README.md) | Documentation index and document ownership (imported hackathon-2026 corpus) |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Local setup, issue reports, commit messages, and verification |
 | [`CODING_STANDARDS.md`](CODING_STANDARDS.md) | Code quality rules and links to engineering patterns |
-| [`docs/plans/hackathon-2026-pr-stack.md`](docs/plans/hackathon-2026-pr-stack.md) | Proposed hackathon document import, issue/Projects reconciliation, PR stack, and full product lifecycle roadmap |
+| [`docs/archive/`](docs/archive/README.md) | Archived historical records: hackathon-2026 import plans and file map, engineering method notes, triage logs |
 | `docs/product-strategy.md` | North-star outcome, issue-driven loop, and seven-layer audit |
 | `docs/observed-behaviour.md` | Evidence boundary, job stories, and research plan |
 | `docs/walking-skeleton.md` | The thinnest end-to-end slice (the acceptance contract) |
