@@ -1,541 +1,313 @@
 # Architecture
 
-> The operating manual for changing Edu-Canvas. It records what exists at this revision, the boundaries a change must preserve, and one allowed path for each common change. It is written for the next engineer and the next coding agent.
+Edu-Canvas is a full-stack TanStack Start application. Its implemented teaching path takes a synthetic teacher request, generates and validates a lesson draft, persists the result, and renders a teacher preview through A2UI. Approval, publication, student submissions, grading, and adaptation remain target contracts.
 
-| Field | Value |
+This document describes the code inspected on **2026-10-26**, using `7229785` as the source baseline. It owns module boundaries, runtime flows, state ownership, and the checks that protect them. [Design contracts](docs/design/design-doc.md) own intended behavior; [AgDRs](docs/agdr/) own decision rationale; [runbooks](docs/foundation-runbook.md) own setup and operation. A disagreement between this document and the implementation is documentation drift, not permission to change behavior.
+
+| Reader's question | Start here |
 | --- | --- |
-| Revision | 2026-10-25 |
-| Code revision | `a321a15` (`docs/architecture-md`, based on `docs/hackathon-2026-roadmap`) |
-| Scope | This repository. Items marked **Target** do not exist yet. |
-| Gate | `pnpm check`; CI in `.github/workflows/foundation.yml` |
-| Companions | [README](README.md) · [ROADMAP](ROADMAP.md) · [design contracts](docs/design/design-doc.md) · [architecture harness](docs/architecture-harness.md) · [AgDR](docs/agdr/) · [rationale](docs/engineering/architecture-rationale.md) |
+| What runs, and where does data go? | [System overview](#system-overview) |
+| Which module owns this change? | [Module ownership](#module-ownership) |
+| What crosses the browser boundary? | [Contracts and trust boundaries](#contracts-and-trust-boundaries) |
+| How do generation and preview work? | [Runtime flows](#runtime-flows) |
+| How do I extend the system? | [Change recipes](#change-recipes) |
+| What verifies the rules? | [Invariants and verification](#invariants-and-verification) |
+| What differs from the design? | [Implementation gaps and drift](#implementation-gaps-and-drift) |
 
-**Reading paths**
+## System overview
 
-| Reader | Start at |
-| --- | --- |
-| New engineer | [System context](#2-system-context-and-trust-boundary) then [runtime flows](#5-runtime-flows) |
-| Agent with a task | [Route your change](#1-route-your-change) then the recipe, invariants, and gate |
-| Reviewer | [Invariants](#7-invariants), [the cage](#8-the-cage), [known drift](#10-shipped-target-and-known-drift) |
-
-**Precedence.** Code and tests define behavior. This document explains them and points to the gate that proves each rule. When they disagree, the code wins and this document is wrong. Fix it in the same change.
-
-## 1. Route your change
-
-| Change | Recipe | Copy the nearest example | Gate |
-| --- | --- | --- | --- |
-| Add or replace a generation provider | [6.1](#61-add-a-generation-provider) | `src/server/generation/provider.ts` | `pnpm check` |
-| Add a persisted record or persistence method | [6.2](#62-add-a-persisted-record-or-persistence-method) | `src/server/persistence/generation-persistence.ts` | `pnpm test:database`, `pnpm check` |
-| Add a server function or API route | [6.3](#63-add-a-server-function-or-api-route) | `src/server/demo/server-function.ts`, `src/routes/api/health.ts` | `pnpm verify:architecture`, `pnpm check` |
-| Add a page route | [6.4](#64-add-a-page-route) | `src/routes/demo/$role.tsx` | `pnpm check` |
-| Add or change an A2UI component or action | [6.5](#65-add-an-a2ui-component-or-action) | `src/shared/a2ui-contract.ts` + `src/server/a2ui/compiler.ts` | `pnpm check` |
-| Change a browser-facing contract | [6.6](#66-change-a-browser-facing-contract) | `src/shared/generation-contract.ts` | `pnpm verify:architecture`, `pnpm verify:client-boundary`, `pnpm check` |
-| Add a validator or configuration flag | [6.7](#67-add-a-validator-or-configuration-flag) | `src/server/generation/validation.ts`, `src/server/config.ts` | `pnpm check` |
-| Change an architectural rule | [6.8](#68-change-an-architectural-rule) | `scripts/verify-architecture.ts` | `pnpm check` |
-
-**No match.** Search before you invent: `rg -n "<concept>" src scripts`. If no canonical slice exists, do not add another parallel seam. Build the slice and its test in the same change, then add the row here. Deterministic generators for these recipes are a **Target** ([§10](#10-shipped-target-and-known-drift)).
-
-## 2. System context and trust boundary
-
-Edu-Canvas turns a teacher request into a validated lesson draft, compiles the accepted draft into an allowlisted A2UI catalog, and streams a teacher preview. The student half of the loop is designed but not built.
+The browser and server are built together, but domain behavior lives under `src/server/`. Routes reach that behavior through named server functions or `.server` modules. Browser-safe schemas live under `src/shared/`.
 
 ```mermaid
 flowchart LR
-    TB[Teacher browser] -->|HTTPS server function| SF[Server function seam]
-    TB -->|SSE preview| API[Preview API route]
-    SB[Student browser] -->|HTTPS server function| SF
-    SF --> GS[Generation service]
-    GS --> PIPE[Structural validation<br/>Semantic review<br/>Learning path]
-    GS -->|server-side only| MODEL[Model provider]
-    PIPE --> PS[Persistence port]
-    GS --> PS
-    API --> PS
-    API --> AC[A2UI compiler]
-    PS --> DB[(PostgreSQL<br/>or seeded store)]
-    SRV[Demos, generation,<br/>preview, health] -.->|scrubbed events| SENTRY[Sentry]
-```
-
-| Actor or system | Role at this revision |
-| --- | --- |
-| Teacher | Seeded identity. Generates drafts and opens previews. Approval and publication are **Target**. |
-| Student | Seeded identity. Reads a role-limited demo snapshot. Attempts and grading are **Target**. |
-| Model provider | Untrusted content producer. Called server-side only; its output is parsed, never trusted. |
-| PostgreSQL | System of record when configured. Supabase in the release runbook. Private credentials server-side only. |
-| Seeded store | Process-local `Map`. Deterministic default for local and CI. Not durable. |
-| Sentry | Server-only error reporting. Context keys are allowlisted, and URLs, bearer tokens, emails, and identity-shaped ids are redacted. |
-
-**Trust boundary.** Browser input is untrusted. Provider and upload text is untrusted data, never instructions or markup. A2UI messages are data checked against a closed catalog; no generated HTML or JavaScript executes. The answer map, tenant identity, capabilities, and grading inputs stay server-side. Today the browser supplies its own `role`; that is a demo affordance, not authentication ([§10](#10-shipped-target-and-known-drift)).
-
-| Capability | Status | Where it lives |
-| --- | --- | --- |
-| Role-limited demo snapshot | Shipped | `src/server/demo/read-model.ts` |
-| Lesson generation, validation, persistence | Shipped | `src/server/generation/` |
-| Teacher A2UI preview | Shipped | `src/server/a2ui/`, `src/components/a2ui/` |
-| Health and readiness | Shipped | `src/server/health.server.ts` |
-| Approval and publication | **Target** ([#5](https://github.com/abodacs/edu-canvas/issues/5)) | No code |
-| Student attempts, grading, reveal, adaptation | **Target** ([#6–#8](https://github.com/abodacs/edu-canvas/issues/6)) | No code |
-| Hard safety gate | **Target** ([#28](https://github.com/abodacs/edu-canvas/issues/28)) | No code |
-| Protected sessions and quotas | **Target** ([#74](https://github.com/abodacs/edu-canvas/issues/74), [AgDR-0007](docs/agdr/AgDR-0007-demo-access-and-deployment.md)) | No code |
-
-## 3. Stack, configuration, and version pins
-
-### 3.1 Stack
-
-| Layer | Choice | Version source |
-| --- | --- | --- |
-| Runtime | Node.js `>=26`, pnpm `10.17.1` | `package.json`, `Dockerfile` |
-| Application | TanStack Start, TanStack Router, React 19, Vite 8 | `package.json` |
-| Server runtime | Nitro 3 beta, output at `.output/server/index.mjs` | `package.json`, [AgDR-0003](docs/agdr/AgDR-0003-nitro-beta-compatibility.md) |
-| Language | TypeScript 6, strict, `verbatimModuleSyntax`, `noUncheckedSideEffectImports` | `tsconfig.json` |
-| Contracts | Zod 4 schemas in `src/shared/`; types inferred from schemas | `src/shared/` |
-| Data | PostgreSQL 17, `postgres` 3.4, Drizzle ORM 0.45 and `drizzle-kit` 0.31 | `package.json`, `docker-compose.yml` |
-| UI | Tailwind 4, Base UI, shadcn/ui, CVA, lucide-react, GSAP | `package.json`, `components.json` |
-| Observability | `@sentry/node`, server-only, scrubbed events | `src/server/observability.server.ts` |
-| Quality | Ultracite 8 (ESLint 10, Prettier 3, Stylelint), Vitest 4, `tsrs` | `package.json`, `eslint.config.js` |
-| Deployment | Multi-stage `node:26-bookworm-slim` image, Fly.io, Supabase Postgres | `Dockerfile`, `fly.toml`, `docs/release-fly-supabase.md` |
-
-### 3.2 Version pins
-
-| Pin | Value | Owner |
-| --- | --- | --- |
-| A2UI protocol | `v0.9.1` | `src/shared/a2ui-contract.ts` |
-| A2UI catalog | `matching-v1`, id `https://edu-canvas.app/a2ui/v0.9.1/catalogs/matching-v1` | `src/shared/a2ui-contract.ts` |
-| Prompt template | `lesson-prompt-v1` | `src/server/generation/provider.ts` |
-| Structural validator | `lesson-validator-v2` | `src/server/generation/validation.ts` |
-| Semantic validators | `curriculum-validator-v1`, `learning-quality-validator-v1`, runner `semantic-validation-runner-v1` | `src/server/generation/semantic-validation-contract.ts` |
-| Prerequisite graph | `equivalent-fractions-v1` | `src/server/seed-data.ts` |
-| Migrations | Applied in filename order; checksummed; immutable once applied | `scripts/database-migrate-runtime.mjs`, `migrations/` |
-
-A catalog change is a new catalog version, never an in-place edit ([AgDR-0001](docs/agdr/AgDR-0001-a2ui-catalog-governance.md)). Version pins travel with generated drafts and learning paths.
-
-### 3.3 Configuration
-
-`src/server/config.ts` is the only configuration reader. Invalid values produce `ConfigIssue` records; callers fail closed before serving.
-
-| Variable | Effect | Failure code |
-| --- | --- | --- |
-| `APP_ENV` | `development`, `preview`, `production` | `INVALID_APP_ENV` |
-| `DEMO_MODE` | Selects the deterministic fixture provider. Defaults to `true` outside production. | `INVALID_DEMO_MODE` |
-| `SYNTHETIC_DATA_ONLY` | Must stay `true`. Real-student mode is disabled. | `REAL_DATA_DISABLED` |
-| `DATABASE_URL` | Enables PostgreSQL. Absent means `seeded-demo`. | `DATABASE_REQUIRED`, `INVALID_DATABASE_URL` |
-| `PERSISTENCE_ADAPTER` | `postgres` (default) or `drizzle` | `INVALID_PERSISTENCE_ADAPTER` |
-| `SENTRY_DSN` | Server-only error delivery | `INVALID_SENTRY_DSN` |
-| `OPENAI_API_KEY` | Required when `DEMO_MODE=false` | `OPENAI_API_KEY_REQUIRED` |
-| `OPENAI_MODEL` | Default `gpt-5.6` | No default issue |
-| `OPENAI_BASE_URL` | HTTPS, or HTTP only on loopback | `INVALID_OPENAI_BASE_URL` |
-
-`pnpm verify:config` prints `safeConfigSummary` and exits non-zero on any issue. It is not part of `pnpm check`.
-
-## 4. Repository map and import law
-
-### 4.1 Folder ownership
-
-| Path | Owns | Must not own |
-| --- | --- | --- |
-| `src/shared/` | Browser-safe contracts, Zod schemas, pure helpers | Server behavior, Node APIs, database imports |
-| `src/routes/` | Delivery: route definitions, loaders, API handlers | Domain rules, persistence choice, tenant policy |
-| `src/server/` | Domain services, validation, persistence, delivery seams, observability | React components, route definitions |
-| `src/components/` | Semantic UI and A2UI rendering | Server or delivery behavior, data ownership |
-| `src/lib/` | Small browser-safe utilities such as `cn` | Domain or persistence logic |
-| `src/server/persistence/` | Adapters behind `GenerationPersistence` | Public response shaping |
-| `drizzle/` | Drizzle schema and generated metadata | Runtime behavior |
-| `migrations/` | Forward-only SQL applied by the runtime runner | Edited history |
-| `scripts/` | Gates, operators, smoke checks | Application runtime code |
-| `docs/agdr/` | Architecture decisions | Implementation detail |
-
-### 4.2 Import law
-
-`pnpm verify:architecture` scans every `src/**/*.ts` and `src/**/*.tsx` file.
-
-| Importer | May import | Must not import |
-| --- | --- | --- |
-| `shared` | `shared`, browser-safe `lib` | `server`, `routes`, `components`, `node:*`, `postgres` |
-| `components` | `components`, `shared`, `lib` | `server`, `routes` |
-| `server` | `server`, `shared`, `lib`, `drizzle` | `routes`, `components` |
-| `routes` | `routes`, `components`, `shared`, `lib` | `server` internals |
-| `routes` → `server` | Only specs ending `.server` or `/server-function` | Any other server module |
-
-Additional enforced rules:
-
-- No global mutable store: `jotai`, `mobx`, `redux`, `valtio`, `zustand`, `@reduxjs/toolkit`, `createStore`, `configureStore`, `createSlice`, or files named `store.ts`, `global-state.ts`, `app-state.ts`.
-- The student demo snapshot must parse against `demoSnapshotSchema` and must not contain the string `answerKey`.
-
-`pnpm verify:client-boundary` adds a bundle-level check after `pnpm build`. It scans `.output/public` for eleven markers: `answerKey`, `OPENAI_API_KEY`, `DATABASE_URL`, `postgresql://`, `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, `@sentry/node`, `observability.server`, `edu-canvas.server-error.v1`, `sendDefaultPii`, `identity_demo_student`.
-
-### 4.3 Generated or immutable files
-
-| File | Rule |
-| --- | --- |
-| `src/routeTree.gen.ts` | Generated. Never edit by hand. Prettier ignores it. |
-| `drizzle/meta/` | Generated by `drizzle-kit`. Do not hand-edit. |
-| `migrations/*.sql` | Append only. An applied file is checksummed and must not change. |
-| `.output/` | Build artifact. `verify:client-boundary` depends on it. |
-| `pnpm-lock.yaml` | Dependency source of truth. Change it only with an intentional dependency change. |
-
-### 4.4 What steers an agent here
-
-An agent takes the shortest compiling path and copies the nearest example. Each mechanism below makes the right pattern the nearest one; the gaps are the places where the cage cannot yet stop a wrong copy.
-
-| Mechanism | Current implementation | Gap |
-| --- | --- | --- |
-| Canonical implementations | One provider port, one persistence port, one public projection, one A2UI catalog, one shared contract per boundary | A stale seeded fixture and duplicate AgDR numbers weaken the signal |
-| Vertical slices | `src/server/<domain>/` keeps each domain's service, types, and tests together; routes stay thin delivery modules | `src/shared/` and `src/components/` remain layered by technical scope |
-| Constrained extension points | `LessonDraftProvider`, `GenerationPersistence`, `ContentSafety`, injected clock, request-id factory, curriculum context, and semantic validator | A new domain still copies a slice by hand |
-| Convention-based discovery | File routes and the generated route tree; `.server` and `/server-function` import suffixes are checked | No command or handler registry |
-| Schema-driven development | Zod contracts in `src/shared/`, inferred types, Drizzle schema, pinned A2UI catalog | No generated client or OpenAPI document |
-| Deterministic scaffolding | None | Add tested generators after the core loop lands |
-| Mechanical enforcement | `verify:architecture`, `verify:client-boundary`, types, lint, tests, CI | Coverage gaps listed in [§8](#8-the-cage) |
-| Checkpoints | GitHub issues, AgDRs, and the validation tracker hold goals and evidence | Checkpoints are not machine-validated |
-
-## 5. Runtime flows
-
-### 5.1 Demo snapshot read
-
-```mermaid
-sequenceDiagram
-    participant B as Browser
-    participant R as Route loader
-    participant F as getDemoSnapshot
-    participant M as readDemoSnapshot
-    participant P as Persistence
-    B->>R: GET /demo/teacher
-    R->>R: isDemoRole(params.role)
-    R->>F: { role }
-    F->>M: readDemoSnapshot(role)
-    M->>M: readServerConfig, getDemoSession, assertTenantAccess
-    M->>P: readDemoCounts()
-    P-->>M: counts
-    M->>M: demoSnapshotSchema.parse(...)
-    M-->>R: snapshot
-    R-->>B: HTML plus loader data
-```
-
-The snapshot contains `environment`, `session`, `curriculum`, and `seededCounts`. It contains no activity content, no answer map, and no generation record. Teacher capabilities are `view_seeded_environment`, `view_demo_activity_fixtures`, and `generate_lesson_draft`; student capabilities are read-only. Capability policy lives in `src/server/demo/policy.ts`.
-
-### 5.2 Lesson generation
-
-```mermaid
-sequenceDiagram
-    participant B as Teacher browser
-    participant F as generateLessonDraft
-    participant S as Generation service
-    participant P as LessonDraftProvider
-    participant V as Validation pipeline
-    participant D as Persistence
-    B->>F: prompt, grade, standard, language, idempotencyKey
-    F->>S: generate({ session, input })
-    S->>S: authorise role, tenant, capability
-    S->>S: normalize and allowlist standard
-    S->>D: find by idempotency key
-    D-->>S: existing or none
-    S->>D: claim generation
-    S->>S: prompt safety check
-    S->>P: generate(request, no correction)
-    P-->>S: untrusted draft
-    S->>S: generated-content safety check
-    S->>V: structural validation
-    alt structural pass
-        V-->>S: valid draft
-    else structural fail
-        S->>P: one correction with diagnostics
-        P-->>S: corrected draft
-        S->>V: structural validation again
+    subgraph Browser
+        Page[Demo page]
+        Preview[Semantic DOM preview]
     end
-    S->>V: semantic review
-    V-->>S: report
-    S->>S: build validated learning path
-    S->>D: save ready-for-review or blocked state
-    S-->>F: record plus public projection
-    F-->>B: publicGenerationResultSchema
+    subgraph Server
+        Functions[Demo server functions]
+        Generation[Generation service]
+        PreviewAPI[Preview API]
+        Compiler[A2UI compiler and SSE]
+        Persistence[Persistence interface]
+    end
+    Page -->|HTTPS| Functions
+    Functions --> Generation
+    Generation -->|Generate or correct| Provider[Fixture or model provider]
+    Provider -->|Untrusted draft| Generation
+    Generation --> Persistence
+    Preview -->|GET preview| PreviewAPI
+    PreviewAPI --> Persistence
+    PreviewAPI --> Compiler
+    Compiler -->|Validated A2UI messages| Preview
+    Persistence --> Seeded[Process-local seeded store]
+    Persistence --> Database[(PostgreSQL)]
 ```
 
-Load-bearing rules:
+Generation is request-driven. There is no background job queue. The generation response returns a public result; a separate request retrieves the persisted draft as an SSE preview. SSE transports an already compiled snapshot, not incremental model output.
 
-- `normalizeGenerationInput` parses `lessonGenerationInputSchema`, accepts only the seeded standard id or code, and derives an FNV-1a idempotency key when the client omits one.
-- `claimGeneration` gives one owner a 30-second lease (`generationClaimLeaseMs`). A duplicate waits up to five seconds (`generationDuplicateWaitMs`) before resolving the existing record.
-- At most one correction call follows a structural failure. The provider throws `LessonProviderError` with kind `timeout`, `rate-limit`, `transient`, or `terminal`; the first three map to `failed-retryable`, the last to `failed-terminal`.
-- Semantic review is bounded: curriculum and learning-quality reviews run deterministically; optional advisory agents get at most two attempts and a default 250 ms timeout. One runner version is recorded in provenance.
-- A blocked or failed attempt stores diagnostics and `draft: null`. Only `ready-for-review` stores a draft.
-- `toPublicGenerationResult` re-parses the response with `publicGenerationResultSchema`. It drops variant `relationships`, the learning path, the record owner, and every private field.
+The student demo currently reads an environment snapshot. It does not run the planned activity, submission, or grading loop.
 
-Generation states:
+### Runtime and dependencies
 
-| State | Meaning | Can retry |
+| Concern | Implementation | Authority |
 | --- | --- | --- |
-| `requested` | Record created, attempt not claimed | No |
-| `generating` | Claim held or lease live | Waits for owner |
-| `ready-for-review` | Validated draft stored | No |
-| `blocked-by-validation` | Structural, semantic, or path failure | Yes, with review |
-| `blocked-by-moderation` | Prompt or generated content failed safety scan | No; revise request |
-| `failed-retryable` | Provider timeout, rate limit, transient error, or validator unavailable | Yes |
-| `failed-terminal` | Provider rejected the request or failed unexpectedly | No |
+| Runtime | Node.js 26 or later; pnpm 10.17.1 | [package.json](package.json), [Dockerfile](Dockerfile) |
+| Application | TanStack Start and Router, React 19, Vite 8, Nitro 3 beta | [package.json](package.json), [vite.config.ts](vite.config.ts) |
+| Contracts | TypeScript 6 and Zod 4 | [tsconfig.json](tsconfig.json), `src/shared/` |
+| UI | Tailwind 4, Base UI, shadcn/ui, semantic DOM | `src/components/`, `src/styles.css` |
+| Storage | PostgreSQL 17; raw SQL or Drizzle query adapter | `src/server/persistence/`, [docker-compose.yml](docker-compose.yml) |
+| Error reporting | Structured server events and optional Sentry delivery | [observability.server.ts](src/server/observability.server.ts) |
+| Delivery | Node container on Fly.io; Supabase Postgres in the release design | [fly.toml](fly.toml), [release runbook](docs/release-fly-supabase.md) |
 
-### 5.3 Teacher preview stream
+Dependency versions belong in `package.json` and `pnpm-lock.yaml`. The [Nitro compatibility decision](docs/agdr/AgDR-0003-nitro-beta-compatibility.md) explains the beta runtime constraint.
+
+## Module ownership
+
+| Location | Owns | Entry points |
+| --- | --- | --- |
+| `src/routes/` | Pages, route parameters, loaders, HTTP delivery, page-local interaction state | [demo/$role.tsx](src/routes/demo/$role.tsx), `src/routes/api/` |
+| `src/server/demo/` | Synthetic sessions, capabilities, tenant assertions, environment snapshot, server-function composition | [server-function.ts](src/server/demo/server-function.ts), [policy.ts](src/server/demo/policy.ts) |
+| `src/server/generation/` | Generation policy, attempts, validation, provider interface, learning path, public projection | [service.ts](src/server/generation/service.ts), [types.ts](src/server/generation/types.ts) |
+| `src/server/a2ui/` | Preview access checks, compilation, SSE delivery | [preview.server.ts](src/server/a2ui/preview.server.ts), [compiler.ts](src/server/a2ui/compiler.ts) |
+| `src/server/persistence.ts` and `src/server/persistence/` | Adapter selection, record storage, atomic claims, conditional writes, database access | [persistence.ts](src/server/persistence.ts), [generation-persistence.ts](src/server/persistence/generation-persistence.ts) |
+| `src/shared/` | Browser-safe input and output schemas, protocol definitions, inferred public types | [generation-contract.ts](src/shared/generation-contract.ts), [a2ui-contract.ts](src/shared/a2ui-contract.ts) |
+| `src/components/a2ui/` | Stream consumption, local render state, catalog rendering | [lesson-preview.tsx](src/components/a2ui/lesson-preview.tsx), [renderer.ts](src/components/a2ui/renderer.ts) |
+| `src/components/ui/`, `src/lib/` | UI primitives and browser-safe utilities | `button.tsx`, `utilities.ts` |
+| `migrations/` | Authoritative executable database schema, RLS, constraints, triggers | `0001_foundation.sql`, `0002_lesson_generation.sql` |
+| `drizzle/` | Query-typing schema and introspection metadata | [schema.ts](drizzle/schema.ts), [ownership notes](drizzle/README.md) |
+| `scripts/` | Verification, database bootstrap, smoke checks, benchmarks | [verify-architecture.ts](scripts/verify-architecture.ts) |
+
+The server functions compose configuration, provider, persistence, and service. The generation service owns the workflow; provider adapters do not decide whether a draft is acceptable. Persistence owns concurrency rules; routes do not coordinate database transactions.
+
+### Dependency direction
+
+The intended direction is routes → named server delivery modules → domain behavior → persistence or provider interfaces. Shared contracts remain usable by both browser and server.
+
+The [architecture verifier](scripts/verify-architecture.ts) rejects these imports:
+
+| Importer | Rejected dependency |
+| --- | --- |
+| `src/shared/` | Server, routes, components, `node:*`, `postgres`, and `postgres/*` |
+| `src/components/` | Server, routes, and source files classified outside the named layers |
+| `src/server/` | Routes and components |
+| `src/routes/` | Server imports whose specifier ends in neither `.server` nor `/server-function` |
+
+The same scan rejects selected global-store packages, store constructors, and filenames such as `store.ts`. This protects known conventions. It does not prove that arbitrary mutable state or every indirect unsafe import is absent. In particular, `src/lib/` has no dedicated dependency rule, and the seeded generation store is an intentional module-level `Map`.
+
+`src/routeTree.gen.ts` is generated by the router. `.output/` is build output. Applied SQL migrations are immutable and checksummed. Drizzle metadata describes an introspection baseline; it is not a second executable migration history.
+
+## Contracts and trust boundaries
+
+### Browser requests and public results
+
+The existing route calls the delivery interface with a role and a schema-validated input:
+
+```ts
+import { generateLessonDraft } from "@/server/demo/server-function";
+
+const result = await generateLessonDraft({
+  data: {
+    role: "teacher",
+    input: {
+      prompt: "Create an equivalent-fractions matching lesson.",
+      grade: 4,
+      standardId: "4.NF.A.1",
+      language: "en",
+      idempotencyKey: "fractions-request-001",
+    },
+  },
+});
+```
+
+`result` satisfies `PublicGenerationResult`, inferred from [generation-contract.ts](src/shared/generation-contract.ts). The input schema accepts grades 3–6; the service restricts the standard to the seeded equivalent-fractions standard ID or code. Current contracts accept English and Arabic, although the release scope is English-only.
+
+The service returns both a private `LessonGenerationRecord` and a public result. The server function returns only the latter. [toPublicGenerationResult](src/server/generation/projection.ts) explicitly selects public fields and parses the strict output schema. It removes relationship mappings, tenant and teacher ownership, attempt history, and the private draft's learning path.
+
+That learning path has a separate, validated public representation in A2UI preview data. Removing it from the generation response does not mean all learning-path information is private.
+
+Demo snapshots use [demoSnapshotSchema](src/shared/demo-contract.schema.ts). They expose synthetic identity, tenant, role, and capability metadata, curriculum metadata, and counts. They contain neither the private activity answer key nor the full generation record.
+
+**Access limitation:** the browser supplies `role`, and `getDemoSession` maps it to a seeded identity. These checks enforce demo perspectives, not authenticated identity. Protected server sessions remain unimplemented.
+
+### Provider output and validated drafts
+
+[LessonDraftProvider](src/server/generation/provider.ts) exposes provenance and one operation: `generate(request, context) → Promise<{ draft: unknown }>`. The context carries correction status and diagnostics. Returning `unknown` keeps acceptance policy in the generation service.
+
+The service transforms provider data through structural validation, semantic review, and learning-path construction. A `LessonDraft` contains four content variants and a validated path with version pins. Variant kinds are `standard`, `scaffold`, and `challenge`; kinds are not teaching stages.
+
+Relationship mappings stay server-side. Model text is data, never executable HTML or JavaScript. The current default content-safety implementation is a pattern scan. It is not the planned cross-cutting hard safety gate.
+
+### A2UI messages
+
+[a2ui-contract.ts](src/shared/a2ui-contract.ts) owns protocol `v0.9.1`, catalog `matching-v1`, allowed components and actions, safe text rules, and message schemas. Compiler, stream, and browser renderer validate against that contract.
+
+Catalog actions such as `submitAttempt` describe allowed messages. Their presence does not establish a working submission or grading endpoint. The current preview renders semantic DOM without executing generated markup.
+
+### Configuration and telemetry
+
+[config.ts](src/server/config.ts) parses application and database-bootstrap settings. Invalid settings produce typed `ConfigIssue` records. Generation, preview, readiness, and persistence reject invalid configuration.
+
+`DEMO_MODE` selects fixture generation and defaults to true outside production. `DATABASE_URL` independently selects PostgreSQL persistence; without it, storage is seeded and process-local. Live generation requires both a database URL and `OPENAI_API_KEY`. `PERSISTENCE_ADAPTER` selects raw SQL or Drizzle against the same database. `SYNTHETIC_DATA_ONLY=false` is rejected.
+
+[observability.server.ts](src/server/observability.server.ts) emits structured errors, restricts context values, redacts sensitive patterns, and optionally sends scrubbed events to Sentry. Sentry uses `sendDefaultPii: false`. This is a server-only interface, not a browser SDK.
+
+## Runtime flows
+
+### Read a demo snapshot
+
+The `/demo/$role` loader validates the role and calls `getDemoSnapshot`. Its server function calls `readDemoSnapshot`, which reads configuration, resolves the seeded session, asserts tenant access, reads persistence counts, and parses the public snapshot. Teacher and student capabilities come from `demo/policy.ts`.
+
+### Generate a lesson
 
 ```mermaid
 sequenceDiagram
-    participant L as LessonPreview component
-    participant A as GET /api/a2ui/preview
-    participant D as Persistence
-    participant C as A2UI compiler
-    participant S as SSE stream
-    L->>A: role, requestId, catalogVersion
-    A->>A: validate role, request id, catalog, config
-    A->>D: readGeneration(tenantId, requestId)
-    D-->>A: record
-    A->>A: teacher only, owner match, tenant match, ready-for-review
-    A->>C: compile draft plus learning path
-    C-->>A: allowlisted messages
-    A->>S: createPreviewSSEStream(messages)
-    S-->>L: event a2ui, then complete or error
-    L->>L: parse, validate, render semantic DOM
+    participant UI as Teacher page
+    participant Fn as Server function
+    participant Service as Generation service
+    participant Store as Persistence
+    participant Model as Provider
+    UI->>Fn: Role and generation input
+    Fn->>Service: Seeded session and validated input
+    Service->>Service: Check access and normalize request
+    Service->>Store: Find tenant-local idempotency key
+    alt Existing attempt
+        Store-->>Service: Existing record
+        Service->>Service: Resolve live or expired claim
+    else New attempt
+        Service->>Store: Atomically claim attempt
+        Service->>Service: Check prompt safety
+        Service->>Model: Generate draft
+        Model-->>Service: Unknown draft
+        Service->>Service: Check content safety and structure
+        opt Structural validation fails
+            Service->>Model: One correction with diagnostics
+            Model-->>Service: Corrected draft
+            Service->>Service: Check safety and structure again
+        end
+        Service->>Service: If valid, review semantics and build path
+        Service->>Store: Conditional write of result and diagnostics
+    end
+    Service-->>Fn: Private record and public projection
+    Fn-->>UI: Public result only
 ```
 
-The compiler emits only `Column`, `Row`, `Card`, `Text`, `MatchCard`, `Button`, `Status`, and `LearningPath`. The catalog's action set is `selectSource`, `selectTarget`, `clearSelection`, `requestHint`, `submitAttempt`, `undoInk`, `clearInk`, and `saveProgress`. Every message is validated twice: in the compiler and again in the stream. The browser rejects unknown components, unknown actions, private field names, unsupported styling, and unsafe text.
+[createGenerationService](src/server/generation/service.ts) owns these decisions:
 
-This is snapshot SSE, not incremental model streaming. The server compiles the full message set, then enqueues frames synchronously. The client aborts after 8 seconds and requires exactly four surfaces. The response sets `cache-control: no-store`, `connection: keep-alive`, `x-edu-canvas-catalog`, and error codes `INVALID_ROLE`, `INVALID_REQUEST_ID`, `UNSUPPORTED_CATALOG`, `PREVIEW_UNAVAILABLE`, `PREVIEW_FORBIDDEN`, `PREVIEW_NOT_FOUND`, `PREVIEW_NOT_READY`, and `PREVIEW_BLOCKED`.
+1. Authorize the seeded teacher and normalize the input. An omitted idempotency key is derived from normalized request data using FNV-1a.
+2. Resolve an existing tenant-local key, or claim a new attempt before calling the provider. A losing claimant resolves the winner's record.
+3. Check prompt and generated-content safety. Structural failure permits one correction, so an attempt makes at most two generation calls.
+4. Run deterministic curriculum and learning-quality reviews. Optional advisory agents have at most two attempts and a default 250 ms timeout per attempt. Warnings remain visible; blocks prevent an accepted draft.
+5. Build a forward learning path against the versioned seeded curriculum. Missing or incompatible context blocks acceptance.
+6. Persist the final state with the expected attempt and update timestamp. If ownership has changed, return the current record instead of overwriting it.
 
-### 5.4 Health and readiness
+The factory currently selects a deterministic fixture provider or an OpenAI Responses adapter. The live adapter uses a 15-second timeout per call. There is no implemented 25-second overall generation deadline.
 
-`GET /api/health` reports process liveness and never touches dependencies. `GET /api/readiness` validates configuration and runs a bounded persistence check; it returns 503 when not ready. Fly checks both endpoints; the Docker image checks health.
-
-### 5.5 Persistence selection and write ownership
-
-`createFoundationPersistence(config)` chooses one adapter:
-
-1. No `DATABASE_URL` → `createSeededPersistence`, a module-level `Map` keyed by tenant and request. Drafts survive requests but not a process restart.
-2. `DATABASE_URL` with `PERSISTENCE_ADAPTER=postgres` → `createPostgresPersistence`.
-3. `DATABASE_URL` with `PERSISTENCE_ADAPTER=drizzle` → `createDrizzlePersistence`.
-
-All three expose `GenerationPersistence` plus `check()` and `readDemoCounts()`. The two PostgreSQL adapters share `createGenerationPersistence` for claim, compare-and-set save, expiry, idempotency lookup, and tenant-scoped read. The database contract test runs the same cases against both adapters.
-
-Every PostgreSQL operation opens a client and closes it in `withDatabase`; there is no pool at this revision. That is acceptable at milestone scale and is recorded in [§10](#10-shipped-target-and-known-drift).
-
-Writes use compare-and-set on `{ attempt, updatedAt }`. A lost write returns `false`, and the service re-reads the current owner's record instead of overwriting it. Idempotency keys are unique per tenant at the database level.
-
-## 6. Task recipes
-
-Each recipe follows the same shape: copy one example, touch only the listed files, keep the constraints, then run the gate. Do not add a parallel path.
-
-### 6.1 Add a generation provider
-
-**Copy** `src/server/generation/provider.ts`.
-
-**Touch**
-
-1. Implement `LessonDraftProvider`: a `provenance` object and `generate(request, context) → { draft: unknown }`.
-2. Add settings and `ConfigIssue` codes in `src/server/config.ts`; document them in `.env.example`.
-3. Select the provider in `src/server/generation/factory.ts`.
-4. Keep `createDeterministicLessonDraftProvider` for `DEMO_MODE`.
-5. Extend `provider.test.ts`, `config.test.ts`, and `service.test.ts`.
-
-**Constraints** Throw `LessonProviderError` with the four supported kinds. Make at most one correction call. Set an explicit deadline. Return `unknown`; validation is not the provider's job. Never call a provider from the browser. Add any new secret marker to `scripts/verify-client-boundary.ts`.
-
-**Gate** `pnpm check`.
-
-### 6.2 Add a persisted record or persistence method
-
-**Copy** `src/server/persistence/generation-persistence.ts` and the two adapter files.
-
-**Touch**
-
-1. Add or extend the type in `src/server/generation/types.ts`.
-2. Add the method to `GenerationPersistence` and implement it once in `createGenerationPersistence`.
-3. Add both PostgreSQL backends in `postgres.ts` and `drizzle.ts`.
-4. Mirror durable state in `seeded.ts` for demo parity.
-5. Add the Drizzle table in `drizzle/schema.ts` and a new forward-only `migrations/00NN_*.sql`.
-6. Extend `src/server/persistence/persistence-contract.test.ts`.
-
-**Constraints** Every query is tenant-scoped; schema policies use `current_setting('app.tenant_id')`. Keep the claim and compare-and-set semantics. Do not add a third migration history: the runtime uses `app_migrations`, and Drizzle tooling has its own metadata. Never edit an applied migration. Put domain code in `src/server/<domain>/`; do not create top-level `services/`, `controllers/`, or `models/` folders.
-
-**Gate** `docker compose up -d postgres`, then `pnpm test:database`, then `pnpm check`.
-
-### 6.3 Add a server function or API route
-
-**Copy** `src/server/demo/server-function.ts` for mutations and reads used by routes; `src/routes/api/health.ts` for a plain HTTP handler.
-
-**Touch**
-
-1. Create or extend `src/server/<domain>/server-function.ts` or a `*.server.ts` delivery module.
-2. Validate input with a Zod schema at the seam.
-3. Build dependencies inside the handler: `readServerConfig`, `createFoundationPersistence`, the configured provider, then the service.
-4. Return a shared public schema, never the internal record.
-5. For an API route, add `src/routes/api/<name>.ts` and delegate to the `*.server` handler.
-
-**Constraints** The route may import server code only when the specifier ends `.server` or `/server-function`; a file named `server-functions.ts` fails the gate. Call `getDemoSession` and `assertTenantAccess` inside the handler. A browser role parameter grants no authority. Set `cache-control: no-store` on private responses.
-
-**Gate** `pnpm verify:architecture`, `pnpm check`.
-
-### 6.4 Add a page route
-
-**Copy** `src/routes/demo/$role.tsx`.
-
-**Touch** Add `src/routes/<path>.tsx` with `createFileRoute`. Read data in `loader`; mutate through a server function. Keep the page component thin.
-
-**Constraints** Do not edit `src/routeTree.gen.ts`; the router plugin generates it. Vitest includes only `src/**/*.test.ts`, so a colocated `.test.tsx` will not run. `__root.tsx` owns the document shell. Add any new public path to `scripts/smoke.ts`.
-
-**Gate** `pnpm check`, then `pnpm build && pnpm start && pnpm smoke` for a runtime path.
-
-### 6.5 Add an A2UI component or action
-
-**Copy** the `Status` or `LearningPath` entry in `src/shared/a2ui-contract.ts`.
-
-**Touch**
-
-1. Add the name to `a2uiComponentNames` or `a2uiActionNames`.
-2. Add a strict schema branch to the discriminated union.
-3. Emit it from `src/server/a2ui/compiler.ts`.
-4. Render it in `src/components/a2ui/renderer.ts` and, when needed, `lesson-preview.tsx`.
-5. Extend `a2ui-contract.test.ts`, `compiler.test.ts`, and `renderer.test.ts`.
-
-**Constraints** The catalog is closed. Unknown components and actions fail with `UNKNOWN_COMPONENT` or `UNKNOWN_ACTION`; styling or markup keys fail with `UNSUPPORTED_PROPERTY`; private field names fail with `UNSAFE_PAYLOAD`. Text is checked for markup and script schemes. A catalog change requires a new catalog version ([AgDR-0001](docs/agdr/AgDR-0001-a2ui-catalog-governance.md)). Never add raw HTML or an execution path.
-
-**Gate** `pnpm check`.
-
-### 6.6 Change a browser-facing contract
-
-**Copy** `src/shared/generation-contract.ts`.
-
-**Touch**
-
-1. Edit the Zod schema and infer the TypeScript type from it.
-2. Update the producer: `projection.ts`, `compiler.ts`, or the server function.
-3. Update the consumer: the route or component.
-4. Update the sibling `*.test.ts`.
-
-**Constraints** `src/shared/` cannot import server, routes, components, `node:*`, or `postgres`. Keep schemas strict. `publicLessonDraftSchema` requires exactly four variants. Drop private fields in the projection, not in the component. If the field reaches the demo snapshot, update `demoSnapshotSchema` and the public-contract check.
-
-**Gate** `pnpm verify:architecture`, `pnpm verify:client-boundary`, `pnpm check`.
-
-### 6.7 Add a validator or configuration flag
-
-**Copy** `src/server/generation/validation.ts` for a structural rule, `curriculum-validator.ts` for a semantic review, and `src/server/config.ts` for a flag.
-
-**Touch** Validator: add a versioned finding with `validator`, `verdict`, and `validatorVersion`, then wire it into `semantic-validation.ts`. Flag: add a `ConfigIssueCode`, a parse branch, `.env.example` documentation, and `config.test.ts`.
-
-**Constraints** Validators return diagnostics, never throw for expected failures. Warnings remain visible to the teacher; blocks keep drafts out of the preview. Configuration fails closed. Do not hide a rule in prose.
-
-**Gate** `pnpm check`.
-
-### 6.8 Change an architectural rule
-
-**Copy** the closest rule in `scripts/verify-architecture.ts` or `eslint.config.js`.
-
-**Touch** Add the check first. Record the reason in `docs/agdr/`. Update `docs/architecture-harness.md` and this document. Add a test fixture that fails without the rule.
-
-**Constraints** Never weaken a gate to pass a diff. A rule that can be a type, lint rule, test, or script does not belong in prose. If a rule genuinely needs a new owner or exception, name the owner in a decision record.
-
-**Gate** `pnpm check`.
-
-## 7. Invariants
-
-| ID | Rule | Enforced by |
+| State | Meaning | Explicit retry |
 | --- | --- | --- |
-| I1 | Layer direction holds: shared is browser-safe, UI owns no runtime, server owns no delivery. | `scripts/verify-architecture.ts` |
-| I2 | The browser receives only fields in a strict public schema. Private fields are dropped at the projection. | `projection.ts`, `demoSnapshotSchema`, `verify:architecture` |
-| I3 | No secret, provider key, database URL, Sentry marker, or student identity reaches the public bundle. | `scripts/verify-client-boundary.ts` |
-| I4 | One owner may claim and write a generation attempt. Writes use compare-and-set. | `GenerationPersistence`, `service.ts`, database contract test |
-| I5 | A generation is idempotent per tenant and key. A retry keeps the original request metadata. | FNV-1a keys, unique database key, `service.ts` |
-| I6 | Only a validated `ready-for-review` draft can be previewed, and only by its teacher in its tenant. | `preview.server.ts` |
-| I7 | A2UI is a closed catalog of semantic components. No generated HTML, JavaScript, or unknown action executes. | `src/shared/a2ui-contract.ts`, compiler, stream, renderer |
-| I8 | Tenant access is asserted on every read and write; real-student data stays disabled. | `policy.ts`, tenant-scoped SQL, `src/server/config.ts` |
-| I9 | There is no hidden global mutable state. State has one owner. | `verify:architecture` store bans, local React state |
-| I10 | Validation fails closed: a blocked or failed attempt stores diagnostics and no draft. | `service.ts`, public projection |
+| `requested` | Initial service record before claim | No |
+| `generating` | An attempt holds a claim | Resolve existing attempt |
+| `ready-for-review` | Accepted draft and learning path stored | No |
+| `blocked-by-validation` | Structure, semantics, or path rejected | Yes |
+| `blocked-by-moderation` | Prompt or content safety rejected | Revise and start a new request |
+| `failed-retryable` | Timeout, rate limit, transient provider error, or unavailable validation | Yes |
+| `failed-terminal` | Terminal or unexpected provider failure | No |
 
-These invariants are architectural. Product rules such as approval before publication and server-authoritative grading are **Target** contracts in [docs/design/design-doc.md](docs/design/design-doc.md); they are not enforced by code yet.
+Blocked and failed attempts retain diagnostics with no accepted draft. `ready-for-review` means previewable, not teacher-approved or published.
 
-## 8. The cage
+### Compile and stream a preview
 
-The cage is the set of automatic checks that reject a change. Prose is the last resort, not the first.
+`LessonPreview` requests `/api/a2ui/preview` with `role`, `requestId`, and a catalog version. [preview.server.ts](src/server/a2ui/preview.server.ts) validates parameters and configuration, requires the seeded teacher, and loads the record by tenant and request ID. The record must belong to that teacher and contain a `ready-for-review` draft.
 
-| Command | Proves | Notes |
+[compiler.ts](src/server/a2ui/compiler.ts) projects the private draft into allowlisted components and preview data, including the validated learning path. [stream.ts](src/server/a2ui/stream.ts) validates messages again and emits SSE `a2ui` events followed by completion or error. Browser stream parsing and rendering live in `src/components/a2ui/` and keep render state local.
+
+### Persist and recover attempts
+
+[GenerationPersistence](src/server/generation/types.ts) provides claim, expiry, conditional save, idempotency lookup, and record read operations. The service does not know SQL or Drizzle transaction details.
+
+A claim has a 30-second lease. Duplicate callers poll for up to five seconds. Expiry is resolved by request handling; there is no background reaper. Conditional writes compare attempt number and update timestamp, so an expired worker cannot overwrite a replacement attempt.
+
+Both PostgreSQL adapters use [createGenerationPersistence](src/server/persistence/generation-persistence.ts) for shared claim and write policy. They supply transactions, savepoints, tenant context, and queries. Generation queries constrain tenant IDs, and SQL policies use transaction-local `app.tenant_id`. The seeded adapter implements the same public port against the process-local map.
+
+The database records requests separately from attempt history. SQL migrations also define the seeded activity, version, graph, and attempt tables; those tables do not imply that the student application flow exists.
+
+## Change recipes
+
+These are extension paths through existing owners. New domain behavior belongs in a named server module with a narrow delivery interface.
+
+| Change | Implementation path | Constraints and verification |
 | --- | --- | --- |
-| `pnpm format:check` | Formatting matches Prettier | `pnpm fix` rewrites |
-| `pnpm lint` | ESLint and Ultracite rules pass | Includes React, Router, Vitest, import, a11y, and JSDoc plugins |
-| `pnpm lint:styles` | Stylelint passes | BEM pattern |
-| `pnpm typecheck` | `tsc --noEmit` passes | Strict, unused checks, `verbatimModuleSyntax` |
-| `pnpm typecheck:tsrs` | Additional project type check passes | `tsrs --noEmit` |
-| `pnpm test` | Vitest unit and integration tests pass | Only `src/**/*.test.ts` |
-| `pnpm build` | Vite and Nitro produce a server bundle | Output in `.output/` |
-| `pnpm verify:client-boundary` | Public bundle has no private markers | Requires a prior build |
-| `pnpm verify:architecture` | Import law, state ownership, delivery seams, and public snapshot hold | Scans `src/` only |
-| `pnpm check` | All of the above pass in order | The local gate |
-| `pnpm test:database` | Both PostgreSQL adapters pass the same contract | Needs a running container |
-| `pnpm test:coverage` | Coverage floors hold: lines 50, branches 65, functions 46, statements 50 | Below the eventual 80% target |
-| `pnpm smoke` | Health, readiness, demo pages, and a deterministic generation request work | Needs a running server |
-| `pnpm verify:config` | Configuration summary is valid | Not part of `pnpm check` |
+| Add a model provider | Implement `LessonDraftProvider` in `generation/provider.ts` or a sibling adapter. Select it in `factory.ts`; add settings in `config.ts` and `.env.example`. | Return unknown draft data and provenance. Map failures to `LessonProviderError`. Keep correction policy in the service. Extend provider, config, and service tests. Add new secret markers to the client scan. |
+| Add persisted state | Extend the domain type and persistence port. Implement storage in seeded, raw SQL, and Drizzle adapters. Add forward-only SQL and refresh the Drizzle snapshot. | Preserve tenant scoping, atomic claims, conditional writes, and adapter parity. Run database contract tests against a migrated database. |
+| Add a server operation | Use `demo/server-function.ts` for the existing demo composition, or a domain-owned `.server` delivery module for HTTP handlers. Parse inputs and project outputs at the boundary. | Keep domain rules and database access behind the delivery interface. Verify architecture imports and public schemas. |
+| Add a page | Add a file route using `routes/demo/$role.tsx` as the existing example. Load data through named server interfaces and keep interaction state local. | Regenerate routes with `pnpm generate-routes`. Do not hand-edit `routeTree.gen.ts`. Check the built client boundary. |
+| Change A2UI | Start with `shared/a2ui-contract.ts`, then update compiler, stream expectations, renderer, and their tests together. | Version catalog changes under the [catalog-governance decision](docs/agdr/AgDR-0001-a2ui-catalog-governance.md). Preserve rejection of unknown messages and private data. |
+| Change a public contract | Change the owning shared Zod schema, its server projection, consumers, and tests together. | Keep server record types private. A schema edit alone does not update an explicit projection. |
+| Add validation or configuration | Put draft acceptance rules in generation validation. Put application settings in `config.ts`, with typed issue codes and safe summaries. | Test pass, warning, block, or invalid-setting behavior as applicable. Keep secrets out of responses and diagnostics. |
+| Change a boundary | Record the decision in an AgDR, update the verifier and affected callers, then update this map. | Run `pnpm verify:architecture` and the full `pnpm check` gate. Document enforcement limits rather than claiming complete isolation. |
 
-CI adds what local `pnpm check` does not: `db:drizzle:check`, a first `db:setup`, `test:coverage`, a repeated bootstrap, `test:database`, a Docker image build, a container health and readiness check, and two smoke runs. The workflow is `.github/workflows/foundation.yml`.
+The repository has no deterministic scaffold command for these recipes. [Coding standards](CODING_STANDARDS.md) own general implementation conventions.
 
-**What the cage does not cover.** `verify:architecture` scans `src/` only. It does not inspect `scripts/`, SQL, CSS, generated output, or the SSR bundle. `verify:client-boundary` scans only `.output/public`. Vitest ignores `.tsx` tests. Those gaps are deliberate at this size; add a check before adding a rule that needs one.
+## Invariants and verification
 
-**Changing the cage.** A recurring review finding becomes a check, test, or type in the same change. Never answer the same finding twice in prose. Update `docs/architecture-harness.md` for the rationale and this document for the map.
+| Invariant | Mechanism | Limit |
+| --- | --- | --- |
+| Routes cross named server delivery interfaces | `verify:architecture` import scan | Selected source patterns, not a complete dependency graph |
+| Public responses use explicit contracts | Snapshot parsing and generation projection schemas | Each new response path needs its own projection and checks |
+| Private markers stay out of shipped browser assets | `verify:client-boundary` scans `.output/public` | Fixed string list; does not inspect the server bundle or all possible sensitive values |
+| One claimant owns a generation write | Atomic claims and compare-and-set persistence; service and database contract tests | A lease is not an overall execution deadline |
+| Retry metadata stays consistent | Service checks owner, retryable state, and normalized request fields | Existing-key lookup does not detect a changed payload under the same explicit key |
+| Only accepted, owned drafts reach preview | `preview.server.ts` access and state checks | Identity is still selected through the demo role |
+| A2UI remains a closed data protocol | Shared schemas, compiler, stream, and renderer validation | Catalog support does not implement the associated business operation |
+| Storage remains tenant-scoped | Tenant predicates, transaction-local tenant context, SQL policies, parity tests | Application access still depends on synthetic sessions |
+| Real-data mode remains disabled | Configuration rejects `SYNTHETIC_DATA_ONLY=false` | This flag cannot identify personal data embedded in free text |
 
-## 9. Deployment and runtime topology
+`pnpm check` runs formatting, ESLint, Stylelint, TypeScript, tsrs, Vitest, the application build, client-boundary verification, and architecture verification in order. [package.json](package.json) owns the exact command chain.
 
-| Environment | Shape |
+Additional checks have separate prerequisites:
+
+| Command | Scope and prerequisite |
 | --- | --- |
-| Local | `pnpm dev` on port 3000. Seeded mode by default; optional Postgres via `docker compose up -d postgres` and `pnpm db:setup`. |
-| CI | PostgreSQL 17 service, full gate, database contract, Docker build, container smoke, then a native server smoke. |
-| Milestone deploy | One Fly.io Machine in `ams`, Supabase Postgres, migrations as a release command, health and readiness checks. **Target** configuration per [AgDR-0007](docs/agdr/AgDR-0007-demo-access-and-deployment.md). |
-| Production | Not authorized. Real data, protected auth, shared rate limits, backups with restore evidence, DPA and residency approval remain open. |
+| `pnpm test:database` | Runs adapter parity tests when `DATABASE_URL` is supplied. Sets `RUN_DATABASE_TESTS=true`; the suite skips without a database URL. |
+| `pnpm test:coverage` | Enforces coverage floors from `vitest.config.ts`; separate from `pnpm check`. |
+| `pnpm verify:config` | Reports safe configuration and fails on configuration issues. |
+| `pnpm smoke` | Checks a running server, including deterministic generation. |
+| `pnpm verify:client-boundary` | Requires an existing build. Run `pnpm build` first when validating a code change. |
 
-The runtime image is multi-stage, runs as the `node` user, binds port 3000, and serves `.output/server/index.mjs`. The migration runner acquires a bootstrap lock, applies SQL files in filename order, and records a SHA-256 checksum in `app_migrations`.
+[Foundation CI](.github/workflows/foundation.yml) adds PostgreSQL setup, Drizzle-history checks, repeated migration and seed runs, coverage, adapter parity, Docker build, and container and native-server smoke checks.
 
-**Scale constraint.** Preview streaming is request-scoped, and the seeded store plus any future in-process limits are process-local. Do not scale horizontally until quota and request-limit state is shared. [AgDR-0007](docs/agdr/AgDR-0007-demo-access-and-deployment.md) records one Machine for the milestone for this reason.
+Verification coverage is bounded. The architecture scanner reads TypeScript under `src/`; it does not inspect SQL, operator scripts, or CSS. Its import extraction uses regular expressions. Vitest selects `src/**/*.test.ts`, so `.test.tsx` files are outside that configuration. Passing these checks does not establish browser interaction coverage or production readiness. [Architecture harness](docs/architecture-harness.md) records guardrail intent.
 
-## 10. Shipped, target, and known drift
+## Deployment and runtime topology
 
-### 10.1 Capability status
+The [Dockerfile](Dockerfile) builds `.output/`, copies runtime dependencies and the migration runner, runs as `node`, and serves `.output/server/index.mjs` on port 3000. Fly runs migrations as a release command. The runner locks bootstrap, applies SQL in filename order, and records SHA-256 checksums in `app_migrations`.
 
-See the table in [§2](#2-system-context-and-trust-boundary). The short version: the teacher generation and preview path is real; approval, publication, student attempts, grading, reveal, adaptation, protected sessions, and quotas are not in this checkout. Do not describe a **Target** item as shipped.
+`/api/health` reports liveness. `/api/readiness` validates configuration and checks persistence. Neither endpoint proves live provider access or lesson quality.
 
-### 10.2 Known drift and debt
+The seeded store is local to one process and disappears on restart. PostgreSQL is required for shared durable records. SSE state belongs to each response and is rebuilt from persisted data on a new preview request.
 
-| Item | Current state | Impact | Default |
-| --- | --- | --- | --- |
-| Deployment count | `fly.toml` sets `min_machines_running = 2`; AgDR-0007 and the runbook say one Machine | Process-local limits and SSE assumptions break at two instances | Align `fly.toml` to one Machine, or share limit state before scaling |
-| Provider naming | Factory and environment variables are `OPENAI_*`; AgDR-0006 selects a provider-agnostic adapter | A provider swap looks larger than it is; documents may name the wrong model | Land the adapter rename; record the exact model only after access evidence |
-| Provider deadline | Adapter uses `AbortSignal.timeout(15_000)`; AgDR-0006 records a 10-second per-call deadline | A claimed deadline is not the implemented deadline | Make code and decision agree before citing either |
-| Seeded store | Module-level `Map` in `persistence.ts` | Not durable, not shared, not multi-instance | Use PostgreSQL for any shared environment |
-| Database connections | Every operation opens and closes a client in `withDatabase` | Connection churn at scale | Add pooling behind the persistence port before production load |
-| Seeded activity fixture | `activityVersion.catalogVersion` is `edu-canvas-matching-v0`; the live preview catalog is `matching-v1` | An agent may copy the stale fixture | Keep the fixture off the preview path; do not copy its catalog version |
-| Authentication | Browser supplies `role` to demo server functions | Public access would be impersonation | Protected sessions before any public link ([#74](https://github.com/abodacs/edu-canvas/issues/74)) |
-| Missing loop slices | No approval, publication, grading, or adaptation code | The loop cannot be called learner-safe | Build the slices in issue order; keep claims to preview |
-| Generators | Recipes are prose; no scaffold command exists | Agents can still invent a seam | Add tested generators once the core loop stabilizes |
-| Coverage | Floors are lines 50, branches 65, functions 46, statements 50 | Regressions pass below the 80% target | Ratchet upward as loop slices land ([#70](https://github.com/abodacs/edu-canvas/issues/70)) |
-| Threat model | Still names OpenAI GPT-5.6 | Security review names a provider the decision record does not promise | Update with the provider adapter change |
-| AgDR numbering | Three records share `AgDR-0003` | A citation by number alone is ambiguous | Cite the full slug; renumber on the next decision record |
+The release design selects one continuously running Fly Machine with database-backed quotas and process-local burst limits. Those controls are targets. Multiple Machines can serve persisted snapshots, but the planned process-local limits require either a single instance or shared limit state. [AgDR-0007](docs/agdr/AgDR-0007-demo-access-and-deployment.md) records that tradeoff; the [release runbook](docs/release-fly-supabase.md) owns launch requirements.
 
-## 11. Decisions and maintenance
+## Implementation gaps and drift
 
-| Record | Decision |
-| --- | --- |
-| [AgDR-0001](docs/agdr/AgDR-0001-a2ui-catalog-governance.md) | Real A2UI v0.9.1 with a custom, allowlisted catalog |
-| [AgDR-0002](docs/agdr/AgDR-0002-server-authoritative-grading.md) | Server-authoritative grading with answer-key isolation |
-| [AgDR-0003](docs/agdr/AgDR-0003-canonical-lesson-contract-and-bounded-generation.md) | Canonical lesson contract and bounded generation |
-| [AgDR-0003](docs/agdr/AgDR-0003-nitro-beta-compatibility.md) | Keep Nitro 3 beta while Vite 8 is pinned |
-| [AgDR-0003](docs/agdr/AgDR-0003-server-observability.md) | Server-only observability with scrubbed Sentry delivery |
-| [AgDR-0004](docs/agdr/AgDR-0004-bounded-semantic-validation.md) | Bounded semantic validation at the generation seam |
-| [AgDR-0005](docs/agdr/AgDR-0005-grounded-package-version-contracts.md) | Grounded lesson-package and version contracts |
-| [AgDR-0006](docs/agdr/AgDR-0006-provider-selection-and-deadlines.md) | Provider-agnostic selection and bounded deadlines |
-| [AgDR-0007](docs/agdr/AgDR-0007-demo-access-and-deployment.md) | Single-instance demo access and deployment |
+These differences were checked against the source baseline above. They are not resolved by this document.
 
-Write an AgDR when a choice changes a boundary, an invariant, a public contract, a dependency direction, or the enforcement cage. Do not write one for a local implementation choice.
+| Area | Implemented state | Target or consequence |
+| --- | --- | --- |
+| Teaching loop | Generation and teacher preview | Approval, immutable publication, learner attempts, grading, reveal, and adaptation remain unimplemented. |
+| Grounding | Seeded curriculum and prerequisite graph | Learning Commons, Jev matching, uploads, and grounded package contracts remain design work described in [AgDR-0005](docs/agdr/AgDR-0005-grounded-package-version-contracts.md). |
+| Safety | Pattern checks, structural validation, bounded semantic review | The cross-cutting hard safety gate remains unimplemented. |
+| Identity and cost controls | Browser-selected seeded role; no invitation sessions or quota enforcement | [AgDR-0007](docs/agdr/AgDR-0007-demo-access-and-deployment.md) defines protected access and bounded usage. |
+| Provider selection | Fixture or OpenAI Responses adapter with `OPENAI_*` settings and a `gpt-5.6` code default | [AgDR-0006](docs/agdr/AgDR-0006-provider-selection-and-deadlines.md) selects a provider through access evidence. The code default is not evidence for an event-allowed provider. |
+| Deadlines | 15 seconds per provider call; 30-second claim lease | AgDR-0006 specifies 10 seconds per call and 25 seconds for generation plus correction. The overall deadline is absent. |
+| Idempotency conflicts | An existing tenant-local key resolves its stored record before payload comparison | AgDR-0006 requires `IDEMPOTENCY_CONFLICT` when an explicit key is reused with changed input. |
+| Machine count | `fly.toml` sets `min_machines_running = 2` | AgDR-0007 and the release procedure select one Machine for the planned limit model. |
+| Connections | Each database operation creates and closes a client | There is no application-wide connection pool. |
+| Seeded catalog | Fixture activity uses `edu-canvas-matching-v0` | Live preview uses `matching-v1`; the activity fixture is not the preview catalog authority. |
+| Decision identifiers | Three records share `AgDR-0003` | Citations need the full filename to distinguish canonical generation, Nitro compatibility, and observability. |
 
-Update this document in the same change when a boundary, flow, recipe, invariant, or drift item changes. Keep it short. The [rationale](docs/engineering/architecture-rationale.md) records why this document has this shape; it is not a second architecture.
+## Document maintenance
 
-**This document does not own:** product status or the demo contract ([README](README.md)), outcomes and release gates ([ROADMAP](ROADMAP.md)), feature scope and acceptance checks ([design contracts](docs/design/design-doc.md)), decision rationale ([AgDR](docs/agdr/)), guardrail rationale ([architecture harness](docs/architecture-harness.md)), setup and redeploy ([runbooks](docs/foundation-runbook.md)), or threats ([threat model](docs/security/threat-model.md)).
+Update this document when a change alters ownership, a public boundary, a runtime flow, concurrency behavior, or an enforcement mechanism. Update a drift row when its implementation lands. Keep future contracts in the design documents and decision rationale in AgDRs.
 
-## 12. Glossary
-
-| Term | Meaning |
-| --- | --- |
-| Lesson draft | The provider's structured proposal: four variants, items, hints, feedback, and an optional learning path. Untrusted until validated. |
-| Variant | One content option (`standard`, `scaffold`, `challenge`). Variants are not teaching stages. |
-| Learning path | A validated, version-pinned prerequisite sequence stored with a ready draft. |
-| Diagnostic | A typed warning or error with a code, message, optional variant or node, and validator version. |
-| Public projection | The strict shape sent to the browser. Private fields are removed here. |
-| Generation claim | The 30-second lease that gives one request owner the right to write. |
-| A2UI | A declarative UI message protocol. The server emits catalog components; the browser renders semantic DOM. |
-| The cage | The automated checks that reject a change. |
+The [document rationale](docs/engineering/architecture-rationale.md) records the alternatives considered for this rewrite. [README](README.md) owns product orientation and current status; [ROADMAP](ROADMAP.md) owns delivery order and outcome gates. This document provides the implementation map those documents link to.
