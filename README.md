@@ -27,6 +27,7 @@ Adaptive visual-learning platform for **Grades 3–6**, starting with **Common C
 
 | Path | What |
 | --- | --- |
+| [`ARCHITECTURE.md`](ARCHITECTURE.md) | Stack, folder ownership, runtime flows, invariants, change recipes, and the enforcement map |
 | [`ROADMAP.md`](ROADMAP.md) | Product direction, delivery order, and validation gates (imported hackathon-2026 roadmap) |
 | [`docs/README.md`](docs/README.md) | Documentation index and document ownership (imported hackathon-2026 corpus) |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Local setup, issue reports, commit messages, and verification |
@@ -48,6 +49,7 @@ Start from the delivery module, then follow the domain-named server module:
 
 | Behavior | Start here |
 | --- | --- |
+| Architecture rules and allowed change paths | [`ARCHITECTURE.md`](ARCHITECTURE.md) |
 | Seeded teacher/student demo | `src/routes/demo/$role.tsx` → `src/server/demo/` |
 | Teacher lesson generation | `src/routes/demo/$role.tsx` → `src/server/generation/` |
 | Demo role policy and tenant assertion | `src/server/demo/policy.ts` |
