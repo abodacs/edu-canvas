@@ -7,6 +7,8 @@ Edu-Canvas is a production product; these documents define and verify one trustw
 | Document | Owns |
 | --- | --- |
 | [Root README](../README.md) | Repository overview, stack, quick start, and safety boundaries |
+| [Architecture](../ARCHITECTURE.md) | Stack, folder ownership, runtime flows, invariants, change recipes, and the enforcement map |
+| [Architecture rationale](engineering/architecture-rationale.md) | Why the architecture document has its shape; candidate synthesis and accepted tradeoffs |
 | [ROADMAP.md](../ROADMAP.md) | Product outcomes, release boundaries, lifecycle gates, and deferred commitments |
 | [Product strategy](product-strategy.md) | Problem, target users, alternatives, value hypothesis, and evidence limits |
 | [Walking skeleton](walking-skeleton.md) | Current end-to-end acceptance contract and actual delivery gaps |
@@ -38,4 +40,5 @@ Edu-Canvas is a production product; these documents define and verify one trustw
 
 ## Change log
 
+- 2026-10-25 (architecture): root [ARCHITECTURE.md](../ARCHITECTURE.md) and its [rationale](engineering/architecture-rationale.md) added. The architecture document owns the current system, folder ownership, runtime flows, and enforcement map; the design documents keep the target contracts.
 - 2026-10-25 (PR 02): ownership reconciled; conflicts from [#89](https://github.com/abodacs/edu-canvas/issues/89) fixed; the July 2026 OpenAI Build Week documents (`DEVPOST_WINNING_STRATEGY.md`, `PRD_GRILL_LOG.md`), the superseded video script, and the unverified idea-brainstorm archive were removed. Their still-valid decisions live in the [decision record](design/design-doc-questions.md) and [teacher UI decisions](product/teacher-ui.md).
