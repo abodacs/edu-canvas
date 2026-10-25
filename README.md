@@ -1,34 +1,32 @@
 # Edu-Canvas
 
-> Turn a teacher's plain-English or Arabic request into a safe, standards-aligned visual matching lesson in minutes — then give a student an adaptive "aha" moment. **Teachers approve every variant; AI never grades or publishes unreviewed content.**
+> Turn a teacher's plain-English request into a safe, standards-aligned visual matching lesson in minutes — then give a student an adaptive "aha" moment. **Teachers approve every variant; AI never grades or publishes unreviewed content.**
 
-Adaptive, bilingual (**English / Arabic, RTL**) visual-learning platform for **Grades 3–6**, starting with **Common Core Math**. Built for **OpenAI Build Week** (Education track).
+Adaptive visual-learning platform for **Grades 3–6**, starting with **Common Core Math**. This is a production product: the goal is teachers who return because preparation, review, and follow-up take less total effort with full control. The **Meta AI Developer Hackathon 2026** (October 26 – November 4) is the first external validation milestone on that path — English-only release; Arabic is a deferred product goal.
 
 ## Why it's different
 
-- **Generative UI, not a chat wrapper.** GPT-5.6 produces a structured _lesson draft_; the server validates it and compiles it into **A2UI v0.9.1** messages from a fixed, allowlisted Edu-Canvas catalog. No generated HTML or JavaScript executes.
+- **Generative UI, not a chat wrapper.** The generation model produces a structured _lesson draft_; the server validates it and compiles it into **A2UI v0.9.1** messages from a fixed, allowlisted Edu-Canvas catalog. No generated HTML or JavaScript executes.
 - **Browser-safe rendering.** Core lesson interaction uses semantic DOM components through A2UI. Experimental HTML-in-Canvas is optional visual polish and never required for authoring, accessibility, sharing, or grading.
-- **Teacher-gated.** Every generated variant is teacher-approved in a bulk review flow before any student sees it.
+- **Teacher-gated.** Every generated variant is teacher-approved in a bulk review flow before any student sees it. Variants are content options, not teaching stages.
 - **Server-authoritative grading.** The answer key never leaves the server; the client cannot submit a score.
 - **Adaptive + explainable.** A curated prerequisite graph drives the next activity; teachers see the reason and can override.
 
 ## Stack
 
 - **TanStack Start** (TypeScript, full-stack) · **PostgreSQL** (server-only, tenant-scoped, immutable versions, append-only events/audit)
-- **OpenAI GPT-5.6** (server-side only) · **A2UI v0.9.1** wire protocol + custom catalog (SSE ↓ / HTTPS ↑)
-- **shadcn/ui Base UI** · Tailwind CSS · logical CSS properties for RTL
-- English + Arabic (RTL) · WCAG 2.2 AA · responsive phone → desktop
+- Generation model behind a server-only provider interface; the exact event-allowed Meta model is recorded once access is proven ([decision C2](docs/design/design-doc-questions.md)) · **A2UI v0.9.1** wire protocol + custom catalog (SSE ↓ / HTTPS ↑)
+- **shadcn/ui Base UI** · Tailwind CSS · logical CSS properties
+- English (Arabic deferred) · WCAG 2.2 AA · responsive phone → desktop
 
 ## Status
 
-🟡 **Foundation, structural generation, bounded semantic validation, and the issue #4 teacher preview slice are in place; the full end-to-end loop is still being built.** [Issue #2](https://github.com/abodacs/edu-canvas/issues/2) provides the TanStack Start runtime, synthetic demo repository, PostgreSQL migrations/seed, health/readiness endpoints, and role-limited demo views. [Issue #3](https://github.com/abodacs/edu-canvas/issues/3) adds the server-side GPT-5.6 path, four structurally validated draft variants, persistence, diagnostics, and retry-safe generation. [Issue #18](https://github.com/abodacs/edu-canvas/issues/18) adds deterministic curriculum and learning-quality reviews with bounded advisory-agent retries; warnings remain teacher-visible and blocks keep drafts out of the public projection. [Issue #4](https://github.com/abodacs/edu-canvas/issues/4) now compiles accepted public drafts into a pinned, allowlisted A2UI v0.9.1 catalog and streams a semantic-DOM teacher preview with recoverable connection states. [Issue #17](https://github.com/abodacs/edu-canvas/issues/17) now adds the validated, version-pinned prerequisite path and teacher-review blocking states to that preview. [Issue #28](https://github.com/abodacs/edu-canvas/issues/28) still owns the cross-cutting hard safety gate; approval/publication, grading, and adaptation remain later slices. [Issue #27](https://github.com/abodacs/edu-canvas/issues/27) remains an open correctness blocker before the landing preview can be called learner-safe. The issue-driven product strategy and observed-behaviour plan live in [`docs/product-strategy.md`](docs/product-strategy.md) and [`docs/observed-behaviour.md`](docs/observed-behaviour.md). Implementation is built with **Codex + GPT-5.6** (Devpost requirement).
+🟡 **Foundation, structural generation, bounded semantic validation, and the issue #4 teacher preview slice are in place; the full end-to-end loop is still being built.** [Issue #2](https://github.com/abodacs/edu-canvas/issues/2) provides the TanStack Start runtime, synthetic demo repository, PostgreSQL migrations/seed, health/readiness endpoints, and role-limited demo views. [Issue #3](https://github.com/abodacs/edu-canvas/issues/3) adds the server-side generation path, four structurally validated draft variants, persistence, diagnostics, and retry-safe generation. [Issue #18](https://github.com/abodacs/edu-canvas/issues/18) adds deterministic curriculum and learning-quality reviews with bounded advisory-agent retries; warnings remain teacher-visible and blocks keep drafts out of the public projection. [Issue #4](https://github.com/abodacs/edu-canvas/issues/4) now compiles accepted public drafts into a pinned, allowlisted A2UI v0.9.1 catalog and streams a semantic-DOM teacher preview with recoverable connection states. [Issue #17](https://github.com/abodacs/edu-canvas/issues/17) now adds the validated, version-pinned prerequisite path and teacher-review blocking states to that preview. [Issue #28](https://github.com/abodacs/edu-canvas/issues/28) still owns the cross-cutting hard safety gate; approval/publication, grading, and adaptation remain later slices. [Issue #27](https://github.com/abodacs/edu-canvas/issues/27) is closed (2026-10-21); re-verify the reported false-success behavior against the release candidate before any learner-safe claim. The issue-driven product strategy and observed-behaviour plan live in [`docs/product-strategy.md`](docs/product-strategy.md) and [`docs/observed-behaviour.md`](docs/observed-behaviour.md).
 
 ## Repo layout
 
 | Path | What |
 | --- | --- |
-| `PRD_GRILL_LOG.md` | 170-question product decision log — the spec |
-| `DEVPOST_WINNING_STRATEGY.md` | Competition cut + 48-hour execution plan |
 | [`ROADMAP.md`](ROADMAP.md) | Product direction, delivery order, and validation gates (imported hackathon-2026 roadmap) |
 | [`docs/README.md`](docs/README.md) | Documentation index and document ownership (imported hackathon-2026 corpus) |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Local setup, issue reports, commit messages, and verification |
@@ -36,7 +34,7 @@ Adaptive, bilingual (**English / Arabic, RTL**) visual-learning platform for **G
 | [`docs/plans/hackathon-2026-pr-stack.md`](docs/plans/hackathon-2026-pr-stack.md) | Proposed hackathon document import, issue/Projects reconciliation, PR stack, and full product lifecycle roadmap |
 | `docs/product-strategy.md` | North-star outcome, issue-driven loop, and seven-layer audit |
 | `docs/observed-behaviour.md` | Evidence boundary, job stories, and research plan |
-| `docs/walking-skeleton.md` | The thinnest end-to-end demo slice (the build contract) |
+| `docs/walking-skeleton.md` | The thinnest end-to-end slice (the acceptance contract) |
 | `docs/foundation-runbook.md` | Operator/developer setup, redeploy, and handoff checks for issue #2 |
 | `docs/release-fly-supabase.md` | Fly.io + Supabase Postgres release procedure and launch gates |
 | `docs/architecture-harness.md` | Guardrails for state ownership, layer imports, and contract drift |
@@ -80,7 +78,7 @@ sequenceDiagram
     actor Teacher
     participant TeacherUI as Teacher browser
     participant Server as Edu-Canvas server
-    participant GPT as GPT-5.6
+    participant Model as Generation model (server-side)
     participant Catalog as Validator + A2UI catalog
     participant Store as Seeded repo / PostgreSQL
     actor Student
@@ -89,8 +87,8 @@ sequenceDiagram
 
     Teacher->>TeacherUI: Enter prompt, grade, standard, language
     TeacherUI->>Server: Submit generation request (HTTPS)
-    Server->>GPT: Request constrained lesson draft
-    GPT-->>Server: Return structured draft
+    Server->>Model: Request constrained lesson draft
+    Model-->>Server: Return structured draft
     Server->>Catalog: Validate structure and bounded curriculum quality
     alt Validation hard-blocks draft
         Catalog-->>Server: hard_block with actionable errors
@@ -100,7 +98,7 @@ sequenceDiagram
         Server->>Catalog: Compile validated draft into A2UI
         Catalog-->>TeacherUI: Stream allowlisted A2UI variants and visible warnings (SSE)
         Teacher->>TeacherUI: Review variants, path, story, and warnings
-        Teacher->>TeacherUI: Edit and approve four variants
+        Teacher->>TeacherUI: Edit and approve the four content variants
         TeacherUI->>Server: Publish approved pack (HTTPS)
         Server->>Catalog: Re-run hard safety gate before Share
         alt Share hard-blocked
@@ -128,7 +126,7 @@ sequenceDiagram
     end
 
     Note over Server,Adapt: Answer key, mastery, and permissions stay server-side.
-    Note over StudentUI,Server: Client never sends a score; no student images or identifying data go to GPT-5.6.
+    Note over StudentUI,Server: Client never sends a score; no student images or identifying data go to the model.
 ```
 
 ## Quick start
@@ -164,7 +162,7 @@ See [`docs/foundation-runbook.md`](docs/foundation-runbook.md) for configuration
 
 - Answer key, mastery, and permissions are **server-only** — never present in any client bundle or A2UI message.
 - **No student images or identifying data** are sent to the model.
-- Real student data is blocked until **DPA + EU-residency + security + consent** approval; the demo uses **synthetic data only**.
+- Real student data is blocked until **DPA + EU-residency + security + consent** approval; milestone deployments use **synthetic data only**.
 
 ## Governance
 

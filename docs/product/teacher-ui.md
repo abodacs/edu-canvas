@@ -13,7 +13,7 @@ This gate covers implementation of this UI direction, including integrations, pr
 ## Agreed direction
 
 - Help teachers generate related teaching materials and interactive tutorials grounded in their teaching sources.
-- Abdullah selected the full agreed first-version feature set for the hackathon (Q29), including Learning Commons, Jev, uploads, and recovery. This expands the earlier sprint scope; feasibility within the existing 30-hour human budget is unproven. Sequence the full scope rather than silently dropping features. See [product priorities](delivery-priorities.md).
+- Abdullah selected the full agreed first-version feature set for the hackathon (Q29), including Learning Commons, Jev, uploads, and recovery. This expands the earlier sprint scope; the preliminary estimate is 36–57 human hours ([UQ3](../design/design-doc-questions.md#answer-the-five-open-ui-design-topics)) versus the earlier 30-hour plan. Sequence the full scope rather than silently dropping features. See [product priorities](delivery-priorities.md).
 - Initial framework: Common Core Grade 4 equivalent fractions (`4.NF.A.1`).
 - Support connected services, uploads, and websites over time; start with Learning Commons.
 - Generate original materials grounded in standards, learning components, and prerequisites for the first version. Defer adapting full publisher lessons until access is confirmed and the scope is approved.
@@ -21,7 +21,7 @@ This gate covers implementation of this UI direction, including integrations, pr
 - Partial grounding may proceed with visible gaps when the standard and required skills are available but prerequisites are missing. If the standard or required skills are unavailable, use the retry/upload recovery path.
 - Show the matched standard, required skills, source links, and coverage gaps in a compact panel alongside the draft. High-confidence matches add no confirmation step.
 - Initial lesson upload formats: selectable-text PDF, TXT, and Markdown (`.md`). Defer OCR for scanned PDFs; explain unreadable extraction and offer TXT/MD upload instead.
-- Flag incomplete PDF extraction and identify affected content. Whether generation must wait for replacement text remains unresolved: Abdullah explicitly accepted flagging, without specifying the continuation behavior.
+- Flag incomplete PDF extraction and identify affected content. Continuation behavior: resolved 2026-10-24 by design answer [UQ2](../design/design-doc-questions.md#answer-the-five-open-ui-design-topics) — generation stops; the teacher supplies corrected extraction or a replacement file.
 - Accept a plain-language teaching objective. Evaluate TypeSafe Jev first against reviewed objective-to-standard examples before enabling automatic generation. Use native `confidence > 0.90` as the initial automatic-generation rule; at 0.90 or below, ask the teacher to confirm the match. Unsupported objectives always route to clarification, regardless of confidence. Validate this threshold on the matching task; native confidence is not measured accuracy. This rule skips objective-match confirmation only; teacher review/approval before publishing remains required.
 - If Jev is unavailable, offer manual confirmation of the proposed standard when Learning Commons grounding is available. If grounding is unavailable, follow the one-retry then lesson-upload recovery path.
 - Start with a small catalog of approved components and iterate quickly. Keep grading, answer keys, approval, and follow-up rules under application control.
@@ -34,11 +34,15 @@ This gate covers implementation of this UI direction, including integrations, pr
 
 ## Open decisions
 
-- Which reviewed matching examples and acceptance criteria will establish that Jev's native-confidence threshold is suitable before automatic generation is enabled?
-- After flagging partial lesson extraction, should generation wait for corrected text or proceed with an explicitly incomplete source?
-- How will the full agreed hackathon scope fit the existing time budget? Estimate after delivery inventory; obtain a scope/budget decision if it does not fit. Earlier roadmap import restrictions and sprint cuts need reconciliation with Q29 before execution.
-- Which verification skills and acceptance checks will Abdullah provide before implementation?
-- Technical design still needs source/version provenance, upload limits and retention, extraction diagnostics, candidate selection, and model/service timeouts. These are unresolved implementation details, not additional approved features or assumed existing capabilities.
+Synced 2026-10-25 with the [design decision record](../design/design-doc-questions.md) (UQ1–UQ5). Each topic keeps its remaining evidence task; a design answer is not observed evidence.
+
+- **Jev acceptance bar (UQ1, answered):** 40 reviewed cases, split equally into development and held-out sets; zero wrong automatic matches and at least five correct automatic matches. Still needed: teacher labels and evaluation results (E6).
+- **Incomplete PDF continuation (UQ2, answered):** stop generation, show affected content, require corrected extraction or a replacement file. Still needed: parser and browser checks (V16).
+- **Scope versus budget (UQ3, answered with estimate):** full scope retained; preliminary estimate 36–57 human hours versus the earlier 30-hour plan. Still needed: fresh-base estimate (E2) and Abdullah's capacity decision (E3) before any delivery commitment.
+- **Verification skills (UQ4, answered with rule):** require Abdullah's named skills for content, pedagogy, rendering, and interactions; AC01–AC24 provide the baseline checks. Still needed: actual skill paths and build approval (E1).
+- **Missing technical details (UQ5, answered):** REST transport, immutable source snapshots, bounded uploads, fixed candidates, explicit deadlines, and versioned records. Still needed: integration and failure checks (V13–V16).
+
+No design answer here is implementation approval; the [implementation gate](#implementation-gate) still applies.
 
 ## Decision trace
 
@@ -56,7 +60,7 @@ Question numbering follows the conversation. Only explicit answers and later acc
 | Q19-Q20, Q23-Q24 | Plain-language intent; Jev evaluation; native-confidence threshold and unsupported-input handling |
 | Q22, Q26 | PDF/TXT/MD; selectable-text PDFs initially; OCR deferred |
 | Q27 | Compact grounding/source panel |
-| Reply “Q26 flag” after Q28 | Incomplete extraction flagged; whether generation continues is still open |
+| Reply “Q26 flag” after Q28 | Incomplete extraction flagged; continuation resolved 2026-10-24 by design answer UQ2 (stop and require corrected text) |
 | Q29 | Full agreed first-version features targeted for the hackathon; no silent feature cuts |
 
 The conversation skipped Q13-Q15 after Learning Commons was identified; subsequent decisions settle service choice and sprint inclusion. Skill discovery and the Refactoring English PDF review are captured in [product priorities](delivery-priorities.md#skill-selection) and its [writing guidance](delivery-priorities.md#writing-guidance-from-refactoring-english).

@@ -285,7 +285,7 @@ Use separate teacher and learner invitation credentials for the synthetic demo. 
 
 Store generation quota counters in Postgres. Permit at most 10 generation attempts per teacher per hour and 100 per tenant per day. Count corrections against the provider-call budget. Stop all generation at 200 provider calls per tenant per day.
 
-Use process-local limits for request bursts: at most 30 authoring requests per session per minute. Permit at most one active generation per teacher. Return a retry interval for rejected requests. These defaults bound use; measure costs before changing them.
+Use process-local limits for request bursts: at most 30 authoring requests per session per minute. Permit at most one active generation per teacher. Return a retry interval for rejected requests. These defaults bound milestone use; measure costs before changing them. Production requires shared, database-backed limit state before horizontal scale — process-local counters cannot serve more than one instance ([AgDR-0007](../agdr/AgDR-0007-demo-access-and-deployment.md)).
 
 Add forward-only migrations. Preserve existing version identifiers and the `matching-v1` reader. Give legacy records an explicit legacy schema version. Do not infer new approval or source provenance for old records.
 

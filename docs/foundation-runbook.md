@@ -52,9 +52,9 @@ Copy `.env.example` to `.env` only when you need local overrides. Unprefixed val
 | `DATABASE_URL` | unset | Optional `postgres://` or `postgresql://` persistence URL |
 | `PERSISTENCE_ADAPTER` | `postgres` | Server-only PostgreSQL implementation: `postgres` or `drizzle` |
 | `SENTRY_DSN` | unset | Optional server-only Sentry delivery for scrubbed errors |
-| `OPENAI_API_KEY` | unset in demo mode | Server-only credential required when `DEMO_MODE=false` |
-| `OPENAI_MODEL` | `gpt-5.6` | Server-selected structured-output model |
-| `OPENAI_BASE_URL` | OpenAI Responses API | HTTPS provider endpoint; loopback HTTP is test-only |
+| `OPENAI_API_KEY` | unset in demo mode | Server-only provider credential required when `DEMO_MODE=false`; renamed with the provider migration ([AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md)) |
+| `OPENAI_MODEL` | `gpt-5.6` | Structured-output model code default. The value must change with the provider selection ([AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md)); it is not an asserted working model |
+| `OPENAI_BASE_URL` | OpenAI Responses API | HTTPS provider endpoint in the current code; moves with the provider selection; loopback HTTP is test-only |
 
 Invalid configuration fails readiness with field-level, secret-free diagnostics. The server never returns a database URL, API key, or private answer key in an error response.
 
@@ -99,7 +99,7 @@ For teacher lesson generation, the trace is:
 1. `src/routes/demo/$role.tsx` collects prompt, grade, standard, language, and optional difficulty.
 2. `src/server/demo/server-function.ts` validates the server-function payload and resolves the seeded teacher session.
 3. `src/server/generation/service.ts` applies safety checks, idempotency, the one-shot correction rule, and the durable state machine.
-4. `src/server/generation/provider.ts` selects the deterministic fixture in seeded mode or the server-only GPT-5.6 adapter in PostgreSQL mode.
+4. `src/server/generation/provider.ts` selects the deterministic fixture in seeded mode or the server-only generation-provider adapter in PostgreSQL mode.
 5. `src/server/generation/validation.ts` validates the canonical lesson contract and separates warnings from blocking errors.
 6. `src/server/generation/semantic-validation.ts` runs deterministic curriculum and learning-quality validators against the normalized draft and the pinned graph context. It checks answer relationships, graph/path direction, grade, language/RTL, accessibility, explanation quality, and meaningful variant differentiation.
 7. `src/server/generation/projection.ts` strips private relationships before returning the browser-safe draft. Semantic warnings are visible in the public diagnostics; semantic blocks and incomplete retryable validation return no draft.

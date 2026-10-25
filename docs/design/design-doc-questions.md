@@ -75,7 +75,7 @@ Yes. Cover source failure, Jev failure, incomplete extraction, invalid generatio
 
 Select one continuously running Fly.io instance and Supabase Postgres. Keep SSE support. Multiple instances require shared request limits first.
 
-The existing release runbook directs two instances. Reconcile that conflict before deployment. If Fly.io cannot meet the requirements, evaluate another persistent host against the same checks. Hosting availability remains untested.
+The release runbook was reconciled to this decision on 2026-10-25: it now directs one instance with database-backed quotas and process-local burst limits ([#89](https://github.com/abodacs/edu-canvas/issues/89)). If Fly.io cannot meet the requirements, evaluate another persistent host against the same checks. Hosting availability remains untested.
 
 ### Q13. Should the 30-second p95 target remain?
 
@@ -143,6 +143,6 @@ These answers supersede the earlier unresolved technical defaults. They do not r
 - [Product priorities](../product/delivery-priorities.md) supply the full-scope delivery sequence.
 - [Roadmap](../../ROADMAP.md) supplies the teaching outcome and validation direction.
 - [Sprint guide](../hackathon/meta-global-2026/README.md) supplies the earlier schedule and event assumptions.
-- [PRD decision log](../../PRD_GRILL_LOG.md) supplies earlier decisions where no later choice conflicts.
+- The superseded July 2026 decision log was removed on 2026-10-25 ([#89](https://github.com/abodacs/edu-canvas/issues/89)); its still-valid product decisions live here and in [teacher UI decisions](../product/teacher-ui.md).
 - [Factory findings](../engineering/software-factory.md#blind-spot-review-2026-10-24) provide dated repository observations, not current test results.
 - [Refactoring English skill](../research/README.md#local-reference-materials) supplies the reader-first structure and design-document guidance.

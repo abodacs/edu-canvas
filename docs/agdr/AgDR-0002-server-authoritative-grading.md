@@ -34,4 +34,4 @@ Grading children's work must be correct, explainable, and tamper-proof. If the c
 
 ## Artifacts
 
-PRD grill log Q9–10, Q16, Q38–39, Q46, Q55–56, Q118–119, Q144 · `docs/security/threat-model.md` (spoofing/tampering on the grading path) · `docs/walking-skeleton.md` AC #2 + submission tests
+July 2026 decision log (removed 2026-10-25) Q9–10, Q16, Q38–39, Q46, Q55–56, Q118–119, Q144 · `docs/security/threat-model.md` (spoofing/tampering on the grading path) · `docs/walking-skeleton.md` AC #2 + submission tests

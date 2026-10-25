@@ -1,6 +1,6 @@
 # Product priorities and ticket writing
 
-Planning draft, 2026-10-24. All agreed first-version features remain in the hackathon target. This orders work; it does not authorize implementation, claim delivery status, or establish that the expanded scope fits 30 human hours. The [implementation gate](teacher-ui.md#implementation-gate) applies to every build and integration probe.
+Planning draft, 2026-10-24. All agreed first-version features remain in the hackathon target. This orders work; it does not authorize implementation, claim delivery status, or establish capacity. The preliminary estimate for the full scope is 36–57 human hours ([UQ3](../design/design-doc-questions.md#answer-the-five-open-ui-design-topics)); Abdullah's capacity decision is still pending. The [implementation gate](teacher-ui.md#implementation-gate) applies to every build and integration probe.
 
 ## Product outcome
 
@@ -37,14 +37,14 @@ These are candidate work packages, not code-verified execution tickets or delive
 | 7 | Jev matching and evaluation | Reviewed matching cases exercise native confidence above/at/below 0.90, unsupported input, and outage; automatic path enabled only after evaluation | Reduce confirmations without assuming calibrated task accuracy |
 | 8 | Grounding recovery and lesson upload | One offered retry, then selectable-text PDF/TXT/MD upload; extracted-content gaps flagged; missing prerequisites distinguished from missing required skills | Deliver the agreed alternate entry path |
 | 9 | Version, interruption, and access resilience | Reload/retry/edit boundaries, keyboard/mobile use, provider failures, and public-demo access/usage guards verified | Keep the complete feature set dependable |
-| 10 | Teacher comparison and judge comprehension | Actual teacher corrections/effort recorded; three unfamiliar viewers can explain the distinctive action; demo claims match observed behavior | Check usefulness and communicate the value |
+| 10 | Teacher comparison and reviewer comprehension | Actual teacher corrections/effort recorded; three unfamiliar viewers can explain the distinctive action; claims match observed behavior | Check usefulness and communicate the value |
 | 11 | Final demonstration and submission artifacts | Real generation, interaction, section revision, and teacher decision shown within the event's actual artifact requirements; access independently checked | Convert working capability into reviewable evidence |
 
 Run teacher review alongside delivery as soon as a reference lesson is available. This order is a dependency-oriented default, not a requirement to postpone evaluation or feedback until the end. Full features remain targeted; narrower subject breadth and a bounded component catalog keep that target concrete.
 
 ## Writing guidance from Refactoring English
 
-Source: Michael Lynch, *Refactoring English: Effective Writing for Software Developers*, v1.0.4, [local reference](../research/README.md#local-reference-materials). Page numbers below are printed pages; PDF viewer pages are three higher. Table of contents and extracted full-text search show no dedicated ticket-writing chapter.
+Source: Michael Lynch, _Refactoring English: Effective Writing for Software Developers_, v1.0.4, [local reference](../research/README.md#local-reference-materials). Page numbers below are printed pages; PDF viewer pages are three higher. Table of contents and extracted full-text search show no dedicated ticket-writing chapter.
 
 - Chapter 1, p. 6: lead with the point. Ticket application: title the user-visible result and explain the problem before implementation details.
 - Chapter 11, p. 64: remove ambiguity. Ticket application: name the trigger, exact threshold, expected result, and failure behavior.
@@ -62,11 +62,13 @@ Example title: **Generate without confirmation when a supported standard match h
 
 ## Open decisions
 
-- PDF partial extraction: flagging is agreed; blocking versus proceeding from incomplete source is undecided.
-- Matching evaluation: reviewed cases, sample size, and acceptance bar await the verification-skills/design pass.
-- Full scope versus budget: current code/issue inventory and estimates are missing. If the expanded target exceeds capacity, Abdullah must choose additional capacity, timeline changes where possible, or an explicit scope revision.
+Synced 2026-10-25 with the [design decision record](../design/design-doc-questions.md) (UQ1–UQ5); see the matching list in [teacher UI decisions](teacher-ui.md#open-decisions) for the full evidence status.
 
-Next planning step: consolidate the feature PRD and technical design, then turn the inventory-backed work packages into bounded tickets. Ticket storage and tracker publication are not selected; no external issues have been created.
+- PDF partial extraction (UQ2, answered): generation stops; corrected extraction or a replacement file is required.
+- Matching evaluation (UQ1, answered with rule): 40 reviewed cases; zero wrong automatic matches and at least five correct automatic matches. Reviewed cases and results still pending (E6).
+- Full scope versus budget (UQ3, answered with estimate): 36–57 human hours versus the earlier 30-hour plan. Abdullah must choose additional capacity, timeline changes where possible, or an explicit scope revision (E3).
+
+Next planning step: the feature PRD and technical design now live in [design/design-doc.md](../design/design-doc.md) and its companions; turn the inventory-backed work packages into bounded tickets there. Ticket storage and tracker publication are not selected; no external issues have been created.
 
 ## Documentation audit
 
