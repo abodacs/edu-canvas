@@ -89,11 +89,11 @@ interface ImportContext {
 const describeImport = ({
   importer,
   specifier,
-  importedFile,
+  importedFile = specifier,
 }: ImportContext) => {
   return `${relative(projectRoot, importer)} imports ${relative(
     projectRoot,
-    importedFile ?? specifier
+    importedFile
   )}`;
 };
 

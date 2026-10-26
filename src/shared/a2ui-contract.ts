@@ -331,9 +331,9 @@ const hasDuplicateComponentIds = (value: unknown): boolean => {
   }
 
   const ids = components.components.flatMap((component) => {
-    return !isRecord(component) || typeof component.id !== "string"
-      ? []
-      : [component.id];
+    return isRecord(component) && typeof component.id === "string"
+      ? [component.id]
+      : [];
   });
 
   const uniqueIds = new Set(ids);
