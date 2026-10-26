@@ -1,5 +1,6 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
+import { cn } from "@/lib/utilities";
 import {
   A2UI_CATALOG_VERSION,
   A2UI_PROTOCOL_VERSION,
@@ -9,9 +10,9 @@ import {
   consumeA2UIPreviewStream,
   PreviewStreamMessageError,
 } from "./preview-stream";
-import type { A2UIComponent } from "@/shared/a2ui-contract";
+import { A2UIComponentRenderer } from "./component-renderer";
+import type { SelectionState } from "./component-renderer";
 import type { A2UIRenderState, A2UIRenderSurface } from "./renderer";
-import type { ElementType, ReactNode } from "react";
 
 const PREVIEW_STREAM_TIMEOUT_MS = 8000;
 const PREVIEW_LOADING_MESSAGE = "Opening the safe lesson preview…";
@@ -32,11 +33,6 @@ type PreviewStatus =
 
 interface LessonPreviewProperties {
   readonly requestId: string;
-}
-
-interface SelectionState {
-  source?: string;
-  target?: string;
 }
 
 const describeSelection = (selection: SelectionState | undefined): string => {
@@ -65,114 +61,6 @@ interface SurfaceEntry {
   language: "en" | "ar";
 }
 
-const renderLearningPath = (
-  dataModel: A2UIRenderSurface["dataModel"],
-  surfaceId: string
-): ReactNode => {
-  if (!dataModel?.learningPath) {
-    return null;
-  }
-  const { learningPath } = dataModel;
-
-  const headingId = `a2ui-learning-path-heading-${surfaceId}`;
-  const isArabic = dataModel.language === "ar";
-  const copy = isArabic
-    ? {
-        eyebrow: "مسار التعلم",
-        title: "لماذا يبدأ هذا الدرس من هنا؟",
-        direction: "ترتيب المتطلبات",
-        prerequisite: "متطلب سابق",
-        target: "المفهوم المستهدف",
-        rationale: "سبب هذا المسار",
-        nextScreen: "سبب الشاشة التالية",
-        draft: "المسودة",
-        graph: "الرسم البياني",
-        model: "النموذج",
-        catalog: "الفهرس",
-      }
-    : {
-        eyebrow: "Learning path",
-        title: "Why this lesson starts here",
-        direction: "Prerequisite order",
-        prerequisite: "Prerequisite",
-        target: "Target concept",
-        rationale: "Why this path",
-        nextScreen: "Next-screen rationale",
-        draft: "Draft",
-        graph: "Graph",
-        model: "Model",
-        catalog: "Catalog",
-      };
-
-  return (
-    <section className="a2ui-learning-path" aria-labelledby={headingId}>
-      <div className="a2ui-learning-path__header">
-        <div>
-          <p className="a2ui-text a2ui-text--label">{copy.eyebrow}</p>
-          <h4 id={headingId} className="a2ui-learning-path__title">
-            {copy.title}
-          </h4>
-        </div>
-        <span className="a2ui-learning-path__direction">{copy.direction}</span>
-      </div>
-
-      <ol className="a2ui-learning-path__steps">
-        {learningPath.steps.map((step, index) => {
-          return (
-            <li
-              className={`a2ui-learning-path__step a2ui-learning-path__step--${step.role}`}
-              key={step.nodeId}
-            >
-              <span className="a2ui-learning-path__number" aria-hidden="true">
-                {index + 1}
-              </span>
-              <div className="a2ui-learning-path__step-copy">
-                <span className="a2ui-learning-path__role">
-                  {step.role === "prerequisite"
-                    ? copy.prerequisite
-                    : copy.target}
-                </span>
-                <strong>{step.label}</strong>
-                <span>{step.screenPurpose}</span>
-              </div>
-            </li>
-          );
-        })}
-      </ol>
-
-      <div className="a2ui-learning-path__notes">
-        <div>
-          <strong>{copy.rationale}</strong>
-          <p>{learningPath.rationale}</p>
-        </div>
-        <div>
-          <strong>{copy.nextScreen}</strong>
-          <p>{learningPath.nextScreenRationale}</p>
-        </div>
-      </div>
-
-      <dl className="a2ui-learning-path__pins">
-        <div>
-          <dt>{copy.draft}</dt>
-          <dd>{learningPath.versionPins.draftId}</dd>
-        </div>
-        <div>
-          <dt>{copy.graph}</dt>
-          <dd>{learningPath.versionPins.graphVersion}</dd>
-        </div>
-        <div>
-          <dt>{copy.model}</dt>
-          <dd>{learningPath.versionPins.modelVersion}</dd>
-        </div>
-        <div>
-          <dt>{copy.catalog}</dt>
-          <dd>{learningPath.versionPins.catalogVersion}</dd>
-        </div>
-      </dl>
-    </section>
-  );
-};
-
 const PreviewLoading = () => {
   return (
     <div className="a2ui-loading" aria-live="polite">
@@ -188,232 +76,6 @@ const PreviewLoading = () => {
     </div>
   );
 };
-
-interface ComponentRenderContext {
-  readonly surface: A2UIRenderSurface;
-  readonly surfaceId: string;
-  readonly onAction: (
-    surfaceId: string,
-    action: string,
-    itemId?: string
-  ) => void;
-  readonly selection?: SelectionState;
-  readonly renderChild: (componentId: string) => ReactNode;
-}
-
-const renderContainer = (
-  component: A2UIComponent,
-  context: ComponentRenderContext
-): ReactNode => {
-  if (component.component !== "Column" && component.component !== "Row") {
-    return null;
-  }
-  const className =
-    component.component === "Column" ? "a2ui-column" : "a2ui-row";
-
-  return (
-    <div className={className}>
-      {component.children.map((childId) => {
-        return (
-          <Fragment key={childId}>{context.renderChild(childId)}</Fragment>
-        );
-      })}
-    </div>
-  );
-};
-
-const renderCard = (
-  component: A2UIComponent,
-  context: ComponentRenderContext
-): ReactNode => {
-  if (component.component !== "Card") {
-    return null;
-  }
-
-  return (
-    <section className={`a2ui-card a2ui-card--${component.tone ?? "surface"}`}>
-      {context.renderChild(component.child)}
-    </section>
-  );
-};
-
-interface TextVariantSpec {
-  readonly element: ElementType;
-  readonly className: string;
-}
-
-const defaultTextVariant: TextVariantSpec = {
-  element: "p",
-  className: "a2ui-text",
-};
-
-const textVariants: Record<string, TextVariantSpec> = {
-  heading: { element: "h4", className: "a2ui-text a2ui-text--heading" },
-  subheading: { element: "h5", className: "a2ui-text a2ui-text--subheading" },
-  label: { element: "p", className: "a2ui-text a2ui-text--label" },
-  caption: { element: "span", className: "a2ui-text a2ui-text--caption" },
-};
-
-const renderText = (component: A2UIComponent): ReactNode => {
-  if (component.component !== "Text") {
-    return null;
-  }
-  const variant = component.variant
-    ? (textVariants[component.variant] ?? defaultTextVariant)
-    : defaultTextVariant;
-  const Element = variant.element;
-
-  return <Element className={variant.className}>{component.text}</Element>;
-};
-
-const renderMatchCard = (
-  component: A2UIComponent,
-  context: ComponentRenderContext
-): ReactNode => {
-  if (component.component !== "MatchCard") {
-    return null;
-  }
-  const selectedItemId =
-    component.group === "source"
-      ? context.selection?.source
-      : context.selection?.target;
-  const isSelected = selectedItemId === component.itemId;
-
-  return (
-    <button
-      className={`a2ui-match-card a2ui-match-card--${component.group}${isSelected ? "is-selected" : ""}`}
-      type="button"
-      aria-pressed={isSelected}
-      aria-label={`${component.label}. ${component.description ?? ""}`.trim()}
-      onClick={() => {
-        return context.onAction(
-          context.surfaceId,
-          component.action.event.name,
-          component.itemId
-        );
-      }}
-    >
-      <span>{component.label}</span>
-      <small>{component.group === "source" ? "Source" : "Candidate"}</small>
-    </button>
-  );
-};
-
-const renderButton = (
-  component: A2UIComponent,
-  context: ComponentRenderContext
-): ReactNode => {
-  if (component.component !== "Button") {
-    return null;
-  }
-
-  return (
-    <button
-      className={`a2ui-action a2ui-action--${component.variant}`}
-      type="button"
-      onClick={() =>
-        context.onAction(context.surfaceId, component.action.event.name)
-      }
-    >
-      {component.label}
-    </button>
-  );
-};
-
-const renderLearningPathComponent = (
-  component: A2UIComponent,
-  context: ComponentRenderContext
-): ReactNode => {
-  return component.component === "LearningPath"
-    ? renderLearningPath(context.surface.dataModel, context.surfaceId)
-    : null;
-};
-
-const renderStatus = (component: A2UIComponent): ReactNode => {
-  if (component.component !== "Status") {
-    return null;
-  }
-
-  return (
-    <output className={`a2ui-status a2ui-status--${component.kind}`}>
-      {component.text}
-    </output>
-  );
-};
-
-type ComponentRenderer = (
-  component: A2UIComponent,
-  context: ComponentRenderContext
-) => ReactNode;
-
-const componentRenderers: Record<string, ComponentRenderer> = {
-  Column: renderContainer,
-  Row: renderContainer,
-  Card: renderCard,
-  Text: renderText,
-  MatchCard: renderMatchCard,
-  Button: renderButton,
-  LearningPath: renderLearningPathComponent,
-  Status: renderStatus,
-};
-
-interface A2UIComponentRendererProperties {
-  readonly surface: A2UIRenderSurface;
-  readonly componentId: string;
-  readonly surfaceId: string;
-  readonly onAction: (
-    surfaceId: string,
-    action: string,
-    itemId?: string
-  ) => void;
-  readonly selection?: SelectionState;
-  readonly visited?: ReadonlySet<string>;
-}
-
-const emptyVisited: ReadonlySet<string> = new Set<string>();
-
-const renderA2UIComponent = ({
-  surface,
-  componentId,
-  surfaceId,
-  onAction,
-  selection,
-  visited = emptyVisited,
-}: A2UIComponentRendererProperties): ReactNode => {
-  if (visited.has(componentId)) {
-    return null;
-  }
-  const component = surface.components[componentId];
-  if (!component) {
-    return null;
-  }
-  const nextVisited = new Set(visited);
-  nextVisited.add(componentId);
-
-  const context: ComponentRenderContext = {
-    surface,
-    surfaceId,
-    onAction,
-    selection,
-    renderChild: (childId) => {
-      return renderA2UIComponent({
-        surface,
-        componentId: childId,
-        surfaceId,
-        onAction,
-        selection,
-        visited: nextVisited,
-      });
-    },
-  };
-
-  const renderer = componentRenderers[component.component] ?? renderStatus;
-  return renderer(component, context);
-};
-
-const A2UIComponentRenderer = renderA2UIComponent;
-
-export { A2UIComponentRenderer };
 
 const usePreviewStream = (requestId: string, retryToken: number) => {
   const [renderState, setRenderState] = useState<A2UIRenderState>(() =>
@@ -580,7 +242,7 @@ const VariantTabs = ({
         const isSelected = surface.surfaceId === activeSurfaceId;
         return (
           <button
-            className={`a2ui-tab${isSelected ? "is-active" : ""}`}
+            className={cn("a2ui-tab", { "is-active": isSelected })}
             id={`a2ui-tab-${surface.variantId}`}
             key={surface.surfaceId}
             role="tab"

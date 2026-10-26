@@ -4,10 +4,37 @@ import { describe, expect, it, vi } from "vitest";
 
 import { A2UI_CATALOG_ID } from "@/shared/a2ui-contract";
 
-import { A2UIComponentRenderer } from "./lesson-preview";
+import { A2UIComponentRenderer } from "./component-renderer";
 import type { A2UIRenderSurface } from "./renderer";
 
 describe("semantic A2UI lesson surface", () => {
+  it("stops cyclic references and omits missing children without hiding siblings", () => {
+    const surface: A2UIRenderSurface = {
+      catalogId: A2UI_CATALOG_ID,
+      components: {
+        root: {
+          id: "root",
+          component: "Row",
+          children: ["card", "missing", "body"],
+        },
+        card: { id: "card", component: "Card", child: "root" },
+        body: { id: "body", component: "Text", text: "Still visible" },
+      },
+    };
+    const markup = renderToStaticMarkup(
+      createElement(A2UIComponentRenderer, {
+        surface,
+        surfaceId: "cycle-preview",
+        componentId: "root",
+        onAction: vi.fn<() => void>(),
+      })
+    );
+
+    expect(markup).toBe(
+      '<div class="a2ui-row"><section class="a2ui-card a2ui-card--surface"></section><p class="a2ui-text">Still visible</p></div>'
+    );
+  });
+
   it("renders child components without React missing-key warnings", () => {
     const surface: A2UIRenderSurface = {
       catalogId: A2UI_CATALOG_ID,

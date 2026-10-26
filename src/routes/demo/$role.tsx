@@ -18,6 +18,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef, useState } from "react";
 
+import { cn } from "@/lib/utilities";
 import { LessonPreview } from "@/components/a2ui/lesson-preview";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -721,7 +722,7 @@ const TeacherGuidance = ({
 
             return (
               <button
-                className={`guidance-panel${isActive ? "is-active" : ""}`}
+                className={cn("guidance-panel", { "is-active": isActive })}
                 type="button"
                 key={panel.key}
                 aria-expanded={isActive}
