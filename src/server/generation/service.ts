@@ -12,18 +12,10 @@ import { GenerationRequestError } from "./generation-request-error";
 import { toPublicGenerationResult } from "./projection";
 
 import { LessonProviderError, RATE_LIMIT_KIND } from "./provider";
-import {
-  createDemoCurriculumContext,
-  semanticValidationRunnerVersion,
-  validateSemanticLesson,
-} from "./semantic-validation";
+import { reviewDraftForAcceptance } from "./draft-acceptance";
 import { generationDuplicateWaitMs, isGenerationClaimExpired } from "./types";
 import { validateProviderDraft } from "./validation";
-import {
-  buildValidatedLearningPath,
-  LearningPathBuildError,
-  toNormalizedReasoningPath,
-} from "./learning-path";
+import type { DraftAcceptanceOptions } from "./draft-acceptance";
 import type {
   GenerationCommand,
   GenerationDiagnostic,
@@ -33,13 +25,8 @@ import type {
   GenerationAttemptRecord,
   LessonGenerationRecord,
   ProviderLessonDraft,
-  ValidatedLearningPath,
+  LessonDraft,
 } from "./types";
-import type {
-  SemanticValidationInput,
-  SemanticValidationReport,
-  VersionedCurriculumContext,
-} from "./semantic-validation";
 import type {
   LessonDraftProvider,
   NormalizedGenerationRequest,
@@ -64,18 +51,12 @@ export interface ContentSafety {
   checkGeneratedContent: (content: unknown) => ContentSafetyResult;
 }
 
-export interface GenerationServiceOptions {
+export interface GenerationServiceOptions extends DraftAcceptanceOptions {
   persistence: GenerationPersistence;
   provider: LessonDraftProvider;
   safety?: ContentSafety;
   now?: () => string;
   requestIdFactory?: () => string;
-  curriculumContext?: (
-    input: NormalizedGenerationRequest
-  ) => VersionedCurriculumContext | undefined;
-  semanticValidation?: (
-    input: SemanticValidationInput
-  ) => Promise<SemanticValidationReport>;
 }
 
 interface NormalizedCommandInput extends NormalizedGenerationRequest {
@@ -209,36 +190,11 @@ const providerFailureDiagnostic = (
 
 const stateForProviderFailure = (
   kind: LessonProviderError["kind"]
-): GenerationState => {
+): "failed-retryable" | "failed-terminal" => {
   return ["timeout", RATE_LIMIT_KIND, "transient"].includes(kind)
     ? FAILED_RETRYABLE_STATE
     : "failed-terminal";
 };
-
-const semanticValidationDiagnostics = (
-  report: SemanticValidationReport
-): GenerationDiagnostic[] => {
-  return report.findings
-    .filter((finding) => finding.verdict !== "pass")
-    .map((finding) => {
-      return {
-        severity: finding.verdict === "warning" ? "warning" : "error",
-        code: finding.code,
-        message: finding.reason,
-        ...(finding.variantId && { variantId: finding.variantId }),
-        ...(finding.field && { field: finding.field }),
-        ...(finding.nodeId && { nodeId: finding.nodeId }),
-        validator: finding.validator,
-        verdict: finding.verdict,
-        validatorVersion: finding.validatorVersion,
-        ...(finding.recommendation && {
-          recommendation: finding.recommendation,
-        }),
-      };
-    });
-};
-
-const nowValue = (now: () => string): string => now();
 
 const updateAttempt = (
   record: LessonGenerationRecord,
@@ -248,37 +204,6 @@ const updateAttempt = (
   return record.attempts.map((attempt) =>
     attempt.attemptNumber === attemptNumber ? { ...attempt, ...patch } : attempt
   );
-};
-
-const curriculumContextDiagnostic = (
-  context: VersionedCurriculumContext,
-  record: LessonGenerationRecord,
-  input: NormalizedCommandInput
-): GenerationDiagnostic | undefined => {
-  if (context.tenantId !== record.tenantId) {
-    return diagnostic(
-      "CURRICULUM_TENANT_MISMATCH",
-      "The approved prerequisite graph belongs to a different classroom. Teacher review is required before student content can be generated."
-    );
-  }
-
-  if (
-    context.standardId !== input.standardId ||
-    context.grade !== input.grade ||
-    context.language !== input.language
-  ) {
-    return diagnostic(
-      "CURRICULUM_CONTEXT_MISMATCH",
-      "The approved prerequisite graph does not match this lesson request. Teacher review is required before student content can be generated."
-    );
-  }
-
-  return context.graphVersion === demoSeed.activityVersion.graphVersion
-    ? undefined
-    : diagnostic(
-        "CURRICULUM_GRAPH_VERSION_UNSUPPORTED",
-        "The approved prerequisite graph version is not available for this lesson. Teacher review is required before student content can be generated."
-      );
 };
 
 const isRetryableState = (state: GenerationState): boolean =>
@@ -320,8 +245,6 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     });
   const requestIdFactory =
     options.requestIdFactory ?? (() => `draft_req_${randomUUID()}`);
-  const semanticValidation =
-    options.semanticValidation ?? validateSemanticLesson;
 
   const persistOwned = async (
     record: LessonGenerationRecord,
@@ -355,22 +278,36 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     return resultFor(persisted.record);
   };
 
-  const persistBlockedDraft = (
+  const finishAttempt = (
     baseRecord: LessonGenerationRecord,
-    attemptNumber: number,
-    diagnostics: GenerationDiagnostic[],
-    wasCorrectionAttempted: boolean
+    outcome:
+      | {
+          state: "ready-for-review";
+          draft: LessonDraft;
+          diagnostics: GenerationDiagnostic[];
+        }
+      | {
+          state: Exclude<
+            GenerationState,
+            "requested" | "generating" | "ready-for-review"
+          >;
+          diagnostics: GenerationDiagnostic[];
+        },
+    attemptDiagnostics = outcome.diagnostics
   ): Promise<GenerationServiceResult> => {
+    const provenance = baseRecord.provenance ?? options.provider.provenance;
+    const draft = "draft" in outcome ? outcome.draft : null;
     const record: LessonGenerationRecord = {
       ...baseRecord,
-      state: BLOCKED_BY_VALIDATION_STATE,
-      diagnostics,
-      draft: null,
-      updatedAt: nowValue(now),
-      attempts: updateAttempt(baseRecord, attemptNumber, {
-        state: BLOCKED_BY_VALIDATION_STATE,
-        correctionAttempted: wasCorrectionAttempted,
-        diagnostics,
+      state: outcome.state,
+      diagnostics: outcome.diagnostics,
+      draft,
+      provenance,
+      updatedAt: draft ? draft.createdAt : now(),
+      attempts: updateAttempt(baseRecord, baseRecord.attempt, {
+        state: outcome.state,
+        diagnostics: attemptDiagnostics,
+        provenance,
       }),
     };
     return persist(record, baseRecord.updatedAt);
@@ -410,7 +347,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       record.tenantId,
       record.requestId,
       record.updatedAt,
-      nowValue(now)
+      now()
     );
     return (
       expired ??
@@ -422,203 +359,51 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     );
   };
 
-  const persistReadyDraft = (
+  const acceptDraft = async (
     baseRecord: LessonGenerationRecord,
-    attemptNumber: number,
     input: NormalizedCommandInput,
     providerDraft: ProviderLessonDraft,
-    learningPath: ValidatedLearningPath,
-    diagnostics: GenerationDiagnostic[],
-    wasCorrectionAttempted: boolean
+    structuralDiagnostics: GenerationDiagnostic[]
   ): Promise<GenerationServiceResult> => {
-    const timestamp = nowValue(now);
     const provenance = baseRecord.provenance ?? options.provider.provenance;
-    const draft = {
-      ...providerDraft,
-      learningPath,
-      requestId: baseRecord.requestId,
-      input: {
-        prompt: input.prompt,
-        grade: input.grade,
-        standardId: input.standardId,
-        language: input.language,
-        difficulty: input.difficulty,
-      },
-      provenance,
-      createdAt: timestamp,
-    };
-    const record: LessonGenerationRecord = {
-      ...baseRecord,
-      state: "ready-for-review",
-      diagnostics,
-      provenance,
-      draft,
-      updatedAt: timestamp,
-      attempts: updateAttempt(baseRecord, attemptNumber, {
-        state: "ready-for-review",
-        correctionAttempted: wasCorrectionAttempted,
-        diagnostics,
-        provenance,
-      }),
-    };
-    return persist(record, baseRecord.updatedAt);
-  };
-
-  const persistSemanticallyValidatedDraft = async (
-    baseRecord: LessonGenerationRecord,
-    attemptNumber: number,
-    input: NormalizedCommandInput,
-    providerDraft: ProviderLessonDraft,
-    structuralDiagnostics: GenerationDiagnostic[],
-    wasCorrectionAttempted: boolean
-  ): Promise<GenerationServiceResult> => {
-    if (!providerDraft.learningPath) {
-      const diagnostics = [
-        ...structuralDiagnostics,
-        diagnostic(
-          "PREREQUISITE_PATH_MISSING",
-          "The approved prerequisite path is missing. Review the draft before trying again."
-        ),
-      ];
-      return persistBlockedDraft(
-        baseRecord,
-        attemptNumber,
-        diagnostics,
-        wasCorrectionAttempted
-      );
-    }
-
-    const curriculumContext = options.curriculumContext
-      ? options.curriculumContext(input)
-      : createDemoCurriculumContext(input);
-    if (!curriculumContext) {
-      const diagnostics = [
-        ...structuralDiagnostics,
-        diagnostic(
-          "PREREQUISITE_PACK_MISSING",
-          "The approved prerequisite graph is unavailable. Teacher review is required before student content can be generated."
-        ),
-      ];
-      return persistBlockedDraft(
-        baseRecord,
-        attemptNumber,
-        diagnostics,
-        wasCorrectionAttempted
-      );
-    }
-
-    const contextDiagnostic = curriculumContextDiagnostic(
-      curriculumContext,
-      baseRecord,
-      input
-    );
-    if (contextDiagnostic) {
-      const diagnostics = [...structuralDiagnostics, contextDiagnostic];
-      return persistBlockedDraft(
-        baseRecord,
-        attemptNumber,
-        diagnostics,
-        wasCorrectionAttempted
-      );
-    }
-
-    let report: SemanticValidationReport;
-    try {
-      report = await semanticValidation({
+    const acceptance = await reviewDraftForAcceptance(
+      {
         draft: providerDraft,
-        context: curriculumContext,
-        path: toNormalizedReasoningPath(providerDraft.learningPath),
-      });
-    } catch {
-      const diagnostics = [
-        ...structuralDiagnostics,
-        {
-          ...diagnostic(
-            "SEMANTIC_VALIDATION_UNAVAILABLE",
-            "Semantic validation could not complete safely. Try this draft again."
-          ),
-          validatorVersion: semanticValidationRunnerVersion,
-        },
-      ];
-      const record: LessonGenerationRecord = {
-        ...baseRecord,
-        state: FAILED_RETRYABLE_STATE,
-        diagnostics,
-        draft: null,
-        updatedAt: nowValue(now),
-        attempts: updateAttempt(baseRecord, attemptNumber, {
-          state: FAILED_RETRYABLE_STATE,
-          diagnostics,
-        }),
-      };
-      return persist(record, baseRecord.updatedAt);
-    }
-
-    const semanticDiagnostics = semanticValidationDiagnostics(report);
-    const diagnostics = [...structuralDiagnostics, ...semanticDiagnostics];
-    if (report.status === "retryable" || report.verdict === "block") {
-      const state: GenerationState =
-        report.status === "retryable"
-          ? FAILED_RETRYABLE_STATE
-          : BLOCKED_BY_VALIDATION_STATE;
-      const record: LessonGenerationRecord = {
-        ...baseRecord,
-        state,
-        diagnostics,
-        draft: null,
-        updatedAt: nowValue(now),
-        attempts: updateAttempt(baseRecord, attemptNumber, {
-          state,
-          correctionAttempted: wasCorrectionAttempted,
-          diagnostics,
-        }),
-      };
-      return persist(record, baseRecord.updatedAt);
-    }
-
-    let learningPath: ValidatedLearningPath;
-    const pathProvenance = baseRecord.provenance ?? options.provider.provenance;
-    try {
-      learningPath = buildValidatedLearningPath({
-        proposal: providerDraft.learningPath,
-        context: curriculumContext,
-        draftId: baseRecord.requestId,
-        provenance: pathProvenance,
-        validatorVersion: semanticValidationRunnerVersion,
-      });
-    } catch (error) {
-      const pathDiagnostics = [
-        ...structuralDiagnostics,
-        ...semanticDiagnostics,
-        diagnostic(
-          "LEARNING_PATH_BLOCKED",
-          error instanceof LearningPathBuildError
-            ? error.message
-            : "The learning path could not be accepted safely. Review the draft before trying again."
-        ),
-      ];
-      return persistBlockedDraft(
-        baseRecord,
-        attemptNumber,
-        pathDiagnostics,
-        wasCorrectionAttempted
-      );
-    }
-
-    return persistReadyDraft(
-      baseRecord,
-      attemptNumber,
-      input,
-      providerDraft,
-      learningPath,
-      diagnostics,
-      wasCorrectionAttempted
+        input,
+        tenantId: baseRecord.tenantId,
+        requestId: baseRecord.requestId,
+        provenance,
+        structuralDiagnostics,
+        graphVersion: demoSeed.activityVersion.graphVersion,
+      },
+      options
     );
+    if (acceptance.state !== "ready-for-review") {
+      return finishAttempt(baseRecord, acceptance);
+    }
+
+    return finishAttempt(baseRecord, {
+      state: acceptance.state,
+      diagnostics: acceptance.diagnostics,
+      draft: {
+        ...providerDraft,
+        learningPath: acceptance.learningPath,
+        requestId: baseRecord.requestId,
+        input: {
+          prompt: input.prompt,
+          grade: input.grade,
+          standardId: input.standardId,
+          language: input.language,
+          difficulty: input.difficulty,
+        },
+        provenance,
+        createdAt: now(),
+      },
+    });
   };
 
   const persistProviderFailure = (
     baseRecord: LessonGenerationRecord,
-    attemptNumber: number,
     error: unknown,
     priorDiagnostics: GenerationDiagnostic[] = []
   ): Promise<GenerationServiceResult> => {
@@ -632,20 +417,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     const failureDiagnostic = providerFailureDiagnostic(providerError);
     const diagnostics = [...priorDiagnostics, failureDiagnostic];
     const state = stateForProviderFailure(providerError.kind);
-    const provenance = baseRecord.provenance ?? options.provider.provenance;
-    const record: LessonGenerationRecord = {
-      ...baseRecord,
-      state,
-      diagnostics,
-      provenance,
-      updatedAt: nowValue(now),
-      attempts: updateAttempt(baseRecord, attemptNumber, {
-        state,
-        diagnostics,
-        provenance,
-      }),
-    };
-    return persist(record, baseRecord.updatedAt);
+    return finishAttempt(baseRecord, { state, diagnostics });
   };
 
   const runAttempt = async (
@@ -653,7 +425,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     input: NormalizedCommandInput
   ): Promise<GenerationServiceResult> => {
     const attemptNumber = baseRecord.attempt + 1;
-    const timestamp = nowValue(now);
+    const timestamp = now();
     const attempt: GenerationAttemptRecord = {
       attemptNumber,
       idempotencyKey: input.idempotencyKey,
@@ -683,10 +455,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     const claim = await options.persistence.claimGeneration(record);
     if (!claim.claimed) {
       const resolved = await resolveDuplicate(claim.record);
-      return {
-        record: resolved,
-        publicResult: toPublicGenerationResult(resolved),
-      };
+      return resultFor(resolved);
     }
     ({ record } = claim);
 
@@ -697,17 +466,10 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
           "This request was blocked by safety review. Revise the request before trying again."
         ),
       ];
-      record = {
-        ...record,
+      return finishAttempt(record, {
         state: BLOCKED_BY_MODERATION_STATE,
         diagnostics,
-        updatedAt: nowValue(now),
-        attempts: updateAttempt(record, attemptNumber, {
-          state: BLOCKED_BY_MODERATION_STATE,
-          diagnostics,
-        }),
-      };
-      return persist(record, claim.record.updatedAt);
+      });
     }
 
     let firstResponse: Awaited<ReturnType<LessonDraftProvider["generate"]>>;
@@ -717,7 +479,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         diagnostics: [],
       });
     } catch (error) {
-      return persistProviderFailure(record, attemptNumber, error);
+      return persistProviderFailure(record, error);
     }
 
     if (!safety.checkGeneratedContent(firstResponse.draft).allowed) {
@@ -727,30 +489,21 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
           "The generated lesson was blocked by safety review and was not shown."
         ),
       ];
-      record = {
-        ...record,
+      return finishAttempt(record, {
         state: BLOCKED_BY_MODERATION_STATE,
         diagnostics,
-        updatedAt: nowValue(now),
-        attempts: updateAttempt(record, attemptNumber, {
-          state: BLOCKED_BY_MODERATION_STATE,
-          diagnostics,
-        }),
-      };
-      return persist(record, claim.record.updatedAt);
+      });
     }
 
     const firstValidation = validateProviderDraft(firstResponse.draft, {
       expectedLanguage: input.language,
     });
     if (firstValidation.ok) {
-      return persistSemanticallyValidatedDraft(
+      return acceptDraft(
         record,
-        attemptNumber,
         input,
         firstValidation.draft,
-        firstValidation.diagnostics,
-        false
+        firstValidation.diagnostics
       );
     }
 
@@ -761,7 +514,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     record = {
       ...record,
       diagnostics: correctionDiagnostics,
-      updatedAt: nowValue(now),
+      updatedAt: now(),
       attempts: updateAttempt(record, attemptNumber, {
         correctionAttempted: true,
         diagnostics: correctionDiagnostics,
@@ -780,12 +533,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         diagnostics: correctionDiagnostics,
       });
     } catch (error) {
-      return persistProviderFailure(
-        record,
-        attemptNumber,
-        error,
-        correctionDiagnostics
-      );
+      return persistProviderFailure(record, error, correctionDiagnostics);
     }
 
     if (!safety.checkGeneratedContent(correctedResponse.draft).allowed) {
@@ -795,45 +543,37 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
           "The corrected lesson was blocked by safety review and was not shown."
         ),
       ];
-      record = {
-        ...record,
-        state: BLOCKED_BY_MODERATION_STATE,
-        diagnostics,
-        updatedAt: nowValue(now),
-        attempts: updateAttempt(record, attemptNumber, {
+      return finishAttempt(
+        record,
+        {
           state: BLOCKED_BY_MODERATION_STATE,
-          diagnostics: [...correctionDiagnostics, ...diagnostics],
-        }),
-      };
-      return persist(record, correctionProgress.record.updatedAt);
+          diagnostics,
+        },
+        [...correctionDiagnostics, ...diagnostics]
+      );
     }
 
     const correctedValidation = validateProviderDraft(correctedResponse.draft, {
       expectedLanguage: input.language,
     });
     if (correctedValidation.ok) {
-      return persistSemanticallyValidatedDraft(
+      return acceptDraft(
         record,
-        attemptNumber,
         input,
         correctedValidation.draft,
-        correctedValidation.diagnostics,
-        true
+        correctedValidation.diagnostics
       );
     }
 
     const { diagnostics } = correctedValidation;
-    record = {
-      ...record,
-      state: BLOCKED_BY_VALIDATION_STATE,
-      diagnostics,
-      updatedAt: nowValue(now),
-      attempts: updateAttempt(record, attemptNumber, {
+    return finishAttempt(
+      record,
+      {
         state: BLOCKED_BY_VALIDATION_STATE,
-        diagnostics: [...correctionDiagnostics, ...diagnostics],
-      }),
-    };
-    return persist(record, correctionProgress.record.updatedAt);
+        diagnostics,
+      },
+      [...correctionDiagnostics, ...diagnostics]
+    );
   };
 
   return {
@@ -848,10 +588,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       );
       if (existing) {
         const resolved = await resolveDuplicate(existing);
-        return {
-          record: resolved,
-          publicResult: toPublicGenerationResult(resolved),
-        };
+        return resultFor(resolved);
       }
 
       if (input.retryOfRequestId) {
@@ -880,7 +617,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         return runAttempt(retryRecord, input);
       }
 
-      const timestamp = nowValue(now);
+      const timestamp = now();
       const record: LessonGenerationRecord = {
         requestId: requestIdFactory(),
         tenantId: command.session.tenantId,
