@@ -169,6 +169,29 @@ describe("server configuration", () => {
     expect(config.openAiBaseUrl).toBe("https://api.openai.com/v1");
   });
 
+  it("uses a 100-second provider timeout by default", () => {
+    expect(readServerConfig({}).openAiTimeoutMs).toBe(100_000);
+  });
+
+  it("accepts a bounded provider timeout override", () => {
+    const config = readServerConfig({ OPENAI_TIMEOUT_MS: "45000" });
+
+    expect(config.openAiTimeoutMs).toBe(45_000);
+    expect(config.issues).toHaveLength(0);
+  });
+
+  it("fails safe for an invalid provider timeout", () => {
+    const config = readServerConfig({ OPENAI_TIMEOUT_MS: "0" });
+
+    expect(config.openAiTimeoutMs).toBe(100_000);
+    expect(config.issues).toContainEqual({
+      code: "INVALID_OPENAI_TIMEOUT_MS",
+      field: "OPENAI_TIMEOUT_MS",
+      message:
+        "OPENAI_TIMEOUT_MS must be an integer from 1000 to 120000 milliseconds.",
+    });
+  });
+
   it("keeps the legacy PostgreSQL adapter as the default", () => {
     expect(
       readServerConfig({

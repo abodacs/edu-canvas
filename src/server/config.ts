@@ -16,6 +16,7 @@ interface ConfigIssueCodes {
   DATABASE_REQUIRED: true;
   OPENAI_API_KEY_REQUIRED: true;
   INVALID_OPENAI_BASE_URL: true;
+  INVALID_OPENAI_TIMEOUT_MS: true;
   REAL_DATA_DISABLED: true;
 }
 
@@ -38,6 +39,7 @@ export interface ServerConfig {
   openAiApiKey?: string;
   openAiModel: string;
   openAiBaseUrl: string;
+  openAiTimeoutMs: number;
   issues: readonly ConfigIssue[];
 }
 
@@ -235,6 +237,35 @@ const readSentryDsn = (
 };
 
 const defaultOpenAiBaseUrl = "https://api.openai.com/v1";
+const defaultOpenAiTimeoutMs = 100_000;
+const minOpenAiTimeoutMs = 1000;
+const maxOpenAiTimeoutMs = 120_000;
+
+const readOpenAiTimeoutMs = (
+  value: string | undefined,
+  issues: ConfigIssue[]
+): number => {
+  if (value === undefined || value.trim() === "") {
+    return defaultOpenAiTimeoutMs;
+  }
+
+  const parsed = Number(value);
+  if (
+    !Number.isSafeInteger(parsed) ||
+    parsed < minOpenAiTimeoutMs ||
+    parsed > maxOpenAiTimeoutMs
+  ) {
+    pushIssue(
+      issues,
+      "INVALID_OPENAI_TIMEOUT_MS",
+      "OPENAI_TIMEOUT_MS",
+      "OPENAI_TIMEOUT_MS must be an integer from 1000 to 120000 milliseconds."
+    );
+    return defaultOpenAiTimeoutMs;
+  }
+
+  return parsed;
+};
 
 const readOpenAiSettings = (
   environment: Record<string, string | undefined>,
@@ -243,6 +274,7 @@ const readOpenAiSettings = (
 ) => {
   const apiKey = environment.OPENAI_API_KEY?.trim() || undefined;
   const model = environment.OPENAI_MODEL?.trim() || "gpt-5.6";
+  const timeoutMs = readOpenAiTimeoutMs(environment.OPENAI_TIMEOUT_MS, issues);
   const requestedBaseUrl =
     environment.OPENAI_BASE_URL?.trim() || defaultOpenAiBaseUrl;
   const baseUrlIsValid =
@@ -269,6 +301,7 @@ const readOpenAiSettings = (
     apiKey,
     model,
     baseUrl: baseUrlIsValid ? requestedBaseUrl : defaultOpenAiBaseUrl,
+    timeoutMs,
   };
 };
 
@@ -304,6 +337,7 @@ export const readServerConfig = (
     ...(openAi.apiKey && { openAiApiKey: openAi.apiKey }),
     openAiModel: openAi.model,
     openAiBaseUrl: openAi.baseUrl,
+    openAiTimeoutMs: openAi.timeoutMs,
     issues,
   };
 };
@@ -314,6 +348,7 @@ export const safeConfigSummary = (config: ServerConfig) => {
     demoMode: config.demoMode,
     syntheticDataOnly: config.syntheticDataOnly,
     persistence: config.mode,
+    provider: { timeoutMs: config.openAiTimeoutMs },
     observability: {
       sentry: config.sentryDsn ? "configured" : "structured-log-only",
     },

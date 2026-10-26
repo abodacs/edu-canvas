@@ -55,6 +55,7 @@ Copy `.env.example` to `.env` only when you need local overrides. Unprefixed val
 | `OPENAI_API_KEY` | unset in demo mode | Server-only provider credential required when `DEMO_MODE=false`; renamed with the provider migration ([AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md)) |
 | `OPENAI_MODEL` | `gpt-5.6` | Structured-output model code default. The value must change with the provider selection ([AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md)); it is not an asserted working model |
 | `OPENAI_BASE_URL` | OpenAI Responses API | HTTPS provider endpoint in the current code; moves with the provider selection; loopback HTTP is test-only |
+| `OPENAI_TIMEOUT_MS` | `100000` | Per-call provider timeout in milliseconds; integer from 1000 to 120000. The event decision allows 100 seconds for the current Meta model |
 
 Invalid configuration fails readiness with field-level, secret-free diagnostics. The server never returns a database URL, API key, or private answer key in an error response.
 

@@ -957,6 +957,15 @@ describe("lesson generation service", () => {
     expect(() => normalizeGenerationInput({ ...validInput, grade: 9 })).toThrow(
       "Generation input is invalid."
     );
+    expect(() => {
+      return normalizeGenerationInput({
+        ...validInput,
+        standardId: "standard_ccss_5_nbt_b_05",
+      });
+    }
+    ).toThrow(
+      "This learning objective is not supported. Use Grade 4 equivalent fractions (4.NF.A.1)."
+    );
     expect(() =>
       normalizeGenerationInput({ ...validInput, provider: "client-selected" })
     ).toThrow("Generation input is invalid.");
