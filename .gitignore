@@ -18,3 +18,4 @@ teaching/
 .claude/settings.local.json
 .zcode/
 .project-map/
+.scratch/

@@ -1,0 +1,10 @@
+                       id                       |      state       | attempt |       standard_id       | language | grade | provider |           model            |  prompt_version  |  validator_version  | variants | path_steps |         created_at         |         updated_at         | elapsed_s 
+------------------------------------------------+------------------+---------+-------------------------+----------+-------+----------+----------------------------+------------------+---------------------+----------+------------+----------------------------+----------------------------+-----------
+ draft_req_c67590db-dc89-4f76-b52d-1b23304373b0 | ready-for-review |       1 | standard_ccss_4_nf_a_01 | en       |     4 | openai   | muse-spark-1.2-contributor | lesson-prompt-v1 | lesson-validator-v2 |        4 |          2 | 2026-10-26 22:38:33.301+00 | 2026-10-26 22:39:06.768+00 |    33.467
+(1 row)
+
+                   request_id                   | attempt_number |           idempotency_key            |      state       | correction_attempted |         created_at         
+------------------------------------------------+----------------+--------------------------------------+------------------+----------------------+----------------------------
+ draft_req_c67590db-dc89-4f76-b52d-1b23304373b0 |              1 | 4f4f33fd-36fc-4ff8-a4f4-554e279e0aaf | ready-for-review | t                    | 2026-10-26 22:38:33.302+00
+(1 row)
+

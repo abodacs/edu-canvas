@@ -12,7 +12,7 @@ This inventory comes from local source inspection. Repeat the inventory on the s
 | --- | --- | --- |
 | [provider.ts](../../src/server/generation/provider.ts) | Fixture and OpenAI providers; four matching variants | Add a Meta adapter and a versioned source-grounded request |
 | [factory.ts](../../src/server/generation/factory.ts) | Chooses fixture or OpenAI | Select the proven provider explicitly; separate fixture mode from live mode |
-| [types.ts](../../src/server/generation/types.ts) | Generation records; 30-second claim lease | Add source/version references and bounded operation timing |
+| [types.ts](../../src/server/generation/types.ts) | Generation records; 220-second claim lease | Add source/version references and bounded operation timing |
 | [service.ts](../../src/server/generation/service.ts) | Generation claims, validation, one correction | Preserve ownership checks across the expanded workflow |
 | [generation-contract.ts](../../src/shared/generation-contract.ts) | Public draft has exactly four variants | Add a versioned package contract and distinct learner projection |
 | [projection.ts](../../src/server/generation/projection.ts) | Removes matching relationships | Separate teacher review from learner responses and feedback |
@@ -167,15 +167,17 @@ An independent item must differ from the worked and guided examples. Keep a retr
 
 ## Bound provider calls and preserve request ownership
 
-Source resolution completes before the generation claim begins. The existing generation lease is 30 seconds.
+Source resolution completes before the generation claim begins. The existing generation lease is 220 seconds.
 
 | Operation | Deadline | Retry rule |
 | --- | --- | --- |
 | Learning Commons sequence | 10 seconds total | One teacher-requested retry |
 | Jev match | 5 seconds | Manual confirmation after failure |
 | Upload extraction | 10 seconds | Correct or replace the file |
-| Model generation and correction | 25 seconds total | At most one correction for invalid output |
-| One model call | 10 seconds | No hidden transport retry |
+| Model generation and correction | Up to 200 seconds total (100 seconds per call) | At most one correction for invalid output |
+| One model call | 100 seconds | No hidden transport retry |
+
+**Event decision, 2026-10-27:** the per-call model timeout is 100 seconds. The selected Meta model takes about 20–47 seconds for the full draft contract. This supersedes the earlier 10-second call and 25-second total for the event run. #105 must record the contract change before acceptance.
 
 Reserve the remaining generation time for validation and persistence. Abort calls at their deadlines. Preserve the original lease ownership check before every write. Reject late responses after expiry or after another attempt acquires ownership.
 

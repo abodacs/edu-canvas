@@ -174,4 +174,68 @@ describe("lesson draft providers", () => {
       },
     });
   });
+
+  it("sends approved curriculum and reference context to the adapter", async () => {
+    let requestInit: RequestInit | undefined;
+    const provider = createOpenAILessonDraftProvider({
+      apiKey: "server-only-test-key",
+      model: "gpt-5.6",
+      fetchImplementation: (_input, init) => {
+        requestInit = init;
+        return Promise.resolve(
+          Response.json(
+            {
+              output_text: JSON.stringify(
+                createEquivalentFractionsDraft(request)
+              ),
+            },
+            { status: 200, headers: { "content-type": "application/json" } }
+          )
+        );
+      },
+    });
+
+    await provider.generate(request, {
+      correctionAttempt: false,
+      diagnostics: [],
+      curriculumContext: {
+        nodes: [
+          {
+            id: "graph_node_equal_parts",
+            screenPurposeId: "screen_purpose_equal_parts",
+          },
+          {
+            id: "graph_node_equivalent_fractions",
+            screenPurposeId: "screen_purpose_equivalent_fractions",
+          },
+        ],
+        edges: [
+          {
+            prerequisiteId: "graph_node_equal_parts",
+            successorId: "graph_node_equivalent_fractions",
+          },
+        ],
+        targetNodeId: "graph_node_equivalent_fractions",
+      },
+      referenceContext: {
+        id: "activity_version_demo_equivalent_fractions_v1",
+        version: "1",
+        graphVersion: "equivalent-fractions-v1",
+        standardCode: "4.NF.A.1",
+        source: "1/2",
+        targets: ["2/4", "3/6", "4/8"],
+        prompt: "Choose the fractions that name the same part of a whole.",
+      },
+    });
+
+    const body = JSON.parse(String(requestInit?.body)) as { input: string };
+
+    expect(body.input).toContain("graph_node_equal_parts");
+    expect(body.input).toContain("screen_purpose_equal_parts");
+    expect(body.input).toContain(
+      "activity_version_demo_equivalent_fractions_v1"
+    );
+    expect(body.input).toContain("Do not use any other node");
+    expect(body.input).not.toContain("answerKey");
+  });
 });

@@ -24,10 +24,29 @@ const variantKindTitles: Record<
 export const RATE_LIMIT_KIND = "rate-limit";
 
 export const promptTemplateVersion = "lesson-prompt-v1";
+export const defaultProviderTimeoutMs = 100_000;
+
+export interface ProviderCurriculumContext {
+  nodes: readonly { id: string; screenPurposeId: string }[];
+  edges: readonly { prerequisiteId: string; successorId: string }[];
+  targetNodeId: string;
+}
+
+export interface ProviderReferenceContext {
+  id: string;
+  version: string;
+  graphVersion: string;
+  standardCode: string;
+  source: string;
+  targets: readonly string[];
+  prompt: string;
+}
 
 export interface ProviderGenerationContext {
   correctionAttempt: boolean;
   diagnostics: readonly GenerationDiagnostic[];
+  curriculumContext?: ProviderCurriculumContext;
+  referenceContext?: ProviderReferenceContext;
 }
 
 export interface ProviderResponse {
@@ -65,6 +84,7 @@ export interface OpenAILessonDraftProviderOptions {
   apiKey: string;
   model: string;
   baseUrl?: string;
+  timeoutMs?: number;
   fetchImplementation?: typeof fetch;
 }
 
@@ -267,6 +287,24 @@ const buildPrompt = (
   request: NormalizedGenerationRequest,
   context: ProviderGenerationContext
 ): string => {
+  const curriculum = context.curriculumContext;
+  const reference = context.referenceContext;
+  const approvedNodes = curriculum?.nodes
+    .map((node) => `${node.id} (${node.screenPurposeId})`)
+    .join(", ");
+  const approvedEdges = curriculum?.edges
+    .map((edge) => `${edge.prerequisiteId} -> ${edge.successorId}`)
+    .join(", ");
+  const pathInstruction = curriculum
+    ? `Include one forward learningPath with exactly ${curriculum.nodes.length} steps in this order: ${curriculum.nodes
+        .map((node) => `${node.id} with ${node.screenPurposeId}`)
+        .join(
+          ", then "
+        )}. Do not use any other node, screen purpose, or edge. Target node: ${curriculum.targetNodeId}.`
+    : "Include one forward learningPath with 2–12 ordered graph steps. Each step must contain only the approved graph node id and screen-purpose id supplied by the curriculum context.";
+  const referenceInstruction = reference
+    ? `Curated reference: ${reference.id} version ${reference.version}; graph ${reference.graphVersion}; standard ${reference.standardCode}; source item ${reference.source}; target options ${reference.targets.join(", ")}. Reference prompt: ${reference.prompt}. Use this content as the lesson basis. Do not include or reveal an answer key.`
+    : "";
   const correction = context.correctionAttempt
     ? ` Correct the previous draft using only these safe validation diagnostics: ${context.diagnostics
         .map((diagnostic) => diagnostic.message)
@@ -278,10 +316,17 @@ const buildPrompt = (
     "Return only the canonical JSON contract. Never return HTML, CSS, JavaScript, A2UI, URLs, or executable content.",
     `Teacher request: ${request.prompt}`,
     `Grade: ${request.grade}. Primary standard: ${request.standardId}. Language: ${request.language}. Difficulty: ${request.difficulty}.`,
-    "Create exactly two standard variants, one scaffold variant, and one challenge variant. Each variant needs 3–8 sources, matching targets, at most two bounded distractors, stable ids, hints, deterministic feedback, language metadata, and accessibility metadata.",
-    "Include one forward learningPath with 2–12 ordered graph steps. Each step must contain only the approved graph node id and screen-purpose id supplied by the curriculum context. Include concise learner-safe rationale and nextScreenRationale; do not include chain-of-thought or private learner data.",
+    "Create exactly two standard variants, one scaffold variant, and one challenge variant. Each variant needs exactly 3 source items, 3 matching target items, zero distractor items, stable ids, one hint, deterministic feedback, language metadata, and accessibility metadata.",
+    approvedNodes
+      ? `Approved curriculum nodes: ${approvedNodes}. Approved curriculum edges: ${approvedEdges}.`
+      : "",
+    referenceInstruction,
+    pathInstruction,
+    "Include concise learner-safe rationale and nextScreenRationale; do not include chain-of-thought or private learner data.",
     correction,
-  ].join("\n");
+  ]
+    .filter((line) => line.length > 0)
+    .join("\n");
 };
 
 const extractResponseDraft = (body: unknown): unknown => {
@@ -348,25 +393,37 @@ const lessonDraftJsonSchema = {
         properties: {
           id: { type: "string" },
           kind: { type: "string", enum: ["standard", "scaffold", "challenge"] },
-          title: { type: "string" },
-          instructions: { type: "string" },
+          title: { type: "string", minLength: 1, maxLength: 400 },
+          instructions: { type: "string", minLength: 1, maxLength: 400 },
           sourceItems: {
             type: "array",
+            minItems: 3,
+            maxItems: 8,
             items: { $ref: ITEM_SCHEMA_REFERENCE },
           },
           targetItems: {
             type: "array",
+            minItems: 1,
+            maxItems: 8,
             items: { $ref: ITEM_SCHEMA_REFERENCE },
           },
           distractorItems: {
             type: "array",
+            maxItems: 2,
             items: { $ref: ITEM_SCHEMA_REFERENCE },
           },
           relationships: {
             type: "array",
+            minItems: 1,
+            maxItems: 8,
             items: { $ref: "#/$defs/relationship" },
           },
-          hints: { type: "array", items: { type: "string" } },
+          hints: {
+            type: "array",
+            minItems: 1,
+            maxItems: 3,
+            items: { type: "string", minLength: 1, maxLength: 400 },
+          },
           feedback: {
             type: "object",
             additionalProperties: false,
@@ -461,6 +518,7 @@ export const createOpenAILessonDraftProvider = (
   return {
     provenance,
     async generate(request, context) {
+      const timeoutMs = options.timeoutMs ?? defaultProviderTimeoutMs;
       let response: Response;
       try {
         response = await fetchImplementation(
@@ -483,7 +541,7 @@ export const createOpenAILessonDraftProvider = (
                 },
               },
             }),
-            signal: AbortSignal.timeout(15_000),
+            signal: AbortSignal.timeout(timeoutMs),
           }
         );
       } catch {
