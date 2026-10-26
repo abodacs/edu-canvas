@@ -2,11 +2,13 @@
 
 Updated 2026-10-24. Current recording plan for the [execution plan](README.md). This script replaces the older Devpost/OpenAI-specific recording assumptions for this sprint; it does not change historical docs or claim the revised loop is shipped. Target runtime: 2:50. Confirm the event’s actual artifact requirements before recording.
 
+The 2026-10-26 [focused event scope](focused-scope.md) governs event execution. The shot list below is the full-scope version. Use it only where the focused scope’s five beats agree: prepare, review, learn, decide, prove.
+
 ## The story
 
 A teacher needs to explain equivalent fractions and decide what to do when a learner still struggles. Show a reviewable explanation, supported practice, a fresh check, and the evidence behind a teacher-controlled follow-up. Free copilots now draft standards-aligned materials; the recording therefore emphasizes what they do not run — the gated loop from teacher approval to follow-up evidence. The product advantage remains a hypothesis until the workflow comparison is recorded in the [validation tracker](validation-tracker.md).
 
-The latest [UI scope](../../product/teacher-ui.md) adds Learning Commons grounding, Jev matching, source visibility, section revision, and upload/recovery. Show the source-grounded draft and a focused teacher revision in the main story. Validate alternate and failure paths separately under V13-V16; a short recording does not waive full-feature acceptance. The timing below is a proposed recording budget, not evidence that the expanded flow already fits.
+The [focused event scope](focused-scope.md) defers Learning Commons grounding, Jev matching, uploads, and section revision for the event. Its five beats replace the full-scope story. Keep the source label honest: the curated reference is not a live Learning Commons result. The timing below is a proposed recording budget, not evidence that the expanded flow fits.
 
 ## Shot list
 

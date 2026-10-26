@@ -2,6 +2,8 @@
 
 Updated 2026-10-24; reframed 2026-10-25. Working evidence record for the [roadmap](../../../ROADMAP.md), [sprint](README.md), and [risk review](README.md#risks-and-decision-rules). All checks start pending: writing this tracker does not establish that a test ran or an implementation exists. Event evidence here feeds the production lifecycle gates; V12 is the production value gate — repeat teacher use, effort saved, and adoption path — and outranks every event award.
 
+**Focused event scope (2026-10-26).** The [focused scope](focused-scope.md) defers V13–V16 to post-event. Event must-pass gates are V1–V3, V6, V8–V11. V4, V5, and V7 are evidence-if-available. The focused scope’s IC1–IC4 map to V3, V6, V8, and V9–V11.
+
 ## Evidence gates
 
 | ID | Question / required artifact | Owner | Checkpoint | Status / evidence | Decision if unmet |
