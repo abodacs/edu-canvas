@@ -1,10 +1,25 @@
 import type { DemoSession } from "@/server/demo/policy";
-import type { PublicGenerationResult } from "@/shared/generation-contract";
-
 import type {
-  NormalizedGenerationRequest,
-  ProviderProvenance,
-} from "./provider";
+  LessonDifficulty,
+  LessonLanguage,
+  PublicGenerationResult,
+} from "@/shared/generation-contract";
+
+export interface NormalizedGenerationRequest {
+  prompt: string;
+  grade: number;
+  standardId: string;
+  language: LessonLanguage;
+  difficulty: LessonDifficulty;
+}
+
+export interface ProviderProvenance {
+  provider: string;
+  model: string;
+  promptTemplateVersion: string;
+  validatorVersion: string;
+  catalogVersion?: string;
+}
 
 export const variantKindValues = ["standard", "scaffold", "challenge"] as const;
 

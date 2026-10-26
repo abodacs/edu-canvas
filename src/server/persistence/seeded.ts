@@ -1,7 +1,7 @@
 import { generationClaimExpiredDiagnostic } from "../generation/types";
 import { serverObservability } from "../observability.server";
 import { getDemoSeedCounts } from "../seed-data";
-import type { FoundationPersistence } from "../persistence";
+import type { FoundationPersistence } from "./types";
 import type { LessonGenerationRecord } from "../generation/types";
 import type { ServerObservability } from "../observability.server";
 

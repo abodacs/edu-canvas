@@ -1,12 +1,11 @@
 import { validatorVersion } from "./validation";
-import type {
-  LessonDifficulty,
-  LessonLanguage,
-} from "@/shared/generation-contract";
+import type { LessonLanguage } from "@/shared/generation-contract";
 
 import type {
   GenerationDiagnostic,
+  NormalizedGenerationRequest,
   ProviderLessonDraft,
+  ProviderProvenance,
   ProviderVariant,
   VariantKind,
 } from "./types";
@@ -25,22 +24,6 @@ const variantKindTitles: Record<
 export const RATE_LIMIT_KIND = "rate-limit";
 
 export const promptTemplateVersion = "lesson-prompt-v1";
-
-export interface NormalizedGenerationRequest {
-  prompt: string;
-  grade: number;
-  standardId: string;
-  language: LessonLanguage;
-  difficulty: LessonDifficulty;
-}
-
-export interface ProviderProvenance {
-  provider: string;
-  model: string;
-  promptTemplateVersion: string;
-  validatorVersion: string;
-  catalogVersion?: string;
-}
 
 export interface ProviderGenerationContext {
   correctionAttempt: boolean;
@@ -568,3 +551,8 @@ export const createOpenAILessonDraftProvider = (
     },
   };
 };
+
+export {
+  type NormalizedGenerationRequest,
+  type ProviderProvenance,
+} from "./types";

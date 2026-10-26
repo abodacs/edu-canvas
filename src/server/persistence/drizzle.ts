@@ -28,7 +28,7 @@ import type { DemoCounts } from "@/shared/demo-contract";
 
 import type { LessonGenerationRecord } from "../generation/types";
 import type { ServerObservability } from "../observability.server";
-import type { FoundationPersistence } from "../persistence";
+import type { FoundationPersistence } from "./types";
 
 import type {
   StoredGenerationAttemptRow,
