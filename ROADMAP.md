@@ -77,7 +77,7 @@ Create one hand-authored lesson following the seven steps above, with a correct-
 
 ### 3. Test whether the workflow earns its place
 
-Ask three teachers to prepare the same short lesson using their normal method or accessible general AI tool, then the reference Edu-Canvas prototype. Vary the order between participants. Include prompting, review, corrections, sharing, and interpretation of sample attempts in the timing. Include the teacher’s best reusable material and one accessible specialist tool when relevant. Match content availability and quality requirements; record researcher assistance. Prototype timing tests the workflow only—repeat with generated drafts before claiming preparation savings.
+Ask three teachers to prepare the same short lesson using their normal method or an accessible general AI tool — free Claude for Teachers, ChatGPT for Teachers, or whichever copilot they already use — then the reference Edu-Canvas prototype. Vary the order between participants. Include prompting, review, corrections, sharing, and interpretation of sample attempts in the timing. Include the teacher’s best reusable material and one accessible specialist tool when relevant. Match content availability and quality requirements; record researcher assistance. Prototype timing tests the workflow only—repeat with generated drafts before claiming preparation savings.
 
 **Deliverable:** a comparison sheet (V7): total time, corrections, unresolved errors, help needed, preferred method, and reason. Include review of incorrect-feedback branches; teacher approval may be the largest cost. Record one next lesson each teacher would actually try.
 

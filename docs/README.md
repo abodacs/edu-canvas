@@ -21,24 +21,21 @@ Edu-Canvas is a production product; these documents define and verify one trustw
 | [Implementation contracts](design/design-doc-implementation.md) | Records, deadlines, commands, estimate, and acceptance checks AC01–AC24 |
 | [Decision record](design/design-doc-questions.md) | Answers to design questions Q1–Q20 and UQ1–UQ5 |
 | [Reading guide](design/design-doc-reading-guide.md) | Terms and writing rules for the design documents |
-| [Product strategy](product-strategy.md) | Problem, target users, alternatives, value hypothesis, and evidence limits |
-| [Walking skeleton](walking-skeleton.md) | Current end-to-end acceptance contract and actual delivery gaps |
 | [Contributing](../CONTRIBUTING.md) | Local setup, actionable issues, useful commits, and contribution checks |
 | [Code standards](../CODING_STANDARDS.md) | Coding and review rules, Ultracite commands, and documentation formatting |
 | [Coding patterns](engineering/coding-patterns.md) | Seven engineering patterns adapted to Edu-Canvas domain rules and boundaries |
-| [Software factory](engineering/software-factory.md) | Dated engineering-method notes; personal tooling sections are context, not contract |
 | [Research index](research/README.md) | Registry of locally retained reference materials; raw research notes stay untracked |
+| [Archive](archive/README.md) | Historical records kept for provenance; owns no current contract |
 | [Foundation runbook](foundation-runbook.md) | Local setup, configuration, readiness, and redeploy checks for the foundation |
 | [Release runbook](release-fly-supabase.md) | Deployment procedure, access and usage limits, and the production requirements list |
 | [Architecture harness](architecture-harness.md) | Guardrails for state ownership, layer imports, contract drift, and dependency boundaries |
 | [Observed behaviour](observed-behaviour.md) | Evidence boundary, job stories, and the research plan |
 | [Threat model](security/threat-model.md) | STRIDE pass and open security questions |
 | [Decision records](agdr/) | Architecture decisions AgDR-0001–0008 |
-| [React Doctor triage](react-doctor-triage.md) | Dated code-quality scan findings and dispositions |
-| [Plans](plans/hackathon-2026-pr-stack.md) | Historical import and reconciliation plan, file map, and change record |
 | GitHub issues and Projects | Work ownership, dependencies, priority, lifecycle state, and delivery evidence |
 
 ## Change log
 
+- 2026-10-26 (alignment): north-star docs name the post-draft loop against free teacher copilots; dated method, triage, and hackathon-2026 import records moved to [archive/](archive/README.md) ([#96](https://github.com/abodacs/edu-canvas/issues/96)).
 - 2026-10-25 (architecture): root [ARCHITECTURE.md](../ARCHITECTURE.md) and its [rationale](engineering/architecture-rationale.md) added. The architecture document owns the current system, folder ownership, runtime flows, and enforcement map; the design documents keep the target contracts.
 - 2026-10-25 (PR 02): ownership reconciled; conflicts from [#89](https://github.com/abodacs/edu-canvas/issues/89) fixed; the July 2026 OpenAI Build Week documents (`DEVPOST_WINNING_STRATEGY.md`, `PRD_GRILL_LOG.md`), the superseded video script, and the unverified idea-brainstorm archive were removed. Their still-valid decisions live in the [decision record](design/design-doc-questions.md) and [teacher UI decisions](product/teacher-ui.md).

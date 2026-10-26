@@ -4,7 +4,7 @@ Updated 2026-10-24. Current recording plan for the [execution plan](README.md). 
 
 ## The story
 
-A teacher needs to explain equivalent fractions and decide what to do when a learner still struggles. Show a reviewable explanation, supported practice, a fresh check, and the evidence behind a teacher-controlled follow-up. The product advantage remains a hypothesis until the workflow comparison is recorded in the [validation tracker](validation-tracker.md).
+A teacher needs to explain equivalent fractions and decide what to do when a learner still struggles. Show a reviewable explanation, supported practice, a fresh check, and the evidence behind a teacher-controlled follow-up. Free copilots now draft standards-aligned materials; the recording therefore emphasizes what they do not run — the gated loop from teacher approval to follow-up evidence. The product advantage remains a hypothesis until the workflow comparison is recorded in the [validation tracker](validation-tracker.md).
 
 The latest [UI scope](../../product/teacher-ui.md) adds Learning Commons grounding, Jev matching, source visibility, section revision, and upload/recovery. Show the source-grounded draft and a focused teacher revision in the main story. Validate alternate and failure paths separately under V13-V16; a short recording does not waive full-feature acceptance. The timing below is a proposed recording budget, not evidence that the expanded flow already fits.
 
