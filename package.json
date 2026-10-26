@@ -37,6 +37,7 @@
     "verify:client-boundary": "node --import tsx scripts/verify-client-boundary.ts",
     "verify:architecture": "node --import tsx scripts/verify-architecture.ts",
     "verify:boundaries": "depcruise src --config .dependency-cruiser.cjs",
+    "verify:lesson-gate": "vitest run src/server/generation/lesson-gate-properties.test.ts",
     "verify:config": "node --import tsx scripts/verify-config.ts",
     "smoke": "node --import tsx scripts/smoke.ts",
     "fix": "ultracite fix"
@@ -95,6 +96,7 @@
     "eslint-plugin-sonarjs": "^4.2.2",
     "eslint-plugin-unicorn": "^77.0.0",
     "eslint-plugin-unused-imports": "^4.4.1",
+    "fast-check": "^4.10.2",
     "globals": "^17.13.0",
     "postcss-less": "^6.0.0",
     "postcss-scss": "^4.0.9",
