@@ -14,3 +14,7 @@ The following materials are retained on the owner's machine only. They are not t
 | _7 Coding Patterns I Stole From Senior Engineers_ (PDF) | Local notes workspace (`.worktrees/hackthon-docs/`) | Article by CodeByUmar, Skill Stuff on Medium, June 8, 2026; its seven patterns are summarized and adapted in [coding patterns](../engineering/coding-patterns.md) |
 | `refactoring-english/` generated skill | Local notes workspace (`.worktrees/hackthon-docs/refactoring-english/`), installed via a personal skills symlink | Book-to-skill output; not installed into this repository |
 | _The Learning Game_ (PNG screenshot) | Owner's Downloads folder | Web-essay screenshot on learning and schooling; saved 2026-10-24, indexed here as a local reference only |
+
+## Synthetic study rehearsals
+
+- [Twelve teacher personas for issue #118](teacher-simulation-118/README.md): reusable role prompts and an AI-authored two-week rehearsal. All participants, events, and times are synthetic. This pack helps examine the study protocol. It supplies no teacher evidence and does not satisfy the real study or V12.

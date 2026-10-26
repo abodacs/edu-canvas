@@ -1,0 +1,123 @@
+{
+  "synthetic": true,
+  "persona_id": "T07",
+  "scope": "core",
+  "assumptions": [
+    "Elena, all sessions, all decisions, and every minute are invented scenario inputs.",
+    "The baseline reuses a school task bank and an assumed Jev objective match. No real adoption or provider access is established.",
+    "Both imagined methods target the same English Grade 4 equivalent-fractions objective and require review of visual explanations and feedback.",
+    "The assumed prototype displays authoritative standard descriptions and source context. Its implementation is not established here.",
+    "Day-1 product setup includes four invented minutes of researcher help. Later sessions assume no help.",
+    "Day-4 product preparation includes time to inspect and manually confirm the match at exactly 0.90 native confidence.",
+    "All lesson use is imagined. Procurement, permission, provider accuracy, and learning outcomes remain unknown."
+  ],
+  "sessions": [
+    {
+      "day": 1,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 3,
+        "preparation": 16,
+        "review": 15,
+        "correction": 4,
+        "sharing": 4,
+        "follow_up": 7
+      },
+      "edu_minutes": {
+        "setup": 11,
+        "preparation": 7,
+        "review": 21,
+        "correction": 3,
+        "sharing": 4,
+        "follow_up": 7
+      },
+      "researcher_help_minutes": 4,
+      "simulated_lesson_use": "used",
+      "errors_found": 1,
+      "unresolved_errors": 0,
+      "event": "In this imagined first session, Elena compares the school task bank with a new draft. She checks the source and every feedback branch. She adds a missing instruction to explain equivalence with a visual model before approval.",
+      "decision": "Use the corrected imagined lesson. Source access is useful, but setup and review require more total effort than the baseline. A standard match does not establish lesson quality."
+    },
+    {
+      "day": 4,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 3,
+        "preparation": 14,
+        "review": 14,
+        "correction": 3,
+        "sharing": 4,
+        "follow_up": 7
+      },
+      "edu_minutes": {
+        "setup": 3,
+        "preparation": 9,
+        "review": 17,
+        "correction": 4,
+        "sharing": 4,
+        "follow_up": 7
+      },
+      "researcher_help_minutes": 0,
+      "simulated_lesson_use": "used",
+      "errors_found": 1,
+      "unresolved_errors": 0,
+      "event": "The assigned Jev native confidence is exactly 0.90. Elena reads the authoritative candidate description and confirms the supported equivalence objective before generation. She corrects an incomplete explanation before approval. A synthetic response selects 2/3 for 1/2. Elena asks for an equal-whole representation before choosing approved practice.",
+      "decision": "Complete this imagined lesson after confirmation and correction. Total effort is nearly equal to reuse. The confidence value permits no automatic confirmation skip and does not diagnose the synthetic response."
+    },
+    {
+      "day": 8,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 3,
+        "preparation": 14,
+        "review": 13,
+        "correction": 3,
+        "sharing": 4,
+        "follow_up": 7
+      },
+      "edu_minutes": {
+        "setup": 2,
+        "preparation": 6,
+        "review": 16,
+        "correction": 3,
+        "sharing": 4,
+        "follow_up": 6
+      },
+      "researcher_help_minutes": 0,
+      "simulated_lesson_use": "used",
+      "errors_found": 1,
+      "unresolved_errors": 0,
+      "event": "Elena returns in the scripted week-two scenario without encouragement. She inspects the source context and corrects one instruction for a fresh equivalent-fractions example. She checks all branches before approval.",
+      "decision": "Continue for this imagined task. Source context and familiar review reduce total work modestly. Keep independent content review even when the objective match appears confident."
+    },
+    {
+      "day": 12,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 3,
+        "preparation": 13,
+        "review": 13,
+        "correction": 3,
+        "sharing": 4,
+        "follow_up": 7
+      },
+      "edu_minutes": {
+        "setup": 2,
+        "preparation": 6,
+        "review": 17,
+        "correction": 3,
+        "sharing": 4,
+        "follow_up": 6
+      },
+      "researcher_help_minutes": 0,
+      "simulated_lesson_use": "used",
+      "errors_found": 1,
+      "unresolved_errors": 0,
+      "event": "Elena prepares another imagined equivalence lesson. A new visual example needs a longer review. She corrects a reference to equal-sized wholes before approval and examines the response evidence before selecting a next activity.",
+      "decision": "Use the corrected imagined lesson. The small total-effort benefit supports another trial, not a school purchase or a claim about learning."
+    }
+  ],
+  "stated_preference": "I prefer source context beside the draft. I still inspect the explanation, diagrams, and feedback. A confident match does not approve a lesson.",
+  "week_two_reason": "Elena completes imagined sessions on days 8 and 12 because later source review takes modestly less total work. This authored return depends on assumed source visibility and does not predict real teacher behavior.",
+  "next_real_test": "Observe an authorized Grade 4 teacher compare the same task with reusable materials and the actual product. Include manual confirmation at native confidence 0.90, source inspection, correction, full branch review, and an unprompted later-use decision."
+}

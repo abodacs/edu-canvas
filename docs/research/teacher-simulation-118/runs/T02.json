@@ -1,0 +1,94 @@
+{
+  "synthetic": true,
+  "persona_id": "T02",
+  "scope": "core",
+  "assumptions": [
+    "Daniel and every event are fictional. All minutes are invented scenario inputs.",
+    "The existing worksheet and answer key already cover the same objective and quality bar.",
+    "The paper workflow uses existing fraction strips and needs little setup.",
+    "The imagined product requires a full review of new examples, feedback branches, and the independent check.",
+    "No app, LLM, or Jev call occurred. All lesson use is imagined.",
+    "Student learning, procurement, and real participation permissions remain unknown."
+  ],
+  "sessions": [
+    {
+      "day": 1,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 2,
+        "preparation": 4,
+        "review": 4,
+        "correction": 1,
+        "sharing": 3,
+        "follow_up": 8
+      },
+      "edu_minutes": {
+        "setup": 9,
+        "preparation": 5,
+        "review": 13,
+        "correction": 3,
+        "sharing": 3,
+        "follow_up": 8
+      },
+      "researcher_help_minutes": 4,
+      "simulated_lesson_use": "used",
+      "errors_found": 1,
+      "unresolved_errors": 0,
+      "event": "Daniel compares the known fraction worksheet with a new imagined draft. The setup includes four minutes of researcher help. He corrects an unclear multi-select instruction before approval. He reviews each feedback branch before the imagined lesson.",
+      "decision": "The paper workflow takes 22 invented minutes. Edu-Canvas takes 41 invented minutes. Daniel agrees to one more trial because initial setup may account for part of the difference."
+    },
+    {
+      "day": 4,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 2,
+        "preparation": 3,
+        "review": 3,
+        "correction": 1,
+        "sharing": 3,
+        "follow_up": 8
+      },
+      "edu_minutes": {
+        "setup": 3,
+        "preparation": 4,
+        "review": 10,
+        "correction": 0,
+        "sharing": 3,
+        "follow_up": 9
+      },
+      "researcher_help_minutes": 0,
+      "simulated_lesson_use": "used",
+      "errors_found": 0,
+      "unresolved_errors": 0,
+      "event": "The imagined lesson uses a different equivalence example. A synthetic response selects an incorrect fraction. Daniel checks the response and asks for an explanation before selecting another approved activity. The new draft contains no assumed content error. Review of the unfamiliar branches still takes time.",
+      "decision": "The paper workflow takes 20 invented minutes. Edu-Canvas takes 29 invented minutes. The product adds review work without an assumed improvement in the next teaching decision."
+    },
+    {
+      "day": 8,
+      "status": "declined",
+      "baseline_minutes": null,
+      "edu_minutes": null,
+      "researcher_help_minutes": null,
+      "simulated_lesson_use": "not_used",
+      "errors_found": null,
+      "unresolved_errors": null,
+      "event": "Daniel declines a third imagined product session without encouragement. He chooses his existing materials. No comparable timed task occurs.",
+      "decision": "The second trial still costs more total work. Daniel follows his stated rule and keeps the established method."
+    },
+    {
+      "day": 12,
+      "status": "declined",
+      "baseline_minutes": null,
+      "edu_minutes": null,
+      "researcher_help_minutes": null,
+      "simulated_lesson_use": "not_used",
+      "errors_found": null,
+      "unresolved_errors": null,
+      "event": "Daniel maintains the refusal in the imagined follow-up. No new timing or lesson observation occurs.",
+      "decision": "There is no new reason to replace his reusable material. His week-two product return remains absent in this authored scenario."
+    }
+  ],
+  "stated_preference": "I prefer my existing worksheet and fraction strips. A faster draft does not offset the time to inspect unfamiliar content.",
+  "week_two_reason": "No completed product session occurs on day 8 or day 12. The authored refusal follows greater total effort in both comparable trials.",
+  "next_real_test": "Observe a real experienced teacher reuse a known fraction lesson, then review a comparable product lesson. Include every feedback branch, all researcher help, and total follow-up effort. Ask about actual later use without prompting a return."
+}

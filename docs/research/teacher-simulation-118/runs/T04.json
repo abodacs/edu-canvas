@@ -1,0 +1,123 @@
+{
+  "synthetic": true,
+  "persona_id": "T04",
+  "scope": "core",
+  "assumptions": [
+    "Every event, minute, lesson use, and decision is invented for this rehearsal.",
+    "Lina already has a reusable LLM prompt and fraction-diagram template. The baseline includes their reuse.",
+    "Both imagined methods require the same objective, answer checks, feedback checks, and quality bar.",
+    "Edu-Canvas saves no meaningful drafting time. Any later advantage comes from less formatting and result interpretation.",
+    "The imagined prototype provides the functions stated in the shared protocol. No application, LLM provider, or Jev API is called.",
+    "Researcher help is included once in Edu-Canvas setup time. Zero means assumed no help, not a missing measurement.",
+    "No actual pupils participate. Learning outcomes and purchasing authority remain unknown."
+  ],
+  "sessions": [
+    {
+      "day": 1,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 1,
+        "preparation": 8,
+        "review": 9,
+        "correction": 5,
+        "sharing": 4,
+        "follow_up": 9
+      },
+      "edu_minutes": {
+        "setup": 9,
+        "preparation": 7,
+        "review": 12,
+        "correction": 5,
+        "sharing": 3,
+        "follow_up": 9
+      },
+      "researcher_help_minutes": 3,
+      "simulated_lesson_use": "used",
+      "errors_found": 1,
+      "unresolved_errors": 0,
+      "event": "Lina reuses her LLM prompt for the baseline. In the imagined prototype trial, she spends extra time learning full-branch review. She corrects an unclear instruction before approval. Setup includes three minutes of assumed researcher help.",
+      "decision": "The first trial takes more total work. Lina agrees to another comparison because first-use setup can explain part of the cost."
+    },
+    {
+      "day": 4,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 1,
+        "preparation": 8,
+        "review": 9,
+        "correction": 5,
+        "sharing": 4,
+        "follow_up": 9
+      },
+      "edu_minutes": {
+        "setup": 2,
+        "preparation": 7,
+        "review": 11,
+        "correction": 5,
+        "sharing": 3,
+        "follow_up": 7
+      },
+      "researcher_help_minutes": 0,
+      "simulated_lesson_use": "used",
+      "errors_found": 1,
+      "unresolved_errors": 0,
+      "event": "The imagined task uses a different fraction example. Lina corrects wording that could imply only one matching fraction. A synthetic response selects 2/3 as equivalent to 1/2. Lina examines the first response and pauses progression for an equal-parts check.",
+      "decision": "Drafting is already fast in both methods. Lina continues only to test whether the review and follow-up steps become shorter."
+    },
+    {
+      "day": 8,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 1,
+        "preparation": 7,
+        "review": 9,
+        "correction": 5,
+        "sharing": 4,
+        "follow_up": 9
+      },
+      "edu_minutes": {
+        "setup": 1,
+        "preparation": 7,
+        "review": 8,
+        "correction": 4,
+        "sharing": 3,
+        "follow_up": 6
+      },
+      "researcher_help_minutes": 0,
+      "simulated_lesson_use": "used",
+      "errors_found": 1,
+      "unresolved_errors": 0,
+      "event": "Lina returns without an imagined reminder. She uses the familiar review sequence and corrects an ambiguous hint. The scenario assumes that grouped response evidence reduces her follow-up work.",
+      "decision": "The constructed comparison now shows less review and follow-up work. Lina keeps the LLM baseline available and tries one further lesson."
+    },
+    {
+      "day": 12,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 1,
+        "preparation": 7,
+        "review": 9,
+        "correction": 4,
+        "sharing": 4,
+        "follow_up": 9
+      },
+      "edu_minutes": {
+        "setup": 1,
+        "preparation": 7,
+        "review": 8,
+        "correction": 3,
+        "sharing": 3,
+        "follow_up": 6
+      },
+      "researcher_help_minutes": 0,
+      "simulated_lesson_use": "used",
+      "errors_found": 1,
+      "unresolved_errors": 0,
+      "event": "A fresh equivalent-fractions lesson uses the same imagined quality bar. Lina checks every answer and feedback branch. She fixes one confusing sentence before approval. No repeated prompt cycle is assumed.",
+      "decision": "Lina would use the imagined prototype for this lesson type because the later review and follow-up costs are lower. She makes no claim about other subjects."
+    }
+  ],
+  "stated_preference": "Lina prefers her existing LLM workflow for quick text drafts. She conditionally prefers the imagined Edu-Canvas workflow when review and follow-up actually take less work.",
+  "week_two_reason": "The scripted role returns on days 8 and 12 because later sessions assume shorter review and follow-up. This is a constructed outcome, not observed retention.",
+  "next_real_test": "Observe a frequent LLM user with their best reusable prompt and materials. Compare the same lesson and full review standard. Include incorrect-feedback review, corrections, researcher help, sharing, and result interpretation. Check unprompted return separately."
+}

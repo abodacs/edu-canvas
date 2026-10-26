@@ -1,0 +1,68 @@
+{
+  "synthetic": true,
+  "persona_id": "T11",
+  "scope": "boundary",
+  "assumptions": [
+    "Hana and every event are fictional. No actual study days elapse.",
+    "The requested Grade 4 equivalent-fractions lesson requires Arabic instructions and feedback.",
+    "The imagined product offer supports English only throughout this rehearsal.",
+    "The baseline includes Arabic school materials, occasional LLM drafting, and hypothetical Jev candidate matching.",
+    "An objective match cannot establish that Arabic lesson output is supported or correct.",
+    "No comparable task starts. Null times and error counts mean not performed, not zero effort or zero errors.",
+    "No app, LLM provider, Jev service, teacher, or pupil is contacted or observed.",
+    "No Arabic translation workaround, product repair, procurement result, or learning outcome is invented."
+  ],
+  "sessions": [
+    {
+      "day": 1,
+      "status": "declined",
+      "baseline_minutes": null,
+      "edu_minutes": null,
+      "researcher_help_minutes": null,
+      "simulated_lesson_use": "not_used",
+      "errors_found": null,
+      "unresolved_errors": null,
+      "event": "Hana describes her imagined Arabic materials and occasional LLM drafting. Jev matching is an assumed baseline feature. The study offers only English output. No comparable task starts.",
+      "decision": "Decline this offer. An English lesson cannot substitute for the requested Arabic lesson. Record this as a language boundary, not poor product quality."
+    },
+    {
+      "day": 4,
+      "status": "declined",
+      "baseline_minutes": null,
+      "edu_minutes": null,
+      "researcher_help_minutes": null,
+      "simulated_lesson_use": "not_used",
+      "errors_found": null,
+      "unresolved_errors": null,
+      "event": "The imagined follow-up still offers only English output. A proposed incorrect-response exercise cannot establish whether Arabic instructions and feedback are usable. No product lesson is attempted.",
+      "decision": "Decline the comparison. Discussing a synthetic response does not count as lesson use or a completed task."
+    },
+    {
+      "day": 8,
+      "status": "declined",
+      "baseline_minutes": null,
+      "edu_minutes": null,
+      "researcher_help_minutes": null,
+      "simulated_lesson_use": "not_used",
+      "errors_found": null,
+      "unresolved_errors": null,
+      "event": "Hana receives no changed language offer in this authored scenario. She does not start a week-two product session. No reminder is assumed.",
+      "decision": "Keep the known Arabic materials for the requested lesson. Do not count willingness to discuss future Arabic support as return."
+    },
+    {
+      "day": 12,
+      "status": "declined",
+      "baseline_minutes": null,
+      "edu_minutes": null,
+      "researcher_help_minutes": null,
+      "simulated_lesson_use": "not_used",
+      "errors_found": null,
+      "unresolved_errors": null,
+      "event": "The final imagined follow-up still has no Arabic lesson. Hana declines the task. No task times, content checks, or classroom observations exist.",
+      "decision": "Keep this boundary case separate from the ten core roles. Language support, procurement, and learner outcomes remain untested."
+    }
+  ],
+  "stated_preference": "I need Arabic instructions and feedback for this lesson. I would discuss a future Arabic study, but I decline the current English-only offer.",
+  "week_two_reason": "No completed imagined product session occurs on day 8 or day 12. The requested language remains unsupported. This is a boundary refusal, not a retention estimate for the English Grade 4 group.",
+  "next_real_test": "Confirm the real target language before recruitment. If an Arabic study is authorized later, observe a teacher review Arabic wording and feedback against comparable existing materials. Keep that study separate from the English-only comparison."
+}

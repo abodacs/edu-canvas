@@ -1,0 +1,74 @@
+{
+  "synthetic": true,
+  "persona_id": "T12",
+  "scope": "boundary",
+  "assumptions": [
+    "Victor, every event, and every minute are fictional.",
+    "The requested task remains Grade 5 fraction multiplication throughout the imagined study.",
+    "The offered prototype supports only English Grade 4 fraction equivalence.",
+    "An imagined Jev result reports native confidence 0.98. This is not an actual provider result or measured accuracy.",
+    "The scope check rejects the request despite the assumed confidence. No equivalent-fractions lesson substitutes for the requested task.",
+    "Day-1 product times describe partial intake effort only. No comparable baseline task is timed.",
+    "No app, product LLM, Jev provider, teacher, or pupil participates. Procurement and learning outcomes remain unknown."
+  ],
+  "sessions": [
+    {
+      "day": 1,
+      "status": "blocked",
+      "baseline_minutes": null,
+      "edu_minutes": {
+        "setup": 4,
+        "preparation": 2,
+        "review": 1,
+        "correction": 0,
+        "sharing": 0,
+        "follow_up": 0
+      },
+      "researcher_help_minutes": 1,
+      "simulated_lesson_use": "not_used",
+      "errors_found": null,
+      "unresolved_errors": null,
+      "event": "Victor requests a Grade 5 fraction-multiplication lesson. An imagined Jev result gives native confidence 0.98. The scope check rejects the request. One invented minute of help is included in setup. No draft or comparable complete task follows.",
+      "decision": "Keep the existing Grade 5 material. Request a direct explanation of the scope limit. Do not accept an equivalence lesson as a substitute."
+    },
+    {
+      "day": 4,
+      "status": "declined",
+      "baseline_minutes": null,
+      "edu_minutes": null,
+      "researcher_help_minutes": null,
+      "simulated_lesson_use": "not_used",
+      "errors_found": null,
+      "unresolved_errors": null,
+      "event": "The offer still covers Grade 4 equivalence only. Victor declines the imagined session. No supported lesson exists for his task, so no incorrect-response replay or timing occurs.",
+      "decision": "A different equivalence example cannot test the requested multiplication lesson. Preserve the task mismatch instead of forcing a comparison."
+    },
+    {
+      "day": 8,
+      "status": "declined",
+      "baseline_minutes": null,
+      "edu_minutes": null,
+      "researcher_help_minutes": null,
+      "simulated_lesson_use": "not_used",
+      "errors_found": null,
+      "unresolved_errors": null,
+      "event": "Victor does not return for an imagined product lesson. His current preparation task remains outside the supported scope. No new measurement exists.",
+      "decision": "Use the known Grade 5 tasks and existing drafting workflow. Interest in future support does not count as product return."
+    },
+    {
+      "day": 12,
+      "status": "declined",
+      "baseline_minutes": null,
+      "edu_minutes": null,
+      "researcher_help_minutes": null,
+      "simulated_lesson_use": "not_used",
+      "errors_found": null,
+      "unresolved_errors": null,
+      "event": "No scope change is supplied in this scenario. Victor declines the final imagined session. No lesson use or content review occurs.",
+      "decision": "Keep this boundary case separate from the ten core roles. The refusal says nothing about usefulness for an in-scope Grade 4 teacher."
+    }
+  ],
+  "stated_preference": "I want a direct scope explanation. I will keep my Grade 5 materials rather than accept a different objective.",
+  "week_two_reason": "No completed product session occurs on day 8 or day 12. The requested Grade 5 multiplication task stays unsupported. This authored refusal is a scope mismatch, not evidence about core-group retention.",
+  "next_real_test": "Use a reviewed unsupported-objective case with synthetic data to inspect the actual rejection path. Confirm that a high-confidence candidate never bypasses the scope rule. Interview an authorized target teacher about the in-scope task separately."
+}
