@@ -2,28 +2,13 @@ import { serverObservability } from "./observability.server";
 import { createDrizzlePersistence } from "./persistence/drizzle";
 import { createPostgresPersistence } from "./persistence/postgres";
 import { createSeededPersistence } from "./persistence/seeded";
-import type { DemoCounts } from "@/shared/demo-contract";
 
 import type { ServerConfig } from "./config";
 import type { GenerationPersistence } from "./generation/types";
-import type { ServerObservability } from "./observability.server";
-
-export interface PersistenceCheck {
-  status: "ready" | "failed";
-  kind: ServerConfig["mode"];
-  code: "READY" | "CONFIG_INVALID" | "PERSISTENCE_UNAVAILABLE";
-  message: string;
-}
-
-export interface FoundationPersistence extends GenerationPersistence {
-  readonly kind: ServerConfig["mode"];
-  check: () => Promise<PersistenceCheck>;
-  readDemoCounts: () => Promise<DemoCounts>;
-}
-
-export interface FoundationPersistenceOptions {
-  observability?: ServerObservability;
-}
+import type {
+  FoundationPersistence,
+  FoundationPersistenceOptions,
+} from "./persistence/types";
 
 const seededGenerationStore = new Map<
   string,
@@ -69,3 +54,9 @@ export const createFoundationPersistence = (
     ? createDrizzlePersistence(config.databaseUrl, options)
     : createPostgresPersistence(config.databaseUrl, options);
 };
+
+export {
+  type PersistenceCheck,
+  type FoundationPersistence,
+  type FoundationPersistenceOptions,
+} from "./persistence/types";
