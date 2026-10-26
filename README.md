@@ -1,18 +1,20 @@
 # Edu-Canvas
 
-> Turn a teacher's plain-English request into a safe, standards-aligned visual matching lesson in minutes — then give a student an adaptive "aha" moment. **Teachers approve every variant; AI never grades or publishes unreviewed content.**
+> **Product promise:** turn a teacher's request into a validated matching lesson, then let the teacher decide the next step. The design keeps the teacher in control: they approve every variant, and AI never grades or publishes unreviewed content.
 
-Adaptive visual-learning platform for **Grades 3–6**, starting with **Common Core Math**. This is a production product: the goal is teachers who return because preparation, review, and follow-up take less total effort with full control. The **Meta AI Developer Hackathon 2026** (October 26 – November 4) is the first external validation milestone on that path — English-only release; Arabic is a deferred product goal.
+Edu-Canvas is building an adaptive visual-learning platform for **Grades 3–6**, starting with **Common Core Math**. The goal is a loop teachers return to because preparation, review, and follow-up take less total effort without giving up control. The **Meta AI Developer Hackathon 2026** (October 26 – November 4) is the first external validation milestone. Its event slice is Grade 4 equivalent fractions in English; Arabic is a deferred product goal.
 
 ## Why it's different
 
-Drafting standards-aligned materials is now a commodity: free teacher copilots — Claude for Teachers, ChatGPT for Teachers, MagicSchool — generate plans, differentiation, and checks. Edu-Canvas competes after the draft, in the gated loop those tools do not run: a teacher approves an immutable version, students work through it, the server grades privately, and the teacher sees the evidence behind the next step.
+Our read: drafting standards-aligned materials is commoditizing. Free teacher copilots — Claude for Teachers, ChatGPT for Teachers, MagicSchool — generate plans, differentiation, and checks. The bet is the gated loop those tools do not run: a teacher approves an immutable version, students work through it, the server grades privately, and the teacher sees the evidence behind the next step.
+
+The design differs in five ways:
 
 - **Generative UI, not a chat wrapper.** The generation model produces a structured _lesson draft_; the server validates it and compiles it into **A2UI v0.9.1** messages from a fixed, allowlisted Edu-Canvas catalog. No generated HTML or JavaScript executes.
 - **Browser-safe rendering.** Core lesson interaction uses semantic DOM components through A2UI. Experimental HTML-in-Canvas is optional visual polish and never required for authoring, accessibility, sharing, or grading.
-- **Teacher-gated.** Every generated variant is teacher-approved in a bulk review flow before any student sees it. Variants are content options, not teaching stages.
-- **Server-authoritative grading.** The answer key never leaves the server; the client cannot submit a score.
-- **Adaptive + explainable.** A curated prerequisite graph drives the next activity; teachers see the reason and can override.
+- **Teacher-gated.** Every generated variant must be teacher-approved in a bulk review flow before any student sees it. Variants are content options, not teaching stages.
+- **Server-authoritative grading.** The answer key stays on the server; the client cannot submit a score.
+- **Adaptive and explainable.** A curated prerequisite graph is intended to drive the next activity; teachers see the reason and can override.
 
 ## Stack
 
@@ -23,15 +25,26 @@ Drafting standards-aligned materials is now a commodity: free teacher copilots �
 
 ## Status
 
-🟡 **Foundation, structural generation, bounded semantic validation, and the issue #4 teacher preview slice are in place; the full end-to-end loop is still being built.** [Issue #2](https://github.com/abodacs/edu-canvas/issues/2) provides the TanStack Start runtime, synthetic demo repository, PostgreSQL migrations/seed, health/readiness endpoints, and role-limited demo views. [Issue #3](https://github.com/abodacs/edu-canvas/issues/3) adds the server-side generation path, four structurally validated draft variants, persistence, diagnostics, and retry-safe generation. [Issue #18](https://github.com/abodacs/edu-canvas/issues/18) adds deterministic curriculum and learning-quality reviews with bounded advisory-agent retries; warnings remain teacher-visible and blocks keep drafts out of the public projection. [Issue #4](https://github.com/abodacs/edu-canvas/issues/4) now compiles accepted public drafts into a pinned, allowlisted A2UI v0.9.1 catalog and streams a semantic-DOM teacher preview with recoverable connection states. [Issue #17](https://github.com/abodacs/edu-canvas/issues/17) now adds the validated, version-pinned prerequisite path and teacher-review blocking states to that preview. [Issue #28](https://github.com/abodacs/edu-canvas/issues/28) still owns the cross-cutting hard safety gate; approval/publication, grading, and adaptation remain later slices. [Issue #27](https://github.com/abodacs/edu-canvas/issues/27) is closed (2026-10-21); re-verify the reported false-success behavior against the release candidate before any learner-safe claim. The issue-driven product strategy and observed-behaviour plan live in [`docs/product-strategy.md`](docs/product-strategy.md) and [`docs/observed-behaviour.md`](docs/observed-behaviour.md).
+🟡 **The generation and teacher-preview path works; the full loop does not.**
+
+| Working now | Next |
+| --- | --- |
+| TanStack Start runtime, synthetic demo repository, PostgreSQL migrations and seed, health/readiness endpoints, and role-limited demo views ([#2](https://github.com/abodacs/edu-canvas/issues/2)) | Hard safety gate ([#28](https://github.com/abodacs/edu-canvas/issues/28)) |
+| Server-side generation with four structurally validated draft variants, persistence, diagnostics, and retry-safe generation ([#3](https://github.com/abodacs/edu-canvas/issues/3)) | Teacher approval and immutable publication ([#5](https://github.com/abodacs/edu-canvas/issues/5)) |
+| Deterministic curriculum and learning-quality reviews with bounded advisory-agent retries; warnings stay teacher-visible, and blocks keep drafts out of the public projection ([#18](https://github.com/abodacs/edu-canvas/issues/18)) | Learner attempts and server grading ([#6](https://github.com/abodacs/edu-canvas/issues/6)) |
+| Compiles accepted public drafts into a pinned, allowlisted A2UI v0.9.1 catalog and streams a semantic-DOM teacher preview with recoverable connection states ([#4](https://github.com/abodacs/edu-canvas/issues/4)) | Reveal and deterministic adaptation ([#7](https://github.com/abodacs/edu-canvas/issues/7)) |
+| Validated, version-pinned prerequisite path and teacher-review blocking states in the preview ([#17](https://github.com/abodacs/edu-canvas/issues/17)) | Teacher evidence and override ([#8](https://github.com/abodacs/edu-canvas/issues/8), [#107](https://github.com/abodacs/edu-canvas/issues/107)) |
+
+[Issue #27](https://github.com/abodacs/edu-canvas/issues/27) is closed (2026-10-21). Re-verify its reported false-success behavior against the release candidate before any learner-safe claim. The issue-driven product strategy and observed-behaviour plan live in [`docs/product-strategy.md`](docs/product-strategy.md) and [`docs/observed-behaviour.md`](docs/observed-behaviour.md).
 
 ## Repo layout
 
 | Path | What |
 | --- | --- |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Stack, folder ownership, runtime flows, invariants, change recipes, and the enforcement map |
-| [`ROADMAP.md`](ROADMAP.md) | Product direction, delivery order, and validation gates (imported hackathon-2026 roadmap) |
-| [`docs/README.md`](docs/README.md) | Documentation index and document ownership (imported hackathon-2026 corpus) |
+| [`ROADMAP.md`](ROADMAP.md) | Product direction, delivery order, and validation gates |
+| [`docs/README.md`](docs/README.md) | Documentation index and document ownership |
+| [`docs/hackathon/meta-global-2026/focused-scope.md`](docs/hackathon/meta-global-2026/focused-scope.md) | Current event execution scope: one teacher-controlled loop, 30 + 6 hours |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Local setup, issue reports, commit messages, and verification |
 | [`CODING_STANDARDS.md`](CODING_STANDARDS.md) | Code quality rules and links to engineering patterns |
 | [`docs/archive/`](docs/archive/README.md) | Archived historical records: hackathon-2026 import plans and file map, engineering method notes, triage logs |
@@ -72,9 +85,9 @@ Start from the delivery module, then follow the domain-named server module:
 
 The route should stay a delivery module. Domain rules, tenant checks, persistence choice, and public projection belong behind the named server seams. The shared seam contains only data the browser is allowed to receive.
 
-## End-to-end demo sequence
+## Target loop (not yet implemented)
 
-The walking skeleton below is the target contract: one deterministic, seeded path from a teacher request to a student’s explainable next activity. This branch covers role-limited delivery, persistence, structural teacher draft generation, #18’s bounded curriculum/learning-quality checks, #4’s allowlisted A2UI teacher preview, and #17’s validated prerequisite-path artifact; #28’s hard safety gate, approval/publication, grading, and adaptation remain issue-driven follow-on slices. See [`docs/product-strategy.md`](docs/product-strategy.md) for the intended order and evidence gaps.
+The diagram is the target contract, not current behavior: one deterministic, seeded path from a teacher request to a student’s explainable next activity. The current checkout implements the generation and teacher-preview portion only. The hard safety gate, approval/publication, grading, and adaptation remain follow-on slices. See [`docs/product-strategy.md`](docs/product-strategy.md) for the intended order and evidence gaps.
 
 ```mermaid
 sequenceDiagram
@@ -166,10 +179,8 @@ See [`docs/foundation-runbook.md`](docs/foundation-runbook.md) for configuration
 
 - Answer key, mastery, and permissions are **server-only** — never present in any client bundle or A2UI message.
 - **No student images or identifying data** are sent to the model.
-- Real student data is blocked until **DPA + EU-residency + security + consent** approval; milestone deployments use **synthetic data only**.
+- Real student data is blocked until a **data-processing agreement (DPA), EU residency, security review, and consent** are in place; milestone deployments use **synthetic data only**.
 
 ## Governance
 
-Governed under [ApexYard](https://github.com/me2resh/apexyard). Per-project governance docs (handover assessment, C4 diagrams) live in the ops portfolio.
-
-_Generated by apexyard `/handover` — review & refine._
+Governed under [ApexYard](https://github.com/me2resh/apexyard). Per-project governance docs (handover assessment, C4 diagrams) live in the ops portfolio. The README was originally generated by apexyard `/handover` and is maintained with the project.
