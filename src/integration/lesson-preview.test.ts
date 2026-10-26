@@ -69,7 +69,9 @@ describe("compiled lesson preview", () => {
         expect(markup).toContain(
           language === "ar" ? "مسار التعلم" : "Learning path"
         );
-        expect(markup).toContain("a2ui-match-card");
+        expect(markup).toContain(
+          'class="a2ui-match-card a2ui-match-card--source is-selected"'
+        );
         expect(markup).toContain("a2ui-action");
         expect(markup).not.toContain("targetId");
         expect(markup).toContain('aria-pressed="true"');

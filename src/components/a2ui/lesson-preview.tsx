@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { cn } from "@/lib/utilities";
 import {
   A2UI_CATALOG_VERSION,
   A2UI_PROTOCOL_VERSION,
@@ -241,7 +242,7 @@ const VariantTabs = ({
         const isSelected = surface.surfaceId === activeSurfaceId;
         return (
           <button
-            className={`a2ui-tab${isSelected ? "is-active" : ""}`}
+            className={cn("a2ui-tab", { "is-active": isSelected })}
             id={`a2ui-tab-${surface.variantId}`}
             key={surface.surfaceId}
             role="tab"

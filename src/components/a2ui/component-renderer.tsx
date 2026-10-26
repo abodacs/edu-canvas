@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utilities";
 import type { ElementType, ReactNode } from "react";
 
 import type { A2UIComponent } from "@/shared/a2ui-contract";
@@ -161,7 +162,9 @@ const MatchCard = ({
   const isSelected = selectedItemId === component.itemId;
   return (
     <button
-      className={`a2ui-match-card a2ui-match-card--${component.group}${isSelected ? "is-selected" : ""}`}
+      className={cn("a2ui-match-card", `a2ui-match-card--${component.group}`, {
+        "is-selected": isSelected,
+      })}
       type="button"
       aria-pressed={isSelected}
       aria-label={`${component.label}. ${component.description ?? ""}`.trim()}
