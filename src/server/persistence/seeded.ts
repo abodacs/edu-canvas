@@ -135,11 +135,17 @@ export const createSeededPersistence = (
     saveGeneration(record, expected) {
       const key = `${record.tenantId}:${record.requestId}`;
       const existing = generationStore.get(key);
+      if (!existing || existing.state !== "generating") {
+        return Promise.resolve(false);
+      }
       if (
-        !existing ||
-        existing.state !== "generating" ||
         existing.attempt !== expected.attempt ||
         existing.updatedAt !== expected.updatedAt
+      ) {
+        return Promise.resolve(false);
+      }
+      if (
+        Date.parse(existing.updatedAt) <= Date.parse(expected.leaseValidAfter)
       ) {
         return Promise.resolve(false);
       }
@@ -154,6 +160,21 @@ export const createSeededPersistence = (
         idempotencyKey
       );
       return Promise.resolve(record ? structuredClone(record) : undefined);
+    },
+
+    findModeratedGeneration(tenantId, teacherId, requestHash) {
+      for (const record of generationStore.values()) {
+        if (
+          record.tenantId === tenantId &&
+          record.teacherId === teacherId &&
+          record.state === "blocked-by-moderation" &&
+          record.attempts.some((attempt) => attempt.requestHash === requestHash)
+        ) {
+          return Promise.resolve(structuredClone(record));
+        }
+      }
+
+      return Promise.resolve(undefined);
     },
 
     readGeneration(tenantId, requestId) {

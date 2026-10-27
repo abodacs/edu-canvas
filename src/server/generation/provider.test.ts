@@ -40,6 +40,27 @@ const expectCanonicalRequestBody = (body: {
   expect(body.input).toContain("Return only the canonical JSON contract.");
 };
 
+const createHangingFetch = () => {
+  const state: { attempts: number; signal?: AbortSignal | null } = {
+    attempts: 0,
+  };
+  const fetchImplementation: typeof fetch = (_input, init) => {
+    state.attempts += 1;
+    state.signal = init?.signal;
+    const deferred = Promise.withResolvers<Response>();
+    init?.signal?.addEventListener(
+      "abort",
+      () => {
+        deferred.reject(new DOMException("Aborted", "AbortError"));
+      },
+      { once: true }
+    );
+    return deferred.promise;
+  };
+
+  return { state, fetchImplementation };
+};
+
 describe("lesson draft providers", () => {
   it("records the validator version with language compatibility rules", async () => {
     const provider = createDeterministicLessonDraftProvider();
@@ -149,6 +170,68 @@ describe("lesson draft providers", () => {
 
     expect(error).toBeInstanceOf(LessonProviderError);
     expect(String(error)).not.toContain("provider details");
+  });
+
+  it.each([429, 500])(
+    "sends exactly one outbound attempt for a %s response",
+    async (status) => {
+      let attempts = 0;
+      const provider = createOpenAILessonDraftProvider({
+        apiKey: "server-only-test-key",
+        model: "gpt-5.6",
+        fetchImplementation: () => {
+          attempts += 1;
+          return Promise.resolve(new Response("provider details", { status }));
+        },
+      });
+
+      await expect(
+        provider.generate(request, {
+          correctionAttempt: false,
+          diagnostics: [],
+        })
+      ).rejects.toBeInstanceOf(LessonProviderError);
+      expect(attempts).toBe(1);
+    }
+  );
+
+  it("propagates the caller signal to the outbound transport", async () => {
+    const controller = new AbortController();
+    const { state, fetchImplementation } = createHangingFetch();
+    const provider = createOpenAILessonDraftProvider({
+      apiKey: "server-only-test-key",
+      model: "gpt-5.6",
+      fetchImplementation,
+    });
+
+    const pending = provider.generate(
+      request,
+      { correctionAttempt: false, diagnostics: [] },
+      { signal: controller.signal }
+    );
+    controller.abort();
+
+    await expect(pending).rejects.toMatchObject({ kind: "timeout" });
+    expect(state.attempts).toBe(1);
+    expect(state.signal?.aborted).toBeTruthy();
+  });
+
+  it("aborts a hanging transport at the configured timeout with one attempt", async () => {
+    const { state, fetchImplementation } = createHangingFetch();
+    const provider = createOpenAILessonDraftProvider({
+      apiKey: "server-only-test-key",
+      model: "gpt-5.6",
+      timeoutMs: 5,
+      fetchImplementation,
+    });
+
+    await expect(
+      provider.generate(request, { correctionAttempt: false, diagnostics: [] })
+    ).rejects.toMatchObject({
+      kind: "timeout",
+      safeMessage: "The lesson provider could not be reached. Try again.",
+    });
+    expect(state.attempts).toBe(1);
   });
 
   it("proposes the seeded prerequisite path with approved screen-purpose ids", async () => {

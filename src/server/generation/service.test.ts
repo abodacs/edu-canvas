@@ -14,8 +14,17 @@ import {
   createDemoCurriculumContext,
   validateSemanticLesson,
 } from "./semantic-validation";
-import type { LessonDraftProvider } from "./provider";
+import { createGenerationRequestHash } from "./types";
 import type { LessonGenerationRecord } from "./types";
+import type { LessonDraftProvider } from "./provider";
+
+const validRequestHash = createGenerationRequestHash({
+  prompt: "equivalent fractions for grade 4",
+  grade: 4,
+  standardId: demoSeed.standard.id,
+  language: "en",
+  difficulty: "on-level",
+});
 
 const validInput = {
   prompt: "equivalent fractions for grade 4",
@@ -63,6 +72,7 @@ const generatingRecord = (
       {
         attemptNumber: 1,
         idempotencyKey,
+        requestHash: validRequestHash,
         state: "generating",
         correctionAttempted: false,
         diagnostics: [],
@@ -512,6 +522,7 @@ describe("lesson generation service", () => {
         {
           attemptNumber: 1,
           idempotencyKey: "request-stale-claim",
+          requestHash: validRequestHash,
           state: "generating",
           correctionAttempted: false,
           diagnostics: [],
@@ -575,6 +586,7 @@ describe("lesson generation service", () => {
         {
           attemptNumber: 1,
           idempotencyKey: "request-cas-loser",
+          requestHash: validRequestHash,
           state: "generating",
           correctionAttempted: false,
           diagnostics: [],
@@ -701,6 +713,7 @@ describe("lesson generation service", () => {
     const saved = await persistence.saveGeneration(staleWorkerRecord, {
       attempt: 1,
       updatedAt: staleWorkerRecord.updatedAt,
+      leaseValidAfter: "2026-07-17T23:59:00.000Z",
     });
     const stored = await persistence.readGeneration(
       currentRecord.tenantId,

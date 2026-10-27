@@ -7,6 +7,7 @@ import { createEquivalentFractionsDraft } from "../generation/provider";
 import { buildValidatedLearningPath } from "../generation/learning-path";
 import { createDemoCurriculumContext } from "../generation/semantic-validation";
 import { getDemoSeedCounts } from "../seed-data";
+import { createGenerationRequestHash } from "../generation/types";
 import { createDrizzlePersistence } from "./drizzle";
 import { createPostgresPersistence } from "./postgres";
 import type {
@@ -108,6 +109,46 @@ const expectExpiredClaim = async (
   ).resolves.toBeUndefined();
 };
 
+const expectModeratedLookup = async (
+  persistence: FoundationPersistence,
+  record: LessonGenerationRecord,
+  requestHash: string
+): Promise<void> => {
+  await expect(
+    persistence.findModeratedGeneration(
+      record.tenantId,
+      record.teacherId,
+      requestHash
+    )
+  ).resolves.toMatchObject({
+    requestId: record.requestId,
+    state: "blocked-by-moderation",
+  });
+
+  const [differentHashRecord, otherTeacherRecord] = await Promise.all([
+    persistence.findModeratedGeneration(
+      record.tenantId,
+      record.teacherId,
+      "different-request-hash"
+    ),
+    persistence.findModeratedGeneration(
+      record.tenantId,
+      "identity_other_teacher",
+      requestHash
+    ),
+  ]);
+
+  expect(differentHashRecord).toBeUndefined();
+  expect(otherTeacherRecord).toBeUndefined();
+
+  const stored = await persistence.readGeneration(
+    record.tenantId,
+    record.requestId
+  );
+
+  expect(stored?.attempts[0]?.requestHash).toBe(requestHash);
+};
+
 const expectRetryLifecycle = async (
   persistence: FoundationPersistence,
   claimed: LessonGenerationRecord,
@@ -122,12 +163,14 @@ const expectRetryLifecycle = async (
     persistence.saveGeneration(claimed, {
       attempt: claimed.attempt,
       updatedAt: claimed.updatedAt,
+      leaseValidAfter: "2026-07-18T00:16:00.000Z",
     })
   ).resolves.toBeFalsy();
   await expect(
     persistence.saveGeneration(completed, {
       attempt: retry.attempt,
       updatedAt: retry.updatedAt,
+      leaseValidAfter: "2026-07-18T00:19:00.000Z",
     })
   ).resolves.toBeTruthy();
 };
@@ -235,7 +278,7 @@ const createGeneratingRecord = (
   const requestId = `draft_issue_42_${suffix}_${runId}`;
   const createdAt = "2026-07-18T00:00:00.000Z";
   const input = {
-    prompt: "Equivalent fractions",
+    prompt: `Equivalent fractions ${suffix}`,
     grade: 4,
     standardId: fixture.standardId,
     language: "en" as const,
@@ -254,6 +297,7 @@ const createGeneratingRecord = (
       {
         attemptNumber,
         idempotencyKey,
+        requestHash: createGenerationRequestHash(input),
         state: "generating",
         correctionAttempted: false,
         diagnostics: [],
@@ -448,6 +492,93 @@ describe.skipIf(!isRunDatabaseTests)("PostgreSQL persistence parity", () => {
         draft: completed.draft,
         updatedAt: completed.updatedAt,
       });
+      expect(stored?.attempts[0]?.requestHash).toBe(
+        createGenerationRequestHash(retry.input)
+      );
+    });
+
+    it("rejects a write past the lease and accepts one inside it", async () => {
+      const persistence = adapter.create();
+      const record = createGeneratingRecord(
+        tenants.primary,
+        `${adapter.name}-lease-write`,
+        "2026-07-18T00:00:00.000Z"
+      );
+
+      await expect(persistence.claimGeneration(record)).resolves.toMatchObject({
+        claimed: true,
+      });
+
+      await expect(
+        persistence.saveGeneration(
+          { ...record, state: "ready-for-review" },
+          {
+            attempt: record.attempt,
+            updatedAt: record.updatedAt,
+            leaseValidAfter: record.updatedAt,
+          }
+        )
+      ).resolves.toBeFalsy();
+
+      const blocked: LessonGenerationRecord = {
+        ...record,
+        state: "blocked-by-moderation",
+        diagnostics: [
+          {
+            severity: "error",
+            code: "MODERATION_BLOCKED",
+            message: "The request was blocked by safety review.",
+          },
+        ],
+      };
+
+      await expect(
+        persistence.saveGeneration(blocked, {
+          attempt: record.attempt,
+          updatedAt: record.updatedAt,
+          leaseValidAfter: "2026-07-17T23:00:00.000Z",
+        })
+      ).resolves.toBeTruthy();
+    });
+
+    it("finds a moderated request by its persisted request hash", async () => {
+      const persistence = adapter.create();
+      const record = createGeneratingRecord(
+        tenants.primary,
+        `${adapter.name}-hash`,
+        "2026-07-18T00:00:00.000Z"
+      );
+      const requestHash = record.attempts[0]?.requestHash;
+      if (!requestHash) {
+        throw new Error(
+          "Expected the fixture attempt to carry a request hash."
+        );
+      }
+
+      await expect(persistence.claimGeneration(record)).resolves.toMatchObject({
+        claimed: true,
+      });
+
+      await persistence.saveGeneration(
+        {
+          ...record,
+          state: "blocked-by-moderation",
+          diagnostics: [
+            {
+              severity: "error",
+              code: "MODERATION_BLOCKED",
+              message: "The request was blocked by safety review.",
+            },
+          ],
+        },
+        {
+          attempt: record.attempt,
+          updatedAt: record.updatedAt,
+          leaseValidAfter: "2026-07-17T23:00:00.000Z",
+        }
+      );
+
+      await expectModeratedLookup(persistence, record, requestHash);
     });
   });
 });

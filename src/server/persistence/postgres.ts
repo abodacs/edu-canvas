@@ -41,6 +41,7 @@ interface GenerationRequestRow {
 interface GenerationAttemptRow {
   attempt_number: number;
   idempotency_key: string;
+  request_hash: string | null;
   state: string;
   correction_attempted: boolean;
   diagnostics: unknown;
@@ -104,6 +105,61 @@ const jsonValue = (value: unknown): JsonValue => {
   }
 };
 
+const hydrateStoredGeneration = async (
+  transaction: SqlTransaction,
+  tenantId: string,
+  row: GenerationRequestRow
+): Promise<LessonGenerationRecord> => {
+  const attempts = await transaction<GenerationAttemptRow[]>`
+        select
+          attempt_number,
+          idempotency_key,
+          request_hash,
+          state,
+          correction_attempted,
+          diagnostics,
+          provenance,
+          created_at
+        from lesson_generation_attempts
+        where tenant_id = ${tenantId} and request_id = ${row.id}
+        order by attempt_number asc
+      `;
+
+  const storedRequest: StoredGenerationRequestRow = {
+    requestId: row.id,
+    tenantId: row.tenant_id,
+    teacherId: row.teacher_id,
+    prompt: row.prompt,
+    grade: row.grade,
+    standardId: row.standard_id,
+    language: row.language,
+    difficulty: row.difficulty,
+    state: row.state,
+    attempt: row.attempt,
+    diagnostics: row.diagnostics,
+    draft: row.draft,
+    provenance: row.provenance,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+  const storedAttempts: StoredGenerationAttemptRow[] = attempts.map(
+    (attempt) => {
+      return {
+        attemptNumber: attempt.attempt_number,
+        idempotencyKey: attempt.idempotency_key,
+        requestHash: attempt.request_hash,
+        state: attempt.state,
+        correctionAttempted: attempt.correction_attempted,
+        diagnostics: attempt.diagnostics,
+        provenance: attempt.provenance,
+        createdAt: attempt.created_at,
+      };
+    }
+  );
+
+  return hydrateGenerationRecord(storedRequest, storedAttempts);
+};
+
 const readGenerationByQuery = (
   databaseUrl: string,
   tenantId: string,
@@ -135,57 +191,44 @@ const readGenerationByQuery = (
             limit 1
           `;
 
-        if (rows.length === 0) {
-          return undefined;
-        }
-        const [row] = rows;
+        return rows.length === 0
+          ? undefined
+          : hydrateStoredGeneration(transaction, tenantId, rows[0]);
+      }
+    );
+  });
+};
 
-        const attempts = await transaction<GenerationAttemptRow[]>`
-        select
-          attempt_number,
-          idempotency_key,
-          state,
-          correction_attempted,
-          diagnostics,
-          provenance,
-          created_at
-        from lesson_generation_attempts
-        where tenant_id = ${tenantId} and request_id = ${row.id}
-        order by attempt_number asc
+const readModeratedGenerationByQuery = (
+  databaseUrl: string,
+  tenantId: string,
+  teacherId: string,
+  requestHash: string
+): Promise<LessonGenerationRecord | undefined> => {
+  return withDatabase(databaseUrl, (sql) => {
+    return sql.begin(
+      async (transaction): Promise<LessonGenerationRecord | undefined> => {
+        await transaction`
+        select set_config('app.tenant_id', ${tenantId}, true)
       `;
 
-        const storedRequest: StoredGenerationRequestRow = {
-          requestId: row.id,
-          tenantId: row.tenant_id,
-          teacherId: row.teacher_id,
-          prompt: row.prompt,
-          grade: row.grade,
-          standardId: row.standard_id,
-          language: row.language,
-          difficulty: row.difficulty,
-          state: row.state,
-          attempt: row.attempt,
-          diagnostics: row.diagnostics,
-          draft: row.draft,
-          provenance: row.provenance,
-          createdAt: row.created_at,
-          updatedAt: row.updated_at,
-        };
-        const storedAttempts: StoredGenerationAttemptRow[] = attempts.map(
-          (attempt) => {
-            return {
-              attemptNumber: attempt.attempt_number,
-              idempotencyKey: attempt.idempotency_key,
-              state: attempt.state,
-              correctionAttempted: attempt.correction_attempted,
-              diagnostics: attempt.diagnostics,
-              provenance: attempt.provenance,
-              createdAt: attempt.created_at,
-            };
-          }
-        );
+        const rows = await transaction<GenerationRequestRow[]>`
+          select request.*
+          from lesson_draft_requests request
+          join lesson_generation_attempts attempt
+            on attempt.request_id = request.id
+           and attempt.tenant_id = request.tenant_id
+          where request.tenant_id = ${tenantId}
+            and request.teacher_id = ${teacherId}
+            and request.state = 'blocked-by-moderation'
+            and attempt.request_hash = ${requestHash}
+          order by request.created_at desc
+          limit 1
+        `;
 
-        return hydrateGenerationRecord(storedRequest, storedAttempts);
+        return rows.length === 0
+          ? undefined
+          : hydrateStoredGeneration(transaction, tenantId, rows[0]);
       }
     );
   });
@@ -266,6 +309,7 @@ const createPostgresGenerationBackend = (
           tenant_id,
           attempt_number,
           idempotency_key,
+          request_hash,
           state,
           correction_attempted,
           diagnostics,
@@ -277,6 +321,7 @@ const createPostgresGenerationBackend = (
           ${record.tenantId},
           ${attempt.attemptNumber},
           ${attempt.idempotencyKey},
+          ${attempt.requestHash},
           ${attempt.state},
           ${attempt.correctionAttempted},
           ${transaction.json(jsonValue(attempt.diagnostics))}::jsonb,
@@ -378,6 +423,7 @@ const createPostgresGenerationBackend = (
           and state = 'generating'
           and attempt = ${expected.attempt}
           and updated_at = ${expected.updatedAt}
+          and updated_at > ${expected.leaseValidAfter}::timestamptz
         returning id
       `;
       return rows.length > 0;
@@ -390,6 +436,7 @@ const createPostgresGenerationBackend = (
           tenant_id,
           attempt_number,
           idempotency_key,
+          request_hash,
           state,
           correction_attempted,
           diagnostics,
@@ -401,6 +448,7 @@ const createPostgresGenerationBackend = (
           ${record.tenantId},
           ${attempt.attemptNumber},
           ${attempt.idempotencyKey},
+          ${attempt.requestHash},
           ${attempt.state},
           ${attempt.correctionAttempted},
           ${transaction.json(jsonValue(attempt.diagnostics))}::jsonb,
@@ -408,6 +456,7 @@ const createPostgresGenerationBackend = (
           ${attempt.createdAt}
         )
         on conflict (request_id, attempt_number) do update set
+          request_hash = excluded.request_hash,
           state = excluded.state,
           correction_attempted = excluded.correction_attempted,
           diagnostics = excluded.diagnostics,
@@ -417,6 +466,15 @@ const createPostgresGenerationBackend = (
 
     findGenerationByIdempotencyKey: (tenantId, idempotencyKey) =>
       readGenerationByQuery(databaseUrl, tenantId, idempotencyKey),
+
+    findModeratedGeneration: (tenantId, teacherId, requestHash) => {
+      return readModeratedGenerationByQuery(
+        databaseUrl,
+        tenantId,
+        teacherId,
+        requestHash
+      );
+    },
 
     readGeneration: (tenantId, requestId) =>
       readGenerationByQuery(databaseUrl, tenantId, requestId, true),

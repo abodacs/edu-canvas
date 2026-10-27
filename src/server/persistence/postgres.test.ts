@@ -78,6 +78,7 @@ describe("PostgreSQL persistence", () => {
         {
           attemptNumber: 1,
           idempotencyKey: "request-claim-test",
+          requestHash: "request-claim-hash",
           state: "generating",
           correctionAttempted: false,
           diagnostics: [],
@@ -159,6 +160,7 @@ describe("PostgreSQL persistence", () => {
         {
           attemptNumber: 1,
           idempotencyKey: "request-duplicate-test",
+          requestHash: "request-duplicate-hash",
           state: "generating",
           correctionAttempted: false,
           diagnostics: [],
@@ -273,6 +275,7 @@ describe("PostgreSQL persistence", () => {
         {
           attemptNumber: 1,
           idempotencyKey: "request-expire-atomic",
+          requestHash: "request-expire-hash",
           state: "generating",
           correctionAttempted: false,
           diagnostics: [],

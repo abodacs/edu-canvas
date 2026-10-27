@@ -406,8 +406,8 @@ These differences were checked against the source baseline above. They are not r
 | Safety | Pattern checks, structural validation, bounded semantic review | The cross-cutting hard safety gate remains unimplemented. |
 | Identity and cost controls | Browser-selected seeded role; no invitation sessions or quota enforcement | [AgDR-0007](docs/agdr/AgDR-0007-demo-access-and-deployment.md) defines protected access and bounded usage. |
 | Provider selection | Fixture or OpenAI Responses adapter with `OPENAI_*` settings and a `gpt-5.6` code default | [AgDR-0006](docs/agdr/AgDR-0006-provider-selection-and-deadlines.md) selects a provider through access evidence. The code default is not evidence for an event-allowed provider. |
-| Deadlines | 15 seconds per provider call; 30-second claim lease | AgDR-0006 specifies 10 seconds per call and 25 seconds for generation plus correction. The overall deadline is absent. |
-| Idempotency conflicts | An existing tenant-local key resolves its stored record before payload comparison | AgDR-0006 requires `IDEMPOTENCY_CONFLICT` when an explicit key is reused with changed input. |
+| Deadlines | 100 seconds per provider call, 200 seconds for generation plus correction, and a 220-second claim lease; writes require an unexpired lease | AgDR-0006 event decision, 2026-10-27. |
+| Idempotency conflicts | An existing tenant-local key compares the persisted normalized request hash; changed input returns `IDEMPOTENCY_CONFLICT` without a provider call | AgDR-0006 requires the conflict; unchanged input reuses the original result. |
 | Machine count | `fly.toml` sets `min_machines_running = 2` | AgDR-0007 and the release procedure select one Machine for the planned limit model. |
 | Connections | Each database operation creates and closes a client | There is no application-wide connection pool. |
 | Seeded catalog | Fixture activity uses `edu-canvas-matching-v0` | Live preview uses `matching-v1`; the activity fixture is not the preview catalog authority. |
