@@ -1,0 +1,124 @@
+{
+  "synthetic": true,
+  "persona_id": "T01",
+  "scope": "core",
+  "assumptions": [
+    "Maya, every session, every action, and every minute are invented for this rehearsal.",
+    "No application, LLM, Jev service, teacher, or pupil was contacted or observed.",
+    "The baseline reuses a school lesson bank and paper fraction strips for the same objective and quality bar.",
+    "The assumed prototype supplies the complete review and approved follow-up paths described in the protocol.",
+    "The day-1 setup includes eight fictional minutes of researcher help. Later sessions assume no researcher help.",
+    "Each total includes setup, preparation, review, correction, sharing, and follow-up. Classroom teaching duration is outside both totals.",
+    "Day-12 review takes longer because Maya inspects every feedback branch for a new equivalence example.",
+    "Permission, procurement, real classroom use, and learning outcomes remain unknown."
+  ],
+  "sessions": [
+    {
+      "day": 1,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 3,
+        "preparation": 22,
+        "review": 12,
+        "correction": 4,
+        "sharing": 4,
+        "follow_up": 6
+      },
+      "edu_minutes": {
+        "setup": 18,
+        "preparation": 8,
+        "review": 20,
+        "correction": 5,
+        "sharing": 5,
+        "follow_up": 7
+      },
+      "researcher_help_minutes": 8,
+      "simulated_lesson_use": "used",
+      "errors_found": 1,
+      "unresolved_errors": 0,
+      "event": "In this invented first session, Maya asks for a worked example. Setup includes eight minutes of help. She corrects an unclear instruction before approval.",
+      "decision": "Use the imagined approved lesson, but reserve judgment. The first product task needs more total work than the familiar lesson bank."
+    },
+    {
+      "day": 4,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 2,
+        "preparation": 20,
+        "review": 11,
+        "correction": 4,
+        "sharing": 4,
+        "follow_up": 6
+      },
+      "edu_minutes": {
+        "setup": 3,
+        "preparation": 6,
+        "review": 16,
+        "correction": 5,
+        "sharing": 4,
+        "follow_up": 6
+      },
+      "researcher_help_minutes": 0,
+      "simulated_lesson_use": "used",
+      "errors_found": 1,
+      "unresolved_errors": 0,
+      "event": "The second imagined task is familiar. Maya corrects ambiguous feedback before approval. A synthetic response selects 2/3 for 1/2. She inspects the response and selects approved equal-parts practice.",
+      "decision": "Try another lesson. Total invented effort is lower than the comparable baseline, with no unresolved content error."
+    },
+    {
+      "day": 8,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 2,
+        "preparation": 18,
+        "review": 10,
+        "correction": 4,
+        "sharing": 4,
+        "follow_up": 6
+      },
+      "edu_minutes": {
+        "setup": 2,
+        "preparation": 6,
+        "review": 14,
+        "correction": 3,
+        "sharing": 4,
+        "follow_up": 6
+      },
+      "researcher_help_minutes": 0,
+      "simulated_lesson_use": "used",
+      "errors_found": 1,
+      "unresolved_errors": 0,
+      "event": "In this scripted week-two return, Maya prepares a new equivalent-fractions example without encouragement. She corrects one instruction and inspects every answer path.",
+      "decision": "Continue for this imagined lesson. Familiar setup and structured examples reduce the invented preparation cost."
+    },
+    {
+      "day": 12,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 2,
+        "preparation": 18,
+        "review": 10,
+        "correction": 3,
+        "sharing": 4,
+        "follow_up": 6
+      },
+      "edu_minutes": {
+        "setup": 2,
+        "preparation": 6,
+        "review": 19,
+        "correction": 4,
+        "sharing": 4,
+        "follow_up": 7
+      },
+      "researcher_help_minutes": 0,
+      "simulated_lesson_use": "used",
+      "errors_found": 1,
+      "unresolved_errors": 0,
+      "event": "A new imagined equivalence example requires longer inspection of feedback branches. Maya corrects one explanation before approval. Review nearly removes the preparation benefit.",
+      "decision": "Use this imagined lesson after correction. Keep the school lesson bank available because the product advantage is small on this task."
+    }
+  ],
+  "stated_preference": "In this role-play, I prefer a worked example and a visible review path. I will compare the whole task before I change my normal method.",
+  "week_two_reason": "The scripted day-4 task takes less total effort without unresolved errors, so Maya elects to return on day 8. This authored choice does not predict real teacher return.",
+  "next_real_test": "Observe a consenting target teacher prepare comparable lessons with existing materials and the actual product. Include first-use help, all feedback review, corrections, and a later unprompted use decision."
+}

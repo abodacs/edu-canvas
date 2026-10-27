@@ -1,0 +1,90 @@
+{
+  "synthetic": true,
+  "persona_id": "T06",
+  "scope": "core",
+  "assumptions": [
+    "Iris and every event in this record are fictional.",
+    "Every minute is an invented scenario input, not a measured duration.",
+    "The baseline uses a keyboard-accessible document template and an occasional LLM draft.",
+    "Day 1 permits complete keyboard review of the first lesson.",
+    "The day-4 feedback review control cannot receive keyboard focus at enlarged text size.",
+    "No usable recovery or verified repair exists during this imagined study.",
+    "Day-1 setup includes three minutes of researcher help. Day-4 setup includes four minutes of researcher help.",
+    "Lesson use refers only to an imagined delivery with artificial responses. No pupil participates.",
+    "Jev is not part of this persona workflow. Procurement and learning outcomes remain unknown."
+  ],
+  "sessions": [
+    {
+      "day": 1,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 3,
+        "preparation": 12,
+        "review": 8,
+        "correction": 3,
+        "sharing": 3,
+        "follow_up": 5
+      },
+      "edu_minutes": {
+        "setup": 7,
+        "preparation": 7,
+        "review": 10,
+        "correction": 3,
+        "sharing": 2,
+        "follow_up": 5
+      },
+      "researcher_help_minutes": 3,
+      "simulated_lesson_use": "used",
+      "errors_found": 1,
+      "unresolved_errors": 0,
+      "event": "Iris reviews the first equivalent-fractions lesson with the keyboard and enlarged text. She corrects one unclear instruction before approval. First-use setup includes three minutes of help.",
+      "decision": "The full imagined flow is usable. Total effort equals the familiar alternative, so Iris reserves judgment until another lesson."
+    },
+    {
+      "day": 4,
+      "status": "blocked",
+      "baseline_minutes": null,
+      "edu_minutes": {
+        "setup": 6,
+        "preparation": 6,
+        "review": 9,
+        "correction": 0,
+        "sharing": 0,
+        "follow_up": 0
+      },
+      "researcher_help_minutes": 4,
+      "simulated_lesson_use": "not_used",
+      "errors_found": 0,
+      "unresolved_errors": 0,
+      "event": "The draft includes a response where an artificial learner selects 2/3 as equivalent to 1/2. Iris cannot focus the control that opens its feedback branch. Four help minutes are included in setup. Content-error counts cover only the material she can inspect. Review remains incomplete.",
+      "decision": "Iris stops before approval because she cannot inspect the incorrect-response path independently. No complete comparable baseline trial occurs, so its time stays unknown."
+    },
+    {
+      "day": 8,
+      "status": "declined",
+      "baseline_minutes": null,
+      "edu_minutes": null,
+      "researcher_help_minutes": null,
+      "simulated_lesson_use": "not_used",
+      "errors_found": null,
+      "unresolved_errors": null,
+      "event": "No usable recovery or verified keyboard repair is available. Iris declines another Edu-Canvas lesson and keeps her accessible document workflow.",
+      "decision": "A positive draft cannot offset incomplete review. She needs the full teacher flow to work without another person operating a control."
+    },
+    {
+      "day": 12,
+      "status": "declined",
+      "baseline_minutes": null,
+      "edu_minutes": null,
+      "researcher_help_minutes": null,
+      "simulated_lesson_use": "not_used",
+      "errors_found": null,
+      "unresolved_errors": null,
+      "event": "The imagined study still has no verified repair. Iris declines the scheduled product session. No task times or new content checks exist.",
+      "decision": "Iris will reconsider after a complete keyboard and enlarged-text review proves usable. She does not accept assisted approval as an equivalent outcome."
+    }
+  ],
+  "stated_preference": "Iris likes the visible lesson sequence, but prefers her accessible document workflow while full review is blocked.",
+  "week_two_reason": "No completed day-8 or day-12 product session occurs. The assigned keyboard barrier remains unresolved.",
+  "next_real_test": "With an authorized adult teacher, inspect every review and approval control by keyboard at enlarged text size. Record focus order, feedback access, recovery, assistance, and whether the teacher can approve independently. Keep any real result separate from this synthetic record."
+}

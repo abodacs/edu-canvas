@@ -1,0 +1,88 @@
+{
+  "synthetic": true,
+  "persona_id": "T03",
+  "scope": "core",
+  "assumptions": [
+    "All sessions, decisions, errors, and minutes are invented scenario inputs.",
+    "The shared laptop and projector have a working connection on day 1 only.",
+    "The school paper pack supports the same equivalent-fractions objective and remains available as a fallback.",
+    "The scenario does not establish offline delivery or recovery of interrupted product work.",
+    "Day-4 product times record partial effort only. No comparable complete baseline task is timed.",
+    "Researcher help is included once in product setup time.",
+    "No app, LLM, Jev, provider, or actual pupil participates. Learning and procurement outcomes remain unknown."
+  ],
+  "sessions": [
+    {
+      "day": 1,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 3,
+        "preparation": 18,
+        "review": 8,
+        "correction": 3,
+        "sharing": 4,
+        "follow_up": 10
+      },
+      "edu_minutes": {
+        "setup": 10,
+        "preparation": 5,
+        "review": 12,
+        "correction": 4,
+        "sharing": 5,
+        "follow_up": 11
+      },
+      "researcher_help_minutes": 3,
+      "simulated_lesson_use": "used",
+      "errors_found": 1,
+      "unresolved_errors": 0,
+      "event": "In this imagined session, the connection holds. Ruth reviews each branch and corrects one unclear instruction before approval. Setup includes three minutes of researcher help.",
+      "decision": "The imagined lesson is ready, but full review and setup remove the drafting advantage. Ruth keeps the paper pack ready."
+    },
+    {
+      "day": 4,
+      "status": "blocked",
+      "baseline_minutes": null,
+      "edu_minutes": {
+        "setup": 12,
+        "preparation": 4,
+        "review": 6,
+        "correction": 0,
+        "sharing": 0,
+        "follow_up": 0
+      },
+      "researcher_help_minutes": 3,
+      "simulated_lesson_use": "not_used",
+      "errors_found": null,
+      "unresolved_errors": null,
+      "event": "The assigned connection failure interrupts review. Three minutes of help do not restore access. Ruth uses the paper fallback. For a synthetic 2/3 response to a 1/2 equivalence task, she selects an equal-parts check.",
+      "decision": "Ruth does not approve an incompletely reviewed product lesson. A single wrong response does not establish its cause. Product recovery and preservation of work remain unverified."
+    },
+    {
+      "day": 8,
+      "status": "declined",
+      "baseline_minutes": null,
+      "edu_minutes": null,
+      "researcher_help_minutes": null,
+      "simulated_lesson_use": "not_used",
+      "errors_found": null,
+      "unresolved_errors": null,
+      "event": "Ruth declines another imagined product session. No evidence of preserved work or usable delivery during an outage is supplied.",
+      "decision": "A ready paper lesson has priority over another uncertain preparation attempt."
+    },
+    {
+      "day": 12,
+      "status": "declined",
+      "baseline_minutes": null,
+      "edu_minutes": null,
+      "researcher_help_minutes": null,
+      "simulated_lesson_use": "not_used",
+      "errors_found": null,
+      "unresolved_errors": null,
+      "event": "The scenario supplies no new recovery evidence. Ruth continues with existing materials and declines the product session.",
+      "decision": "Do not infer return from willingness to discuss the tool. The delivery constraint remains unresolved."
+    }
+  ],
+  "stated_preference": "The reviewed example could be useful when access is reliable. The paper pack is preferable for the present device and network constraints.",
+  "week_two_reason": "No completed imagined product session occurs on day 8 or day 12. The day-4 interruption leaves work preservation and dependable delivery unverified.",
+  "next_real_test": "With an authorized teacher and synthetic records, interrupt an actual review on the available laptop. Inspect saved work after reconnection and verify an available lesson-delivery route. Measure complete effort against the same paper lesson."
+}

@@ -1,0 +1,89 @@
+{
+  "synthetic": true,
+  "persona_id": "T05",
+  "scope": "core",
+  "assumptions": [
+    "Every event and minute is invented for this scripted rehearsal.",
+    "Owen compares the same English Grade 4 equivalence objective with a reviewed school task bank.",
+    "The baseline includes occasional LLM rewording and Owen checks every changed explanation.",
+    "Day 1 includes a complete review of diagrams, answer keys, incorrect-response feedback, and next activities.",
+    "The assigned day-4 draft contains unequal-sized wholes. No verified correction is supplied in this scenario.",
+    "Day-4 correction time records an attempted edit and an error note. It does not establish a successful repair.",
+    "No app, LLM drafting provider, Jev service, teacher, or pupil participates in these imagined events.",
+    "Classroom use means only an imagined delivery. Learning and procurement outcomes remain unknown."
+  ],
+  "sessions": [
+    {
+      "day": 1,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 1,
+        "preparation": 8,
+        "review": 10,
+        "correction": 2,
+        "sharing": 2,
+        "follow_up": 7
+      },
+      "edu_minutes": {
+        "setup": 4,
+        "preparation": 4,
+        "review": 16,
+        "correction": 0,
+        "sharing": 3,
+        "follow_up": 11
+      },
+      "researcher_help_minutes": 0,
+      "simulated_lesson_use": "used",
+      "errors_found": 0,
+      "unresolved_errors": 0,
+      "event": "Owen tries correct and incorrect responses before approval. He compares the same objective with an existing reviewed task. The full branch review and unfamiliar response summary add invented review and follow-up costs.",
+      "decision": "Approve this imagined lesson because every inspected mathematical claim and feedback branch is acceptable. One acceptable draft does not justify a general trust claim."
+    },
+    {
+      "day": 4,
+      "status": "blocked",
+      "baseline_minutes": null,
+      "edu_minutes": {
+        "setup": 1,
+        "preparation": 4,
+        "review": 12,
+        "correction": 6,
+        "sharing": 0,
+        "follow_up": 0
+      },
+      "researcher_help_minutes": 0,
+      "simulated_lesson_use": "not_used",
+      "errors_found": 1,
+      "unresolved_errors": 1,
+      "event": "The draft compares shaded halves in wholes of different sizes. Owen also tries the synthetic incorrect response 2/3 for 1/2. He pauses the proposed next activity. An attempted diagram edit does not produce a verified replacement. The work stops before approval, so there is no comparable completed baseline.",
+      "decision": "Reject publication. Record the unequal-whole error and require a corrected diagram plus review of dependent feedback before any lesson use."
+    },
+    {
+      "day": 8,
+      "status": "declined",
+      "baseline_minutes": null,
+      "edu_minutes": null,
+      "researcher_help_minutes": null,
+      "simulated_lesson_use": "not_used",
+      "errors_found": null,
+      "unresolved_errors": null,
+      "event": "Owen declines another product session. The scenario supplies no verified resolution of the day-4 error. No new task or timing occurs.",
+      "decision": "Use the reviewed school material for the next lesson. Do not count the declined session as zero effort or a completed comparison."
+    },
+    {
+      "day": 12,
+      "status": "declined",
+      "baseline_minutes": null,
+      "edu_minutes": null,
+      "researcher_help_minutes": null,
+      "simulated_lesson_use": "not_used",
+      "errors_found": null,
+      "unresolved_errors": null,
+      "event": "Owen declines the final imagined product session. His day-4 error report remains the reason for refusal. No new mathematics inspection occurs.",
+      "decision": "Keep the existing task bank until a reviewed correction and a repeatable review process are demonstrated."
+    }
+  ],
+  "stated_preference": "The full preview is useful, but a known reviewed task is preferable when the draft contains an unresolved mathematical error.",
+  "week_two_reason": "No completed imagined session occurs on day 8 or day 12. Owen declines because the assigned unequal-whole defect has no verified resolution in this scenario.",
+  "next_real_test": "Ask an authorized Grade 4 teacher to inspect equivalent and unequal-whole diagrams without a leading prompt. Record detection, correction, dependent-feedback review, total effort, and the actual next-use decision."
+}

@@ -1,0 +1,98 @@
+{
+  "synthetic": true,
+  "persona_id": "T08",
+  "scope": "core",
+  "assumptions": [
+    "Sam, the classroom, every event, and all minutes are fictional scenario inputs.",
+    "No application, teacher, pupil, LLM service, or Jev service was contacted or observed.",
+    "Both methods cover the same equivalent-fractions objective and use equal-sized wholes.",
+    "The baseline uses a familiar paper station routine with six shared tablets available for other work.",
+    "Product sharing includes tablet handoffs, session entry, and checking that each group has the approved lesson.",
+    "Product follow-up includes separating group records before Sam selects another approved activity.",
+    "On day 4, authoritative source grounding is available but the assumed Jev match is unavailable for both workflows.",
+    "Manual match confirmation is an allowed response to the assigned outage. It does not verify the lesson content.",
+    "Researcher help appears once inside product setup. Classroom teaching duration is outside both totals.",
+    "Actual classroom use, permissions, procurement, and learning outcomes remain unknown."
+  ],
+  "sessions": [
+    {
+      "day": 1,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 4,
+        "preparation": 11,
+        "review": 7,
+        "correction": 2,
+        "sharing": 5,
+        "follow_up": 9
+      },
+      "edu_minutes": {
+        "setup": 12,
+        "preparation": 5,
+        "review": 11,
+        "correction": 3,
+        "sharing": 10,
+        "follow_up": 14
+      },
+      "researcher_help_minutes": 4,
+      "simulated_lesson_use": "used",
+      "errors_found": 1,
+      "unresolved_errors": 0,
+      "event": "In the imagined first task, Sam checks every feedback branch and corrects an unclear group instruction. Setup includes four minutes of help. Tablet handoffs and group records add effort.",
+      "decision": "Use the imagined approved lesson once. Keep the paper routine ready. A shorter draft does not yet offset setup, transitions, and follow-up."
+    },
+    {
+      "day": 4,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 6,
+        "preparation": 10,
+        "review": 8,
+        "correction": 1,
+        "sharing": 5,
+        "follow_up": 9
+      },
+      "edu_minutes": {
+        "setup": 10,
+        "preparation": 5,
+        "review": 12,
+        "correction": 1,
+        "sharing": 10,
+        "follow_up": 15
+      },
+      "researcher_help_minutes": 1,
+      "simulated_lesson_use": "used",
+      "errors_found": 1,
+      "unresolved_errors": 0,
+      "event": "Jev is unavailable in the assigned scenario. Grounding remains available, so Sam confirms the standard manually in both methods. Product setup includes one minute of help. He corrects one instruction before approval. A synthetic response selects 2/3 for 1/2. Sam inspects the response and selects an approved equal-parts check.",
+      "decision": "Complete this imagined lesson after full review. Do not infer a misconception from one response. Manual confirmation handles matching, but the device transitions and group follow-up still exceed the paper routine."
+    },
+    {
+      "day": 8,
+      "status": "declined",
+      "baseline_minutes": null,
+      "edu_minutes": null,
+      "researcher_help_minutes": null,
+      "simulated_lesson_use": "not_used",
+      "errors_found": null,
+      "unresolved_errors": null,
+      "event": "Sam declines another imagined product session and chooses the existing station materials. No new comparable task is timed.",
+      "decision": "The product does not fit the present device handoffs and follow-up routine. Fast draft preparation is insufficient reason to return."
+    },
+    {
+      "day": 12,
+      "status": "declined",
+      "baseline_minutes": null,
+      "edu_minutes": null,
+      "researcher_help_minutes": null,
+      "simulated_lesson_use": "not_used",
+      "errors_found": null,
+      "unresolved_errors": null,
+      "event": "The scenario supplies no new evidence about simpler tablet transitions or group interpretation. Sam maintains the refusal. No lesson use or timing is observed.",
+      "decision": "Keep the familiar paper stations. Do not assume that a future device or interface change removes the present constraint."
+    }
+  ],
+  "stated_preference": "The visible review steps are useful in this role-play. I prefer my paper stations while tablet handoffs and group follow-up take more work.",
+  "week_two_reason": "No imagined product session is completed on day 8 or day 12. Sam declines because setup, shared-device transitions, and follow-up do not fit the existing routine. The assigned Jev outage is handled through manual confirmation, not through an invented provider repair.",
+  "next_real_test": "Observe an authorized teacher run comparable paper and product stations with the actual shared devices and synthetic records. Record session entry, handoffs, response attribution, all review work, and the later use decision. Test a real matching outage only with source grounding available."
+}

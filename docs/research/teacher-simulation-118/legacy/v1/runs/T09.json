@@ -1,0 +1,125 @@
+{
+  "synthetic": true,
+  "persona_id": "T09",
+  "scope": "core",
+  "assumptions": [
+    "Noor, every session, every event, and every minute are fictional.",
+    "No application, provider, Jev service, teacher, or pupil was contacted or observed.",
+    "Both methods use the same English Grade 4 equivalence objective and quality bar.",
+    "The baseline uses reviewed intervention cards and hypothetical Jev objective matching. Jev does not draft, grade, or approve content.",
+    "The imagined product provides the review, response evidence, and teacher control defined in the shared protocol.",
+    "Day-1 setup includes four invented minutes of researcher help. All later sessions assume no help.",
+    "Source prerequisites remain unavailable from day 4 onward. The visible coverage gap is not an inferred pupil diagnosis.",
+    "The standard and required skills remain available. Continued use follows the assumed partial-grounding rule, with full teacher review.",
+    "All lesson use and response evidence are imagined. Learning outcomes, procurement, and permissions remain unknown."
+  ],
+  "sessions": [
+    {
+      "day": 1,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 2,
+        "preparation": 9,
+        "review": 6,
+        "correction": 1,
+        "sharing": 3,
+        "follow_up": 11
+      },
+      "edu_minutes": {
+        "setup": 10,
+        "preparation": 5,
+        "review": 10,
+        "correction": 2,
+        "sharing": 3,
+        "follow_up": 9
+      },
+      "researcher_help_minutes": 4,
+      "simulated_lesson_use": "used",
+      "errors_found": 1,
+      "unresolved_errors": 0,
+      "event": "In this imagined first session, Noor checks the worked example, hints, and independent task. She corrects an instruction that could imply one selection only. Setup includes four invented minutes of help.",
+      "decision": "Use the imagined lesson after review. Setup and unfamiliar branches cost more work than the reviewed cards. Test whether response context helps on another task."
+    },
+    {
+      "day": 4,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 2,
+        "preparation": 9,
+        "review": 6,
+        "correction": 1,
+        "sharing": 3,
+        "follow_up": 11
+      },
+      "edu_minutes": {
+        "setup": 3,
+        "preparation": 5,
+        "review": 13,
+        "correction": 2,
+        "sharing": 3,
+        "follow_up": 9
+      },
+      "researcher_help_minutes": 0,
+      "simulated_lesson_use": "used",
+      "errors_found": 1,
+      "unresolved_errors": 0,
+      "event": "The assigned source gap is visible: prerequisites are missing while the standard and required skills are available. Noor keeps the gap visible. She corrects wording that treats one wrong response as a diagnosis. A synthetic response selects 2/3 as equivalent to 1/2. She inspects the first response and hint history, then chooses an approved equal-parts check.",
+      "decision": "Continue within the assumed partial-grounding rule after full review. The source gap remains. One wrong response does not establish missing prerequisite knowledge. Extra inspection removes the time advantage on this task."
+    },
+    {
+      "day": 8,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 2,
+        "preparation": 9,
+        "review": 6,
+        "correction": 1,
+        "sharing": 3,
+        "follow_up": 11
+      },
+      "edu_minutes": {
+        "setup": 2,
+        "preparation": 5,
+        "review": 8,
+        "correction": 1,
+        "sharing": 3,
+        "follow_up": 8
+      },
+      "researcher_help_minutes": 0,
+      "simulated_lesson_use": "used",
+      "errors_found": 1,
+      "unresolved_errors": 0,
+      "event": "Noor returns in this scripted week-two session without encouragement. She reviews a fresh equivalence example and corrects one unclear instruction. The source prerequisite gap remains visible. She checks response context before accepting an approved next activity.",
+      "decision": "The imagined response record separates a first independent attempt from a hinted retry. Teacher control helps Noor choose a bounded next check. Familiar review takes less invented effort than the baseline."
+    },
+    {
+      "day": 12,
+      "status": "completed",
+      "baseline_minutes": {
+        "setup": 2,
+        "preparation": 8,
+        "review": 6,
+        "correction": 1,
+        "sharing": 3,
+        "follow_up": 11
+      },
+      "edu_minutes": {
+        "setup": 2,
+        "preparation": 5,
+        "review": 8,
+        "correction": 0,
+        "sharing": 3,
+        "follow_up": 8
+      },
+      "researcher_help_minutes": 0,
+      "simulated_lesson_use": "used",
+      "errors_found": 0,
+      "unresolved_errors": 0,
+      "event": "For another imagined lesson, Noor inspects every feedback branch and the fresh independent check. No content error is assigned in this draft. The source prerequisite gap remains visible and unresolved. Noor pauses one proposed next activity because the response record does not distinguish a reading error from a mathematical error.",
+      "decision": "Use the reviewed lesson while retaining the option to pause. The invented benefit comes from easier inspection of responses and teacher control, not from a certain diagnosis or restored source coverage."
+    }
+  ],
+  "stated_preference": "I prefer response records that distinguish independent work from help. I need to see the response before I select another activity.",
+  "week_two_reason": "In this authored scenario, Noor completes days 8 and 12 because response context and teacher control help her select a next check. The prerequisite-source gap remains visible. The return is an invented decision, not evidence of real retention.",
+  "next_real_test": "Observe an authorized intervention teacher use the actual response view with synthetic attempts. Present an incorrect independent response and a correct hinted retry. Inspect whether the teacher distinguishes the records, notices a source gap, and pauses or changes the next activity. Compare full effort with reviewed cards and record later use separately."
+}
