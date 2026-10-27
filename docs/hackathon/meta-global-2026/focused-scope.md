@@ -2,6 +2,8 @@
 
 **Status:** v1, 2026-10-26. Ready to execute on Day 1; iterate only after IC1 passes. This document is the event execution decision. It narrows the [full event plan](README.md) and the [teacher UI scope](../../product/teacher-ui.md). The production [roadmap](../../../ROADMAP.md) and epic [#108](https://github.com/abodacs/edu-canvas/issues/108) remain the post-event direction.
 
+The proposed [UI build plan](focused-ui-plan.md) describes the screens and interactions. The [issue dependency graphs](issue-graphs.md) separate the focused build from the production backlog.
+
 ## Decision
 
 Build one complete, teacher-controlled equivalent-fractions loop.
