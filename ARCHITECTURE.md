@@ -305,9 +305,9 @@ sequenceDiagram
 3. Check prompt and generated-content safety. Structural failure permits one correction, so an attempt makes at most two generation calls.
 4. Run deterministic curriculum and learning-quality reviews. Optional advisory agents have at most two attempts and a default 250 ms timeout per attempt. Warnings remain visible; blocks prevent an accepted draft.
 5. Build a forward learning path against the versioned seeded curriculum. Missing or incompatible context blocks acceptance.
-6. Persist the final state with the expected attempt and update timestamp. If ownership has changed, return the current record instead of overwriting it.
+6. Persist the final state with the expected attempt, update timestamp, and an unexpired lease. If ownership has changed, return the current record instead of overwriting it.
 
-The factory currently selects a deterministic fixture provider or an OpenAI Responses adapter. The live adapter uses a 15-second timeout per call. There is no implemented 25-second overall generation deadline.
+The factory currently selects a deterministic fixture provider or an OpenAI Responses adapter. The live adapter uses a 100-second timeout per call. The service enforces a 200-second total budget across generation and one correction.
 
 | State | Meaning | Explicit retry |
 | --- | --- | --- |
@@ -331,7 +331,7 @@ Blocked and failed attempts retain diagnostics with no accepted draft. `ready-fo
 
 [GenerationPersistence](src/server/generation/types.ts) provides claim, expiry, conditional save, idempotency lookup, and record read operations. The service does not know SQL or Drizzle transaction details.
 
-A claim has a 30-second lease. Duplicate callers poll for up to five seconds. Expiry is resolved by request handling; there is no background reaper. Conditional writes compare attempt number and update timestamp, so an expired worker cannot overwrite a replacement attempt.
+A claim has a 220-second lease. Duplicate callers poll for up to five seconds. Expiry is resolved by request handling; there is no background reaper. Conditional writes compare attempt number, update timestamp, and an unexpired lease, so an expired worker cannot overwrite a replacement attempt.
 
 Both PostgreSQL adapters use [createGenerationPersistence](src/server/persistence/generation-persistence.ts) for shared claim and write policy. They supply transactions, savepoints, tenant context, and queries. Generation queries constrain tenant IDs, and SQL policies use transaction-local `app.tenant_id`. The seeded adapter implements the same public port against the process-local map.
 
@@ -362,8 +362,8 @@ The repository has no deterministic scaffold command for these recipes. [Coding 
 | Context boundaries hold and the graph stays acyclic | `verify:boundaries` dependency-cruiser rules | Warn-severity debt is enumerated, not resolved; generated router edge excluded; cruises `src/` only |
 | Public responses use explicit contracts | Snapshot parsing and generation projection schemas | Each new response path needs its own projection and checks |
 | Private markers stay out of shipped browser assets | `verify:client-boundary` scans `.output/public` | Fixed string list; does not inspect the server bundle or all possible sensitive values |
-| One claimant owns a generation write | Atomic claims and compare-and-set persistence; service and database contract tests | A lease is not an overall execution deadline |
-| Retry metadata stays consistent | Service checks owner, retryable state, and normalized request fields | Existing-key lookup does not detect a changed payload under the same explicit key |
+| One claimant owns a generation write | Atomic claims and compare-and-set persistence; service and database contract tests | The 200-second generation budget is separate from the 220-second lease |
+| Retry metadata stays consistent | Service checks owner, retryable state, normalized request fields, and the persisted request hash | A hash collision would defeat changed-payload detection; FNV-1a is not cryptographic |
 | Only accepted, owned drafts reach preview | `preview.server.ts` access and state checks | Identity is still selected through the demo role |
 | A2UI remains a closed data protocol | Shared schemas, compiler, stream, and renderer validation | Catalog support does not implement the associated business operation |
 | Storage remains tenant-scoped | Tenant predicates, transaction-local tenant context, SQL policies, parity tests | Application access still depends on synthetic sessions |
