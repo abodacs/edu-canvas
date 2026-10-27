@@ -1,79 +1,97 @@
-# Teacher-agent rehearsal for issue #118
+# Teacher study-design protocol — v2.0
 
-Every participant, event, quote, and minute in this exercise is synthetic. This is a scripted study rehearsal, not teacher research.
+Use only with profile/card version **2.0**. This is an unexecuted design for ten fictional core teachers and two boundary roles. No participant, event, quotation, elapsed effort or later choice is observed or generated in v2. The [legacy procedure](legacy/v1/protocol.md) belongs only to the archived v1 rehearsal.
 
-## Task and product assumptions
+## Establish scope and capability mode
 
-Use an imagined English Grade 4 equivalent-fractions lesson. The objective is to explain and identify equivalent fractions with equal-sized wholes. The task includes a worked example, guided practice, and a fresh independent check.
+The core setting is a US school using Common Core, Grade 4, English. The shared objective is to explain and identify equivalent fractions using equal-sized wholes (`4.NF.A.1`). Every core task requires a worked example, guided practice and a fresh independent check. Preserve mathematical correctness, objective alignment, readable instructions, usable diagrams and feedback for correct and incorrect responses. Review all learner-reachable branches and keep teacher control over learner-facing changes. A completed review alone cannot prove correctness or error detection.
 
-Assume a research prototype offers draft, full review, correction, approval, immutable publication, private grading, response evidence, and teacher control. These are scenario assumptions. This run does not establish that the repository implements them. No agent operates the app or calls an external provider.
+Before showing the product, ask about existing materials, available resources, language, access requirements and actual school policy. Compare the same objective, source/material availability and quality bar with the teacher's best normal alternative, including reuse. Record any mismatch and withhold an effort comparison until it is resolved. Vary method order across a future real study; ask baseline questions before either demonstration.
 
-Compare the same lesson objective and quality bar with each persona's normal alternative. Include reusable materials. An LLM is a large language model used for drafting. Jev is an assumed objective-matching service in this exercise. Jev does not draft the lesson, grade answers, verify mathematics, or approve publication. Do not imply that real teachers already use it.
+Read the [capability ledger](capabilities.md). Select one mode and label it throughout:
 
-Preserve these documented matching rules in imagined Jev paths: native confidence above 0.90 can skip match confirmation for supported objectives. At 0.90 or below, request confirmation. Unsupported objectives stay unsupported at any confidence. A Jev outage allows manual confirmation only when source grounding exists. These are design rules, not verified provider behavior.
+- **Documented current:** generation, validation and teacher preview as documented at the pinned revision. Actual availability needs checking. Stop at the first unavailable step; do not invent publication, learner attempts or follow-up.
+- **Hypothetical target loop:** explicitly labeled mockups or discussion of review, correction, approval, publication, response evidence and teacher-selected follow-up. All continuations are assumptions. Broader Jev/grounding probes remain separate from this focused target.
 
-## Twelve separate roles
+Do not compare a hypothetical complete product with a measured current baseline as if both were observed. Accessibility, mathematical review and tool policy are constraints to investigate, not guaranteed abilities assigned by identity.
 
-Read one profile in personas.json. Maintain that role across four sessions. Do not infer technology skill, trust, or outcome from a name or geography. Use the profile's stated constraints and trade-offs.
+## Neutral prompts first
 
-Ten roles fit the core subject and language. Two roles deliberately test unsupported language or subject requests. Keep those roles separate in the summary. Do not present this constructed mix as a representative sample.
+Ask these core questions before any assigned obstacle or product claim:
 
-## Four simulated sessions
+1. “Tell me about the last comparable fractions lesson you prepared. What did you reuse, and what did you need to change?”
+2. “Walk through preparing the shared objective with your usual method. What would make the lesson ready to use?”
+3. “As you inspect this draft or labeled mockup, what do you notice? What would you do next?” Do not name a planted error, correctness issue or expected action.
+4. “What would you need to review, change or ask about before using this material?” Record uncertainty and help; do not coach an answer.
+5. “What can you conclude from this response record, and what else would you need before choosing the next activity?” Use the same labeled example for every core role: a first independent `2/3` response to a `1/2` equivalence check, followed by a supported retry. Show support context separately; do not infer mastery or a misconception from that record.
+6. “Where does this help or add work compared with your normal method? Which parts remain unclear?”
+7. “For your next eligible preparation task, what options would you consider?” Do not ask for a promise to return or prescribe a benefit threshold.
 
-1. Day 1: explain the recent baseline workflow. Try a first comparable lesson. Record setup and all review work.
-2. Day 4: try a different equivalence example. Include an incorrect synthetic response and the teacher's next decision.
-3. Day 8: decide whether to return without an interviewer's encouragement. Record a refusal, missing session, or product barrier as such.
-4. Day 12: try another lesson if the teacher continues. Otherwise preserve the reason and unknowns.
+In a role discussion, these prompts identify information to seek; do not fabricate a real recent lesson or a participant quote. In a future authorized study, record what the teacher actually says and does separately from the researcher's interpretation.
 
-No actual days elapse in this exercise. Week-two return means a completed imagined product session on day 8 or 12. It is not a prediction of real retention.
+## Shared stress prompts — after neutral work
 
-## Assigned probes
+Label each as an injected or hypothetical condition. Use an equivalent condition and quality requirement for every core role when making a comparison. These probes do not establish naturally occurring defects or their frequency. Keep resulting behavior separate from the neutral phase.
 
-- T01: first-use setup followed by a familiar second task.
-- T02: compare with strong reusable material. A neutral or worse result is allowed.
-- T03: day-4 connection failure. Recovery and lesson readiness matter.
-- T04: compare with an efficient existing LLM workflow, including correction work.
-- T05: an unequal-whole diagram is present in the day-4 draft. Require correction before use.
-- T06: a day-4 review control cannot be reached with the keyboard. Record blocked use if there is no usable recovery.
-- T07: Jev native confidence is exactly 0.90 on day 4. Require confirmation.
-- T08: Jev is unavailable on day 4 while authoritative source grounding remains available. Use manual match confirmation. Include shared-device transitions.
-- T09: source prerequisites are missing on day 4, but the standard and required skills are available. Inspect the visible gap. Do not diagnose a pupil from one response.
-- T10: a competing school duty occurs in week two. Positive preference does not establish return.
-- T11: the offer is English-only. An Arabic-output request remains outside this rehearsal's supported task.
-- T12: the request is Grade 5 fraction multiplication. An imagined confidence of 0.98 cannot make it in scope.
+| Probe | Prompt | What remains open |
+| --- | --- | --- |
+| S1: content review | Plant an unequal-whole comparison in a separate draft. Ask only: “Here is another draft. Inspect it as you normally would.” Do not identify the error before inspection. Disclose the injection afterward. | Whether an error is noticed unaided, what help is needed, whether correction reaches dependent feedback |
+| S2: interruption | “Suppose the connection fails during preparation. What would you need to do next?” | Work preservation, recovery and a usable delivery route; none is assumed |
+| S3: evidence uncertainty | “This separate record lacks support or attribution detail. What can you decide from it?” | Whether the teacher seeks context, waits, uses another check or accepts uncertainty |
 
-These probes are authored conditions, not defects found in the application.
+Record whether the facilitator revealed a defect or provided help before a choice. A prompted correction must not be reported as spontaneous detection. Do not continue learner use with an unresolved content error in any later authorized enactment.
 
-## Output contract
+## Persona-specific stress prompts
 
-Write one JSON file at runs/<ID>.json. Use the exact ID from the assigned profile. Do not edit another role's file.
+These questions follow neutral and shared prompts. They deliberately differ by role and must not enter a pooled causal comparison. They are not scheduled failures or required decisions.
 
-The top-level fields are synthetic=true, persona_id, scope, assumptions, sessions, stated_preference, week_two_reason, and next_real_test. assumptions is an array of short strings. sessions contains exactly four entries, in order, for days 1, 4, 8, and 12.
+| Role | Additional question / condition | Capability mode |
+| --- | --- | --- |
+| T01 Maya | Where would a worked example or another reviewer help? Could an apparently complete review still miss a mathematical error? | Current preview or labeled mockup |
+| T02 Daniel | If response context improved the teaching decision while requiring more effort, how would that affect the choice alongside strong reusable materials? | Hypothetical response evidence |
+| T03 Ruth | Preparation can happen online, but the classroom is offline. What reviewed artifact and recovery route would be sufficient? | Offline delivery remains unverified |
+| T04 Lina | How would school approval and institutional funding affect use when an approved LLM workflow is already available? | Policy discussion; no personal-spending assumption |
+| T05 Owen | A shared department item changes. Which colleagues, versions and dependent feedback need review before redistribution? | Hypothetical shared-material change |
+| T06 Iris | Inspect the review path with keyboard and preferred zoom. What happens to focus, reflow and access to every branch? In a hypothetical barrier, what recovery is usable? | Actual access only if tested; otherwise mockup |
+| T07 Elena | In the broader hypothetical matching design, native confidence is exactly 0.90. What source information is needed to confirm the match? Who decides about purchasing? | Hypothetical Jev; confirmation required by proposed rule |
+| T08 Sam | On a shared tablet, distinguish a group submission from an individual attempt. What attribution is needed? Separately, Jev is unavailable but source grounding exists: what would manual confirmation require? | Hypothetical evidence and broader matching |
+| T09 Noor | Prerequisite source coverage is missing while standard and required skills are available. What can be inferred about source coverage, and what additional learner evidence is needed? | Hypothetical broader grounding; no automatic diagnosis |
+| T10 Alex | Given the next genuinely available preparation slot, which method would you choose and why? Ask about competing duties without assigning a missed session. | Open opportunity and choice discussion |
 
-Each session has these fields:
+## Separate accessibility probe
 
-- day: 1, 4, 8, or 12.
-- status: completed, blocked, declined, or missing.
-- baseline_minutes: an object or null.
-- edu_minutes: an object or null.
-- researcher_help_minutes: a non-negative number or null. Include this time once in edu_minutes.setup.
-- simulated_lesson_use: used, not_used, or unknown.
-- errors_found: a non-negative integer or null.
-- unresolved_errors: a non-negative integer or null.
-- event: a short account of the assigned condition and action.
-- decision: a short explanation tied to this persona's constraints.
+Iris covers low vision, keyboard and zoom only. A **separate screen-reader probe** is required; do not assign screen-reader experience to Iris or count it as a thirteenth persona observation. In a later authorized accessibility session, establish browser/assistive-technology setup and the person's actual proficiency. Inspect names and roles, headings and reading order, fraction-diagram alternatives, focus and live updates, feedback branches, errors and recovery, and the target approval path when available. Record assistance and unavailable steps. No screen-reader access result is supplied here.
 
-Each minutes object has six non-negative numeric fields: setup, preparation, review, correction, sharing, and follow_up. All numbers are invented scenario inputs. Explain unusual costs in event or assumptions. Never describe them as measured time.
+## Boundary screening and one rejection probe
 
-A completed session needs both minutes objects, numeric help, and numeric error counts. Include help in setup. A blocked session can record partial edu_minutes, but use a null baseline when the tasks are not comparable. A declined or missing session has null times, help, and errors. Never replace missing data with zero. An unresolved content error prevents simulated lesson use. Use used only for an imagined complete delivery, never for an actual classroom observation.
+Screen for intended grade, objective and required output language before core enrollment. T11 and T12 receive **screening plus one rejection probe each**, with no four-session follow-up, effort comparison or core-retention denominator.
 
-Do not force a favorable result. Do not invent a repair that removes the assigned obstacle. Keep untested procurement and learning outcomes unknown. A good synthetic result cannot satisfy issue #118, V12, Jev evaluation, or real-student authorization.
+| Role | Screening result in the fictional assignment | Single rejection probe |
+| --- | --- | --- |
+| T11 Hana | US public dual-language Grade 4; this task requires Arabic instructions and feedback | Ask how the English-only offer explains rejection of the Arabic request and what a useful next option would be. Do not substitute English or promise RTL support. |
+| T12 Victor | US rural private Grade 5; fraction multiplication (`5.NF.B.4`) | Supply a hypothetical high-confidence match (0.98) and inspect the scope explanation. It must remain unsupported without silently replacing the objective with Grade 4 equivalence. |
 
-Use short, direct English. Do not browse, call providers, access student data, send outreach, or start another agent.
+These are fixed study eligibility boundaries, not predetermined adoption attitudes. Record the requested task and reason for mismatch. A boundary rejection is not evidence that the in-scope product is undesirable.
 
-## Source boundaries
+## Opportunity, burden and choice
 
-- [Issue #118](https://github.com/abodacs/edu-canvas/issues/118) owns the real five-teacher, two-week study.
-- [Observed behaviour](../../observed-behaviour.md) separates observations from assumptions.
-- [Teacher UI decisions](../../product/teacher-ui.md) owns the proposed Jev rules.
-- [Validation tracker](../../hackathon/meta-global-2026/validation-tracker.md) keeps V12 pending without real evidence.
+A later real study could retain the proposed day 1, 4, 8 and 12 contact windows from v1, subject to teacher availability and authorization. These are invitations, not enacted sessions or required product uses. Ten core roles share objectives and quality requirements; variation in examples must retain comparable difficulty. Boundary roles stop after screening and their rejection probe.
+
+At each later contact, first establish whether an eligible lesson and a genuine preparation opportunity occurred. Then distinguish use, choice of another method, no opportunity, absence and unavailable product. Leave unknowns unknown. Preserve positive comments alongside non-use without turning either into a return rule. No scripted “return only if” criteria apply.
+
+For v2 discussion, describe **burden, help, trade-offs and unknowns** across setup, preparation, review, correction, sharing/delivery and follow-up. Include assistance and interruptions; note whether review was independent. Do not invent minutes, totals, savings percentages, retention figures, error counts or lesson-use events. In a later real study, measured effort needs an observable start/stop method and comparable completed tasks; that study must retain real observations separately from these scenarios.
+
+## Record design questions, not results
+
+Use a note with these fields rather than the v1 run schema:
+
+- Pack/profile/protocol version; role ID; source revision; capability mode.
+- Phase: neutral, shared stress, persona stress, screen-reader probe or boundary rejection.
+- Assigned facts, materials and tools available; hypothetical conditions explicitly labeled.
+- Possible burden and help, trade-offs, unresolved capability and policy questions.
+- Choice: **not observed** in this design pack. List alternatives to investigate without selecting an outcome for the teacher.
+- Real-world question, evidence needed and any unavailable comparison.
+
+No notes or role outputs are generated by this revision. Do not overwrite v1 runs, infer a result from the profile or copy v1 events into v2. Any later rehearsal needs new provenance and a separate versioned location. No nested agents, provider calls, application actions, student data or outreach are part of this documentation exercise.
+
+[Issue #118](https://github.com/abodacs/edu-canvas/issues/118) still needs real teachers, permissions, scheduled sessions, actual comparisons and follow-up evidence. [V12](../../hackathon/meta-global-2026/validation-tracker.md) remains pending. Purchasing willingness, adoption, learning outcomes and real access remain unknown.

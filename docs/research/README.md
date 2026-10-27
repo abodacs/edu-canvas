@@ -17,4 +17,4 @@ The following materials are retained on the owner's machine only. They are not t
 
 ## Synthetic study rehearsals
 
-- [Twelve teacher personas for issue #118](teacher-simulation-118/README.md): reusable role prompts and an AI-authored two-week rehearsal. All participants, events, and times are synthetic. This pack helps examine the study protocol. It supplies no teacher evidence and does not satisfy the real study or V12.
+- [Twelve fictional teacher personas for issue #118](teacher-simulation-118/README.md): v2 US Common Core profiles, neutral prompts, capability limits and a twelve-persona gap audit. No v2 outcomes are generated. The complete original AI-authored rehearsal is retained under `legacy/v1`; its profiles, procedure and raw values stay separate. Neither version supplies real teacher evidence or satisfies #118 or V12.

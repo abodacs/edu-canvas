@@ -1,54 +1,44 @@
-# Twelve teacher personas for issue #118
+# Twelve fictional teacher personas — v2
 
-This pack rehearses a two-week teacher study with 12 fictional roles. Every session, event, and minute is synthetic. No teacher recruitment or classroom observation occurs.
+This pack supports product and study design for US Common Core Grade 4 equivalent fractions. It contains ten core teachers and two boundary roles. All identities, qualifications, resources and constraints are authored assignments. **V2 contains no simulated outcomes, measured effort or teacher evidence.**
 
-Read the [results](report.md) for the constructed outcomes. Read the [protocol](protocol.md) for the assumptions and assigned obstacles.
+Start with the [protocol](protocol.md), then use a [role card](agents/) and the [capability ledger](capabilities.md). The [twelve-persona gap audit](gap-audit.md) turns each assignment into questions for real teachers. The [design review](report.md) explains the revision and its remaining limits.
 
 ## Choose a role
 
-The ten core roles teach English Grade 4 equivalent fractions. Two boundary roles request a different language or subject. Personality traits come from authored profiles, not from demographic assumptions.
+The [canonical profiles](personas.json) and all role cards share profile/protocol version **2.0**. Update them together. The JSON is documentation data, not an application API contract.
 
-| Agent | Context and personality | Assumed tool use | Scope |
-| --- | --- | --- | --- |
-| [T01](agents/T01.md) | Maya: early-career planner | Neither | core |
-| [T02](agents/T02.md) | Daniel: experienced material reuser | Neither | core |
-| [T03](agents/T03.md) | Ruth: teacher with limited connectivity | Neither | core |
-| [T04](agents/T04.md) | Lina: frequent llm user | LLM | core |
-| [T05](agents/T05.md) | Owen: mathematics reviewer | LLM | core |
-| [T06](agents/T06.md) | Iris: keyboard-first teacher | LLM | core |
-| [T07](agents/T07.md) | Elena: curriculum coordinator | Assumed Jev | core |
-| [T08](agents/T08.md) | Sam: teacher with shared devices | Assumed Jev | core |
-| [T09](agents/T09.md) | Noor: intervention specialist | Assumed Jev | core |
-| [T10](agents/T10.md) | Alex: school technology champion | LLM + assumed Jev | core |
-| [T11](agents/T11.md) | Hana: arabic-output boundary case | LLM + assumed Jev | boundary |
-| [T12](agents/T12.md) | Victor: adjacent-grade boundary case | LLM + assumed Jev | boundary |
+| Role | Age; gender; ethnicity | School; teaching experience; caregiving | Focus | Assigned planning tools |
+| --- | --- | --- | --- | --- |
+| [T01 Maya](agents/T01.md) | 25–29; woman; White | Urban public; 2 years; none assigned | Uneven maths confidence; may miss errors | Neither |
+| [T02 Daniel](agents/T02.md) | 55–59; man; Black | Suburban public; 18 years, second career; eldercare | Better teaching decisions can justify switching | Neither |
+| [T03 Ruth](agents/T03.md) | 35–39; woman; Asian American | Rural public; 11 years; none assigned | Online preparation, offline teaching | Neither |
+| [T04 Lina](agents/T04.md) | 30–34; woman; Latina | Urban charter; 8 years; parent | Approved tools; no personal budget | LLM |
+| [T05 Owen](agents/T05.md) | 40–44; man; Black | Suburban public; 16 years; parent | Reviews shared department materials | LLM |
+| [T06 Iris](agents/T06.md) | 35–39; nonbinary; White | Suburban public; 10 years; none assigned | Low vision; keyboard and zoom | LLM |
+| [T07 Elena](agents/T07.md) | 45–49; woman; Latina | Urban public; 20 years; eldercare | Recommends; district purchases | Hypothetical Jev |
+| [T08 Sam](agents/T08.md) | 30–34; man; White | Urban public; 7 years; parent | Separate individual and group evidence | Hypothetical Jev |
+| [T09 Noor](agents/T09.md) | 40–44; woman; Arab American | Urban public; 15 years; eldercare | Uneven maths prerequisites | Hypothetical Jev |
+| [T10 Alex](agents/T10.md) | 35–39; nonbinary; Asian American | Suburban public; 12 years; parent | Limited preparation slots; genuine choice | LLM + hypothetical Jev |
+| [T11 Hana](agents/T11.md) | 30–34; woman; Arab American | Public dual-language; 7 years; none assigned | Arabic-output boundary | LLM + hypothetical Jev |
+| [T12 Victor](agents/T12.md) | 50–54; man; Multiracial | Rural private; 25 years; none assigned | Grade 5 multiplication boundary | LLM + hypothetical Jev |
 
-Jev is an assumed objective-matching service inside a planning workflow. Its inclusion does not establish teacher adoption or provider access. The personas use an LLM for draft text, Jev for matching, both, or neither. The role-play agents themselves use the model inherited from this session.
+All are US-born except Lina (immigrated as a teenager), Elena and Hana (immigrated as adults). No country of origin is assigned. Skills, attitudes, languages and support needs are assigned independently of identity. These contrasts do not describe demographic groups or a representative US sample. School use of Common Core is a scenario assumption, including the private-school boundary role.
 
-## Run a role again
+The core tool groups are deliberately uneven: three neither, three LLM only, three hypothetical Jev only, one both. Boundary roles are additional cases, not extra observations for the both-tools group. No tool-group comparison is justified. Jev is a hypothetical objective-matching condition, not established teacher adoption or provider access.
 
-1. Start a separate agent or a fresh model conversation.
-2. Give the agent the shared protocol and one linked role card.
-3. Ask the agent to follow the card's start instruction.
-4. Keep the output separate from every other role.
-5. Review the output against the protocol before comparison.
+## Use the pack
 
-Use the same protocol and source profiles for a repeated run. Agent decisions and invented times can change between runs. This is not a deterministic forecast. The [source profiles](personas.json) contain the assumptions used to create the role cards. No production model, Jev API, or application session is part of this rehearsal.
+1. Read the capability ledger and choose either documented-current discussion or explicitly hypothetical target-loop discussion.
+2. Read one version-matched profile and card. Start with neutral prompts before showing stress conditions.
+3. Keep the same objective and quality requirements for core comparisons. Use screening and one rejection probe for each boundary role.
+4. Record qualitative burden, help, trade-offs and unknowns. A role discussion may expose questions; it cannot supply observed choices or future use.
+5. Keep any future authorized study or rehearsal in a separately versioned artifact. Do not write v2 output into v1 runs.
 
-## Read the records
+This revision does not execute agents, providers, the application or a study. It changes no application API.
 
-- [Protocol](protocol.md): common task, product assumptions, session schedule, and output contract.
-- [Role profiles](personas.json): the 12 authored backgrounds and decision rules.
-- [Raw runs](runs/): one synthetic JSON record per persona.
-- [Session table](sessions.csv): all four sessions, including blocked, declined, and missing sessions.
-- [Report](report.md): per-persona comparisons, reasons, and next real checks.
+## Original rehearsal
 
-All time fields use minutes. Total effort includes setup, preparation, review, correction, sharing, and follow-up. Researcher help is included once in setup. A missing measurement stays empty in the session table. Only completed comparable tasks contribute to a time comparison.
+The [legacy index](legacy/README.md) retains the complete original v1 pack, including its original profiles, return rules, protocol, raw JSON/CSV and results. Raw values are preserved. V1's constructed events and minutes belong only to those original profiles and procedure. The v2 names and IDs are continuity labels, not permission to transfer old results to revised people.
 
-## Limits and real next step
-
-The assigned obstacles and times drive these outcomes. Twelve role outputs from the same model are not 12 independent teacher observations. They cannot estimate demand, retention, savings, learning gains, provider quality, or market size.
-
-[Issue #118](https://github.com/abodacs/edu-canvas/issues/118) still requires five confirmed real teachers, permissions, scheduled sessions, actual workflow comparisons, and follow-up records. No acceptance box or evidence gate changes because this pack exists. [V12](../../hackathon/meta-global-2026/validation-tracker.md) remains pending.
-
-Use this rehearsal to improve the real study's questions. Test the assumptions with real teachers when outreach is authorized. Do not present invented lesson use as student participation.
+[Issue #118](https://github.com/abodacs/edu-canvas/issues/118) and [V12](../../hackathon/meta-global-2026/validation-tracker.md) remain pending. This pack establishes no real recruitment, teacher usefulness, learning gain, accessibility compliance, retention or purchase willingness. Real-study evidence and outreach authorization remain separate work.

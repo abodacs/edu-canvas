@@ -1,186 +1,628 @@
 {
+  "pack_version": "2.0",
+  "profile_version": "2.0",
+  "protocol_version": "2.0",
   "synthetic": true,
-  "purpose": "Scripted rehearsal for issue #118; no real participants or provider calls.",
+  "purpose": "Fictional US Common Core study-design roles; no v2 simulations, participants or outcomes.",
+  "assignment_rules": [
+    "All demographic, qualification, resource and workload details are fictional scenario assignments.",
+    "Skills, attitudes, languages and constraints are independently assigned; never derive them from identity.",
+    "Tool groups are deliberately uneven within the ten core roles and support no comparative inference.",
+    "Jev use means a hypothetical planning condition, never established adoption or access.",
+    "Do not apply v1 runs or timing to these revised profiles. Purchasing willingness remains unknown."
+  ],
   "personas": [
     {
       "id": "T01",
       "name": "Maya",
-      "role": "Early-career planner",
+      "profile_version": "2.0",
+      "protocol_version": "2.0",
+      "synthetic": true,
+      "role": "Early-career classroom teacher",
       "scope": "core",
-      "background": "Grade 4 teacher, two years of experience, English-medium public school.",
-      "personality": "Careful and curious. Asks for a worked example before a rule.",
+      "identity": {
+        "age_range": "25–29",
+        "gender": "woman",
+        "ethnicity": "White",
+        "migration": "US-born"
+      },
+      "school": {
+        "country": "United States",
+        "setting": "Urban public",
+        "curriculum": "US Common Core assumed for this fictional school",
+        "grade": 4
+      },
+      "qualifications": {
+        "education_and_credential": "BA in elementary education; elementary teaching license assumed",
+        "teaching_experience_years": 2
+      },
+      "workload": {
+        "responsibilities": "One Grade 4 class of 28; generalist teaching and routine assessment",
+        "planning_time": "Short school-day planning periods, often interrupted by grade-level team tasks; some preparation at home",
+        "caregiving": "None assigned"
+      },
+      "resources": "School laptop, projector, stable preparation connection; paper fraction strips and a shared lesson bank",
+      "languages": "English for planning and teaching; other languages unassigned",
+      "access_needs": "No access need assigned; accommodation needs remain open",
+      "proficiency": {
+        "tool_skills": "Comfortable with school documents; unfamiliar with prompt design and source panels",
+        "mathematics_review": "Uneven maths confidence: comfortable checking simple pairs, uncertain about unequal wholes and some feedback explanations; may miss errors",
+        "llm_use": "none",
+        "jev_use": "none"
+      },
+      "tool_policy": "Uses school-approved materials; new software needs school review",
+      "purchasing": {
+        "authority": "No purchasing authority assigned; school approval route unclear",
+        "willingness_to_pay": "Unknown; no price, personal willingness or institutional purchase commitment established"
+      },
       "baseline": "School lesson bank and paper fraction strips",
-      "llm_use": "none",
-      "jev_use": "none",
-      "context": "School laptop, projector, stable connection, 28 pupils.",
-      "strength": "Needs help with lesson structure but can inspect every answer.",
-      "risk": "Reviewing every feedback branch may remove the preparation benefit.",
-      "decision_rule": "Return only if the second lesson needs less total work without unresolved errors."
+      "attitude": "Curious; asks for a worked example before a rule",
+      "focus": "Review support may help, but review completion cannot establish that Maya detected a mathematical error",
+      "uncertainties": [
+        "Which mistakes can she detect without hints?",
+        "Who can support review when confidence is low?"
+      ]
     },
     {
       "id": "T02",
       "name": "Daniel",
-      "role": "Experienced material reuser",
+      "profile_version": "2.0",
+      "protocol_version": "2.0",
+      "synthetic": true,
+      "role": "Experienced second-career teacher",
       "scope": "core",
-      "background": "Grade 4 teacher, 18 years of experience, extensive reusable fraction materials.",
-      "personality": "Direct and skeptical. Requires a specific benefit before changing habits.",
-      "baseline": "Known worksheet, answer key, and physical fraction strips",
-      "llm_use": "none",
-      "jev_use": "none",
-      "context": "Laptop and shared devices, 25 pupils.",
-      "strength": "Known materials are fast to reuse and easy to check.",
-      "risk": "A new review flow may cost more than reuse.",
-      "decision_rule": "Keep existing materials if total work is equal or greater."
+      "identity": {
+        "age_range": "55–59",
+        "gender": "man",
+        "ethnicity": "Black",
+        "migration": "US-born"
+      },
+      "school": {
+        "country": "United States",
+        "setting": "Suburban public",
+        "curriculum": "US Common Core assumed for this fictional school",
+        "grade": 4
+      },
+      "qualifications": {
+        "education_and_credential": "BA outside education followed by teacher preparation and elementary licensure; previous career unspecified",
+        "teaching_experience_years": 18
+      },
+      "workload": {
+        "responsibilities": "One Grade 4 class of 25; lesson reuse, assessment and colleague mentoring",
+        "planning_time": "Established reusable plans; protected school planning is available, while eldercare can constrain evening work",
+        "caregiving": "Eldercare"
+      },
+      "resources": "Laptop, shared learner devices and physical fraction strips; reliable school connection",
+      "languages": "English for planning and teaching; other languages unassigned",
+      "access_needs": "No access need assigned; accommodation needs remain open",
+      "proficiency": {
+        "tool_skills": "Proficient with document reuse; no LLM or Jev workflow assigned",
+        "mathematics_review": "Strong familiarity with his fraction materials; detecting unfamiliar draft errors remains uncertain",
+        "llm_use": "none",
+        "jev_use": "none"
+      },
+      "tool_policy": "School approval required for new tools; avoids unnecessary account changes",
+      "purchasing": {
+        "authority": "Can recommend a classroom tool; budget holder and purchasing process unknown",
+        "willingness_to_pay": "Unknown; no price, personal willingness or institutional purchase commitment established"
+      },
+      "baseline": "Known worksheet, answer key and physical fraction strips",
+      "attitude": "Direct; asks what a change helps him decide",
+      "focus": "Better teaching decisions could justify switching even when preparation effort stays equal or rises",
+      "uncertainties": [
+        "What counts as a better teaching decision?",
+        "What additional effort is acceptable when evidence is clearer?"
+      ]
     },
     {
       "id": "T03",
       "name": "Ruth",
-      "role": "Teacher with limited connectivity",
+      "profile_version": "2.0",
+      "protocol_version": "2.0",
+      "synthetic": true,
+      "role": "Teacher preparing online and teaching offline",
       "scope": "core",
-      "background": "Grade 4 teacher in a small school with unreliable network access.",
-      "personality": "Patient with pupils, strict about lesson readiness. Makes an offline backup.",
+      "identity": {
+        "age_range": "35–39",
+        "gender": "woman",
+        "ethnicity": "Asian American",
+        "migration": "US-born"
+      },
+      "school": {
+        "country": "United States",
+        "setting": "Rural public",
+        "curriculum": "US Common Core assumed for this fictional school",
+        "grade": 4
+      },
+      "qualifications": {
+        "education_and_credential": "BS in elementary education; elementary teaching license assumed",
+        "teaching_experience_years": 11
+      },
+      "workload": {
+        "responsibilities": "One Grade 4 class of 32; generalist teaching and paper assessment",
+        "planning_time": "Can prepare during connected school planning slots; needs a usable lesson before entering an offline classroom",
+        "caregiving": "None assigned"
+      },
+      "resources": "Shared laptop, intermittent preparation connection, projector and printer; no dependable classroom internet",
+      "languages": "English for planning and teaching; other languages unassigned",
+      "access_needs": "No access need assigned; offline delivery is a resource constraint",
+      "proficiency": {
+        "tool_skills": "Proficient with downloaded documents, printing and backups; no LLM or Jev workflow assigned",
+        "mathematics_review": "Comfortable teaching equivalence with physical diagrams; unfamiliar feedback still needs checking",
+        "llm_use": "none",
+        "jev_use": "none"
+      },
+      "tool_policy": "Managed device and approved downloads; export and print permissions need confirmation",
+      "purchasing": {
+        "authority": "May request school resources; cannot assume authority to buy connectivity or devices",
+        "willingness_to_pay": "Unknown; no price, personal willingness or institutional purchase commitment established"
+      },
       "baseline": "Printed school pack and hand-drawn diagrams",
-      "llm_use": "none",
-      "jev_use": "none",
-      "context": "Shared laptop, intermittent connection, one projector, 32 pupils.",
-      "strength": "A prepared paper pack works during an outage.",
-      "risk": "A session interruption can make a prepared lesson unusable.",
-      "decision_rule": "Return only if recovery preserves work and the lesson can be delivered with available devices."
+      "attitude": "Patient; plans around lesson readiness",
+      "focus": "Online preparation could be useful even when live interactive teaching is unavailable; an offline product route is unverified",
+      "uncertainties": [
+        "What must survive disconnection?",
+        "Would a printed reviewed lesson have value without interactive evidence?"
+      ]
     },
     {
       "id": "T04",
       "name": "Lina",
-      "role": "Frequent LLM user",
+      "profile_version": "2.0",
+      "protocol_version": "2.0",
+      "synthetic": true,
+      "role": "Teacher using approved LLM drafting",
       "scope": "core",
-      "background": "Grade 4 teacher who already uses a general language model for draft text.",
-      "personality": "Fast and experimental. Inspects mathematical claims and dislikes repeated prompting.",
-      "baseline": "Reusable prompt, general LLM draft, manual diagrams and answer review",
-      "llm_use": "frequent",
-      "jev_use": "none",
-      "context": "Personal laptop and classroom display, 24 pupils.",
-      "strength": "Already drafts text quickly. Must still check and format it.",
-      "risk": "Edu-Canvas can duplicate an already short drafting step.",
-      "decision_rule": "Return if review and follow-up improve beyond the existing LLM workflow."
+      "identity": {
+        "age_range": "30–34",
+        "gender": "woman",
+        "ethnicity": "Latina",
+        "migration": "Immigrated to the US as a teenager"
+      },
+      "school": {
+        "country": "United States",
+        "setting": "Urban charter",
+        "curriculum": "US Common Core assumed for this fictional school",
+        "grade": 4
+      },
+      "qualifications": {
+        "education_and_credential": "BA in elementary education; teaching credential assumed; credential jurisdiction unspecified",
+        "teaching_experience_years": 8
+      },
+      "workload": {
+        "responsibilities": "One Grade 4 class of 24; lesson preparation and family communication",
+        "planning_time": "School planning slots and limited home preparation around parenting responsibilities",
+        "caregiving": "Parent"
+      },
+      "resources": "School-managed laptop, classroom display and reliable school connection",
+      "languages": "English for instruction; Spanish and English for some family communication (authored separately from ethnicity)",
+      "access_needs": "No access need assigned; accommodation needs remain open",
+      "proficiency": {
+        "tool_skills": "Frequent LLM drafter with reusable prompts; checks mathematics and formats diagrams manually",
+        "mathematics_review": "Comfortable inspecting common equivalence claims; not assumed to catch every generated error",
+        "llm_use": "frequent",
+        "jev_use": "none"
+      },
+      "tool_policy": "Only institution-approved tools/accounts; no pupil-identifying data in prompts",
+      "purchasing": {
+        "authority": "No personal tool budget; institution must approve and fund any adoption",
+        "willingness_to_pay": "Unknown; no price, personal willingness or institutional purchase commitment established"
+      },
+      "baseline": "Approved general LLM, reusable prompt, manual diagrams and answer review",
+      "attitude": "Experimental within school policy; dislikes repeated prompting",
+      "focus": "An efficient existing workflow raises the comparison bar; usefulness cannot override tool policy or missing funding",
+      "uncertainties": [
+        "Is Edu-Canvas eligible for institutional approval?",
+        "Would a paid account be available to this classroom?"
+      ]
     },
     {
       "id": "T05",
       "name": "Owen",
-      "role": "Mathematics reviewer",
+      "profile_version": "2.0",
+      "protocol_version": "2.0",
+      "synthetic": true,
+      "role": "Department mathematics reviewer",
       "scope": "core",
-      "background": "Grade 4 mathematics lead with responsibility for reviewing colleagues materials.",
-      "personality": "Precise and analytical. Tries an incorrect answer before accepting feedback.",
-      "baseline": "School fraction task bank plus occasional LLM rewording",
-      "llm_use": "occasional",
-      "jev_use": "none",
-      "context": "Laptop, projector, stable connection, 26 pupils.",
-      "strength": "Can detect unequal-whole diagrams and unjustified feedback.",
-      "risk": "High review standards can make even a plausible draft expensive.",
-      "decision_rule": "Reject any unresolved mathematics error regardless of time saved."
+      "identity": {
+        "age_range": "40–44",
+        "gender": "man",
+        "ethnicity": "Black",
+        "migration": "US-born"
+      },
+      "school": {
+        "country": "United States",
+        "setting": "Suburban public",
+        "curriculum": "US Common Core assumed for this fictional school",
+        "grade": 4
+      },
+      "qualifications": {
+        "education_and_credential": "BA in elementary education and postgraduate mathematics education qualification; license assumed",
+        "teaching_experience_years": 16
+      },
+      "workload": {
+        "responsibilities": "One Grade 4 class of 26 plus review of shared department materials",
+        "planning_time": "Planning periods split between his class and colleague review; home availability varies with parenting",
+        "caregiving": "Parent"
+      },
+      "resources": "Laptop, projector, stable connection and shared department task bank",
+      "languages": "English for planning and teaching; other languages unassigned",
+      "access_needs": "No access need assigned; accommodation needs remain open",
+      "proficiency": {
+        "tool_skills": "Proficient with shared documents; occasional LLM rewording; no Jev workflow assigned",
+        "mathematics_review": "Practiced at checking equal wholes and incorrect-answer feedback; expertise does not guarantee detection",
+        "llm_use": "occasional",
+        "jev_use": "none"
+      },
+      "tool_policy": "Department review required before shared materials are distributed",
+      "purchasing": {
+        "authority": "Can recommend departmental materials; procurement approval belongs elsewhere",
+        "willingness_to_pay": "Unknown; no price, personal willingness or institutional purchase commitment established"
+      },
+      "baseline": "School fraction task bank plus occasional approved LLM rewording",
+      "attitude": "Analytical; tries incorrect answers while reviewing",
+      "focus": "A correction to a shared item may affect several teachers and dependent feedback; version ownership matters",
+      "uncertainties": [
+        "Who must reapprove a changed shared resource?",
+        "Which dependencies are actually reviewed?"
+      ]
     },
     {
       "id": "T06",
       "name": "Iris",
-      "role": "Keyboard-first teacher",
+      "profile_version": "2.0",
+      "protocol_version": "2.0",
+      "synthetic": true,
+      "role": "Teacher using keyboard and zoom",
       "scope": "core",
-      "background": "Grade 4 teacher who uses keyboard navigation and enlarged text.",
-      "personality": "Methodical and independent. Describes the exact step where a control becomes unusable.",
-      "baseline": "Accessible document template plus occasional LLM draft",
-      "llm_use": "occasional",
-      "jev_use": "none",
-      "context": "Laptop with enlarged text and keyboard navigation, 22 pupils.",
-      "strength": "Has a known usable document workflow.",
-      "risk": "A control may prevent review or approval even when the draft is correct.",
-      "decision_rule": "Return only if the complete teacher flow is usable with the stated controls."
+      "identity": {
+        "age_range": "35–39",
+        "gender": "nonbinary",
+        "ethnicity": "White",
+        "migration": "US-born"
+      },
+      "school": {
+        "country": "United States",
+        "setting": "Suburban public",
+        "curriculum": "US Common Core assumed for this fictional school",
+        "grade": 4
+      },
+      "qualifications": {
+        "education_and_credential": "BA in elementary education; elementary teaching license assumed",
+        "teaching_experience_years": 10
+      },
+      "workload": {
+        "responsibilities": "One Grade 4 class of 22; generalist teaching and accessible-material preparation",
+        "planning_time": "School planning periods; review may require enlarged layouts and sequential keyboard inspection",
+        "caregiving": "None assigned"
+      },
+      "resources": "Laptop with browser zoom and keyboard navigation; accessible document templates and reliable connection",
+      "languages": "English for planning and teaching; other languages unassigned",
+      "access_needs": "Low vision; keyboard access, enlarged text, visible focus and usable reflow required; screen-reader use not assigned",
+      "proficiency": {
+        "tool_skills": "Proficient with keyboard-based documents and zoom; occasional LLM drafting",
+        "mathematics_review": "Experienced in fraction instruction; draft correctness still needs independent review",
+        "llm_use": "occasional",
+        "jev_use": "none"
+      },
+      "tool_policy": "School-approved accessible tools; assistance must not replace independent access without being recorded",
+      "purchasing": {
+        "authority": "Can request accessible software; accommodation and procurement owners unconfirmed",
+        "willingness_to_pay": "Unknown; no price, personal willingness or institutional purchase commitment established"
+      },
+      "baseline": "Accessible document template plus occasional approved LLM draft",
+      "attitude": "Methodical; describes where navigation becomes difficult",
+      "focus": "Review may fail at focus order, contrast, reflow or an unreachable branch; keyboard and zoom do not establish screen-reader access",
+      "uncertainties": [
+        "Can Iris inspect every feedback branch independently at the preferred zoom?",
+        "Which access failures require another route?"
+      ]
     },
     {
       "id": "T07",
       "name": "Elena",
-      "role": "Curriculum coordinator",
+      "profile_version": "2.0",
+      "protocol_version": "2.0",
+      "synthetic": true,
+      "role": "Teacher and curriculum coordinator",
       "scope": "core",
-      "background": "Grade 4 teacher and curriculum coordinator in a school assumed to have a standards tool.",
-      "personality": "Organized and source-focused. Separates standard matching from lesson quality.",
-      "baseline": "School task bank and assumed Jev objective-to-standard matching",
-      "llm_use": "none",
-      "jev_use": "hypothetical",
-      "context": "Managed laptop and reliable network, 27 pupils.",
-      "strength": "Can confirm a standard manually using its authoritative description.",
-      "risk": "A confident match can distract from a missing instructional requirement.",
-      "decision_rule": "Return if sources and review reduce work; never treat confidence as correctness."
+      "identity": {
+        "age_range": "45–49",
+        "gender": "woman",
+        "ethnicity": "Latina",
+        "migration": "Immigrated to the US as an adult"
+      },
+      "school": {
+        "country": "United States",
+        "setting": "Urban public",
+        "curriculum": "US Common Core assumed for this fictional school",
+        "grade": 4
+      },
+      "qualifications": {
+        "education_and_credential": "Education degree, US teaching credential and curriculum leadership training assumed; recognition route unspecified",
+        "teaching_experience_years": 20
+      },
+      "workload": {
+        "responsibilities": "One Grade 4 class of 27 plus curriculum coordination and source review",
+        "planning_time": "Planning shared with coordination meetings; eldercare can limit after-school follow-up",
+        "caregiving": "Eldercare"
+      },
+      "resources": "Managed laptop, reliable connection and district materials; standards tool access hypothetical",
+      "languages": "English for instruction; Spanish and English for selected curriculum/family tasks (authored assignment)",
+      "access_needs": "No access need assigned; accommodation needs remain open",
+      "proficiency": {
+        "tool_skills": "Proficient at standards lookup and source review; no LLM drafting assigned; Jev workflow hypothetical",
+        "mathematics_review": "Can compare standard wording manually; match confidence does not establish lesson quality",
+        "llm_use": "none",
+        "jev_use": "hypothetical"
+      },
+      "tool_policy": "District-approved tools and source licensing must be checked",
+      "purchasing": {
+        "authority": "Recommends and advises; district purchases and approves contracts",
+        "willingness_to_pay": "Unknown; no price, personal willingness or institutional purchase commitment established"
+      },
+      "baseline": "School task bank; optional hypothetical Jev objective-to-standard matching",
+      "attitude": "Organized; asks for source context",
+      "focus": "Recommendation authority is distinct from purchase authority; manual confirmation adds work but may clarify alignment",
+      "uncertainties": [
+        "Who evaluates a recommendation and signs the contract?",
+        "What source context changes her instructional choice?"
+      ]
     },
     {
       "id": "T08",
       "name": "Sam",
-      "role": "Teacher with shared devices",
+      "profile_version": "2.0",
+      "protocol_version": "2.0",
+      "synthetic": true,
+      "role": "Teacher organizing shared-device groups",
       "scope": "core",
-      "background": "Grade 4 teacher responsible for rotating small groups across a few devices.",
-      "personality": "Practical and calm. Plans around transitions and setup time.",
-      "baseline": "Printed station tasks and an assumed Jev match inside school planning software",
-      "llm_use": "none",
-      "jev_use": "hypothetical",
-      "context": "Six shared tablets, teacher laptop, 30 pupils.",
-      "strength": "Existing station routine is predictable.",
-      "risk": "Device handoffs and interpreting group results can exceed drafting savings.",
-      "decision_rule": "Return only if setup and follow-up fit the existing group routine."
+      "identity": {
+        "age_range": "30–34",
+        "gender": "man",
+        "ethnicity": "White",
+        "migration": "US-born"
+      },
+      "school": {
+        "country": "United States",
+        "setting": "Urban public",
+        "curriculum": "US Common Core assumed for this fictional school",
+        "grade": 4
+      },
+      "qualifications": {
+        "education_and_credential": "BA in elementary education; elementary teaching license assumed",
+        "teaching_experience_years": 7
+      },
+      "workload": {
+        "responsibilities": "One Grade 4 class of 30; rotating groups and device handoffs",
+        "planning_time": "Planning periods split between station setup and feedback; home preparation constrained by parenting",
+        "caregiving": "Parent"
+      },
+      "resources": "Six shared tablets, teacher laptop, reliable preparation connection and printed station tasks",
+      "languages": "English for planning and teaching; other languages unassigned",
+      "access_needs": "No personal access need assigned; shared devices require clear session and learner attribution",
+      "proficiency": {
+        "tool_skills": "Proficient at station routines and device rotation; no LLM drafting assigned; Jev matching hypothetical",
+        "mathematics_review": "Checks group discussions against individual work; a group answer cannot establish individual understanding",
+        "llm_use": "none",
+        "jev_use": "hypothetical"
+      },
+      "tool_policy": "Managed shared devices; session access and data handling need school approval",
+      "purchasing": {
+        "authority": "Can request device allocation; software purchasing authority unconfirmed",
+        "willingness_to_pay": "Unknown; no price, personal willingness or institutional purchase commitment established"
+      },
+      "baseline": "Printed stations; optional hypothetical Jev matching in planning software",
+      "attitude": "Practical; tracks handoffs and transitions",
+      "focus": "Shared-device responses need individual/group attribution and help context before informing a teaching decision",
+      "uncertainties": [
+        "How is an individual response distinguished from a group submission?",
+        "Who resets access between groups?"
+      ]
     },
     {
       "id": "T09",
       "name": "Noor",
+      "profile_version": "2.0",
+      "protocol_version": "2.0",
+      "synthetic": true,
       "role": "Intervention specialist",
       "scope": "core",
-      "background": "Grade 4 fractions intervention teacher working with short, supervised groups.",
-      "personality": "Patient and diagnostic. Requests the actual response before choosing another activity.",
-      "baseline": "Reviewed intervention cards and assumed Jev objective matching",
-      "llm_use": "none",
-      "jev_use": "hypothetical",
-      "context": "Laptop, projector, groups of six, stable connection.",
-      "strength": "Can distinguish hints used from a first independent response.",
-      "risk": "A single wrong response can lead to an unjustified next step.",
-      "decision_rule": "Return if teacher control and response context help select the next task."
+      "identity": {
+        "age_range": "40–44",
+        "gender": "woman",
+        "ethnicity": "Arab American",
+        "migration": "US-born"
+      },
+      "school": {
+        "country": "United States",
+        "setting": "Urban public",
+        "curriculum": "US Common Core assumed for this fictional school",
+        "grade": 4
+      },
+      "qualifications": {
+        "education_and_credential": "BA in elementary education and intervention training; elementary teaching license assumed",
+        "teaching_experience_years": 15
+      },
+      "workload": {
+        "responsibilities": "Several short Grade 4 intervention groups of six; coordination with class teachers",
+        "planning_time": "Brief preparation between groups; review and eldercare compete for after-school availability",
+        "caregiving": "Eldercare"
+      },
+      "resources": "Laptop, projector, stable connection and reviewed intervention cards",
+      "languages": "English for planning and teaching; other language proficiency unassigned",
+      "access_needs": "No personal access need assigned; learner access needs require separate screening",
+      "proficiency": {
+        "tool_skills": "Proficient with response records and intervention materials; no LLM drafting assigned; Jev matching hypothetical",
+        "mathematics_review": "Attends to uneven maths prerequisites; can distinguish first independent responses from supported retries without diagnosing from one answer",
+        "llm_use": "none",
+        "jev_use": "hypothetical"
+      },
+      "tool_policy": "School-approved intervention resources; synthetic records only in this pack",
+      "purchasing": {
+        "authority": "Can recommend intervention resources; purchase decision and budget unknown",
+        "willingness_to_pay": "Unknown; no price, personal willingness or institutional purchase commitment established"
+      },
+      "baseline": "Reviewed intervention cards; optional hypothetical Jev objective matching",
+      "attitude": "Patient; asks what support preceded the response",
+      "focus": "Missing source prerequisites and missing learner knowledge are different uncertainties; neither licenses an automatic diagnosis",
+      "uncertainties": [
+        "Which prerequisite evidence changes the next check?",
+        "How does she distinguish missing evidence from absent skill?"
+      ]
     },
     {
       "id": "T10",
       "name": "Alex",
-      "role": "School technology champion",
+      "profile_version": "2.0",
+      "protocol_version": "2.0",
+      "synthetic": true,
+      "role": "Teacher supporting school technology",
       "scope": "core",
-      "background": "Grade 4 teacher who helps colleagues with new software and already drafts with an LLM.",
-      "personality": "Optimistic but busy. Offers positive feedback before deciding whether to use a tool again.",
-      "baseline": "LLM prompts, reusable materials, and assumed Jev standard matching",
-      "llm_use": "frequent",
-      "jev_use": "hypothetical",
-      "context": "Managed laptop, reliable network, 29 pupils.",
-      "strength": "Comfortable with multiple tools. Training duties consume available time.",
-      "risk": "Stated enthusiasm can differ from week-two behavior.",
-      "decision_rule": "Return depends on another real preparation slot, not on a positive interview answer."
+      "identity": {
+        "age_range": "35–39",
+        "gender": "nonbinary",
+        "ethnicity": "Asian American",
+        "migration": "US-born"
+      },
+      "school": {
+        "country": "United States",
+        "setting": "Suburban public",
+        "curriculum": "US Common Core assumed for this fictional school",
+        "grade": 4
+      },
+      "qualifications": {
+        "education_and_credential": "BA in elementary education and school technology training; elementary teaching license assumed",
+        "teaching_experience_years": 12
+      },
+      "workload": {
+        "responsibilities": "One Grade 4 class of 29 plus colleague training and troubleshooting",
+        "planning_time": "Limited preparation slots shared with technology support and parenting; a later choice requires a genuine opportunity",
+        "caregiving": "Parent"
+      },
+      "resources": "Managed laptop, reliable connection and reusable materials; standards tool access hypothetical",
+      "languages": "English for planning and teaching; other languages unassigned",
+      "access_needs": "No access need assigned; accommodation needs remain open",
+      "proficiency": {
+        "tool_skills": "Frequent LLM user and confident software troubleshooter; Jev workflow hypothetical",
+        "mathematics_review": "Comfortable comparing prompts and materials; technology fluency does not establish mathematical review accuracy",
+        "llm_use": "frequent",
+        "jev_use": "hypothetical"
+      },
+      "tool_policy": "Uses approved accounts; enthusiasm does not bypass school adoption requirements",
+      "purchasing": {
+        "authority": "Can recommend and train colleagues; no contract-signing authority assigned",
+        "willingness_to_pay": "Unknown; no price, personal willingness or institutional purchase commitment established"
+      },
+      "baseline": "Approved LLM prompts and reusable materials; optional hypothetical Jev matching",
+      "attitude": "Optimistic about experiments; weighs competing duties",
+      "focus": "A limited preparation slot permits a genuine choice among methods; praise, nonattendance and rejection are distinct",
+      "uncertainties": [
+        "Was there an eligible preparation task and a free choice?",
+        "What would Alex use in the next available slot?"
+      ]
     },
     {
       "id": "T11",
       "name": "Hana",
-      "role": "Arabic-output boundary case",
+      "profile_version": "2.0",
+      "protocol_version": "2.0",
+      "synthetic": true,
+      "role": "Arabic-output boundary role",
       "scope": "boundary",
-      "background": "Grade 4 teacher whose proposed lesson requires Arabic output in an Arabic-medium setting.",
-      "personality": "Careful about meaning. Refuses to treat an English-only output as an equivalent lesson.",
-      "baseline": "Arabic school materials, general LLM drafting, assumed Jev candidate matching",
-      "llm_use": "occasional",
-      "jev_use": "hypothetical",
-      "context": "Laptop and projector, 25 pupils.",
-      "strength": "Can inspect Arabic instructional wording in existing materials.",
-      "risk": "The English-only study offer does not meet the requested language.",
-      "decision_rule": "Decline the current offer unless the task is explicitly changed. Report separately from core teachers."
+      "identity": {
+        "age_range": "30–34",
+        "gender": "woman",
+        "ethnicity": "Arab American",
+        "migration": "Immigrated to the US as an adult"
+      },
+      "school": {
+        "country": "United States",
+        "setting": "Public dual-language",
+        "curriculum": "US Common Core assumed for this fictional school",
+        "grade": 4
+      },
+      "qualifications": {
+        "education_and_credential": "Education degree and bilingual teaching credential assumed; credential recognition route unspecified",
+        "teaching_experience_years": 7
+      },
+      "workload": {
+        "responsibilities": "One Grade 4 dual-language class of 25; prepares Arabic and English materials",
+        "planning_time": "School planning periods include bilingual wording review and coordination",
+        "caregiving": "None assigned"
+      },
+      "resources": "Laptop, projector, reliable preparation connection and bilingual school materials",
+      "languages": "Arabic and English for teaching; this task specifically requires Arabic instructions and feedback",
+      "access_needs": "Arabic output, RTL reading order and appropriate maths notation required for this task; personal access needs unassigned",
+      "proficiency": {
+        "tool_skills": "Occasional LLM drafting with manual Arabic review; Jev matching hypothetical",
+        "mathematics_review": "Can review Arabic instructional wording; no assumption of perfect mathematical or translation accuracy",
+        "llm_use": "occasional",
+        "jev_use": "hypothetical"
+      },
+      "tool_policy": "Approved bilingual materials and tools only; English substitution requires a separately agreed task",
+      "purchasing": {
+        "authority": "Can recommend bilingual materials; purchasing authority and budget unknown",
+        "willingness_to_pay": "Unknown; no price, personal willingness or institutional purchase commitment established"
+      },
+      "baseline": "Arabic school materials and approved LLM drafting; optional hypothetical Jev matching",
+      "attitude": "Careful about meaning; explains language requirements",
+      "focus": "Arabic output remains outside the English study offer even if the mathematics objective matches",
+      "uncertainties": [
+        "How should the rejection explain the language boundary?",
+        "What would a separately authorized Arabic study require?"
+      ]
     },
     {
       "id": "T12",
       "name": "Victor",
-      "role": "Adjacent-grade boundary case",
+      "profile_version": "2.0",
+      "protocol_version": "2.0",
+      "synthetic": true,
+      "role": "Grade 5 multiplication boundary role",
       "scope": "boundary",
-      "background": "Grade 5 teacher requesting fraction multiplication rather than Grade 4 fraction equivalence.",
-      "personality": "Efficient and inquisitive. Wants a direct explanation of unsupported requests.",
-      "baseline": "Reusable Grade 5 tasks, LLM drafting, and assumed Jev candidate matching",
-      "llm_use": "frequent",
-      "jev_use": "hypothetical",
-      "context": "Laptop and shared tablets, 26 pupils.",
-      "strength": "Existing material covers the actual Grade 5 task.",
-      "risk": "A high-confidence match must not turn an unsupported objective into an accepted one.",
-      "decision_rule": "Reject silent substitution of an equivalence lesson. Report separately from the core group."
+      "identity": {
+        "age_range": "50–54",
+        "gender": "man",
+        "ethnicity": "Multiracial",
+        "migration": "US-born"
+      },
+      "school": {
+        "country": "United States",
+        "setting": "Rural private",
+        "curriculum": "US Common Core assumed for this fictional school",
+        "grade": 5
+      },
+      "qualifications": {
+        "education_and_credential": "BA in education and elementary teaching credential assumed; private-school credential policy unspecified",
+        "teaching_experience_years": 25
+      },
+      "workload": {
+        "responsibilities": "One Grade 5 class of 26; mathematics planning and assessment",
+        "planning_time": "School planning periods with established reusable Grade 5 tasks",
+        "caregiving": "None assigned"
+      },
+      "resources": "Laptop, shared tablets, reliable preparation connection and school task bank",
+      "languages": "English for planning and teaching; other languages unassigned",
+      "access_needs": "No access need assigned; accommodation needs remain open",
+      "proficiency": {
+        "tool_skills": "Frequent LLM drafting and document reuse; Jev candidate matching hypothetical",
+        "mathematics_review": "Experienced with Grade 5 fraction multiplication; confidence in a match cannot change the supported scope",
+        "llm_use": "frequent",
+        "jev_use": "hypothetical"
+      },
+      "tool_policy": "School selects its materials; new tool approval and data policy need confirmation",
+      "purchasing": {
+        "authority": "May recommend tools; school purchasing process and budget unknown",
+        "willingness_to_pay": "Unknown; no price, personal willingness or institutional purchase commitment established"
+      },
+      "baseline": "Reusable Grade 5 tasks and approved LLM drafting; optional hypothetical Jev candidate matching",
+      "attitude": "Inquisitive; asks for a clear scope explanation",
+      "focus": "Grade 5 fraction multiplication (5.NF.B.4) remains unsupported; a confident candidate must not substitute Grade 4 equivalence",
+      "uncertainties": [
+        "Does the rejection preserve the actual objective?",
+        "What fallback is useful without pretending to support multiplication?"
+      ]
     }
   ]
 }
