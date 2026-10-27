@@ -472,6 +472,7 @@ const TeacherLessonComposer = ({ standardId }: LessonComposerProperties) => {
     setIsGenerating(true);
     setRequestError(null);
 
+    // Browser crypto has no UUIDv7, and this key needs uniqueness only.
     const idempotencyKey = retryOfRequestId
       ? crypto.randomUUID()
       : requestKeyReference.current || crypto.randomUUID();
