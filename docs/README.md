@@ -31,12 +31,13 @@ Edu-Canvas is a production product; these documents define and verify one trustw
 | [Release runbook](release-fly-supabase.md) | Deployment procedure, access and usage limits, and the production requirements list |
 | [Architecture harness](architecture-harness.md) | Guardrails for state ownership, layer imports, contract drift, and dependency boundaries |
 | [Observed behaviour](observed-behaviour.md) | Evidence boundary, job stories, and the research plan |
-| [Threat model](security/threat-model.md) | STRIDE pass and open security questions |
+| [Threat model](security/threat-model.md) | STRIDE pass against the implemented paths, with linked residual owners |
 | [Decision records](agdr/) | Architecture decisions AgDR-0001–0008 |
 | GitHub issues and Projects | Work ownership, dependencies, priority, lifecycle state, and delivery evidence |
 
 ## Change log
 
+- 2026-10-27 (security): the [threat model](security/threat-model.md) was refreshed against the implemented generation, A2UI/SSE preview, tenant-scoping, and synthetic-data paths. Controls cite source paths; residual rows link to their owners where a follow-up exists, including the new follow-ups [#130](https://github.com/abodacs/edu-canvas/issues/130), [#131](https://github.com/abodacs/edu-canvas/issues/131), and [#132](https://github.com/abodacs/edu-canvas/issues/132) ([#73](https://github.com/abodacs/edu-canvas/issues/73)).
 - 2026-10-26 (alignment): north-star docs name the post-draft loop against free teacher copilots; dated method, triage, and hackathon-2026 import records moved to [archive/](archive/README.md) ([#96](https://github.com/abodacs/edu-canvas/issues/96)).
 - 2026-10-25 (architecture): root [ARCHITECTURE.md](../ARCHITECTURE.md) and its [rationale](engineering/architecture-rationale.md) added. The architecture document owns the current system, folder ownership, runtime flows, and enforcement map; the design documents keep the target contracts.
 - 2026-10-25 (PR 02): ownership reconciled; conflicts from [#89](https://github.com/abodacs/edu-canvas/issues/89) fixed; the July 2026 OpenAI Build Week documents (`DEVPOST_WINNING_STRATEGY.md`, `PRD_GRILL_LOG.md`), the superseded video script, and the unverified idea-brainstorm archive were removed. Their still-valid decisions live in the [decision record](design/design-doc-questions.md) and [teacher UI decisions](product/teacher-ui.md).
