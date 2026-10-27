@@ -2,6 +2,8 @@
 
 **Status: IC1 path passes on the accepted diagnostic run.** One live Meta draft passed structural and semantic validation, persisted, projected safely, and rendered in the A2UI preview. The unsupported objective was rejected with no persisted artifact.
 
+**Related:** [deadline, idempotency, and ownership conformance (#105)](conformance-105.md) records the deterministic matrix for the same contract chain.
+
 **Issue:** [#115](https://github.com/abodacs/edu-canvas/issues/115). **Revision:** `bfbdf9b571773948dd396e681942994c1a0d013b` plus the timeout, prompt-context, schema, and claim-lease changes in the working tree. **Run window:** 2026-10-26 22:19:30 UTC to 22:41 UTC. About 20 focused minutes for this rerun.
 
 ## Environment
