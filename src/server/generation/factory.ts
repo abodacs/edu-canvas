@@ -21,5 +21,6 @@ export const createConfiguredLessonDraftProvider = (
     apiKey: config.openAiApiKey,
     model: config.openAiModel,
     baseUrl: config.openAiBaseUrl,
+    timeoutMs: config.openAiTimeoutMs,
   });
 };

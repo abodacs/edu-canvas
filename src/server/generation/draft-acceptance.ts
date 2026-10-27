@@ -106,6 +106,15 @@ const semanticValidationDiagnostics = (
     });
 };
 
+export const resolveCurriculumContext = (
+  input: NormalizedGenerationRequest,
+  options: DraftAcceptanceOptions
+): VersionedCurriculumContext | undefined => {
+  return options.curriculumContext
+    ? options.curriculumContext(input)
+    : createDemoCurriculumContext(input);
+};
+
 export const reviewDraftForAcceptance = async (
   {
     draft,
@@ -139,9 +148,7 @@ export const reviewDraftForAcceptance = async (
     };
   }
 
-  const context = options.curriculumContext
-    ? options.curriculumContext(input)
-    : createDemoCurriculumContext(input);
+  const context = resolveCurriculumContext(input, options);
   if (!context) {
     return {
       state: BLOCKED_BY_VALIDATION_STATE,

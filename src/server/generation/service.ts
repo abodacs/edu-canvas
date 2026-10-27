@@ -12,7 +12,10 @@ import { GenerationRequestError } from "./generation-request-error";
 import { toPublicGenerationResult } from "./projection";
 
 import { LessonProviderError, RATE_LIMIT_KIND } from "./provider";
-import { reviewDraftForAcceptance } from "./draft-acceptance";
+import {
+  resolveCurriculumContext,
+  reviewDraftForAcceptance,
+} from "./draft-acceptance";
 import { generationDuplicateWaitMs, isGenerationClaimExpired } from "./types";
 import { validateProviderDraft } from "./validation";
 import type { DraftAcceptanceOptions } from "./draft-acceptance";
@@ -30,6 +33,7 @@ import type {
 import type {
   LessonDraftProvider,
   NormalizedGenerationRequest,
+  ProviderGenerationContext,
 } from "./provider";
 import type { LessonDifficulty } from "@/shared/generation-contract";
 
@@ -119,7 +123,9 @@ export const normalizeGenerationInput = (
   }
 
   if (!supportedStandardIds.has(parsed.data.standardId)) {
-    throw new GenerationInputError();
+    throw new GenerationInputError(
+      "This learning objective is not supported. Use Grade 4 equivalent fractions (4.NF.A.1)."
+    );
   }
 
   const standardId =
@@ -245,6 +251,46 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     });
   const requestIdFactory =
     options.requestIdFactory ?? (() => `draft_req_${randomUUID()}`);
+
+  const buildProviderContext = (
+    input: NormalizedGenerationRequest,
+    isCorrectionAttempt: boolean,
+    diagnostics: GenerationDiagnostic[]
+  ): ProviderGenerationContext => {
+    const curriculum = resolveCurriculumContext(input, options);
+    const reference = {
+      id: demoSeed.activityVersion.id,
+      version: String(demoSeed.activityVersion.versionNumber),
+      graphVersion: demoSeed.activityVersion.graphVersion,
+      standardCode: demoSeed.standard.code,
+      source: demoSeed.activityVersion.publicContent.source,
+      targets: demoSeed.activityVersion.publicContent.targets,
+      prompt: demoSeed.activityVersion.publicContent.prompt,
+    };
+
+    return {
+      correctionAttempt: isCorrectionAttempt,
+      diagnostics,
+      referenceContext: reference,
+      ...(curriculum && {
+        curriculumContext: {
+          nodes: curriculum.nodes.map((node) => {
+            return {
+              id: node.id,
+              screenPurposeId: node.screenPurposeId,
+            };
+          }),
+          edges: curriculum.edges.map((edge) => {
+            return {
+              prerequisiteId: edge.prerequisiteId,
+              successorId: edge.successorId,
+            };
+          }),
+          targetNodeId: curriculum.targetNodeId,
+        },
+      }),
+    };
+  };
 
   const persistOwned = async (
     record: LessonGenerationRecord,
@@ -474,10 +520,10 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
 
     let firstResponse: Awaited<ReturnType<LessonDraftProvider["generate"]>>;
     try {
-      firstResponse = await options.provider.generate(input, {
-        correctionAttempt: false,
-        diagnostics: [],
-      });
+      firstResponse = await options.provider.generate(
+        input,
+        buildProviderContext(input, false, [])
+      );
     } catch (error) {
       return persistProviderFailure(record, error);
     }
@@ -528,10 +574,10 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
 
     let correctedResponse: Awaited<ReturnType<LessonDraftProvider["generate"]>>;
     try {
-      correctedResponse = await options.provider.generate(input, {
-        correctionAttempt: true,
-        diagnostics: correctionDiagnostics,
-      });
+      correctedResponse = await options.provider.generate(
+        input,
+        buildProviderContext(input, true, correctionDiagnostics)
+      );
     } catch (error) {
       return persistProviderFailure(record, error, correctionDiagnostics);
     }

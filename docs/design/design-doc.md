@@ -189,7 +189,7 @@ A service level objective, or SLO, is a measurable service target. These are pro
 | Measurement | Milestone target | Evidence |
 | --- | --- | --- |
 | Complete milestone loop | Under 180 seconds | Three consecutive rehearsals |
-| Live generation to complete preview | p95 at most 30 seconds | At least 20 sequential requests after source confirmation |
+| Live generation to complete preview | p95 at most 100 seconds for the event model; production target 30 seconds | At least 20 sequential requests after source confirmation |
 | Grounding and matching | Report separately | Duration, failures, and recovery results |
 | Milestone access | Protected URL works for reviewers | Independent access check and manual checks |
 | Public usage | Access and cost limits active | Rejection and quota checks |

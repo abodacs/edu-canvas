@@ -50,6 +50,7 @@ describe("foundation persistence boundary", () => {
       persistenceAdapter: "postgres",
       openAiModel: "gpt-5.6",
       openAiBaseUrl: "https://api.openai.com/v1",
+      openAiTimeoutMs: 100_000,
       issues: [],
     };
 

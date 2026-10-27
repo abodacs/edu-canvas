@@ -185,7 +185,7 @@ export interface GenerationWriteExpectation {
   updatedAt: string;
 }
 
-export const generationClaimLeaseMs = 30_000;
+export const generationClaimLeaseMs = 220_000;
 export const generationDuplicateWaitMs = 5000;
 
 export const isGenerationClaimExpired = (
