@@ -435,6 +435,7 @@ export const lessonGenerationAttempts = pgTable(
     tenantId: text("tenant_id").notNull(),
     attemptNumber: integer("attempt_number").notNull(),
     idempotencyKey: text("idempotency_key").notNull(),
+    requestHash: text("request_hash"),
     state: text().notNull(),
     correctionAttempted: boolean("correction_attempted")
       .default(false)

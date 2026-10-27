@@ -11,6 +11,7 @@ import {
   providerDraftSchema,
   validatedLearningPathSchema,
 } from "../generation/validation";
+import { createGenerationRequestHash } from "../generation/types";
 import type {
   GenerationAttemptRecord,
   GenerationDiagnostic,
@@ -75,6 +76,7 @@ export interface StoredGenerationRequestRow {
 export interface StoredGenerationAttemptRow {
   attemptNumber: number;
   idempotencyKey: string;
+  requestHash?: unknown;
   state: string;
   correctionAttempted: boolean;
   diagnostics: unknown;
@@ -168,6 +170,10 @@ export const hydrateGenerationRecord = (
       return {
         attemptNumber: attempt.attemptNumber,
         idempotencyKey: attempt.idempotencyKey,
+        requestHash:
+          typeof attempt.requestHash === "string"
+            ? attempt.requestHash
+            : createGenerationRequestHash(input),
         state: stateSchema.parse(attempt.state),
         correctionAttempted: attempt.correctionAttempted,
         diagnostics:

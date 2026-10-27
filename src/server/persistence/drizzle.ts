@@ -1,4 +1,4 @@
-import { and, asc, eq, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { serverObservability } from "../observability.server";
@@ -126,6 +126,57 @@ const generationMutableValues = (record: LessonGenerationRecord) => {
   };
 };
 
+const hydrateStoredGeneration = async (
+  transaction: DrizzleTransaction,
+  tenantId: string,
+  row: typeof lessonDraftRequests.$inferSelect
+): Promise<LessonGenerationRecord> => {
+  const attemptRows = await transaction
+    .select()
+    .from(lessonGenerationAttempts)
+    .where(
+      and(
+        eq(lessonGenerationAttempts.tenantId, tenantId),
+        eq(lessonGenerationAttempts.requestId, row.id)
+      )
+    )
+    .orderBy(asc(lessonGenerationAttempts.attemptNumber));
+
+  const storedRequest: StoredGenerationRequestRow = {
+    requestId: row.id,
+    tenantId: row.tenantId,
+    teacherId: row.teacherId,
+    prompt: row.prompt,
+    grade: row.grade,
+    standardId: row.standardId,
+    language: row.language,
+    difficulty: row.difficulty,
+    state: row.state,
+    attempt: row.attempt,
+    diagnostics: row.diagnostics,
+    draft: row.draft,
+    provenance: row.provenance,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+  const storedAttempts: StoredGenerationAttemptRow[] = attemptRows.map(
+    (attempt) => {
+      return {
+        attemptNumber: attempt.attemptNumber,
+        idempotencyKey: attempt.idempotencyKey,
+        requestHash: attempt.requestHash,
+        state: attempt.state,
+        correctionAttempted: attempt.correctionAttempted,
+        diagnostics: attempt.diagnostics,
+        provenance: attempt.provenance,
+        createdAt: attempt.createdAt,
+      };
+    }
+  );
+
+  return hydrateGenerationRecord(storedRequest, storedAttempts);
+};
+
 const readGenerationByQuery = (
   databaseUrl: string,
   tenantId: string,
@@ -167,54 +218,58 @@ const readGenerationByQuery = (
             )
           )
           .limit(1);
-        if (requests.length === 0) {
-          return undefined;
-        }
-        const [row] = requests;
+        return requests.length === 0
+          ? undefined
+          : hydrateStoredGeneration(transaction, tenantId, requests[0]);
+      }
+    );
+  });
+};
 
-        const attemptRows = await transaction
-          .select()
-          .from(lessonGenerationAttempts)
-          .where(
-            and(
-              eq(lessonGenerationAttempts.tenantId, tenantId),
-              eq(lessonGenerationAttempts.requestId, requestId)
-            )
-          )
-          .orderBy(asc(lessonGenerationAttempts.attemptNumber));
-
-        const storedRequest: StoredGenerationRequestRow = {
-          requestId: row.id,
-          tenantId: row.tenantId,
-          teacherId: row.teacherId,
-          prompt: row.prompt,
-          grade: row.grade,
-          standardId: row.standardId,
-          language: row.language,
-          difficulty: row.difficulty,
-          state: row.state,
-          attempt: row.attempt,
-          diagnostics: row.diagnostics,
-          draft: row.draft,
-          provenance: row.provenance,
-          createdAt: row.createdAt,
-          updatedAt: row.updatedAt,
-        };
-        const storedAttempts: StoredGenerationAttemptRow[] = attemptRows.map(
-          (attempt) => {
-            return {
-              attemptNumber: attempt.attemptNumber,
-              idempotencyKey: attempt.idempotencyKey,
-              state: attempt.state,
-              correctionAttempted: attempt.correctionAttempted,
-              diagnostics: attempt.diagnostics,
-              provenance: attempt.provenance,
-              createdAt: attempt.createdAt,
-            };
-          }
+const readModeratedGenerationByQuery = (
+  databaseUrl: string,
+  tenantId: string,
+  teacherId: string,
+  requestHash: string
+): Promise<LessonGenerationRecord | undefined> => {
+  return withDatabase(databaseUrl, (database) => {
+    return database.transaction(
+      async (transaction): Promise<LessonGenerationRecord | undefined> => {
+        await transaction.execute(
+          sql`select set_config('app.tenant_id', ${tenantId}, true)`
         );
 
-        return hydrateGenerationRecord(storedRequest, storedAttempts);
+        const requests = await transaction
+          .select()
+          .from(lessonDraftRequests)
+          .innerJoin(
+            lessonGenerationAttempts,
+            and(
+              eq(lessonGenerationAttempts.requestId, lessonDraftRequests.id),
+              eq(
+                lessonGenerationAttempts.tenantId,
+                lessonDraftRequests.tenantId
+              )
+            )
+          )
+          .where(
+            and(
+              eq(lessonDraftRequests.tenantId, tenantId),
+              eq(lessonDraftRequests.teacherId, teacherId),
+              eq(lessonDraftRequests.state, "blocked-by-moderation"),
+              eq(lessonGenerationAttempts.requestHash, requestHash)
+            )
+          )
+          .orderBy(desc(lessonDraftRequests.createdAt))
+          .limit(1);
+
+        return requests.length === 0
+          ? undefined
+          : hydrateStoredGeneration(
+              transaction,
+              tenantId,
+              requests[0].lesson_draft_requests
+            );
       }
     );
   });
@@ -255,6 +310,7 @@ const createDrizzleGenerationBackend = (
           tenantId: record.tenantId,
           attemptNumber: attempt.attemptNumber,
           idempotencyKey: attempt.idempotencyKey,
+          requestHash: attempt.requestHash,
           state: attempt.state,
           correctionAttempted: attempt.correctionAttempted,
           diagnostics: attempt.diagnostics,
@@ -370,7 +426,8 @@ const createDrizzleGenerationBackend = (
             eq(lessonDraftRequests.id, record.requestId),
             eq(lessonDraftRequests.state, "generating"),
             eq(lessonDraftRequests.attempt, expected.attempt),
-            eq(lessonDraftRequests.updatedAt, expected.updatedAt)
+            eq(lessonDraftRequests.updatedAt, expected.updatedAt),
+            sql`${lessonDraftRequests.updatedAt} > ${expected.leaseValidAfter}::timestamptz`
           )
         )
         .returning({ id: lessonDraftRequests.id });
@@ -386,6 +443,7 @@ const createDrizzleGenerationBackend = (
           tenantId: record.tenantId,
           attemptNumber: attempt.attemptNumber,
           idempotencyKey: attempt.idempotencyKey,
+          requestHash: attempt.requestHash,
           state: attempt.state,
           correctionAttempted: attempt.correctionAttempted,
           diagnostics: attempt.diagnostics,
@@ -398,6 +456,7 @@ const createDrizzleGenerationBackend = (
             lessonGenerationAttempts.attemptNumber,
           ],
           set: {
+            requestHash: attempt.requestHash,
             state: attempt.state,
             correctionAttempted: attempt.correctionAttempted,
             diagnostics: attempt.diagnostics,
@@ -408,6 +467,15 @@ const createDrizzleGenerationBackend = (
 
     findGenerationByIdempotencyKey: (tenantId, idempotencyKey) =>
       readGenerationByQuery(databaseUrl, tenantId, idempotencyKey),
+
+    findModeratedGeneration: (tenantId, teacherId, requestHash) => {
+      return readModeratedGenerationByQuery(
+        databaseUrl,
+        tenantId,
+        teacherId,
+        requestHash
+      );
+    },
 
     readGeneration: (tenantId, requestId) =>
       readGenerationByQuery(databaseUrl, tenantId, requestId, true),

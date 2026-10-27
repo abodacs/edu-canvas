@@ -64,6 +64,11 @@ export interface GenerationPersistenceBackend<TTransaction> {
     tenantId: string,
     idempotencyKey: string
   ) => Promise<LessonGenerationRecord | undefined>;
+  findModeratedGeneration: (
+    tenantId: string,
+    teacherId: string,
+    requestHash: string
+  ) => Promise<LessonGenerationRecord | undefined>;
   readGeneration: (
     tenantId: string,
     requestId: string
@@ -227,6 +232,9 @@ export const createGenerationPersistence = <TTransaction>(
 
     findGenerationByIdempotencyKey: (tenantId, idempotencyKey) =>
       backend.findGenerationByIdempotencyKey(tenantId, idempotencyKey),
+
+    findModeratedGeneration: (tenantId, teacherId, requestHash) =>
+      backend.findModeratedGeneration(tenantId, teacherId, requestHash),
 
     readGeneration: (tenantId, requestId) =>
       backend.readGeneration(tenantId, requestId),

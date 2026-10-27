@@ -153,6 +153,7 @@ export type GenerationState =
 export interface GenerationAttemptRecord {
   attemptNumber: number;
   idempotencyKey: string;
+  requestHash: string;
   state: GenerationState;
   correctionAttempted: boolean;
   diagnostics: GenerationDiagnostic[];
@@ -183,10 +184,52 @@ export interface GenerationClaim {
 export interface GenerationWriteExpectation {
   attempt: number;
   updatedAt: string;
+  /**
+   * The write must also prove that the claim lease is still active. The value
+   * is the oldest `updatedAt` that remains inside the lease; a stale owner
+   * cannot commit a write after this instant even when no replacement exists.
+   */
+  leaseValidAfter: string;
 }
 
+export const generationPerCallBudgetMs = 100_000;
+export const generationTotalBudgetMs = 200_000;
 export const generationClaimLeaseMs = 220_000;
 export const generationDuplicateWaitMs = 5000;
+
+export interface GenerationDeadlines {
+  perCallMs: number;
+  totalMs: number;
+  leaseMs: number;
+}
+
+export const defaultGenerationDeadlines: GenerationDeadlines = {
+  perCallMs: generationPerCallBudgetMs,
+  totalMs: generationTotalBudgetMs,
+  leaseMs: generationClaimLeaseMs,
+};
+
+/**
+ * Canonical hash of the normalized request metadata. The operation key reuses its original result only when this hash matches exactly.
+ */
+export const createGenerationRequestHash = (
+  input: NormalizedGenerationRequest
+): string => {
+  const canonical = JSON.stringify([
+    input.prompt,
+    input.grade,
+    input.standardId,
+    input.language,
+    input.difficulty,
+  ]);
+  let hash = 2_166_136_261;
+  for (const character of canonical) {
+    // eslint-disable-next-line no-bitwise -- FNV-1a mixing step.
+    hash ^= character.codePointAt(0) ?? 0;
+    hash = Math.imul(hash, 16_777_619);
+  }
+  return Math.abs(hash).toString(36);
+};
 
 export const isGenerationClaimExpired = (
   record: LessonGenerationRecord,
@@ -225,6 +268,11 @@ export interface GenerationPersistence {
   findGenerationByIdempotencyKey: (
     tenantId: string,
     idempotencyKey: string
+  ) => Promise<LessonGenerationRecord | undefined>;
+  findModeratedGeneration: (
+    tenantId: string,
+    teacherId: string,
+    requestHash: string
   ) => Promise<LessonGenerationRecord | undefined>;
   readGeneration: (
     tenantId: string,

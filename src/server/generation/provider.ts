@@ -53,6 +53,10 @@ export interface ProviderResponse {
   draft: unknown;
 }
 
+export interface ProviderCallOptions {
+  signal?: AbortSignal;
+}
+
 export type ProviderFailureKind =
   "timeout" | typeof RATE_LIMIT_KIND | "transient" | "terminal";
 
@@ -76,7 +80,8 @@ export interface LessonDraftProvider {
   readonly provenance: ProviderProvenance;
   generate: (
     request: NormalizedGenerationRequest,
-    context: ProviderGenerationContext
+    context: ProviderGenerationContext,
+    options?: ProviderCallOptions
   ) => Promise<ProviderResponse>;
 }
 
@@ -517,8 +522,12 @@ export const createOpenAILessonDraftProvider = (
 
   return {
     provenance,
-    async generate(request, context) {
+    async generate(request, context, callOptions) {
       const timeoutMs = options.timeoutMs ?? defaultProviderTimeoutMs;
+      const timeoutSignal = AbortSignal.timeout(timeoutMs);
+      const signal = callOptions?.signal
+        ? AbortSignal.any([callOptions.signal, timeoutSignal])
+        : timeoutSignal;
       let response: Response;
       try {
         response = await fetchImplementation(
@@ -541,7 +550,7 @@ export const createOpenAILessonDraftProvider = (
                 },
               },
             }),
-            signal: AbortSignal.timeout(timeoutMs),
+            signal,
           }
         );
       } catch {
