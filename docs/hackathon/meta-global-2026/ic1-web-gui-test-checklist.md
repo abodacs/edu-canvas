@@ -1,5 +1,7 @@
 # IC1 web GUI test checklist
 
+**Superseded 2026-10-27:** the deadline contract is now 100 s per call, 200 s total, and a 220 s lease. [#105](https://github.com/abodacs/edu-canvas/issues/105) landed as PR #128. The Gate 0 and Gate 5 rows below record the pre-run state on 2026-10-26 and are historical.
+
 **Issue:** [#115](https://github.com/abodacs/edu-canvas/issues/115). **Guard:** [#117](https://github.com/abodacs/edu-canvas/issues/117). **Failure contract:** [#105](https://github.com/abodacs/edu-canvas/issues/105). **Candidate revision:** `bfbdf9b571773948dd396e681942994c1a0d013b` (branch `refactor/generation-acceptance-and-rendering`). Record the SHA again at run time; do not test a dirty tree. **Clock:** five focused hours. Record start, finish, elapsed, and the fallback trigger.
 
 ## What this test is
