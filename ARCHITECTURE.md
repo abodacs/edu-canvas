@@ -113,7 +113,7 @@ Contexts are derived from the teaching loop's verbs — draft → validate → p
 | Identity & Tenancy | Supporting | Sessions, roles, capabilities, tenant membership | `src/server/demo/policy.ts`; [#98](https://github.com/abodacs/edu-canvas/issues/98), [#99](https://github.com/abodacs/edu-canvas/issues/99) |
 | A2UI Protocol | Supporting | Catalog governance, message schemas, compiler and renderer conformance | [a2ui-contract.ts](src/shared/a2ui-contract.ts); [AgDR-0001](docs/agdr/AgDR-0001-a2ui-catalog-governance.md) |
 | Shared contracts | Published language | Browser-safe input and output schemas | `src/shared/` |
-| Platform | Generic | Persistence adapters, configuration, observability, health, UI primitives | `src/server/persistence*`, `config.ts`, `observability.server.ts`, `src/lib/`, `src/components/ui/` |
+| Platform | Generic | Persistence adapters, configuration, observability, health, identifier minting, UI primitives | `src/server/persistence*`, `config.ts`, `observability.server.ts`, `ids.ts`, `src/lib/`, `src/components/ui/` |
 
 ```mermaid
 flowchart TB

@@ -1,9 +1,9 @@
-import { randomUUID } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
 
 import { lessonGenerationInputSchema } from "@/shared/generation-contract";
 
 import { assertTenantAccess, canAccess } from "@/server/demo/policy";
+import { createId } from "@/server/ids";
 import { demoSeed } from "@/server/seed-data";
 
 import { GenerationInputError } from "./generation-input-error";
@@ -389,8 +389,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       const date = new Date(clock());
       return date.toISOString();
     });
-  const requestIdFactory =
-    options.requestIdFactory ?? (() => `draft_req_${randomUUID()}`);
+  const requestIdFactory = options.requestIdFactory ?? (() => createId());
   const inFlightCalls = new Map<string, AbortController>();
 
   const writeExpectation = (
