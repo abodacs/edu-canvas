@@ -102,6 +102,8 @@ Readiness must report `status: "ready"`, `config.persistence: "postgres"`, and n
 
 The [implementation contracts](design/design-doc-implementation.md#apply-access-limits-and-safe-release-changes) define the limits; the deployment must have them active. Verify each before giving the URL to anyone:
 
+**Status 2026-10-27:** the current build implements none of these limits or the invitation sessions. The [threat model](security/threat-model.md) records them as open, and [#74](https://github.com/abodacs/edu-canvas/issues/74) owns the protected session and cost guard. Do not open a public URL until they land.
+
 - Database-backed generation quotas in Postgres: at most 10 generation attempts per teacher per hour and 100 per tenant per day. Corrections count against the provider-call budget; all generation stops at 200 provider calls per tenant per day.
 - Process-local burst limits: at most 30 authoring requests per session per minute and at most one active generation per teacher. Rejected requests receive a stated retry interval (`RATE_LIMITED`, HTTP 429).
 - Separate teacher and learner invitation credentials exchanged for signed, HttpOnly, Secure, SameSite session cookies; no invitation credential in client bundles or repository files.
