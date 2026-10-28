@@ -18,6 +18,16 @@ jobs:
       DATABASE_URL: postgresql://edu_canvas:edu_canvas_dev@127.0.0.1:5432/edu_canvas
       # Test-only value: smoke covers deterministic generation and never calls OpenAI.
       OPENAI_API_KEY: ci-test-key
+      # Test-only authentication configuration. Preview must use the hosted
+      # provider and fails closed without these values, so CI supplies
+      # synthetic ones rather than falling back to the local provider.
+      AUTH_PROVIDER: supabase
+      AUTH_PUBLIC_ORIGIN: http://127.0.0.1:3000
+      AUTH_SESSION_SECRET: ci-only-session-secret-that-is-long-enough
+      AUTH_CREDENTIAL_KEY: ZWR1LWNhbnZhcy1jaS1rZXktMDAwMDAwMDAwMDAwMDA=
+      SUPABASE_URL: https://synthetic-project.supabase.co
+      SUPABASE_ANON_KEY: synthetic-anon-key
+      SUPABASE_SERVICE_ROLE_KEY: synthetic-service-role-key
     services:
       postgres:
         image: postgres:17-alpine
@@ -89,6 +99,13 @@ jobs:
             --env SYNTHETIC_DATA_ONLY=true \
             --env OPENAI_API_KEY=ci-test-key \
             --env DATABASE_URL=postgresql://edu_canvas:edu_canvas_dev@host.docker.internal:5432/edu_canvas \
+            --env AUTH_PROVIDER=supabase \
+            --env AUTH_PUBLIC_ORIGIN=http://127.0.0.1:3010 \
+            --env AUTH_SESSION_SECRET=ci-only-session-secret-that-is-long-enough \
+            --env AUTH_CREDENTIAL_KEY=ZWR1LWNhbnZhcy1jaS1rZXktMDAwMDAwMDAwMDAwMDA= \
+            --env SUPABASE_URL=https://synthetic-project.supabase.co \
+            --env SUPABASE_ANON_KEY=synthetic-anon-key \
+            --env SUPABASE_SERVICE_ROLE_KEY=synthetic-service-role-key \
             edu-canvas:ci
           cleanup() {
             docker rm -f edu-canvas-ci >/dev/null 2>&1 || true
