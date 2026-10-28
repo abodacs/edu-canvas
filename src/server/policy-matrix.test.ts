@@ -67,6 +67,9 @@ import type { SessionProjection } from "@/shared/identity-contract";
 vi.stubEnv("DATABASE_URL", "");
 vi.stubEnv("APP_ENV", "development");
 vi.stubEnv("DEMO_MODE", "true");
+// CI sets AUTH_PROVIDER=supabase for the preview-shaped smoke job. The seams read
+// process.env, so without this pin the synthetic sessions never resolve here.
+vi.stubEnv("AUTH_PROVIDER", "deterministic");
 
 const testEnvironment = { APP_ENV: "development", DEMO_MODE: "true" };
 const password = "synthetic-pass-1";
