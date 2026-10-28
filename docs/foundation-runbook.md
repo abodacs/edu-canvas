@@ -72,11 +72,13 @@ pnpm db:migrate
 pnpm db:seed
 ```
 
-`pnpm db:migrate` applies `drizzle/` migrations in journal order and records each file hash in `drizzle.__edu_canvas_drizzle_migrations`. `drizzle/schema.ts` is the source of truth: change it, run `pnpm db:generate`, and commit the SQL plus `drizzle/meta/`. Use `pnpm exec drizzle-kit generate --custom --name <name>` only for what the snapshot cannot express: forced row-level security, triggers, and functions. Migrations are forward-only: do not edit an applied file or reorder the journal. The runner fails on an edited or out-of-order migration instead of skipping it.
+`pnpm db:migrate` applies `drizzle/` migrations in journal order and records each file hash in `drizzle.__edu_canvas_drizzle_migrations`. The runner rejects an edited or out-of-order migration instead of skipping it. Schema changes start in `drizzle/schema.ts`; the rules live in [drizzle/README.md](../drizzle/README.md).
+
+A database created by the pre-Drizzle runner has the tables but no ledger. The first `pnpm db:migrate` against it fails on `CREATE TABLE`. For a local synthetic database, reset it with `docker compose down -v && docker compose up -d postgres`, then run `pnpm db:setup`.
 
 `pnpm db:seed` is a thin operator entry point over `src/server/persistence/seed-postgres.ts`. The seed adapter uses stable IDs and `ON CONFLICT` upserts inside one transaction. It can be run repeatedly without duplicating the synthetic tenant, seeded identities, equivalent-fractions standard, prerequisite graph, activity version, or attempt fixture.
 
-Drizzle is both the persistence adapter and the migration owner. Set `PERSISTENCE_ADAPTER=drizzle` to exercise the adapter; omit the variable, or set it to `postgres`, to use the raw SQL adapter. `drizzle/schema.ts` is the schema source and `drizzle/` holds the generated SQL. Do not run `drizzle-kit push` or `drizzle-kit pull`: push bypasses the journal, and pull overwrites the authored schema without the forced-RLS and trigger layer.
+Drizzle is both the persistence adapter and the migration owner. Set `PERSISTENCE_ADAPTER=drizzle` to exercise the adapter; omit the variable, or set it to `postgres`, to use the raw SQL adapter. Never run `drizzle-kit push` or `drizzle-kit pull`; push bypasses the journal, and pull overwrites the authored schema without the forced-RLS and trigger layer.
 
 Migration and seed processes take the same non-blocking PostgreSQL advisory lock and use bounded statement, lock, and idle-in-transaction timeouts. If another bootstrap process is running, the command fails quickly so a deploy cannot wait indefinitely behind a hidden database lock.
 

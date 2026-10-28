@@ -58,7 +58,7 @@ Two verified serializer traps:
 | Symptom | Cause | Action |
 | --- | --- | --- |
 | A migration is silently not applied | Drizzle compares only the newest ledger row and skips entries whose journal `when` is older | The runner's preflight throws instead. Regenerate the migration so its timestamp is current |
-| `Migration … is unapplied but is not newer…` | The file was edited after apply, or a branch merge produced an older timestamp | Never edit applied SQL; delete and regenerate with a new timestamp |
+| `Migration … has no ledger entry and is not newer…` | The file was edited after apply, or a branch merge produced an older timestamp | Revert the edit, or regenerate the migration with a new timestamp |
 | Duplicate table/column on the next release | Snapshot-visible DDL was placed in a custom migration | Move it into `schema.ts` and regenerate |
 | Policy exists but rows leak | `.enableRLS()` missing | Add it to the table |
 | `db:generate` produces a diff in CI | `schema.ts` changed without a committed migration | Run `pnpm db:generate` and commit the output |

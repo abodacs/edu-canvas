@@ -69,7 +69,7 @@ Run these commands from the repository root or from the release worktree.
 
    Database bootstrap does not call the lesson-generation provider, so it does not require `OPENAI_API_KEY`. The running Fly application still receives that credential through its server-only secret store.
 
-   The migration runner records each file hash in `drizzle.__edu_canvas_drizzle_migrations` and takes a non-blocking advisory lock. It rejects an edited or out-of-order migration before applying anything, so a release cannot silently skip a change. On every later `fly deploy`, the Fly release command runs the same migration logic in a temporary Machine and aborts the deployment if it cannot complete. It never seeds or deletes data. Never edit an already-applied migration; add a new one instead.
+   The migration runner records each file hash in `drizzle.__edu_canvas_drizzle_migrations` and takes a non-blocking advisory lock. It rejects an edited or out-of-order migration before applying anything, so a release cannot silently skip a change. On every later `fly deploy`, the Fly release command runs the same migration logic in a temporary Machine and aborts the deployment if it cannot complete. It never seeds or deletes data. Schema-change rules live in [drizzle/README.md](../drizzle/README.md).
 
 3. Deploy with a canary replacement and wait for Fly health checks:
 

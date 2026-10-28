@@ -1,8 +1,8 @@
-import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { readMigrationFiles } from "drizzle-orm/migrator";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
@@ -38,35 +38,30 @@ const assertDatabaseUrl = (databaseUrl) => {
 
 const readJournal = async () => {
   const journalPath = path.join(migrationsDirectory, "meta/_journal.json");
-  const journal = JSON.parse(await readFile(journalPath, "utf-8"));
-  const entries = [];
+  const { entries } = JSON.parse(await readFile(journalPath, "utf-8"));
+  const migrations = readMigrationFiles({
+    migrationsFolder: migrationsDirectory,
+  });
+  const ordered = [];
   let previousWhen = -Infinity;
 
-  for (const entry of journal.entries) {
-    if (Number(entry.when) <= previousWhen) {
+  for (const [index, entry] of entries.entries()) {
+    const when = Number(entry.when);
+    if (when <= previousWhen) {
       throw new Error(
         `Migration journal is not strictly ordered at ${entry.tag}; regenerate the migration instead of reordering it.`
       );
     }
-    previousWhen = Number(entry.when);
-    // eslint-disable-next-line no-await-in-loop -- journal order is sequential.
-    const contents = await readFile(
-      path.join(migrationsDirectory, `${entry.tag}.sql`),
-      "utf-8"
-    );
-    entries.push({
-      tag: entry.tag,
-      when: Number(entry.when),
-      hash: createHash("sha256").update(contents, "utf-8").digest("hex"),
-    });
+    previousWhen = when;
+    ordered.push({ tag: entry.tag, when, hash: migrations[index].hash });
   }
 
-  return entries;
+  return ordered;
 };
 
 const assertLedgerMatchesJournal = async (sql, entries) => {
   if (!entries.length) {
-    return entries.length;
+    return noPendingMigrations;
   }
 
   const [ledger] = await sql`
@@ -78,7 +73,7 @@ const assertLedgerMatchesJournal = async (sql, entries) => {
 
   const [applied] = await sql`
     select coalesce(max(created_at), 0) as last, array_agg(hash) as hashes
-    from drizzle.__edu_canvas_drizzle_migrations
+    from ${sql.unsafe(ledgerTable)}
   `;
   const last = Number(applied.last);
   const hashes = new Set(applied.hashes);
@@ -89,8 +84,8 @@ const assertLedgerMatchesJournal = async (sql, entries) => {
     }
     if (!hashes.has(entry.hash)) {
       throw new Error(
-        `Migration ${entry.tag} is unapplied but is not newer than the last applied migration. ` +
-          "Drizzle would skip it silently; regenerate the migration so its journal timestamp is current."
+        `Migration ${entry.tag} has no ledger entry and is not newer than the newest applied migration. ` +
+          "It was edited after apply, or generated with a stale journal timestamp. Revert the edit, or regenerate the migration."
       );
     }
   }
@@ -137,6 +132,14 @@ export const runDatabaseMigrations = async (databaseUrl) => {
 
 const scriptArgumentIndex = 1;
 
+const describeError = (error) => {
+  const cause = Error.isError(error) ? error.cause : undefined;
+  if (Error.isError(cause)) {
+    return cause.message;
+  }
+  return Error.isError(error) ? error.message : "Unknown error.";
+};
+
 if (
   process.argv.at(scriptArgumentIndex) &&
   import.meta.filename === path.resolve(process.argv.at(scriptArgumentIndex))
@@ -146,10 +149,7 @@ if (
     try {
       await runDatabaseMigrations(databaseUrl);
     } catch (error) {
-      console.error(
-        "Database migration failed:",
-        Error.isError(error) ? error.message : "Unknown error."
-      );
+      console.error("Database migration failed:", describeError(error));
       process.exitCode = 1;
     }
   } else {
