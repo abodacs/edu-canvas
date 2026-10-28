@@ -680,6 +680,110 @@ export const createRecordCommands = <TTransaction>(
     );
   };
 
+  const assertAppendPackage = async (
+    transaction: TTransaction,
+    actor: Actor,
+    input: AppendVersionInput
+  ): Promise<void> => {
+    await requireRow(transaction, "standards", {
+      tenant_id: actor.tenantId,
+      id: input.package.standardId,
+    });
+
+    const packageRow = await findOne(transaction, "lesson_packages", {
+      tenant_id: actor.tenantId,
+      id: input.package.id,
+    });
+    if (packageRow) {
+      if (
+        packageRow.teacher_actor_id !== actor.actorId ||
+        packageRow.standard_id !== input.package.standardId
+      ) {
+        throw recordError("FORBIDDEN");
+      }
+      return;
+    }
+    if (input.expectedHeadRevision !== 0) {
+      throw recordError("STALE_VERSION");
+    }
+    await backend.insert(transaction, "lesson_packages", {
+      id: input.package.id,
+      tenant_id: actor.tenantId,
+      teacher_actor_id: actor.actorId,
+      standard_id: input.package.standardId,
+      title: input.package.title,
+      head_revision: 0,
+      created_at: clock(),
+      updated_at: clock(),
+    });
+  };
+
+  const assertVersionReferences = async (
+    transaction: TTransaction,
+    actor: Actor,
+    input: AppendVersionInput
+  ): Promise<void> => {
+    const curatedRow = await requireRow(transaction, "curated_references", {
+      tenant_id: actor.tenantId,
+      id: input.curatedReferenceId,
+    });
+    if (
+      curatedRow.teacher_actor_id !== actor.actorId ||
+      curatedRow.standard_id !== input.package.standardId
+    ) {
+      throw recordError("FORBIDDEN");
+    }
+
+    if (input.generationRequestId) {
+      const request = await requireRow(transaction, "lesson_draft_requests", {
+        tenant_id: actor.tenantId,
+        id: input.generationRequestId,
+      });
+      if (request.teacher_id !== actor.actorId) {
+        throw recordError("FORBIDDEN");
+      }
+    }
+
+    for (const conceptId of input.conceptIds) {
+      // Sequential reads keep the transaction ordered and stop at the first foreign referent.
+      // eslint-disable-next-line no-await-in-loop
+      const concept = await requireRow(transaction, "prerequisite_nodes", {
+        tenant_id: actor.tenantId,
+        id: conceptId,
+      });
+      if (concept.standard_id !== input.package.standardId) {
+        throw recordError("FORBIDDEN");
+      }
+    }
+
+    for (const edit of input.provenance.authoredEdits) {
+      // eslint-disable-next-line no-await-in-loop
+      const editActor = await requireRow(transaction, "actors", {
+        id: edit.actorId,
+      });
+      if (editActor.is_active !== true) {
+        throw recordError("FORBIDDEN");
+      }
+    }
+
+    if (input.parentVersionId) {
+      const parent = await requireRow(transaction, "lesson_versions", {
+        tenant_id: actor.tenantId,
+        id: input.parentVersionId,
+      });
+      if (parent.package_id !== input.package.id) {
+        throw recordError("INVALID_INPUT");
+      }
+    }
+
+    if (input.predecessorVersionId) {
+      await requireRow(transaction, "lesson_versions", {
+        tenant_id: actor.tenantId,
+        id: input.predecessorVersionId,
+      });
+    }
+  };
+
   const appendVersion = (
     actor: Actor,
     raw: unknown
@@ -689,101 +793,8 @@ export const createRecordCommands = <TTransaction>(
       "append-version",
       raw,
       async (transaction, input) => {
-        await requireRow(transaction, "standards", {
-          tenant_id: actor.tenantId,
-          id: input.package.standardId,
-        });
-
-        let packageRow = await findOne(transaction, "lesson_packages", {
-          tenant_id: actor.tenantId,
-          id: input.package.id,
-        });
-        if (!packageRow) {
-          if (input.expectedHeadRevision !== 0) {
-            throw recordError("STALE_VERSION");
-          }
-          await backend.insert(transaction, "lesson_packages", {
-            id: input.package.id,
-            tenant_id: actor.tenantId,
-            teacher_actor_id: actor.actorId,
-            standard_id: input.package.standardId,
-            title: input.package.title,
-            head_revision: 0,
-            created_at: clock(),
-            updated_at: clock(),
-          });
-          packageRow = await requireRow(transaction, "lesson_packages", {
-            tenant_id: actor.tenantId,
-            id: input.package.id,
-          });
-        }
-        if (
-          packageRow.teacher_actor_id !== actor.actorId ||
-          packageRow.standard_id !== input.package.standardId
-        ) {
-          throw recordError("FORBIDDEN");
-        }
-
-        const curatedRow = await requireRow(transaction, "curated_references", {
-          tenant_id: actor.tenantId,
-          id: input.curatedReferenceId,
-        });
-        if (
-          curatedRow.teacher_actor_id !== actor.actorId ||
-          curatedRow.standard_id !== input.package.standardId
-        ) {
-          throw recordError("FORBIDDEN");
-        }
-
-        if (input.generationRequestId) {
-          const request = await requireRow(
-            transaction,
-            "lesson_draft_requests",
-            { tenant_id: actor.tenantId, id: input.generationRequestId }
-          );
-          if (request.teacher_id !== actor.actorId) {
-            throw recordError("FORBIDDEN");
-          }
-        }
-
-        for (const conceptId of input.conceptIds) {
-          // Sequential reads keep the transaction ordered and stop at the first foreign referent.
-          // eslint-disable-next-line no-await-in-loop
-          const concept = await requireRow(transaction, "prerequisite_nodes", {
-            tenant_id: actor.tenantId,
-            id: conceptId,
-          });
-          if (concept.standard_id !== input.package.standardId) {
-            throw recordError("FORBIDDEN");
-          }
-        }
-
-        for (const edit of input.provenance.authoredEdits) {
-          // eslint-disable-next-line no-await-in-loop
-          const editActor = await requireRow(transaction, "actors", {
-            id: edit.actorId,
-          });
-          if (editActor.is_active !== true) {
-            throw recordError("FORBIDDEN");
-          }
-        }
-
-        if (input.parentVersionId) {
-          const parent = await requireRow(transaction, "lesson_versions", {
-            tenant_id: actor.tenantId,
-            id: input.parentVersionId,
-          });
-          if (parent.package_id !== input.package.id) {
-            throw recordError("INVALID_INPUT");
-          }
-        }
-
-        if (input.predecessorVersionId) {
-          await requireRow(transaction, "lesson_versions", {
-            tenant_id: actor.tenantId,
-            id: input.predecessorVersionId,
-          });
-        }
+        await assertAppendPackage(transaction, actor, input);
+        await assertVersionReferences(transaction, actor, input);
 
         const revision = input.expectedHeadRevision + 1;
         const contentHash = createContentHash({
