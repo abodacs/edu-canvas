@@ -10,14 +10,41 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as SignUpRouteImport } from './routes/sign-up'
+import { Route as WorkspaceRouteImport } from './routes/workspace'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiReadinessRouteImport } from './routes/api/readiness'
-import { Route as DemoRoleRouteImport } from './routes/demo/$role'
+import { Route as LoginMembershipRouteImport } from './routes/login/membership'
 import { Route as ApiA2uiPreviewRouteImport } from './routes/api/a2ui/preview'
+import { Route as ApiAuthContextRouteImport } from './routes/api/auth/context'
+import { Route as ApiAuthContinueRouteImport } from './routes/api/auth/continue'
+import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
+import { Route as ApiAuthMembershipRouteImport } from './routes/api/auth/membership'
+import { Route as ApiAuthSessionRouteImport } from './routes/api/auth/session'
+import { Route as ApiAuthSignInRouteImport } from './routes/api/auth/sign-in'
+import { Route as ApiAuthSignUpRouteImport } from './routes/api/auth/sign-up'
+import { Route as ApiLessonsGenerateRouteImport } from './routes/api/lessons/generate'
+import { Route as ApiLessonsDraftIdCancelRouteImport } from './routes/api/lessons/$draftId/cancel'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignUpRoute = SignUpRouteImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WorkspaceRoute = WorkspaceRouteImport.update({
+  id: '/workspace',
+  path: '/workspace',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
@@ -30,61 +57,197 @@ const ApiReadinessRoute = ApiReadinessRouteImport.update({
   path: '/api/readiness',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoRoleRoute = DemoRoleRouteImport.update({
-  id: '/demo/$role',
-  path: '/demo/$role',
-  getParentRoute: () => rootRouteImport,
+const LoginMembershipRoute = LoginMembershipRouteImport.update({
+  id: '/membership',
+  path: '/membership',
+  getParentRoute: () => LoginRoute,
 } as any)
 const ApiA2uiPreviewRoute = ApiA2uiPreviewRouteImport.update({
   id: '/api/a2ui/preview',
   path: '/api/a2ui/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthContextRoute = ApiAuthContextRouteImport.update({
+  id: '/api/auth/context',
+  path: '/api/auth/context',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthContinueRoute = ApiAuthContinueRouteImport.update({
+  id: '/api/auth/continue',
+  path: '/api/auth/continue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthLogoutRoute = ApiAuthLogoutRouteImport.update({
+  id: '/api/auth/logout',
+  path: '/api/auth/logout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthMembershipRoute = ApiAuthMembershipRouteImport.update({
+  id: '/api/auth/membership',
+  path: '/api/auth/membership',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSessionRoute = ApiAuthSessionRouteImport.update({
+  id: '/api/auth/session',
+  path: '/api/auth/session',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSignInRoute = ApiAuthSignInRouteImport.update({
+  id: '/api/auth/sign-in',
+  path: '/api/auth/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSignUpRoute = ApiAuthSignUpRouteImport.update({
+  id: '/api/auth/sign-up',
+  path: '/api/auth/sign-up',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLessonsGenerateRoute = ApiLessonsGenerateRouteImport.update({
+  id: '/api/lessons/generate',
+  path: '/api/lessons/generate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLessonsDraftIdCancelRoute = ApiLessonsDraftIdCancelRouteImport.update({
+  id: '/api/lessons/$draftId/cancel',
+  path: '/api/lessons/$draftId/cancel',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRouteWithChildren
+  '/sign-up': typeof SignUpRoute
+  '/workspace': typeof WorkspaceRoute
   '/api/health': typeof ApiHealthRoute
   '/api/readiness': typeof ApiReadinessRoute
-  '/demo/$role': typeof DemoRoleRoute
+  '/login/membership': typeof LoginMembershipRoute
   '/api/a2ui/preview': typeof ApiA2uiPreviewRoute
+  '/api/auth/context': typeof ApiAuthContextRoute
+  '/api/auth/continue': typeof ApiAuthContinueRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/membership': typeof ApiAuthMembershipRoute
+  '/api/auth/session': typeof ApiAuthSessionRoute
+  '/api/auth/sign-in': typeof ApiAuthSignInRoute
+  '/api/auth/sign-up': typeof ApiAuthSignUpRoute
+  '/api/lessons/generate': typeof ApiLessonsGenerateRoute
+  '/api/lessons/$draftId/cancel': typeof ApiLessonsDraftIdCancelRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRouteWithChildren
+  '/sign-up': typeof SignUpRoute
+  '/workspace': typeof WorkspaceRoute
   '/api/health': typeof ApiHealthRoute
   '/api/readiness': typeof ApiReadinessRoute
-  '/demo/$role': typeof DemoRoleRoute
+  '/login/membership': typeof LoginMembershipRoute
   '/api/a2ui/preview': typeof ApiA2uiPreviewRoute
+  '/api/auth/context': typeof ApiAuthContextRoute
+  '/api/auth/continue': typeof ApiAuthContinueRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/membership': typeof ApiAuthMembershipRoute
+  '/api/auth/session': typeof ApiAuthSessionRoute
+  '/api/auth/sign-in': typeof ApiAuthSignInRoute
+  '/api/auth/sign-up': typeof ApiAuthSignUpRoute
+  '/api/lessons/generate': typeof ApiLessonsGenerateRoute
+  '/api/lessons/$draftId/cancel': typeof ApiLessonsDraftIdCancelRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/login': typeof LoginRouteWithChildren
+  '/sign-up': typeof SignUpRoute
+  '/workspace': typeof WorkspaceRoute
   '/api/health': typeof ApiHealthRoute
   '/api/readiness': typeof ApiReadinessRoute
-  '/demo/$role': typeof DemoRoleRoute
+  '/login/membership': typeof LoginMembershipRoute
   '/api/a2ui/preview': typeof ApiA2uiPreviewRoute
+  '/api/auth/context': typeof ApiAuthContextRoute
+  '/api/auth/continue': typeof ApiAuthContinueRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/membership': typeof ApiAuthMembershipRoute
+  '/api/auth/session': typeof ApiAuthSessionRoute
+  '/api/auth/sign-in': typeof ApiAuthSignInRoute
+  '/api/auth/sign-up': typeof ApiAuthSignUpRoute
+  '/api/lessons/generate': typeof ApiLessonsGenerateRoute
+  '/api/lessons/$draftId/cancel': typeof ApiLessonsDraftIdCancelRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/api/health' | '/api/readiness' | '/demo/$role' | '/api/a2ui/preview'
+    | '/'
+    | '/login'
+    | '/sign-up'
+    | '/workspace'
+    | '/api/health'
+    | '/api/readiness'
+    | '/login/membership'
+    | '/api/a2ui/preview'
+    | '/api/auth/context'
+    | '/api/auth/continue'
+    | '/api/auth/logout'
+    | '/api/auth/membership'
+    | '/api/auth/session'
+    | '/api/auth/sign-in'
+    | '/api/auth/sign-up'
+    | '/api/lessons/generate'
+    | '/api/lessons/$draftId/cancel'
   fileRoutesByTo: FileRoutesByTo
   to:
-    '/' | '/api/health' | '/api/readiness' | '/demo/$role' | '/api/a2ui/preview'
+    | '/'
+    | '/login'
+    | '/sign-up'
+    | '/workspace'
+    | '/api/health'
+    | '/api/readiness'
+    | '/login/membership'
+    | '/api/a2ui/preview'
+    | '/api/auth/context'
+    | '/api/auth/continue'
+    | '/api/auth/logout'
+    | '/api/auth/membership'
+    | '/api/auth/session'
+    | '/api/auth/sign-in'
+    | '/api/auth/sign-up'
+    | '/api/lessons/generate'
+    | '/api/lessons/$draftId/cancel'
   id:
     | '__root__'
     | '/'
+    | '/login'
+    | '/sign-up'
+    | '/workspace'
     | '/api/health'
     | '/api/readiness'
-    | '/demo/$role'
+    | '/login/membership'
     | '/api/a2ui/preview'
+    | '/api/auth/context'
+    | '/api/auth/continue'
+    | '/api/auth/logout'
+    | '/api/auth/membership'
+    | '/api/auth/session'
+    | '/api/auth/sign-in'
+    | '/api/auth/sign-up'
+    | '/api/lessons/generate'
+    | '/api/lessons/$draftId/cancel'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LoginRoute: typeof LoginRouteWithChildren
+  SignUpRoute: typeof SignUpRoute
+  WorkspaceRoute: typeof WorkspaceRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiReadinessRoute: typeof ApiReadinessRoute
-  DemoRoleRoute: typeof DemoRoleRoute
   ApiA2uiPreviewRoute: typeof ApiA2uiPreviewRoute
+  ApiAuthContextRoute: typeof ApiAuthContextRoute
+  ApiAuthContinueRoute: typeof ApiAuthContinueRoute
+  ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
+  ApiAuthMembershipRoute: typeof ApiAuthMembershipRoute
+  ApiAuthSessionRoute: typeof ApiAuthSessionRoute
+  ApiAuthSignInRoute: typeof ApiAuthSignInRoute
+  ApiAuthSignUpRoute: typeof ApiAuthSignUpRoute
+  ApiLessonsGenerateRoute: typeof ApiLessonsGenerateRoute
+  ApiLessonsDraftIdCancelRoute: typeof ApiLessonsDraftIdCancelRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -94,6 +257,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-up': {
+      id: '/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof SignUpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/workspace': {
+      id: '/workspace'
+      path: '/workspace'
+      fullPath: '/workspace'
+      preLoaderRoute: typeof WorkspaceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/health': {
@@ -110,12 +294,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiReadinessRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo/$role': {
-      id: '/demo/$role'
-      path: '/demo/$role'
-      fullPath: '/demo/$role'
-      preLoaderRoute: typeof DemoRoleRouteImport
-      parentRoute: typeof rootRouteImport
+    '/login/membership': {
+      id: '/login/membership'
+      path: '/membership'
+      fullPath: '/login/membership'
+      preLoaderRoute: typeof LoginMembershipRouteImport
+      parentRoute: typeof LoginRoute
     }
     '/api/a2ui/preview': {
       id: '/api/a2ui/preview'
@@ -124,15 +308,99 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiA2uiPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/context': {
+      id: '/api/auth/context'
+      path: '/api/auth/context'
+      fullPath: '/api/auth/context'
+      preLoaderRoute: typeof ApiAuthContextRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/continue': {
+      id: '/api/auth/continue'
+      path: '/api/auth/continue'
+      fullPath: '/api/auth/continue'
+      preLoaderRoute: typeof ApiAuthContinueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/logout': {
+      id: '/api/auth/logout'
+      path: '/api/auth/logout'
+      fullPath: '/api/auth/logout'
+      preLoaderRoute: typeof ApiAuthLogoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/membership': {
+      id: '/api/auth/membership'
+      path: '/api/auth/membership'
+      fullPath: '/api/auth/membership'
+      preLoaderRoute: typeof ApiAuthMembershipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/session': {
+      id: '/api/auth/session'
+      path: '/api/auth/session'
+      fullPath: '/api/auth/session'
+      preLoaderRoute: typeof ApiAuthSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/sign-in': {
+      id: '/api/auth/sign-in'
+      path: '/api/auth/sign-in'
+      fullPath: '/api/auth/sign-in'
+      preLoaderRoute: typeof ApiAuthSignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/sign-up': {
+      id: '/api/auth/sign-up'
+      path: '/api/auth/sign-up'
+      fullPath: '/api/auth/sign-up'
+      preLoaderRoute: typeof ApiAuthSignUpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/lessons/generate': {
+      id: '/api/lessons/generate'
+      path: '/api/lessons/generate'
+      fullPath: '/api/lessons/generate'
+      preLoaderRoute: typeof ApiLessonsGenerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/lessons/$draftId/cancel': {
+      id: '/api/lessons/$draftId/cancel'
+      path: '/api/lessons/$draftId/cancel'
+      fullPath: '/api/lessons/$draftId/cancel'
+      preLoaderRoute: typeof ApiLessonsDraftIdCancelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface LoginRouteChildren {
+  LoginMembershipRoute: typeof LoginMembershipRoute
+}
+
+const LoginRouteChildren: LoginRouteChildren = {
+  LoginMembershipRoute: LoginMembershipRoute,
+}
+
+const LoginRouteWithChildren = LoginRoute._addFileChildren(LoginRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LoginRoute: LoginRouteWithChildren,
+  SignUpRoute: SignUpRoute,
+  WorkspaceRoute: WorkspaceRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiReadinessRoute: ApiReadinessRoute,
-  DemoRoleRoute: DemoRoleRoute,
   ApiA2uiPreviewRoute: ApiA2uiPreviewRoute,
+  ApiAuthContextRoute: ApiAuthContextRoute,
+  ApiAuthContinueRoute: ApiAuthContinueRoute,
+  ApiAuthLogoutRoute: ApiAuthLogoutRoute,
+  ApiAuthMembershipRoute: ApiAuthMembershipRoute,
+  ApiAuthSessionRoute: ApiAuthSessionRoute,
+  ApiAuthSignInRoute: ApiAuthSignInRoute,
+  ApiAuthSignUpRoute: ApiAuthSignUpRoute,
+  ApiLessonsGenerateRoute: ApiLessonsGenerateRoute,
+  ApiLessonsDraftIdCancelRoute: ApiLessonsDraftIdCancelRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

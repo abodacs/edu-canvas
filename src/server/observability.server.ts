@@ -34,8 +34,18 @@ const safeDependencies = new Set(["postgres", "seeded-demo"]);
 const safeRoutes = new Set([
   "/api/health",
   "/api/readiness",
-  "/demo/student",
-  "/demo/teacher",
+  "/login",
+  "/sign-up",
+  "/login/membership",
+  "/workspace",
+  "/api/auth/context",
+  "/api/auth/sign-in",
+  "/api/auth/sign-up",
+  "/api/auth/membership",
+  "/api/auth/session",
+  "/api/auth/continue",
+  "/api/auth/logout",
+  "/api/lessons/generate",
 ]);
 const safeIssueCodePattern = /^[A-Z][A-Z0-9_]+$/u;
 
