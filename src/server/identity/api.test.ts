@@ -314,6 +314,9 @@ describe("logout header contract", () => {
 
     expect(response.status).toBe(204);
     expect(response.headers.get("clear-site-data")).toBe(clearSiteData);
+    // Session and challenge cookies are cleared as separate headers; joined into
+    // one value a browser would treat the second as an attribute of the first.
+    expect(response.headers.getSetCookie()).toHaveLength(2);
 
     const replay = await handleSession(
       new Request(`${sessionDependencies.publicOrigin}/api/auth/session`, {

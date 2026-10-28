@@ -136,7 +136,8 @@ describe("membership selection over HTTP", () => {
       actor: { tenantName: "Southside Middle" },
     });
     expect(cookieValue(selected, "edu_canvas_session")).toBeDefined();
-    // Session cookie plus cleared pending cookie: Set-Cookie cannot be folded.
+    // The rotated session cookie and the cleared pending cookie are separate
+    // headers; a browser would misread them as one joined value.
     expect(selected.headers.getSetCookie()).toHaveLength(2);
   });
 

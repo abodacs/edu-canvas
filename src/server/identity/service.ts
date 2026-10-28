@@ -667,8 +667,13 @@ export const createIdentityService = (
         session.providerCredentialsCiphertext
       );
       if (credentials) {
-        // Best effort for this session only; never a global sign-out.
-        await options.provider.signOut(credentials.accessToken);
+        // Best effort for this session only, never a global sign-out. A provider
+        // outage must not turn a completed local logout into a failure.
+        try {
+          await options.provider.signOut(credentials.accessToken);
+        } catch {
+          // The local revocation above is already durable.
+        }
       }
 
       return { status: "revoked" };

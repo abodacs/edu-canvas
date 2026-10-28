@@ -7,7 +7,7 @@ import {
   signUpInputSchema,
 } from "@/shared/identity-contract";
 import { readServerConfig } from "../config";
-import { noStoreJson, readJsonBody, withSetCookies } from "../http.server";
+import { noStoreJson, readJsonBody, responseWithCookies } from "../http.server";
 import { serverObservability } from "../observability.server";
 import { createConfiguredIdentity } from "./composition.server";
 import {
@@ -401,7 +401,7 @@ export const handleMembership = async (
       sourceAddress: sourceAddressFor(request),
     });
     const names = cookieNamesFor(dependencies.config);
-    return noStoreJson(
+    return responseWithCookies(
       projectActiveSession({
         role: outcome.actor.role,
         displayName: outcome.actor.displayName,
@@ -411,8 +411,7 @@ export const handleMembership = async (
         idleExpiresAt: outcome.session.lastActivityAt,
         absoluteExpiresAt: outcome.session.absoluteExpiresAt,
       }),
-      200,
-      withSetCookies([
+      [
         sessionCookieHeader(dependencies, outcome.credential),
         serializeCookie(
           { name: names.pending, value: "" },
@@ -422,7 +421,8 @@ export const handleMembership = async (
             clear: true,
           }
         ),
-      ])
+      ],
+      200
     );
   } catch (error) {
     return toErrorResponse(error);
@@ -565,22 +565,21 @@ export const handleLogout = async (
   ];
 
   const outcome = await dependencies.identity.endSession(credential);
-  const headers = withSetCookies(clearedCookies, {
-    "clear-site-data": clearSiteDataValue,
-  });
+  const headers = { "clear-site-data": clearSiteDataValue };
 
   if (outcome.status === "durable-failure") {
-    return noStoreJson(
+    return responseWithCookies(
       {
         code: "AUTH_UNAVAILABLE",
         message: "Sign-out could not be confirmed. Reload the page.",
       },
+      clearedCookies,
       503,
       headers
     );
   }
 
-  return new Response(null, { status: 204, headers });
+  return responseWithCookies(null, clearedCookies, 204, headers);
 };
 
 /**
