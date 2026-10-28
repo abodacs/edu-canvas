@@ -482,3 +482,280 @@ export const lessonGenerationAttempts = pgTable(
     ];
   }
 ).enableRLS();
+
+// Identity persistence. actors and provider_bindings are deliberately not
+// tenant-scoped: the credential binding step runs before a tenant is known.
+export const actors = pgTable(
+  "actors",
+  {
+    id: text().primaryKey().notNull(),
+    displayName: text("display_name").notNull(),
+    isActive: boolean("is_active").default(true).notNull(),
+    authorizationRevision: integer("authorization_revision")
+      .default(1)
+      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  () => {
+    return [
+      check(
+        "actors_authorization_revision_check",
+        sql`authorization_revision >= 0`
+      ),
+    ];
+  }
+);
+
+export const providerBindings = pgTable(
+  "provider_bindings",
+  {
+    providerIssuer: text("provider_issuer").notNull(),
+    providerSubject: text("provider_subject").notNull(),
+    actorId: text("actor_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => {
+    return [
+      index("provider_bindings_actor_idx").using(
+        "btree",
+        table.actorId.asc().nullsLast().op("text_ops")
+      ),
+      foreignKey({
+        columns: [table.actorId],
+        foreignColumns: [actors.id],
+        name: "provider_bindings_actor_id_fkey",
+      }),
+      primaryKey({
+        columns: [table.providerIssuer, table.providerSubject],
+        name: "provider_bindings_pkey",
+      }),
+      unique("provider_bindings_actor_id_provider_issuer_key").on(
+        table.actorId,
+        table.providerIssuer
+      ),
+    ];
+  }
+);
+
+export const memberships = pgTable(
+  "memberships",
+  {
+    id: text().primaryKey().notNull(),
+    actorId: text("actor_id").notNull(),
+    tenantId: text("tenant_id").notNull(),
+    role: text().notNull(),
+    status: text().default("active").notNull(),
+    learnerId: text("learner_id"),
+    revision: integer().default(1).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => {
+    return [
+      index("memberships_actor_idx").using(
+        "btree",
+        table.actorId.asc().nullsLast().op("text_ops")
+      ),
+      index("memberships_tenant_idx").using(
+        "btree",
+        table.tenantId.asc().nullsLast().op("text_ops")
+      ),
+      foreignKey({
+        columns: [table.actorId],
+        foreignColumns: [actors.id],
+        name: "memberships_actor_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId],
+        foreignColumns: [tenants.id],
+        name: "memberships_tenant_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.learnerId],
+        foreignColumns: [identities.tenantId, identities.id],
+        name: "memberships_tenant_id_learner_id_fkey",
+      }),
+      unique("memberships_actor_id_tenant_id_role_key").on(
+        table.actorId,
+        table.tenantId,
+        table.role
+      ),
+      unique("memberships_tenant_id_id_key").on(table.tenantId, table.id),
+      pgPolicy("memberships_are_tenant_scoped", {
+        as: "permissive",
+        for: "all",
+        to: ["public"],
+        using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
+      }),
+      check(
+        "memberships_role_check",
+        sql`role = ANY (ARRAY['teacher'::text, 'student'::text])`
+      ),
+      check(
+        "memberships_status_check",
+        sql`status = ANY (ARRAY['active'::text, 'revoked'::text])`
+      ),
+      check("memberships_revision_check", sql`revision >= 0`),
+    ];
+  }
+).enableRLS();
+
+export const classAssignments = pgTable(
+  "class_assignments",
+  {
+    membershipId: text("membership_id").notNull(),
+    classId: text("class_id").notNull(),
+    tenantId: text("tenant_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => {
+    return [
+      index("class_assignments_membership_idx").using(
+        "btree",
+        table.membershipId.asc().nullsLast().op("text_ops")
+      ),
+      foreignKey({
+        columns: [table.tenantId],
+        foreignColumns: [tenants.id],
+        name: "class_assignments_tenant_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.membershipId],
+        foreignColumns: [memberships.tenantId, memberships.id],
+        name: "class_assignments_tenant_id_membership_id_fkey",
+      }),
+      primaryKey({
+        columns: [table.membershipId, table.classId],
+        name: "class_assignments_pkey",
+      }),
+      pgPolicy("class_assignments_are_tenant_scoped", {
+        as: "permissive",
+        for: "all",
+        to: ["public"],
+        using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
+      }),
+    ];
+  }
+).enableRLS();
+
+export const identitySessions = pgTable(
+  "identity_sessions",
+  {
+    sessionId: text("session_id").primaryKey().notNull(),
+    verifierHash: text("verifier_hash").notNull(),
+    actorId: text("actor_id").notNull(),
+    membershipId: text("membership_id").notNull(),
+    tenantId: text("tenant_id").notNull(),
+    providerSessionId: text("provider_session_id").notNull(),
+    providerSubject: text("provider_subject").notNull(),
+    sessionGeneration: text("session_generation").notNull(),
+    authorizationRevision: integer("authorization_revision").notNull(),
+    revision: integer().default(1).notNull(),
+    providerCredentialsCiphertext: text("provider_credentials_ciphertext"),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "string",
+    }).notNull(),
+    lastActivityAt: timestamp("last_activity_at", {
+      withTimezone: true,
+      mode: "string",
+    }).notNull(),
+    absoluteExpiresAt: timestamp("absolute_expires_at", {
+      withTimezone: true,
+      mode: "string",
+    }).notNull(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true, mode: "string" }),
+  },
+  (table) => {
+    return [
+      index("identity_sessions_actor_idx").using(
+        "btree",
+        table.actorId.asc().nullsLast().op("text_ops")
+      ),
+      foreignKey({
+        columns: [table.actorId],
+        foreignColumns: [actors.id],
+        name: "identity_sessions_actor_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId],
+        foreignColumns: [tenants.id],
+        name: "identity_sessions_tenant_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.membershipId],
+        foreignColumns: [memberships.tenantId, memberships.id],
+        name: "identity_sessions_tenant_id_membership_id_fkey",
+      }),
+      unique("identity_sessions_verifier_hash_key").on(table.verifierHash),
+      unique("identity_sessions_tenant_id_membership_id_session_id_key").on(
+        table.tenantId,
+        table.membershipId,
+        table.sessionId
+      ),
+      pgPolicy("identity_sessions_are_tenant_scoped", {
+        as: "permissive",
+        for: "all",
+        to: ["public"],
+        using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
+      }),
+      check("identity_sessions_revision_check", sql`revision >= 0`),
+    ];
+  }
+).enableRLS();
+
+export const pendingAuthentications = pgTable(
+  "pending_authentications",
+  {
+    pendingId: text("pending_id").primaryKey().notNull(),
+    verifierHash: text("verifier_hash").notNull(),
+    actorId: text("actor_id").notNull(),
+    memberships: jsonb().notNull(),
+    providerSessionId: text("provider_session_id").notNull(),
+    providerSubject: text("provider_subject").notNull(),
+    providerCredentialsCiphertext: text("provider_credentials_ciphertext"),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "string",
+    }).notNull(),
+    expiresAt: timestamp("expires_at", {
+      withTimezone: true,
+      mode: "string",
+    }).notNull(),
+    consumedAt: timestamp("consumed_at", {
+      withTimezone: true,
+      mode: "string",
+    }),
+  },
+  (table) => {
+    return [
+      foreignKey({
+        columns: [table.actorId],
+        foreignColumns: [actors.id],
+        name: "pending_authentications_actor_id_fkey",
+      }),
+      unique("pending_authentications_verifier_hash_key").on(
+        table.verifierHash
+      ),
+    ];
+  }
+);
+
+export const provisioningAudit = pgTable("provisioning_audit", {
+  id: text().primaryKey().notNull(),
+  principal: text().notNull(),
+  operation: text().notNull(),
+  targetId: text("target_id").notNull(),
+  result: text().notNull(),
+  requestId: text("request_id").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+    .defaultNow()
+    .notNull(),
+});

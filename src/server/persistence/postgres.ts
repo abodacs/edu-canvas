@@ -4,7 +4,7 @@ import { serverObservability } from "../observability.server";
 import { demoSeed } from "../seed-data";
 import { hydrateGenerationRecord } from "./generation-codec";
 import { createGenerationPersistence } from "./generation-persistence";
-import type { DemoCounts } from "@/shared/demo-contract";
+import type { SeedCounts } from "../seed-data";
 
 import type { LessonGenerationRecord } from "../generation/types";
 import type { ServerObservability } from "../observability.server";
@@ -523,7 +523,7 @@ export const createPostgresPersistence = (
       }
     },
 
-    async readDemoCounts(): Promise<DemoCounts> {
+    async readDemoCounts(): Promise<SeedCounts> {
       try {
         const rows = await withDatabase(databaseUrl, (sql) => {
           return sql.begin(async (transaction) => {

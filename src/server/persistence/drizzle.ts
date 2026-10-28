@@ -23,7 +23,7 @@ import type {
   PostgresJsTransaction,
 } from "drizzle-orm/postgres-js";
 
-import type { DemoCounts } from "@/shared/demo-contract";
+import type { SeedCounts } from "../seed-data";
 
 import type { LessonGenerationRecord } from "../generation/types";
 import type { ServerObservability } from "../observability.server";
@@ -522,7 +522,7 @@ export const createDrizzlePersistence = (
       }
     },
 
-    async readDemoCounts(): Promise<DemoCounts> {
+    async readDemoCounts(): Promise<SeedCounts> {
       try {
         return await withDatabase(databaseUrl, (database) => {
           return database.transaction(async (transaction) => {

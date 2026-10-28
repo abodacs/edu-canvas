@@ -1,6 +1,5 @@
-import type { DemoCounts } from "@/shared/demo-contract";
-
 import type { ServerConfig } from "../config";
+import type { SeedCounts } from "../seed-data";
 import type { GenerationPersistence } from "../generation/types";
 import type { ServerObservability } from "../observability.server";
 
@@ -14,7 +13,7 @@ export interface PersistenceCheck {
 export interface FoundationPersistence extends GenerationPersistence {
   readonly kind: ServerConfig["mode"];
   check: () => Promise<PersistenceCheck>;
-  readDemoCounts: () => Promise<DemoCounts>;
+  readDemoCounts: () => Promise<SeedCounts>;
 }
 
 export interface FoundationPersistenceOptions {
