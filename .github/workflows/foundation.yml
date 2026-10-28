@@ -51,6 +51,9 @@ jobs:
       - name: Check Drizzle schema history
         run: pnpm db:drizzle:check
 
+      - name: Verify migrations match the schema
+        run: pnpm db:generate && git diff --exit-code -- drizzle
+
       - name: Prepare database for integration checks
         run: pnpm db:setup
 
@@ -87,6 +90,7 @@ jobs:
           trap cleanup EXIT
 
           test "$(docker inspect --format '{{.Config.User}}' edu-canvas-ci)" = "node"
+          docker exec edu-canvas-ci node scripts/database-migrate-runtime.mjs
           docker exec edu-canvas-ci node scripts/database-migrate-runtime.mjs
 
           for attempt in $(seq 1 30); do

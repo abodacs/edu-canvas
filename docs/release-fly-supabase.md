@@ -16,7 +16,7 @@ The runbook makes no production-readiness or availability claim for the mileston
 - Lesson generation uses the server-only provider key secret. The product runs its selected model behind the existing provider interface; see [AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md) for the provider selection and deadlines. The historical `OPENAI_API_KEY`/`OPENAI_MODEL` secret and setting names are kept until the provider migration lands ([AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md)).
 - Fly runs the idempotent migration runner as a release command before replacing application Machines.
 - The app does not use `supabase-js`, Supabase Auth, or the Supabase Data API; no browser key or public table grant is required.
-- The existing `migrations/` directory and `pnpm db:migrate` runner remain the migration source of truth. Do not run `supabase db push` against this checkout unless the repository is intentionally converted to the standard `supabase/migrations/` layout.
+- The `drizzle/` directory and `pnpm db:migrate` runner are the migration source of truth. Do not run `supabase db push`, `drizzle-kit push`, or `drizzle-kit pull` against this checkout.
 
 Supabase's direct Postgres connection is the preferred option for migrations and administration. For a persistent Fly backend on an IPv4-only network, use the Supavisor session-mode connection string from the Supabase **Connect** dialog. Keep `sslmode=require` in the connection string.
 
@@ -69,7 +69,7 @@ Run these commands from the repository root or from the release worktree.
 
    Database bootstrap does not call the lesson-generation provider, so it does not require `OPENAI_API_KEY`. The running Fly application still receives that credential through its server-only secret store.
 
-   The migration runner records each applied file and its SHA-256 checksum in `app_migrations` and takes a non-blocking advisory lock. Existing name-only ledger rows are baselined once; later edits to an applied file fail the release. On every later `fly deploy`, the Fly release command runs the same migration logic in a temporary Machine and aborts the deployment if it cannot complete. It never seeds or deletes data. Never edit an already-applied migration; add a new numbered file instead.
+   The migration runner records each file hash in `drizzle.__edu_canvas_drizzle_migrations` and takes a non-blocking advisory lock. It rejects an edited or out-of-order migration before applying anything, so a release cannot silently skip a change. On every later `fly deploy`, the Fly release command runs the same migration logic in a temporary Machine and aborts the deployment if it cannot complete. It never seeds or deletes data. Never edit an already-applied migration; add a new one instead.
 
 3. Deploy with a canary replacement and wait for Fly health checks:
 

@@ -72,15 +72,15 @@ pnpm db:migrate
 pnpm db:seed
 ```
 
-`pnpm db:migrate` applies files in `migrations/` in lexical order and records each applied filename plus its SHA-256 checksum in `app_migrations`. Existing name-only ledger rows are baselined once; later edits to an applied file fail fast. Migrations are forward-only: do not edit an applied file or add a destructive reset command. Add a new numbered migration for schema changes.
+`pnpm db:migrate` applies `drizzle/` migrations in journal order and records each file hash in `drizzle.__edu_canvas_drizzle_migrations`. `drizzle/schema.ts` is the source of truth: change it, run `pnpm db:generate`, and commit the SQL plus `drizzle/meta/`. Use `pnpm exec drizzle-kit generate --custom --name <name>` only for what the snapshot cannot express: forced row-level security, triggers, and functions. Migrations are forward-only: do not edit an applied file or reorder the journal. The runner fails on an edited or out-of-order migration instead of skipping it.
 
 `pnpm db:seed` is a thin operator entry point over `src/server/persistence/seed-postgres.ts`. The seed adapter uses stable IDs and `ON CONFLICT` upserts inside one transaction. It can be run repeatedly without duplicating the synthetic tenant, seeded identities, equivalent-fractions standard, prerequisite graph, activity version, or attempt fixture.
 
-Drizzle is an incremental read/write adapter behind the existing persistence seam. Set `PERSISTENCE_ADAPTER=drizzle` to exercise it against the same PostgreSQL schema; omit the variable, or set it to `postgres`, to use the legacy adapter. The SQL migration runner remains authoritative for schema creation. Drizzle Kit uses the separate `drizzle` migration schema/table only for future ORM-owned migration metadata and must not be used to apply the existing `migrations/0001_foundation.sql` or `migrations/0002_lesson_generation.sql` files.
+Drizzle is both the persistence adapter and the migration owner. Set `PERSISTENCE_ADAPTER=drizzle` to exercise the adapter; omit the variable, or set it to `postgres`, to use the raw SQL adapter. `drizzle/schema.ts` is the schema source and `drizzle/` holds the generated SQL. Do not run `drizzle-kit push` or `drizzle-kit pull`: push bypasses the journal, and pull overwrites the authored schema without the forced-RLS and trigger layer.
 
 Migration and seed processes take the same non-blocking PostgreSQL advisory lock and use bounded statement, lock, and idle-in-transaction timeouts. If another bootstrap process is running, the command fails quickly so a deploy cannot wait indefinitely behind a hidden database lock.
 
-The PostgreSQL schema includes tenant columns on every tenant-owned table, forced row-level policies keyed by the transaction-local `app.tenant_id`, and same-tenant foreign keys for tenant-owned relationships. Published activity versions and attempts are immutable at the database seam; rerunning the seed leaves existing immutable rows untouched. Application code also asserts the tenant at the server boundary.
+The PostgreSQL schema includes tenant columns on every tenant-owned table, forced row-level policies keyed by the transaction-local `app.tenant_id`, and same-tenant foreign keys for tenant-owned relationships. Primary keys stay application-generated UUIDv7 (`src/server/ids.ts`); no column default mints identifiers. Published activity versions and attempts are immutable at the database seam; rerunning the seed leaves existing immutable rows untouched. Application code also asserts the tenant at the server boundary.
 
 ## Module navigation
 

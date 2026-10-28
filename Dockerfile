@@ -21,7 +21,7 @@ ENV PORT=3000
 
 COPY --from=build --chown=node:node /app/.output ./.output
 COPY --from=build --chown=node:node /app/node_modules ./node_modules
-COPY --from=build --chown=node:node /app/migrations ./migrations
+COPY --from=build --chown=node:node /app/drizzle ./drizzle
 COPY --from=build --chown=node:node /app/scripts/database-migrate-runtime.mjs ./scripts/database-migrate-runtime.mjs
 COPY --from=build --chown=node:node /app/src/server/persistence/bootstrap-lock.mjs ./src/server/persistence/bootstrap-lock.mjs
 

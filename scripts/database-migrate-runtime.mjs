@@ -1,13 +1,22 @@
 import { createHash } from "node:crypto";
-import { readdir, readFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { drizzle } from "drizzle-orm/postgres-js";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
 
 import { withFoundationBootstrapLock } from "../src/server/persistence/bootstrap-lock.mjs";
 
-const { resolve } = path;
+const migrationsTable = "__edu_canvas_drizzle_migrations";
+const migrationsSchema = "drizzle";
+const noPendingMigrations = 0;
+const singleMigration = 1;
+const migrationsDirectory = fileURLToPath(
+  new URL("../drizzle/", import.meta.url)
+);
+const ledgerTable = `${migrationsSchema}.${migrationsTable}`;
 
 const parseDatabaseUrl = (databaseUrl) => {
   try {
@@ -27,16 +36,70 @@ const assertDatabaseUrl = (databaseUrl) => {
   }
 };
 
+const readJournal = async () => {
+  const journalPath = path.join(migrationsDirectory, "meta/_journal.json");
+  const journal = JSON.parse(await readFile(journalPath, "utf-8"));
+  const entries = [];
+  let previousWhen = -Infinity;
+
+  for (const entry of journal.entries) {
+    if (Number(entry.when) <= previousWhen) {
+      throw new Error(
+        `Migration journal is not strictly ordered at ${entry.tag}; regenerate the migration instead of reordering it.`
+      );
+    }
+    previousWhen = Number(entry.when);
+    // eslint-disable-next-line no-await-in-loop -- journal order is sequential.
+    const contents = await readFile(
+      path.join(migrationsDirectory, `${entry.tag}.sql`),
+      "utf-8"
+    );
+    entries.push({
+      tag: entry.tag,
+      when: Number(entry.when),
+      hash: createHash("sha256").update(contents, "utf-8").digest("hex"),
+    });
+  }
+
+  return entries;
+};
+
+const assertLedgerMatchesJournal = async (sql, entries) => {
+  if (!entries.length) {
+    return entries.length;
+  }
+
+  const [ledger] = await sql`
+    select to_regclass(${ledgerTable}) is not null as exists
+  `;
+  if (!ledger.exists) {
+    return entries.length;
+  }
+
+  const [applied] = await sql`
+    select coalesce(max(created_at), 0) as last, array_agg(hash) as hashes
+    from drizzle.__edu_canvas_drizzle_migrations
+  `;
+  const last = Number(applied.last);
+  const hashes = new Set(applied.hashes);
+
+  for (const entry of entries) {
+    if (entry.when > last) {
+      continue;
+    }
+    if (!hashes.has(entry.hash)) {
+      throw new Error(
+        `Migration ${entry.tag} is unapplied but is not newer than the last applied migration. ` +
+          "Drizzle would skip it silently; regenerate the migration so its journal timestamp is current."
+      );
+    }
+  }
+
+  return entries.filter((entry) => !hashes.has(entry.hash)).length;
+};
+
 export const runDatabaseMigrations = async (databaseUrl) => {
   assertDatabaseUrl(databaseUrl);
-
-  const migrationsDirectory = fileURLToPath(
-    new URL("../migrations/", import.meta.url)
-  );
-  const entries = await readdir(migrationsDirectory);
-  const migrationFiles = entries
-    .filter((file) => file.endsWith(".sql"))
-    .toSorted((left, right) => left.localeCompare(right));
 
   const connectionOptions = {
     max: 1,
@@ -51,57 +114,21 @@ export const runDatabaseMigrations = async (databaseUrl) => {
 
   try {
     await withFoundationBootstrapLock(sql, async () => {
-      await sql`
-        create table if not exists app_migrations (
-          name text primary key,
-          checksum text not null,
-          applied_at timestamptz not null default now()
-        )
-      `;
-      await sql`
-        alter table app_migrations
-        add column if not exists checksum text
-      `;
+      const entries = await readJournal();
+      const pending = await assertLedgerMatchesJournal(sql, entries);
 
-      for (const name of migrationFiles) {
-        // Migrations apply in file order against one connection.
-        // eslint-disable-next-line no-await-in-loop
-        const contents = await readFile(
-          `${migrationsDirectory}/${name}`,
-          "utf-8"
-        );
-        const checksum = createHash("sha256")
-          .update(contents, "utf-8")
-          .digest("hex");
-        // eslint-disable-next-line no-await-in-loop
-        const [applied] = await sql`
-          select checksum from app_migrations where name = ${name}
-        `;
+      await migrate(drizzle(sql), {
+        migrationsFolder: migrationsDirectory,
+        migrationsSchema,
+        migrationsTable,
+      });
 
-        if (!applied) {
-          // eslint-disable-next-line no-await-in-loop
-          await sql.begin(async (transaction) => {
-            await transaction.unsafe(contents);
-            await transaction`
-              insert into app_migrations (name, checksum)
-              values (${name}, ${checksum})
-            `;
-          });
-          console.log(`Applied migration ${name}`);
-        } else if (applied.checksum === null) {
-          // eslint-disable-next-line no-await-in-loop
-          await sql`
-            update app_migrations
-            set checksum = ${checksum}
-            where name = ${name} and checksum is null
-          `;
-          console.log(`Baselined migration checksum ${name}`);
-        } else if (applied.checksum !== checksum) {
-          throw new Error(
-            `Migration checksum mismatch for ${name}; applied migrations are immutable.`
-          );
-        }
-      }
+      const suffix = pending === singleMigration ? "" : "s";
+      console.log(
+        pending === noPendingMigrations
+          ? "Database schema is current; no migrations applied."
+          : `Applied ${pending} migration${suffix}.`
+      );
     });
   } finally {
     await sql.end({ timeout: 3 });
@@ -112,7 +139,7 @@ const scriptArgumentIndex = 1;
 
 if (
   process.argv.at(scriptArgumentIndex) &&
-  import.meta.filename === resolve(process.argv.at(scriptArgumentIndex))
+  import.meta.filename === path.resolve(process.argv.at(scriptArgumentIndex))
 ) {
   const databaseUrl = process.env.DATABASE_URL?.trim();
   if (databaseUrl) {

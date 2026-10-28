@@ -6,7 +6,6 @@ import { demoSeed } from "../seed-data";
 import {
   activities,
   activityVersions,
-  appMigrations,
   attempts,
   identities,
   lessonDraftRequests,
@@ -39,7 +38,6 @@ import type { GenerationPersistenceBackend } from "./generation-persistence";
 const schema = {
   activities,
   activityVersions,
-  appMigrations,
   attempts,
   identities,
   lessonDraftRequests,
