@@ -21,9 +21,10 @@ export const privateAnswerRelationshipsSchema = z
   .min(1)
   .max(recordLimits.answerRelationshipMax)
   .refine(
-    (relationships) =>
-      new Set(relationships.map((entry) => entry.itemId)).size ===
-      relationships.length,
+    (relationships) => {
+      const items = new Set(relationships.map((entry) => entry.itemId));
+      return items.size === relationships.length;
+    },
     { message: "Each item may have one answer relationship." }
   );
 

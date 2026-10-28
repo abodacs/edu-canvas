@@ -1,17 +1,9 @@
-import type { z } from "zod";
-
-import {
-  capabilitiesForRole,
-  type Actor,
-  type Capability,
-} from "../identity/types";
+import { capabilitiesForRole } from "../identity/types";
 import { createId } from "../ids";
 import {
   curatedReferenceSchema,
   lessonVersionSchema,
   publicationSchema,
-  type LessonVersion,
-  type Publication,
 } from "../records/authoring";
 import {
   assignmentSchema,
@@ -19,11 +11,6 @@ import {
   learnerAttemptSchema,
   learnerRunSchema,
   teacherDecisionSchema,
-  type Assignment,
-  type AssistanceEvent,
-  type LearnerAttempt,
-  type LearnerRun,
-  type TeacherDecision,
 } from "../records/delivery";
 import { recordError } from "../records/errors";
 import { canonicalJson } from "../records/canonical-json";
@@ -41,15 +28,6 @@ import {
   readEvidenceInputSchema,
   readLessonInputSchema,
   writeInputSchemas,
-  type AppendVersionInput,
-  type AssignInput,
-  type ChooseInput,
-  type PublishInput,
-  type RecordAttemptInput,
-  type RecordHintInput,
-  type StartRunInput,
-  type StoreGroundingInput,
-  type WriteAction,
 } from "../records/inputs";
 import {
   evidenceAssistanceEvents,
@@ -58,17 +36,36 @@ import {
   projectStudentLesson,
   projectTeacherEvidence,
   projectTeacherVersion,
-  type StudentEvidenceProjection,
-  type StudentLessonProjection,
-  type TeacherEvidenceProjection,
-  type TeacherVersionProjection,
 } from "../records/projections";
-import {
-  RecordUniqueViolation,
-  type RecordBackend,
-  type RecordTableName,
-  type StoredRow,
-} from "./records-port";
+import { RecordUniqueViolationError } from "./records-port";
+import type {
+  AppendVersionInput,
+  AssignInput,
+  ChooseInput,
+  PublishInput,
+  RecordAttemptInput,
+  RecordHintInput,
+  StartRunInput,
+  StoreGroundingInput,
+  WriteAction,
+} from "../records/inputs";
+import type {
+  StudentEvidenceProjection,
+  StudentLessonProjection,
+  TeacherEvidenceProjection,
+  TeacherVersionProjection,
+} from "../records/projections";
+import type {
+  Assignment,
+  AssistanceEvent,
+  LearnerAttempt,
+  LearnerRun,
+  TeacherDecision,
+} from "../records/delivery";
+import type { LessonVersion, Publication } from "../records/authoring";
+import type { Actor, Capability } from "../identity/types";
+import type { RecordBackend, RecordTableName, StoredRow } from "./records-port";
+import type { z } from "zod";
 
 export interface RecordMutationResult {
   readonly id: string;
@@ -139,7 +136,10 @@ const learnerActions: ReadonlySet<WriteAction> = new Set([
   "record-attempt",
 ]);
 
-const nowIso = (): string => new Date().toISOString();
+const nowIso = (): string => {
+  const now = new Date();
+  return now.toISOString();
+};
 
 const toIso = (value: unknown): string => {
   if (value instanceof Date) {
@@ -152,8 +152,10 @@ const toIso = (value: unknown): string => {
 const stripOperationKey = <T extends { operationKey: string }>(
   input: T
 ): Omit<T, "operationKey"> => {
-  const { operationKey, ...payload } = input;
-  return payload;
+  const payload = Object.fromEntries(
+    Object.entries(input).filter(([key]) => key !== "operationKey")
+  );
+  return payload as Omit<T, "operationKey">;
 };
 
 const parseOrThrow = <T>(schema: z.ZodType<T>, value: unknown): T => {
@@ -175,6 +177,202 @@ const hydrate = <T>(parse: () => T): T => {
 const isNullOrUndefined = (value: unknown): boolean =>
   value === null || value === undefined;
 
+const assertCapability = (actor: Actor, action: WriteAction): void => {
+  const capability = writeCapability[action];
+  if (!capabilitiesForRole(actor.role).includes(capability)) {
+    throw recordError("FORBIDDEN");
+  }
+  const isWantsLearner = learnerActions.has(action);
+  if (isWantsLearner && actor.role !== "student") {
+    throw recordError("FORBIDDEN");
+  }
+  if (!isWantsLearner && actor.role !== "teacher") {
+    throw recordError("FORBIDDEN");
+  }
+};
+
+const mapStorageError = (error: unknown): unknown => {
+  if (!(error instanceof RecordUniqueViolationError)) {
+    return error;
+  }
+  if (error.constraint.includes("operation_receipts_actor_action_key")) {
+    return recordError("IDEMPOTENCY_CONFLICT", { cause: error });
+  }
+  if (
+    error.constraint.includes("lesson_versions_package_id_revision") ||
+    error.constraint.includes("learner_attempts_run_item_ordinal") ||
+    error.constraint.includes("assistance_events_run_item_ordinal")
+  ) {
+    return recordError("STALE_VERSION", { cause: error });
+  }
+  return error.constraint.includes(
+    "publications_tenant_id_lesson_version_id"
+  ) || error.constraint.includes("learner_runs_tenant_id_assignment_id")
+    ? recordError("IDEMPOTENCY_CONFLICT", { cause: error })
+    : error;
+};
+
+const packageProjection = (row: StoredRow): AuthoringPackageProjection => {
+  return {
+    id: row.id as string,
+    tenantId: row.tenant_id as string,
+    title: row.title as string,
+    standardId: row.standard_id as string,
+    headRevision: row.head_revision as number,
+    createdAt: toIso(row.created_at),
+    updatedAt: toIso(row.updated_at),
+  };
+};
+
+const mapVersion = (row: StoredRow): LessonVersion => {
+  return hydrate(() => {
+    return lessonVersionSchema.parse({
+      id: row.id,
+      tenantId: row.tenant_id,
+      packageId: row.package_id,
+      revision: row.revision,
+      schemaVersion: row.schema_version,
+      parentVersionId: row.parent_version_id ?? null,
+      predecessorVersionId: row.predecessor_version_id ?? null,
+      curatedReferenceId: row.curated_reference_id,
+      generationRequestId: row.generation_request_id ?? null,
+      conceptIds: row.concept_ids,
+      variantReferences: row.variant_references,
+      objectiveHash: row.objective_hash,
+      sections: row.sections,
+      provenance: row.provenance,
+      revisionKind: row.revision_kind,
+      changedSectionIds: row.changed_section_ids,
+      contentHash: row.content_hash,
+      packageHash: row.package_hash,
+      privateAnswerDigest: row.private_answer_digest,
+      privateAnswerRelationships: row.private_answer_relationships,
+      validationResult: row.validation_result,
+      validationResultHash: row.validation_result_hash,
+      ruleVersions: row.rule_versions,
+      createdAt: toIso(row.created_at),
+    });
+  });
+};
+
+const mapPublication = (row: StoredRow): Publication => {
+  return hydrate(() => {
+    return publicationSchema.parse({
+      id: row.id,
+      tenantId: row.tenant_id,
+      schemaVersion: row.schema_version,
+      lessonVersionId: row.lesson_version_id,
+      approvingActorId: row.approving_actor_id,
+      contentHash: row.content_hash,
+      packageHash: row.package_hash,
+      privateAnswerDigest: row.private_answer_digest,
+      validationResultHash: row.validation_result_hash,
+      ruleVersions: row.rule_versions,
+      approvedAt: toIso(row.approved_at),
+      createdAt: toIso(row.created_at),
+    });
+  });
+};
+
+const mapAssignment = (row: StoredRow): Assignment => {
+  return hydrate(() => {
+    return assignmentSchema.parse({
+      id: row.id,
+      tenantId: row.tenant_id,
+      schemaVersion: row.schema_version,
+      publicationId: row.publication_id,
+      learnerId: row.learner_id,
+      assigningActorId: row.assigning_actor_id,
+      createdAt: toIso(row.created_at),
+    });
+  });
+};
+
+const mapRun = (row: StoredRow): LearnerRun => {
+  return hydrate(() => {
+    return learnerRunSchema.parse({
+      id: row.id,
+      tenantId: row.tenant_id,
+      schemaVersion: row.schema_version,
+      assignmentId: row.assignment_id,
+      learnerId: row.learner_id,
+      publicationId: row.publication_id,
+      assignedVariantId: row.assigned_variant_id,
+      stage: row.stage,
+      firstResponseStatus: row.first_response_status,
+      revision: row.revision,
+      nextActivity: row.next_activity ?? null,
+      createdAt: toIso(row.created_at),
+      updatedAt: toIso(row.updated_at),
+    });
+  });
+};
+
+const mapAssistance = (row: StoredRow): AssistanceEvent => {
+  return hydrate(() => {
+    return assistanceEventSchema.parse({
+      id: row.id,
+      tenantId: row.tenant_id,
+      schemaVersion: row.schema_version,
+      runId: row.run_id,
+      itemId: row.item_id,
+      kind: row.kind,
+      ordinal: row.ordinal,
+      recordedAt: toIso(row.recorded_at),
+    });
+  });
+};
+
+const mapAttempt = (row: StoredRow): LearnerAttempt => {
+  return hydrate(() => {
+    return learnerAttemptSchema.parse({
+      id: row.id,
+      tenantId: row.tenant_id,
+      schemaVersion: row.schema_version,
+      runId: row.run_id,
+      publicationId: row.publication_id,
+      lessonVersionId: row.lesson_version_id,
+      itemId: row.item_id,
+      ordinal: row.ordinal,
+      priorAttemptId: row.prior_attempt_id ?? null,
+      selectedPairs: row.selected_pairs,
+      assistanceState: row.assistance_state,
+      assistanceEventIds: row.assistance_event_ids,
+      score: row.score,
+      correctness: row.correctness,
+      gradingRuleVersion: row.grading_rule_version,
+      createdAt: toIso(row.created_at),
+    });
+  });
+};
+
+const mapDecision = (row: StoredRow): TeacherDecision => {
+  return hydrate(() => {
+    return teacherDecisionSchema.parse({
+      id: row.id,
+      tenantId: row.tenant_id,
+      schemaVersion: row.schema_version,
+      runId: row.run_id,
+      teacherActorId: row.teacher_actor_id,
+      evidenceHash: row.evidence_hash,
+      proposal: row.proposal,
+      action: row.action,
+      approvedTargetId: row.approved_target_id ?? null,
+      createdAt: toIso(row.created_at),
+    });
+  });
+};
+
+const collectItemIds = (version: LessonVersion): Set<string> => {
+  const items = new Set<string>();
+  for (const section of version.sections) {
+    for (const itemId of section.itemIds) {
+      items.add(itemId);
+    }
+  }
+  return items;
+};
+
 export interface RecordCommandsOptions {
   readonly clock?: () => string;
 }
@@ -185,7 +383,7 @@ export const createRecordCommands = <TTransaction>(
 ): RecordPersistence => {
   const clock = options.clock ?? nowIso;
 
-  const findOne = async (
+  const findOne = (
     transaction: TTransaction,
     table: RecordTableName,
     where: Readonly<Record<string, string | number | boolean | null>>
@@ -195,28 +393,13 @@ export const createRecordCommands = <TTransaction>(
   const requireRow = async (
     transaction: TTransaction,
     table: RecordTableName,
-    where: Readonly<Record<string, string | number | boolean | null>>,
-    code: "FORBIDDEN" | "NOT_FOUND" | "INVALID_INPUT" = "FORBIDDEN"
+    where: Readonly<Record<string, string | number | boolean | null>>
   ): Promise<StoredRow> => {
     const row = await findOne(transaction, table, where);
     if (!row) {
-      throw recordError(code);
+      throw recordError("FORBIDDEN");
     }
     return row;
-  };
-
-  const assertCapability = (actor: Actor, action: WriteAction): void => {
-    const capability = writeCapability[action];
-    if (!capabilitiesForRole(actor.role).includes(capability)) {
-      throw recordError("FORBIDDEN");
-    }
-    const wantsLearner = learnerActions.has(action);
-    if (wantsLearner && actor.role !== "student") {
-      throw recordError("FORBIDDEN");
-    }
-    if (!wantsLearner && actor.role !== "teacher") {
-      throw recordError("FORBIDDEN");
-    }
   };
 
   const verifyActorContext = async (
@@ -267,29 +450,6 @@ export const createRecordCommands = <TTransaction>(
     }
   };
 
-  const mapStorageError = (error: unknown): unknown => {
-    if (!(error instanceof RecordUniqueViolation)) {
-      return error;
-    }
-    if (error.constraint.includes("operation_receipts_actor_action_key")) {
-      return recordError("IDEMPOTENCY_CONFLICT", { cause: error });
-    }
-    if (
-      error.constraint.includes("lesson_versions_package_id_revision") ||
-      error.constraint.includes("learner_attempts_run_item_ordinal") ||
-      error.constraint.includes("assistance_events_run_item_ordinal")
-    ) {
-      return recordError("STALE_VERSION", { cause: error });
-    }
-    if (
-      error.constraint.includes("publications_tenant_id_lesson_version_id") ||
-      error.constraint.includes("learner_runs_tenant_id_assignment_id")
-    ) {
-      return recordError("IDEMPOTENCY_CONFLICT", { cause: error });
-    }
-    return error;
-  };
-
   const runWrite = async <TInput extends { operationKey: string }>(
     actor: Actor,
     action: WriteAction,
@@ -302,6 +462,9 @@ export const createRecordCommands = <TTransaction>(
       readonly resultIds: readonly string[];
     }>
   ): Promise<RecordMutationResult> => {
+    if (!actor) {
+      throw recordError("UNAUTHENTICATED");
+    }
     const parsed = writeInputSchemas[action].safeParse(raw);
     if (!parsed.success) {
       throw recordError("INVALID_INPUT", { cause: parsed.error });
@@ -328,7 +491,7 @@ export const createRecordCommands = <TTransaction>(
             });
           }
           const ids = receipt.result_ids as readonly string[];
-          const first = ids[0];
+          const [first] = ids;
           if (typeof first !== "string") {
             throw recordError("PERSISTENCE_UNAVAILABLE");
           }
@@ -350,7 +513,7 @@ export const createRecordCommands = <TTransaction>(
           result_ids: [...result.resultIds],
           created_at: clock(),
         });
-        const first = result.resultIds[0];
+        const [first] = result.resultIds;
         if (typeof first !== "string") {
           throw recordError("PERSISTENCE_UNAVAILABLE");
         }
@@ -366,6 +529,9 @@ export const createRecordCommands = <TTransaction>(
     capability: Capability,
     work: (transaction: TTransaction) => Promise<T>
   ): Promise<T> => {
+    if (!actor) {
+      throw recordError("UNAUTHENTICATED");
+    }
     if (!capabilitiesForRole(actor.role).includes(capability)) {
       throw recordError("FORBIDDEN");
     }
@@ -379,138 +545,6 @@ export const createRecordCommands = <TTransaction>(
       throw mapStorageError(error);
     }
   };
-
-  const mapVersion = (row: StoredRow): LessonVersion =>
-    hydrate(() =>
-      lessonVersionSchema.parse({
-        id: row.id,
-        tenantId: row.tenant_id,
-        packageId: row.package_id,
-        revision: row.revision,
-        schemaVersion: row.schema_version,
-        parentVersionId: row.parent_version_id ?? null,
-        predecessorVersionId: row.predecessor_version_id ?? null,
-        curatedReferenceId: row.curated_reference_id,
-        generationRequestId: row.generation_request_id ?? null,
-        conceptIds: row.concept_ids,
-        variantReferences: row.variant_references,
-        objectiveHash: row.objective_hash,
-        sections: row.sections,
-        provenance: row.provenance,
-        revisionKind: row.revision_kind,
-        changedSectionIds: row.changed_section_ids,
-        contentHash: row.content_hash,
-        packageHash: row.package_hash,
-        privateAnswerDigest: row.private_answer_digest,
-        privateAnswerRelationships: row.private_answer_relationships,
-        validationResult: row.validation_result,
-        validationResultHash: row.validation_result_hash,
-        ruleVersions: row.rule_versions,
-        createdAt: toIso(row.created_at),
-      })
-    );
-
-  const mapPublication = (row: StoredRow): Publication =>
-    hydrate(() =>
-      publicationSchema.parse({
-        id: row.id,
-        tenantId: row.tenant_id,
-        schemaVersion: row.schema_version,
-        lessonVersionId: row.lesson_version_id,
-        approvingActorId: row.approving_actor_id,
-        contentHash: row.content_hash,
-        packageHash: row.package_hash,
-        privateAnswerDigest: row.private_answer_digest,
-        validationResultHash: row.validation_result_hash,
-        ruleVersions: row.rule_versions,
-        approvedAt: toIso(row.approved_at),
-        createdAt: toIso(row.created_at),
-      })
-    );
-
-  const mapAssignment = (row: StoredRow): Assignment =>
-    hydrate(() =>
-      assignmentSchema.parse({
-        id: row.id,
-        tenantId: row.tenant_id,
-        schemaVersion: row.schema_version,
-        publicationId: row.publication_id,
-        learnerId: row.learner_id,
-        assigningActorId: row.assigning_actor_id,
-        createdAt: toIso(row.created_at),
-      })
-    );
-
-  const mapRun = (row: StoredRow): LearnerRun =>
-    hydrate(() =>
-      learnerRunSchema.parse({
-        id: row.id,
-        tenantId: row.tenant_id,
-        schemaVersion: row.schema_version,
-        assignmentId: row.assignment_id,
-        learnerId: row.learner_id,
-        publicationId: row.publication_id,
-        assignedVariantId: row.assigned_variant_id,
-        stage: row.stage,
-        firstResponseStatus: row.first_response_status,
-        revision: row.revision,
-        nextActivity: row.next_activity ?? null,
-        createdAt: toIso(row.created_at),
-        updatedAt: toIso(row.updated_at),
-      })
-    );
-
-  const mapAssistance = (row: StoredRow): AssistanceEvent =>
-    hydrate(() =>
-      assistanceEventSchema.parse({
-        id: row.id,
-        tenantId: row.tenant_id,
-        schemaVersion: row.schema_version,
-        runId: row.run_id,
-        itemId: row.item_id,
-        kind: row.kind,
-        ordinal: row.ordinal,
-        recordedAt: toIso(row.recorded_at),
-      })
-    );
-
-  const mapAttempt = (row: StoredRow): LearnerAttempt =>
-    hydrate(() =>
-      learnerAttemptSchema.parse({
-        id: row.id,
-        tenantId: row.tenant_id,
-        schemaVersion: row.schema_version,
-        runId: row.run_id,
-        publicationId: row.publication_id,
-        lessonVersionId: row.lesson_version_id,
-        itemId: row.item_id,
-        ordinal: row.ordinal,
-        priorAttemptId: row.prior_attempt_id ?? null,
-        selectedPairs: row.selected_pairs,
-        assistanceState: row.assistance_state,
-        assistanceEventIds: row.assistance_event_ids,
-        score: row.score,
-        correctness: row.correctness,
-        gradingRuleVersion: row.grading_rule_version,
-        createdAt: toIso(row.created_at),
-      })
-    );
-
-  const mapDecision = (row: StoredRow): TeacherDecision =>
-    hydrate(() =>
-      teacherDecisionSchema.parse({
-        id: row.id,
-        tenantId: row.tenant_id,
-        schemaVersion: row.schema_version,
-        runId: row.run_id,
-        teacherActorId: row.teacher_actor_id,
-        evidenceHash: row.evidence_hash,
-        proposal: row.proposal,
-        action: row.action,
-        approvedTargetId: row.approved_target_id ?? null,
-        createdAt: toIso(row.created_at),
-      })
-    );
 
   const loadVersion = async (
     transaction: TTransaction,
@@ -588,21 +622,11 @@ export const createRecordCommands = <TTransaction>(
     }
   };
 
-  const collectItemIds = (version: LessonVersion): Set<string> => {
-    const items = new Set<string>();
-    for (const section of version.sections) {
-      for (const itemId of section.itemIds) {
-        items.add(itemId);
-      }
-    }
-    return items;
-  };
-
-  const storeGrounding = async (
+  const storeGrounding = (
     actor: Actor,
     raw: unknown
-  ): Promise<RecordMutationResult> =>
-    runWrite<StoreGroundingInput>(
+  ): Promise<RecordMutationResult> => {
+    return runWrite<StoreGroundingInput>(
       actor,
       "store-grounding",
       raw,
@@ -654,12 +678,13 @@ export const createRecordCommands = <TTransaction>(
         return { resultKind: "curated-reference", resultIds: [curated.id] };
       }
     );
+  };
 
-  const appendVersion = async (
+  const appendVersion = (
     actor: Actor,
     raw: unknown
-  ): Promise<RecordMutationResult> =>
-    runWrite<AppendVersionInput>(
+  ): Promise<RecordMutationResult> => {
+    return runWrite<AppendVersionInput>(
       actor,
       "append-version",
       raw,
@@ -722,11 +747,23 @@ export const createRecordCommands = <TTransaction>(
         }
 
         for (const conceptId of input.conceptIds) {
+          // Sequential reads keep the transaction ordered and stop at the first foreign referent.
+          // eslint-disable-next-line no-await-in-loop
           const concept = await requireRow(transaction, "prerequisite_nodes", {
             tenant_id: actor.tenantId,
             id: conceptId,
           });
           if (concept.standard_id !== input.package.standardId) {
+            throw recordError("FORBIDDEN");
+          }
+        }
+
+        for (const edit of input.provenance.authoredEdits) {
+          // eslint-disable-next-line no-await-in-loop
+          const editActor = await requireRow(transaction, "actors", {
+            id: edit.actorId,
+          });
+          if (editActor.is_active !== true) {
             throw recordError("FORBIDDEN");
           }
         }
@@ -832,12 +869,13 @@ export const createRecordCommands = <TTransaction>(
         return { resultKind: "lesson-version", resultIds: [version.id] };
       }
     );
+  };
 
-  const publish = async (
+  const publish = (
     actor: Actor,
     raw: unknown
-  ): Promise<RecordMutationResult> =>
-    runWrite<PublishInput>(
+  ): Promise<RecordMutationResult> => {
+    return runWrite<PublishInput>(
       actor,
       "publish",
       raw,
@@ -852,14 +890,15 @@ export const createRecordCommands = <TTransaction>(
         if (!version.validationResult.ok) {
           throw recordError("INVALID_INPUT");
         }
-        if (
-          version.contentHash !== input.contentHash ||
-          version.packageHash !== input.packageHash ||
-          version.privateAnswerDigest !== input.privateAnswerDigest ||
-          version.validationResultHash !== input.validationResultHash ||
-          canonicalJson(version.ruleVersions) !==
-            canonicalJson(input.ruleVersions)
-        ) {
+        const areHashesEqual =
+          version.contentHash === input.contentHash &&
+          version.packageHash === input.packageHash &&
+          version.privateAnswerDigest === input.privateAnswerDigest;
+        const isEvidenceEqual =
+          version.validationResultHash === input.validationResultHash &&
+          canonicalJson(version.ruleVersions) ===
+            canonicalJson(input.ruleVersions);
+        if (!areHashesEqual || !isEvidenceEqual) {
           throw recordError("STALE_VERSION");
         }
 
@@ -896,76 +935,83 @@ export const createRecordCommands = <TTransaction>(
         return { resultKind: "publication", resultIds: [publication.id] };
       }
     );
+  };
 
-  const assign = async (
+  const assign = (
     actor: Actor,
     raw: unknown
-  ): Promise<RecordMutationResult> =>
-    runWrite<AssignInput>(actor, "assign", raw, async (transaction, input) => {
-      const publication = await requirePublication(
-        transaction,
-        actor.tenantId,
-        input.publicationId
-      );
-      const version = await loadVersion(
-        transaction,
-        publication.lessonVersionId,
-        actor.tenantId
-      );
-      await requireOwnedPackage(transaction, actor, version.packageId);
+  ): Promise<RecordMutationResult> => {
+    return runWrite<AssignInput>(
+      actor,
+      "assign",
+      raw,
+      async (transaction, input) => {
+        const publication = await requirePublication(
+          transaction,
+          actor.tenantId,
+          input.publicationId
+        );
+        const version = await loadVersion(
+          transaction,
+          publication.lessonVersionId,
+          actor.tenantId
+        );
+        await requireOwnedPackage(transaction, actor, version.packageId);
 
-      if (
-        input.classId &&
-        (actor.role !== "teacher" ||
-          !actor.rosterClassIds.some((classId) => classId === input.classId))
-      ) {
-        throw recordError("FORBIDDEN");
+        if (
+          input.classId &&
+          (actor.role !== "teacher" ||
+            actor.rosterClassIds.every((classId) => classId !== input.classId))
+        ) {
+          throw recordError("FORBIDDEN");
+        }
+
+        const learner = await requireRow(transaction, "identities", {
+          tenant_id: actor.tenantId,
+          id: input.learnerId,
+        });
+        if (learner.role !== "student" || learner.is_active !== true) {
+          throw recordError("FORBIDDEN");
+        }
+        const learnerMembership = await findOne(transaction, "memberships", {
+          tenant_id: actor.tenantId,
+          learner_id: input.learnerId,
+          status: "active",
+        });
+        if (!learnerMembership) {
+          throw recordError("FORBIDDEN");
+        }
+
+        const assignment = assignmentSchema.parse({
+          id: createId(),
+          tenantId: actor.tenantId,
+          schemaVersion: "assignment-v1",
+          publicationId: publication.id,
+          learnerId: input.learnerId,
+          assigningActorId: actor.actorId,
+          createdAt: clock(),
+        });
+
+        await backend.insert(transaction, "assignments", {
+          id: assignment.id,
+          tenant_id: assignment.tenantId,
+          schema_version: assignment.schemaVersion,
+          publication_id: assignment.publicationId,
+          learner_id: assignment.learnerId,
+          assigning_actor_id: assignment.assigningActorId,
+          created_at: assignment.createdAt,
+        });
+
+        return { resultKind: "assignment", resultIds: [assignment.id] };
       }
+    );
+  };
 
-      const learner = await requireRow(transaction, "identities", {
-        tenant_id: actor.tenantId,
-        id: input.learnerId,
-      });
-      if (learner.role !== "student" || learner.is_active !== true) {
-        throw recordError("FORBIDDEN");
-      }
-      const learnerMembership = await findOne(transaction, "memberships", {
-        tenant_id: actor.tenantId,
-        learner_id: input.learnerId,
-        status: "active",
-      });
-      if (!learnerMembership) {
-        throw recordError("FORBIDDEN");
-      }
-
-      const assignment = assignmentSchema.parse({
-        id: createId(),
-        tenantId: actor.tenantId,
-        schemaVersion: "assignment-v1",
-        publicationId: publication.id,
-        learnerId: input.learnerId,
-        assigningActorId: actor.actorId,
-        createdAt: clock(),
-      });
-
-      await backend.insert(transaction, "assignments", {
-        id: assignment.id,
-        tenant_id: assignment.tenantId,
-        schema_version: assignment.schemaVersion,
-        publication_id: assignment.publicationId,
-        learner_id: assignment.learnerId,
-        assigning_actor_id: assignment.assigningActorId,
-        created_at: assignment.createdAt,
-      });
-
-      return { resultKind: "assignment", resultIds: [assignment.id] };
-    });
-
-  const startRun = async (
+  const startRun = (
     actor: Actor,
     raw: unknown
-  ): Promise<RecordMutationResult> =>
-    runWrite<StartRunInput>(
+  ): Promise<RecordMutationResult> => {
+    return runWrite<StartRunInput>(
       actor,
       "start-run",
       raw,
@@ -992,8 +1038,8 @@ export const createRecordCommands = <TTransaction>(
           actor.tenantId
         );
         if (
-          !version.variantReferences.some(
-            (variant) => variant.variantId === input.assignedVariantId
+          version.variantReferences.every(
+            (variant) => variant.variantId !== input.assignedVariantId
           )
         ) {
           throw recordError("INVALID_INPUT");
@@ -1048,12 +1094,13 @@ export const createRecordCommands = <TTransaction>(
         return { resultKind: "learner-run", resultIds: [run.id] };
       }
     );
+  };
 
-  const recordHint = async (
+  const recordHint = (
     actor: Actor,
     raw: unknown
-  ): Promise<RecordMutationResult> =>
-    runWrite<RecordHintInput>(
+  ): Promise<RecordMutationResult> => {
+    return runWrite<RecordHintInput>(
       actor,
       "record-hint",
       raw,
@@ -1113,12 +1160,13 @@ export const createRecordCommands = <TTransaction>(
         return { resultKind: "assistance-event", resultIds: [event.id] };
       }
     );
+  };
 
-  const recordAttempt = async (
+  const recordAttempt = (
     actor: Actor,
     raw: unknown
-  ): Promise<RecordMutationResult> =>
-    runWrite<RecordAttemptInput>(
+  ): Promise<RecordMutationResult> => {
+    return runWrite<RecordAttemptInput>(
       actor,
       "record-attempt",
       raw,
@@ -1153,6 +1201,7 @@ export const createRecordCommands = <TTransaction>(
         }
 
         for (const eventId of input.assistanceEventIds) {
+          // eslint-disable-next-line no-await-in-loop
           const event = await requireRow(transaction, "assistance_events", {
             tenant_id: actor.tenantId,
             id: eventId,
@@ -1223,118 +1272,113 @@ export const createRecordCommands = <TTransaction>(
         return { resultKind: "learner-attempt", resultIds: [attempt.id] };
       }
     );
+  };
 
-  const choose = async (
+  const choose = (
     actor: Actor,
     raw: unknown
-  ): Promise<RecordMutationResult> =>
-    runWrite<ChooseInput>(actor, "choose", raw, async (transaction, input) => {
-      const runRow = await requireRow(transaction, "learner_runs", {
-        tenant_id: actor.tenantId,
-        id: input.runId,
-      });
-      const run = mapRun(runRow);
-      const assignmentRow = await requireRow(transaction, "assignments", {
-        tenant_id: actor.tenantId,
-        id: run.assignmentId,
-      });
-      if (mapAssignment(assignmentRow).assigningActorId !== actor.actorId) {
-        throw recordError("FORBIDDEN");
-      }
+  ): Promise<RecordMutationResult> => {
+    return runWrite<ChooseInput>(
+      actor,
+      "choose",
+      raw,
+      async (transaction, input) => {
+        const runRow = await requireRow(transaction, "learner_runs", {
+          tenant_id: actor.tenantId,
+          id: input.runId,
+        });
+        const run = mapRun(runRow);
+        const assignmentRow = await requireRow(transaction, "assignments", {
+          tenant_id: actor.tenantId,
+          id: run.assignmentId,
+        });
+        if (mapAssignment(assignmentRow).assigningActorId !== actor.actorId) {
+          throw recordError("FORBIDDEN");
+        }
 
-      const attempts = (
-        await backend.list(
+        const attemptsRows = await backend.list(
           transaction,
           "learner_attempts",
           { tenant_id: actor.tenantId, run_id: run.id },
           { column: "ordinal", direction: "asc" }
-        )
-      ).map(mapAttempt);
-      const assistance = (
-        await backend.list(
+        );
+        const attempts = attemptsRows.map(mapAttempt);
+        const assistanceRows = await backend.list(
           transaction,
           "assistance_events",
           { tenant_id: actor.tenantId, run_id: run.id },
           { column: "ordinal", direction: "asc" }
-        )
-      ).map(mapAssistance);
+        );
+        const assistance = assistanceRows.map(mapAssistance);
 
-      const currentEvidenceHash = createEvidenceHash({
-        runId: run.id,
-        publicationId: run.publicationId,
-        learnerId: run.learnerId,
-        attempts: evidenceAttempts(attempts),
-        assistanceEvents: evidenceAssistanceEvents(assistance),
-      });
-      if (currentEvidenceHash !== input.evidenceHash) {
-        throw recordError("STALE_VERSION");
+        const currentEvidenceHash = createEvidenceHash({
+          runId: run.id,
+          publicationId: run.publicationId,
+          learnerId: run.learnerId,
+          attempts: evidenceAttempts(attempts),
+          assistanceEvents: evidenceAssistanceEvents(assistance),
+        });
+        if (currentEvidenceHash !== input.evidenceHash) {
+          throw recordError("STALE_VERSION");
+        }
+
+        const publication = await requirePublication(
+          transaction,
+          actor.tenantId,
+          run.publicationId
+        );
+        const version = await loadVersion(
+          transaction,
+          publication.lessonVersionId,
+          actor.tenantId
+        );
+        if (
+          input.approvedTargetId &&
+          !collectItemIds(version).has(input.approvedTargetId)
+        ) {
+          throw recordError("INVALID_INPUT");
+        }
+
+        const decision = teacherDecisionSchema.parse({
+          id: createId(),
+          tenantId: actor.tenantId,
+          schemaVersion: "teacher-decision-v1",
+          runId: run.id,
+          teacherActorId: actor.actorId,
+          evidenceHash: input.evidenceHash,
+          proposal: input.proposal,
+          action: input.action,
+          approvedTargetId: input.approvedTargetId,
+          createdAt: clock(),
+        });
+
+        await backend.insert(transaction, "teacher_decisions", {
+          id: decision.id,
+          tenant_id: decision.tenantId,
+          schema_version: decision.schemaVersion,
+          run_id: decision.runId,
+          teacher_actor_id: decision.teacherActorId,
+          evidence_hash: decision.evidenceHash,
+          proposal: decision.proposal,
+          action: decision.action,
+          approved_target_id: decision.approvedTargetId,
+          created_at: decision.createdAt,
+        });
+
+        await advanceRun(transaction, run, input.expectedRunRevision, {
+          stage: input.action === "pause" ? "paused" : "advanced",
+          next_activity:
+            input.action === "pause" || !input.approvedTargetId
+              ? null
+              : { targetId: input.approvedTargetId },
+        });
+
+        return { resultKind: "teacher-decision", resultIds: [decision.id] };
       }
+    );
+  };
 
-      const publication = await requirePublication(
-        transaction,
-        actor.tenantId,
-        run.publicationId
-      );
-      const version = await loadVersion(
-        transaction,
-        publication.lessonVersionId,
-        actor.tenantId
-      );
-      if (
-        input.approvedTargetId &&
-        !collectItemIds(version).has(input.approvedTargetId)
-      ) {
-        throw recordError("INVALID_INPUT");
-      }
-
-      const decision = teacherDecisionSchema.parse({
-        id: createId(),
-        tenantId: actor.tenantId,
-        schemaVersion: "teacher-decision-v1",
-        runId: run.id,
-        teacherActorId: actor.actorId,
-        evidenceHash: input.evidenceHash,
-        proposal: input.proposal,
-        action: input.action,
-        approvedTargetId: input.approvedTargetId,
-        createdAt: clock(),
-      });
-
-      await backend.insert(transaction, "teacher_decisions", {
-        id: decision.id,
-        tenant_id: decision.tenantId,
-        schema_version: decision.schemaVersion,
-        run_id: decision.runId,
-        teacher_actor_id: decision.teacherActorId,
-        evidence_hash: decision.evidenceHash,
-        proposal: decision.proposal,
-        action: decision.action,
-        approved_target_id: decision.approvedTargetId,
-        created_at: decision.createdAt,
-      });
-
-      await advanceRun(transaction, run, input.expectedRunRevision, {
-        stage: input.action === "pause" ? "paused" : "advanced",
-        next_activity:
-          input.action === "pause" || !input.approvedTargetId
-            ? null
-            : { targetId: input.approvedTargetId },
-      });
-
-      return { resultKind: "teacher-decision", resultIds: [decision.id] };
-    });
-
-  const packageProjection = (row: StoredRow): AuthoringPackageProjection => ({
-    id: row.id as string,
-    tenantId: row.tenant_id as string,
-    title: row.title as string,
-    standardId: row.standard_id as string,
-    headRevision: row.head_revision as number,
-    createdAt: toIso(row.created_at),
-    updatedAt: toIso(row.updated_at),
-  });
-
-  const readAuthoring = async (
+  const readAuthoring = (
     actor: Actor,
     raw: unknown
   ): Promise<AuthoringProjection> => {
@@ -1375,7 +1419,7 @@ export const createRecordCommands = <TTransaction>(
     });
   };
 
-  const readEvidence = async (
+  const readEvidence = (
     actor: Actor,
     raw: unknown
   ): Promise<TeacherEvidenceProjection> => {
@@ -1393,30 +1437,27 @@ export const createRecordCommands = <TTransaction>(
       if (mapAssignment(assignmentRow).assigningActorId !== actor.actorId) {
         throw recordError("FORBIDDEN");
       }
-      const attempts = (
-        await backend.list(
-          transaction,
-          "learner_attempts",
-          { tenant_id: actor.tenantId, run_id: run.id },
-          { column: "ordinal", direction: "asc" }
-        )
-      ).map(mapAttempt);
-      const assistance = (
-        await backend.list(
-          transaction,
-          "assistance_events",
-          { tenant_id: actor.tenantId, run_id: run.id },
-          { column: "ordinal", direction: "asc" }
-        )
-      ).map(mapAssistance);
-      const decisions = (
-        await backend.list(
-          transaction,
-          "teacher_decisions",
-          { tenant_id: actor.tenantId, run_id: run.id },
-          { column: "created_at", direction: "asc" }
-        )
-      ).map(mapDecision);
+      const attemptsRows = await backend.list(
+        transaction,
+        "learner_attempts",
+        { tenant_id: actor.tenantId, run_id: run.id },
+        { column: "ordinal", direction: "asc" }
+      );
+      const attempts = attemptsRows.map(mapAttempt);
+      const assistanceRows = await backend.list(
+        transaction,
+        "assistance_events",
+        { tenant_id: actor.tenantId, run_id: run.id },
+        { column: "ordinal", direction: "asc" }
+      );
+      const assistance = assistanceRows.map(mapAssistance);
+      const decisionsRows = await backend.list(
+        transaction,
+        "teacher_decisions",
+        { tenant_id: actor.tenantId, run_id: run.id },
+        { column: "created_at", direction: "asc" }
+      );
+      const decisions = decisionsRows.map(mapDecision);
       return projectTeacherEvidence({
         run,
         attempts,
@@ -1426,7 +1467,7 @@ export const createRecordCommands = <TTransaction>(
     });
   };
 
-  const readLesson = async (
+  const readLesson = (
     actor: Actor,
     raw: unknown
   ): Promise<LessonReadResult> => {
@@ -1447,22 +1488,20 @@ export const createRecordCommands = <TTransaction>(
         publication.lessonVersionId,
         actor.tenantId
       );
-      const attempts = (
-        await backend.list(
-          transaction,
-          "learner_attempts",
-          { tenant_id: actor.tenantId, run_id: run.id },
-          { column: "ordinal", direction: "asc" }
-        )
-      ).map(mapAttempt);
-      const assistance = (
-        await backend.list(
-          transaction,
-          "assistance_events",
-          { tenant_id: actor.tenantId, run_id: run.id },
-          { column: "ordinal", direction: "asc" }
-        )
-      ).map(mapAssistance);
+      const attemptsRows = await backend.list(
+        transaction,
+        "learner_attempts",
+        { tenant_id: actor.tenantId, run_id: run.id },
+        { column: "ordinal", direction: "asc" }
+      );
+      const attempts = attemptsRows.map(mapAttempt);
+      const assistanceRows = await backend.list(
+        transaction,
+        "assistance_events",
+        { tenant_id: actor.tenantId, run_id: run.id },
+        { column: "ordinal", direction: "asc" }
+      );
+      const assistance = assistanceRows.map(mapAssistance);
       return {
         lesson: projectStudentLesson({ version, run }),
         evidence: projectStudentEvidence({

@@ -1,13 +1,12 @@
 import postgres from "postgres";
 
-import {
-  RecordUniqueViolation,
-  recordJsonColumns,
-  type RecordBackend,
-  type RecordOrder,
-  type RecordTableName,
-  type RecordValue,
-  type StoredRow,
+import { RecordUniqueViolationError, recordJsonColumns } from "./records-port";
+import type {
+  RecordBackend,
+  RecordOrder,
+  RecordTableName,
+  RecordValue,
+  StoredRow,
 } from "./records-port";
 
 type SqlClient = ReturnType<typeof postgres>;
@@ -16,30 +15,30 @@ type SqlParameter = string | number | boolean | null;
 
 const maxErrorDepth = 5;
 
-const toParameter = (value: RecordValue): SqlParameter => {
-  if (
-    value === null ||
+const isScalarParameter = (value: RecordValue): value is SqlParameter => {
+  return (
     typeof value === "string" ||
     typeof value === "number" ||
     typeof value === "boolean"
-  ) {
-    return value;
-  }
-  return JSON.stringify(value);
+  );
 };
 
-const createSqlClient = (databaseUrl: string): SqlClient =>
-  postgres(databaseUrl, {
+const toParameter = (value: RecordValue): SqlParameter =>
+  value === null || isScalarParameter(value) ? value : JSON.stringify(value);
+
+const createSqlClient = (databaseUrl: string): SqlClient => {
+  return postgres(databaseUrl, {
     max: 1,
     connect_timeout: 5,
     idle_timeout: 5,
     max_lifetime: 30,
     prepare: false,
   });
+};
 
 const findUniqueViolation = (
   error: unknown
-): RecordUniqueViolation | undefined => {
+): RecordUniqueViolationError | undefined => {
   let current: unknown = error;
   for (let depth = 0; depth < maxErrorDepth; depth += 1) {
     if (typeof current !== "object" || current === null) {
@@ -49,7 +48,7 @@ const findUniqueViolation = (
     if (record.code === "23505") {
       const constraint =
         typeof record.constraint === "string" ? record.constraint : "";
-      return new RecordUniqueViolation(constraint, { cause: error });
+      return new RecordUniqueViolationError(constraint, { cause: error });
     }
     current = record.cause;
   }
@@ -57,7 +56,7 @@ const findUniqueViolation = (
 };
 
 const jsonColumns = (table: RecordTableName): ReadonlySet<string> =>
-  new Set(recordJsonColumns[table] ?? []);
+  new Set(recordJsonColumns[table]);
 
 const whereClause = (
   where: Readonly<Record<string, RecordValue>>
@@ -93,11 +92,11 @@ export const createPostgresRecordBackend = (
         json.has(column) ? `$${index + 1}::text::jsonb` : `$${index + 1}`
       )
       .join(", ");
-    const params = columns.map((column) => toParameter(values[column]));
+    const parameters = columns.map((column) => toParameter(values[column]));
     try {
       await transaction.unsafe(
         `insert into "${table}" (${columnSql}) values (${valueSql})`,
-        params
+        parameters
       );
     } catch (error) {
       const violation = findUniqueViolation(error);
@@ -149,25 +148,25 @@ export const createPostgresRecordBackend = (
     const entries = Object.entries(values);
     const json = jsonColumns(table);
     const setSql = entries
-      .map(([column], index) =>
-        json.has(column)
+      .map(([column], index) => {
+        return json.has(column)
           ? `"${column}" = $${index + 1}::text::jsonb`
-          : `"${column}" = $${index + 1}`
-      )
+          : `"${column}" = $${index + 1}`;
+      })
       .join(", ");
     const whereEntries = Object.entries(where);
     const offset = entries.length;
     const whereSql = whereEntries
       .map(([column], index) => `"${column}" = $${offset + index + 1}`)
       .join(" and ");
-    const params = [
+    const parameters = [
       ...entries.map(([, value]) => toParameter(value)),
       ...whereEntries.map(([, value]) => toParameter(value)),
     ];
     try {
       const rows = await transaction.unsafe(
         `update "${table}" set ${setSql} where ${whereSql} returning "id"`,
-        params
+        parameters
       );
       return rows.length;
     } catch (error) {
@@ -197,9 +196,7 @@ export const createPostgresRecordBackend = (
     ): Promise<T> => {
       const client = createSqlClient(databaseUrl);
       try {
-        const result = await client.begin(async (transaction) =>
-          work(transaction)
-        );
+        const result = await client.begin((transaction) => work(transaction));
         return result as unknown as T;
       } finally {
         await client.end({ timeout: 3 });

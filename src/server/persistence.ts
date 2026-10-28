@@ -30,10 +30,7 @@ const identityPersistenceCache = new Map<string, IdentityPersistence>();
 const seededRecordBackend = createSeededRecordBackend();
 
 /**
- * Records are their own port, like identity. The focused-loop records are not
- * generation state and not demo counts; keeping the port separate stops the
- * generation contract from growing record-shaped methods and matches the
- * identity boundary's precedent.
+ * Records are their own port, like identity. The focused-loop records are not generation state and not demo counts; keeping the port separate stops the generation contract from growing record-shaped methods and matches the identity boundary's precedent.
  */
 export const createRecordPersistence = (
   config: ServerConfig
@@ -50,6 +47,8 @@ export const createRecordPersistence = (
     throw new Error("PostgreSQL record persistence requires DATABASE_URL.");
   }
 
+  // The two backends have different transaction types; a ternary would widen the union.
+  // eslint-disable-next-line unicorn/prefer-ternary
   if (config.persistenceAdapter === "drizzle") {
     return createRecordCommands(
       createDrizzleRecordBackend({ databaseUrl: config.databaseUrl })

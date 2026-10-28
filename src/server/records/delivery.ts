@@ -99,13 +99,14 @@ export const learnerAttemptSchema = z.strictObject({
 
 export type LearnerAttempt = z.infer<typeof learnerAttemptSchema>;
 
-const decisionTargetIsValid = (decision: {
+const isDecisionTargetValid = (decision: {
   action: (typeof teacherDecisionActionValues)[number];
   approvedTargetId: string | null;
-}): boolean =>
-  decision.action === "pause"
+}): boolean => {
+  return decision.action === "pause"
     ? decision.approvedTargetId === null
     : decision.approvedTargetId !== null;
+};
 
 export const teacherDecisionSchema = z
   .strictObject({
@@ -123,7 +124,7 @@ export const teacherDecisionSchema = z
     approvedTargetId: recordIdSchema.nullable(),
     createdAt: isoTimestampSchema,
   })
-  .refine(decisionTargetIsValid, {
+  .refine(isDecisionTargetValid, {
     message: "Pause releases no target; accept and override require one.",
     path: ["approvedTargetId"],
   });

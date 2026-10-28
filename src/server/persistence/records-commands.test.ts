@@ -1,3 +1,4 @@
+/* eslint-disable vitest/max-expects -- the focused-loop test asserts each stage of one flow. */
 import { describe, expect, it } from "vitest";
 
 import {
@@ -7,7 +8,6 @@ import {
   parseMembershipId,
   parseTenantId,
 } from "../identity/identifiers";
-import type { Actor } from "../identity/types";
 import {
   createContentHash,
   createPackageHash,
@@ -17,6 +17,7 @@ import {
 import { hashVersion } from "../records/vocabulary";
 import { createSeededRecordBackend } from "./records-seeded";
 import { createRecordCommands } from "./records-commands";
+import type { Actor } from "../identity/types";
 
 const tenantId = parseTenantId("tenant_records_test");
 const otherTenantId = parseTenantId("tenant_records_other");
@@ -31,8 +32,8 @@ const conceptId = "concept_test";
 const createdAt = "2026-10-28T00:00:00.000Z";
 const expiresAt = "2099-01-01T00:00:00.000Z";
 
-const buildActor = (role: "teacher" | "student", sessionId: string): Actor =>
-  role === "teacher"
+const buildActor = (role: "teacher" | "student", sessionId: string): Actor => {
+  return role === "teacher"
     ? {
         actorId: teacherActorId,
         displayName: "Teacher",
@@ -57,6 +58,7 @@ const buildActor = (role: "teacher" | "student", sessionId: string): Actor =>
         role: "student",
         learnerId,
       };
+};
 
 const teacher = buildActor("teacher", "session_teacher");
 const student = buildActor("student", "session_student");
@@ -245,30 +247,32 @@ const buildFixture = () => {
   return { backend, records: createRecordCommands(backend) };
 };
 
-const appendInput = (overrides: Record<string, unknown> = {}) => ({
-  operationKey: "append-version-key-1",
-  package: {
-    id: "package_test",
-    title: "Equivalent fractions",
-    standardId,
-  },
-  expectedHeadRevision: 0,
-  revisionKind: "initial",
-  parentVersionId: null,
-  predecessorVersionId: null,
-  curatedReferenceId: "curated_placeholder",
-  generationRequestId: null,
-  conceptIds: [conceptId],
-  variantReferences,
-  objectiveHash: "a".repeat(64),
-  sections,
-  provenance,
-  changedSectionIds: [],
-  ruleVersions,
-  validationResult,
-  privateAnswerRelationships: privateAnswers,
-  ...overrides,
-});
+const appendInput = (overrides: Record<string, unknown> = {}) => {
+  return {
+    operationKey: "append-version-key-1",
+    package: {
+      id: "package_test",
+      title: "Equivalent fractions",
+      standardId,
+    },
+    expectedHeadRevision: 0,
+    revisionKind: "initial",
+    parentVersionId: null,
+    predecessorVersionId: null,
+    curatedReferenceId: "curated_placeholder",
+    generationRequestId: null,
+    conceptIds: [conceptId],
+    variantReferences,
+    objectiveHash: "a".repeat(64),
+    sections,
+    provenance,
+    changedSectionIds: [],
+    ruleVersions,
+    validationResult,
+    privateAnswerRelationships: privateAnswers,
+    ...overrides,
+  };
+};
 
 describe("record commands", () => {
   it("runs the focused loop end to end and replays committed operations", async () => {
@@ -314,6 +318,7 @@ describe("record commands", () => {
 
     const publication = await records.publish(teacher, publishInput);
     const replay = await records.publish(teacher, publishInput);
+
     expect(replay.id).toBe(publication.id);
 
     const assignment = await records.assign(teacher, {
@@ -353,6 +358,7 @@ describe("record commands", () => {
     const evidence = await records.readEvidence(teacher, {
       runId: run.id,
     });
+
     expect(evidence.attempts).toHaveLength(1);
     expect(evidence.assistanceEvents).toHaveLength(1);
     expect(evidence.revision).toBe(2);
@@ -366,20 +372,24 @@ describe("record commands", () => {
       action: "accept",
       approvedTargetId: "item_2",
     });
+
     expect(decision.id).toBeTruthy();
 
     const lesson = await records.readLesson(student, { runId: run.id });
+
     expect(lesson.lesson.assignedVariantId).toBe("variant_standard");
     expect(lesson.evidence.attempts).toHaveLength(1);
 
     const serialized = JSON.stringify(lesson);
+
     expect(serialized).not.toContain("privateAnswerRelationships");
     expect(serialized).not.toContain("contentHash");
 
     const attemptId = attempt.id;
-    expect(
-      (await records.readEvidence(teacher, { runId: run.id })).decisions
-    ).toHaveLength(1);
+
+    const refreshed = await records.readEvidence(teacher, { runId: run.id });
+
+    expect(refreshed.decisions).toHaveLength(1);
     expect(attemptId).toBeTruthy();
   });
 
@@ -485,6 +495,7 @@ describe("record commands", () => {
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
 
     const revoked = buildActor("student", "session_revoked");
+
     await expect(
       records.readLesson(revoked, { runId: "run_missing" })
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
@@ -493,6 +504,7 @@ describe("record commands", () => {
       ...teacher,
       tenantId: otherTenantId,
     };
+
     await expect(
       records.storeGrounding(otherTenantTeacher, {
         operationKey: "store-grounding-other-tenant",
@@ -540,6 +552,7 @@ describe("record commands", () => {
       tenant_id: tenantId,
       id: "package_rollback",
     });
+
     expect(packageRow).toBeUndefined();
   });
 
@@ -577,8 +590,9 @@ describe("record commands", () => {
       kind: "package",
       packageId: "package_test",
     });
-    expect(authoring.versions.map((version) => version.revision)).toEqual([
-      2, 1,
-    ]);
+
+    expect(authoring.versions.map((version) => version.revision)).toStrictEqual(
+      [2, 1]
+    );
   });
 });

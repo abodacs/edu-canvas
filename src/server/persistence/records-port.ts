@@ -9,9 +9,7 @@ export type RecordValue =
 export type StoredRow = Record<string, unknown>;
 
 /**
- * Every table the records boundary reads. Write operations only target the ten
- * record tables; the identity, curriculum, and generation tables are read-only
- * referents.
+ * Every table the records boundary reads. Write operations only target the ten record tables; the identity, curriculum, and generation tables are read-only referents.
  */
 export const recordTableColumns = {
   curated_references: [
@@ -295,12 +293,12 @@ export const recordUniqueConstraints: Partial<
   ],
 };
 
-export class RecordUniqueViolation extends Error {
+export class RecordUniqueViolationError extends Error {
   readonly constraint: string;
 
   constructor(constraint: string, options?: ErrorOptions) {
     super("A record unique constraint rejected the write.", options);
-    this.name = "RecordUniqueViolation";
+    this.name = "RecordUniqueViolationError";
     this.constraint = constraint;
   }
 }

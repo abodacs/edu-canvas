@@ -4,23 +4,25 @@ const canonicalize = (value: unknown): string => {
   }
 
   switch (typeof value) {
-    case "boolean":
+    case "boolean": {
       return value ? "true" : "false";
+    }
     case "number": {
       if (!Number.isFinite(value)) {
         throw new TypeError("Canonical JSON rejects non-finite numbers.");
       }
       return JSON.stringify(value);
     }
-    case "string":
+    case "string": {
       return JSON.stringify(value);
+    }
     case "object": {
       if (Array.isArray(value)) {
         return `[${value.map((entry) => canonicalize(entry)).join(",")}]`;
       }
       const record = value as Record<string, unknown>;
       const entries = Object.keys(record)
-        .sort()
+        .toSorted((left, right) => left.localeCompare(right))
         .map((key) => {
           const entry = record[key];
           if (entry === undefined) {
@@ -32,14 +34,13 @@ const canonicalize = (value: unknown): string => {
         });
       return `{${entries.join(",")}}`;
     }
-    default:
+    default: {
       throw new TypeError("Canonical JSON rejects unsupported values.");
+    }
   }
 };
 
 /**
- * Deterministic JSON for hashing: sorted object keys, preserved array order,
- * explicit nulls. Undefined is rejected so an absent value cannot silently
- * change a hash.
+ * Deterministic JSON for hashing: sorted object keys, preserved array order, explicit nulls. Undefined is rejected so an absent value cannot silently change a hash.
  */
 export const canonicalJson = (value: unknown): string => canonicalize(value);

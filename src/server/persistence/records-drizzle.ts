@@ -1,17 +1,17 @@
-import { sql, type ExtractTablesWithRelations } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
-import type { PostgresJsTransaction } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
-import {
-  RecordUniqueViolation,
-  recordJsonColumns,
-  type RecordBackend,
-  type RecordOrder,
-  type RecordTableName,
-  type RecordValue,
-  type StoredRow,
+import { RecordUniqueViolationError, recordJsonColumns } from "./records-port";
+import type {
+  RecordBackend,
+  RecordOrder,
+  RecordTableName,
+  RecordValue,
+  StoredRow,
 } from "./records-port";
+import type { ExtractTablesWithRelations } from "drizzle-orm";
+import type { PostgresJsTransaction } from "drizzle-orm/postgres-js";
 
 type DrizzleTransaction = PostgresJsTransaction<
   Record<string, never>,
@@ -20,18 +20,19 @@ type DrizzleTransaction = PostgresJsTransaction<
 
 const maxErrorDepth = 5;
 
-const createSqlClient = (databaseUrl: string) =>
-  postgres(databaseUrl, {
+const createSqlClient = (databaseUrl: string) => {
+  return postgres(databaseUrl, {
     max: 1,
     connect_timeout: 5,
     idle_timeout: 5,
     max_lifetime: 30,
     prepare: false,
   });
+};
 
 const findUniqueViolation = (
   error: unknown
-): RecordUniqueViolation | undefined => {
+): RecordUniqueViolationError | undefined => {
   let current: unknown = error;
   for (let depth = 0; depth < maxErrorDepth; depth += 1) {
     if (typeof current !== "object" || current === null) {
@@ -41,7 +42,7 @@ const findUniqueViolation = (
     if (record.code === "23505") {
       const constraint =
         typeof record.constraint === "string" ? record.constraint : "";
-      return new RecordUniqueViolation(constraint, { cause: error });
+      return new RecordUniqueViolationError(constraint, { cause: error });
     }
     current = record.cause;
   }
@@ -51,18 +52,19 @@ const findUniqueViolation = (
 const quoted = (identifier: string) => sql.raw(`"${identifier}"`);
 
 const jsonColumns = (table: RecordTableName): ReadonlySet<string> =>
-  new Set(recordJsonColumns[table] ?? []);
+  new Set(recordJsonColumns[table]);
 
 const boundValue = (isJson: boolean, value: RecordValue) =>
   isJson ? sql`${JSON.stringify(value)}::text::jsonb` : sql`${value}`;
 
-const whereClause = (where: Readonly<Record<string, RecordValue>>) =>
-  sql.join(
+const whereClause = (where: Readonly<Record<string, RecordValue>>) => {
+  return sql.join(
     Object.entries(where).map(
       ([column, value]) => sql`${quoted(column)} = ${value}`
     ),
     sql` and `
   );
+};
 
 export interface DrizzleRecordBackendOptions {
   readonly databaseUrl: string;
@@ -175,7 +177,7 @@ export const createDrizzleRecordBackend = (
       const client = createSqlClient(databaseUrl);
       const database = drizzle({ client });
       try {
-        return await database.transaction(async (transaction) =>
+        return await database.transaction((transaction) =>
           work(transaction as DrizzleTransaction)
         );
       } finally {

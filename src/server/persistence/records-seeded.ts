@@ -1,13 +1,15 @@
 import {
-  RecordUniqueViolation,
+  RecordUniqueViolationError,
   recordTableColumns,
   recordUniqueConstraints,
-  type RecordBackend,
-  type RecordOrder,
-  type RecordTableName,
-  type RecordValue,
-  type StoredRow,
-  type UniqueConstraint,
+} from "./records-port";
+import type {
+  RecordBackend,
+  RecordOrder,
+  RecordTableName,
+  RecordValue,
+  StoredRow,
+  UniqueConstraint,
 } from "./records-port";
 
 export interface SeededRecordBackend extends RecordBackend<undefined> {
@@ -33,10 +35,7 @@ const compareValues = (left: unknown, right: unknown): number => {
 };
 
 /**
- * In-memory implementation of the record port. It enforces the same unique
- * constraints as PostgreSQL and rolls the whole store back when the work
- * throws, so the logical contract tests can run without a database. It is not
- * restart-durable; PostgreSQL is the durability authority.
+ * In-memory implementation of the record port. It enforces the same unique constraints as PostgreSQL and rolls the whole store back when the work throws. It is not restart-durable; PostgreSQL is the durability authority.
  */
 export const createSeededRecordBackend = (
   seed: Partial<Record<RecordTableName, readonly StoredRow[]>> = {}
@@ -65,50 +64,56 @@ export const createSeededRecordBackend = (
     }
   };
 
-  const violates = (
+  const doesViolate = (
     table: RecordTableName,
     candidate: StoredRow,
     constraint: UniqueConstraint,
     ignore?: StoredRow
   ): boolean => {
     const values = constraint.columns.map((column) => candidate[column]);
-    if (values.some((value) => value === null || value === undefined)) {
-      return false;
-    }
-    return rowsFor(table).some(
-      (row) =>
-        row !== ignore &&
-        constraint.columns.every(
-          (column, index) => row[column] === values[index]
-        )
+    const hasMissingValue = values.some(
+      (value) => value === null || value === undefined
+    );
+    return (
+      !hasMissingValue &&
+      rowsFor(table).some((row) => {
+        return (
+          row !== ignore &&
+          constraint.columns.every(
+            (column, index) => row[column] === values[index]
+          )
+        );
+      })
     );
   };
 
-  const insert = async (
+  const insert = (
     _transaction: undefined,
     table: RecordTableName,
     values: Readonly<Record<string, RecordValue>>
   ): Promise<void> => {
     assertColumns(table, values);
     const candidate = structuredClone(values) as StoredRow;
-    for (const constraint of recordUniqueConstraints[table] ?? []) {
-      if (violates(table, candidate, constraint)) {
-        throw new RecordUniqueViolation(constraint.name);
+    const constraints = recordUniqueConstraints[table] ?? [];
+    for (const constraint of constraints) {
+      if (doesViolate(table, candidate, constraint)) {
+        throw new RecordUniqueViolationError(constraint.name);
       }
     }
     rowsFor(table).push(candidate);
+    return Promise.resolve();
   };
 
-  const findOne = async (
+  const findOne = (
     _transaction: undefined,
     table: RecordTableName,
     where: Readonly<Record<string, RecordValue>>
   ): Promise<StoredRow | undefined> => {
     const row = rowsFor(table).find((entry) => matches(entry, where));
-    return row ? structuredClone(row) : undefined;
+    return Promise.resolve(row ? structuredClone(row) : undefined);
   };
 
-  const list = async (
+  const list = (
     _transaction: undefined,
     table: RecordTableName,
     where: Readonly<Record<string, RecordValue>>,
@@ -117,56 +122,63 @@ export const createSeededRecordBackend = (
   ): Promise<StoredRow[]> => {
     let rows = rowsFor(table).filter((entry) => matches(entry, where));
     if (order) {
-      rows = [...rows].sort(
-        (left, right) =>
+      rows = rows.toSorted((left, right) => {
+        return (
           compareValues(left[order.column], right[order.column]) *
           (order.direction === "asc" ? 1 : -1)
-      );
+        );
+      });
     }
     if (limit !== undefined) {
       rows = rows.slice(0, limit);
     }
-    return rows.map((row) => structuredClone(row));
+    return Promise.resolve(rows.map((row) => structuredClone(row)));
   };
 
-  const update = async (
+  const update = (
     _transaction: undefined,
     table: RecordTableName,
     where: Readonly<Record<string, RecordValue>>,
     values: Readonly<Record<string, RecordValue>>
   ): Promise<number> => {
     assertColumns(table, values);
+    const constraints = recordUniqueConstraints[table] ?? [];
     let affected = 0;
     for (const row of rowsFor(table)) {
       if (!matches(row, where)) {
         continue;
       }
       const candidate = { ...row, ...structuredClone(values) } as StoredRow;
-      for (const constraint of recordUniqueConstraints[table] ?? []) {
-        if (violates(table, candidate, constraint, row)) {
-          throw new RecordUniqueViolation(constraint.name);
+      for (const constraint of constraints) {
+        if (doesViolate(table, candidate, constraint, row)) {
+          throw new RecordUniqueViolationError(constraint.name);
         }
       }
       Object.assign(row, structuredClone(values));
       affected += 1;
     }
-    return affected;
+    return Promise.resolve(affected);
   };
 
-  const snapshot = (): Map<RecordTableName, StoredRow[]> =>
-    new Map(
-      [...tables.entries()].map(([table, rows]) => [table, cloneRows(rows)])
-    );
+  const snapshot = (): Map<RecordTableName, StoredRow[]> => {
+    const copy = new Map<RecordTableName, StoredRow[]>();
+    for (const [table, rows] of tables) {
+      copy.set(table, cloneRows(rows));
+    }
+    return copy;
+  };
 
   const restore = (snap: Map<RecordTableName, StoredRow[]>): void => {
-    tables = new Map(
-      [...snap.entries()].map(([table, rows]) => [table, cloneRows(rows)])
-    );
+    const restored = new Map<RecordTableName, StoredRow[]>();
+    for (const [table, rows] of snap) {
+      restored.set(table, cloneRows(rows));
+    }
+    tables = restored;
   };
 
   const backend: SeededRecordBackend = {
     kind: "seeded-demo",
-    check: async () => true,
+    check: () => Promise.resolve(true),
     withTransaction: async (work) => {
       const snap = snapshot();
       try {
@@ -176,7 +188,7 @@ export const createSeededRecordBackend = (
         throw error;
       }
     },
-    setTenant: async () => undefined,
+    setTenant: () => Promise.resolve(),
     insert,
     findOne,
     list,

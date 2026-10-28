@@ -20,9 +20,7 @@ const safeMessageByCode: Record<RecordErrorCode, string> = {
 };
 
 /**
- * The single error type the records boundary throws. The message is always the
- * safe message for the code, so a caller can serialize it without leaking
- * stored content or another tenant's identifiers.
+ * The single error type the records boundary throws. The message is always the safe message for the code, so a caller can serialize it without leaking stored content or another tenant's identifiers.
  */
 export class RecordStoreError extends Error {
   readonly code: RecordErrorCode;

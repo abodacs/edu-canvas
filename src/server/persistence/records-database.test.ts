@@ -10,7 +10,6 @@ import {
   parseMembershipId,
   parseTenantId,
 } from "../identity/identifiers";
-import type { Actor } from "../identity/types";
 import {
   createContentHash,
   createPackageHash,
@@ -21,6 +20,7 @@ import { hashVersion } from "../records/vocabulary";
 import { createDrizzleRecordBackend } from "./records-drizzle";
 import { createPostgresRecordBackend } from "./records-postgres";
 import { createRecordCommands } from "./records-commands";
+import type { Actor } from "../identity/types";
 
 const databaseUrl = process.env.DATABASE_URL;
 const isEnabled = process.env.RUN_DATABASE_TESTS === "true";
@@ -132,6 +132,14 @@ const createFixture = async (suffix: string): Promise<Fixture> => {
   const standardId = `standard_${suffix}_${runId}`;
   const conceptId = `concept_${suffix}_${runId}`;
   const classId = `class_${suffix}_${runId}`;
+  const tenantSlug = `slug-${runId}`;
+  const otherTenantSlug = `slug-other-${runId}`;
+  const learnerHandle = `learner-${runId}`;
+  const teacherSessionId = `session_teacher_${runId}`;
+  const studentSessionId = `session_student_${runId}`;
+  const teacherVerifier = `verifier_teacher_${runId}`;
+  const studentVerifier = `verifier_student_${runId}`;
+  const standardCode = `4.NF.A.1-${runId}`;
 
   const sql = postgres(requireUrl(), {
     max: 1,
@@ -142,16 +150,16 @@ const createFixture = async (suffix: string): Promise<Fixture> => {
 
   try {
     await sql.begin(async (transaction) => {
-      await transaction`insert into tenants (id, slug, name, synthetic_data_only, created_at) values (${tenantId}, ${`slug-${runId}`}, ${"Test school"}, true, ${createdAt})`;
-      await transaction`insert into tenants (id, slug, name, synthetic_data_only, created_at) values (${otherTenantId}, ${`slug-other-${runId}`}, ${"Other school"}, true, ${createdAt})`;
+      await transaction`insert into tenants (id, slug, name, synthetic_data_only, created_at) values (${tenantId}, ${tenantSlug}, ${"Test school"}, true, ${createdAt})`;
+      await transaction`insert into tenants (id, slug, name, synthetic_data_only, created_at) values (${otherTenantId}, ${otherTenantSlug}, ${"Other school"}, true, ${createdAt})`;
       await transaction`insert into actors (id, display_name, is_active, authorization_revision, created_at) values (${teacherActorId}, ${"Teacher"}, true, 1, ${createdAt})`;
       await transaction`insert into actors (id, display_name, is_active, authorization_revision, created_at) values (${studentActorId}, ${"Student"}, true, 1, ${createdAt})`;
-      await transaction`insert into identities (id, tenant_id, role, display_name, demo_handle, is_active, created_at) values (${learnerId}, ${tenantId}, 'student', ${"Learner"}, ${`learner-${runId}`}, true, ${createdAt})`;
+      await transaction`insert into identities (id, tenant_id, role, display_name, demo_handle, is_active, created_at) values (${learnerId}, ${tenantId}, 'student', ${"Learner"}, ${learnerHandle}, true, ${createdAt})`;
       await transaction`insert into memberships (id, actor_id, tenant_id, role, status, learner_id, revision, created_at) values (${teacherMembershipId}, ${teacherActorId}, ${tenantId}, 'teacher', 'active', null, 1, ${createdAt})`;
       await transaction`insert into memberships (id, actor_id, tenant_id, role, status, learner_id, revision, created_at) values (${studentMembershipId}, ${studentActorId}, ${tenantId}, 'student', 'active', ${learnerId}, 1, ${createdAt})`;
-      await transaction`insert into identity_sessions (session_id, verifier_hash, actor_id, membership_id, tenant_id, provider_session_id, provider_subject, session_generation, authorization_revision, revision, created_at, last_activity_at, absolute_expires_at) values (${`session_teacher_${runId}`}, ${`verifier_teacher_${runId}`}, ${teacherActorId}, ${teacherMembershipId}, ${tenantId}, ${"provider-session"}, ${"provider-subject"}, ${"generation"}, 1, 1, ${createdAt}, ${createdAt}, ${expiresAt})`;
-      await transaction`insert into identity_sessions (session_id, verifier_hash, actor_id, membership_id, tenant_id, provider_session_id, provider_subject, session_generation, authorization_revision, revision, created_at, last_activity_at, absolute_expires_at) values (${`session_student_${runId}`}, ${`verifier_student_${runId}`}, ${studentActorId}, ${studentMembershipId}, ${tenantId}, ${"provider-session"}, ${"provider-subject"}, ${"generation"}, 1, 1, ${createdAt}, ${createdAt}, ${expiresAt})`;
-      await transaction`insert into standards (id, tenant_id, code, name, subject, grade_band, created_at) values (${standardId}, ${tenantId}, ${`4.NF.A.1-${runId}`}, ${"Explain equivalent fractions"}, ${"Math"}, ${"Grade 4"}, ${createdAt})`;
+      await transaction`insert into identity_sessions (session_id, verifier_hash, actor_id, membership_id, tenant_id, provider_session_id, provider_subject, session_generation, authorization_revision, revision, created_at, last_activity_at, absolute_expires_at) values (${teacherSessionId}, ${teacherVerifier}, ${teacherActorId}, ${teacherMembershipId}, ${tenantId}, ${"provider-session"}, ${"provider-subject"}, ${"generation"}, 1, 1, ${createdAt}, ${createdAt}, ${expiresAt})`;
+      await transaction`insert into identity_sessions (session_id, verifier_hash, actor_id, membership_id, tenant_id, provider_session_id, provider_subject, session_generation, authorization_revision, revision, created_at, last_activity_at, absolute_expires_at) values (${studentSessionId}, ${studentVerifier}, ${studentActorId}, ${studentMembershipId}, ${tenantId}, ${"provider-session"}, ${"provider-subject"}, ${"generation"}, 1, 1, ${createdAt}, ${createdAt}, ${expiresAt})`;
+      await transaction`insert into standards (id, tenant_id, code, name, subject, grade_band, created_at) values (${standardId}, ${tenantId}, ${standardCode}, ${"Explain equivalent fractions"}, ${"Math"}, ${"Grade 4"}, ${createdAt})`;
       await transaction`insert into prerequisite_nodes (id, tenant_id, standard_id, label, sequence, created_at) values (${conceptId}, ${tenantId}, ${standardId}, ${"Equal parts"}, 1, ${createdAt})`;
     });
   } finally {
@@ -164,7 +172,7 @@ const createFixture = async (suffix: string): Promise<Fixture> => {
     tenantId: parseTenantId(tenantId),
     tenantName: "Test school",
     membershipId: parseMembershipId(teacherMembershipId),
-    sessionId: `session_teacher_${runId}`,
+    sessionId: teacherSessionId,
     sessionGeneration: "generation",
     authorizationRevision: 1,
     role: "teacher",
@@ -176,7 +184,7 @@ const createFixture = async (suffix: string): Promise<Fixture> => {
     tenantId: parseTenantId(tenantId),
     tenantName: "Test school",
     membershipId: parseMembershipId(studentMembershipId),
-    sessionId: `session_student_${runId}`,
+    sessionId: studentSessionId,
     sessionGeneration: "generation",
     authorizationRevision: 1,
     role: "student",
@@ -234,29 +242,31 @@ const deleteFixture = async (fixture: Fixture): Promise<void> => {
   }
 };
 
-const appendInput = (fixture: Fixture, curatedReferenceId: string) => ({
-  operationKey: `append-version-key-${curatedReferenceId}`,
-  package: {
-    id: `package_${curatedReferenceId}`,
-    title: "Equivalent fractions",
-    standardId: fixture.standardId,
-  },
-  expectedHeadRevision: 0,
-  revisionKind: "initial",
-  parentVersionId: null,
-  predecessorVersionId: null,
-  curatedReferenceId,
-  generationRequestId: null,
-  conceptIds: [fixture.conceptId],
-  variantReferences,
-  objectiveHash: "a".repeat(64),
-  sections,
-  provenance,
-  changedSectionIds: [],
-  ruleVersions,
-  validationResult,
-  privateAnswerRelationships: privateAnswers,
-});
+const appendInput = (fixture: Fixture, curatedReferenceId: string) => {
+  return {
+    operationKey: `append-version-key-${curatedReferenceId}`,
+    package: {
+      id: `package_${curatedReferenceId}`,
+      title: "Equivalent fractions",
+      standardId: fixture.standardId,
+    },
+    expectedHeadRevision: 0,
+    revisionKind: "initial",
+    parentVersionId: null,
+    predecessorVersionId: null,
+    curatedReferenceId,
+    generationRequestId: null,
+    conceptIds: [fixture.conceptId],
+    variantReferences,
+    objectiveHash: "a".repeat(64),
+    sections,
+    provenance,
+    changedSectionIds: [],
+    ruleVersions,
+    validationResult,
+    privateAnswerRelationships: privateAnswers,
+  };
+};
 
 const expectFocusedLoop = async (
   createRecords: () => ReturnType<typeof createRecordCommands>,
@@ -337,6 +347,7 @@ const expectFocusedLoop = async (
   const evidence = await records.readEvidence(fixture.teacher, {
     runId: run.id,
   });
+
   expect(evidence.attempts).toHaveLength(1);
   expect(evidence.assistanceEvents).toHaveLength(1);
 
@@ -351,6 +362,7 @@ const expectFocusedLoop = async (
   });
 
   const lesson = await records.readLesson(fixture.student, { runId: run.id });
+
   expect(lesson.evidence.attempts).toHaveLength(1);
 
   return { publicationId: publication.id, runId: run.id };
@@ -383,31 +395,36 @@ describe.skipIf(!isRun)("record database parity", () => {
   it.each([
     [
       "postgres",
-      () =>
-        createRecordCommands(
+      () => {
+        return createRecordCommands(
           createPostgresRecordBackend({ databaseUrl: requireUrl() })
-        ),
+        );
+      },
     ],
     [
       "drizzle",
-      () =>
-        createRecordCommands(
+      () => {
+        return createRecordCommands(
           createDrizzleRecordBackend({ databaseUrl: requireUrl() })
-        ),
+        );
+      },
     ],
   ] as const)(
     "runs the focused loop on the %s adapter",
     async (_name, create) => {
-      await expectFocusedLoop(create, fixture, _name);
+      const result = await expectFocusedLoop(create, fixture, _name);
+
+      expect(result.publicationId).toBeTruthy();
     }
   );
 
   it("reads another adapter's committed records", async () => {
     const { runId } = await expectFocusedLoop(
-      () =>
-        createRecordCommands(
+      () => {
+        return createRecordCommands(
           createDrizzleRecordBackend({ databaseUrl: requireUrl() })
-        ),
+        );
+      },
       fixture,
       "cross"
     );
@@ -415,16 +432,18 @@ describe.skipIf(!isRun)("record database parity", () => {
       createPostgresRecordBackend({ databaseUrl: requireUrl() })
     );
     const evidence = await raw.readEvidence(fixture.teacher, { runId });
+
     expect(evidence.runId).toBe(runId);
     expect(evidence.decisions).toHaveLength(1);
   });
 
   it("rejects a direct change to an immutable record", async () => {
     const { publicationId } = await expectFocusedLoop(
-      () =>
-        createRecordCommands(
+      () => {
+        return createRecordCommands(
           createPostgresRecordBackend({ databaseUrl: requireUrl() })
-        ),
+        );
+      },
       fixture,
       "immutable"
     );
@@ -445,10 +464,11 @@ describe.skipIf(!isRun)("record database parity", () => {
 
   it("hides another tenant's record from a non-bypass role", async () => {
     const { publicationId } = await expectFocusedLoop(
-      () =>
-        createRecordCommands(
+      () => {
+        return createRecordCommands(
           createPostgresRecordBackend({ databaseUrl: requireUrl() })
-        ),
+        );
+      },
       fixture,
       "rls"
     );
@@ -467,6 +487,7 @@ describe.skipIf(!isRun)("record database parity", () => {
           await transaction`select count(*)::int as count from publications where id = ${publicationId}`;
         return rows[0]?.count as number;
       });
+
       expect(count).toBe(0);
     } finally {
       await sql.end({ timeout: 3 });

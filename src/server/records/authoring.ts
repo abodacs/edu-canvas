@@ -64,21 +64,24 @@ export const sectionSchema = z.strictObject({
 
 export type LessonSection = z.infer<typeof sectionSchema>;
 
-const sectionsInOrder = (sections: readonly LessonSection[]): boolean =>
+const areSectionsInOrder = (sections: readonly LessonSection[]): boolean =>
   sections.every((section, index) => section.kind === sectionKindValues[index]);
+
+const hasUniqueSectionIds = (sections: readonly LessonSection[]): boolean => {
+  const ids = new Set(sections.map((section) => section.id));
+  return ids.size === sections.length;
+};
 
 export const sectionsSchema = z
   .array(sectionSchema)
   .length(recordLimits.sectionCount)
-  .refine(sectionsInOrder, {
+  .refine(areSectionsInOrder, {
     message:
       "Sections must be ordered worked-example, guided-practice, independent-check, follow-up.",
   })
-  .refine(
-    (sections) =>
-      new Set(sections.map((section) => section.id)).size === sections.length,
-    { message: "Section identifiers must be unique." }
-  );
+  .refine(hasUniqueSectionIds, {
+    message: "Section identifiers must be unique.",
+  });
 
 export const variantReferenceSchema = z.strictObject({
   variantId: recordIdSchema,
@@ -135,30 +138,36 @@ export const ruleVersionsSchema = z.strictObject({
 
 export type RuleVersions = z.infer<typeof ruleVersionsSchema>;
 
-const lineageIsValid = (version: {
+const isLineageValid = (version: {
   revision: number;
   revisionKind: (typeof revisionKindValues)[number];
   parentVersionId: string | null;
   predecessorVersionId: string | null;
 }): boolean => {
   switch (version.revisionKind) {
-    case "initial":
+    case "initial": {
       return (
         version.revision === initialRevision &&
         version.parentVersionId === null &&
         version.predecessorVersionId === null
       );
+    }
     case "section-revision":
-    case "reframe":
+    case "reframe": {
       return (
         version.revision > initialRevision &&
         version.parentVersionId !== null &&
         version.predecessorVersionId === null
       );
-    case "fresh-draft":
+    }
+    case "fresh-draft": {
       return (
         version.revision === initialRevision && version.parentVersionId === null
       );
+    }
+    default: {
+      return false;
+    }
   }
 };
 
@@ -189,7 +198,7 @@ export const lessonVersionSchema = z
     ruleVersions: ruleVersionsSchema,
     createdAt: isoTimestampSchema,
   })
-  .refine(lineageIsValid, {
+  .refine(isLineageValid, {
     message: "Revision lineage does not match the revision kind.",
     path: ["revisionKind"],
   });

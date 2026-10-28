@@ -162,37 +162,37 @@ describe("record contracts", () => {
   it("rejects unknown fields at the top level and inside a nested object", () => {
     expect(() =>
       curatedReferenceSchema.parse({ ...curatedReference, extra: true })
-    ).toThrow();
-    expect(() =>
-      curatedReferenceSchema.parse({
+    ).toThrow(/Unrecognized key/u);
+    expect(() => {
+      return curatedReferenceSchema.parse({
         ...curatedReference,
         reviewedContent: { ...reviewedContent, hidden: "x" },
-      })
-    ).toThrow();
+      });
+    }).toThrow(/Unrecognized key/u);
   });
 
   it("rejects a lineage that contradicts the revision kind", () => {
-    expect(() =>
-      lessonVersionSchema.parse({
+    expect(() => {
+      return lessonVersionSchema.parse({
         ...lessonVersion,
         revisionKind: "section-revision",
-      })
-    ).toThrow();
-    expect(() =>
-      lessonVersionSchema.parse({
+      });
+    }).toThrow(/lineage/u);
+    expect(() => {
+      return lessonVersionSchema.parse({
         ...lessonVersion,
         parentVersionId: "version_0",
-      })
-    ).toThrow();
+      });
+    }).toThrow(/lineage/u);
   });
 
   it("rejects an unknown schema literal", () => {
-    expect(() =>
-      lessonVersionSchema.parse({
+    expect(() => {
+      return lessonVersionSchema.parse({
         ...lessonVersion,
         schemaVersion: "lesson-package-v2",
-      })
-    ).toThrow();
+      });
+    }).toThrow(/Invalid/u);
   });
 
   it("parses publication, assignment, run, assistance, attempt, decision, receipt", () => {
@@ -294,11 +294,13 @@ describe("record contracts", () => {
       resultIds: ["publication_1"],
       createdAt,
     });
+
+    expect(publication.id).toBe("publication_1");
   });
 
   it("rejects a pause decision with a target and a score outside the scale", () => {
-    expect(() =>
-      teacherDecisionSchema.parse({
+    expect(() => {
+      return teacherDecisionSchema.parse({
         id: "decision_2",
         tenantId,
         schemaVersion: "teacher-decision-v1",
@@ -309,11 +311,11 @@ describe("record contracts", () => {
         action: "pause",
         approvedTargetId: "item_2",
         createdAt,
-      })
-    ).toThrow();
+      });
+    }).toThrow(/Pause|target/u);
 
-    expect(() =>
-      learnerAttemptSchema.parse({
+    expect(() => {
+      return learnerAttemptSchema.parse({
         id: "attempt_2",
         tenantId,
         schemaVersion: "attempt-v2",
@@ -330,14 +332,21 @@ describe("record contracts", () => {
         correctness: "incorrect",
         gradingRuleVersion: "matching-grader-v1",
         createdAt,
-      })
-    ).toThrow();
+      });
+    }).toThrow(/score|Too big/u);
   });
 
   it("hashes deterministically and rejects undefined", () => {
     expect(canonicalJson({ b: 1, a: [2, 3] })).toBe('{"a":[2,3],"b":1}');
+
     expect(canonicalJson({ a: null })).toBe('{"a":null}');
-    expect(() => canonicalJson({ a: undefined })).toThrow();
+
+    const incomplete: Record<string, unknown> = {};
+
+    expect(() => canonicalJson({ a: incomplete.missing })).toThrow(
+      /undefined/u
+    );
+
     expect(contentHash).toBe(
       createContentHash({
         conceptIds: ["concept_1"],
@@ -348,7 +357,7 @@ describe("record contracts", () => {
     expect(contentHash).toHaveLength(64);
   });
 
-  it("decodes legacy rows with explicit labels and no inferred approval", () => {
+  it("decodes a legacy activity with explicit labels and no inferred approval", () => {
     const activity = decodeLegacyActivity({
       id: "activity_version_demo",
       tenantId,
@@ -360,11 +369,14 @@ describe("record contracts", () => {
       answerKey: { item_1: "target_1" },
       immutableAt: createdAt,
     });
+
     expect(activity.schemaVersion).toBe("legacy-activity-v1");
     expect(activity.approval).toBeNull();
     expect(activity.source).toBeNull();
-    expect(activity.privateAnswerPresent).toBe(true);
+    expect(activity.privateAnswerPresent).toBeTruthy();
+  });
 
+  it("decodes a legacy attempt with no publication or run", () => {
     const attempt = decodeLegacyAttempt({
       id: "attempt_demo",
       tenantId,
@@ -374,6 +386,7 @@ describe("record contracts", () => {
       submittedAt: createdAt,
       createdAt,
     });
+
     expect(attempt.schemaVersion).toBe("legacy-attempt-v1");
     expect(attempt.publication).toBeNull();
     expect(attempt.run).toBeNull();
@@ -402,15 +415,15 @@ describe("record contracts", () => {
       JSON.stringify(projectStudentLesson({ version, run })),
     ].join("\n");
 
-    for (const hidden of [
+    const leaked = [
       "privateAnswerRelationships",
       "contentHash",
       "packageHash",
       "privateAnswerDigest",
       "rawPrompt",
       "internalErrorBody",
-    ]) {
-      expect(serialized).not.toContain(hidden);
-    }
+    ].filter((hidden) => serialized.includes(hidden));
+
+    expect(leaked).toStrictEqual([]);
   });
 });

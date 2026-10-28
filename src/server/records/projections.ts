@@ -1,12 +1,5 @@
 import { z } from "zod";
 
-import type { LessonVersion } from "./authoring";
-import type {
-  AssistanceEvent,
-  LearnerAttempt,
-  LearnerRun,
-  TeacherDecision,
-} from "./delivery";
 import { createEvidenceHash } from "./hashes";
 import { isoTimestampSchema, recordIdSchema, scoreSchema } from "./envelope";
 import {
@@ -18,6 +11,13 @@ import {
   runStageValues,
   teacherDecisionActionValues,
 } from "./vocabulary";
+import type {
+  AssistanceEvent,
+  LearnerAttempt,
+  LearnerRun,
+  TeacherDecision,
+} from "./delivery";
+import type { LessonVersion } from "./authoring";
 
 /**
  * Explicit allowlists. A projection is constructed field by field, never by
@@ -49,8 +49,8 @@ export type TeacherVersionProjection = z.infer<
 
 export const projectTeacherVersion = (
   version: LessonVersion
-): TeacherVersionProjection =>
-  teacherVersionProjectionSchema.parse({
+): TeacherVersionProjection => {
+  return teacherVersionProjectionSchema.parse({
     id: version.id,
     tenantId: version.tenantId,
     packageId: version.packageId,
@@ -67,6 +67,7 @@ export const projectTeacherVersion = (
     ruleVersions: version.ruleVersions,
     createdAt: version.createdAt,
   });
+};
 
 export const studentLessonProjectionSchema = z.strictObject({
   publicationId: recordIdSchema,
@@ -85,8 +86,8 @@ export type StudentLessonProjection = z.infer<
 export const projectStudentLesson = (input: {
   readonly version: LessonVersion;
   readonly run: LearnerRun;
-}): StudentLessonProjection =>
-  studentLessonProjectionSchema.parse({
+}): StudentLessonProjection => {
+  return studentLessonProjectionSchema.parse({
     publicationId: input.run.publicationId,
     lessonVersionId: input.version.id,
     assignedVariantId: input.run.assignedVariantId,
@@ -95,6 +96,7 @@ export const projectStudentLesson = (input: {
     firstResponseStatus: input.run.firstResponseStatus,
     nextActivity: input.run.nextActivity,
   });
+};
 
 export const attemptProjectionSchema = z.strictObject({
   attemptId: recordIdSchema,
@@ -122,60 +124,71 @@ export const decisionProjectionSchema = z.strictObject({
   createdAt: isoTimestampSchema,
 });
 
-const projectAttempt = (attempt: LearnerAttempt) => ({
-  attemptId: attempt.id,
-  itemId: attempt.itemId,
-  ordinal: attempt.ordinal,
-  score: attempt.score,
-  correctness: attempt.correctness,
-  assistanceState: attempt.assistanceState,
-  createdAt: attempt.createdAt,
-});
-
-const projectAssistance = (event: AssistanceEvent) => ({
-  eventId: event.id,
-  itemId: event.itemId,
-  kind: event.kind,
-  ordinal: event.ordinal,
-  recordedAt: event.recordedAt,
-});
-
-const projectDecision = (decision: TeacherDecision) => ({
-  decisionId: decision.id,
-  action: decision.action,
-  approvedTargetId: decision.approvedTargetId,
-  evidenceHash: decision.evidenceHash,
-  createdAt: decision.createdAt,
-});
-
-/**
- * Evidence identity excludes storage timestamps: their precision differs
- * between drivers and they are not part of what the teacher decides on.
- */
-export const evidenceAttempts = (
-  attempts: readonly LearnerAttempt[]
-): readonly Record<string, unknown>[] =>
-  attempts.map((attempt) => ({
-    id: attempt.id,
+const projectAttempt = (attempt: LearnerAttempt) => {
+  return {
+    attemptId: attempt.id,
     itemId: attempt.itemId,
     ordinal: attempt.ordinal,
-    selectedPairs: attempt.selectedPairs,
-    assistanceState: attempt.assistanceState,
-    assistanceEventIds: attempt.assistanceEventIds,
     score: attempt.score,
     correctness: attempt.correctness,
-    gradingRuleVersion: attempt.gradingRuleVersion,
-  }));
+    assistanceState: attempt.assistanceState,
+    createdAt: attempt.createdAt,
+  };
+};
 
-export const evidenceAssistanceEvents = (
-  events: readonly AssistanceEvent[]
-): readonly Record<string, unknown>[] =>
-  events.map((event) => ({
-    id: event.id,
+const projectAssistance = (event: AssistanceEvent) => {
+  return {
+    eventId: event.id,
     itemId: event.itemId,
     kind: event.kind,
     ordinal: event.ordinal,
-  }));
+    recordedAt: event.recordedAt,
+  };
+};
+
+const projectDecision = (decision: TeacherDecision) => {
+  return {
+    decisionId: decision.id,
+    action: decision.action,
+    approvedTargetId: decision.approvedTargetId,
+    evidenceHash: decision.evidenceHash,
+    createdAt: decision.createdAt,
+  };
+};
+
+/**
+ * Evidence identity excludes storage timestamps: their precision differs between drivers and they are not part of what the teacher decides on.
+ */
+export const evidenceAttempts = (
+  attempts: readonly LearnerAttempt[]
+): readonly Record<string, unknown>[] => {
+  return attempts.map((attempt) => {
+    return {
+      id: attempt.id,
+      itemId: attempt.itemId,
+      ordinal: attempt.ordinal,
+      selectedPairs: attempt.selectedPairs,
+      assistanceState: attempt.assistanceState,
+      assistanceEventIds: attempt.assistanceEventIds,
+      score: attempt.score,
+      correctness: attempt.correctness,
+      gradingRuleVersion: attempt.gradingRuleVersion,
+    };
+  });
+};
+
+export const evidenceAssistanceEvents = (
+  events: readonly AssistanceEvent[]
+): readonly Record<string, unknown>[] => {
+  return events.map((event) => {
+    return {
+      id: event.id,
+      itemId: event.itemId,
+      kind: event.kind,
+      ordinal: event.ordinal,
+    };
+  });
+};
 
 export const studentEvidenceProjectionSchema = z.strictObject({
   runId: recordIdSchema,
@@ -193,14 +206,15 @@ export const projectStudentEvidence = (input: {
   readonly run: LearnerRun;
   readonly attempts: readonly LearnerAttempt[];
   readonly assistanceEvents: readonly AssistanceEvent[];
-}): StudentEvidenceProjection =>
-  studentEvidenceProjectionSchema.parse({
+}): StudentEvidenceProjection => {
+  return studentEvidenceProjectionSchema.parse({
     runId: input.run.id,
     attempts: input.attempts.map((attempt) => projectAttempt(attempt)),
     assistanceEvents: input.assistanceEvents.map((event) =>
       projectAssistance(event)
     ),
   });
+};
 
 export const teacherEvidenceProjectionSchema = z.strictObject({
   runId: recordIdSchema,
@@ -226,8 +240,8 @@ export const projectTeacherEvidence = (input: {
   readonly attempts: readonly LearnerAttempt[];
   readonly assistanceEvents: readonly AssistanceEvent[];
   readonly decisions: readonly TeacherDecision[];
-}): TeacherEvidenceProjection =>
-  teacherEvidenceProjectionSchema.parse({
+}): TeacherEvidenceProjection => {
+  return teacherEvidenceProjectionSchema.parse({
     runId: input.run.id,
     learnerId: input.run.learnerId,
     publicationId: input.run.publicationId,
@@ -247,3 +261,4 @@ export const projectTeacherEvidence = (input: {
     ),
     decisions: input.decisions.map((decision) => projectDecision(decision)),
   });
+};

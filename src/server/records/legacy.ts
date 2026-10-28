@@ -9,9 +9,7 @@ import {
 import { recordLimits } from "./vocabulary";
 
 /**
- * Decoders for the pre-versioning fixture rows. They return explicit legacy
- * labels and explicit nulls for approval and source evidence. They never infer
- * that an old activity was approved, grounded, or matched.
+ * Decoders for the pre-versioning fixture rows. They return explicit legacy labels and explicit nulls for approval and source evidence. They never infer that an old activity was approved, grounded, or matched.
  */
 export const legacyActivitySchema = z.strictObject({
   schemaVersion: z.literal("legacy-activity-v1"),
@@ -42,8 +40,10 @@ export interface LegacyActivityRow {
   readonly immutableAt: string;
 }
 
-export const decodeLegacyActivity = (row: LegacyActivityRow): LegacyActivity =>
-  legacyActivitySchema.parse({
+export const decodeLegacyActivity = (
+  row: LegacyActivityRow
+): LegacyActivity => {
+  return legacyActivitySchema.parse({
     schemaVersion: "legacy-activity-v1",
     id: row.id,
     tenantId: row.tenantId,
@@ -57,6 +57,7 @@ export const decodeLegacyActivity = (row: LegacyActivityRow): LegacyActivity =>
     source: null,
     immutableAt: row.immutableAt,
   });
+};
 
 export const legacyAttemptSchema = z.strictObject({
   schemaVersion: z.literal("legacy-attempt-v1"),
@@ -83,8 +84,8 @@ export interface LegacyAttemptRow {
   readonly createdAt: string;
 }
 
-export const decodeLegacyAttempt = (row: LegacyAttemptRow): LegacyAttempt =>
-  legacyAttemptSchema.parse({
+export const decodeLegacyAttempt = (row: LegacyAttemptRow): LegacyAttempt => {
+  return legacyAttemptSchema.parse({
     schemaVersion: "legacy-attempt-v1",
     id: row.id,
     tenantId: row.tenantId,
@@ -96,6 +97,7 @@ export const decodeLegacyAttempt = (row: LegacyAttemptRow): LegacyAttempt =>
     publication: null,
     run: null,
   });
+};
 
 export const legacyGenerationSchema = z.strictObject({
   schemaVersion: z.literal("legacy-generation-v1"),
@@ -125,8 +127,8 @@ export interface LegacyGenerationRow {
 
 export const decodeLegacyGeneration = (
   row: LegacyGenerationRow
-): LegacyGeneration =>
-  legacyGenerationSchema.parse({
+): LegacyGeneration => {
+  return legacyGenerationSchema.parse({
     schemaVersion: "legacy-generation-v1",
     id: row.id,
     tenantId: row.tenantId,
@@ -139,3 +141,4 @@ export const decodeLegacyGeneration = (
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   });
+};
