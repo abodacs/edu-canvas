@@ -1,11 +1,13 @@
 import { z } from "zod";
 
 import {
+  csrfHeaderName,
   membershipSelectionInputSchema,
   signInInputSchema,
   signUpInputSchema,
 } from "@/shared/identity-contract";
 import { readServerConfig } from "../config";
+import { noStoreJson, readJsonBody, withSetCookies } from "../http.server";
 import { serverObservability } from "../observability.server";
 import { createConfiguredIdentity } from "./composition.server";
 import {
@@ -16,36 +18,26 @@ import {
   isTrustedOrigin,
 } from "./csrf";
 import {
-  csrfHeaderName,
   pendingAuthCookieName,
   sessionChallengeCookieName,
   sessionCookieName,
 } from "./cookies";
 import { IdentityError, isIdentityError } from "./errors";
-import { projectActiveSession, projectMembershipRequired } from "./projection";
+import {
+  idleExpiryFrom,
+  projectActiveSession,
+  projectMembershipRequired,
+} from "./projection";
 
 import type { ServerConfig } from "../config";
 import type { IdentityService, SignInOutcome } from "./service";
-import type { SessionResolution } from "./types";
+import type { SessionResolution, TeacherActor } from "./types";
 import type { SessionProjection } from "@/shared/identity-contract";
 
 const sessionMaxAgeSeconds = 8 * 60 * 60;
 
-const noStore = { "cache-control": "no-store" } as const;
-
-const jsonResponse = (
-  payload: unknown,
-  status = 200,
-  headers: HeadersInit = {}
-) => {
-  return Response.json(payload, {
-    status,
-    headers: { ...noStore, ...headers },
-  });
-};
-
 const errorResponse = (error: IdentityError) => {
-  return jsonResponse(
+  return noStoreJson(
     { code: error.code, message: error.message },
     error.status
   );
@@ -147,20 +139,21 @@ const cookieNamesFor = (config: ServerConfig): CookieNames => {
 const sourceAddressFor = (request: Request): string =>
   request.headers.get("fly-client-ip")?.trim() || "unknown";
 
-const readJson = async (request: Request): Promise<unknown> => {
-  try {
-    return await request.json();
-  } catch {
-    return undefined;
-  }
-};
-
 export interface AuthDependencies {
   readonly identity: IdentityService;
   readonly sessionSecret: string;
   readonly publicOrigin: string;
   readonly config: ServerConfig;
 }
+
+export type TeacherResolution =
+  | {
+      readonly ok: true;
+      readonly actor: TeacherActor;
+      readonly sessionId: string;
+      readonly dependencies: AuthDependencies;
+    }
+  | { readonly ok: false; readonly error: IdentityError };
 
 export const resolveAuthDependencies = async (
   config: ServerConfig = readServerConfig()
@@ -265,7 +258,7 @@ export const handleAuthContext = (
 ): Promise<Response> => {
   const token = createPreAuthChallenge();
   return Promise.resolve(
-    jsonResponse({ csrf: token }, 200, challengeHeaders(dependencies, token))
+    noStoreJson({ csrf: token }, 200, challengeHeaders(dependencies, token))
   );
 };
 
@@ -285,7 +278,7 @@ export const handleSignUp = async (
     return errorResponse(challengeError);
   }
 
-  const parsed = signUpInputSchema.safeParse(await readJson(request));
+  const parsed = signUpInputSchema.safeParse(await readJsonBody(request));
   if (!parsed.success) {
     return errorResponse(new IdentityError("INVALID_INPUT"));
   }
@@ -296,7 +289,7 @@ export const handleSignUp = async (
       password: parsed.data.password,
       sourceAddress: sourceAddressFor(request),
     });
-    return jsonResponse({
+    return noStoreJson({
       status: outcome.status,
       email: outcome.email,
     });
@@ -310,7 +303,7 @@ const projectSignInOutcome = (
   outcome: SignInOutcome
 ): Response => {
   if (outcome.status === "membership-required") {
-    return jsonResponse(
+    return noStoreJson(
       projectMembershipRequired(outcome.memberships, outcome.expiresAt),
       200,
       {
@@ -322,7 +315,7 @@ const projectSignInOutcome = (
     );
   }
 
-  return jsonResponse(
+  return noStoreJson(
     projectActiveSession({
       role: outcome.actor.role,
       displayName: outcome.actor.displayName,
@@ -353,7 +346,7 @@ export const handleSignIn = async (
     return errorResponse(challengeError);
   }
 
-  const parsed = signInInputSchema.safeParse(await readJson(request));
+  const parsed = signInInputSchema.safeParse(await readJsonBody(request));
   if (!parsed.success) {
     return errorResponse(new IdentityError("INVALID_INPUT"));
   }
@@ -387,7 +380,7 @@ export const handleMembership = async (
   }
 
   const parsed = membershipSelectionInputSchema.safeParse(
-    await readJson(request)
+    await readJsonBody(request)
   );
   if (!parsed.success) {
     return errorResponse(new IdentityError("INVALID_INPUT"));
@@ -408,7 +401,7 @@ export const handleMembership = async (
       sourceAddress: sourceAddressFor(request),
     });
     const names = cookieNamesFor(dependencies.config);
-    return jsonResponse(
+    return noStoreJson(
       projectActiveSession({
         role: outcome.actor.role,
         displayName: outcome.actor.displayName,
@@ -419,19 +412,17 @@ export const handleMembership = async (
         absoluteExpiresAt: outcome.session.absoluteExpiresAt,
       }),
       200,
-      {
-        "set-cookie": [
-          sessionCookieHeader(dependencies, outcome.credential),
-          serializeCookie(
-            { name: names.pending, value: "" },
-            {
-              maxAge: 0,
-              secure: dependencies.config.appEnv !== "development",
-              clear: true,
-            }
-          ),
-        ].join(", "),
-      }
+      withSetCookies([
+        sessionCookieHeader(dependencies, outcome.credential),
+        serializeCookie(
+          { name: names.pending, value: "" },
+          {
+            maxAge: 0,
+            secure: dependencies.config.appEnv !== "development",
+            clear: true,
+          }
+        ),
+      ])
     );
   } catch (error) {
     return toErrorResponse(error);
@@ -461,8 +452,8 @@ export const handleSession = async (
     return errorResponse(new IdentityError("UNAUTHENTICATED"));
   }
 
-  const idleExpiry = new Date(
-    Date.parse(resolution.session.lastActivityAt) + 30 * 60 * 1000
+  const idleDeadline = new Date(
+    idleExpiryFrom(resolution.session.lastActivityAt)
   );
   const projection: SessionProjection = projectActiveSession({
     role: resolution.actor.role,
@@ -470,7 +461,7 @@ export const handleSession = async (
     tenantId: resolution.actor.tenantId,
     tenantName: resolution.actor.tenantName,
     sessionGeneration: resolution.actor.sessionGeneration,
-    idleExpiresAt: idleExpiry.toISOString(),
+    idleExpiresAt: idleDeadline.toISOString(),
     absoluteExpiresAt: resolution.session.absoluteExpiresAt,
   });
 
@@ -478,7 +469,7 @@ export const handleSession = async (
     dependencies.sessionSecret,
     resolution.session.sessionId
   );
-  return jsonResponse(
+  return noStoreJson(
     { ...projection, csrf: challenge },
     200,
     challengeHeaders(dependencies, challenge)
@@ -526,7 +517,7 @@ export const handleContinue = async (
   if (!outcome) {
     return errorResponse(new IdentityError("UNAUTHENTICATED"));
   }
-  return jsonResponse({
+  return noStoreJson({
     status: "active",
     idleExpiresAt: outcome.idleExpiresAt,
     absoluteExpiresAt: outcome.absoluteExpiresAt,
@@ -571,16 +562,15 @@ export const handleLogout = async (
         clear: true,
       }
     ),
-  ].join(", ");
+  ];
 
   const outcome = await dependencies.identity.endSession(credential);
-  const headers = {
+  const headers = withSetCookies(clearedCookies, {
     "clear-site-data": clearSiteDataValue,
-    "set-cookie": clearedCookies,
-  };
+  });
 
   if (outcome.status === "durable-failure") {
-    return jsonResponse(
+    return noStoreJson(
       {
         code: "AUTH_UNAVAILABLE",
         message: "Sign-out could not be confirmed. Reload the page.",
@@ -623,6 +613,41 @@ export const guardProtectedMutation = (
   return originError ?? guardSessionChallenge(request, dependencies, sessionId);
 };
 
+// Resolve the caller as a verified teacher, or name the reason. Transport stays with the caller.
+export const resolveTeacherActor = async (
+  request: Request,
+  config: ServerConfig = readServerConfig()
+): Promise<TeacherResolution> => {
+  if (config.issues.length > 0) {
+    return { ok: false, error: new IdentityError("AUTH_UNAVAILABLE") };
+  }
+
+  let dependencies: AuthDependencies;
+  try {
+    dependencies = await resolveAuthDependencies(config);
+  } catch {
+    return { ok: false, error: new IdentityError("AUTH_UNAVAILABLE") };
+  }
+
+  const resolution = await resolveRequestSession(request, dependencies);
+  if (resolution.status === "unavailable") {
+    return { ok: false, error: new IdentityError("AUTH_UNAVAILABLE") };
+  }
+  if (resolution.status === "unauthenticated") {
+    return { ok: false, error: new IdentityError("UNAUTHENTICATED") };
+  }
+  if (resolution.actor.role !== "teacher") {
+    return { ok: false, error: new IdentityError("FORBIDDEN") };
+  }
+
+  return {
+    ok: true,
+    actor: resolution.actor,
+    sessionId: resolution.session.sessionId,
+    dependencies,
+  };
+};
+
 export const identityErrorJson = (error: IdentityError): Response =>
   errorResponse(error);
 
@@ -648,4 +673,19 @@ export const resolveAuthOrError = async (): Promise<
       response: identityErrorJson(new IdentityError("AUTH_UNAVAILABLE")),
     };
   }
+};
+
+// Bind one auth handler to the route contract. Every `/api/auth/*` route is this line.
+export const authRoute = (
+  handler: (
+    request: Request,
+    dependencies: AuthDependencies
+  ) => Promise<Response>
+): ((context: { readonly request: Request }) => Promise<Response>) => {
+  return async ({ request }) => {
+    const resolved = await resolveAuthOrError();
+    return resolved.ok
+      ? handler(request, resolved.dependencies)
+      : resolved.response;
+  };
 };

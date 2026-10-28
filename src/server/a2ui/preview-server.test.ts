@@ -29,6 +29,45 @@ const draftRequestId = "draft_req_preview_owner";
 
 const sessionState = vi.hoisted(() => ({ resolution: undefined as unknown }));
 
+/* eslint-disable func-style, unicorn/consistent-function-scoping -- vi.mock factories are hoisted and cannot reference module-scope helpers. */
+// Mirrors the production seam: resolve the session, then require a teacher.
+const seam = vi.hoisted(() => {
+  function failure(code: string, status: number, message: string) {
+    return { ok: false, error: { code, status, message } };
+  }
+
+  function resolveTeacherActor() {
+    const resolution = sessionState.resolution as SessionResolution;
+    if (resolution.status === "unavailable") {
+      return Promise.resolve(
+        failure(
+          "AUTH_UNAVAILABLE",
+          503,
+          "Sign-in is temporarily unavailable. Try again in a moment."
+        )
+      );
+    }
+    if (resolution.status !== "active") {
+      return Promise.resolve(
+        failure("UNAUTHENTICATED", 401, "Sign in to continue.")
+      );
+    }
+    if (resolution.actor.role !== "teacher") {
+      return Promise.resolve(
+        failure("FORBIDDEN", 403, "You do not have access to this resource.")
+      );
+    }
+    return Promise.resolve({
+      ok: true,
+      actor: resolution.actor,
+      sessionId: resolution.session.sessionId,
+      dependencies: { config: { issues: [] } },
+    });
+  }
+
+  return { resolveTeacherActor };
+});
+
 vi.mock(
   import(
     /* webpackChunkName: "identity-api-server" */ "@/server/identity/api.server"
@@ -37,9 +76,11 @@ vi.mock(
     return {
       resolveAuthDependencies: () => Promise.resolve({}),
       resolveRequestSession: () => Promise.resolve(sessionState.resolution),
+      resolveTeacherActor: seam.resolveTeacherActor,
     } as never;
   }
 );
+/* eslint-enable func-style, unicorn/consistent-function-scoping */
 
 const persistenceState = vi.hoisted(() => ({ current: undefined as unknown }));
 

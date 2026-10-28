@@ -724,8 +724,6 @@ export const createPostgresIdentityPersistence = (
   }
 
   return {
-    kind: "postgres",
-
     findProviderBinding: (issuer, subject) =>
       findProviderBinding(databaseUrl, issuer, subject),
     createProviderBinding: (binding) =>

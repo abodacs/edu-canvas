@@ -3,7 +3,7 @@ import { useId, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
-import type { ReactElement, Ref } from "react";
+import type { ReactElement } from "react";
 
 interface PasswordFieldProperties {
   readonly label: string;
@@ -16,7 +16,6 @@ interface PasswordFieldProperties {
   readonly minLength?: number;
   readonly required?: boolean;
   readonly disabled?: boolean;
-  readonly inputRef?: Ref<HTMLInputElement>;
 }
 
 /**
@@ -36,7 +35,6 @@ export const PasswordField = ({
   minLength,
   required = true,
   disabled = false,
-  inputRef,
 }: PasswordFieldProperties): ReactElement => {
   const [isVisible, setIsVisible] = useState(false);
   const inputId = useId();
@@ -54,7 +52,6 @@ export const PasswordField = ({
       </label>
       <div className="field__control">
         <input
-          ref={inputRef}
           id={inputId}
           className="field__input field__input--with-toggle"
           name={name}

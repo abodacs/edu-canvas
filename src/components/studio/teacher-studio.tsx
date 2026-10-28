@@ -12,9 +12,11 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef, useState } from "react";
 
+import { readResponseJson } from "@/lib/http";
 import { cn } from "@/lib/utilities";
 import { LessonPreview } from "@/components/a2ui/lesson-preview";
 import { Button } from "@/components/ui/button";
+import { csrfHeaderName } from "@/shared/identity-contract";
 import { publicGenerationResultSchema } from "@/shared/generation-contract";
 import type {
   LessonGenerationInput,
@@ -35,7 +37,6 @@ The seeded synthetic curriculum every draft is generated against. The identity s
 const DEFAULT_STANDARD_ID = "standard_ccss_4_nf_a_01";
 
 const GENERATE_ENDPOINT = "/api/lessons/generate";
-const GENERATION_CSRF_HEADER = "x-edu-canvas-csrf";
 
 const GRADES = ["3", "4", "5", "6"] as const;
 
@@ -229,14 +230,6 @@ const readErrorCode = (payload: unknown): string | null => {
   return typeof code === "string" ? code : null;
 };
 
-const readJson = async (response: Response): Promise<unknown> => {
-  try {
-    return await response.json();
-  } catch {
-    return undefined;
-  }
-};
-
 interface GenerationFailure {
   readonly unauthorized: boolean;
   readonly message: string;
@@ -290,7 +283,7 @@ const postGenerationRequest = async (
       method: "POST",
       headers: {
         "content-type": "application/json",
-        [GENERATION_CSRF_HEADER]: csrf,
+        [csrfHeaderName]: csrf,
       },
       body: JSON.stringify(input),
     });
@@ -298,7 +291,7 @@ const postGenerationRequest = async (
     return { kind: "error", message: ERROR_COPY.generic };
   }
 
-  const payload = await readJson(response);
+  const payload = await readResponseJson(response);
 
   if (!response.ok) {
     const failure = resolveFailure(response.status, readErrorCode(payload));

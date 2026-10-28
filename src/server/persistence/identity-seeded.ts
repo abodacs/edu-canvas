@@ -92,8 +92,6 @@ export const createSeededIdentityPersistence = (
   };
 
   return {
-    kind: "seeded-demo",
-
     findProviderBinding: (issuer, subject) => {
       const binding = store.providerBindings.get(bindingKey(issuer, subject));
       return Promise.resolve(binding ? structuredClone(binding) : undefined);

@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+// The forgery-token header, defined once for the client and the server guard.
+export const csrfHeaderName = "x-edu-canvas-csrf";
+
 export const identityRoleSchema = z.enum(["teacher", "student"]);
 export type IdentityRoleValue = z.infer<typeof identityRoleSchema>;
 
@@ -69,13 +72,6 @@ export const sessionProjectionSchema = z.discriminatedUnion("status", [
 ]);
 
 export type SessionProjection = z.infer<typeof sessionProjectionSchema>;
-
-export const authErrorSchema = z.strictObject({
-  code: z.string(),
-  message: z.string(),
-});
-
-export type AuthError = z.infer<typeof authErrorSchema>;
 
 export const continueSessionProjectionSchema = z.strictObject({
   status: z.literal("active"),

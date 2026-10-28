@@ -27,7 +27,10 @@ Routes that intentionally serve anonymous callers.
 const publicRoutePrefixes = new Set(["auth", "health", "readiness"]);
 
 const serverImportPattern = /from\s+['"](?<specifier>@\/server\/[^'"]+)['"]/gu;
-const sessionResolutionMarkers = ["resolveRequestSession", "resolveActor"];
+const sessionResolutionMarkers = [
+  "resolveRequestSession",
+  "resolveTeacherActor",
+];
 
 const listRouteFiles = async (directory: string): Promise<string[]> => {
   const entries = await readdir(directory, { withFileTypes: true });

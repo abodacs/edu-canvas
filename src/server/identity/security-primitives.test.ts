@@ -5,7 +5,6 @@ import {
   createOpaqueCredential,
   createSessionGeneration,
   hashCredential,
-  isVerifierMatch,
 } from "./cookies";
 import { createRateLimiter, normalizedAccountDigest } from "./rate-limit";
 
@@ -97,13 +96,13 @@ describe("opaque credentials", () => {
     ).toBeGreaterThanOrEqual(32);
   });
 
-  it("persists a one-way verifier that matches only the credential", () => {
+  it("persists a one-way verifier that never contains the credential", () => {
     const credential = createOpaqueCredential();
     const verifier = hashCredential(credential);
 
     expect(verifier).not.toContain(credential);
-    expect(isVerifierMatch(credential, verifier)).toBeTruthy();
-    expect(isVerifierMatch(createOpaqueCredential(), verifier)).toBeFalsy();
+    expect(hashCredential(credential)).toBe(verifier);
+    expect(hashCredential(createOpaqueCredential())).not.toBe(verifier);
   });
 
   it("mints a distinct non-secret session generation", () => {
@@ -150,6 +149,11 @@ describe("rate limiter", () => {
   });
 
   it("derives a stable, non-reversible account digest", () => {
+    // A pinned value, so a changed mixer cannot pass the relative assertions
+    // below. Rate-limit buckets are keyed by this digest.
+    expect(normalizedAccountDigest("edu-canvas", "teacher@school.test")).toBe(
+      "h5bt2o"
+    );
     expect(normalizedAccountDigest("s", "User@Example.test")).toBe(
       normalizedAccountDigest("s", " user@example.test ")
     );

@@ -52,7 +52,3 @@ export const projectMembershipRequired = (
     expiresAt,
   };
 };
-
-export const projectVerificationPending = (
-  email: string
-): SessionProjection => ({ status: "verification-pending", email });

@@ -8,6 +8,7 @@ import {
   handleSession,
   handleSignIn,
   resolveAuthDependencies,
+  resolveTeacherActor,
 } from "./api.server";
 
 import type { AuthDependencies } from "./api.server";
@@ -47,7 +48,10 @@ const bootstrapFlow = async (sessionDependencies: AuthDependencies) => {
   };
 };
 
-const signIn = async (sessionDependencies: AuthDependencies) => {
+const signIn = async (
+  sessionDependencies: AuthDependencies,
+  email = "bilal.north@example.test"
+) => {
   const flow = await bootstrapFlow(sessionDependencies);
   const response = await handleSignIn(
     new Request(`${sessionDependencies.publicOrigin}/api/auth/sign-in`, {
@@ -59,7 +63,7 @@ const signIn = async (sessionDependencies: AuthDependencies) => {
         cookie: flow.cookie,
       },
       body: JSON.stringify({
-        email: "bilal.north@example.test",
+        email,
         password,
       }),
     }),
@@ -348,5 +352,76 @@ describe("logout header contract", () => {
 
     expect(response.status).toBe(403);
     expect(response.headers.get("clear-site-data")).toBeNull();
+  });
+});
+
+const teacherRequest = (
+  sessionDependencies: AuthDependencies,
+  cookie: string | undefined
+): Request => {
+  return new Request(`${sessionDependencies.publicOrigin}/lesson/preview`, {
+    method: "GET",
+    ...(cookie && { headers: { cookie } }),
+  });
+};
+
+describe("teacher delivery seam", () => {
+  it("returns the verified teacher actor for an active session", async () => {
+    const sessionDependencies = await dependencies();
+    const { sessionCookie } = await signIn(sessionDependencies);
+
+    const resolved = await resolveTeacherActor(
+      teacherRequest(sessionDependencies, sessionCookie),
+      sessionDependencies.config
+    );
+
+    expect(resolved).toMatchObject({
+      ok: true,
+      actor: { role: "teacher", actorId: "actor_teacher_bilal" },
+      sessionId: expect.any(String),
+    });
+  });
+
+  it("refuses a learner session", async () => {
+    const sessionDependencies = await dependencies();
+    const { sessionCookie } = await signIn(
+      sessionDependencies,
+      "lina.north@example.test"
+    );
+
+    const resolved = await resolveTeacherActor(
+      teacherRequest(sessionDependencies, sessionCookie),
+      sessionDependencies.config
+    );
+
+    expect(resolved).toMatchObject({ ok: false, error: { code: "FORBIDDEN" } });
+  });
+
+  it("refuses a request with no session", async () => {
+    const sessionDependencies = await dependencies();
+
+    const resolved = await resolveTeacherActor(
+      teacherRequest(sessionDependencies, undefined),
+      sessionDependencies.config
+    );
+
+    expect(resolved).toMatchObject({
+      ok: false,
+      error: { code: "UNAUTHENTICATED" },
+    });
+  });
+
+  it("fails closed when the configuration is invalid", async () => {
+    const invalid = readServerConfig({ APP_ENV: "production" });
+
+    const resolved = await resolveTeacherActor(
+      new Request("https://education.example.test/lesson/preview"),
+      invalid
+    );
+
+    expect(resolved).toMatchObject({
+      ok: false,
+      error: { code: "AUTH_UNAVAILABLE" },
+    });
   });
 });

@@ -61,8 +61,6 @@ export interface SessionCredentialReplacement {
  * Identity persistence: bindings, membership, sessions, pending authentication, and trusted provisioning. Tenant-scoped reads and writes carry the authorization revision alongside the domain expectation so revocation committed first blocks a stale write.
  */
 export interface IdentityPersistence {
-  readonly kind: "seeded-demo" | "postgres";
-
   findProviderBinding: (
     issuer: string,
     subject: string

@@ -2,13 +2,12 @@ import { z } from "zod";
 
 import { A2UI_CATALOG_ID, A2UI_CATALOG_VERSION } from "@/shared/a2ui-contract";
 
-import {
-  resolveAuthDependencies,
-  resolveRequestSession,
-} from "../identity/api.server";
-import { readServerConfig } from "../config";
+import { resolveTeacherActor } from "../identity/api.server";
+import { noStoreJson } from "../http.server";
 import { compileLessonPreview, LessonPreviewCompileError } from "./compiler";
 import { createPreviewSSEStream } from "./stream";
+
+import type { ServerConfig } from "../config";
 
 const previewUnavailableMessage =
   "The preview is temporarily unavailable. Try again later.";
@@ -18,30 +17,22 @@ const requestIdSchema = z
   .trim()
   .regex(/^[A-Za-z0-9_-]{1,80}$/u);
 
-const jsonResponse = (payload: unknown, status = 200) => {
-  return Response.json(payload, {
-    status,
-    headers: {
-      "cache-control": "no-store",
-    },
-  });
-};
-
 const sseError = (code: string, message: string, status: number) =>
-  jsonResponse({ code, message }, status);
+  noStoreJson({ code, message }, status);
 
 const buildPreviewResponse = async ({
+  config,
   requestId,
   tenantId,
   actorId,
   signal,
 }: {
+  config: ServerConfig;
   requestId: string;
   tenantId: string;
   actorId: string;
   signal: AbortSignal | null;
 }): Promise<Response> => {
-  const config = readServerConfig();
   /* eslint-disable unicorn/single-line-block-comment-style -- Vite reads a dynamic import's chunkname only from a single-line block comment. */
   const { createFoundationPersistence } = await import(
     /* webpackChunkName: "foundation-persistence" */
@@ -116,42 +107,21 @@ export const handleLessonPreviewRequest = async (
     );
   }
 
-  const config = readServerConfig();
-  if (config.issues.length > 0) {
-    return sseError("AUTH_UNAVAILABLE", previewUnavailableMessage, 503);
-  }
-
-  let dependencies;
-  try {
-    dependencies = await resolveAuthDependencies(config);
-  } catch {
-    return sseError("AUTH_UNAVAILABLE", previewUnavailableMessage, 503);
-  }
-
-  const resolution = await resolveRequestSession(request, dependencies);
-  if (resolution.status === "unavailable") {
+  const resolved = await resolveTeacherActor(request);
+  if (!resolved.ok) {
     return sseError(
-      "AUTH_UNAVAILABLE",
-      "Sign-in is temporarily unavailable. Try again in a moment.",
-      503
-    );
-  }
-  if (resolution.status === "unauthenticated") {
-    return sseError("UNAUTHENTICATED", "Sign in to continue.", 401);
-  }
-  if (resolution.actor.role !== "teacher") {
-    return sseError(
-      "FORBIDDEN",
-      "You do not have access to this resource.",
-      403
+      resolved.error.code,
+      resolved.error.message,
+      resolved.error.status
     );
   }
 
   try {
     return await buildPreviewResponse({
+      config: resolved.dependencies.config,
       requestId: parsedRequestId.data,
-      tenantId: resolution.actor.tenantId,
-      actorId: resolution.actor.actorId,
+      tenantId: resolved.actor.tenantId,
+      actorId: resolved.actor.actorId,
       signal: request.signal,
     });
   } catch (error) {

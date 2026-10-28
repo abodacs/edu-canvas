@@ -12,12 +12,23 @@ import {
   idleWindowMs,
   pendingWindowMs,
 } from "./projection";
+import {
+  membershipAttemptLimit,
+  membershipAttemptWindowMs,
+  normalizedAccountDigest,
+  signInAccountLimit,
+  signInAccountWindowMs,
+  signUpSourceLimit,
+  signUpSourceWindowMs,
+  sourceSignInLimit,
+} from "./rate-limit";
 
 import type { ActorId } from "./identifiers";
+import type { RateLimiter } from "./rate-limit";
 import type { CredentialCipher } from "./cipher";
 import type { IdentityPersistence } from "./persistence-port";
 import type { IdentityProvider } from "./provider/port";
-import type { RateLimiter } from "./rate-limit";
+
 import type {
   Actor,
   IdentitySessionRecord,
@@ -138,30 +149,6 @@ const parseCredentials = (
   return isEncryptedCredentials(parsed) ? parsed : undefined;
 };
 
-const signInAccountLimit = 10;
-const signInAccountWindowMs = 15 * 60 * 1000;
-const sourceSignInDefault = 300;
-const signUpSourceDefault = 5;
-const signUpSourceWindowMs = 60 * 60 * 1000;
-const membershipAttemptDefault = 20;
-const membershipAttemptWindowMs = 5 * 60 * 1000;
-
-/**
- * FNV-1a bucket digest. Not cryptographic and never stored as a raw identifier:
- * it only separates rate-limit counters for distinct normalized addresses.
- */
-const normalizedDigest = (secret: string, email: string): string => {
-  const normalized = email.trim().toLowerCase();
-  let hash = 2_166_136_261;
-  const digestInput = `${secret}:${normalized}`;
-  for (const character of digestInput) {
-    // eslint-disable-next-line no-bitwise -- FNV-1a mixing step.
-    hash ^= character.codePointAt(0) ?? 0;
-    hash = Math.imul(hash, 16_777_619);
-  }
-  return Math.abs(hash).toString(36);
-};
-
 export const createIdentityService = (
   options: IdentityServiceOptions
 ): IdentityService => {
@@ -191,7 +178,14 @@ export const createIdentityService = (
   const buildActor = async (
     session: IdentitySessionRecord
   ): Promise<Actor | undefined> => {
-    const actorRecord = await options.persistence.readActor(session.actorId);
+    // Independent reads share one round trip. Every verified request takes this
+    // path, so a serialized chain would add the full read latency each time.
+    const [actorRecord, membership, tenantNameRecord] = await Promise.all([
+      options.persistence.readActor(session.actorId),
+      options.persistence.readMembership(session.membershipId),
+      options.persistence.readTenantName(session.tenantId),
+    ]);
+
     if (
       !actorRecord ||
       !actorRecord.isActive ||
@@ -200,26 +194,20 @@ export const createIdentityService = (
       return undefined;
     }
 
-    const membership = await options.persistence.readMembership(
-      session.membershipId
-    );
     if (
       !membership ||
       membership.status !== "active" ||
-      membership.actorId !== session.actorId
+      membership.actorId !== session.actorId ||
+      membership.tenantId !== session.tenantId
     ) {
       return undefined;
     }
-
-    const tenantName =
-      (await options.persistence.readTenantName(membership.tenantId)) ??
-      membership.tenantName;
 
     const base = {
       actorId: session.actorId,
       displayName: actorRecord.displayName,
       tenantId: session.tenantId,
-      tenantName,
+      tenantName: tenantNameRecord ?? membership.tenantName,
       membershipId: session.membershipId,
       sessionId: session.sessionId,
       sessionGeneration: session.sessionGeneration,
@@ -338,13 +326,13 @@ export const createIdentityService = (
   return {
     signIn: async (command) => {
       const account = options.rateLimiter.consume(
-        `signin:account:${normalizedDigest(correlationSecret, command.email)}`,
+        `signin:account:${normalizedAccountDigest(correlationSecret, command.email)}`,
         options.signInAttemptLimit ?? signInAccountLimit,
         signInAccountWindowMs
       );
       const source = options.rateLimiter.consume(
         `signin:source:${command.sourceAddress}`,
-        options.sourceSignInLimit ?? sourceSignInDefault,
+        options.sourceSignInLimit ?? sourceSignInLimit,
         signInAccountWindowMs
       );
       if (!account.allowed || !source.allowed) {
@@ -445,7 +433,7 @@ export const createIdentityService = (
     signUpTeacher: async (command) => {
       const source = options.rateLimiter.consume(
         `signup:source:${command.sourceAddress}`,
-        options.signUpSourceLimit ?? signUpSourceDefault,
+        options.signUpSourceLimit ?? signUpSourceLimit,
         signUpSourceWindowMs
       );
       if (!source.allowed) {
@@ -466,7 +454,7 @@ export const createIdentityService = (
     selectMembership: async (command) => {
       const source = options.rateLimiter.consume(
         `membership:source:${command.sourceAddress}`,
-        options.membershipAttemptLimit ?? membershipAttemptDefault,
+        options.membershipAttemptLimit ?? membershipAttemptLimit,
         membershipAttemptWindowMs
       );
       if (!source.allowed) {

@@ -136,6 +136,8 @@ describe("membership selection over HTTP", () => {
       actor: { tenantName: "Southside Middle" },
     });
     expect(cookieValue(selected, "edu_canvas_session")).toBeDefined();
+    // Session cookie plus cleared pending cookie: Set-Cookie cannot be folded.
+    expect(selected.headers.getSetCookie()).toHaveLength(2);
   });
 
   it("refuses a foreign membership with one generic error", async () => {

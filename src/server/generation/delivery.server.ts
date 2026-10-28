@@ -5,19 +5,16 @@ import { lessonGenerationInputSchema } from "@/shared/generation-contract";
 import {
   guardProtectedMutation,
   identityErrorJson,
-  resolveAuthDependencies,
-  resolveRequestSession,
+  resolveTeacherActor,
 } from "../identity/api.server";
 import { IdentityError } from "../identity/errors";
+import { readJsonBody, noStoreJson } from "../http.server";
 import { readServerConfig } from "../config";
 import { createFoundationPersistence } from "../persistence";
 import { createConfiguredLessonDraftProvider } from "./factory";
 import { createGenerationService } from "./service";
 
 import type { TeacherActor } from "../identity/types";
-
-const noStoreJson = (payload: unknown, status = 200): Response =>
-  Response.json(payload, { status, headers: { "cache-control": "no-store" } });
 
 const createService = (): ReturnType<typeof createGenerationService> => {
   const config = readServerConfig();
@@ -27,65 +24,24 @@ const createService = (): ReturnType<typeof createGenerationService> => {
   });
 };
 
-const readBody = async (request: Request): Promise<unknown> => {
-  try {
-    return await request.json();
-  } catch {
-    return undefined;
-  }
-};
-
 type TeacherResolution =
   | { readonly ok: true; readonly actor: TeacherActor }
   | { readonly ok: false; readonly response: Response };
 
 const resolveTeacher = async (request: Request): Promise<TeacherResolution> => {
-  const config = readServerConfig();
-  if (config.issues.length > 0) {
-    return {
-      ok: false,
-      response: identityErrorJson(new IdentityError("AUTH_UNAVAILABLE")),
-    };
-  }
-
-  let dependencies;
-  try {
-    dependencies = await resolveAuthDependencies(config);
-  } catch {
-    return {
-      ok: false,
-      response: identityErrorJson(new IdentityError("AUTH_UNAVAILABLE")),
-    };
-  }
-
-  const resolution = await resolveRequestSession(request, dependencies);
-  if (resolution.status === "unavailable") {
-    return {
-      ok: false,
-      response: identityErrorJson(new IdentityError("AUTH_UNAVAILABLE")),
-    };
-  }
-  if (resolution.status === "unauthenticated") {
-    return {
-      ok: false,
-      response: identityErrorJson(new IdentityError("UNAUTHENTICATED")),
-    };
-  }
-  if (resolution.actor.role !== "teacher") {
-    return {
-      ok: false,
-      response: identityErrorJson(new IdentityError("FORBIDDEN")),
-    };
+  const resolved = await resolveTeacherActor(request);
+  if (!resolved.ok) {
+    return { ok: false, response: identityErrorJson(resolved.error) };
   }
 
   const guard = guardProtectedMutation(
     request,
-    dependencies,
-    resolution.session.sessionId
+    resolved.dependencies,
+    resolved.sessionId
   );
   return guard
     ? { ok: false, response: identityErrorJson(guard) }
-    : { ok: true, actor: resolution.actor };
+    : { ok: true, actor: resolved.actor };
 };
 
 const mapGenerationError = (error: unknown): Response => {
@@ -117,7 +73,9 @@ export const handleGenerateLessonRequest = async (
     return resolved.response;
   }
 
-  const parsed = lessonGenerationInputSchema.safeParse(await readBody(request));
+  const parsed = lessonGenerationInputSchema.safeParse(
+    await readJsonBody(request)
+  );
   if (!parsed.success) {
     return identityErrorJson(new IdentityError("INVALID_INPUT"));
   }

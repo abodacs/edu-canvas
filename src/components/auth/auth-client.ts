@@ -1,17 +1,14 @@
 import {
   continueSessionProjectionSchema,
+  csrfHeaderName,
   sessionProjectionSchema,
 } from "@/shared/identity-contract";
+import { readResponseJson } from "@/lib/http";
 
 import type {
   ContinueSessionProjection,
   SessionProjection,
 } from "@/shared/identity-contract";
-
-/**
-Header a browser echoes back with a protected mutation's challenge.
-*/
-export const csrfHeaderName = "x-edu-canvas-csrf";
 
 /**
 Channel every tab listens on so a sign-out or expiry hides private UI.
@@ -91,12 +88,21 @@ const contractFailure: AuthApiFailure = {
   message: "",
 };
 
-const readJson = async (response: Response): Promise<unknown> => {
-  try {
-    return await response.json();
-  } catch {
+// The envelope may carry extra keys, so select the projection keys before a strict parse.
+const parseActiveProjection = (
+  body: unknown
+): ActiveSessionProjection | undefined => {
+  if (!isRecord(body)) {
     return undefined;
   }
+  const parsed = sessionProjectionSchema.safeParse({
+    status: body.status,
+    actor: body.actor,
+    session: body.session,
+  });
+  return parsed.success && parsed.data.status === "active"
+    ? parsed.data
+    : undefined;
 };
 
 const toFailure = (response: Response, body: unknown): AuthApiFailure => {
@@ -124,7 +130,8 @@ const request = async (
     return { ok: false, error: networkFailure };
   }
 
-  const body = response.status === 204 ? undefined : await readJson(response);
+  const body =
+    response.status === 204 ? undefined : await readResponseJson(response);
   return response.ok
     ? { ok: true, data: { body, response } }
     : { ok: false, error: toFailure(response, body) };
@@ -206,18 +213,9 @@ export const submitMembership = async (
   if (!result.ok) {
     return result;
   }
-  // The envelope carries no extra keys, but select the three known branches so
-  // a future addition cannot fail a strict parse.
-  const { body } = result.data;
-  const parsed = isRecord(body)
-    ? sessionProjectionSchema.safeParse({
-        status: body.status,
-        actor: body.actor,
-        session: body.session,
-      })
-    : undefined;
-  return parsed?.success && parsed.data.status === "active"
-    ? { ok: true, data: parsed.data }
+  const projection = parseActiveProjection(result.data.body);
+  return projection
+    ? { ok: true, data: projection }
     : { ok: false, error: contractFailure };
 };
 
@@ -237,15 +235,9 @@ export const fetchSession = async (): Promise<
   const { body } = result.data;
   const csrf =
     isRecord(body) && typeof body.csrf === "string" ? body.csrf : null;
-  const parsed = isRecord(body)
-    ? sessionProjectionSchema.safeParse({
-        status: body.status,
-        actor: body.actor,
-        session: body.session,
-      })
-    : undefined;
-  return parsed?.success && parsed.data.status === "active"
-    ? { ok: true, data: { projection: parsed.data, csrf } }
+  const projection = parseActiveProjection(body);
+  return projection
+    ? { ok: true, data: { projection, csrf } }
     : { ok: false, error: contractFailure };
 };
 

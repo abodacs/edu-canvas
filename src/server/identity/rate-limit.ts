@@ -87,12 +87,7 @@ export const createRateLimiter = (
   };
 };
 
-/**
- * A stable, non-reversible digest for a rate-limit key. Raw account identifiers and client addresses are never logged or stored as bucket keys.
- */
-export const rateLimitKey = (namespace: string, secret: string): string =>
-  `${namespace}:${secret}`;
-
+// A stable, non-reversible digest for a rate-limit bucket key. Not cryptographic.
 export const normalizedAccountDigest = (
   secret: string,
   email: string
@@ -109,8 +104,8 @@ export const normalizedAccountDigest = (
   return Math.abs(hash).toString(36);
 };
 
-export const signInAttemptLimit = 10;
-export const signInAttemptWindowMs = 15 * 60 * 1000;
+export const signInAccountLimit = 10;
+export const signInAccountWindowMs = 15 * 60 * 1000;
 export const sourceSignInLimit = 300;
 export const signUpSourceLimit = 5;
 export const signUpSourceWindowMs = 60 * 60 * 1000;
