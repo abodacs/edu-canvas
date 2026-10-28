@@ -110,11 +110,18 @@ export interface SemanticValidationOptions {
   retryDelayMs?: number;
 }
 
+/**
+ * The seeded curriculum is a stand-in, not a tenant-owned catalogue (#110 owns
+ * that). Its context is therefore bound to the acting tenant so that a real
+ * signed-in teacher is not rejected by the tenant-match check. Replace this
+ * default with tenant-owned graph resolution when it lands.
+ */
 export const createDemoCurriculumContext = (
-  input: Pick<NormalizedGenerationRequest, "grade" | "language" | "standardId">
+  input: Pick<NormalizedGenerationRequest, "grade" | "language" | "standardId">,
+  tenantId: string = demoSeed.tenant.id
 ): VersionedCurriculumContext => {
   return {
-    tenantId: demoSeed.tenant.id,
+    tenantId,
     standardId: input.standardId,
     standardCode: demoSeed.standard.code,
     grade: input.grade,

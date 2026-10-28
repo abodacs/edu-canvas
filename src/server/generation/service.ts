@@ -2,7 +2,6 @@ import { setTimeout as delay } from "node:timers/promises";
 
 import { lessonGenerationInputSchema } from "@/shared/generation-contract";
 
-import { assertTenantAccess, canAccess } from "@/server/demo/policy";
 import { createId } from "@/server/ids";
 import { demoSeed } from "@/server/seed-data";
 
@@ -23,6 +22,7 @@ import {
   isGenerationClaimExpired,
 } from "./types";
 import { validateProviderDraft } from "./validation";
+import type { Actor } from "@/server/identity/types";
 import type { DraftAcceptanceOptions } from "./draft-acceptance";
 import type {
   GenerationCommand,
@@ -78,7 +78,7 @@ export interface GenerationServiceOptions extends DraftAcceptanceOptions {
 }
 
 export interface GenerationCancellationCommand {
-  session: GenerationCommand["session"];
+  actor: GenerationCommand["actor"];
   requestId: string;
 }
 
@@ -279,17 +279,10 @@ const updateAttempt = (
 const isRetryableState = (state: GenerationState): boolean =>
   state === FAILED_RETRYABLE_STATE || state === BLOCKED_BY_VALIDATION_STATE;
 
-const assertTeacherCanGenerate = (
-  session: GenerationCommand["session"]
-): void => {
-  assertTenantAccess(session, demoSeed.tenant.id);
-  if (
-    session.role !== "teacher" ||
-    session.identityId !== "identity_demo_teacher" ||
-    !canAccess(session, "generate_lesson_draft")
-  ) {
+const assertTeacherCanGenerate = (actor: Actor): void => {
+  if (actor.role !== "teacher") {
     throw new GenerationRequestError(
-      "Only a seeded teacher can generate lesson drafts."
+      "Only a verified teacher can generate lesson drafts."
     );
   }
 };
@@ -703,7 +696,11 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
 
     // Source resolution completes before the claim so the remaining lease is
     // reserved for generation, validation, and persistence.
-    const curriculum = resolveCurriculumContext(input, options);
+    const curriculum = resolveCurriculumContext(
+      input,
+      record.tenantId,
+      options
+    );
     const claim = await options.persistence.claimGeneration(record);
     if (!claim.claimed) {
       const resolved = await resolveDuplicate(claim.record, input);
@@ -863,10 +860,10 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     async generate(
       command: GenerationCommand
     ): Promise<GenerationServiceResult> {
-      assertTeacherCanGenerate(command.session);
+      assertTeacherCanGenerate(command.actor);
       const input = normalizeGenerationInput(command.input);
       const existing = await options.persistence.findGenerationByIdempotencyKey(
-        command.session.tenantId,
+        command.actor.tenantId,
         input.idempotencyKey
       );
       if (existing) {
@@ -875,8 +872,8 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       }
 
       const moderated = await options.persistence.findModeratedGeneration(
-        command.session.tenantId,
-        command.session.identityId,
+        command.actor.tenantId,
+        command.actor.actorId,
         input.requestHash
       );
       if (moderated) {
@@ -888,13 +885,10 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
 
       if (input.retryOfRequestId) {
         const retryRecord = await options.persistence.readGeneration(
-          command.session.tenantId,
+          command.actor.tenantId,
           input.retryOfRequestId
         );
-        if (
-          !retryRecord ||
-          retryRecord.teacherId !== command.session.identityId
-        ) {
+        if (!retryRecord || retryRecord.teacherId !== command.actor.actorId) {
           throw new GenerationRequestError(
             "The requested draft was not found.",
             { code: "DRAFT_NOT_FOUND" }
@@ -918,8 +912,8 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       const timestamp = now();
       const record: LessonGenerationRecord = {
         requestId: requestIdFactory(),
-        tenantId: command.session.tenantId,
-        teacherId: command.session.identityId,
+        tenantId: command.actor.tenantId,
+        teacherId: command.actor.actorId,
         input: {
           prompt: input.prompt,
           grade: input.grade,
@@ -941,12 +935,12 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     async cancel(
       command: GenerationCancellationCommand
     ): Promise<GenerationServiceResult> {
-      assertTeacherCanGenerate(command.session);
+      assertTeacherCanGenerate(command.actor);
       const record = await options.persistence.readGeneration(
-        command.session.tenantId,
+        command.actor.tenantId,
         command.requestId
       );
-      if (!record || record.teacherId !== command.session.identityId) {
+      if (!record || record.teacherId !== command.actor.actorId) {
         throw new GenerationRequestError("The requested draft was not found.", {
           code: "DRAFT_NOT_FOUND",
         });

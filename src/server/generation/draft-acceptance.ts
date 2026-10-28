@@ -108,11 +108,12 @@ const semanticValidationDiagnostics = (
 
 export const resolveCurriculumContext = (
   input: NormalizedGenerationRequest,
+  tenantId: string,
   options: DraftAcceptanceOptions
 ): VersionedCurriculumContext | undefined => {
   return options.curriculumContext
     ? options.curriculumContext(input)
-    : createDemoCurriculumContext(input);
+    : createDemoCurriculumContext(input, tenantId);
 };
 
 export const reviewDraftForAcceptance = async (
@@ -148,7 +149,7 @@ export const reviewDraftForAcceptance = async (
     };
   }
 
-  const context = resolveCurriculumContext(input, options);
+  const context = resolveCurriculumContext(input, tenantId, options);
   if (!context) {
     return {
       state: BLOCKED_BY_VALIDATION_STATE,

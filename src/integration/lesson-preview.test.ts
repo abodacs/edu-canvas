@@ -5,14 +5,20 @@ import { describe, expect, it, vi } from "vitest";
 import { compileLessonPreview } from "@/server/a2ui/compiler";
 import { createGenerationService } from "@/server/generation/service";
 import { createDeterministicLessonDraftProvider } from "@/server/generation/provider";
+import { parseTenantId } from "@/server/identity/identifiers";
+import { syntheticTeacherActor } from "@/server/identity/test-actors";
 import { createSeededPersistence } from "@/server/persistence/seeded";
-import { getDemoSession } from "@/server/demo/policy";
+import { demoSeed } from "@/server/seed-data";
 
 import { A2UIComponentRenderer } from "@/components/a2ui/component-renderer";
 import {
   applyA2UIMessage,
   createA2UIRenderState,
 } from "@/components/a2ui/renderer";
+
+const teacherActor = syntheticTeacherActor({
+  tenantId: parseTenantId(demoSeed.tenant.id),
+});
 
 describe("compiled lesson preview", () => {
   it.each(["en", "ar"] as const)(
@@ -28,7 +34,7 @@ describe("compiled lesson preview", () => {
       const result = await createGenerationService({
         persistence: createSeededPersistence(),
         provider: createDeterministicLessonDraftProvider(),
-      }).generate({ session: getDemoSession("teacher"), input });
+      }).generate({ actor: teacherActor, input });
       if (!result.record.draft) {
         throw new Error("Expected the generated fixture to be reviewable.");
       }

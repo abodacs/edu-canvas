@@ -1,18 +1,17 @@
-import { getDemoSession } from "@/server/demo/policy";
 import { createDeterministicLessonDraftProvider } from "@/server/generation/provider";
 import { createGenerationService } from "@/server/generation/service";
+import { parseTenantId } from "@/server/identity/identifiers";
+import { syntheticTeacherActor } from "@/server/identity/test-actors";
 import { createSeededPersistence } from "@/server/persistence/seeded";
 import { demoSeed } from "@/server/seed-data";
 
+const teacherActor = syntheticTeacherActor({
+  tenantId: parseTenantId(demoSeed.tenant.id),
+});
+
 const baseUrl = process.env.SMOKE_URL ?? "http://127.0.0.1:3000";
 const requestTimeoutMs = 3000;
-const paths = [
-  "/",
-  "/api/health",
-  "/api/readiness",
-  "/demo/teacher",
-  "/demo/student",
-];
+const paths = ["/", "/login", "/sign-up", "/api/health", "/api/readiness"];
 
 const results = await Promise.all(
   paths.map(async (path) => {
@@ -58,7 +57,7 @@ const generationService = createGenerationService({
   requestIdFactory: () => "draft_req_smoke_generation",
 });
 const generation = await generationService.generate({
-  session: getDemoSession("teacher"),
+  actor: teacherActor,
   input: requestInput,
 });
 const isGenerationPassed =
@@ -74,7 +73,7 @@ const recoveryService = createGenerationService({
   requestIdFactory: () => "draft_req_smoke_failure",
 });
 const recovery = await recoveryService.generate({
-  session: getDemoSession("teacher"),
+  actor: teacherActor,
   input: { ...requestInput, idempotencyKey: "smoke-generation-failure" },
 });
 const recoveryPassed =

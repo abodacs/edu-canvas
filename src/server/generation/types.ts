@@ -1,4 +1,4 @@
-import type { DemoSession } from "@/server/demo/policy";
+import type { TeacherActor } from "@/server/identity/types";
 import type {
   LessonDifficulty,
   LessonLanguage,
@@ -281,7 +281,10 @@ export interface GenerationPersistence {
 }
 
 export interface GenerationCommand {
-  session: DemoSession;
+  /**
+  Only a verified teacher actor may generate drafts; learners cannot compile.
+  */
+  actor: TeacherActor;
   input: unknown;
 }
 

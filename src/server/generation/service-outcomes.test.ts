@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { getDemoSession } from "@/server/demo/policy";
 import { demoSeed } from "@/server/seed-data";
+import { parseTenantId } from "@/server/identity/identifiers";
+import { syntheticTeacherActor } from "@/server/identity/test-actors";
 
 import { createSeededPersistence } from "../persistence/seeded";
 import {
@@ -10,6 +11,10 @@ import {
 } from "./provider";
 import { createGenerationService } from "./service";
 import { createDemoCurriculumContext } from "./semantic-validation";
+
+const teacherActor = syntheticTeacherActor({
+  tenantId: parseTenantId(demoSeed.tenant.id),
+});
 
 const input = {
   prompt: "equivalent fractions for grade 4",
@@ -35,7 +40,7 @@ describe("generation attempt outcomes", () => {
     });
 
     const { record, publicResult } = await service.generate({
-      session: getDemoSession("teacher"),
+      actor: teacherActor,
       input,
     });
 
@@ -71,7 +76,7 @@ describe("generation attempt outcomes", () => {
     });
 
     const { record } = await service.generate({
-      session: getDemoSession("teacher"),
+      actor: teacherActor,
       input,
     });
 
@@ -100,7 +105,7 @@ describe("generation attempt outcomes", () => {
       });
 
       const { record, publicResult } = await service.generate({
-        session: getDemoSession("teacher"),
+        actor: teacherActor,
         input,
       });
 
@@ -145,7 +150,7 @@ describe("generation attempt outcomes", () => {
     });
 
     const { record } = await service.generate({
-      session: getDemoSession("teacher"),
+      actor: teacherActor,
       input,
     });
 
@@ -181,7 +186,7 @@ describe("generation attempt outcomes", () => {
     });
 
     const { record, publicResult } = await service.generate({
-      session: getDemoSession("teacher"),
+      actor: teacherActor,
       input,
     });
 
