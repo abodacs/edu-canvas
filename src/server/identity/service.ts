@@ -279,6 +279,83 @@ export const createIdentityService = (
   const encryptCredentials = (credentials: EncryptedCredentials): string =>
     options.cipher.encrypt(JSON.stringify(credentials));
 
+  /**
+   * Refresh is internal to the adapter, never a browser endpoint. Only the worker that wins the revision check replaces encrypted credentials; a waiter re-reads the result, and an ambiguous failure ends the local session rather than reusing a credential of unknown state.
+   */
+  const rotateCredentials = async (
+    session: IdentitySessionRecord
+  ): Promise<
+    | {
+        readonly status: "refreshed";
+        readonly session: IdentitySessionRecord;
+        readonly credentials: EncryptedCredentials;
+      }
+    | { readonly status: "unavailable" }
+    | { readonly status: "ended" }
+  > => {
+    const current =
+      (await options.persistence.readSession(session.sessionId)) ?? session;
+
+    if (
+      current.providerCredentialsCiphertext &&
+      current.providerCredentialsCiphertext !==
+        session.providerCredentialsCiphertext
+    ) {
+      // Another worker already replaced the credentials. Use its result instead
+      // of starting a second refresh.
+      const replacement = readCredentials(
+        current.providerCredentialsCiphertext
+      );
+      return replacement
+        ? { status: "refreshed", session: current, credentials: replacement }
+        : { status: "ended" };
+    }
+
+    const existing = readCredentials(current.providerCredentialsCiphertext);
+    if (!existing) {
+      return { status: "ended" };
+    }
+
+    const outcome = await options.provider.refresh(existing.refreshToken);
+    if (outcome.status === "unavailable") {
+      return { status: "unavailable" };
+    }
+    if (outcome.status === "invalid") {
+      await options.persistence.revokeSession(current.sessionId, clock());
+      return { status: "ended" };
+    }
+
+    const nextCredentials: EncryptedCredentials = {
+      accessToken: outcome.auth.accessToken,
+      refreshToken: outcome.auth.refreshToken,
+    };
+    const rotated = await options.persistence.rotateSessionCredentials({
+      sessionId: current.sessionId,
+      expectedRevision: current.revision,
+      providerCredentialsCiphertext: options.cipher.encrypt(
+        JSON.stringify(nextCredentials)
+      ),
+    });
+
+    const latest = await options.persistence.readSession(current.sessionId);
+    // A logout that wins the revision check leaves the session revoked, and its
+    // late credentials are discarded rather than written back.
+    if (!latest || latest.revokedAt) {
+      return { status: "ended" };
+    }
+    if (!rotated) {
+      const replacement = readCredentials(latest.providerCredentialsCiphertext);
+      return replacement
+        ? { status: "refreshed", session: latest, credentials: replacement }
+        : { status: "ended" };
+    }
+    return {
+      status: "refreshed",
+      session: latest,
+      credentials: nextCredentials,
+    };
+  };
+
   const validate = async (
     credential: string | undefined
   ): Promise<SessionResolution> => {
@@ -317,10 +394,33 @@ export const createIdentityService = (
     if (providerStatus.status === "unavailable") {
       return { status: "unavailable" };
     }
-    return providerStatus.status === "unauthorized" ||
-      providerStatus.subject !== session.providerSubject
-      ? { status: "unauthenticated" }
-      : { status: "active", actor, session };
+    if (
+      providerStatus.status === "active" &&
+      providerStatus.subject === session.providerSubject
+    ) {
+      return { status: "active", actor, session };
+    }
+
+    // The provider no longer honours the access token. Try exactly one bounded
+    // refresh before ending the session.
+    const refreshed = await rotateCredentials(session);
+    if (refreshed.status === "unavailable") {
+      return { status: "unavailable" };
+    }
+    if (refreshed.status === "ended") {
+      return { status: "unauthenticated" };
+    }
+
+    const reverified = await options.provider.verifySession(
+      refreshed.credentials.accessToken
+    );
+    if (reverified.status === "unavailable") {
+      return { status: "unavailable" };
+    }
+    return reverified.status === "active" &&
+      reverified.subject === session.providerSubject
+      ? { status: "active", actor, session: refreshed.session }
+      : { status: "unauthenticated" };
   };
 
   return {

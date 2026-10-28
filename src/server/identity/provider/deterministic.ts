@@ -37,12 +37,19 @@ const normalizeEmail = (email: string): string => email.trim().toLowerCase();
 const encodeToken = (bytes: Uint8Array): string =>
   bytes.toBase64({ alphabet: "base64url", omitPadding: true });
 
+export interface DeterministicIdentityProvider extends IdentityProvider {
+  /**
+   * Expire every access token issued so far while leaving the refresh tokens usable, so a test can drive the bounded internal refresh path. Test-only.
+   */
+  readonly expireAccessTokens: () => void;
+}
+
 /**
  * In-memory provider used by tests and explicit local development tooling. It implements the same contract as the hosted adapter, so application behavior is exercised without a live vendor. It can never supply authority to a deployed request: it is constructed only where the caller chooses it.
  */
 export const createDeterministicIdentityProvider = (
   options: DeterministicProviderOptions = {}
-): IdentityProvider => {
+): DeterministicIdentityProvider => {
   const issuer = options.issuer ?? "deterministic-local";
   const accounts = new Map<string, DeterministicAccount>();
   if (options.accounts !== undefined) {
@@ -51,6 +58,7 @@ export const createDeterministicIdentityProvider = (
     }
   }
   const sessions = new Map<string, StoredSession>();
+  const expiredAccessTokens = new Set<string>();
   const available = options.available ?? true;
 
   const mint = (account: DeterministicAccount): ProviderAuthResult => {
@@ -123,7 +131,7 @@ export const createDeterministicIdentityProvider = (
         return Promise.resolve({ status: "unavailable" });
       }
       const session = sessions.get(accessToken);
-      if (!session) {
+      if (!session || expiredAccessTokens.has(accessToken)) {
         return Promise.resolve({ status: "unauthorized" });
       }
       const account = accounts
@@ -134,6 +142,11 @@ export const createDeterministicIdentityProvider = (
         subject: parseProviderSubject(session.subject),
         emailVerified: account?.emailVerified ?? false,
       });
+    },
+    expireAccessTokens: () => {
+      for (const accessToken of sessions.keys()) {
+        expiredAccessTokens.add(accessToken);
+      }
     },
   };
 };
