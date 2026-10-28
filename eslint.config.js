@@ -28,6 +28,24 @@ export default [
     },
   },
   {
+    // Local assertion helpers wrap `expect` so a test reads as one behaviour.
+    // Tell vitest/expect-expect to recognise them instead of flagging the test
+    // body as assertion-free.
+    files: ["**/*.test.ts", "**/*.test.tsx"],
+    rules: {
+      "vitest/expect-expect": [
+        "error",
+        {
+          assertFunctionNames: [
+            "expect",
+            "expectCode",
+            "expectPrivateOutputScrubbed",
+          ],
+        },
+      ],
+    },
+  },
+  {
     // Paths outside the shipped source: nested git worktrees, generated
     // route trees, and build output. They are not ours to lint.
     ignores: [
