@@ -14,14 +14,6 @@ import {
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
-export const appMigrations = pgTable("app_migrations", {
-  name: text().primaryKey().notNull(),
-  checksum: text().notNull(),
-  appliedAt: timestamp("applied_at", { withTimezone: true, mode: "string" })
-    .defaultNow()
-    .notNull(),
-});
-
 export const tenants = pgTable(
   "tenants",
   {
@@ -44,7 +36,7 @@ export const tenants = pgTable(
       }),
     ];
   }
-);
+).enableRLS();
 
 export const identities = pgTable(
   "identities",
@@ -63,7 +55,7 @@ export const identities = pgTable(
     return [
       index("identities_tenant_idx").using(
         "btree",
-        table.tenantId.asc().nullsLast().op("text_ops")
+        table.tenantId.asc().nullsLast()
       ),
       foreignKey({
         columns: [table.tenantId],
@@ -84,7 +76,7 @@ export const identities = pgTable(
       ),
     ];
   }
-);
+).enableRLS();
 
 export const standards = pgTable(
   "standards",
@@ -103,7 +95,7 @@ export const standards = pgTable(
     return [
       index("standards_tenant_idx").using(
         "btree",
-        table.tenantId.asc().nullsLast().op("text_ops")
+        table.tenantId.asc().nullsLast()
       ),
       foreignKey({
         columns: [table.tenantId],
@@ -120,7 +112,7 @@ export const standards = pgTable(
       }),
     ];
   }
-);
+).enableRLS();
 
 export const prerequisiteNodes = pgTable(
   "prerequisite_nodes",
@@ -138,7 +130,7 @@ export const prerequisiteNodes = pgTable(
     return [
       index("graph_nodes_tenant_idx").using(
         "btree",
-        table.tenantId.asc().nullsLast().op("text_ops")
+        table.tenantId.asc().nullsLast()
       ),
       foreignKey({
         columns: [table.tenantId],
@@ -163,7 +155,7 @@ export const prerequisiteNodes = pgTable(
       check("prerequisite_nodes_sequence_check", sql`sequence > 0`),
     ];
   }
-);
+).enableRLS();
 
 export const activities = pgTable(
   "activities",
@@ -182,7 +174,7 @@ export const activities = pgTable(
     return [
       index("activities_tenant_idx").using(
         "btree",
-        table.tenantId.asc().nullsLast().op("text_ops")
+        table.tenantId.asc().nullsLast()
       ),
       foreignKey({
         columns: [table.tenantId],
@@ -208,7 +200,7 @@ export const activities = pgTable(
       ),
     ];
   }
-);
+).enableRLS();
 
 export const activityVersions = pgTable(
   "activity_versions",
@@ -232,7 +224,7 @@ export const activityVersions = pgTable(
     return [
       index("activity_versions_tenant_idx").using(
         "btree",
-        table.tenantId.asc().nullsLast().op("text_ops")
+        table.tenantId.asc().nullsLast()
       ),
       foreignKey({
         columns: [table.tenantId],
@@ -258,7 +250,7 @@ export const activityVersions = pgTable(
       check("activity_versions_version_number_check", sql`version_number > 0`),
     ];
   }
-);
+).enableRLS();
 
 export const attempts = pgTable(
   "attempts",
@@ -281,7 +273,7 @@ export const attempts = pgTable(
     return [
       index("attempts_tenant_idx").using(
         "btree",
-        table.tenantId.asc().nullsLast().op("text_ops")
+        table.tenantId.asc().nullsLast()
       ),
       foreignKey({
         columns: [table.tenantId],
@@ -307,7 +299,7 @@ export const attempts = pgTable(
       check("attempts_score_check", sql`(score >= 0) AND (score <= 100)`),
     ];
   }
-);
+).enableRLS();
 
 export const lessonDraftRequests = pgTable(
   "lesson_draft_requests",
@@ -338,8 +330,8 @@ export const lessonDraftRequests = pgTable(
     return [
       index("lesson_draft_requests_tenant_idx").using(
         "btree",
-        table.tenantId.asc().nullsLast().op("text_ops"),
-        table.updatedAt.desc().nullsFirst().op("text_ops")
+        table.tenantId.asc().nullsLast(),
+        table.updatedAt.desc().nullsFirst()
       ),
       foreignKey({
         columns: [table.tenantId, table.teacherId],
@@ -380,7 +372,7 @@ export const lessonDraftRequests = pgTable(
       check("lesson_draft_requests_attempt_check", sql`attempt >= 0`),
     ];
   }
-);
+).enableRLS();
 
 export const prerequisiteEdges = pgTable(
   "prerequisite_edges",
@@ -396,7 +388,7 @@ export const prerequisiteEdges = pgTable(
     return [
       index("graph_edges_tenant_idx").using(
         "btree",
-        table.tenantId.asc().nullsLast().op("text_ops")
+        table.tenantId.asc().nullsLast()
       ),
       foreignKey({
         columns: [table.tenantId],
@@ -426,7 +418,7 @@ export const prerequisiteEdges = pgTable(
       check("prerequisite_edges_check", sql`prerequisite_id <> successor_id`),
     ];
   }
-);
+).enableRLS();
 
 export const lessonGenerationAttempts = pgTable(
   "lesson_generation_attempts",
@@ -451,8 +443,14 @@ export const lessonGenerationAttempts = pgTable(
     return [
       index("lesson_generation_attempts_tenant_idx").using(
         "btree",
-        table.tenantId.asc().nullsLast().op("text_ops"),
-        table.createdAt.desc().nullsFirst().op("text_ops")
+        table.tenantId.asc().nullsLast(),
+        table.createdAt.desc().nullsFirst()
+      ),
+      index("lesson_generation_attempts_request_hash_idx").using(
+        "btree",
+        table.tenantId.asc().nullsLast(),
+        table.requestHash.asc().nullsLast(),
+        table.createdAt.desc().nullsFirst()
       ),
       foreignKey({
         columns: [table.tenantId, table.requestId],
@@ -483,4 +481,4 @@ export const lessonGenerationAttempts = pgTable(
       ),
     ];
   }
-);
+).enableRLS();

@@ -51,6 +51,9 @@ jobs:
       - name: Check Drizzle schema history
         run: pnpm db:drizzle:check
 
+      - name: Verify migrations match the schema
+        run: pnpm db:generate && git diff --exit-code -- drizzle
+
       - name: Prepare database for integration checks
         run: pnpm db:setup
 
@@ -65,6 +68,12 @@ jobs:
           pnpm db:setup
           pnpm db:migrate
           pnpm db:seed
+
+      - name: Reject an edited applied migration
+        run: |
+          trap 'git checkout -- drizzle/0001_foundation_behaviors.sql' EXIT
+          echo "-- tamper" >> drizzle/0001_foundation_behaviors.sql
+          ! node scripts/database-migrate-runtime.mjs
 
       - name: Run PostgreSQL persistence parity tests
         run: pnpm test:database
@@ -87,6 +96,7 @@ jobs:
           trap cleanup EXIT
 
           test "$(docker inspect --format '{{.Config.User}}' edu-canvas-ci)" = "node"
+          docker exec edu-canvas-ci node scripts/database-migrate-runtime.mjs
           docker exec edu-canvas-ci node scripts/database-migrate-runtime.mjs
 
           for attempt in $(seq 1 30); do

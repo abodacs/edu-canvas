@@ -35,7 +35,6 @@ export default [
       ".tanstack/**",
       ".output/**",
       ".nitro/**",
-      "migrations/**",
       "teaching/**",
       // Tool-owned config, not shipped source; its rules live in the file itself.
       ".dependency-cruiser.cjs",
