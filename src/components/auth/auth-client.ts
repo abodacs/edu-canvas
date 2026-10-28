@@ -148,6 +148,8 @@ const jsonPost = (
       "content-type": "application/json",
       [csrfHeaderName]: csrf,
     },
+    // A revocation request must outlive the navigation that follows it.
+    keepalive: true,
     body: JSON.stringify(payload),
   });
 };

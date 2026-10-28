@@ -223,3 +223,29 @@ revoke all on function identity_lookup_session_by_id(text) from public;
 revoke all on function identity_lookup_membership(text) from public;
 revoke all on function identity_list_actor_memberships(text) from public;
 revoke all on function identity_disable_actor(text, timestamptz) from public;
+
+-- A revoke from PUBLIC removes only the global default. Supabase grants EXECUTE
+-- to its own roles through ALTER DEFAULT PRIVILEGES, and those explicit grants
+-- survive, which would expose every definer function through the Data API. The
+-- roles exist only on a Supabase database, so the revoke is conditional.
+do $$
+declare
+  api_role text;
+  signature text;
+begin
+  foreach api_role in array array['anon', 'authenticated'] loop
+    if exists (select 1 from pg_roles where rolname = api_role) then
+      foreach signature in array array[
+        'identity_lookup_session(text)',
+        'identity_lookup_pending(text)',
+        'identity_lookup_session_by_id(text)',
+        'identity_lookup_membership(text)',
+        'identity_list_actor_memberships(text)',
+        'identity_disable_actor(text, timestamptz)'
+      ] loop
+        execute format('revoke all on function public.%s from %I', signature, api_role);
+      end loop;
+    end if;
+  end loop;
+end;
+$$;

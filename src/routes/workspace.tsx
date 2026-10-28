@@ -162,9 +162,11 @@ const WorkspacePage = (): ReactElement => {
     );
   }
 
-  const handleSignOut = (): void => {
-    session.signOut();
-    void navigate({ to: "/", replace: true });
+  const handleSignOut = async (): Promise<void> => {
+    const isSignedOut = await session.signOut();
+    if (isSignedOut) {
+      await navigate({ to: "/", replace: true });
+    }
   };
 
   const handleDismissWarning = (): void => {
@@ -242,6 +244,7 @@ const WorkspacePage = (): ReactElement => {
           tabIndex={-1}
         >
           <TeacherStudio
+            key={generation}
             csrf={csrf}
             generation={generation}
             onUnauthorized={handleUnauthorized}

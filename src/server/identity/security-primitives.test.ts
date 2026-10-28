@@ -139,13 +139,49 @@ describe("rate limiter", () => {
     expect(limiter.consume("k", 1, 100).allowed).toBeTruthy();
   });
 
-  it("bounds the key space", () => {
+  it("bounds the key space and refuses a key it cannot track", () => {
     const limiter = createRateLimiter({ maxBuckets: 5, now: () => 0 });
     for (let index = 0; index < 20; index += 1) {
       limiter.consume(`key-${index}`, 10, 1000);
     }
 
-    expect(limiter.consume("fresh", 10, 1000).allowed).toBeTruthy();
+    // The table is full of live counters, so the new key is refused instead of
+    // clearing a live throttle. It is bounded, and it fails closed.
+    expect(limiter.consume("fresh", 10, 1000).allowed).toBeFalsy();
+  });
+
+  it("keeps a live throttle when an attacker fills the bucket table", () => {
+    const clock = { now: 0 };
+    const limiter = createRateLimiter({
+      now: () => clock.now,
+      maxBuckets: 4,
+    });
+
+    limiter.consume("victim@example.test", 2, 1000);
+    limiter.consume("victim@example.test", 2, 1000);
+
+    expect(limiter.consume("victim@example.test", 2, 1000).allowed).toBeFalsy();
+
+    // Distinct keys from an attacker must not reset the victim's counter.
+    for (const key of ["a", "b", "c", "d", "e"]) {
+      limiter.consume(key, 10, 1000);
+    }
+
+    expect(limiter.consume("victim@example.test", 2, 1000).allowed).toBeFalsy();
+  });
+
+  it("reclaims expired buckets before refusing a new key", () => {
+    const clock = { now: 0 };
+    const limiter = createRateLimiter({
+      now: () => clock.now,
+      maxBuckets: 2,
+    });
+
+    limiter.consume("old-1", 10, 1000);
+    limiter.consume("old-2", 10, 1000);
+    clock.now = 1500;
+
+    expect(limiter.consume("new", 10, 1000).allowed).toBeTruthy();
   });
 
   it("derives a stable, non-reversible account digest", () => {

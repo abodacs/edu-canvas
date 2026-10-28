@@ -54,6 +54,9 @@ export default [
       ".output/**",
       ".nitro/**",
       "teaching/**",
+      // Vendored agent skills: upstream code, reviewed as a dependency.
+      ".agents/skills/**",
+      ".claude/skills/**",
       // Tool-owned config, not shipped source; its rules live in the file itself.
       ".dependency-cruiser.cjs",
     ],

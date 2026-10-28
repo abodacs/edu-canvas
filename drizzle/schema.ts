@@ -506,7 +506,7 @@ export const actors = pgTable(
       ),
     ];
   }
-);
+).enableRLS();
 
 export const providerBindings = pgTable(
   "provider_bindings",
@@ -539,7 +539,7 @@ export const providerBindings = pgTable(
       ),
     ];
   }
-);
+).enableRLS();
 
 export const memberships = pgTable(
   "memberships",
@@ -746,7 +746,7 @@ export const pendingAuthentications = pgTable(
       ),
     ];
   }
-);
+).enableRLS();
 
 export const provisioningAudit = pgTable("provisioning_audit", {
   id: text().primaryKey().notNull(),
@@ -758,4 +758,4 @@ export const provisioningAudit = pgTable("provisioning_audit", {
   createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
     .defaultNow()
     .notNull(),
-});
+}).enableRLS();

@@ -223,4 +223,53 @@ describe("server configuration", () => {
       message: "PERSISTENCE_ADAPTER must be postgres or drizzle.",
     });
   });
+
+  it("refuses the deterministic provider outside development", () => {
+    const secretEnvironment = {
+      OPENAI_API_KEY: "sk-not-used",
+      AUTH_PUBLIC_ORIGIN: "https://education.example.test",
+      AUTH_SESSION_SECRET: "s".repeat(40),
+      AUTH_CREDENTIAL_KEY: Uint8Array.from({ length: 32 }, () => 3).toBase64(),
+    };
+
+    for (const appEnvironment of ["preview", "production"]) {
+      const config = readServerConfig({
+        ...secretEnvironment,
+        APP_ENV: appEnvironment,
+        AUTH_PROVIDER: "deterministic",
+      });
+
+      expect(config.auth.provider).toBe("supabase");
+      expect(config.issues).toContainEqual({
+        code: "INVALID_AUTH_PROVIDER",
+        field: "AUTH_PROVIDER",
+        message:
+          "AUTH_PROVIDER=deterministic is available only when APP_ENV=development.",
+      });
+    }
+  });
+
+  it("selects the deterministic provider in development", () => {
+    const config = readServerConfig({
+      APP_ENV: "development",
+      AUTH_PROVIDER: "deterministic",
+    });
+
+    expect(config.auth.provider).toBe("deterministic");
+    expect(config.issues).not.toContainEqual(
+      expect.objectContaining({ code: "INVALID_AUTH_PROVIDER" })
+    );
+  });
+
+  it("rejects a non-HTTPS Supabase URL and a malformed key version", () => {
+    const config = readServerConfig({
+      APP_ENV: "development",
+      SUPABASE_URL: "http://provider.example.test",
+      AUTH_CREDENTIAL_KEY_VERSION: "1:2",
+    });
+
+    expect(config.issues.map((issue) => issue.code)).toStrictEqual(
+      expect.arrayContaining(["INVALID_SUPABASE_URL", "INVALID_CREDENTIAL_KEY"])
+    );
+  });
 });

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
+  clearPendingMembershipHandoff,
   endSession,
   fetchSession,
   publishAuthSignal,
@@ -29,7 +30,10 @@ export interface AuthSessionState {
   ) => void;
   readonly markExpired: () => void;
   readonly revalidate: () => void;
-  readonly signOut: () => void;
+  /**
+  Resolves true only when revocation was confirmed or was never needed.
+  */
+  readonly signOut: () => Promise<boolean>;
 }
 
 /**
@@ -165,17 +169,24 @@ export const useAuthSession = (): AuthSessionState => {
     clear(true);
   }, [clear]);
 
-  const signOut = useCallback((): void => {
+  const signOut = useCallback(async (): Promise<boolean> => {
     const generation = generationReference.current;
     publishAuthSignal({ type: "signed-out", generation });
-    void (async () => {
-      setIsSigningOut(true);
-      if (csrf) {
-        await endSession(csrf);
-      }
+    setIsSigningOut(true);
+    clearPendingMembershipHandoff();
+
+    const result = csrf ? await endSession(csrf) : { ok: true as const };
+    if (result.ok) {
       clear(false);
-    })();
-  }, [clear, csrf]);
+      return true;
+    }
+
+    // The credential is HttpOnly, so only a server response can clear it. Re-read
+    // the truth instead of showing a signed-out page over a live session.
+    setIsSigningOut(false);
+    await load();
+    return false;
+  }, [clear, csrf, load]);
 
   const revalidate = useCallback((): void => {
     void load();

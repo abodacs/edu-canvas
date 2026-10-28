@@ -112,6 +112,13 @@ const openAiBaseUrlSchema = z.string().refine((value) => {
   return url !== null && isAllowedOpenAiBaseUrl(url);
 }, "OPENAI_BASE_URL must use HTTPS, or HTTP for a local loopback test server.");
 
+// The provider receives a password and a service-role key, so a cleartext URL
+// would expose both to an on-path observer and could point at any host.
+const supabaseUrlSchema = z.string().refine((value) => {
+  const url = parseUrl(value);
+  return url !== null && isAllowedOpenAiBaseUrl(url);
+}, "SUPABASE_URL must use HTTPS, or HTTP for a local loopback development stack.");
+
 const parseBoolean = (
   value: string | undefined,
   isFallback: boolean
@@ -335,20 +342,33 @@ const readAuthProvider = (
   appEnvironment: ServerEnvironment,
   issues: ConfigIssue[]
 ): AuthProviderKind => {
+  const isDevelopment = appEnvironment === "development";
   const requested = environment.AUTH_PROVIDER?.trim();
   if (requested === undefined || requested === "") {
-    return appEnvironment === "development" ? "deterministic" : "supabase";
+    return isDevelopment ? "deterministic" : "supabase";
   }
-  if ((authProviderValues as readonly string[]).includes(requested)) {
-    return requested as AuthProviderKind;
+  if (!(authProviderValues as readonly string[]).includes(requested)) {
+    pushIssue(
+      issues,
+      "INVALID_AUTH_PROVIDER",
+      "AUTH_PROVIDER",
+      "AUTH_PROVIDER must be deterministic or supabase."
+    );
+    return "supabase";
   }
-  pushIssue(
-    issues,
-    "INVALID_AUTH_PROVIDER",
-    "AUTH_PROVIDER",
-    "AUTH_PROVIDER must be deterministic or supabase."
-  );
-  return "supabase";
+  // The deterministic provider accepts credentials committed to this repository.
+  // It must never authenticate a deployed request, so the gate lives here rather
+  // than in a comment on the factory.
+  if (requested === "deterministic" && !isDevelopment) {
+    pushIssue(
+      issues,
+      "INVALID_AUTH_PROVIDER",
+      "AUTH_PROVIDER",
+      "AUTH_PROVIDER=deterministic is available only when APP_ENV=development."
+    );
+    return "supabase";
+  }
+  return requested as AuthProviderKind;
 };
 
 const readPublicOrigin = (
@@ -430,12 +450,15 @@ const readSupabaseSettings = (
   const supabaseAnonKey = environment.SUPABASE_ANON_KEY?.trim() || undefined;
   const supabaseServiceRoleKey =
     environment.SUPABASE_SERVICE_ROLE_KEY?.trim() || undefined;
-  if (supabaseUrl !== undefined && parseUrl(supabaseUrl) === null) {
+  if (
+    supabaseUrl !== undefined &&
+    !supabaseUrlSchema.safeParse(supabaseUrl).success
+  ) {
     pushIssue(
       issues,
       "INVALID_SUPABASE_URL",
       "SUPABASE_URL",
-      "SUPABASE_URL must be an absolute URL."
+      "SUPABASE_URL must be an absolute HTTPS URL, or loopback HTTP."
     );
   }
   return { supabaseUrl, supabaseAnonKey, supabaseServiceRoleKey };
@@ -451,8 +474,18 @@ const readAuthConfig = (
   const publicOrigin = readPublicOrigin(environment, isDevelopment, issues);
   const sessionSecret = readSessionSecret(environment, isDevelopment, issues);
   const credentialKey = readCredentialKey(environment, isDevelopment, issues);
+  // The cipher frames a payload as `${version}:${iv}:${tag}:${body}`, so a
+  // version containing the separator would make every session unreadable.
   const credentialKeyVersion =
     environment.AUTH_CREDENTIAL_KEY_VERSION?.trim() || "1";
+  if (!/^[A-Za-z0-9_-]{1,32}$/u.test(credentialKeyVersion)) {
+    pushIssue(
+      issues,
+      "INVALID_CREDENTIAL_KEY",
+      "AUTH_CREDENTIAL_KEY_VERSION",
+      "AUTH_CREDENTIAL_KEY_VERSION must be 1-32 letters, digits, hyphens, or underscores."
+    );
+  }
   const { supabaseUrl, supabaseAnonKey, supabaseServiceRoleKey } =
     readSupabaseSettings(environment, issues);
 

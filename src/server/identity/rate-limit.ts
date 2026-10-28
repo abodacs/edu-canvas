@@ -5,7 +5,7 @@ export interface RateLimitVerdict {
 
 interface Bucket {
   count: number;
-  windowStartedAt: number;
+  expiresAt: number;
 }
 
 export interface RateLimiterOptions {
@@ -35,11 +35,9 @@ export interface RateLimiter {
 
 const defaultMaxBuckets = 10_000;
 
-/**
- * In-memory, process-local limiter. Bounded key space prevents unbounded growth.
- * The release model runs one Machine (AgDR-0007), so a process-local limiter is
- * the current authority; the interface keeps a shared store swappable later.
- */
+// In-memory, process-local limiter (one Machine, AgDR-0007). A full table of live
+// counters refuses the new key rather than evicting one: evicting would let an
+// attacker clear a targeted account's throttle with enough distinct keys.
 export const createRateLimiter = (
   options: RateLimiterOptions = {}
 ): RateLimiter => {
@@ -47,10 +45,11 @@ export const createRateLimiter = (
   const maxBuckets = options.maxBuckets ?? defaultMaxBuckets;
   const buckets = new Map<string, Bucket>();
 
-  const evictOldest = (): void => {
-    const oldest = buckets.keys().next().value;
-    if (oldest !== undefined) {
-      buckets.delete(oldest);
+  const reclaimExpired = (timestamp: number): void => {
+    for (const [candidate, bucket] of buckets) {
+      if (timestamp >= bucket.expiresAt) {
+        buckets.delete(candidate);
+      }
     }
   };
 
@@ -58,27 +57,36 @@ export const createRateLimiter = (
     consume: (key, limit, windowMs) => {
       const timestamp = now();
       const existing = buckets.get(key);
+      const isLive = existing !== undefined && timestamp < existing.expiresAt;
 
-      if (!existing || timestamp - existing.windowStartedAt >= windowMs) {
-        if (!existing && buckets.size >= maxBuckets) {
-          evictOldest();
+      if (isLive) {
+        if (existing.count >= limit) {
+          return {
+            allowed: false,
+            retryAfterMs: Math.max(0, existing.expiresAt - timestamp),
+          };
         }
-        buckets.delete(key);
-        buckets.set(key, { count: 1, windowStartedAt: timestamp });
+
+        existing.count += 1;
         return { allowed: true, retryAfterMs: 0 };
       }
 
-      if (existing.count >= limit) {
-        return {
-          allowed: false,
-          retryAfterMs: Math.max(
-            0,
-            existing.windowStartedAt + windowMs - timestamp
-          ),
-        };
+      if (existing === undefined && buckets.size >= maxBuckets) {
+        reclaimExpired(timestamp);
+        if (buckets.size >= maxBuckets) {
+          const oldest = buckets.values().next().value;
+          return {
+            allowed: false,
+            retryAfterMs: Math.max(
+              0,
+              (oldest?.expiresAt ?? timestamp) - timestamp
+            ),
+          };
+        }
       }
 
-      existing.count += 1;
+      buckets.delete(key);
+      buckets.set(key, { count: 1, expiresAt: timestamp + windowMs });
       return { allowed: true, retryAfterMs: 0 };
     },
     reset: () => {

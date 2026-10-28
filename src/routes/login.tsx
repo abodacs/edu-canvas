@@ -9,6 +9,7 @@ import { Info, LogIn, ShieldCheck, UserPlus } from "lucide-react";
 import { useId, useState } from "react";
 
 import {
+  clearPendingMembershipHandoff,
   submitSignIn,
   writePendingMembershipHandoff,
 } from "@/components/auth/auth-client";
@@ -149,6 +150,8 @@ const LoginPage = (): ReactElement => {
 
     setIsPending(true);
     announce(null);
+    // A previous tab session may have left another account's school list here.
+    clearPendingMembershipHandoff();
     const result = await submitSignIn({ email: trimmedEmail, password }, csrf);
 
     if (!result.ok) {
