@@ -3,11 +3,16 @@ import { createDrizzlePersistence } from "./persistence/drizzle";
 import { createPostgresIdentityPersistence } from "./persistence/identity-postgres";
 import { createSeededIdentityPersistence } from "./persistence/identity-seeded";
 import { createPostgresPersistence } from "./persistence/postgres";
+import { createRecordCommands } from "./persistence/records-commands";
+import { createDrizzleRecordBackend } from "./persistence/records-drizzle";
+import { createPostgresRecordBackend } from "./persistence/records-postgres";
+import { createSeededRecordBackend } from "./persistence/records-seeded";
 import { createSeededPersistence } from "./persistence/seeded";
 
 import type { ServerConfig } from "./config";
 import type { GenerationPersistence } from "./generation/types";
 import type { IdentityPersistence } from "./identity/persistence-port";
+import type { RecordPersistence } from "./persistence/records-commands";
 import type {
   FoundationPersistence,
   FoundationPersistenceOptions,
@@ -21,6 +26,40 @@ const seededGenerationStore = new Map<
 const seededDemoMode = "seeded-demo";
 
 const identityPersistenceCache = new Map<string, IdentityPersistence>();
+
+const seededRecordBackend = createSeededRecordBackend();
+
+/**
+ * Records are their own port, like identity. The focused-loop records are not
+ * generation state and not demo counts; keeping the port separate stops the
+ * generation contract from growing record-shaped methods and matches the
+ * identity boundary's precedent.
+ */
+export const createRecordPersistence = (
+  config: ServerConfig
+): RecordPersistence => {
+  if (config.issues.length > 0) {
+    throw new Error("Cannot create record persistence for invalid config.");
+  }
+
+  if (config.mode === seededDemoMode) {
+    return createRecordCommands(seededRecordBackend);
+  }
+
+  if (!config.databaseUrl) {
+    throw new Error("PostgreSQL record persistence requires DATABASE_URL.");
+  }
+
+  if (config.persistenceAdapter === "drizzle") {
+    return createRecordCommands(
+      createDrizzleRecordBackend({ databaseUrl: config.databaseUrl })
+    );
+  }
+
+  return createRecordCommands(
+    createPostgresRecordBackend({ databaseUrl: config.databaseUrl })
+  );
+};
 
 /**
  * Identity persistence is a separate port from generation persistence: the identity boundary owns actors, bindings, memberships, and sessions, and the generation boundary owns drafts and attempts.
