@@ -31,6 +31,12 @@ describe("readiness", () => {
       DEMO_MODE: "false",
       DATABASE_URL: "not-a-url",
       OPENAI_API_KEY: "test-server-key",
+      AUTH_PUBLIC_ORIGIN: "https://app.example.com",
+      AUTH_SESSION_SECRET: "a-session-secret-that-is-long-enough",
+      AUTH_CREDENTIAL_KEY: "ZWR1LWNhbnZhcy1kZXYta2V5LTAwMDAwMDAwMDAwMDA=",
+      SUPABASE_URL: "https://project.supabase.co",
+      SUPABASE_ANON_KEY: "synthetic-anon-key",
+      SUPABASE_SERVICE_ROLE_KEY: "synthetic-service-role-key",
     });
 
     expect(payload.status).toBe("not_ready");
@@ -53,6 +59,12 @@ describe("readiness", () => {
         DEMO_MODE: "false",
         DATABASE_URL: "not-a-url",
         OPENAI_API_KEY: "test-server-key",
+        AUTH_PUBLIC_ORIGIN: "https://app.example.com",
+        AUTH_SESSION_SECRET: "a-session-secret-that-is-long-enough",
+        AUTH_CREDENTIAL_KEY: "ZWR1LWNhbnZhcy1kZXYta2V5LTAwMDAwMDAwMDAwMDA=",
+        SUPABASE_URL: "https://project.supabase.co",
+        SUPABASE_ANON_KEY: "synthetic-anon-key",
+        SUPABASE_SERVICE_ROLE_KEY: "synthetic-service-role-key",
       },
       { observability }
     );
