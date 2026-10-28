@@ -2,13 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { MailCheck, ShieldCheck, UserPlus } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 
-import {
-  fetchAuthChallenge,
-  submitSignUp,
-} from "@/components/auth/auth-client";
+import { submitSignUp } from "@/components/auth/auth-client";
 import { AuthBrand } from "@/components/auth/auth-brand";
 import { AuthStatus } from "@/components/auth/auth-status";
 import { PasswordField } from "@/components/auth/password-field";
+import { useAuthChallenge } from "@/components/auth/use-auth-challenge";
 import { Button } from "@/components/ui/button";
 
 import type { AuthApiFailure } from "@/components/auth/auth-client";
@@ -69,61 +67,24 @@ const SignUpPage = (): ReactElement => {
   const emailId = useId();
   const emailErrorId = useId();
   const passwordErrorId = useId();
-  const statusReference = useRef<HTMLDivElement>(null);
   const verificationReference = useRef<HTMLOutputElement>(null);
-  const focusNoticeReference = useRef(false);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [csrf, setCsrf] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
-  const [notice, setNotice] = useState<AuthNotice | null>(null);
   const [verificationAddress, setVerificationAddress] = useState<string | null>(
     null
   );
   const [cooldown, setCooldown] = useState(0);
-
-  const loadChallengeReference = useRef<(() => Promise<void>) | null>(null);
-
-  const loadChallenge = useCallback(async (): Promise<void> => {
-    const result = await fetchAuthChallenge();
-    if (result.ok) {
-      setCsrf(result.data.csrf);
-      return;
-    }
-    setCsrf(null);
-    setNotice({
+  const { csrf, notice, statusReference, announce } = useAuthChallenge({
+    unavailableNotice: {
       tone: "error",
       title: "Sign-up is temporarily unavailable",
       message: "We could not start a secure sign-up. Try again in a moment.",
-      actionLabel: "Try again",
-      onAction: () => {
-        focusNoticeReference.current = true;
-        void loadChallengeReference.current?.();
-      },
-    });
-  }, []);
-
-  useEffect(() => {
-    loadChallengeReference.current = loadChallenge;
-  }, [loadChallenge]);
-
-  // The loader is stable, so this runs once on mount. Invoking it through the
-  // ref keeps the effect a subscription rather than a synchronous state write.
-  useEffect(() => {
-    void loadChallengeReference.current?.();
-  }, []);
-
-  useEffect(() => {
-    if (!(notice && focusNoticeReference.current)) {
-      return;
-    }
-
-    focusNoticeReference.current = false;
-    statusReference.current?.focus();
-  }, [notice]);
+    },
+  });
 
   useEffect(() => {
     if (cooldown <= 0) {
@@ -149,7 +110,7 @@ const SignUpPage = (): ReactElement => {
         return;
       }
       setIsPending(true);
-      setNotice(null);
+      announce(null);
       const result = await submitSignUp(
         { email: email.trim(), password },
         csrf
@@ -157,8 +118,7 @@ const SignUpPage = (): ReactElement => {
       setIsPending(false);
 
       if (!result.ok) {
-        focusNoticeReference.current = true;
-        setNotice(describeSignUpFailure(result.error));
+        announce(describeSignUpFailure(result.error));
         return;
       }
 
@@ -168,14 +128,13 @@ const SignUpPage = (): ReactElement => {
         return;
       }
 
-      focusNoticeReference.current = true;
-      setNotice({
+      announce({
         tone: "info",
         title: "Verification email sent again",
         message: "Check your inbox for the newest link.",
       });
     },
-    [csrf, email, password]
+    [announce, csrf, email, password]
   );
 
   const handleSubmit = async (

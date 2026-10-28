@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, School } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import {
   clearPendingMembershipHandoff,
@@ -10,6 +10,7 @@ import {
 import { AuthBrand } from "@/components/auth/auth-brand";
 import { AuthStatus } from "@/components/auth/auth-status";
 import { MembershipRadio } from "@/components/auth/membership-radio";
+import { useAuthNotice } from "@/components/auth/use-auth-notice";
 import { Button } from "@/components/ui/button";
 
 import type {
@@ -20,7 +21,6 @@ import type { AuthNotice } from "@/components/auth/auth-status";
 import type { KeyboardEvent, ReactElement } from "react";
 
 type HandoffState =
-  | { readonly phase: "loading" }
   | {
       readonly phase: "ready";
       readonly csrf: string;
@@ -74,8 +74,7 @@ const describeMembershipFailure = (
 
 const MembershipPage = (): ReactElement => {
   const navigate = useNavigate();
-  const statusReference = useRef<HTMLDivElement>(null);
-  const focusNoticeReference = useRef(false);
+  const { notice, statusReference, announce } = useAuthNotice();
 
   // The handoff is same-tab module memory, so it can be resolved in the initial
   // state instead of an effect. A full page load always starts with an empty
@@ -93,7 +92,6 @@ const MembershipPage = (): ReactElement => {
   });
   const [selected, setSelected] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
-  const [notice, setNotice] = useState<AuthNotice | null>(null);
 
   useEffect(() => {
     if (handoff.phase === "expired") {
@@ -101,27 +99,18 @@ const MembershipPage = (): ReactElement => {
     }
   }, [handoff.phase]);
 
-  useEffect(() => {
-    if (!(notice && focusNoticeReference.current)) {
-      return;
-    }
-
-    focusNoticeReference.current = false;
-    statusReference.current?.focus();
-  }, [notice]);
-
   const expire = useCallback((): void => {
     clearPendingMembershipHandoff();
     setHandoff({ phase: "expired" });
-    setNotice(null);
-  }, []);
+    announce(null);
+  }, [announce]);
 
   const continueWithMembership = useCallback(async (): Promise<void> => {
     if (isPending || selected === null || handoff.phase !== "ready") {
       return;
     }
     setIsPending(true);
-    setNotice(null);
+    announce(null);
     const result = await submitMembership(selected, handoff.csrf);
     if (result.ok) {
       clearPendingMembershipHandoff();
@@ -134,25 +123,8 @@ const MembershipPage = (): ReactElement => {
       expire();
       return;
     }
-    focusNoticeReference.current = true;
-    setNotice(failure);
-  }, [expire, handoff, isPending, navigate, selected]);
-
-  if (handoff.phase === "loading") {
-    return (
-      <main className="auth-shell" aria-labelledby="membership-heading">
-        <div className="auth-frame">
-          <AuthBrand />
-          <section className="auth-card">
-            <h1 id="membership-heading" className="auth-heading">
-              Choose your school
-            </h1>
-            <output className="auth-lede">Loading your schools…</output>
-          </section>
-        </div>
-      </main>
-    );
-  }
+    announce(failure);
+  }, [announce, expire, handoff, isPending, navigate, selected]);
 
   if (handoff.phase === "expired") {
     return (

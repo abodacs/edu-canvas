@@ -6,16 +6,16 @@ import {
   useRouterState,
 } from "@tanstack/react-router";
 import { Info, LogIn, ShieldCheck, UserPlus } from "lucide-react";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useId, useState } from "react";
 
 import {
-  fetchAuthChallenge,
   submitSignIn,
   writePendingMembershipHandoff,
 } from "@/components/auth/auth-client";
 import { AuthBrand } from "@/components/auth/auth-brand";
 import { AuthStatus } from "@/components/auth/auth-status";
 import { PasswordField } from "@/components/auth/password-field";
+import { useAuthChallenge } from "@/components/auth/use-auth-challenge";
 import { Button } from "@/components/ui/button";
 
 import type { AuthApiFailure } from "@/components/auth/auth-client";
@@ -95,63 +95,26 @@ const LoginPage = (): ReactElement => {
   const emailHintId = useId();
   const emailErrorId = useId();
   const passwordErrorId = useId();
-  const statusReference = useRef<HTMLDivElement>(null);
-  const focusNoticeReference = useRef(false);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [csrf, setCsrf] = useState<string | null>(null);
-  const [challengeUnavailable, setChallengeUnavailable] = useState(false);
   const [isPending, setIsPending] = useState(false);
-  const [notice, setNotice] = useState<AuthNotice | null>(null);
-
-  const loadChallengeReference = useRef<(() => Promise<void>) | null>(null);
-
-  const loadChallenge = useCallback(async (): Promise<void> => {
-    setChallengeUnavailable(false);
-    const result = await fetchAuthChallenge();
-    if (result.ok) {
-      setCsrf(result.data.csrf);
-      return;
-    }
-    setCsrf(null);
-    setChallengeUnavailable(true);
-    setNotice({
+  const {
+    csrf,
+    unavailable: challengeUnavailable,
+    notice,
+    statusReference,
+    announce,
+  } = useAuthChallenge({
+    enabled: !isMembershipRoute,
+    unavailableNotice: {
       tone: "error",
       title: "Sign-in is temporarily unavailable",
       message: "We could not start a secure sign-in. Try again in a moment.",
-      actionLabel: "Try again",
-      onAction: () => {
-        focusNoticeReference.current = true;
-        void loadChallengeReference.current?.();
-      },
-    });
-  }, []);
-
-  useEffect(() => {
-    loadChallengeReference.current = loadChallenge;
-  }, [loadChallenge]);
-
-  // The loader is stable, so the challenge only re-fetches when the route
-  // changes. It is invoked through the ref to keep this effect a subscription
-  // to the route rather than a synchronous state write.
-  useEffect(() => {
-    if (isMembershipRoute) {
-      return;
-    }
-    void loadChallengeReference.current?.();
-  }, [isMembershipRoute]);
-
-  useEffect(() => {
-    if (!(notice && focusNoticeReference.current)) {
-      return;
-    }
-
-    focusNoticeReference.current = false;
-    statusReference.current?.focus();
-  }, [notice]);
+    },
+  });
 
   if (isMembershipRoute) {
     return <Outlet />;
@@ -174,7 +137,6 @@ const LoginPage = (): ReactElement => {
     setEmailError(nextEmailError);
     setPasswordError(nextPasswordError);
     if (nextEmailError || nextPasswordError) {
-      focusNoticeReference.current = false;
       const firstInvalid = nextEmailError ? emailId : undefined;
       if (firstInvalid) {
         const invalidField = document.querySelector<HTMLElement>(
@@ -186,13 +148,12 @@ const LoginPage = (): ReactElement => {
     }
 
     setIsPending(true);
-    setNotice(null);
+    announce(null);
     const result = await submitSignIn({ email: trimmedEmail, password }, csrf);
 
     if (!result.ok) {
       setIsPending(false);
-      focusNoticeReference.current = true;
-      setNotice(describeSignInFailure(result.error));
+      announce(describeSignInFailure(result.error));
       // The email stays in state, so it remains filled in after a failure.
       return;
     }
@@ -219,8 +180,7 @@ const LoginPage = (): ReactElement => {
     }
 
     setIsPending(false);
-    focusNoticeReference.current = true;
-    setNotice({
+    announce({
       tone: "error",
       title: SIGN_IN_FAILURE_TITLE,
       message: GENERIC_CREDENTIAL_MESSAGE,
@@ -228,8 +188,7 @@ const LoginPage = (): ReactElement => {
   };
 
   const showForgotPassword = (): void => {
-    focusNoticeReference.current = true;
-    setNotice({
+    announce({
       tone: "info",
       title: "Contact your school administrator",
       message:
