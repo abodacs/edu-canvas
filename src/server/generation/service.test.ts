@@ -65,7 +65,7 @@ const generatingRecord = (
   return {
     requestId,
     tenantId: demoSeed.tenant.id,
-    teacherId: "identity_demo_teacher",
+    teacherId: ownerTeacherActor.actorId,
     input: {
       prompt: validInput.prompt,
       grade: validInput.grade,
@@ -515,7 +515,7 @@ describe("lesson generation service", () => {
     const staleRecord: LessonGenerationRecord = {
       requestId: "draft_req_stale_claim",
       tenantId: demoSeed.tenant.id,
-      teacherId: "identity_demo_teacher",
+      teacherId: ownerTeacherActor.actorId,
       input: {
         prompt: validInput.prompt,
         grade: validInput.grade,
@@ -579,7 +579,7 @@ describe("lesson generation service", () => {
     const staleRecord: LessonGenerationRecord = {
       requestId: "draft_req_cas_loser",
       tenantId: demoSeed.tenant.id,
-      teacherId: "identity_demo_teacher",
+      teacherId: ownerTeacherActor.actorId,
       input: {
         prompt: validInput.prompt,
         grade: validInput.grade,

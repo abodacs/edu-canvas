@@ -290,7 +290,7 @@ describe("generation service conformance: idempotency and ownership", () => {
     const claimed: LessonGenerationRecord = {
       requestId: "draft_req_conformance_owner",
       tenantId: demoSeed.tenant.id,
-      teacherId: "identity_demo_teacher",
+      teacherId: teacherActor.actorId,
       input: {
         prompt: "equivalent fractions for grade 4",
         grade: 4,
@@ -452,7 +452,7 @@ describe("generation service conformance: idempotency and ownership", () => {
     const record: LessonGenerationRecord = {
       requestId: "draft_req_conformance_lease",
       tenantId: demoSeed.tenant.id,
-      teacherId: "identity_demo_teacher",
+      teacherId: teacherActor.actorId,
       input: {
         prompt: "equivalent fractions for grade 4",
         grade: 4,

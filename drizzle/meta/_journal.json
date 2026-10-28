@@ -36,6 +36,13 @@
       "when": 1793161012495,
       "tag": "0004_identity_rls_deny_non_owner",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793194749394,
+      "tag": "0005_draft_ownership",
+      "breakpoints": true
     }
   ]
 }

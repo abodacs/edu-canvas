@@ -38,6 +38,31 @@ export const tenants = pgTable(
   }
 ).enableRLS();
 
+// Not tenant-scoped: credential binding runs before a tenant is known, and
+// draft ownership points at the actor rather than the legacy demo identity.
+export const actors = pgTable(
+  "actors",
+  {
+    id: text().primaryKey().notNull(),
+    displayName: text("display_name").notNull(),
+    isActive: boolean("is_active").default(true).notNull(),
+    authorizationRevision: integer("authorization_revision")
+      .default(1)
+      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  () => {
+    return [
+      check(
+        "actors_authorization_revision_check",
+        sql`authorization_revision >= 0`
+      ),
+    ];
+  }
+).enableRLS();
+
 export const identities = pgTable(
   "identities",
   {
@@ -334,9 +359,9 @@ export const lessonDraftRequests = pgTable(
         table.updatedAt.desc().nullsFirst()
       ),
       foreignKey({
-        columns: [table.tenantId, table.teacherId],
-        foreignColumns: [identities.tenantId, identities.id],
-        name: "lesson_draft_requests_tenant_id_teacher_id_fkey",
+        columns: [table.teacherId],
+        foreignColumns: [actors.id],
+        name: "lesson_draft_requests_teacher_id_fkey",
       }),
       foreignKey({
         columns: [table.tenantId, table.standardId],
@@ -346,6 +371,11 @@ export const lessonDraftRequests = pgTable(
       unique("lesson_draft_requests_tenant_id_id_key").on(
         table.tenantId,
         table.id
+      ),
+      unique("lesson_draft_requests_tenant_id_id_teacher_id_key").on(
+        table.tenantId,
+        table.id,
+        table.teacherId
       ),
       pgPolicy("lesson_draft_requests_are_tenant_scoped", {
         as: "permissive",
@@ -425,6 +455,7 @@ export const lessonGenerationAttempts = pgTable(
   {
     requestId: text("request_id").notNull(),
     tenantId: text("tenant_id").notNull(),
+    teacherId: text("teacher_id").notNull(),
     attemptNumber: integer("attempt_number").notNull(),
     idempotencyKey: text("idempotency_key").notNull(),
     requestHash: text("request_hash"),
@@ -453,16 +484,21 @@ export const lessonGenerationAttempts = pgTable(
         table.createdAt.desc().nullsFirst()
       ),
       foreignKey({
-        columns: [table.tenantId, table.requestId],
-        foreignColumns: [lessonDraftRequests.tenantId, lessonDraftRequests.id],
-        name: "lesson_generation_attempts_tenant_id_request_id_fkey",
+        columns: [table.tenantId, table.requestId, table.teacherId],
+        foreignColumns: [
+          lessonDraftRequests.tenantId,
+          lessonDraftRequests.id,
+          lessonDraftRequests.teacherId,
+        ],
+        name: "lesson_generation_attempts_tenant_id_request_id_teacher_id_fkey",
       }),
       primaryKey({
         columns: [table.requestId, table.attemptNumber],
         name: "lesson_generation_attempts_pkey",
       }),
-      unique("lesson_generation_attempts_tenant_id_idempotency_key_key").on(
+      unique("lesson_generation_attempts_idempotency_scope_key").on(
         table.tenantId,
+        table.teacherId,
         table.idempotencyKey
       ),
       pgPolicy("lesson_generation_attempts_are_tenant_scoped", {
@@ -483,31 +519,8 @@ export const lessonGenerationAttempts = pgTable(
   }
 ).enableRLS();
 
-// Identity persistence. actors and provider_bindings are deliberately not
-// tenant-scoped: the credential binding step runs before a tenant is known.
-export const actors = pgTable(
-  "actors",
-  {
-    id: text().primaryKey().notNull(),
-    displayName: text("display_name").notNull(),
-    isActive: boolean("is_active").default(true).notNull(),
-    authorizationRevision: integer("authorization_revision")
-      .default(1)
-      .notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
-      .defaultNow()
-      .notNull(),
-  },
-  () => {
-    return [
-      check(
-        "actors_authorization_revision_check",
-        sql`authorization_revision >= 0`
-      ),
-    ];
-  }
-).enableRLS();
-
+// Identity persistence. provider_bindings is deliberately not tenant-scoped:
+// the credential binding step runs before a tenant is known.
 export const providerBindings = pgTable(
   "provider_bindings",
   {

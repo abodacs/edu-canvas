@@ -267,6 +267,7 @@ export interface GenerationPersistence {
   ) => Promise<LessonGenerationRecord | undefined>;
   findGenerationByIdempotencyKey: (
     tenantId: string,
+    teacherId: string,
     idempotencyKey: string
   ) => Promise<LessonGenerationRecord | undefined>;
   findModeratedGeneration: (

@@ -80,6 +80,8 @@ const southTenantName = "Southside Middle";
 const teacherEmail = "bilal.north@example.test";
 const dualMembershipEmail = "amira.north@example.test";
 const learnerEmail = "lina.north@example.test";
+const teacherActorId = "actor_teacher_bilal";
+const learnerActorId = "actor_learner_lina";
 
 const clearSiteDataValue =
   '"cache", "cookies", "storage", "executionContexts", "prefetchCache", "prerenderCache"';
@@ -521,6 +523,7 @@ describe("protected domain policy matrix", () => {
       const stored =
         await foundationPersistence().findGenerationByIdempotencyKey(
           northTenantId,
+          teacherActorId,
           key
         );
 
@@ -624,6 +627,7 @@ describe("protected domain policy matrix", () => {
       const stored =
         await foundationPersistence().findGenerationByIdempotencyKey(
           northTenantId,
+          teacherActorId,
           key
         );
 
@@ -803,6 +807,7 @@ describe("protected domain policy matrix", () => {
       const stored =
         await foundationPersistence().findGenerationByIdempotencyKey(
           northTenantId,
+          teacherActorId,
           key
         );
 
@@ -817,6 +822,32 @@ describe("protected domain policy matrix", () => {
       });
     });
 
+    it("PT-40b two teachers in one tenant keep separate drafts for a shared key", async () => {
+      const dependencies = await authDependencies();
+      const bilal = await signInDirect(dependencies, teacherEmail);
+      const amira = await signInForTenant(dependencies, northTenantName);
+      const key = "policy-pt-40b-shared-idempotency-key";
+      const first = await generate(dependencies, bilal, key);
+      const second = await generate(dependencies, amira, key);
+
+      expect({
+        firstStatus: first.response.status,
+        secondStatus: second.response.status,
+        separateDrafts: first.body.requestId !== second.body.requestId,
+      }).toStrictEqual({
+        firstStatus: 200,
+        secondStatus: 200,
+        separateDrafts: true,
+      });
+      await expect(
+        foundationPersistence().findGenerationByIdempotencyKey(
+          northTenantId,
+          "actor_teacher_amira",
+          key
+        )
+      ).resolves.toMatchObject({ requestId: second.body.requestId });
+    });
+
     it("PT-42 PC-02: valid origin and session challenge authorize the effect", async () => {
       const dependencies = await authDependencies();
       const teacher = await signInDirect(dependencies, teacherEmail);
@@ -825,6 +856,7 @@ describe("protected domain policy matrix", () => {
       const stored =
         await foundationPersistence().findGenerationByIdempotencyKey(
           northTenantId,
+          teacherActorId,
           key
         );
 
@@ -862,6 +894,7 @@ describe("protected domain policy matrix", () => {
         [forged, absent, foreign].map((key) => {
           return foundationPersistence().findGenerationByIdempotencyKey(
             northTenantId,
+            teacherActorId,
             key
           );
         })
@@ -907,6 +940,7 @@ describe("protected domain policy matrix", () => {
       const stored =
         await foundationPersistence().findGenerationByIdempotencyKey(
           northTenantId,
+          teacherActorId,
           key
         );
 
@@ -1098,6 +1132,7 @@ describe("protected domain policy matrix", () => {
         const stored =
           await foundationPersistence().findGenerationByIdempotencyKey(
             northTenantId,
+            teacherActorId,
             key
           );
 
@@ -1176,6 +1211,7 @@ describe("protected domain policy matrix", () => {
       const stored =
         await foundationPersistence().findGenerationByIdempotencyKey(
           northTenantId,
+          teacherActorId,
           key
         );
 
@@ -1200,6 +1236,7 @@ describe("protected domain policy matrix", () => {
       const stored =
         await foundationPersistence().findGenerationByIdempotencyKey(
           northTenantId,
+          teacherActorId,
           key
         );
 
@@ -1221,6 +1258,7 @@ describe("protected domain policy matrix", () => {
       const stored =
         await foundationPersistence().findGenerationByIdempotencyKey(
           northTenantId,
+          learnerActorId,
           key
         );
 
@@ -1243,6 +1281,7 @@ describe("protected domain policy matrix", () => {
       const stored =
         await foundationPersistence().findGenerationByIdempotencyKey(
           northTenantId,
+          learnerActorId,
           key
         );
 
@@ -1267,6 +1306,7 @@ describe("protected domain policy matrix", () => {
         const stored =
           await foundationPersistence().findGenerationByIdempotencyKey(
             northTenantId,
+            teacherActorId,
             key
           );
 
@@ -1361,6 +1401,7 @@ describe("protected domain policy matrix", () => {
         const stored =
           await foundationPersistence().findGenerationByIdempotencyKey(
             northTenantId,
+            teacherActorId,
             key
           );
 
@@ -1388,6 +1429,7 @@ describe("protected domain policy matrix", () => {
         const stored =
           await foundationPersistence().findGenerationByIdempotencyKey(
             northTenantId,
+            teacherActorId,
             key
           );
 

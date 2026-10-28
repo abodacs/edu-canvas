@@ -21,11 +21,13 @@ export const createSeededPersistence = (
 
   const findStoredGenerationByIdempotencyKey = (
     tenantId: string,
+    teacherId: string,
     idempotencyKey: string
   ): LessonGenerationRecord | undefined => {
     for (const record of generationStore.values()) {
       if (
         record.tenantId === tenantId &&
+        record.teacherId === teacherId &&
         record.attempts.some(
           (attempt) => attempt.idempotencyKey === idempotencyKey
         )
@@ -83,6 +85,7 @@ export const createSeededPersistence = (
 
       const existing = findStoredGenerationByIdempotencyKey(
         record.tenantId,
+        record.teacherId,
         attempt.idempotencyKey
       );
       if (existing) {
@@ -154,9 +157,10 @@ export const createSeededPersistence = (
       return Promise.resolve(true);
     },
 
-    findGenerationByIdempotencyKey(tenantId, idempotencyKey) {
+    findGenerationByIdempotencyKey(tenantId, teacherId, idempotencyKey) {
       const record = findStoredGenerationByIdempotencyKey(
         tenantId,
+        teacherId,
         idempotencyKey
       );
       return Promise.resolve(record ? structuredClone(record) : undefined);

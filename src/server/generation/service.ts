@@ -55,6 +55,7 @@ const BLOCKED_BY_VALIDATION_STATE = "blocked-by-validation";
 const FAILED_RETRYABLE_STATE = "failed-retryable";
 
 const CANCELLED_DIAGNOSTIC_CODE = "GENERATION_CANCELLED";
+const DRAFT_NOT_FOUND_MESSAGE = "The requested draft was not found.";
 
 const DEADLINE_DIAGNOSTIC_CODE = "GENERATION_DEADLINE_EXCEEDED";
 
@@ -476,9 +477,15 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
   };
 
   const resolveDuplicate = async (
+    actorId: string,
     initialRecord: LessonGenerationRecord,
     input: NormalizedCommandInput
   ): Promise<LessonGenerationRecord> => {
+    if (initialRecord.teacherId !== actorId) {
+      throw new GenerationRequestError(DRAFT_NOT_FOUND_MESSAGE, {
+        code: "DRAFT_NOT_FOUND",
+      });
+    }
     assertRequestMatches(initialRecord, input);
     let record = initialRecord;
     if (
@@ -703,7 +710,11 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     );
     const claim = await options.persistence.claimGeneration(record);
     if (!claim.claimed) {
-      const resolved = await resolveDuplicate(claim.record, input);
+      const resolved = await resolveDuplicate(
+        record.teacherId,
+        claim.record,
+        input
+      );
       return resultFor(resolved);
     }
     ({ record } = claim);
@@ -864,10 +875,15 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       const input = normalizeGenerationInput(command.input);
       const existing = await options.persistence.findGenerationByIdempotencyKey(
         command.actor.tenantId,
+        command.actor.actorId,
         input.idempotencyKey
       );
       if (existing) {
-        const resolved = await resolveDuplicate(existing, input);
+        const resolved = await resolveDuplicate(
+          command.actor.actorId,
+          existing,
+          input
+        );
         return resultFor(resolved);
       }
 
@@ -889,10 +905,9 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
           input.retryOfRequestId
         );
         if (!retryRecord || retryRecord.teacherId !== command.actor.actorId) {
-          throw new GenerationRequestError(
-            "The requested draft was not found.",
-            { code: "DRAFT_NOT_FOUND" }
-          );
+          throw new GenerationRequestError(DRAFT_NOT_FOUND_MESSAGE, {
+            code: "DRAFT_NOT_FOUND",
+          });
         }
         if (!isRetryableState(retryRecord.state)) {
           throw new GenerationRequestError(
@@ -941,7 +956,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         command.requestId
       );
       if (!record || record.teacherId !== command.actor.actorId) {
-        throw new GenerationRequestError("The requested draft was not found.", {
+        throw new GenerationRequestError(DRAFT_NOT_FOUND_MESSAGE, {
           code: "DRAFT_NOT_FOUND",
         });
       }
