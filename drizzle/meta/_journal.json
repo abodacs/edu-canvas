@@ -15,6 +15,20 @@
       "when": 1793145723640,
       "tag": "0001_foundation_behaviors",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793155846735,
+      "tag": "0002_identity",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793155861756,
+      "tag": "0003_identity_definer_functions",
+      "breakpoints": true
     }
   ]
 }
