@@ -78,6 +78,7 @@ const SignUpPage = (): ReactElement => {
     null
   );
   const [cooldown, setCooldown] = useState(0);
+  const pendingFocusReference = useRef<string | null>(null);
   const { csrf, notice, statusReference, announce } = useAuthChallenge({
     unavailableNotice: {
       tone: "error",
@@ -85,6 +86,18 @@ const SignUpPage = (): ReactElement => {
       message: "We could not start a secure sign-up. Try again in a moment.",
     },
   });
+
+  useEffect(() => {
+    const pendingFocus = pendingFocusReference.current;
+    if (pendingFocus === null) {
+      return;
+    }
+
+    pendingFocusReference.current = null;
+    document
+      .querySelector<HTMLElement>(`#${CSS.escape(pendingFocus)}`)
+      ?.focus();
+  }, [emailError, passwordError]);
 
   useEffect(() => {
     if (cooldown <= 0) {
@@ -155,10 +168,10 @@ const SignUpPage = (): ReactElement => {
     setEmailError(nextEmailError);
     setPasswordError(nextPasswordError);
     if (nextEmailError || nextPasswordError) {
-      const invalidField = document.querySelector<HTMLElement>(
-        `#${nextEmailError ? emailId : passwordErrorId}`
-      );
-      invalidField?.focus();
+      // The error element does not exist until React commits this update.
+      pendingFocusReference.current = nextEmailError
+        ? emailId
+        : passwordErrorId;
       return;
     }
 
@@ -249,7 +262,7 @@ const SignUpPage = (): ReactElement => {
                   }}
                 />
                 {emailError ? (
-                  <p className="field__error" id={emailErrorId}>
+                  <p className="field__error" id={emailErrorId} tabIndex={-1}>
                     {emailError}
                   </p>
                 ) : null}
@@ -272,7 +285,7 @@ const SignUpPage = (): ReactElement => {
                 normally.
               </p>
               {passwordError ? (
-                <p className="field__error" id={passwordErrorId}>
+                <p className="field__error" id={passwordErrorId} tabIndex={-1}>
                   {passwordError}
                 </p>
               ) : null}
