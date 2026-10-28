@@ -624,16 +624,18 @@ export const createIdentityService = (
       }
 
       const { session } = resolution;
-      const extension = Math.min(
-        now() + idleWindowMs,
+      const activityAt = now();
+      const activityDate = new Date(activityAt);
+      const idleExpiry = Math.min(
+        activityAt + idleWindowMs,
         Date.parse(session.absoluteExpiresAt)
       );
-      const extensionDate = new Date(extension);
-      const nextIdle = extensionDate.toISOString();
+      const idleExpiryDate = new Date(idleExpiry);
+      const nextIdle = idleExpiryDate.toISOString();
       const touched = await options.persistence.touchSession({
         sessionId: session.sessionId,
         expectedRevision: session.revision,
-        lastActivityAt: nextIdle,
+        lastActivityAt: activityDate.toISOString(),
       });
       if (!touched) {
         return null;

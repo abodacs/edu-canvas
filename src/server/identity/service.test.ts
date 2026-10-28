@@ -376,6 +376,24 @@ describe("session resolution, expiry, and revocation", () => {
     );
   });
 
+  it("keeps the idle window at thirty minutes after a continuation", async () => {
+    const { service, outcome, advance } = await activeSession();
+    advance(10 * minute);
+    const continued = await service.continueSession(outcome.credential);
+    advance(29 * minute);
+
+    expect(continued?.idleExpiresAt).toBe("2026-01-01T00:40:00.000Z");
+    await expect(
+      service.resolveSession(outcome.credential)
+    ).resolves.toMatchObject({ status: "active" });
+
+    advance(2 * minute);
+
+    await expect(
+      service.resolveSession(outcome.credential)
+    ).resolves.toMatchObject({ status: "unauthenticated" });
+  });
+
   it("does not renew on a read", async () => {
     const { service, outcome, advance } = await activeSession();
     advance(10 * minute);
