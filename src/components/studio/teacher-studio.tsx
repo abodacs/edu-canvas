@@ -15,8 +15,6 @@ import { useEffect, useRef, useState } from "react";
 import { readResponseJson } from "@/lib/http";
 import {
   GENERIC_GENERATION_FAILURE_MESSAGE,
-  readErrorCode,
-  readServerCuratedMessage,
   resolveFailure,
 } from "@/lib/generation-failures";
 import { cn } from "@/lib/utilities";
@@ -242,14 +240,7 @@ const postGenerationRequest = async (
   const payload = await readResponseJson(response);
 
   if (!response.ok) {
-    const failure = resolveFailure(
-      response.status,
-      readErrorCode(payload),
-      readServerCuratedMessage(payload)
-    );
-    return failure.unauthorized
-      ? { kind: "unauthorized" }
-      : { kind: "error", message: failure.message };
+    return resolveFailure(response.status, payload);
   }
 
   const parsed = publicGenerationResultSchema.safeParse(payload);
