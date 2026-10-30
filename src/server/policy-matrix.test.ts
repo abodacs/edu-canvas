@@ -374,15 +374,15 @@ const generateReadyDraft = async (
   return body;
 };
 
-const errorCode = async (response: Response): Promise<string | undefined> => {
-  const body = (await response.clone().json()) as { code?: string };
-  return body.code;
-};
-
 const errorBody = async (
   response: Response
 ): Promise<{ code?: string; message?: string }> =>
   (await response.clone().json()) as { code?: string; message?: string };
+
+const errorCode = async (response: Response): Promise<string | undefined> => {
+  const body = await errorBody(response);
+  return body.code;
+};
 
 const eventStreamOf = (body: string): number =>
   (body.match(/event: a2ui/gu) ?? []).length;

@@ -13,8 +13,10 @@ import type { DeterministicAccount } from "./provider/deterministic";
 
 /**
  * Synthetic identity fixture for explicit local development and tests. Two
- * schools, two teachers in one school, two classes, and two learners, per the
- * spec's fixture requirement. It is invoked only by the development
+ * schools plus the curriculum-owning synthetic classroom, two teachers in one
+ * school, two classes, and two learners, per the spec's fixture requirement
+ * (the classroom membership the focused generation gate signs in through was
+ * added for issue #115). It is invoked only by the development
  * composition and by tests; it can never supply authority to a deployed
  * request because the deterministic provider is unreachable outside
  * development (config forces the hosted provider elsewhere).
