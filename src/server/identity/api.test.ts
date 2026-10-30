@@ -5,6 +5,7 @@ import {
   handleAuthContext,
   handleContinue,
   handleLogout,
+  handleMembership,
   handleSession,
   handleSignIn,
   resolveAuthDependencies,
@@ -48,6 +49,47 @@ const bootstrapFlow = async (sessionDependencies: AuthDependencies) => {
   };
 };
 
+interface MembershipBody {
+  readonly memberships?: readonly {
+    readonly membershipId: string;
+    readonly tenantName: string;
+  }[];
+}
+
+/**
+The fixture teachers also hold the curriculum classroom membership, so an established session selects it exactly like a production client must.
+*/
+const selectCurriculumMembership = async (
+  sessionDependencies: AuthDependencies,
+  signInResponse: Response,
+  memberships: MembershipBody["memberships"]
+): Promise<Response> => {
+  const classroom =
+    memberships?.find(
+      (membership) => membership.tenantName === "Edu-Canvas Synthetic Classroom"
+    ) ??
+    memberships?.find((membership) =>
+      membership.membershipId.includes("_demo")
+    ) ??
+    memberships?.[0];
+  const flow = await bootstrapFlow(sessionDependencies);
+  return handleMembership(
+    new Request(`${sessionDependencies.publicOrigin}/api/auth/membership`, {
+      method: "POST",
+      headers: {
+        origin: sessionDependencies.publicOrigin,
+        "content-type": "application/json",
+        "x-edu-canvas-csrf": flow.csrf,
+        cookie: `edu_canvas_pending=${
+          cookieValue(signInResponse, "edu_canvas_pending") ?? ""
+        }; ${flow.cookie}`,
+      },
+      body: JSON.stringify({ membershipId: classroom?.membershipId ?? "" }),
+    }),
+    sessionDependencies
+  );
+};
+
 const signIn = async (
   sessionDependencies: AuthDependencies,
   email = "bilal.north@example.test"
@@ -69,9 +111,20 @@ const signIn = async (
     }),
     sessionDependencies
   );
+  const body = (await response.clone().json()) as MembershipBody & {
+    status?: string;
+  };
+  const established =
+    body.status === "membership-required"
+      ? await selectCurriculumMembership(
+          sessionDependencies,
+          response,
+          body.memberships
+        )
+      : response;
   return {
-    response,
-    sessionCookie: `edu_canvas_session=${cookieValue(response, "edu_canvas_session") ?? ""}`,
+    response: established,
+    sessionCookie: `edu_canvas_session=${cookieValue(established, "edu_canvas_session") ?? ""}`,
     flow,
   };
 };

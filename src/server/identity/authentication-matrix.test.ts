@@ -285,6 +285,32 @@ const selectMembership = async (input: {
   );
 };
 
+const curriculumTenantName = "Edu-Canvas Synthetic Classroom";
+
+/**
+Signs the fixture teacher in and, since he also holds the curriculum classroom membership, completes the designed selection exactly like a production client. Defaults to the curriculum classroom; pass a school tenancy for rows that pin it.
+*/
+const signInAndSelect = async (
+  dependencies: AuthDependencies,
+  tenantName: string = curriculumTenantName
+): Promise<Response> => {
+  const signInResponse = await signIn(dependencies, bilal);
+  const body = await readJson<MembershipRequiredBody>(signInResponse);
+  if (body.status !== "membership-required") {
+    return signInResponse;
+  }
+  const membership =
+    body.memberships.find((option) => option.tenantName === tenantName) ??
+    body.memberships.find((option) => option.membershipId.includes("_demo")) ??
+    body.memberships.find((option) => option.role === "teacher") ??
+    body.memberships[0];
+  return selectMembership({
+    dependencies,
+    signInResponse,
+    membershipId: membership?.membershipId ?? "",
+  });
+};
+
 type MutationHandler = (
   request: Request,
   dependencies: AuthDependencies
@@ -467,7 +493,10 @@ const provisioningPrincipalEntries: readonly string[] = [];
 describe("AT-01 to AT-04: credential verification", () => {
   it("AT-01 signs a provisioned teacher into a session with no credential fields in the payload", async () => {
     const dependencies = await configuredDependencies();
-    const response = await signIn(dependencies, bilal);
+    const response = await signInAndSelect(
+      dependencies,
+      "Northside Elementary"
+    );
     const body = await readJson<SessionProjectionBody>(response);
 
     expect(response.status).toBe(200);
@@ -555,11 +584,17 @@ describe("AT-05 to AT-08: membership selection", () => {
 
     expect(response.status).toBe(200);
     expect(body.status).toBe("membership-required");
+    // The fixture teachers also hold the curriculum classroom membership, so
+    // Amira's own list is now three tenancies.
     expect(
       body.memberships
         .map((membership) => membership.tenantName)
         .toSorted((left, right) => left.localeCompare(right))
-    ).toStrictEqual(["Northside Elementary", "Southside Middle"]);
+    ).toStrictEqual([
+      "Edu-Canvas Synthetic Classroom",
+      "Northside Elementary",
+      "Southside Middle",
+    ]);
     expect(cookieValue(response, localCookieNames.session)).toBeUndefined();
     expect(domain.status).toBe(401);
   });
@@ -667,7 +702,7 @@ describe("AT-05 to AT-08: membership selection", () => {
 describe("AT-09 to AT-14: session reads and idle continuation", () => {
   it("AT-09 returns a safe active projection for a teacher session", async () => {
     const dependencies = await configuredDependencies();
-    const signedIn = await signIn(dependencies, bilal);
+    const signedIn = await signInAndSelect(dependencies);
     const response = await handleSession(
       sessionRequest(
         dependencies,
@@ -734,7 +769,7 @@ describe("AT-09 to AT-14: session reads and idle continuation", () => {
 
   it("AT-11 rejects a missing, expired, or revoked session credential", async () => {
     const dependencies = await configuredDependencies();
-    const signedIn = await signIn(dependencies, bilal);
+    const signedIn = await signInAndSelect(dependencies);
     const credential = cookieHeaderFor(signedIn, localCookieNames.session);
     await handleLogout(
       authMutation({ dependencies, path: logoutPath, cookies: [credential] }),
@@ -749,7 +784,7 @@ describe("AT-09 to AT-14: session reads and idle continuation", () => {
       dependencies
     );
     const harness = await createHarness();
-    const harnessSignIn = await signIn(harness.dependencies, bilal);
+    const harnessSignIn = await signInAndSelect(harness.dependencies);
     harness.advance(31 * minute);
     const expired = await handleSession(
       sessionRequest(
@@ -770,7 +805,7 @@ describe("AT-09 to AT-14: session reads and idle continuation", () => {
 
   it("AT-12 advances a teacher idle deadline monotonically and inside the absolute deadline", async () => {
     const dependencies = await configuredDependencies();
-    const signedIn = await signIn(dependencies, bilal);
+    const signedIn = await signInAndSelect(dependencies);
     const credential = cookieHeaderFor(signedIn, localCookieNames.session);
     const before = await readJson<SessionProjectionBody>(
       await handleSession(
@@ -833,7 +868,7 @@ describe("AT-09 to AT-14: session reads and idle continuation", () => {
 
   it("AT-14 rejects a missing, expired, or revoked continue credential without extending", async () => {
     const harness = await createHarness();
-    const signedIn = await signIn(harness.dependencies, bilal);
+    const signedIn = await signInAndSelect(harness.dependencies);
     const credential = cookieHeaderFor(signedIn, localCookieNames.session);
     const session = await readJson<SessionProjectionBody>(
       await handleSession(
@@ -851,7 +886,7 @@ describe("AT-09 to AT-14: session reads and idle continuation", () => {
       }),
       harness.dependencies
     );
-    const secondSignIn = await signIn(harness.dependencies, bilal);
+    const secondSignIn = await signInAndSelect(harness.dependencies);
     const revokedCredential = cookieHeaderFor(
       secondSignIn,
       localCookieNames.session
@@ -1006,7 +1041,7 @@ describe("AT-15 to AT-19: mutation protection and provider failure", () => {
 
   it("AT-17 rejects an invalid session proof on a valid credential with no domain effect", async () => {
     const dependencies = await configuredDependencies();
-    const signedIn = await signIn(dependencies, bilal);
+    const signedIn = await signInAndSelect(dependencies);
     const credential = cookieHeaderFor(signedIn, localCookieNames.session);
     const forged = await handleContinue(
       authMutation({
@@ -1097,7 +1132,7 @@ describe("AT-20 to AT-22: logout", () => {
 
   it("AT-21 completes a local logout during a provider logout outage and refuses the replay", async () => {
     const harness = await createHarness({ signOutOutage: true });
-    const signedIn = await signIn(harness.dependencies, bilal);
+    const signedIn = await signInAndSelect(harness.dependencies);
     const credential = cookieHeaderFor(signedIn, localCookieNames.session);
     const response = await handleLogout(
       authMutation({
@@ -1127,7 +1162,7 @@ describe("AT-20 to AT-22: logout", () => {
         };
       },
     });
-    const signedIn = await signIn(harness.dependencies, bilal);
+    const signedIn = await signInAndSelect(harness.dependencies);
     const credential = cookieHeaderFor(signedIn, localCookieNames.session);
     const response = await handleLogout(
       authMutation({

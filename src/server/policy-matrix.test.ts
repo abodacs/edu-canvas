@@ -210,7 +210,39 @@ const sessionChallenge = async (
 };
 
 /**
-A single-membership account (teacher or learner) signs in straight to a session.
+Completes the designed membership selection with the named tenant's membership.
+*/
+const selectTenantMembership = async (
+  dependencies: AuthDependencies,
+  signIn: Response,
+  tenantName: string
+): Promise<Response> => {
+  const body = (await signIn.clone().json()) as {
+    memberships?: { membershipId: string; tenantName: string }[];
+  };
+  const membershipId = body.memberships?.find(
+    (membership) => membership.tenantName === tenantName
+  )?.membershipId;
+  const flow = await preAuthFlow(dependencies);
+  return handleMembership(
+    new Request(`${dependencies.publicOrigin}/api/auth/membership`, {
+      method: "POST",
+      headers: {
+        origin: dependencies.publicOrigin,
+        "content-type": "application/json",
+        "x-edu-canvas-csrf": flow.csrf,
+        cookie: `edu_canvas_pending=${
+          cookieValue(signIn, "edu_canvas_pending") ?? ""
+        }; ${flow.cookie}`,
+      },
+      body: JSON.stringify({ membershipId: membershipId ?? "" }),
+    }),
+    dependencies
+  );
+};
+
+/**
+A single-membership account (teacher or learner) signs in straight to a session. The fixture teachers also hold the curriculum classroom membership, so a teacher session completes the designed selection with the school tenancy these rows assert.
 */
 const signInDirect = async (
   dependencies: AuthDependencies,
@@ -221,7 +253,12 @@ const signInDirect = async (
     email,
     await preAuthFlow(dependencies)
   );
-  const cookie = sessionCookie(response);
+  const body = (await response.clone().json()) as { status?: string };
+  const established =
+    body.status === "membership-required"
+      ? await selectTenantMembership(dependencies, response, northTenantName)
+      : response;
+  const cookie = sessionCookie(established);
   return { cookie, csrf: await sessionChallenge(dependencies, cookie) };
 };
 
@@ -237,27 +274,10 @@ const signInForTenant = async (
     dualMembershipEmail,
     await preAuthFlow(dependencies)
   );
-  const body = (await signIn.clone().json()) as {
-    memberships?: { membershipId: string; tenantName: string }[];
-  };
-  const membershipId = body.memberships?.find(
-    (membership) => membership.tenantName === tenantName
-  )?.membershipId;
-  const flow = await preAuthFlow(dependencies);
-  const selected = await handleMembership(
-    new Request(`${dependencies.publicOrigin}/api/auth/membership`, {
-      method: "POST",
-      headers: {
-        origin: dependencies.publicOrigin,
-        "content-type": "application/json",
-        "x-edu-canvas-csrf": flow.csrf,
-        cookie: `edu_canvas_pending=${
-          cookieValue(signIn, "edu_canvas_pending") ?? ""
-        }; ${flow.cookie}`,
-      },
-      body: JSON.stringify({ membershipId: membershipId ?? "" }),
-    }),
-    dependencies
+  const selected = await selectTenantMembership(
+    dependencies,
+    signIn,
+    tenantName
   );
   const cookie = sessionCookie(selected);
   return { cookie, csrf: await sessionChallenge(dependencies, cookie) };
