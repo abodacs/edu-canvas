@@ -23,7 +23,7 @@ import type {
   PostgresJsTransaction,
 } from "drizzle-orm/postgres-js";
 
-import type { DemoCounts } from "@/shared/demo-contract";
+import type { SeedCounts } from "../seed-data";
 
 import type { LessonGenerationRecord } from "../generation/types";
 import type { ServerObservability } from "../observability.server";
@@ -179,7 +179,7 @@ const readGenerationByQuery = (
   databaseUrl: string,
   tenantId: string,
   value: string,
-  isLookupByRequestId = false
+  lookup: { teacherId?: string; byRequestId?: boolean } = {}
 ): Promise<LessonGenerationRecord | undefined> => {
   return withDatabase(databaseUrl, (database) => {
     return database.transaction(
@@ -189,13 +189,14 @@ const readGenerationByQuery = (
         );
 
         let requestId = value;
-        if (!isLookupByRequestId) {
+        if (!lookup.byRequestId) {
           const matches = await transaction
             .select({ requestId: lessonGenerationAttempts.requestId })
             .from(lessonGenerationAttempts)
             .where(
               and(
                 eq(lessonGenerationAttempts.tenantId, tenantId),
+                eq(lessonGenerationAttempts.teacherId, lookup.teacherId ?? ""),
                 eq(lessonGenerationAttempts.idempotencyKey, value)
               )
             )
@@ -306,6 +307,7 @@ const createDrizzleGenerationBackend = (
         .values({
           requestId: record.requestId,
           tenantId: record.tenantId,
+          teacherId: record.teacherId,
           attemptNumber: attempt.attemptNumber,
           idempotencyKey: attempt.idempotencyKey,
           requestHash: attempt.requestHash,
@@ -318,6 +320,7 @@ const createDrizzleGenerationBackend = (
         .onConflictDoNothing({
           target: [
             lessonGenerationAttempts.tenantId,
+            lessonGenerationAttempts.teacherId,
             lessonGenerationAttempts.idempotencyKey,
           ],
         })
@@ -343,6 +346,7 @@ const createDrizzleGenerationBackend = (
         .where(
           and(
             eq(lessonGenerationAttempts.tenantId, record.tenantId),
+            eq(lessonGenerationAttempts.teacherId, record.teacherId),
             or(
               eq(
                 lessonGenerationAttempts.idempotencyKey,
@@ -439,6 +443,7 @@ const createDrizzleGenerationBackend = (
         .values({
           requestId: record.requestId,
           tenantId: record.tenantId,
+          teacherId: record.teacherId,
           attemptNumber: attempt.attemptNumber,
           idempotencyKey: attempt.idempotencyKey,
           requestHash: attempt.requestHash,
@@ -463,8 +468,11 @@ const createDrizzleGenerationBackend = (
         });
     },
 
-    findGenerationByIdempotencyKey: (tenantId, idempotencyKey) =>
-      readGenerationByQuery(databaseUrl, tenantId, idempotencyKey),
+    findGenerationByIdempotencyKey: (tenantId, teacherId, idempotencyKey) => {
+      return readGenerationByQuery(databaseUrl, tenantId, idempotencyKey, {
+        teacherId,
+      });
+    },
 
     findModeratedGeneration: (tenantId, teacherId, requestHash) => {
       return readModeratedGenerationByQuery(
@@ -475,8 +483,11 @@ const createDrizzleGenerationBackend = (
       );
     },
 
-    readGeneration: (tenantId, requestId) =>
-      readGenerationByQuery(databaseUrl, tenantId, requestId, true),
+    readGeneration: (tenantId, requestId) => {
+      return readGenerationByQuery(databaseUrl, tenantId, requestId, {
+        byRequestId: true,
+      });
+    },
   };
 };
 
@@ -522,7 +533,7 @@ export const createDrizzlePersistence = (
       }
     },
 
-    async readDemoCounts(): Promise<DemoCounts> {
+    async readDemoCounts(): Promise<SeedCounts> {
       try {
         return await withDatabase(databaseUrl, (database) => {
           return database.transaction(async (transaction) => {

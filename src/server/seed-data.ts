@@ -1,4 +1,18 @@
-import type { DemoCounts, DemoRole } from "@/shared/demo-contract";
+/**
+ * The seeded foundation still ships synthetic curriculum, so the seed keeps its own browser-safe value shapes. The retired demo snapshot contract no longer owns them; the persistence seam and the seed read the same local types.
+ */
+export interface SeedCounts {
+  tenants: number;
+  identities: number;
+  standards: number;
+  graphNodes: number;
+  graphEdges: number;
+  activities: number;
+  activityVersions: number;
+  attempts: number;
+}
+
+export type SeedRole = "teacher" | "student";
 
 export const demoSeed = {
   tenant: {
@@ -106,7 +120,7 @@ export const assertSeedIntegrity = (): void => {
   }
 };
 
-export const getDemoSeedCounts = (): DemoCounts => {
+export const getDemoSeedCounts = (): SeedCounts => {
   assertSeedIntegrity();
 
   return {
@@ -121,7 +135,7 @@ export const getDemoSeedCounts = (): DemoCounts => {
   };
 };
 
-export const getSeedIdentity = (role: DemoRole) => {
+export const getSeedIdentity = (role: SeedRole) => {
   const identity = demoSeed.identities.find(
     (candidate) => candidate.role === role
   );

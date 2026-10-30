@@ -3,8 +3,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { readDemoSnapshot } from "@/server/demo/read-model";
-import { demoSnapshotSchema } from "@/shared/demo-contract.schema";
+import { sessionProjectionSchema } from "@/shared/identity-contract";
 
 const { dirname, extname, join, relative, resolve, sep } = path;
 const projectRoot = fileURLToPath(new URL("../", import.meta.url));
@@ -243,21 +242,49 @@ const checkSourceStructure = async (files: string[]): Promise<string[]> => {
   return issueGroups.flat();
 };
 
-const checkPublicContract = async (): Promise<string[]> => {
-  const snapshot = await readDemoSnapshot("student", {});
-  const result = demoSnapshotSchema.safeParse(snapshot);
+/**
+ * A representative active session projection shaped exactly like
+ * `GET /api/auth/session` returns (minus the session-bound CSRF token). The
+ * harness guards the public identity contract here: the projection must satisfy
+ * the shared schema and must never carry the private answer key.
+ */
+const sampleActiveProjection = {
+  status: "active",
+  actor: {
+    role: "teacher",
+    displayName: "Synthetic Teacher",
+    tenantId: "tenant_synthetic_school",
+    tenantName: "Synthetic School",
+    capabilities: [
+      "read_environment",
+      "generate",
+      "preview_draft",
+      "publish",
+      "teacher_decision",
+      "logout",
+    ],
+  },
+  session: {
+    generation: "generation_sample_0001",
+    idleExpiresAt: "2026-01-01T00:15:00.000Z",
+    absoluteExpiresAt: "2026-01-01T08:00:00.000Z",
+  },
+} as const;
+
+const checkPublicContract = (): string[] => {
+  const result = sessionProjectionSchema.safeParse(sampleActiveProjection);
   const issues: string[] = [];
 
   if (!result.success) {
     issues.push(
-      `the seeded demo snapshot does not satisfy the shared runtime contract: ${
-        result.error.message
-      }`
+      `the public session projection does not satisfy the shared runtime contract: ${result.error.message}`
     );
   }
 
-  if (JSON.stringify(snapshot).includes("answerKey")) {
-    issues.push("the public demo snapshot contains the private answer key.");
+  if (JSON.stringify(sampleActiveProjection).includes("answerKey")) {
+    issues.push(
+      "the public session projection contains the private answer key."
+    );
   }
 
   return issues;
@@ -266,7 +293,7 @@ const checkPublicContract = async (): Promise<string[]> => {
 const files = await listSourceFiles(sourceRoot);
 const issues = [
   ...(await checkSourceStructure(files)),
-  ...(await checkPublicContract()),
+  ...checkPublicContract(),
 ];
 
 if (issues.length > 0) {

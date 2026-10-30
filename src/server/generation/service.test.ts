@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { getDemoSession } from "@/server/demo/policy";
 import { demoSeed } from "@/server/seed-data";
+import { parseTenantId } from "@/server/identity/identifiers";
+import {
+  syntheticLearnerActor,
+  syntheticTeacherActor,
+} from "@/server/identity/test-actors";
 
 import { createSeededPersistence } from "../persistence/seeded";
 import {
@@ -17,6 +21,7 @@ import {
 import { createGenerationRequestHash } from "./types";
 import type { LessonGenerationRecord } from "./types";
 import type { LessonDraftProvider } from "./provider";
+import type { TeacherActor } from "@/server/identity/types";
 
 const validRequestHash = createGenerationRequestHash({
   prompt: "equivalent fractions for grade 4",
@@ -35,9 +40,13 @@ const validInput = {
   idempotencyKey: "request-equivalent-fractions-1",
 };
 
+const ownerTeacherActor = syntheticTeacherActor({
+  tenantId: parseTenantId(demoSeed.tenant.id),
+});
+
 const teacherCommand = (input: Record<string, unknown> = validInput) => {
   return {
-    session: getDemoSession("teacher"),
+    actor: ownerTeacherActor,
     input,
   };
 };
@@ -56,7 +65,7 @@ const generatingRecord = (
   return {
     requestId,
     tenantId: demoSeed.tenant.id,
-    teacherId: "identity_demo_teacher",
+    teacherId: ownerTeacherActor.actorId,
     input: {
       prompt: validInput.prompt,
       grade: validInput.grade,
@@ -506,7 +515,7 @@ describe("lesson generation service", () => {
     const staleRecord: LessonGenerationRecord = {
       requestId: "draft_req_stale_claim",
       tenantId: demoSeed.tenant.id,
-      teacherId: "identity_demo_teacher",
+      teacherId: ownerTeacherActor.actorId,
       input: {
         prompt: validInput.prompt,
         grade: validInput.grade,
@@ -570,7 +579,7 @@ describe("lesson generation service", () => {
     const staleRecord: LessonGenerationRecord = {
       requestId: "draft_req_cas_loser",
       tenantId: demoSeed.tenant.id,
-      teacherId: "identity_demo_teacher",
+      teacherId: ownerTeacherActor.actorId,
       input: {
         prompt: validInput.prompt,
         grade: validInput.grade,
@@ -944,7 +953,7 @@ describe("lesson generation service", () => {
     expect(result.record.attempts[0]?.provenance).toStrictEqual(provenance);
   });
 
-  it("rejects students, cross-tenant sessions, invalid metadata, and client provider settings", async () => {
+  it("rejects a learner actor and invalid metadata for generation", async () => {
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
@@ -952,20 +961,10 @@ describe("lesson generation service", () => {
 
     await expect(
       service.generate({
-        session: getDemoSession("student"),
+        actor: syntheticLearnerActor() as unknown as TeacherActor,
         input: validInput,
       })
-    ).rejects.toThrow("Only a seeded teacher can generate lesson drafts.");
-
-    await expect(
-      service.generate({
-        session: {
-          ...getDemoSession("teacher"),
-          tenantId: "tenant_other_school",
-        },
-        input: validInput,
-      })
-    ).rejects.toThrow("Tenant access denied.");
+    ).rejects.toThrow("Only a verified teacher can generate lesson drafts.");
 
     expect(() => normalizeGenerationInput({ ...validInput, grade: 9 })).toThrow(
       "Generation input is invalid."

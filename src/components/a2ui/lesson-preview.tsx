@@ -101,7 +101,6 @@ const usePreviewStream = (requestId: string, retryToken: number) => {
     }, PREVIEW_STREAM_TIMEOUT_MS);
 
     const url = new URL("/api/a2ui/preview", window.location.origin);
-    url.searchParams.set("role", "teacher");
     url.searchParams.set("requestId", requestId);
     url.searchParams.set("catalogVersion", A2UI_CATALOG_VERSION);
 

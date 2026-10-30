@@ -1,10 +1,11 @@
 import {
   ArrowRight,
-  ArrowUpRight,
   Check,
   EyeOff,
   LockKeyhole,
+  LogIn,
   ShieldCheck,
+  UserPlus,
 } from "lucide-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
@@ -34,13 +35,21 @@ const TeacherHome = () => {
               <span className="brand-subtitle">lessons that land</span>
             </span>
           </Link>
-          <Link
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-            to="/demo/$role"
-            params={{ role: "teacher" }}
-          >
-            Draft a lesson
-          </Link>
+          <div className="hero-actions site-header__actions">
+            <Link
+              className={cn(buttonVariants({ size: "sm" }), "min-h-9")}
+              to="/login"
+            >
+              <LogIn aria-hidden="true" />
+              Sign in
+            </Link>
+            <Link
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+              to="/sign-up"
+            >
+              Create account
+            </Link>
+          </div>
         </header>
 
         <section className="page-grid page-grid--hero">
@@ -56,10 +65,9 @@ const TeacherHome = () => {
             <div className="hero-actions">
               <Link
                 className={cn(buttonVariants({ size: "lg" }), "cta-primary")}
-                to="/demo/$role"
-                params={{ role: "teacher" }}
+                to="/login"
               >
-                Draft a lesson
+                Sign in
                 <ArrowRight aria-hidden="true" />
               </Link>
               <Link
@@ -67,12 +75,18 @@ const TeacherHome = () => {
                   buttonVariants({ variant: "outline", size: "lg" }),
                   "min-h-12"
                 )}
-                to="/demo/$role"
-                params={{ role: "student" }}
+                to="/sign-up"
               >
-                Watch a student solve
+                <UserPlus aria-hidden="true" />
+                Create a teacher account
               </Link>
             </div>
+            <p className="hero-signin-note">
+              Already signed in?{" "}
+              <Link className="text-link" to="/workspace">
+                Open your workspace
+              </Link>
+            </p>
           </div>
 
           <RevealPreview />
@@ -129,44 +143,6 @@ const TeacherHome = () => {
         </section>
 
         <section
-          className="demo-entry reveal-in"
-          aria-labelledby="demo-entry-heading"
-        >
-          <div className="demo-entry__head">
-            <h2 id="demo-entry-heading">Try the seeded demo</h2>
-            <p className="demo-entry__note">
-              Synthetic identities. No real students.
-            </p>
-          </div>
-          <div className="demo-entry__grid">
-            <Link
-              className="demo-entry__card demo-entry__card--teacher"
-              to="/demo/$role"
-              params={{ role: "teacher" }}
-            >
-              <span className="demo-entry__role">Teacher</span>
-              <span className="demo-entry__name">Maya Hassan</span>
-              <span className="demo-entry__desc">
-                Compose a prompt and approve the pack
-              </span>
-              <ArrowUpRight className="demo-entry__arrow" aria-hidden="true" />
-            </Link>
-            <Link
-              className="demo-entry__card demo-entry__card--student"
-              to="/demo/$role"
-              params={{ role: "student" }}
-            >
-              <span className="demo-entry__role">Student</span>
-              <span className="demo-entry__name">Omar Nabil</span>
-              <span className="demo-entry__desc">
-                Solve a problem and watch the reveal
-              </span>
-              <ArrowUpRight className="demo-entry__arrow" aria-hidden="true" />
-            </Link>
-          </div>
-        </section>
-
-        <section
           className="cta-final reveal-in"
           aria-labelledby="cta-final-heading"
         >
@@ -177,10 +153,9 @@ const TeacherHome = () => {
             </p>
             <Link
               className={cn(buttonVariants({ size: "lg" }), "cta-primary")}
-              to="/demo/$role"
-              params={{ role: "teacher" }}
+              to="/sign-up"
             >
-              Draft a lesson
+              Create a teacher account
               <ArrowRight aria-hidden="true" />
             </Link>
           </div>
@@ -202,7 +177,7 @@ const TeacherHome = () => {
             </a>
           </nav>
           <p className="footer-note">
-            Synthetic demo data only. Built with Codex and GPT-5.6.
+            Synthetic fixture data only. Built with Codex and GPT-5.6.
           </p>
         </footer>
       </div>
@@ -258,7 +233,7 @@ const RevealPreview = () => {
       <p className="reveal__why">Different names, same amount.</p>
 
       <figcaption className="reveal__caption">
-        Illustration of the seeded demo. Synthetic data only.
+        Illustration of the seeded curriculum. Synthetic data only.
       </figcaption>
     </figure>
   );

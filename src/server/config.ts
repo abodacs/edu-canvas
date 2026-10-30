@@ -5,6 +5,7 @@ const environmentValues = ["development", "preview", "production"] as const;
 export type ServerEnvironment = (typeof environmentValues)[number];
 export type PersistenceMode = "seeded-demo" | "postgres";
 export type PostgresPersistenceAdapter = "postgres" | "drizzle";
+export type AuthProviderKind = "deterministic" | "supabase";
 
 interface ConfigIssueCodes {
   INVALID_APP_ENV: true;
@@ -18,6 +19,12 @@ interface ConfigIssueCodes {
   INVALID_OPENAI_BASE_URL: true;
   INVALID_OPENAI_TIMEOUT_MS: true;
   REAL_DATA_DISABLED: true;
+  INVALID_AUTH_PROVIDER: true;
+  INVALID_PUBLIC_ORIGIN: true;
+  INVALID_SESSION_SECRET: true;
+  INVALID_CREDENTIAL_KEY: true;
+  INVALID_SUPABASE_URL: true;
+  AUTH_CONFIG_REQUIRED: true;
 }
 
 export type ConfigIssueCode = keyof ConfigIssueCodes;
@@ -26,6 +33,17 @@ export interface ConfigIssue {
   code: ConfigIssueCode;
   field: string;
   message: string;
+}
+
+export interface AuthConfig {
+  provider: AuthProviderKind;
+  publicOrigin?: string;
+  sessionSecret?: string;
+  credentialKey?: string;
+  credentialKeyVersion: string;
+  supabaseUrl?: string;
+  supabaseAnonKey?: string;
+  supabaseServiceRoleKey?: string;
 }
 
 export interface ServerConfig {
@@ -40,6 +58,7 @@ export interface ServerConfig {
   openAiModel: string;
   openAiBaseUrl: string;
   openAiTimeoutMs: number;
+  auth: AuthConfig;
   issues: readonly ConfigIssue[];
 }
 
@@ -92,6 +111,13 @@ const openAiBaseUrlSchema = z.string().refine((value) => {
   const url = parseUrl(value);
   return url !== null && isAllowedOpenAiBaseUrl(url);
 }, "OPENAI_BASE_URL must use HTTPS, or HTTP for a local loopback test server.");
+
+// The provider receives a password and a service-role key, so a cleartext URL
+// would expose both to an on-path observer and could point at any host.
+const supabaseUrlSchema = z.string().refine((value) => {
+  const url = parseUrl(value);
+  return url !== null && isAllowedOpenAiBaseUrl(url);
+}, "SUPABASE_URL must use HTTPS, or HTTP for a local loopback development stack.");
 
 const parseBoolean = (
   value: string | undefined,
@@ -305,6 +331,197 @@ const readOpenAiSettings = (
   };
 };
 
+const authProviderValues = ["deterministic", "supabase"] as const;
+const developmentPublicOrigin = "http://localhost:3000";
+const developmentSessionSecret =
+  "edu-canvas-development-only-session-secret-0000";
+const developmentCredentialKey = "ZWR1LWNhbnZhcy1kZXYta2V5LTAwMDAwMDAwMDAwMDA=";
+
+const readAuthProvider = (
+  environment: Record<string, string | undefined>,
+  appEnvironment: ServerEnvironment,
+  issues: ConfigIssue[]
+): AuthProviderKind => {
+  const isDevelopment = appEnvironment === "development";
+  const requested = environment.AUTH_PROVIDER?.trim();
+  if (requested === undefined || requested === "") {
+    return isDevelopment ? "deterministic" : "supabase";
+  }
+  if (!(authProviderValues as readonly string[]).includes(requested)) {
+    pushIssue(
+      issues,
+      "INVALID_AUTH_PROVIDER",
+      "AUTH_PROVIDER",
+      "AUTH_PROVIDER must be deterministic or supabase."
+    );
+    return "supabase";
+  }
+  // The deterministic provider accepts credentials committed to this repository.
+  // It must never authenticate a deployed request, so the gate lives here rather
+  // than in a comment on the factory.
+  if (requested === "deterministic" && !isDevelopment) {
+    pushIssue(
+      issues,
+      "INVALID_AUTH_PROVIDER",
+      "AUTH_PROVIDER",
+      "AUTH_PROVIDER=deterministic is available only when APP_ENV=development."
+    );
+    return "supabase";
+  }
+  return requested as AuthProviderKind;
+};
+
+const readPublicOrigin = (
+  environment: Record<string, string | undefined>,
+  isDevelopment: boolean,
+  issues: ConfigIssue[]
+): string | undefined => {
+  const publicOrigin =
+    environment.AUTH_PUBLIC_ORIGIN?.trim() ||
+    (isDevelopment ? developmentPublicOrigin : undefined);
+  if (publicOrigin !== undefined && parseUrl(publicOrigin) === null) {
+    pushIssue(
+      issues,
+      "INVALID_PUBLIC_ORIGIN",
+      "AUTH_PUBLIC_ORIGIN",
+      "AUTH_PUBLIC_ORIGIN must be an absolute URL."
+    );
+  }
+  return publicOrigin;
+};
+
+const readSessionSecret = (
+  environment: Record<string, string | undefined>,
+  isDevelopment: boolean,
+  issues: ConfigIssue[]
+): string | undefined => {
+  const sessionSecret =
+    environment.AUTH_SESSION_SECRET?.trim() ||
+    (isDevelopment ? developmentSessionSecret : undefined);
+  if (sessionSecret !== undefined && sessionSecret.length < 32) {
+    pushIssue(
+      issues,
+      "INVALID_SESSION_SECRET",
+      "AUTH_SESSION_SECRET",
+      "AUTH_SESSION_SECRET must be at least 32 characters."
+    );
+  }
+  return sessionSecret;
+};
+
+const base64ByteLength = (value: string): number => {
+  try {
+    return Uint8Array.fromBase64(value).length;
+  } catch {
+    return 0;
+  }
+};
+
+const readCredentialKey = (
+  environment: Record<string, string | undefined>,
+  isDevelopment: boolean,
+  issues: ConfigIssue[]
+): string | undefined => {
+  const credentialKey =
+    environment.AUTH_CREDENTIAL_KEY?.trim() ||
+    (isDevelopment ? developmentCredentialKey : undefined);
+  if (credentialKey !== undefined && base64ByteLength(credentialKey) !== 32) {
+    pushIssue(
+      issues,
+      "INVALID_CREDENTIAL_KEY",
+      "AUTH_CREDENTIAL_KEY",
+      "AUTH_CREDENTIAL_KEY must be a base64-encoded 32-byte key."
+    );
+  }
+  return credentialKey;
+};
+
+interface SupabaseSettings {
+  readonly supabaseUrl: string | undefined;
+  readonly supabaseAnonKey: string | undefined;
+  readonly supabaseServiceRoleKey: string | undefined;
+}
+
+const readSupabaseSettings = (
+  environment: Record<string, string | undefined>,
+  issues: ConfigIssue[]
+): SupabaseSettings => {
+  const supabaseUrl = environment.SUPABASE_URL?.trim() || undefined;
+  const supabaseAnonKey = environment.SUPABASE_ANON_KEY?.trim() || undefined;
+  const supabaseServiceRoleKey =
+    environment.SUPABASE_SERVICE_ROLE_KEY?.trim() || undefined;
+  if (
+    supabaseUrl !== undefined &&
+    !supabaseUrlSchema.safeParse(supabaseUrl).success
+  ) {
+    pushIssue(
+      issues,
+      "INVALID_SUPABASE_URL",
+      "SUPABASE_URL",
+      "SUPABASE_URL must be an absolute HTTPS URL, or loopback HTTP."
+    );
+  }
+  return { supabaseUrl, supabaseAnonKey, supabaseServiceRoleKey };
+};
+
+const readAuthConfig = (
+  environment: Record<string, string | undefined>,
+  appEnvironment: ServerEnvironment,
+  issues: ConfigIssue[]
+): AuthConfig => {
+  const isDevelopment = appEnvironment === "development";
+  const provider = readAuthProvider(environment, appEnvironment, issues);
+  const publicOrigin = readPublicOrigin(environment, isDevelopment, issues);
+  const sessionSecret = readSessionSecret(environment, isDevelopment, issues);
+  const credentialKey = readCredentialKey(environment, isDevelopment, issues);
+  // The cipher frames a payload as `${version}:${iv}:${tag}:${body}`, so a
+  // version containing the separator would make every session unreadable.
+  const credentialKeyVersion =
+    environment.AUTH_CREDENTIAL_KEY_VERSION?.trim() || "1";
+  if (!/^[A-Za-z0-9_-]{1,32}$/u.test(credentialKeyVersion)) {
+    pushIssue(
+      issues,
+      "INVALID_CREDENTIAL_KEY",
+      "AUTH_CREDENTIAL_KEY_VERSION",
+      "AUTH_CREDENTIAL_KEY_VERSION must be 1-32 letters, digits, hyphens, or underscores."
+    );
+  }
+  const { supabaseUrl, supabaseAnonKey, supabaseServiceRoleKey } =
+    readSupabaseSettings(environment, issues);
+
+  if (!isDevelopment && (!publicOrigin || !sessionSecret || !credentialKey)) {
+    pushIssue(
+      issues,
+      "AUTH_CONFIG_REQUIRED",
+      "AUTH_PROVIDER",
+      "Set AUTH_PUBLIC_ORIGIN, AUTH_SESSION_SECRET, and AUTH_CREDENTIAL_KEY outside development."
+    );
+  }
+
+  if (
+    provider === "supabase" &&
+    (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey)
+  ) {
+    pushIssue(
+      issues,
+      "AUTH_CONFIG_REQUIRED",
+      "SUPABASE_URL",
+      "Set SUPABASE_URL, SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY for the Supabase provider."
+    );
+  }
+
+  return {
+    provider,
+    credentialKeyVersion,
+    ...(publicOrigin && { publicOrigin }),
+    ...(sessionSecret && { sessionSecret }),
+    ...(credentialKey && { credentialKey }),
+    ...(supabaseUrl && { supabaseUrl }),
+    ...(supabaseAnonKey && { supabaseAnonKey }),
+    ...(supabaseServiceRoleKey && { supabaseServiceRoleKey }),
+  };
+};
+
 export const readServerConfig = (
   environment: Record<string, string | undefined> = process.env
 ): ServerConfig => {
@@ -315,6 +532,7 @@ export const readServerConfig = (
   const persistenceAdapter = readPersistenceAdapter(environment, issues);
   const sentryDsn = readSentryDsn(environment, issues);
   const openAi = readOpenAiSettings(environment, isDemoMode, issues);
+  const auth = readAuthConfig(environment, appEnvironment, issues);
   const { syntheticDataOnly, databaseUrl } = databaseConfig;
 
   if (!isDemoMode && !databaseUrl) {
@@ -338,6 +556,7 @@ export const readServerConfig = (
     openAiModel: openAi.model,
     openAiBaseUrl: openAi.baseUrl,
     openAiTimeoutMs: openAi.timeoutMs,
+    auth,
     issues,
   };
 };
@@ -349,6 +568,12 @@ export const safeConfigSummary = (config: ServerConfig) => {
     syntheticDataOnly: config.syntheticDataOnly,
     persistence: config.mode,
     provider: { timeoutMs: config.openAiTimeoutMs },
+    auth: {
+      provider: config.auth.provider,
+      publicOrigin: config.auth.publicOrigin ? "configured" : "missing",
+      sessionSecret: config.auth.sessionSecret ? "configured" : "missing",
+      credentialKey: config.auth.credentialKey ? "configured" : "missing",
+    },
     observability: {
       sentry: config.sentryDsn ? "configured" : "structured-log-only",
     },

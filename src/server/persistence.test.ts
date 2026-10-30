@@ -19,6 +19,12 @@ describe("foundation persistence boundary", () => {
       DEMO_MODE: "false",
       DATABASE_URL: "not-a-url",
       OPENAI_API_KEY: "test-server-key",
+      AUTH_PUBLIC_ORIGIN: "https://app.example.com",
+      AUTH_SESSION_SECRET: "a-session-secret-that-is-long-enough",
+      AUTH_CREDENTIAL_KEY: "ZWR1LWNhbnZhcy1kZXYta2V5LTAwMDAwMDAwMDAwMDA=",
+      SUPABASE_URL: "https://project.supabase.co",
+      SUPABASE_ANON_KEY: "synthetic-anon-key",
+      SUPABASE_SERVICE_ROLE_KEY: "synthetic-service-role-key",
     });
 
     expect(() =>
@@ -51,6 +57,13 @@ describe("foundation persistence boundary", () => {
       openAiModel: "gpt-5.6",
       openAiBaseUrl: "https://api.openai.com/v1",
       openAiTimeoutMs: 100_000,
+      auth: {
+        provider: "supabase",
+        publicOrigin: "https://app.example.com",
+        sessionSecret: "a-session-secret-that-is-long-enough",
+        credentialKey: Uint8Array.from({ length: 32 }, () => 1).toBase64(),
+        credentialKeyVersion: "1",
+      },
       issues: [],
     };
 

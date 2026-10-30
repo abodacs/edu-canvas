@@ -1,207 +1,42 @@
 import {
-  ArrowLeft,
   ArrowRight,
-  ArrowUpRight,
   BookOpen,
   Check,
-  Database,
   Globe2,
   Layers3,
-  LockKeyhole,
-  Network,
   ShieldCheck,
   Sparkles,
   WandSparkles,
 } from "lucide-react";
-import { createFileRoute, Link } from "@tanstack/react-router";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef, useState } from "react";
 
+import { readResponseJson } from "@/lib/http";
 import { cn } from "@/lib/utilities";
 import { LessonPreview } from "@/components/a2ui/lesson-preview";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { isDemoRole } from "@/shared/demo-contract";
-import {
-  generateLessonDraft,
-  getDemoSnapshot,
-} from "@/server/demo/server-function";
-import type { PublicGenerationResult } from "@/shared/generation-contract";
+import { csrfHeaderName } from "@/shared/identity-contract";
+import { publicGenerationResultSchema } from "@/shared/generation-contract";
+import type {
+  LessonGenerationInput,
+  PublicGenerationResult,
+} from "@/shared/generation-contract";
+
 import type { SyntheticEvent } from "react";
 
-const DemoPerspective = () => {
-  const { session, environment, curriculum, seededCounts } =
-    Route.useLoaderData();
-  const isTeacher = session.role === "teacher";
-
-  return (
-    <main
-      className={isTeacher ? "app-shell app-shell--teacher" : "app-shell"}
-      aria-labelledby={isTeacher ? "generation-heading" : "demo-title"}
-    >
-      <div
-        className={isTeacher ? "page-frame page-frame--teacher" : "page-frame"}
-      >
-        {isTeacher ? (
-          <>
-            <TeacherStudioHeader />
-            <TeacherLessonComposer standardId={curriculum.id} />
-          </>
-        ) : (
-          <>
-            <header className="site-header">
-              <Link className="text-link" to="/">
-                <ArrowLeft aria-hidden="true" /> Back to foundation
-              </Link>
-              <Badge variant="secondary">Synthetic demo</Badge>
-            </header>
-
-            <section className="demo-intro">
-              <div>
-                <p className="eyebrow">{session.role} perspective</p>
-                <h1 id="demo-title">Welcome, {session.displayName}.</h1>
-                <p className="hero-description">
-                  You are viewing the isolated{" "}
-                  <strong>{session.tenantName}</strong> tenant. This foundation
-                  exposes only the capabilities intended for this seeded role.
-                </p>
-              </div>
-              <div className="session-stamp">
-                <span>Environment</span>
-                <strong>{environment.appEnv}</strong>
-                <span>Persistence</span>
-                <strong>{environment.persistence}</strong>
-              </div>
-            </section>
-
-            <section className="page-grid page-grid--details">
-              <Card>
-                <CardHeader>
-                  <CardTitle>What this identity can see</CardTitle>
-                  <CardDescription>
-                    Capabilities are resolved on the server.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="capability-list">
-                    {session.capabilities.map((capability) => {
-                      return (
-                        <li key={capability}>
-                          <ShieldCheck aria-hidden="true" />
-                          {capability.replaceAll("_", " ")}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  <p className="security-note">
-                    <LockKeyhole aria-hidden="true" /> The private answer key is
-                    not part of this response or the client bundle.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Seeded classroom</CardTitle>
-                  <CardDescription>{curriculum.name}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <dl className="data-list">
-                    <div>
-                      <dt>Standard</dt>
-                      <dd>{curriculum.id}</dd>
-                    </div>
-                    <div>
-                      <dt>Graph version</dt>
-                      <dd>{curriculum.graphVersion}</dd>
-                    </div>
-                    <div>
-                      <dt>Tenant</dt>
-                      <dd>{session.tenantId}</dd>
-                    </div>
-                  </dl>
-                </CardContent>
-              </Card>
-            </section>
-
-            <section
-              className="fixture-section"
-              aria-labelledby="fixture-heading"
-            >
-              <div className="section-heading">
-                <div>
-                  <p className="eyebrow">Persistence proof</p>
-                  <h2 id="fixture-heading">
-                    The next slices have somewhere stable to land.
-                  </h2>
-                </div>
-                <Database aria-hidden="true" />
-              </div>
-              <div className="fixture-grid">
-                {Object.entries(seededCounts).map(([label, count]) => {
-                  return (
-                    <div className="fixture-stat" key={label}>
-                      <strong>{String(count)}</strong>
-                      <span>
-                        {label.replaceAll(
-                          /[A-Z]/gu,
-                          (letter) => ` ${letter.toLowerCase()}`
-                        )}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-              <p className="supporting-note">
-                <Network aria-hidden="true" /> This seeded view stays
-                tenant-scoped; generated content remains a reviewable draft
-                until a teacher acts.
-              </p>
-            </section>
-          </>
-        )}
-      </div>
-    </main>
-  );
-};
-
-const TeacherStudioHeader = () => {
-  return (
-    <header className="studio-nav">
-      <Link
-        className="studio-brand"
-        to="/"
-        aria-label="Back to Edu-Canvas home"
-      >
-        <span className="studio-brand__mark" aria-hidden="true">
-          EC
-        </span>
-        <span className="studio-brand__name">Edu-Canvas</span>
-      </Link>
-      <div className="studio-nav__actions">
-        <span className="studio-nav__state">
-          <span className="studio-nav__dot" aria-hidden="true" />
-          Teacher studio
-        </span>
-        <Link className="studio-nav__exit" to="/">
-          Exit <ArrowUpRight aria-hidden="true" />
-        </Link>
-      </div>
-    </header>
-  );
-};
-
-interface LessonComposerProperties {
-  readonly standardId: string;
+interface TeacherStudioProperties {
+  readonly csrf: string;
+  readonly generation: string;
+  readonly onUnauthorized: () => void;
 }
+
+/**
+The seeded synthetic curriculum every draft is generated against. The identity session projection carries no curriculum id, so the studio pins the classroom's current standard here until a teacher can choose one.
+*/
+const DEFAULT_STANDARD_ID = "standard_ccss_4_nf_a_01";
+
+const GENERATE_ENDPOINT = "/api/lessons/generate";
 
 const GRADES = ["3", "4", "5", "6"] as const;
 
@@ -241,6 +76,19 @@ const guidancePanels = [
   },
 ] as const;
 
+const DIFFICULTY_SIGNALS: readonly [string, PromptContext["difficulty"]][] = [
+  ["challenge", "stretch"],
+  ["support", "support"],
+  ["scaffold", "support"],
+];
+
+const getDifficulty = (lowerPrompt: string): PromptContext["difficulty"] => {
+  return (
+    DIFFICULTY_SIGNALS.find(([signal]) => lowerPrompt.includes(signal))?.[1] ??
+    "on-level"
+  );
+};
+
 const getPromptContext = (prompt: string): PromptContext => {
   const gradeMatch = prompt.match(
     /\b(?:grade|year|class)\s*(?<grade>[3-6])\b/iu
@@ -255,23 +103,10 @@ const getPromptContext = (prompt: string): PromptContext => {
   };
 };
 
-const DIFFICULTY_SIGNALS: readonly [string, PromptContext["difficulty"]][] = [
-  ["challenge", "stretch"],
-  ["support", "support"],
-  ["scaffold", "support"],
-];
-
-const getDifficulty = (lowerPrompt: string): PromptContext["difficulty"] => {
-  return (
-    DIFFICULTY_SIGNALS.find(([signal]) => lowerPrompt.includes(signal))?.[1] ??
-    "on-level"
-  );
-};
-
 const READY_FOR_REVIEW_STATE = "ready-for-review";
 
 const getDisplayStandardId = (standardId: string) =>
-  standardId === "standard_ccss_4_nf_a_01" ? "4.NF.A.1" : standardId;
+  standardId === DEFAULT_STANDARD_ID ? "4.NF.A.1" : standardId;
 
 const getResultTitle = (state: PublicGenerationResult["state"]) => {
   switch (state) {
@@ -307,6 +142,9 @@ const TEACHER_REVIEW_DIAGNOSTIC_CODES: ReadonlySet<string> = new Set([
   "CURRICULUM_CONTEXT_MISMATCH",
   "CURRICULUM_GRAPH_VERSION_UNSUPPORTED",
 ]);
+
+const isTeacherReviewDiagnostic = (code: string): boolean =>
+  TEACHER_REVIEW_DIAGNOSTIC_CODES.has(code);
 
 const STATUS_ANNOUNCEMENTS: Partial<
   Record<PublicGenerationResult["state"], string>
@@ -372,8 +210,101 @@ const getDiagnosticLabel = (
     : DIAGNOSTIC_SEVERITY_LABELS[diagnostic.severity];
 };
 
-const isTeacherReviewDiagnostic = (code: string): boolean =>
-  TEACHER_REVIEW_DIAGNOSTIC_CODES.has(code);
+const ERROR_COPY = {
+  rateLimited: "Too many requests right now. Wait a moment and try again.",
+  unavailable:
+    "Lesson generation is temporarily unavailable. Try again in a moment.",
+  forbidden: "You do not have access to generate lessons for this classroom.",
+  generic: "The draft could not be generated. Check the request and try again.",
+} as const;
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const readErrorCode = (payload: unknown): string | null => {
+  if (!isRecord(payload)) {
+    return null;
+  }
+
+  const { code } = payload;
+  return typeof code === "string" ? code : null;
+};
+
+interface GenerationFailure {
+  readonly unauthorized: boolean;
+  readonly message: string;
+}
+
+const FORBIDDEN_ERROR_CODES: ReadonlySet<string> = new Set([
+  "FORBIDDEN",
+  "CSRF_REJECTED",
+  "ACCESS_NOT_PROVISIONED",
+]);
+
+const isForbiddenFailure = (status: number, code: string | null): boolean =>
+  status === 403 || (code !== null && FORBIDDEN_ERROR_CODES.has(code));
+
+const resolveFailure = (
+  status: number,
+  code: string | null
+): GenerationFailure => {
+  if (status === 401 || code === "UNAUTHENTICATED") {
+    return { unauthorized: true, message: "" };
+  }
+
+  if (status === 429 || code === "RATE_LIMITED") {
+    return { unauthorized: false, message: ERROR_COPY.rateLimited };
+  }
+
+  if (status === 503 || code === "AUTH_UNAVAILABLE") {
+    return { unauthorized: false, message: ERROR_COPY.unavailable };
+  }
+
+  return {
+    unauthorized: false,
+    message: isForbiddenFailure(status, code)
+      ? ERROR_COPY.forbidden
+      : ERROR_COPY.generic,
+  };
+};
+
+type GenerationAttempt =
+  | { readonly kind: "result"; readonly result: PublicGenerationResult }
+  | { readonly kind: "unauthorized" }
+  | { readonly kind: "error"; readonly message: string };
+
+const postGenerationRequest = async (
+  input: LessonGenerationInput,
+  csrf: string
+): Promise<GenerationAttempt> => {
+  let response: Response;
+  try {
+    response = await fetch(GENERATE_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        [csrfHeaderName]: csrf,
+      },
+      body: JSON.stringify(input),
+    });
+  } catch {
+    return { kind: "error", message: ERROR_COPY.generic };
+  }
+
+  const payload = await readResponseJson(response);
+
+  if (!response.ok) {
+    const failure = resolveFailure(response.status, readErrorCode(payload));
+    return failure.unauthorized
+      ? { kind: "unauthorized" }
+      : { kind: "error", message: failure.message };
+  }
+
+  const parsed = publicGenerationResultSchema.safeParse(payload);
+  return parsed.success
+    ? { kind: "result", result: parsed.data }
+    : { kind: "error", message: ERROR_COPY.generic };
+};
 
 const PromptSignals = ({
   context,
@@ -399,237 +330,6 @@ const PromptSignals = ({
         {context.language === "ar" ? "Arabic / RTL" : "English / LTR"}
       </span>
     </div>
-  );
-};
-
-const TeacherLessonComposer = ({ standardId }: LessonComposerProperties) => {
-  const [prompt, setPrompt] = useState("equivalent fractions for grade 4");
-  const requestKeyReference = useRef("");
-  const [result, setResult] = useState<PublicGenerationResult | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [requestError, setRequestError] = useState<string | null>(null);
-  const studioReference = useRef<HTMLElement>(null);
-  const context = getPromptContext(prompt);
-
-  useEffect(() => {
-    const root = studioReference.current;
-    if (!root || typeof window === "undefined") {
-      return () => {
-        // Nothing was animated, so there is nothing to clean up.
-      };
-    }
-
-    gsap.registerPlugin(ScrollTrigger);
-
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return () => {
-        // Nothing was animated, so there is nothing to clean up.
-      };
-    }
-
-    const animationContext = gsap.context(() => {
-      gsap.from(".insight-card", {
-        opacity: 0,
-        transform: "translate3d(0, 18px, 0)",
-        duration: 0.62,
-        ease: "expo.out",
-        stagger: 0.06,
-        scrollTrigger: {
-          trigger: ".insight-grid",
-          start: "top 80%",
-          once: true,
-        },
-      });
-
-      const guidance = root.querySelector<HTMLElement>(".teacher-guidance");
-      const rail = root.querySelector<HTMLElement>(".teacher-guidance__rail");
-
-      if (guidance && rail && window.matchMedia("(min-width: 60rem)").matches) {
-        ScrollTrigger.create({
-          trigger: guidance,
-          start: "top top+=96",
-          end: "bottom bottom-=64",
-          pin: rail,
-          pinSpacing: false,
-        });
-      }
-    }, root);
-
-    return () => animationContext.revert();
-  }, []);
-
-  const updateRequestKey = () => {
-    requestKeyReference.current = "";
-    setResult(null);
-    setRequestError(null);
-  };
-
-  const submitGeneration = async (
-    event: SyntheticEvent<HTMLFormElement>,
-    retryOfRequestId?: string
-  ) => {
-    event.preventDefault();
-    setIsGenerating(true);
-    setRequestError(null);
-
-    // Browser crypto has no UUIDv7, and this key needs uniqueness only.
-    const idempotencyKey = retryOfRequestId
-      ? crypto.randomUUID()
-      : requestKeyReference.current || crypto.randomUUID();
-    if (!retryOfRequestId) {
-      requestKeyReference.current = idempotencyKey;
-    }
-
-    const retryField = retryOfRequestId ? { retryOfRequestId } : {};
-
-    try {
-      const nextResult = await generateLessonDraft({
-        data: {
-          role: "teacher",
-          input: {
-            prompt,
-            grade: context.grade,
-            standardId,
-            language: context.language,
-            difficulty: context.difficulty,
-            idempotencyKey,
-            ...retryField,
-          },
-        },
-      });
-      setResult(nextResult);
-    } catch {
-      setRequestError(
-        "The draft could not be generated. Check the request and try again."
-      );
-    }
-    setIsGenerating(false);
-  };
-
-  return (
-    <section
-      ref={studioReference}
-      className="teacher-studio"
-      aria-labelledby="generation-heading"
-    >
-      <div className="teacher-hero">
-        <div className="teacher-hero__copy">
-          <p className="studio-kicker">
-            <span className="studio-kicker__line" aria-hidden="true" />A calmer
-            way to begin
-          </p>
-          <h1 id="generation-heading">
-            Make the idea{" "}
-            <span className="inline-fraction-art" aria-hidden="true">
-              <span>1</span>
-              <i />
-              <span>2</span>
-            </span>{" "}
-            click.
-          </h1>
-          <p className="teacher-hero__description">
-            Describe the learning moment in your own words. We will shape a
-            clear first draft, then you decide what is worth sharing.
-          </p>
-        </div>
-        <div className="teacher-hero__art" aria-hidden="true">
-          <div className="teacher-hero__art-image" />
-          <div className="fraction-orbit fraction-orbit--one">
-            <span>1</span>
-            <i />
-            <span>2</span>
-          </div>
-          <div className="fraction-orbit fraction-orbit--two">
-            <span>2</span>
-            <i />
-            <span>4</span>
-          </div>
-          <div className="teacher-hero__art-note">same whole, new view</div>
-        </div>
-      </div>
-
-      <form className="prompt-composer" onSubmit={submitGeneration}>
-        <div className="prompt-composer__heading">
-          <label htmlFor="lesson-prompt">What should students practice?</label>
-          <span>{prompt.length}/500</span>
-        </div>
-        <textarea
-          id="lesson-prompt"
-          name="prompt"
-          aria-label="What should students practice?"
-          required
-          maxLength={500}
-          rows={3}
-          value={prompt}
-          placeholder="e.g. equivalent fractions for grade 4"
-          onChange={(event) => {
-            setPrompt(event.target.value);
-            updateRequestKey();
-          }}
-        />
-        <div className="prompt-composer__bottom">
-          <PromptSignals context={context} standardId={standardId} />
-          <Button
-            type="submit"
-            size="lg"
-            className="prompt-composer__submit"
-            disabled={isGenerating || !prompt.trim()}
-          >
-            <WandSparkles aria-hidden="true" />
-            {isGenerating ? "Shaping the draft…" : "Create lesson"}
-            {isGenerating ? null : <ArrowRight aria-hidden="true" />}
-          </Button>
-        </div>
-      </form>
-
-      <div className="teacher-trust-line">
-        <ShieldCheck aria-hidden="true" />
-        <span>
-          Private draft first. You approve every version before students see it.
-        </span>
-      </div>
-
-      <TeacherGuidance
-        context={context}
-        prompt={prompt}
-        standardId={standardId}
-      />
-
-      <output
-        className="generation-status teacher-generation-status"
-        aria-live="polite"
-      >
-        {isGenerating ? (
-          <p className="status-pulse">
-            <span aria-hidden="true" /> Reading the idea, finding the cleanest
-            path…
-          </p>
-        ) : null}
-        {requestError ? (
-          <p className="generation-error">{requestError}</p>
-        ) : null}
-      </output>
-
-      {result ? (
-        <GenerationResult
-          result={result}
-          onRetry={(event) => {
-            submitGeneration(event, result.requestId);
-          }}
-        />
-      ) : (
-        <div className="teacher-action-band">
-          <div>
-            <p className="studio-kicker">Ready when you are</p>
-            <p>One sentence is enough to start a useful conversation.</p>
-          </div>
-          <span>
-            <Check aria-hidden="true" />
-            Nothing publishes automatically
-          </span>
-        </div>
-      )}
-    </section>
   );
 };
 
@@ -956,13 +656,295 @@ const GenerationResult = ({ result, onRetry }: GenerationResultProperties) => {
   );
 };
 
-export const Route = createFileRoute("/demo/$role")({
-  loader: ({ params }) => {
-    if (!isDemoRole(params.role)) {
-      throw new Error("Unknown seeded demo role.");
+interface TeacherLessonComposerProperties {
+  readonly csrf: string;
+  readonly generation: string;
+  readonly onUnauthorized: () => void;
+  readonly standardId: string;
+}
+
+const TeacherLessonComposer = ({
+  csrf,
+  generation,
+  onUnauthorized,
+  standardId,
+}: TeacherLessonComposerProperties) => {
+  const [prompt, setPrompt] = useState("equivalent fractions for grade 4");
+  const requestKeyReference = useRef("");
+  const submittingReference = useRef(false);
+  // Mirrors the live session generation so a response that lands after the
+  // session changed (sign-out, expiry, renewal) is discarded instead of shown.
+  const generationReference = useRef(generation);
+  const [result, setResult] = useState<PublicGenerationResult | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [requestError, setRequestError] = useState<string | null>(null);
+  const studioReference = useRef<HTMLElement>(null);
+  const context = getPromptContext(prompt);
+
+  useEffect(() => {
+    generationReference.current = generation;
+  }, [generation]);
+
+  useEffect(() => {
+    const root = studioReference.current;
+    if (!root || typeof window === "undefined") {
+      return () => {
+        // Nothing was animated, so there is nothing to clean up.
+      };
     }
 
-    return getDemoSnapshot({ data: { role: params.role } });
-  },
-  component: DemoPerspective,
-});
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return () => {
+        // Nothing was animated, so there is nothing to clean up.
+      };
+    }
+
+    const animationContext = gsap.context(() => {
+      gsap.from(".insight-card", {
+        opacity: 0,
+        transform: "translate3d(0, 18px, 0)",
+        duration: 0.62,
+        ease: "expo.out",
+        stagger: 0.06,
+        scrollTrigger: {
+          trigger: ".insight-grid",
+          start: "top 80%",
+          once: true,
+        },
+      });
+
+      const guidance = root.querySelector<HTMLElement>(".teacher-guidance");
+      const rail = root.querySelector<HTMLElement>(".teacher-guidance__rail");
+
+      if (guidance && rail && window.matchMedia("(min-width: 60rem)").matches) {
+        ScrollTrigger.create({
+          trigger: guidance,
+          start: "top top+=96",
+          end: "bottom bottom-=64",
+          pin: rail,
+          pinSpacing: false,
+        });
+      }
+    }, root);
+
+    return () => animationContext.revert();
+  }, []);
+
+  const updateRequestKey = () => {
+    requestKeyReference.current = "";
+    setResult(null);
+    setRequestError(null);
+  };
+
+  const submitGeneration = async (
+    event: SyntheticEvent<HTMLFormElement>,
+    retryOfRequestId?: string
+  ): Promise<void> => {
+    event.preventDefault();
+    if (submittingReference.current) {
+      return;
+    }
+    submittingReference.current = true;
+    setIsGenerating(true);
+    setRequestError(null);
+
+    const startedGeneration = generationReference.current;
+
+    // Browser crypto has no UUIDv7, and this key needs uniqueness only.
+    const idempotencyKey = retryOfRequestId
+      ? crypto.randomUUID()
+      : requestKeyReference.current || crypto.randomUUID();
+    if (!retryOfRequestId) {
+      requestKeyReference.current = idempotencyKey;
+    }
+
+    const input: LessonGenerationInput = {
+      prompt,
+      grade: context.grade,
+      standardId,
+      language: context.language,
+      difficulty: context.difficulty,
+      idempotencyKey,
+      ...(retryOfRequestId && { retryOfRequestId }),
+    };
+
+    const stopSubmitting = (): void => {
+      submittingReference.current = false;
+      setIsGenerating(false);
+    };
+
+    const attempt = await postGenerationRequest(input, csrf);
+
+    if (generationReference.current !== startedGeneration) {
+      // The session changed while this request was in flight; drop the result.
+      stopSubmitting();
+      return;
+    }
+
+    stopSubmitting();
+
+    switch (attempt.kind) {
+      case "result": {
+        setResult(attempt.result);
+        break;
+      }
+      case "unauthorized": {
+        setResult(null);
+        onUnauthorized();
+        break;
+      }
+      default: {
+        setResult(null);
+        setRequestError(attempt.message);
+      }
+    }
+  };
+
+  return (
+    <section
+      ref={studioReference}
+      className="teacher-studio"
+      aria-labelledby="generation-heading"
+    >
+      <div className="teacher-hero">
+        <div className="teacher-hero__copy">
+          <p className="studio-kicker">
+            <span className="studio-kicker__line" aria-hidden="true" />A calmer
+            way to begin
+          </p>
+          <h1 id="generation-heading">
+            Make the idea{" "}
+            <span className="inline-fraction-art" aria-hidden="true">
+              <span>1</span>
+              <i />
+              <span>2</span>
+            </span>{" "}
+            click.
+          </h1>
+          <p className="teacher-hero__description">
+            Describe the learning moment in your own words. We will shape a
+            clear first draft, then you decide what is worth sharing.
+          </p>
+        </div>
+        <div className="teacher-hero__art" aria-hidden="true">
+          <div className="teacher-hero__art-image" />
+          <div className="fraction-orbit fraction-orbit--one">
+            <span>1</span>
+            <i />
+            <span>2</span>
+          </div>
+          <div className="fraction-orbit fraction-orbit--two">
+            <span>2</span>
+            <i />
+            <span>4</span>
+          </div>
+          <div className="teacher-hero__art-note">same whole, new view</div>
+        </div>
+      </div>
+
+      <form className="prompt-composer" onSubmit={submitGeneration}>
+        <div className="prompt-composer__heading">
+          <label htmlFor="lesson-prompt">What should students practice?</label>
+          <span>{prompt.length}/500</span>
+        </div>
+        <textarea
+          id="lesson-prompt"
+          name="prompt"
+          aria-label="What should students practice?"
+          required
+          maxLength={500}
+          rows={3}
+          value={prompt}
+          placeholder="e.g. equivalent fractions for grade 4"
+          onChange={(event) => {
+            setPrompt(event.target.value);
+            updateRequestKey();
+          }}
+        />
+        <div className="prompt-composer__bottom">
+          <PromptSignals context={context} standardId={standardId} />
+          <Button
+            type="submit"
+            size="lg"
+            className="prompt-composer__submit"
+            disabled={isGenerating || !prompt.trim()}
+          >
+            <WandSparkles aria-hidden="true" />
+            {isGenerating ? "Shaping the draft…" : "Create lesson"}
+            {isGenerating ? null : <ArrowRight aria-hidden="true" />}
+          </Button>
+        </div>
+      </form>
+
+      <div className="teacher-trust-line">
+        <ShieldCheck aria-hidden="true" />
+        <span>
+          Private draft first. You approve every version before students see it.
+        </span>
+      </div>
+
+      <TeacherGuidance
+        context={context}
+        prompt={prompt}
+        standardId={standardId}
+      />
+
+      <output
+        className="generation-status teacher-generation-status"
+        aria-live="polite"
+      >
+        {isGenerating ? (
+          <p className="status-pulse">
+            <span aria-hidden="true" /> Reading the idea, finding the cleanest
+            path…
+          </p>
+        ) : null}
+        {requestError ? (
+          <p className="generation-error">{requestError}</p>
+        ) : null}
+      </output>
+
+      {result ? (
+        <GenerationResult
+          result={result}
+          onRetry={(event) => {
+            submitGeneration(event, result.requestId);
+          }}
+        />
+      ) : (
+        <div className="teacher-action-band">
+          <div>
+            <p className="studio-kicker">Ready when you are</p>
+            <p>One sentence is enough to start a useful conversation.</p>
+          </div>
+          <span>
+            <Check aria-hidden="true" />
+            Nothing publishes automatically
+          </span>
+        </div>
+      )}
+    </section>
+  );
+};
+
+/**
+The authenticated teacher studio. It renders the lesson composer against the
+session-bound HTTP seam; a `401` hands control back through `onUnauthorized` so
+the workspace route can hide private content.
+*/
+export const TeacherStudio = ({
+  csrf,
+  generation,
+  onUnauthorized,
+}: TeacherStudioProperties) => {
+  return (
+    <TeacherLessonComposer
+      csrf={csrf}
+      generation={generation}
+      onUnauthorized={onUnauthorized}
+      standardId={DEFAULT_STANDARD_ID}
+    />
+  );
+};

@@ -15,6 +15,34 @@
       "when": 1793145723640,
       "tag": "0001_foundation_behaviors",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793155846735,
+      "tag": "0002_identity",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793155861756,
+      "tag": "0003_identity_definer_functions",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793161012495,
+      "tag": "0004_identity_rls_deny_non_owner",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793194749394,
+      "tag": "0005_draft_ownership",
+      "breakpoints": true
     }
   ]
 }

@@ -1,56 +1,56 @@
 import { z } from "zod";
 
 import { A2UI_CATALOG_ID, A2UI_CATALOG_VERSION } from "@/shared/a2ui-contract";
-import { isDemoRole } from "@/shared/demo-contract";
 
-import { readServerConfig } from "../config";
-import { createFoundationPersistence } from "../persistence";
-import { assertTenantAccess, getDemoSession } from "../demo/policy";
+import { resolveTeacherActor } from "../identity/api.server";
+import { noStoreJson } from "../http.server";
 import { compileLessonPreview, LessonPreviewCompileError } from "./compiler";
 import { createPreviewSSEStream } from "./stream";
+
+import type { ServerConfig } from "../config";
+
+const previewUnavailableMessage =
+  "The preview is temporarily unavailable. Try again later.";
 
 const requestIdSchema = z
   .string()
   .trim()
   .regex(/^[A-Za-z0-9_-]{1,80}$/u);
 
-const jsonResponse = (payload: unknown, status = 200) => {
-  return Response.json(payload, {
-    status,
-    headers: {
-      "cache-control": "no-store",
-    },
-  });
-};
-
 const sseError = (code: string, message: string, status: number) =>
-  jsonResponse({ code, message }, status);
+  noStoreJson({ code, message }, status);
 
 const buildPreviewResponse = async ({
   config,
-  session,
   requestId,
+  tenantId,
+  actorId,
   signal,
 }: {
-  config: ReturnType<typeof readServerConfig>;
-  session: ReturnType<typeof getDemoSession>;
+  config: ServerConfig;
   requestId: string;
+  tenantId: string;
+  actorId: string;
   signal: AbortSignal | null;
 }): Promise<Response> => {
+  /* eslint-disable unicorn/single-line-block-comment-style -- Vite reads a dynamic import's chunkname only from a single-line block comment. */
+  const { createFoundationPersistence } = await import(
+    /* webpackChunkName: "foundation-persistence" */
+    "../persistence"
+  );
+  /* eslint-enable unicorn/single-line-block-comment-style */
   const record = await createFoundationPersistence(config).readGeneration(
-    session.tenantId,
+    tenantId,
     requestId
   );
 
-  if (!record || record.teacherId !== session.identityId) {
+  if (!record || record.teacherId !== actorId) {
     return sseError(
-      "PREVIEW_NOT_FOUND",
-      "That lesson draft is no longer available. Generate it again.",
-      404
+      "FORBIDDEN",
+      "You do not have access to this resource.",
+      403
     );
   }
-
-  assertTenantAccess(session, record.tenantId);
 
   if (record.state !== "ready-for-review" || !record.draft) {
     return sseError(
@@ -86,10 +86,6 @@ export const handleLessonPreviewRequest = async (
   request: Request
 ): Promise<Response> => {
   const url = new URL(request.url);
-  const role = url.searchParams.get("role");
-  if (!role || !isDemoRole(role)) {
-    return sseError("INVALID_ROLE", "This preview role is not available.", 400);
-  }
 
   const requestId = url.searchParams.get("requestId");
   const parsedRequestId = requestIdSchema.safeParse(requestId);
@@ -97,7 +93,7 @@ export const handleLessonPreviewRequest = async (
     return sseError(
       "INVALID_REQUEST_ID",
       "This preview request is not valid. Generate the draft again.",
-      400
+      422
     );
   }
 
@@ -111,29 +107,21 @@ export const handleLessonPreviewRequest = async (
     );
   }
 
-  const config = readServerConfig();
-  if (config.issues.length > 0) {
+  const resolved = await resolveTeacherActor(request);
+  if (!resolved.ok) {
     return sseError(
-      "PREVIEW_UNAVAILABLE",
-      "The preview is temporarily unavailable. Try again later.",
-      503
-    );
-  }
-
-  const session = getDemoSession(role);
-  if (session.role !== "teacher") {
-    return sseError(
-      "PREVIEW_FORBIDDEN",
-      "Only the seeded teacher can open lesson previews.",
-      403
+      resolved.error.code,
+      resolved.error.message,
+      resolved.error.status
     );
   }
 
   try {
     return await buildPreviewResponse({
-      config,
-      session,
+      config: resolved.dependencies.config,
       requestId: parsedRequestId.data,
+      tenantId: resolved.actor.tenantId,
+      actorId: resolved.actor.actorId,
       signal: request.signal,
     });
   } catch (error) {
@@ -143,10 +131,6 @@ export const handleLessonPreviewRequest = async (
           "This draft could not be rendered safely. Try generating it again.",
           422
         )
-      : sseError(
-          "PREVIEW_UNAVAILABLE",
-          "The preview is temporarily unavailable. Try again later.",
-          503
-        );
+      : sseError("PREVIEW_UNAVAILABLE", previewUnavailableMessage, 503);
   }
 };

@@ -1,10 +1,13 @@
 import { serverObservability } from "./observability.server";
 import { createDrizzlePersistence } from "./persistence/drizzle";
+import { createPostgresIdentityPersistence } from "./persistence/identity-postgres";
+import { createSeededIdentityPersistence } from "./persistence/identity-seeded";
 import { createPostgresPersistence } from "./persistence/postgres";
 import { createSeededPersistence } from "./persistence/seeded";
 
 import type { ServerConfig } from "./config";
 import type { GenerationPersistence } from "./generation/types";
+import type { IdentityPersistence } from "./identity/persistence-port";
 import type {
   FoundationPersistence,
   FoundationPersistenceOptions,
@@ -14,6 +17,38 @@ const seededGenerationStore = new Map<
   string,
   Parameters<GenerationPersistence["saveGeneration"]>[0]
 >();
+
+const seededDemoMode = "seeded-demo";
+
+const identityPersistenceCache = new Map<string, IdentityPersistence>();
+
+/**
+ * Identity persistence is a separate port from generation persistence: the identity boundary owns actors, bindings, memberships, and sessions, and the generation boundary owns drafts and attempts.
+ */
+export const createIdentityPersistence = (
+  config: ServerConfig,
+  options: FoundationPersistenceOptions = {}
+): IdentityPersistence => {
+  if (config.issues.length > 0) {
+    throw new Error("Cannot create identity persistence for invalid config.");
+  }
+
+  if (config.mode === seededDemoMode) {
+    const cached = identityPersistenceCache.get(seededDemoMode);
+    if (cached) {
+      return cached;
+    }
+    const created = createSeededIdentityPersistence(options);
+    identityPersistenceCache.set(seededDemoMode, created);
+    return created;
+  }
+
+  if (!config.databaseUrl) {
+    throw new Error("PostgreSQL identity persistence requires DATABASE_URL.");
+  }
+
+  return createPostgresIdentityPersistence(config.databaseUrl, options);
+};
 
 export const createFoundationPersistence = (
   config: ServerConfig,
@@ -33,7 +68,7 @@ export const createFoundationPersistence = (
     throw error;
   }
 
-  if (config.mode === "seeded-demo") {
+  if (config.mode === seededDemoMode) {
     return createSeededPersistence({
       generationStore: seededGenerationStore,
       observability,

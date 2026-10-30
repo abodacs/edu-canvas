@@ -276,7 +276,7 @@ h2 {
   inline-size: 1rem;
 }
 
-/* Shared with the seeded demo route. */
+/* Shared with the authenticated workspace studio. */
 .capability-list {
   display: grid;
   padding: 0;
@@ -609,81 +609,7 @@ h2 {
   font-weight: 700;
 }
 
-/* Landing: seeded demo entry. */
-.demo-entry {
-  margin-block-start: clamp(4.5rem, 10vw, 7.5rem);
-}
-
-.demo-entry__head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-block-end: 1.25rem;
-}
-
-.demo-entry__note {
-  margin: 0;
-  color: var(--muted-foreground);
-  font-size: 0.82rem;
-}
-
-.demo-entry__grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.demo-entry__card {
-  display: grid;
-  align-content: start;
-  padding: clamp(1.1rem, 2vw, 1.4rem);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--card);
-  gap: 0.3rem;
-  transition:
-    border-color 0.2s ease,
-    transform 0.2s ease;
-}
-
-.demo-entry__card:hover {
-  border-color: color-mix(in oklch, var(--primary) 45%, var(--border));
-  transform: translateY(-3px) scale(1.012);
-}
-
-.demo-entry__card--teacher {
-  border-color: color-mix(in oklch, var(--primary) 30%, var(--border));
-  background: color-mix(in oklch, var(--primary) 8%, var(--card));
-}
-
-.demo-entry__role {
-  color: var(--muted-foreground);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.demo-entry__name {
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.demo-entry__desc {
-  color: var(--muted-foreground);
-  font-size: 0.88rem;
-  line-height: 1.45;
-}
-
-.demo-entry__arrow {
-  block-size: 1.1rem;
-  color: var(--muted-foreground);
-  inline-size: 1.1rem;
-  margin-block-start: 0.4rem;
-}
-
+/* Landing: footer. */
 .footer-links {
   display: flex;
   gap: 1.25rem;
@@ -763,46 +689,6 @@ h2 {
   gap: 1rem;
   margin-block-start: 5rem;
   padding-block-start: 1rem;
-}
-
-.demo-intro {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  border-block-end: 1px solid var(--border);
-  gap: 2rem;
-  padding-block-end: 3rem;
-}
-
-.demo-intro h1 {
-  font-size: clamp(2.4rem, 6vw, 5.4rem);
-  max-inline-size: 16ch;
-}
-
-.session-stamp {
-  display: grid;
-  border-inline-start: 1px solid var(--primary);
-  gap: 0.35rem;
-  min-inline-size: 11rem;
-  padding-block: 0.25rem;
-  padding-inline: 1rem;
-}
-
-.session-stamp span {
-  color: var(--muted-foreground);
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.session-stamp strong {
-  font-size: 0.88rem;
-  margin-block-end: 0.4rem;
-}
-
-.page-grid--details {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-block-start: 2rem;
 }
 
 .security-note {
@@ -1634,18 +1520,8 @@ h2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .page-grid--hero,
-  .page-grid--details {
+  .page-grid--hero {
     grid-template-columns: 1fr;
-  }
-
-  .demo-entry__grid {
-    grid-template-columns: 1fr;
-  }
-
-  .demo-entry__head {
-    flex-direction: column;
-    align-items: flex-start;
   }
 }
 
@@ -1680,8 +1556,7 @@ h2 {
 
   .site-header,
   .section-heading,
-  .site-footer,
-  .demo-intro {
+  .site-footer {
     flex-direction: column;
     align-items: flex-start;
   }
@@ -1696,13 +1571,6 @@ h2 {
 
   .hero-actions > * {
     inline-size: 100%;
-  }
-
-  .session-stamp {
-    border-block-start: 1px solid var(--border);
-    border-inline-start: 0;
-    inline-size: 100%;
-    padding-block-start: 1rem;
   }
 
   .site-footer {
@@ -3123,5 +2991,552 @@ h2 {
   .guidance-panel:active,
   .prompt-composer__submit:active {
     transform: none;
+  }
+}
+
+/* Authentication surfaces: a calm, single-column focus for sign-in, sign-up,
+   and school selection. They reuse the studio palette tokens and logical
+   properties, so the existing Arabic / RTL surfaces keep working. */
+.auth-shell {
+  display: grid;
+  align-items: center;
+  background:
+    radial-gradient(
+      60% 45% at 88% 0%,
+      color-mix(in oklch, var(--teacher-butter) 66%, transparent),
+      transparent 100%
+    ),
+    var(--teacher-paper);
+  min-block-size: 100dvh;
+  padding-block: clamp(1.5rem, 5vw, 4rem);
+  padding-inline: clamp(1rem, 5vw, 3rem);
+}
+
+.auth-frame {
+  inline-size: min(100%, 32rem);
+  margin-inline: auto;
+}
+
+.auth-card {
+  display: grid;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border: 1px solid
+    color-mix(in oklch, var(--teacher-forest) 20%, var(--border));
+  border-radius: 1.5rem;
+  background: color-mix(in oklch, var(--card) 88%, var(--teacher-mint));
+  box-shadow: 0 1.5rem 3rem
+    color-mix(in oklch, var(--teacher-forest) 9%, transparent);
+  gap: 1.25rem;
+  margin-block-start: 1.25rem;
+}
+
+.auth-card__brand {
+  inline-size: fit-content;
+}
+
+.auth-card__header {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.auth-heading {
+  margin: 0;
+  color: var(--teacher-ink);
+  font-size: clamp(1.7rem, 4vw, 2.35rem);
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  line-height: 1.05;
+  max-inline-size: 20ch;
+}
+
+.auth-lede {
+  margin: 0;
+  color: color-mix(in oklch, var(--teacher-ink) 66%, transparent);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  max-inline-size: 46ch;
+}
+
+.auth-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.auth-eyebrow svg {
+  block-size: 0.9rem;
+  inline-size: 0.9rem;
+}
+
+.auth-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.field__label {
+  color: var(--teacher-ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.field__control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.field__input {
+  border: 1px solid var(--input);
+  border-radius: 0.65rem;
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+  inline-size: 100%;
+  min-block-size: 2.75rem;
+  padding-block: 0.55rem;
+  padding-inline: 0.8rem;
+}
+
+.field__input--with-toggle {
+  padding-inline-end: 5.25rem;
+}
+
+.field__input[aria-invalid="true"] {
+  border-color: var(--destructive);
+}
+
+.password-toggle {
+  position: absolute;
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 750;
+  gap: 0.3rem;
+  inset-inline-end: 0.3rem;
+}
+
+.password-toggle svg {
+  block-size: 0.9rem;
+  inline-size: 0.9rem;
+}
+
+.field__hint {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.field__error {
+  margin: 0;
+  color: var(--destructive);
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.auth-status {
+  display: grid;
+  border-radius: 0.8rem;
+  gap: 0.35rem;
+  padding-block: 0.85rem;
+  padding-inline: 1rem;
+}
+
+.auth-status:empty {
+  display: none;
+}
+
+.auth-status:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 3px;
+}
+
+.auth-status__title {
+  font-size: 0.85rem;
+  font-weight: 750;
+}
+
+.auth-status p {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.auth-status__action {
+  inline-size: fit-content;
+  margin-block-start: 0.35rem;
+}
+
+.auth-status--error {
+  border: 1px solid color-mix(in oklch, var(--destructive) 32%, var(--border));
+  background: color-mix(in oklch, var(--destructive) 7%, var(--card));
+  color: var(--destructive);
+}
+
+.auth-status--info {
+  border: 1px solid color-mix(in oklch, var(--primary) 26%, var(--border));
+  background: color-mix(in oklch, var(--primary) 7%, var(--card));
+  color: color-mix(in oklch, var(--primary) 60%, var(--foreground));
+}
+
+.auth-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.auth-submit {
+  border-radius: 0.8rem;
+  font-size: 0.95rem;
+  font-weight: 750;
+  min-block-size: 2.9rem;
+}
+
+.auth-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 0.84rem;
+  gap: 0.75rem;
+}
+
+.auth-links__aside {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.auth-links__aside svg {
+  block-size: 0.85rem;
+  inline-size: 0.85rem;
+}
+
+.auth-note {
+  display: flex;
+  align-items: flex-start;
+  margin: 0;
+  border-block-start: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 0.78rem;
+  gap: 0.5rem;
+  line-height: 1.5;
+  padding-block-start: 1rem;
+}
+
+.auth-note svg {
+  flex: none;
+  block-size: 1rem;
+  inline-size: 1rem;
+  margin-block-start: 0.1rem;
+}
+
+.auth-note--quiet {
+  border-block-start: 0;
+  padding-block-start: 0;
+}
+
+.verification-panel {
+  display: grid;
+  border: 1px solid color-mix(in oklch, var(--primary) 26%, var(--border));
+  border-radius: 0.9rem;
+  background: color-mix(in oklch, var(--primary) 6%, var(--card));
+  gap: 0.7rem;
+  padding-block: 1.1rem;
+  padding-inline: 1.1rem;
+}
+
+.verification-panel:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 3px;
+}
+
+.verification-panel__heading {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  color: var(--teacher-ink);
+  font-size: 1.05rem;
+  gap: 0.45rem;
+}
+
+.verification-panel p {
+  margin: 0;
+  color: color-mix(in oklch, var(--teacher-ink) 72%, transparent);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.verification-panel__address {
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+
+.membership-fieldset {
+  display: grid;
+  padding: 0;
+  border: 0;
+  margin: 0;
+  gap: 0.6rem;
+}
+
+.membership-options {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.membership-option {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--card);
+  cursor: pointer;
+  gap: 0.75rem;
+  min-block-size: 3.25rem;
+  padding-block: 0.6rem;
+  padding-inline: 0.85rem;
+  transition:
+    border-color 0.16s ease,
+    background-color 0.16s ease;
+}
+
+.membership-option:has(input:checked) {
+  border-color: color-mix(in oklch, var(--primary) 52%, var(--border));
+  background: color-mix(in oklch, var(--primary) 8%, var(--card));
+}
+
+.membership-option input {
+  accent-color: var(--primary);
+  block-size: 1.15rem;
+  inline-size: 1.15rem;
+}
+
+.membership-option__copy {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.membership-option__school {
+  color: var(--teacher-ink);
+  font-size: 0.92rem;
+  font-weight: 750;
+}
+
+.membership-option__role {
+  color: var(--muted-foreground);
+  font-size: 0.76rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* Workspace chrome: a reachable header, a persistent expiry dialog, and the
+   neutral states that never reveal private content. */
+.skip-link {
+  position: absolute;
+  z-index: 30;
+  border-radius: 0.5rem;
+  background: var(--teacher-forest);
+  color: var(--teacher-paper);
+  font-size: 0.82rem;
+  font-weight: 750;
+  inset-block-start: 0.75rem;
+  inset-inline-start: 0.75rem;
+  padding-block: 0.55rem;
+  padding-inline: 0.9rem;
+  transform: translateY(-150%);
+  transition: transform 150ms var(--ease-out);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+.account-identity {
+  display: grid;
+  gap: 0.1rem;
+  text-align: end;
+}
+
+.account-identity__name {
+  color: var(--teacher-ink);
+  font-size: 0.86rem;
+  font-weight: 750;
+}
+
+.account-identity__meta {
+  color: color-mix(in oklch, var(--teacher-ink) 62%, transparent);
+  font-size: 0.74rem;
+}
+
+.account-signout {
+  color: var(--teacher-ink);
+  font-size: 0.78rem;
+  font-weight: 750;
+  gap: 0.35rem;
+}
+
+.account-signout svg {
+  block-size: 0.95rem;
+  inline-size: 0.95rem;
+}
+
+.session-banner {
+  position: sticky;
+  z-index: 20;
+  display: grid;
+  align-items: center;
+  border: 1px solid color-mix(in oklch, var(--teacher-clay) 45%, var(--border));
+  border-radius: 1.1rem;
+  background: color-mix(in oklch, var(--teacher-butter) 78%, var(--card));
+  box-shadow: 0 1rem 2.5rem
+    color-mix(in oklch, var(--teacher-forest) 12%, transparent);
+  gap: 0.75rem 1.25rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  inset-block-start: 0.75rem;
+  margin-block-end: 1.25rem;
+  padding-block: 0.9rem;
+  padding-inline: 1.1rem;
+}
+
+.session-banner:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 3px;
+}
+
+.session-banner__icon {
+  display: grid;
+  border-radius: 50%;
+  background: color-mix(in oklch, var(--teacher-clay) 34%, var(--card));
+  block-size: 2.1rem;
+  inline-size: 2.1rem;
+  place-items: center;
+}
+
+.session-banner__icon svg {
+  block-size: 1.1rem;
+  inline-size: 1.1rem;
+}
+
+.session-banner__copy {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.session-banner__copy strong {
+  color: var(--teacher-ink);
+  font-size: 0.92rem;
+}
+
+.session-banner__copy p {
+  margin: 0;
+  color: color-mix(in oklch, var(--teacher-ink) 72%, transparent);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  max-inline-size: 62ch;
+}
+
+.session-banner__error {
+  color: var(--destructive) !important;
+  font-weight: 700;
+}
+
+.session-banner__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.session-banner__continue {
+  border-radius: 0.7rem;
+  font-weight: 750;
+  min-block-size: 2.4rem;
+}
+
+.workspace-content[aria-hidden="true"] {
+  opacity: 0.35;
+}
+
+.workspace-content:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 3px;
+}
+
+.workspace-revalidating {
+  position: sticky;
+  z-index: 15;
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: 0.8rem;
+  margin: 0;
+  background: var(--card);
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+  inset-block-end: 0.75rem;
+  padding-block: 0.6rem;
+  padding-inline: 0.9rem;
+}
+
+.workspace-status {
+  display: grid;
+  gap: 0.9rem;
+  max-inline-size: 40rem;
+  padding-block: clamp(2rem, 8vw, 6rem);
+  place-items: start start;
+}
+
+.workspace-status__mark {
+  display: grid;
+  border-radius: 1rem 0.4rem;
+  background: var(--teacher-forest);
+  block-size: 3rem;
+  color: var(--teacher-paper);
+  font-size: 0.8rem;
+  font-weight: 800;
+  inline-size: 3rem;
+  letter-spacing: 0.08em;
+  place-items: center;
+}
+
+.workspace-status__mark svg {
+  block-size: 1.4rem;
+  inline-size: 1.4rem;
+}
+
+@media (width <= 38rem) {
+  .session-banner {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .session-banner__actions {
+    grid-column: 1 / -1;
+  }
+
+  .account-identity {
+    text-align: start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skip-link,
+  .membership-option {
+    transition: none;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .membership-option:hover {
+    border-color: color-mix(in oklch, var(--primary) 38%, var(--border));
+  }
+
+  .account-signout:hover {
+    background: color-mix(in oklch, var(--teacher-ink) 8%, transparent);
   }
 }

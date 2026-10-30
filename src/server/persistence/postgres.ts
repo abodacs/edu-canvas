@@ -4,7 +4,7 @@ import { serverObservability } from "../observability.server";
 import { demoSeed } from "../seed-data";
 import { hydrateGenerationRecord } from "./generation-codec";
 import { createGenerationPersistence } from "./generation-persistence";
-import type { DemoCounts } from "@/shared/demo-contract";
+import type { SeedCounts } from "../seed-data";
 
 import type { LessonGenerationRecord } from "../generation/types";
 import type { ServerObservability } from "../observability.server";
@@ -164,7 +164,7 @@ const readGenerationByQuery = (
   databaseUrl: string,
   tenantId: string,
   value: string,
-  isLookupByRequestId = false
+  lookup: { teacherId?: string; byRequestId?: boolean } = {}
 ): Promise<LessonGenerationRecord | undefined> => {
   return withDatabase(databaseUrl, (sql) => {
     return sql.begin(
@@ -173,7 +173,7 @@ const readGenerationByQuery = (
         select set_config('app.tenant_id', ${tenantId}, true)
       `;
 
-        const rows = isLookupByRequestId
+        const rows = lookup.byRequestId
           ? await transaction<GenerationRequestRow[]>`
             select *
             from lesson_draft_requests
@@ -186,7 +186,9 @@ const readGenerationByQuery = (
             join lesson_generation_attempts attempt
               on attempt.request_id = request.id
              and attempt.tenant_id = request.tenant_id
+             and attempt.teacher_id = request.teacher_id
             where request.tenant_id = ${tenantId}
+              and request.teacher_id = ${lookup.teacherId ?? ""}
               and attempt.idempotency_key = ${value}
             limit 1
           `;
@@ -307,6 +309,7 @@ const createPostgresGenerationBackend = (
         insert into lesson_generation_attempts (
           request_id,
           tenant_id,
+          teacher_id,
           attempt_number,
           idempotency_key,
           request_hash,
@@ -319,6 +322,7 @@ const createPostgresGenerationBackend = (
         values (
           ${record.requestId},
           ${record.tenantId},
+          ${record.teacherId},
           ${attempt.attemptNumber},
           ${attempt.idempotencyKey},
           ${attempt.requestHash},
@@ -328,7 +332,7 @@ const createPostgresGenerationBackend = (
           ${transaction.json(jsonValue(attempt.provenance ?? null))}::jsonb,
           ${attempt.createdAt}
         )
-        on conflict (tenant_id, idempotency_key) do nothing
+        on conflict (tenant_id, teacher_id, idempotency_key) do nothing
         returning request_id
       `;
       return rows.map(({ request_id: requestId }) => ({ requestId }));
@@ -353,6 +357,7 @@ const createPostgresGenerationBackend = (
         select request_id
         from lesson_generation_attempts
         where tenant_id = ${record.tenantId}
+          and teacher_id = ${record.teacherId}
           and (
             idempotency_key = ${attempt.idempotencyKey}
             or (
@@ -434,6 +439,7 @@ const createPostgresGenerationBackend = (
         insert into lesson_generation_attempts (
           request_id,
           tenant_id,
+          teacher_id,
           attempt_number,
           idempotency_key,
           request_hash,
@@ -446,6 +452,7 @@ const createPostgresGenerationBackend = (
         values (
           ${record.requestId},
           ${record.tenantId},
+          ${record.teacherId},
           ${attempt.attemptNumber},
           ${attempt.idempotencyKey},
           ${attempt.requestHash},
@@ -464,8 +471,11 @@ const createPostgresGenerationBackend = (
       `;
     },
 
-    findGenerationByIdempotencyKey: (tenantId, idempotencyKey) =>
-      readGenerationByQuery(databaseUrl, tenantId, idempotencyKey),
+    findGenerationByIdempotencyKey: (tenantId, teacherId, idempotencyKey) => {
+      return readGenerationByQuery(databaseUrl, tenantId, idempotencyKey, {
+        teacherId,
+      });
+    },
 
     findModeratedGeneration: (tenantId, teacherId, requestHash) => {
       return readModeratedGenerationByQuery(
@@ -476,8 +486,11 @@ const createPostgresGenerationBackend = (
       );
     },
 
-    readGeneration: (tenantId, requestId) =>
-      readGenerationByQuery(databaseUrl, tenantId, requestId, true),
+    readGeneration: (tenantId, requestId) => {
+      return readGenerationByQuery(databaseUrl, tenantId, requestId, {
+        byRequestId: true,
+      });
+    },
   };
 };
 
@@ -523,7 +536,7 @@ export const createPostgresPersistence = (
       }
     },
 
-    async readDemoCounts(): Promise<DemoCounts> {
+    async readDemoCounts(): Promise<SeedCounts> {
       try {
         const rows = await withDatabase(databaseUrl, (sql) => {
           return sql.begin(async (transaction) => {

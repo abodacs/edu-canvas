@@ -128,7 +128,7 @@ describe("PostgreSQL persistence", () => {
     expect(
       statements.some((statement) => {
         return statement.includes(
-          "on conflict (tenant_id, idempotency_key) do nothing"
+          "on conflict (tenant_id, teacher_id, idempotency_key) do nothing"
         );
       })
     ).toBeTruthy();

@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { getDemoSession } from "@/server/demo/policy";
 import { demoSeed } from "@/server/seed-data";
+import { parseTenantId } from "@/server/identity/identifiers";
+import { syntheticTeacherActor } from "@/server/identity/test-actors";
 
 import { createSeededPersistence } from "../persistence/seeded";
 import {
@@ -29,7 +30,9 @@ import type {
 } from "./provider";
 import type { GenerationServiceResult, LessonGenerationRecord } from "./types";
 
-const teacherSession = getDemoSession("teacher");
+const teacherActor = syntheticTeacherActor({
+  tenantId: parseTenantId(demoSeed.tenant.id),
+});
 
 const baseInput = (overrides: Record<string, unknown> = {}) => {
   return {
@@ -55,7 +58,7 @@ const recordInput = (): NormalizedGenerationRequest => {
 
 const teacherCommand = (overrides: Record<string, unknown> = {}) => {
   return {
-    session: teacherSession,
+    actor: teacherActor,
     input: baseInput(overrides),
   };
 };
@@ -287,7 +290,7 @@ describe("generation service conformance: idempotency and ownership", () => {
     const claimed: LessonGenerationRecord = {
       requestId: "draft_req_conformance_owner",
       tenantId: demoSeed.tenant.id,
-      teacherId: "identity_demo_teacher",
+      teacherId: teacherActor.actorId,
       input: {
         prompt: "equivalent fractions for grade 4",
         grade: 4,
@@ -449,7 +452,7 @@ describe("generation service conformance: idempotency and ownership", () => {
     const record: LessonGenerationRecord = {
       requestId: "draft_req_conformance_lease",
       tenantId: demoSeed.tenant.id,
-      teacherId: "identity_demo_teacher",
+      teacherId: teacherActor.actorId,
       input: {
         prompt: "equivalent fractions for grade 4",
         grade: 4,
@@ -636,7 +639,7 @@ describe("generation service conformance: deadlines and cancellation", () => {
       });
 
       const cancelled = await service.cancel({
-        session: teacherSession,
+        actor: teacherActor,
         requestId: "draft_req_conformance_cancel",
       });
 
@@ -674,7 +677,7 @@ describe("generation service conformance: deadlines and cancellation", () => {
 
     const generated = await service.generate(teacherCommand());
     const cancelled = await service.cancel({
-      session: teacherSession,
+      actor: teacherActor,
       requestId: generated.record.requestId,
     });
 

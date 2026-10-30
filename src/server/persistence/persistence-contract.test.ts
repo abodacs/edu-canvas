@@ -40,6 +40,7 @@ const requireLearningPath = <T extends { learningPath?: unknown }>(
 interface TenantFixture {
   tenantId: string;
   teacherId: string;
+  otherTeacherId: string;
   standardId: string;
 }
 
@@ -63,6 +64,7 @@ const expectTenantLocalClaims = async (
   await expect(
     persistence.findGenerationByIdempotencyKey(
       winningClaim.tenantId,
+      winningClaim.teacherId,
       idempotencyKey
     )
   ).resolves.toMatchObject({
@@ -77,6 +79,7 @@ const expectTenantLocalClaims = async (
   await expect(
     persistence.findGenerationByIdempotencyKey(
       otherTenant.tenantId,
+      otherTenant.teacherId,
       idempotencyKey
     )
   ).resolves.toMatchObject({ requestId: otherTenant.requestId });
@@ -177,7 +180,8 @@ const expectRetryLifecycle = async (
 
 const createTenantFixture = async (suffix: string): Promise<TenantFixture> => {
   const tenantId = `tenant_issue_42_${suffix}_${runId}`;
-  const teacherId = `identity_issue_42_${suffix}_${runId}`;
+  const teacherId = `actor_issue_42_${suffix}_${runId}`;
+  const otherTeacherId = `actor_issue_42_${suffix}_other_${runId}`;
   const standardId = `standard_issue_42_${suffix}_${runId}`;
   const sql = postgres(requireDatabaseUrl(), {
     max: 1,
@@ -192,20 +196,10 @@ const createTenantFixture = async (suffix: string): Promise<TenantFixture> => {
         values (${tenantId}, ${tenantId}, ${"Issue 42 contract fixture"}, true)
       `;
       await transaction`
-        insert into identities (
-          id,
-          tenant_id,
-          role,
-          display_name,
-          demo_handle
-        )
-        values (
-          ${teacherId},
-          ${tenantId},
-          'teacher',
-          ${"Issue 42 fixture teacher"},
-          ${`${teacherId}.demo`}
-        )
+        insert into actors (id, display_name)
+        values
+          (${teacherId}, ${"Issue 42 fixture teacher"}),
+          (${otherTeacherId}, ${"Issue 42 other fixture teacher"})
       `;
       await transaction`
         insert into standards (
@@ -230,7 +224,7 @@ const createTenantFixture = async (suffix: string): Promise<TenantFixture> => {
     await sql.end({ timeout: 3 });
   }
 
-  return { tenantId, teacherId, standardId };
+  return { tenantId, teacherId, otherTeacherId, standardId };
 };
 
 const deleteTenantFixture = async (fixture: TenantFixture): Promise<void> => {
@@ -255,8 +249,8 @@ const deleteTenantFixture = async (fixture: TenantFixture): Promise<void> => {
         where tenant_id = ${fixture.tenantId}
       `;
       await transaction`
-        delete from identities
-        where tenant_id = ${fixture.tenantId}
+        delete from actors
+        where id in (${fixture.teacherId}, ${fixture.otherTeacherId})
       `;
       await transaction`
         delete from tenants
@@ -272,7 +266,8 @@ const createGeneratingRecord = (
   fixture: TenantFixture,
   suffix: string,
   updatedAt: string,
-  idempotencyKey = `issue-42-${suffix}-${runId}`
+  idempotencyKey = `issue-42-${suffix}-${runId}`,
+  teacherId = fixture.teacherId
 ): LessonGenerationRecord => {
   const attemptNumber = 1;
   const requestId = `draft_issue_42_${suffix}_${runId}`;
@@ -288,7 +283,7 @@ const createGeneratingRecord = (
   return {
     requestId,
     tenantId: fixture.tenantId,
-    teacherId: fixture.teacherId,
+    teacherId,
     input,
     state: "generating",
     attempt: attemptNumber,
@@ -384,6 +379,45 @@ describe.skipIf(!isRunDatabaseTests)("PostgreSQL persistence parity", () => {
         otherTenant,
         idempotencyKey
       );
+    });
+
+    it("keeps idempotency keys scoped to the teacher inside one tenant", async () => {
+      const persistence = adapter.create();
+      const idempotencyKey = `issue-42-teacher-scope-${adapter.name}-${runId}`;
+      const first = createGeneratingRecord(
+        tenants.primary,
+        `${adapter.name}-teacher-a`,
+        "2026-07-18T00:10:00.000Z",
+        idempotencyKey
+      );
+      const second = createGeneratingRecord(
+        tenants.primary,
+        `${adapter.name}-teacher-b`,
+        "2026-07-18T00:10:00.000Z",
+        idempotencyKey,
+        tenants.primary.otherTeacherId
+      );
+
+      await expect(persistence.claimGeneration(first)).resolves.toMatchObject({
+        claimed: true,
+      });
+      await expect(persistence.claimGeneration(second)).resolves.toMatchObject({
+        claimed: true,
+      });
+      await expect(
+        persistence.findGenerationByIdempotencyKey(
+          first.tenantId,
+          first.teacherId,
+          idempotencyKey
+        )
+      ).resolves.toMatchObject({ requestId: first.requestId });
+      await expect(
+        persistence.findGenerationByIdempotencyKey(
+          second.tenantId,
+          second.teacherId,
+          idempotencyKey
+        )
+      ).resolves.toMatchObject({ requestId: second.requestId });
     });
 
     it("expires claims atomically and rejects stale worker writes", async () => {

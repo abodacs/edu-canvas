@@ -68,8 +68,9 @@ Dependency versions belong in `package.json` and `pnpm-lock.yaml`. The [Nitro co
 
 | Location | Owns | Entry points |
 | --- | --- | --- |
-| `src/routes/` | Pages, route parameters, loaders, HTTP delivery, page-local interaction state | [demo/$role.tsx](src/routes/demo/$role.tsx), `src/routes/api/` |
-| `src/server/demo/` | Synthetic sessions, capabilities, tenant assertions, environment snapshot, server-function composition | [server-function.ts](src/server/demo/server-function.ts), [policy.ts](src/server/demo/policy.ts) |
+| `src/routes/` | Pages, route parameters, loaders, HTTP delivery, page-local interaction state | `src/routes/api/`, `src/routes/login.tsx`, `src/routes/workspace.tsx` |
+| `src/server/identity/` | Provider adapter contract, verified actor construction, session establishment/resolution/expiry/logout, CSRF and rate limits, trusted provisioning, browser-safe session projection | [service.ts](src/server/identity/service.ts), [api.server.ts](src/server/identity/api.server.ts), [persistence-port.ts](src/server/identity/persistence-port.ts) |
+| `src/routes/api/auth/`, `src/routes/api/lessons/` | Authenticated delivery seams; they resolve an actor and delegate, and never select a role | `context.ts`, `sign-in.ts`, `generate.ts` |
 | `src/server/generation/` | Generation policy, attempts, validation, provider interface, learning path, public projection | [service.ts](src/server/generation/service.ts), [types.ts](src/server/generation/types.ts) |
 | `src/server/a2ui/` | Preview access checks, compilation, SSE delivery | [preview.server.ts](src/server/a2ui/preview.server.ts), [compiler.ts](src/server/a2ui/compiler.ts) |
 | `src/server/persistence.ts` and `src/server/persistence/` | Adapter selection, record storage, atomic claims, conditional writes, database access | [persistence.ts](src/server/persistence.ts), [generation-persistence.ts](src/server/persistence/generation-persistence.ts) |
@@ -403,7 +404,7 @@ These differences were checked against the source baseline above. They are not r
 | Teaching loop | Generation and teacher preview | Approval, immutable publication, learner attempts, grading, reveal, and adaptation remain unimplemented. |
 | Grounding | Seeded curriculum and prerequisite graph | Learning Commons, Jev matching, uploads, and grounded package contracts remain design work described in [AgDR-0005](docs/agdr/AgDR-0005-grounded-package-version-contracts.md). |
 | Safety | Pattern checks, structural validation, bounded semantic review | The cross-cutting hard safety gate remains unimplemented. |
-| Identity and cost controls | Browser-selected seeded role; no invitation sessions or quota enforcement | [AgDR-0007](docs/agdr/AgDR-0007-demo-access-and-deployment.md) defines protected access and bounded usage. |
+| Identity and cost controls | Server-owned opaque sessions with current membership checks, CSRF/origin guards, bounded counters, and trusted provisioning; the role-selected demo surface is retired | [#98](https://github.com/abodacs/edu-canvas/issues/98) release unit A is implemented on `impl/98-authentication`. Release unit B (publication, attempts, teacher decisions) stays open, and deployment/rollback/monitoring gates remain pending. Least-privilege database roles belong to [#100](https://github.com/abodacs/edu-canvas/issues/100). |
 | Provider selection | Fixture or OpenAI Responses adapter with `OPENAI_*` settings and a `gpt-5.6` code default | [AgDR-0006](docs/agdr/AgDR-0006-provider-selection-and-deadlines.md) selects a provider through access evidence. The code default is not evidence for an event-allowed provider. |
 | Deadlines | 100 seconds per provider call, 200 seconds for generation plus correction, and a 220-second claim lease; writes require an unexpired lease | AgDR-0006 event decision, 2026-10-27. |
 | Idempotency conflicts | An existing tenant-local key compares the persisted normalized request hash; changed input returns `IDEMPOTENCY_CONFLICT` without a provider call | AgDR-0006 requires the conflict; unchanged input reuses the original result. |

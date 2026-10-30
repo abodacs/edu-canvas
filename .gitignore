@@ -19,3 +19,6 @@ teaching/
 .zcode/
 .project-map/
 .scratch/
+
+# GUI test evidence
+gui-test-screenshots/
