@@ -795,7 +795,6 @@ const TeacherLessonComposer = ({
         <textarea
           id="lesson-prompt"
           name="prompt"
-          aria-label="What should students practice?"
           required
           maxLength={500}
           rows={3}
