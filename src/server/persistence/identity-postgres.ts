@@ -381,12 +381,13 @@ const grantMembership = async (
   transaction: SqlTransaction,
   input: NewMembershipInput
 ): Promise<MembershipRecord> => {
+  // Trusted provisioning must stay insert-if-missing: a grant creates the
+  // tenant a fresh database lacks, but never renames or rebrands a row that
+  // already exists.
   await transaction`
     insert into tenants (id, slug, name, synthetic_data_only)
     values (${input.tenantId}, ${input.tenantId}, ${input.tenantName}, true)
-    on conflict (id) do update set
-      name = excluded.name,
-      synthetic_data_only = true
+    on conflict (id) do nothing
   `;
 
   if (input.learnerId) {

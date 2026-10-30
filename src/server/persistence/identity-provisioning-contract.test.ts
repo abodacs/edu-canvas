@@ -33,6 +33,19 @@ interface ProvisionedIdentityRow {
   is_active: boolean;
 }
 
+const readTenantRow = (
+  rowTenantId: string
+): Promise<ProvisionedTenantRow | undefined> => {
+  return withTenantSql(rowTenantId, async (transaction) => {
+    const rows = await transaction<ProvisionedTenantRow[]>`
+      select id, slug, name, synthetic_data_only
+      from tenants
+      where id = ${rowTenantId}
+    `;
+    return rows[0];
+  });
+};
+
 describe.skipIf(!isRunDatabaseTests)(
   "identity persistence provisioning",
   () => {
@@ -42,6 +55,12 @@ describe.skipIf(!isRunDatabaseTests)(
     const tenantName = "Issue 115 regression school";
     const renamedTenantName = "Issue 115 regression school (renamed)";
 
+    const realTenantId = parseTenantId(`tenant_issue_115_real_${runId}`);
+    const realActorId = parseActorId(`actor_issue_115_real_${runId}`);
+    const realMembershipId = parseMembershipId(
+      `membership_issue_115_real_${runId}`
+    );
+
     const learnerTenantId = parseTenantId(`tenant_issue_115_learner_${runId}`);
     const learnerActorId = parseActorId(`actor_issue_115_learner_${runId}`);
     const learnerMembershipId = parseMembershipId(
@@ -49,19 +68,6 @@ describe.skipIf(!isRunDatabaseTests)(
     );
     const learnerId = parseLearnerId(`learner_issue_115_${runId}`);
     const learnerTenantName = "Issue 115 learner school";
-
-    const readProvisionedTenant = (): Promise<
-      ProvisionedTenantRow | undefined
-    > => {
-      return withTenantSql(tenantId, async (transaction) => {
-        const rows = await transaction<ProvisionedTenantRow[]>`
-          select id, slug, name, synthetic_data_only
-          from tenants
-          where id = ${tenantId}
-        `;
-        return rows[0];
-      });
-    };
 
     const countActorMemberships = (): Promise<number> => {
       return withTenantSql(tenantId, async (transaction) => {
@@ -122,6 +128,17 @@ describe.skipIf(!isRunDatabaseTests)(
           delete from tenants where id = ${tenantId}
         `;
       });
+      await withTenantSql(realTenantId, async (transaction) => {
+        await transaction`
+          delete from memberships where actor_id = ${realActorId}
+        `;
+        await transaction`
+          delete from actors where id = ${realActorId}
+        `;
+        await transaction`
+          delete from tenants where id = ${realTenantId}
+        `;
+      });
       await withTenantSql(learnerTenantId, async (transaction) => {
         await transaction`
           delete from memberships where actor_id = ${learnerActorId}
@@ -169,7 +186,7 @@ describe.skipIf(!isRunDatabaseTests)(
         tenantName
       );
 
-      await expect(readProvisionedTenant()).resolves.toMatchObject({
+      await expect(readTenantRow(tenantId)).resolves.toMatchObject({
         id: tenantId,
         slug: tenantId,
         name: tenantName,
@@ -177,7 +194,7 @@ describe.skipIf(!isRunDatabaseTests)(
       });
     });
 
-    it("replays the same grant idempotently and updates the tenant name", async () => {
+    it("replays the same grant idempotently and keeps the existing tenant row", async () => {
       const persistence =
         createPostgresIdentityPersistence(requireDatabaseUrl());
 
@@ -192,9 +209,55 @@ describe.skipIf(!isRunDatabaseTests)(
       ).resolves.toMatchObject({ membershipId, status: "active" });
 
       await expect(countActorMemberships()).resolves.toBe(1);
+      // The grant must stay insert-if-missing: replaying a fixture boot may
+      // not rename or rebrand a tenant row that already exists.
       await expect(persistence.readTenantName(tenantId)).resolves.toBe(
-        renamedTenantName
+        tenantName
       );
+    });
+
+    it("leaves an existing non-synthetic tenant row untouched when granting", async () => {
+      const persistence =
+        createPostgresIdentityPersistence(requireDatabaseUrl());
+
+      // A tenant that was provisioned outside the synthetic fixture must not
+      // be renamed or marked synthetic by a membership grant.
+      await withTenantSql(realTenantId, async (transaction) => {
+        await transaction`
+          insert into tenants (id, slug, name, synthetic_data_only)
+          values (
+            ${realTenantId},
+            'real-district-school',
+            ${"Really Real District School"},
+            false
+          )
+        `;
+      });
+
+      await persistence.createActor({
+        actorId: realActorId,
+        displayName: "Issue 115 real district teacher",
+      });
+
+      await expect(
+        persistence.grantMembership({
+          membershipId: realMembershipId,
+          actorId: realActorId,
+          tenantId: realTenantId,
+          tenantName: renamedTenantName,
+          role: "teacher",
+        })
+      ).resolves.toMatchObject({
+        membershipId: realMembershipId,
+        status: "active",
+      });
+
+      await expect(readTenantRow(realTenantId)).resolves.toMatchObject({
+        id: realTenantId,
+        slug: "real-district-school",
+        name: "Really Real District School",
+        synthetic_data_only: false,
+      });
     });
 
     it("creates the missing learner identity before granting", async () => {
