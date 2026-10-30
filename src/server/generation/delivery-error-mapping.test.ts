@@ -1,13 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  GENERATION_INPUT_ERROR_CODE,
-  mapGenerationError,
-} from "./delivery.server";
-import { GenerationInputError } from "./generation-input-error";
-import { GenerationRequestError } from "./generation-request-error";
+import { generationRequestErrorStatusByCode } from "@/shared/generation-contract";
 
-import type { GenerationRequestErrorCode } from "./generation-request-error";
+import { IdentityError } from "../identity/errors";
+import { mapGenerationError } from "./delivery.server";
+import {
+  GenerationRequestError,
+  GENERATION_INPUT_INVALID_MESSAGE,
+} from "./generation-request-error";
+
+import type { GenerationRequestErrorCode } from "@/shared/generation-contract";
 
 const UNSUPPORTED_OBJECTIVE_MESSAGE =
   "This learning objective is not supported. Use Grade 4 equivalent fractions (4.NF.A.1).";
@@ -17,26 +19,8 @@ const FALLBACK_BODY = {
   message: "The draft could not be completed. Try again.",
 } as const;
 
-/**
-The intended transport status for every generation request error code, per the
-design-doc conventions (§ error table): not-found is 404, conflict-family codes
-are 409, and a request that must be revised is 422.
-*/
-const expectedStatusByRequestErrorCode: Record<
-  GenerationRequestErrorCode,
-  number
-> = {
-  IDEMPOTENCY_CONFLICT: 409,
-  MODERATION_REVISION_REQUIRED: 422,
-  DRAFT_NOT_FOUND: 404,
-  DRAFT_NOT_RETRYABLE: 409,
-  RETRY_METADATA_MISMATCH: 409,
-  DRAFT_SUPERSEDED: 409,
-  CANCELLATION_FORBIDDEN: 409,
-};
-
 const requestErrorCodes = Object.keys(
-  expectedStatusByRequestErrorCode
+  generationRequestErrorStatusByCode
 ) as GenerationRequestErrorCode[];
 
 const errorBodyOf = async (
@@ -47,7 +31,9 @@ const errorBodyOf = async (
 describe("generation delivery error mapping", () => {
   it("rejects an unsupported objective with an explicit 422 code and the curated message", async () => {
     const response = mapGenerationError(
-      new GenerationInputError(UNSUPPORTED_OBJECTIVE_MESSAGE)
+      new GenerationRequestError(UNSUPPORTED_OBJECTIVE_MESSAGE, {
+        code: "GENERATION_INPUT_INVALID",
+      })
     );
 
     expect({
@@ -55,20 +41,24 @@ describe("generation delivery error mapping", () => {
       ...(await errorBodyOf(response)),
     }).toStrictEqual({
       status: 422,
-      code: GENERATION_INPUT_ERROR_CODE,
+      code: "GENERATION_INPUT_INVALID",
       message: UNSUPPORTED_OBJECTIVE_MESSAGE,
     });
   });
 
   it("maps the default input rejection to 422 without inventing copy", async () => {
-    const response = mapGenerationError(new GenerationInputError());
+    const response = mapGenerationError(
+      new GenerationRequestError(GENERATION_INPUT_INVALID_MESSAGE, {
+        code: "GENERATION_INPUT_INVALID",
+      })
+    );
 
     expect({
       status: response.status,
       ...(await errorBodyOf(response)),
     }).toStrictEqual({
       status: 422,
-      code: GENERATION_INPUT_ERROR_CODE,
+      code: "GENERATION_INPUT_INVALID",
       message: "Generation input is invalid.",
     });
   });
@@ -85,24 +75,24 @@ describe("generation delivery error mapping", () => {
         status: response.status,
         ...(await errorBodyOf(response)),
       }).toStrictEqual({
-        status: expectedStatusByRequestErrorCode[code],
+        status: generationRequestErrorStatusByCode[code],
         code,
         message,
       });
     }
   );
 
-  it("keeps the generic 500 fallback for an uncoded request error", async () => {
-    const response = mapGenerationError(
-      new GenerationRequestError(
-        "Only a verified teacher can generate lesson drafts."
-      )
-    );
+  it("maps the teacher guard rejection to the identity forbidden response", async () => {
+    const response = mapGenerationError(new IdentityError("FORBIDDEN"));
 
     expect({
       status: response.status,
       ...(await errorBodyOf(response)),
-    }).toStrictEqual({ status: 500, ...FALLBACK_BODY });
+    }).toStrictEqual({
+      status: 403,
+      code: "FORBIDDEN",
+      message: "You do not have access to this resource.",
+    });
   });
 
   it("keeps the generic 500 fallback for an unexpected error", async () => {

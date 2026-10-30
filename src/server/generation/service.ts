@@ -5,8 +5,12 @@ import { lessonGenerationInputSchema } from "@/shared/generation-contract";
 import { createId } from "@/server/ids";
 import { demoSeed } from "@/server/seed-data";
 
-import { GenerationInputError } from "./generation-input-error";
-import { GenerationRequestError } from "./generation-request-error";
+import { IdentityError } from "../identity/errors";
+
+import {
+  GenerationRequestError,
+  GENERATION_INPUT_INVALID_MESSAGE,
+} from "./generation-request-error";
 
 import { toPublicGenerationResult } from "./projection";
 
@@ -44,9 +48,6 @@ import type {
   ProviderResponse,
 } from "./provider";
 import type { LessonDifficulty } from "@/shared/generation-contract";
-
-export { GenerationInputError } from "./generation-input-error";
-export { GenerationRequestError } from "./generation-request-error";
 
 const BLOCKED_BY_MODERATION_STATE = "blocked-by-moderation";
 
@@ -154,7 +155,9 @@ export const normalizeGenerationInput = (
 ): NormalizedCommandInput => {
   const parsed = lessonGenerationInputSchema.safeParse(input);
   if (!parsed.success) {
-    throw new GenerationInputError();
+    throw new GenerationRequestError(GENERATION_INPUT_INVALID_MESSAGE, {
+      code: "GENERATION_INPUT_INVALID",
+    });
   }
 
   const grade =
@@ -162,12 +165,15 @@ export const normalizeGenerationInput = (
       ? parsed.data.grade
       : Number(parsed.data.grade);
   if (!Number.isSafeInteger(grade) || grade < 3 || grade > 6) {
-    throw new GenerationInputError();
+    throw new GenerationRequestError(GENERATION_INPUT_INVALID_MESSAGE, {
+      code: "GENERATION_INPUT_INVALID",
+    });
   }
 
   if (!supportedStandardIds.has(parsed.data.standardId)) {
-    throw new GenerationInputError(
-      "This learning objective is not supported. Use Grade 4 equivalent fractions (4.NF.A.1)."
+    throw new GenerationRequestError(
+      "This learning objective is not supported. Use Grade 4 equivalent fractions (4.NF.A.1).",
+      { code: "GENERATION_INPUT_INVALID" }
     );
   }
 
@@ -282,9 +288,9 @@ const isRetryableState = (state: GenerationState): boolean =>
 
 const assertTeacherCanGenerate = (actor: Actor): void => {
   if (actor.role !== "teacher") {
-    throw new GenerationRequestError(
-      "Only a verified teacher can generate lesson drafts."
-    );
+    // Defense-in-depth behind the delivery seam's own teacher resolution: an
+    // authorization condition, so it uses the identity error contract.
+    throw new IdentityError("FORBIDDEN");
   }
 };
 

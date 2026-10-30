@@ -10,11 +10,8 @@ import {
   createEquivalentFractionsDraft,
   LessonProviderError,
 } from "./provider";
-import {
-  createGenerationService,
-  GenerationRequestError,
-  normalizeGenerationInput,
-} from "./service";
+import { createGenerationService, normalizeGenerationInput } from "./service";
+import { GenerationRequestError } from "./generation-request-error";
 import {
   createGenerationRequestHash,
   generationClaimLeaseMs,

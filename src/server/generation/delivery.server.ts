@@ -12,34 +12,10 @@ import { readJsonBody, noStoreJson } from "../http.server";
 import { readServerConfig } from "../config";
 import { createFoundationPersistence } from "../persistence";
 import { createConfiguredLessonDraftProvider } from "./factory";
-import { GenerationInputError } from "./generation-input-error";
 import { GenerationRequestError } from "./generation-request-error";
 import { createGenerationService } from "./service";
 
 import type { TeacherActor } from "../identity/types";
-import type { GenerationRequestErrorCode } from "./generation-request-error";
-
-/**
-The stable machine code for a rejected generation input. The message is always the curated one the error type owns, never invented here.
-*/
-export const GENERATION_INPUT_ERROR_CODE = "GENERATION_INPUT_INVALID";
-
-const GENERATION_INPUT_ERROR_STATUS = 422;
-
-/**
-Transport status per request error code, following the seam conventions
-(identity `CONFLICT` 409, `INVALID_INPUT` 422) and the design-doc error table
-(`NOT_FOUND` 404; conflict-family codes 409; revise-the-request codes 422).
-*/
-const statusByRequestErrorCode: Record<GenerationRequestErrorCode, number> = {
-  IDEMPOTENCY_CONFLICT: 409,
-  MODERATION_REVISION_REQUIRED: 422,
-  DRAFT_NOT_FOUND: 404,
-  DRAFT_NOT_RETRYABLE: 409,
-  RETRY_METADATA_MISMATCH: 409,
-  DRAFT_SUPERSEDED: 409,
-  CANCELLATION_FORBIDDEN: 409,
-};
 
 const createService = (): ReturnType<typeof createGenerationService> => {
   const config = readServerConfig();
@@ -70,22 +46,16 @@ const resolveTeacher = async (request: Request): Promise<TeacherResolution> => {
 };
 
 /**
-Map a generation failure to its transport response. Typed domain errors carry their own code and curated message with a precise status; everything else keeps the generic fallback so no internal detail escapes.
+Map a generation failure to its transport response. Typed domain errors carry their own code, curated message, and status from the shared seam contract; everything else keeps the generic fallback so no internal detail escapes.
 */
 export const mapGenerationError = (error: unknown): Response => {
   if (error instanceof IdentityError) {
     return identityErrorJson(error);
   }
-  if (error instanceof GenerationInputError) {
-    return noStoreJson(
-      { code: GENERATION_INPUT_ERROR_CODE, message: error.message },
-      GENERATION_INPUT_ERROR_STATUS
-    );
-  }
-  if (error instanceof GenerationRequestError && error.code) {
+  if (error instanceof GenerationRequestError) {
     return noStoreJson(
       { code: error.code, message: error.message },
-      statusByRequestErrorCode[error.code]
+      error.status
     );
   }
   return noStoreJson(
