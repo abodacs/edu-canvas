@@ -58,6 +58,10 @@ const fixture = {
   tenants: {
     north: { id: "tenant_school_north", name: "Northside Elementary" },
     south: { id: "tenant_school_south", name: "Southside Middle" },
+    demo: {
+      id: "tenant_demo_eu_synthetic",
+      name: "Edu-Canvas Synthetic Classroom",
+    },
   },
   actors: [
     { id: "actor_teacher_amira", displayName: "Amira Haddad" },
@@ -66,6 +70,18 @@ const fixture = {
     { id: "actor_learner_yusuf", displayName: "Yusuf Karim" },
   ],
   memberships: [
+    {
+      membershipId: "membership_amira_demo",
+      actorId: "actor_teacher_amira",
+      tenantKey: "demo" as const,
+      role: "teacher" as const,
+    },
+    {
+      membershipId: "membership_bilal_demo",
+      actorId: "actor_teacher_bilal",
+      tenantKey: "demo" as const,
+      role: "teacher" as const,
+    },
     {
       membershipId: "membership_amira_north",
       actorId: "actor_teacher_amira",
@@ -105,7 +121,7 @@ const fixture = {
   ],
 } as const;
 
-const tenantFor = (key: "north" | "south") => fixture.tenants[key];
+const tenantFor = (key: keyof typeof fixture.tenants) => fixture.tenants[key];
 
 /**
  * Idempotent: provisioning operations are safe to replay. Running the fixture twice leaves one actor, membership, and binding per entry.
