@@ -359,6 +359,11 @@ const errorCode = async (response: Response): Promise<string | undefined> => {
   return body.code;
 };
 
+const errorBody = async (
+  response: Response
+): Promise<{ code?: string; message?: string }> =>
+  (await response.clone().json()) as { code?: string; message?: string };
+
 const eventStreamOf = (body: string): number =>
   (body.match(/event: a2ui/gu) ?? []).length;
 
@@ -1136,11 +1141,10 @@ describe("protected domain policy matrix", () => {
             key
           );
 
-        // PRODUCTION GAP: observed 500 GENERATION_FAILED. `service.generate`
-        // throws GenerationRequestError("DRAFT_NOT_FOUND") for a referent the actor
-        // does not own; `mapGenerationError` in delivery.server.ts maps every
-        // non-IdentityError to 500, so an inaccessible referent is not the §10
-        // generic 403.
+        // PRODUCTION GAP: the service scopes the referent by owner, so the seam
+        // now surfaces its typed rejection as 404 DRAFT_NOT_FOUND (issue #115
+        // mapping). The §12 matrix requires the generic 403 for an out-of-scope
+        // referent; no row can assert that until the policy decision lands.
         expect({
           status: response.status,
           code: await errorCode(response),
@@ -1405,9 +1409,8 @@ describe("protected domain policy matrix", () => {
             key
           );
 
-        // PRODUCTION GAP: observed 500 GENERATION_FAILED.
-        // `normalizeGenerationInput` throws GenerationInputError for an unsupported
-        // standard, and `mapGenerationError` maps it to 500. No row is created and
+        // PRODUCTION GAP: the seam now surfaces the input rejection explicitly as
+        // 422 GENERATION_INPUT_INVALID (issue #115 mapping). No row is created and
         // no provider call happens, but the transport code is not the required 403.
         expect({
           status: response.status,
@@ -1433,7 +1436,7 @@ describe("protected domain policy matrix", () => {
             key
           );
 
-        // PRODUCTION GAP: observed 500 GENERATION_FAILED (see PT-18). This is the
+        // PRODUCTION GAP: observed 404 DRAFT_NOT_FOUND (see PT-18). This is the
         // generate half of the §12 referent rule; the preview half is proven by
         // PT-19, which returns the same generic 403 for both foreign referents.
         expect({
@@ -1443,6 +1446,91 @@ describe("protected domain policy matrix", () => {
         }).toStrictEqual({ status: 403, code: "FORBIDDEN", hasRow: false });
       }
     );
+  });
+
+  /**
+   * Issue #115 (IC1) requires the unsupported-objective run through the same
+   * delivery boundary to yield an explicit rejection the teacher can read, with
+   * no persisted draft. The rows assert the transport contract directly:
+   * status, machine code, and the curated message the error type already owns.
+   */
+  describe("generation delivery rejections (IC1)", () => {
+    it("rejects an unsupported objective with an explicit 422 rejection and no persisted draft", async () => {
+      const dependencies = await authDependencies();
+      const teacher = await signInDirect(dependencies, teacherEmail);
+      const key = "policy-ic1-unsupported-objective";
+      const { response } = await generate(dependencies, teacher, key, {
+        standardId: "unsupported-objective-999",
+      });
+      const stored =
+        await foundationPersistence().findGenerationByIdempotencyKey(
+          northTenantId,
+          teacherActorId,
+          key
+        );
+
+      expect({
+        status: response.status,
+        ...(await errorBody(response)),
+        hasRow: stored !== undefined,
+      }).toStrictEqual({
+        status: 422,
+        code: "GENERATION_INPUT_INVALID",
+        message:
+          "This learning objective is not supported. Use Grade 4 equivalent fractions (4.NF.A.1).",
+        hasRow: false,
+      });
+    });
+
+    it("reports a missing cancel referent as an explicit 404 not-found", async () => {
+      const dependencies = await authDependencies();
+      const teacher = await signInDirect(dependencies, teacherEmail);
+      const response = await handleCancelGenerationRequest(
+        mutationRequest(
+          dependencies,
+          "/api/lessons/draft_missing_cancel/cancel",
+          teacher,
+          {}
+        ),
+        "draft_missing_cancel"
+      );
+
+      expect({
+        status: response.status,
+        ...(await errorBody(response)),
+      }).toStrictEqual({
+        status: 404,
+        code: "DRAFT_NOT_FOUND",
+        message: "The requested draft was not found.",
+      });
+    });
+
+    it("reports changed input under a used operation key as an explicit 409 conflict", async () => {
+      const dependencies = await authDependencies();
+      const teacher = await signInDirect(dependencies, teacherEmail);
+      const key = "policy-ic1-idempotency-conflict";
+      const first = await generateReadyDraft(dependencies, teacher, key);
+      const { response } = await generate(dependencies, teacher, key, {
+        prompt: "a different lesson request",
+      });
+      const stored =
+        await foundationPersistence().findGenerationByIdempotencyKey(
+          northTenantId,
+          teacherActorId,
+          key
+        );
+
+      expect({
+        status: response.status,
+        ...(await errorBody(response)),
+        unchangedRequestId: stored?.requestId,
+      }).toStrictEqual({
+        status: 409,
+        code: "IDEMPOTENCY_CONFLICT",
+        message: "This operation key belongs to a different lesson request.",
+        unchangedRequestId: first.requestId,
+      });
+    });
   });
 
   describe("release unit B — protected entries absent from this branch", () => {
