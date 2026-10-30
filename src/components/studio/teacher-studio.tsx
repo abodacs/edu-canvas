@@ -374,8 +374,8 @@ const TeacherGuidance = ({
               >
                 <span className="guidance-panel__icon">
                   <Icon aria-hidden="true" />
-                </span>
-                <span className="guidance-panel__title">{panel.title}</span>
+                </span>{" "}
+                <span className="guidance-panel__title">{panel.title}</span>{" "}
                 <span className="guidance-panel__copy">
                   {isActive ? panel.detail : panel.short}
                 </span>
@@ -812,7 +812,7 @@ const TeacherLessonComposer = ({
             type="submit"
             size="lg"
             className="prompt-composer__submit"
-            disabled={isGenerating || !prompt.trim()}
+            disabled={isGenerating}
           >
             <WandSparkles aria-hidden="true" />
             {isGenerating ? "Shaping the draft…" : "Create lesson"}
