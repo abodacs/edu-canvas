@@ -2,6 +2,8 @@
 
 **Issue:** [#117](https://github.com/abodacs/edu-canvas/issues/117). **Purpose:** one revision-pinned IC1 inventory and prerequisite record. It states what works, what is missing, what is unverified, and the next executable proof. **Revision:** `bfbdf9b571773948dd396e681942994c1a0d013b` plus the uncommitted timeout, prompt-context, schema, and claim-lease changes recorded in [the live run](evidence/ic1-2026-10-27/README.md). **Date:** 2026-10-27.
 
+**2026-10-30 update:** the next-executable proofs below item 6 were executed against the #143 identity seams — see [the 2026-10-30 re-trace](evidence/ic1-2026-10-30/README.md) (two live `muse-spark-1.2-contributor` traces, explicit unsupported rejection, and the three fresh-database blockers fixed). Eligibility evidence is attached there; teacher content review and the keyboard-only check remain open and carry forward into the new record.
+
 ## Inventory
 
 | IC1 step | Status | Observed check | Limit and next proof |
