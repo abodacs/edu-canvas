@@ -1,3 +1,4 @@
+import { isJsonObject } from "@/lib/http";
 import { generationRequestErrorCodeValues } from "@/shared/generation-contract";
 
 /**
@@ -26,9 +27,6 @@ A resolved generation failure: the studio must re-authenticate, or show one teac
 export type GenerationFailure =
   | { readonly kind: "unauthorized" }
   | { readonly kind: "error"; readonly message: string };
-
-const isJsonObject = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null;
 
 interface FailurePayload {
   readonly code: string | null;
