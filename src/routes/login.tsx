@@ -328,4 +328,7 @@ const LoginPage = (): ReactElement => {
   );
 };
 
-export const Route = createFileRoute("/login")({ component: LoginPage });
+export const Route = createFileRoute("/login")({
+  component: LoginPage,
+  head: () => ({ meta: [{ title: "Sign in | Edu-Canvas" }] }),
+});

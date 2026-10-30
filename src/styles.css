@@ -311,6 +311,7 @@ h2 {
 }
 
 .text-link {
+  position: relative;
   color: var(--primary);
   font-size: 0.86rem;
   font-weight: 700;
@@ -322,8 +323,17 @@ h2 {
   text-underline-offset: 0.25em;
 }
 
-.text-link:hover {
-  text-decoration-color: currentcolor;
+/* Extend the 19px inline link to a 24px-plus target without moving the text. */
+.text-link::after {
+  position: absolute;
+  content: "";
+  inset: -0.55rem -0.4rem;
+}
+
+@media (hover: hover) {
+  .text-link:hover {
+    text-decoration-color: currentcolor;
+  }
 }
 
 .fixture-grid,
@@ -2024,7 +2034,6 @@ h2 {
   letter-spacing: -0.035em;
   line-height: 1.2;
   min-block-size: clamp(7.5rem, 15vw, 11rem);
-  outline: 0;
   padding-block: 0.5rem 1rem;
   resize: vertical;
 }

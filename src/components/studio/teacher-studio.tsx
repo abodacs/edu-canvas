@@ -374,8 +374,8 @@ const TeacherGuidance = ({
               >
                 <span className="guidance-panel__icon">
                   <Icon aria-hidden="true" />
-                </span>
-                <span className="guidance-panel__title">{panel.title}</span>
+                </span>{" "}
+                <span className="guidance-panel__title">{panel.title}</span>{" "}
                 <span className="guidance-panel__copy">
                   {isActive ? panel.detail : panel.short}
                 </span>
@@ -789,13 +789,15 @@ const TeacherLessonComposer = ({
 
       <form className="prompt-composer" onSubmit={submitGeneration}>
         <div className="prompt-composer__heading">
-          <label htmlFor="lesson-prompt">What should students practice?</label>
+          <label htmlFor="lesson-prompt" id="lesson-prompt-label">
+            What should students practice?
+          </label>
           <span>{prompt.length}/500</span>
         </div>
         <textarea
           id="lesson-prompt"
           name="prompt"
-          aria-label="What should students practice?"
+          aria-labelledby="lesson-prompt-label"
           required
           maxLength={500}
           rows={3}
@@ -812,7 +814,7 @@ const TeacherLessonComposer = ({
             type="submit"
             size="lg"
             className="prompt-composer__submit"
-            disabled={isGenerating || !prompt.trim()}
+            disabled={isGenerating}
           >
             <WandSparkles aria-hidden="true" />
             {isGenerating ? "Shaping the draft…" : "Create lesson"}

@@ -270,5 +270,6 @@ const MembershipPage = (): ReactElement => {
 };
 
 export const Route = createFileRoute("/login/membership")({
+  head: () => ({ meta: [{ title: "Choose your school | Edu-Canvas" }] }),
   component: MembershipPage,
 });

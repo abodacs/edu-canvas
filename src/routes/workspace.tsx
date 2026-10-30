@@ -261,5 +261,6 @@ const WorkspacePage = (): ReactElement => {
 };
 
 export const Route = createFileRoute("/workspace")({
+  head: () => ({ meta: [{ title: "Teacher studio | Edu-Canvas" }] }),
   component: WorkspacePage,
 });
