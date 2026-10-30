@@ -36,6 +36,24 @@ Both runs are live Meta calls through the full identity → delivery → validat
 | Preview render + interaction | SSE captured headlessly | Preview rendered from the persisted live draft; source 1/2 → candidate 2/4 → status **"Preview selection captured. Clear selection to try another pair."** (`live_selection_captured.png`) |
 | Structural/semantic outcomes | Structural: accepted first pass (validator `lesson-validator-v2`); semantic: 5 warnings, 0 errors | Same validator; teacher-visible "Worth noticing" notes in the rehearsal screenshots |
 
+## Keyboard-only lane (follow-up run, 2026-10-30)
+
+The IC1 gate's remaining agent-executable gap: drive the whole teacher lane with **real keyboard events only** (Tab / Enter / Space / arrow keys; zero mouse clicks), headless Chromium 1248 via Playwright CDP (`verify-kb-115.mjs`, 15 assertions, all PASS, zero page/console errors).
+
+| Field | Value |
+| --- | --- |
+| Run identity | Worktree head `a953281` (post-fix-round); server `.env.live` + `DEMO_MODE=false` (live provider); page origin `http://localhost:3000` — the origin guard rejects `127.0.0.1` (`publicOrigin` mismatch, 403 `CSRF_REJECTED`, an honest rejection not a bug) |
+| Draft | `01a18e80-c041-78cf-9c79-ad1edd9d0464`, `ready-for-review`, attempt 1, provider `openai`, model **`muse-spark-1.2-contributor`** (provenance strip shows Draft / Graph / Model / Catalog in `s5-pair-captured.png`) |
+| Timing | Generate `Enter` → ready in **32.8 s** (20:29:24.929 → 20:29:57.762 UTC) |
+| S1 sign-in tab order | `Tab` from page load: home link → email field (order recorded in the step log) |
+| S2 sign-in | typed email → `Tab` → typed password → `Tab` → `Enter` on the focused submit button → `/login/membership` |
+| S3 membership | native radio group (single tab stop, roving arrows): `Tab` reaches the group, `ArrowDown` selects **"Edu-Canvas Synthetic Classroom, Teacher"** (`s3-classroom-selected.png`), `Tab` → `Enter` on **Continue** → workspace |
+| S4 generate | `Tab` to the prompt composer → typed the focused objective → `Tab` → `Enter` on **Create lesson** → "Shaping the draft…" → variants from the live model |
+| S5 preview interaction | `Space` on the focused source card (`aria-pressed="true"`) → `Space` on the candidate card → **"Preview selection captured."** (`s5-pair-captured.png`, source 1/2 + candidate 2/4) |
+| Fixture-mode companion run | The first pass (same script, `DEMO_MODE` unset → deterministic provider) also passed 15/15 in fixture mode: draft `01a18e7c-95af-73a3-86aa-40fcd5bf7eef`, labeled **fixture** |
+| Artifacts | `.scratch/ic1-2026-10-30-keyboard/` (gitignored): 10 screenshots `s1…s5` + `verify-kb-115.mjs` step log script; the committed text stands alone |
+| Limit | Tab-order audit beyond the recorded stops, screen-reader output, and 390 px layout are not re-claimed by this run (390 px remains fixture-only per the labels above) |
+
 ## Unsupported request (negative gate — same delivery boundary)
 
 | Field | Value |
@@ -55,7 +73,7 @@ Both runs are live Meta calls through the full identity → delivery → validat
 
 - The deterministic-mode rehearsal (auth → generate → preview, plus every rehearsal screenshot before `live_*`) is labeled **fixture**; it cannot pass IC1 and is not counted toward the gate.
 - The five-hour event-day clock is **not claimed** by this re-trace (it is an event-day gate). Pipeline elapsed times are stated above; the fallback trigger therefore does not apply here — recorded per the issue's "unavailable checks" rule rather than reported as passed.
-- Keyboard-only preview activation: **not executed** — the in-app-browser automation surface could not drive Enter/Space activation (three key paths tried; element focuses, no activation). DOM facts: real `<button type="button">`, `tabindex` 0, not disabled — the control is keyboard-ready, and a pre-#143 headless-Chromium run passed this check, but **this run does not claim it**. Next executable step: re-run with headless Chromium.
+- Keyboard-only preview activation: **executed** (follow-up run, same day — see "Keyboard-only lane" below). The earlier blocker is now precisely characterized: the in-app-browser automation surface delivers printable keys (typed credentials reached React state) but does not honor Tab traversal or Enter/Space activation on any of three key paths; the check was therefore run in headless Chromium via Playwright CDP key events, where traversal and activation are native.
 - Narrow-viewport (390 × 844): executed in the **fixture** run only — no horizontal overflow (scrollWidth 375 = clientWidth 375), clean stacking (`g7_narrow_390_top.png`, `g7_narrow_390_preview.png`).
 - Teacher content/pedagogy review: **not performed** (human task). The semantic validator reported 5 warnings / 0 errors on the API trace and 0/0 on the GUI trace; validator coverage of mathematical and pedagogical quality remains unverified.
 - First live-server boot returned 503 on all auth routes; an identical-env restart resolved it and in-process reproduction of the same path passed throughout. Suspected first-boot fixture-provisioning failure inside the memoized composition; not root-caused — next executable step is a fresh-DB first-boot reproduction.
@@ -89,4 +107,7 @@ pnpm dev            # or: pnpm build && pnpm start
 # GUI: /login → amira.north@example.test (deterministic dev provider) →
 #   choose "Edu-Canvas Synthetic Classroom" → Create lesson → preview interaction.
 # API: the trace capture script mirrors the same chain and records the artifacts above.
+# Keyboard-only lane (follow-up run): node verify-kb-115.mjs from
+#   .scratch/ic1-2026-10-30-keyboard/ (playwright-core + cached Chromium 1248,
+#   KB_BASE_URL=http://localhost:3000). Zero clicks; 15 assertions.
 ```
