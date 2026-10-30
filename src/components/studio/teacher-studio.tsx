@@ -789,12 +789,15 @@ const TeacherLessonComposer = ({
 
       <form className="prompt-composer" onSubmit={submitGeneration}>
         <div className="prompt-composer__heading">
-          <label htmlFor="lesson-prompt">What should students practice?</label>
+          <label htmlFor="lesson-prompt" id="lesson-prompt-label">
+            What should students practice?
+          </label>
           <span>{prompt.length}/500</span>
         </div>
         <textarea
           id="lesson-prompt"
           name="prompt"
+          aria-labelledby="lesson-prompt-label"
           required
           maxLength={500}
           rows={3}
