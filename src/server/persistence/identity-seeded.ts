@@ -189,7 +189,7 @@ export const createSeededIdentityPersistence = (
         role: input.role,
         status: "active",
         revision: 1,
-        ...(input.learnerId && { learnerId: input.learnerId }),
+        ...(input.learner && { learnerId: input.learner.id }),
       };
       store.memberships.set(input.membershipId, membership);
       return Promise.resolve(structuredClone(membership));

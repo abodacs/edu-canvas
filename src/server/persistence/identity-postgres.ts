@@ -390,15 +390,17 @@ const grantMembership = async (
     on conflict (id) do nothing
   `;
 
-  if (input.learnerId) {
+  // A materialized roster learner is a student identity and carries the real
+  // roster fields, so teacher-facing surfaces never render a raw machine id.
+  if (input.learner) {
     await transaction`
       insert into identities (id, tenant_id, role, display_name, demo_handle, is_active)
       values (
-        ${input.learnerId},
+        ${input.learner.id},
         ${input.tenantId},
-        ${input.role},
-        ${input.learnerId},
-        ${input.learnerId},
+        'student',
+        ${input.learner.displayName},
+        ${input.learner.demoHandle},
         true
       )
       on conflict (id) do nothing
@@ -413,7 +415,7 @@ const grantMembership = async (
       ${input.tenantId},
       ${input.role},
       'active',
-      ${input.learnerId ?? null}
+      ${input.learner?.id ?? null}
     )
     on conflict (actor_id, tenant_id, role) do nothing
   `;

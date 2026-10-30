@@ -278,19 +278,25 @@ describe.skipIf(!isRunDatabaseTests)(
           tenantId: learnerTenantId,
           tenantName: learnerTenantName,
           role: "student",
-          learnerId,
+          learner: {
+            id: learnerId,
+            displayName: "Lina Farouk",
+            demoHandle: "lina.demo",
+          },
         })
       ).resolves.toMatchObject({
         membershipId: learnerMembershipId,
         status: "active",
       });
 
+      // The materialized identity carries the real roster fields, never a
+      // raw machine id a teacher-facing surface would render.
       await expect(readProvisionedLearnerIdentity()).resolves.toMatchObject({
         id: learnerId,
         tenant_id: learnerTenantId,
         role: "student",
-        display_name: learnerId,
-        demo_handle: learnerId,
+        display_name: "Lina Farouk",
+        demo_handle: "lina.demo",
         is_active: true,
       });
     });
@@ -306,7 +312,11 @@ describe.skipIf(!isRunDatabaseTests)(
           tenantId: learnerTenantId,
           tenantName: learnerTenantName,
           role: "student",
-          learnerId,
+          learner: {
+            id: learnerId,
+            displayName: "Lina Farouk",
+            demoHandle: "lina.demo",
+          },
         })
       ).resolves.toMatchObject({
         membershipId: learnerMembershipId,

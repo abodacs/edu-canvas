@@ -9,14 +9,11 @@ import {
   tenantIdSchema,
 } from "./identifiers";
 
+import type { ActorId, ClassId, MembershipId, TenantId } from "./identifiers";
 import type {
-  ActorId,
-  ClassId,
-  LearnerId,
-  MembershipId,
-  TenantId,
-} from "./identifiers";
-import type { IdentityPersistence } from "./persistence-port";
+  IdentityPersistence,
+  NewMembershipLearner,
+} from "./persistence-port";
 import type { IdentityRole } from "./types";
 
 /**
@@ -40,7 +37,7 @@ export interface GrantMembershipInput extends ProvisioningPrincipal {
   readonly tenantId: TenantId;
   readonly tenantName: string;
   readonly role: IdentityRole;
-  readonly learnerId?: LearnerId;
+  readonly learner?: NewMembershipLearner;
 }
 
 export interface AssignClassInput extends ProvisioningPrincipal {
@@ -77,7 +74,13 @@ const grantMembershipSchema = z.strictObject({
   tenantId: tenantIdSchema,
   tenantName: z.string().trim().min(1).max(200),
   role: z.enum(["teacher", "student"]),
-  learnerId: learnerIdSchema.optional(),
+  learner: z
+    .strictObject({
+      id: learnerIdSchema,
+      displayName: z.string().trim().min(1).max(200),
+      demoHandle: z.string().trim().min(1).max(200),
+    })
+    .optional(),
   principal: z.string().trim().min(1).max(200),
   requestId: z.string().trim().min(1).max(200),
 });
@@ -177,7 +180,7 @@ export const createIdentityProvisioning = (
         tenantId: parsed.tenantId,
         tenantName: parsed.tenantName,
         role: parsed.role,
-        ...(parsed.learnerId && { learnerId: parsed.learnerId }),
+        ...(parsed.learner && { learner: parsed.learner }),
       });
       await audit({
         operation: "grantMembership",

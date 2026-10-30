@@ -105,14 +105,22 @@ const fixture = {
       actorId: "actor_learner_lina",
       tenantKey: "north" as const,
       role: "student" as const,
-      learnerId: "learner_lina",
+      learner: {
+        id: "learner_lina",
+        displayName: "Lina Farouk",
+        demoHandle: "lina.demo",
+      },
     },
     {
       membershipId: "membership_yusuf_north",
       actorId: "actor_learner_yusuf",
       tenantKey: "north" as const,
       role: "student" as const,
-      learnerId: "learner_yusuf",
+      learner: {
+        id: "learner_yusuf",
+        displayName: "Yusuf Karim",
+        demoHandle: "yusuf.demo",
+      },
     },
   ],
   classAssignments: [
@@ -157,8 +165,11 @@ export const ensureSyntheticIdentityFixture = async (
         tenantId: parseTenantId(tenant.id),
         tenantName: tenant.name,
         role: membership.role,
-        ...("learnerId" in membership && {
-          learnerId: parseLearnerId(membership.learnerId),
+        ...("learner" in membership && {
+          learner: {
+            ...membership.learner,
+            id: parseLearnerId(membership.learner.id),
+          },
         }),
         principal,
         requestId: `fixture-membership-${membership.membershipId}`,

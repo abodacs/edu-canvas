@@ -127,13 +127,22 @@ export interface NewActorInput {
   readonly isActive?: boolean;
 }
 
+/**
+The roster learner a student membership carries. Trusted provisioning materializes the learner's identity row with these fields when it is missing.
+*/
+export interface NewMembershipLearner {
+  readonly id: LearnerId;
+  readonly displayName: string;
+  readonly demoHandle: string;
+}
+
 export interface NewMembershipInput {
   readonly membershipId: MembershipId;
   readonly actorId: ActorId;
   readonly tenantId: TenantId;
   readonly tenantName: string;
   readonly role: IdentityRole;
-  readonly learnerId?: LearnerId;
+  readonly learner?: NewMembershipLearner;
 }
 
 export interface NewClassAssignmentInput {
