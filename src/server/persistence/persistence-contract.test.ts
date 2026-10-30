@@ -10,6 +10,7 @@ import { getDemoSeedCounts } from "../seed-data";
 import { createGenerationRequestHash } from "../generation/types";
 import {
   parseActorId,
+  parseLearnerId,
   parseMembershipId,
   parseTenantId,
 } from "../identity/identifiers";
@@ -630,6 +631,15 @@ interface ProvisionedTenantRow {
   synthetic_data_only: boolean;
 }
 
+interface ProvisionedIdentityRow {
+  id: string;
+  tenant_id: string;
+  role: string;
+  display_name: string;
+  demo_handle: string;
+  is_active: boolean;
+}
+
 const withIdentityDatabase = async <T>(
   work: (sql: ReturnType<typeof postgres>) => Promise<T>
 ): Promise<T> => {
@@ -650,6 +660,14 @@ describe.skipIf(!isRunDatabaseTests)(
     const membershipId = parseMembershipId(`membership_issue_115_${runId}`);
     const tenantName = "Issue 115 regression school";
     const renamedTenantName = "Issue 115 regression school (renamed)";
+
+    const learnerTenantId = parseTenantId(`tenant_issue_115_learner_${runId}`);
+    const learnerActorId = parseActorId(`actor_issue_115_learner_${runId}`);
+    const learnerMembershipId = parseMembershipId(
+      `membership_issue_115_learner_${runId}`
+    );
+    const learnerId = parseLearnerId(`learner_issue_115_${runId}`);
+    const learnerTenantName = "Issue 115 learner school";
 
     const readProvisionedTenant = (): Promise<
       ProvisionedTenantRow | undefined
@@ -685,21 +703,89 @@ describe.skipIf(!isRunDatabaseTests)(
       });
     };
 
+    const readProvisionedLearnerIdentity = (): Promise<
+      ProvisionedIdentityRow | undefined
+    > => {
+      return withIdentityDatabase((sql) => {
+        return sql.begin(async (transaction) => {
+          await transaction`
+            select set_config('app.tenant_id', ${learnerTenantId}, true)
+          `;
+          const rows = await transaction<ProvisionedIdentityRow[]>`
+            select id, tenant_id, role, display_name, demo_handle, is_active
+            from identities
+            where id = ${learnerId}
+          `;
+          return rows[0];
+        });
+      });
+    };
+
+    const countLearnerIdentityRows = (): Promise<number> => {
+      return withIdentityDatabase((sql) => {
+        return sql.begin(async (transaction) => {
+          await transaction`
+            select set_config('app.tenant_id', ${learnerTenantId}, true)
+          `;
+          const rows = await transaction<{ count: string }[]>`
+            select count(*) as count
+            from identities
+            where id = ${learnerId}
+          `;
+          return Number(rows[0]?.count ?? 0);
+        });
+      });
+    };
+
+    const countLearnerMemberships = (): Promise<number> => {
+      return withIdentityDatabase((sql) => {
+        return sql.begin(async (transaction) => {
+          await transaction`
+            select set_config('app.tenant_id', ${learnerTenantId}, true)
+          `;
+          const rows = await transaction<{ count: string }[]>`
+            select count(*) as count
+            from memberships
+            where actor_id = ${learnerActorId}
+              and tenant_id = ${learnerTenantId}
+          `;
+          return Number(rows[0]?.count ?? 0);
+        });
+      });
+    };
+
     afterAll(async () => {
       await withIdentityDatabase(async (sql) => {
         await sql.begin(async (transaction) => {
           await transaction`
-          select set_config('app.tenant_id', ${tenantId}, true)
-        `;
+            select set_config('app.tenant_id', ${tenantId}, true)
+          `;
           await transaction`
-          delete from memberships where actor_id = ${actorId}
-        `;
+            delete from memberships where actor_id = ${actorId}
+          `;
           await transaction`
-          delete from actors where id = ${actorId}
-        `;
+            delete from actors where id = ${actorId}
+          `;
           await transaction`
-          delete from tenants where id = ${tenantId}
-        `;
+            delete from tenants where id = ${tenantId}
+          `;
+        });
+        await sql.begin(async (transaction) => {
+          await transaction`
+            select set_config('app.tenant_id', ${learnerTenantId}, true)
+          `;
+          await transaction`
+            delete from memberships where actor_id = ${learnerActorId}
+          `;
+          await transaction`
+            delete from identities where id = ${learnerId}
+          `;
+          await transaction`
+            delete from actors where id = ${learnerActorId}
+          `;
+          await transaction`
+            delete from tenants where id = ${learnerTenantId}
+          `;
         });
       });
     });
@@ -761,6 +847,63 @@ describe.skipIf(!isRunDatabaseTests)(
       await expect(persistence.readTenantName(tenantId)).resolves.toBe(
         renamedTenantName
       );
+    });
+
+    it("creates the missing learner identity before granting", async () => {
+      const persistence =
+        createPostgresIdentityPersistence(requireDatabaseUrl());
+
+      await persistence.createActor({
+        actorId: learnerActorId,
+        displayName: "Issue 115 regression learner",
+      });
+
+      // Neither a tenants row nor an identities row exists: the
+      // fresh-database shape for learner memberships from issue #115.
+      await expect(
+        persistence.grantMembership({
+          membershipId: learnerMembershipId,
+          actorId: learnerActorId,
+          tenantId: learnerTenantId,
+          tenantName: learnerTenantName,
+          role: "student",
+          learnerId,
+        })
+      ).resolves.toMatchObject({
+        membershipId: learnerMembershipId,
+        status: "active",
+      });
+
+      await expect(readProvisionedLearnerIdentity()).resolves.toMatchObject({
+        id: learnerId,
+        tenant_id: learnerTenantId,
+        role: "student",
+        display_name: learnerId,
+        demo_handle: learnerId,
+        is_active: true,
+      });
+    });
+
+    it("replays the learner grant idempotently", async () => {
+      const persistence =
+        createPostgresIdentityPersistence(requireDatabaseUrl());
+
+      await expect(
+        persistence.grantMembership({
+          membershipId: learnerMembershipId,
+          actorId: learnerActorId,
+          tenantId: learnerTenantId,
+          tenantName: learnerTenantName,
+          role: "student",
+          learnerId,
+        })
+      ).resolves.toMatchObject({
+        membershipId: learnerMembershipId,
+        status: "active",
+      });
+
+      await expect(countLearnerIdentityRows()).resolves.toBe(1);
+      await expect(countLearnerMemberships()).resolves.toBe(1);
     });
   }
 );

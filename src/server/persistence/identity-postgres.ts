@@ -389,6 +389,21 @@ const grantMembership = async (
       synthetic_data_only = true
   `;
 
+  if (input.learnerId) {
+    await transaction`
+      insert into identities (id, tenant_id, role, display_name, demo_handle, is_active)
+      values (
+        ${input.learnerId},
+        ${input.tenantId},
+        ${input.role},
+        ${input.learnerId},
+        ${input.learnerId},
+        true
+      )
+      on conflict (id) do nothing
+    `;
+  }
+
   await transaction`
     insert into memberships (id, actor_id, tenant_id, role, status, learner_id)
     values (
