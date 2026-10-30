@@ -8,8 +8,14 @@ import { buildValidatedLearningPath } from "../generation/learning-path";
 import { createDemoCurriculumContext } from "../generation/semantic-validation";
 import { getDemoSeedCounts } from "../seed-data";
 import { createGenerationRequestHash } from "../generation/types";
+import {
+  parseActorId,
+  parseMembershipId,
+  parseTenantId,
+} from "../identity/identifiers";
 import { createDrizzlePersistence } from "./drizzle";
 import { createPostgresPersistence } from "./postgres";
+import { createPostgresIdentityPersistence } from "./identity-postgres";
 import type {
   GenerationAttemptRecord,
   LessonGenerationRecord,
@@ -616,3 +622,145 @@ describe.skipIf(!isRunDatabaseTests)("PostgreSQL persistence parity", () => {
     });
   });
 });
+
+interface ProvisionedTenantRow {
+  id: string;
+  slug: string;
+  name: string;
+  synthetic_data_only: boolean;
+}
+
+const withIdentityDatabase = async <T>(
+  work: (sql: ReturnType<typeof postgres>) => Promise<T>
+): Promise<T> => {
+  const sql = postgres(requireDatabaseUrl(), { max: 1, prepare: false });
+
+  try {
+    return await work(sql);
+  } finally {
+    await sql.end({ timeout: 3 });
+  }
+};
+
+describe.skipIf(!isRunDatabaseTests)(
+  "identity persistence provisioning",
+  () => {
+    const tenantId = parseTenantId(`tenant_issue_115_${runId}`);
+    const actorId = parseActorId(`actor_issue_115_${runId}`);
+    const membershipId = parseMembershipId(`membership_issue_115_${runId}`);
+    const tenantName = "Issue 115 regression school";
+    const renamedTenantName = "Issue 115 regression school (renamed)";
+
+    const readProvisionedTenant = (): Promise<
+      ProvisionedTenantRow | undefined
+    > => {
+      return withIdentityDatabase((sql) => {
+        return sql.begin(async (transaction) => {
+          await transaction`
+            select set_config('app.tenant_id', ${tenantId}, true)
+          `;
+          const rows = await transaction<ProvisionedTenantRow[]>`
+            select id, slug, name, synthetic_data_only
+            from tenants
+            where id = ${tenantId}
+          `;
+          return rows[0];
+        });
+      });
+    };
+
+    const countActorMemberships = (): Promise<number> => {
+      return withIdentityDatabase((sql) => {
+        return sql.begin(async (transaction) => {
+          await transaction`
+            select set_config('app.tenant_id', ${tenantId}, true)
+          `;
+          const rows = await transaction<{ count: string }[]>`
+            select count(*) as count
+            from memberships
+            where actor_id = ${actorId} and tenant_id = ${tenantId}
+          `;
+          return Number(rows[0]?.count ?? 0);
+        });
+      });
+    };
+
+    afterAll(async () => {
+      await withIdentityDatabase(async (sql) => {
+        await sql.begin(async (transaction) => {
+          await transaction`
+          select set_config('app.tenant_id', ${tenantId}, true)
+        `;
+          await transaction`
+          delete from memberships where actor_id = ${actorId}
+        `;
+          await transaction`
+          delete from actors where id = ${actorId}
+        `;
+          await transaction`
+          delete from tenants where id = ${tenantId}
+        `;
+        });
+      });
+    });
+
+    it("creates the missing membership tenant before granting", async () => {
+      const persistence =
+        createPostgresIdentityPersistence(requireDatabaseUrl());
+
+      await persistence.createActor({
+        actorId,
+        displayName: "Issue 115 regression teacher",
+      });
+
+      // No tenants row exists for tenantId: the fresh-database shape from
+      // issue #115 where deterministic sign-in failed with a 503.
+      await expect(
+        persistence.grantMembership({
+          membershipId,
+          actorId,
+          tenantId,
+          tenantName,
+          role: "teacher",
+        })
+      ).resolves.toMatchObject({
+        membershipId,
+        actorId,
+        tenantId,
+        role: "teacher",
+        status: "active",
+      });
+
+      await expect(persistence.readTenantName(tenantId)).resolves.toBe(
+        tenantName
+      );
+
+      await expect(readProvisionedTenant()).resolves.toMatchObject({
+        id: tenantId,
+        slug: tenantId,
+        name: tenantName,
+        synthetic_data_only: true,
+      });
+    });
+
+    it("replays the same grant idempotently and updates the tenant name", async () => {
+      const persistence =
+        createPostgresIdentityPersistence(requireDatabaseUrl());
+
+      await expect(
+        persistence.grantMembership({
+          membershipId,
+          actorId,
+          tenantId,
+          tenantName: renamedTenantName,
+          role: "teacher",
+        })
+      ).resolves.toMatchObject({ membershipId, status: "active" });
+
+      await expect(countActorMemberships()).resolves.toBe(1);
+      await expect(persistence.readTenantName(tenantId)).resolves.toBe(
+        renamedTenantName
+      );
+    });
+  }
+);

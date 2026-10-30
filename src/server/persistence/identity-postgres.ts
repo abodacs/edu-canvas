@@ -382,6 +382,14 @@ const grantMembership = async (
   input: NewMembershipInput
 ): Promise<MembershipRecord> => {
   await transaction`
+    insert into tenants (id, slug, name, synthetic_data_only)
+    values (${input.tenantId}, ${input.tenantId}, ${input.tenantName}, true)
+    on conflict (id) do update set
+      name = excluded.name,
+      synthetic_data_only = true
+  `;
+
+  await transaction`
     insert into memberships (id, actor_id, tenant_id, role, status, learner_id)
     values (
       ${input.membershipId},
