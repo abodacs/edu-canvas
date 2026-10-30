@@ -964,7 +964,10 @@ describe("lesson generation service", () => {
         actor: syntheticLearnerActor() as unknown as TeacherActor,
         input: validInput,
       })
-    ).rejects.toThrow("Only a verified teacher can generate lesson drafts.");
+    ).rejects.toMatchObject({
+      name: "IdentityError",
+      code: "FORBIDDEN",
+    });
 
     expect(() => normalizeGenerationInput({ ...validInput, grade: 9 })).toThrow(
       "Generation input is invalid."

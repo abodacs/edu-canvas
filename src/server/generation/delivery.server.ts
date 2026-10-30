@@ -12,6 +12,7 @@ import { readJsonBody, noStoreJson } from "../http.server";
 import { readServerConfig } from "../config";
 import { createFoundationPersistence } from "../persistence";
 import { createConfiguredLessonDraftProvider } from "./factory";
+import { GenerationRequestError } from "./generation-request-error";
 import { createGenerationService } from "./service";
 
 import type { TeacherActor } from "../identity/types";
@@ -44,9 +45,18 @@ const resolveTeacher = async (request: Request): Promise<TeacherResolution> => {
     : { ok: true, actor: resolved.actor };
 };
 
-const mapGenerationError = (error: unknown): Response => {
+/**
+Map a generation failure to its transport response. Typed domain errors carry their own code, curated message, and status from the shared seam contract; everything else keeps the generic fallback so no internal detail escapes.
+*/
+export const mapGenerationError = (error: unknown): Response => {
   if (error instanceof IdentityError) {
     return identityErrorJson(error);
+  }
+  if (error instanceof GenerationRequestError) {
+    return noStoreJson(
+      { code: error.code, message: error.message },
+      error.status
+    );
   }
   return noStoreJson(
     {

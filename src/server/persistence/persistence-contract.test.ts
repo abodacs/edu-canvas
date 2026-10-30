@@ -1,6 +1,5 @@
 import { randomUUID } from "node:crypto";
 
-import postgres from "postgres";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { createEquivalentFractionsDraft } from "../generation/provider";
@@ -10,22 +9,17 @@ import { getDemoSeedCounts } from "../seed-data";
 import { createGenerationRequestHash } from "../generation/types";
 import { createDrizzlePersistence } from "./drizzle";
 import { createPostgresPersistence } from "./postgres";
+import {
+  isRunDatabaseTests,
+  requireDatabaseUrl,
+  withTenantSql,
+} from "./database-test-support";
 import type {
   GenerationAttemptRecord,
   LessonGenerationRecord,
 } from "../generation/types";
 import type { FoundationPersistence } from "../persistence";
 
-const databaseUrl = process.env.DATABASE_URL;
-const isDatabaseTestsEnabled = process.env.RUN_DATABASE_TESTS === "true";
-const isRunDatabaseTests = Boolean(databaseUrl && isDatabaseTestsEnabled);
-
-const requireDatabaseUrl = (): string => {
-  if (!databaseUrl) {
-    throw new Error("DATABASE_URL must be set for database contract tests.");
-  }
-  return databaseUrl;
-};
 const runId = randomUUID();
 
 const requireLearningPath = <T extends { learningPath?: unknown }>(
@@ -183,83 +177,63 @@ const createTenantFixture = async (suffix: string): Promise<TenantFixture> => {
   const teacherId = `actor_issue_42_${suffix}_${runId}`;
   const otherTeacherId = `actor_issue_42_${suffix}_other_${runId}`;
   const standardId = `standard_issue_42_${suffix}_${runId}`;
-  const sql = postgres(requireDatabaseUrl(), {
-    max: 1,
-    prepare: false,
+  await withTenantSql(tenantId, async (transaction) => {
+    await transaction`
+      insert into tenants (id, slug, name, synthetic_data_only)
+      values (${tenantId}, ${tenantId}, ${"Issue 42 contract fixture"}, true)
+    `;
+    await transaction`
+      insert into actors (id, display_name)
+      values
+        (${teacherId}, ${"Issue 42 fixture teacher"}),
+        (${otherTeacherId}, ${"Issue 42 other fixture teacher"})
+    `;
+    await transaction`
+      insert into standards (
+        id,
+        tenant_id,
+        code,
+        name,
+        subject,
+        grade_band
+      )
+      values (
+        ${standardId},
+        ${tenantId},
+        ${`ISSUE42-${suffix}`},
+        ${"Issue 42 contract standard"},
+        ${"Mathematics"},
+        ${"Grade 4"}
+      )
+    `;
   });
-
-  try {
-    await sql.begin(async (transaction) => {
-      await transaction`select set_config('app.tenant_id', ${tenantId}, true)`;
-      await transaction`
-        insert into tenants (id, slug, name, synthetic_data_only)
-        values (${tenantId}, ${tenantId}, ${"Issue 42 contract fixture"}, true)
-      `;
-      await transaction`
-        insert into actors (id, display_name)
-        values
-          (${teacherId}, ${"Issue 42 fixture teacher"}),
-          (${otherTeacherId}, ${"Issue 42 other fixture teacher"})
-      `;
-      await transaction`
-        insert into standards (
-          id,
-          tenant_id,
-          code,
-          name,
-          subject,
-          grade_band
-        )
-        values (
-          ${standardId},
-          ${tenantId},
-          ${`ISSUE42-${suffix}`},
-          ${"Issue 42 contract standard"},
-          ${"Mathematics"},
-          ${"Grade 4"}
-        )
-      `;
-    });
-  } finally {
-    await sql.end({ timeout: 3 });
-  }
 
   return { tenantId, teacherId, otherTeacherId, standardId };
 };
 
 const deleteTenantFixture = async (fixture: TenantFixture): Promise<void> => {
-  const sql = postgres(requireDatabaseUrl(), {
-    max: 1,
-    prepare: false,
+  await withTenantSql(fixture.tenantId, async (transaction) => {
+    await transaction`
+      delete from lesson_generation_attempts
+      where tenant_id = ${fixture.tenantId}
+    `;
+    await transaction`
+      delete from lesson_draft_requests
+      where tenant_id = ${fixture.tenantId}
+    `;
+    await transaction`
+      delete from standards
+      where tenant_id = ${fixture.tenantId}
+    `;
+    await transaction`
+      delete from actors
+      where id in (${fixture.teacherId}, ${fixture.otherTeacherId})
+    `;
+    await transaction`
+      delete from tenants
+      where id = ${fixture.tenantId}
+    `;
   });
-
-  try {
-    await sql.begin(async (transaction) => {
-      await transaction`select set_config('app.tenant_id', ${fixture.tenantId}, true)`;
-      await transaction`
-        delete from lesson_generation_attempts
-        where tenant_id = ${fixture.tenantId}
-      `;
-      await transaction`
-        delete from lesson_draft_requests
-        where tenant_id = ${fixture.tenantId}
-      `;
-      await transaction`
-        delete from standards
-        where tenant_id = ${fixture.tenantId}
-      `;
-      await transaction`
-        delete from actors
-        where id in (${fixture.teacherId}, ${fixture.otherTeacherId})
-      `;
-      await transaction`
-        delete from tenants
-        where id = ${fixture.tenantId}
-      `;
-    });
-  } finally {
-    await sql.end({ timeout: 3 });
-  }
 };
 
 const createGeneratingRecord = (

@@ -101,6 +101,7 @@ describe("membership selection over HTTP", () => {
       memberships: { membershipId: string; tenantName: string }[];
     };
 
+    // Amira's fixture shape now includes the curriculum classroom membership.
     expect({
       status: response.status,
       bodyStatus: body.status,
@@ -109,7 +110,7 @@ describe("membership selection over HTTP", () => {
     }).toStrictEqual({
       status: 200,
       bodyStatus: "membership-required",
-      membershipCount: 2,
+      membershipCount: 3,
       leaksVerifier: false,
     });
   });

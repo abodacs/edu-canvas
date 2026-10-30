@@ -13,8 +13,10 @@ import type { DeterministicAccount } from "./provider/deterministic";
 
 /**
  * Synthetic identity fixture for explicit local development and tests. Two
- * schools, two teachers in one school, two classes, and two learners, per the
- * spec's fixture requirement. It is invoked only by the development
+ * schools plus the curriculum-owning synthetic classroom, two teachers in one
+ * school, two classes, and two learners, per the spec's fixture requirement
+ * (the classroom membership the focused generation gate signs in through was
+ * added for issue #115). It is invoked only by the development
  * composition and by tests; it can never supply authority to a deployed
  * request because the deterministic provider is unreachable outside
  * development (config forces the hosted provider elsewhere).
@@ -58,6 +60,10 @@ const fixture = {
   tenants: {
     north: { id: "tenant_school_north", name: "Northside Elementary" },
     south: { id: "tenant_school_south", name: "Southside Middle" },
+    demo: {
+      id: "tenant_demo_eu_synthetic",
+      name: "Edu-Canvas Synthetic Classroom",
+    },
   },
   actors: [
     { id: "actor_teacher_amira", displayName: "Amira Haddad" },
@@ -66,6 +72,18 @@ const fixture = {
     { id: "actor_learner_yusuf", displayName: "Yusuf Karim" },
   ],
   memberships: [
+    {
+      membershipId: "membership_amira_demo",
+      actorId: "actor_teacher_amira",
+      tenantKey: "demo" as const,
+      role: "teacher" as const,
+    },
+    {
+      membershipId: "membership_bilal_demo",
+      actorId: "actor_teacher_bilal",
+      tenantKey: "demo" as const,
+      role: "teacher" as const,
+    },
     {
       membershipId: "membership_amira_north",
       actorId: "actor_teacher_amira",
@@ -89,14 +107,22 @@ const fixture = {
       actorId: "actor_learner_lina",
       tenantKey: "north" as const,
       role: "student" as const,
-      learnerId: "learner_lina",
+      learner: {
+        id: "learner_lina",
+        displayName: "Lina Farouk",
+        demoHandle: "lina.demo",
+      },
     },
     {
       membershipId: "membership_yusuf_north",
       actorId: "actor_learner_yusuf",
       tenantKey: "north" as const,
       role: "student" as const,
-      learnerId: "learner_yusuf",
+      learner: {
+        id: "learner_yusuf",
+        displayName: "Yusuf Karim",
+        demoHandle: "yusuf.demo",
+      },
     },
   ],
   classAssignments: [
@@ -105,7 +131,7 @@ const fixture = {
   ],
 } as const;
 
-const tenantFor = (key: "north" | "south") => fixture.tenants[key];
+const tenantFor = (key: keyof typeof fixture.tenants) => fixture.tenants[key];
 
 /**
  * Idempotent: provisioning operations are safe to replay. Running the fixture twice leaves one actor, membership, and binding per entry.
@@ -141,8 +167,11 @@ export const ensureSyntheticIdentityFixture = async (
         tenantId: parseTenantId(tenant.id),
         tenantName: tenant.name,
         role: membership.role,
-        ...("learnerId" in membership && {
-          learnerId: parseLearnerId(membership.learnerId),
+        ...("learner" in membership && {
+          learner: {
+            ...membership.learner,
+            id: parseLearnerId(membership.learner.id),
+          },
         }),
         principal,
         requestId: `fixture-membership-${membership.membershipId}`,

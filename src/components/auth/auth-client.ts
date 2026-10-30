@@ -3,7 +3,7 @@ import {
   csrfHeaderName,
   sessionProjectionSchema,
 } from "@/shared/identity-contract";
-import { readResponseJson } from "@/lib/http";
+import { isJsonObject, readResponseJson } from "@/lib/http";
 
 import type {
   ContinueSessionProjection,
@@ -66,9 +66,6 @@ export interface AuthBroadcastMessage {
   readonly generation: string | null;
 }
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null;
-
 const isAuthErrorCode = (value: unknown): value is AuthErrorCode => {
   return (
     typeof value === "string" &&
@@ -92,7 +89,7 @@ const contractFailure: AuthApiFailure = {
 const parseActiveProjection = (
   body: unknown
 ): ActiveSessionProjection | undefined => {
-  if (!isRecord(body)) {
+  if (!isJsonObject(body)) {
     return undefined;
   }
   const parsed = sessionProjectionSchema.safeParse({
@@ -107,10 +104,13 @@ const parseActiveProjection = (
 
 const toFailure = (response: Response, body: unknown): AuthApiFailure => {
   return {
-    code: isRecord(body) && isAuthErrorCode(body.code) ? body.code : "UNKNOWN",
+    code:
+      isJsonObject(body) && isAuthErrorCode(body.code) ? body.code : "UNKNOWN",
     status: response.status,
     message:
-      isRecord(body) && typeof body.message === "string" ? body.message : "",
+      isJsonObject(body) && typeof body.message === "string"
+        ? body.message
+        : "",
   };
 };
 
@@ -165,7 +165,9 @@ export const fetchAuthChallenge = async (): Promise<
     return result;
   }
   const { body } = result.data;
-  return !isRecord(body) || typeof body.csrf !== "string" || body.csrf === ""
+  return !isJsonObject(body) ||
+    typeof body.csrf !== "string" ||
+    body.csrf === ""
     ? { ok: false, error: contractFailure }
     : { ok: true, data: { csrf: body.csrf } };
 };
@@ -199,7 +201,7 @@ export const submitSignUp = async (
     return result;
   }
   const { body } = result.data;
-  return isRecord(body) && typeof body.email === "string"
+  return isJsonObject(body) && typeof body.email === "string"
     ? { ok: true, data: { email: body.email } }
     : { ok: false, error: contractFailure };
 };
@@ -236,7 +238,7 @@ export const fetchSession = async (): Promise<
   }
   const { body } = result.data;
   const csrf =
-    isRecord(body) && typeof body.csrf === "string" ? body.csrf : null;
+    isJsonObject(body) && typeof body.csrf === "string" ? body.csrf : null;
   const projection = parseActiveProjection(body);
   return projection
     ? { ok: true, data: { projection, csrf } }
@@ -315,7 +317,7 @@ export const subscribeToAuthSignals = (
     const channel = new BroadcastChannel(authBroadcastChannelName);
     const handleMessage = (event: MessageEvent<unknown>): void => {
       const { data } = event;
-      if (!isRecord(data)) {
+      if (!isJsonObject(data)) {
         return;
       }
       if (data.type !== "signed-out" && data.type !== "expired") {

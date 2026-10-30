@@ -13,6 +13,10 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef, useState } from "react";
 
 import { readResponseJson } from "@/lib/http";
+import {
+  GENERIC_GENERATION_FAILURE_MESSAGE,
+  resolveFailure,
+} from "@/lib/generation-failures";
 import { cn } from "@/lib/utilities";
 import { LessonPreview } from "@/components/a2ui/lesson-preview";
 import { Button } from "@/components/ui/button";
@@ -210,64 +214,6 @@ const getDiagnosticLabel = (
     : DIAGNOSTIC_SEVERITY_LABELS[diagnostic.severity];
 };
 
-const ERROR_COPY = {
-  rateLimited: "Too many requests right now. Wait a moment and try again.",
-  unavailable:
-    "Lesson generation is temporarily unavailable. Try again in a moment.",
-  forbidden: "You do not have access to generate lessons for this classroom.",
-  generic: "The draft could not be generated. Check the request and try again.",
-} as const;
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null;
-
-const readErrorCode = (payload: unknown): string | null => {
-  if (!isRecord(payload)) {
-    return null;
-  }
-
-  const { code } = payload;
-  return typeof code === "string" ? code : null;
-};
-
-interface GenerationFailure {
-  readonly unauthorized: boolean;
-  readonly message: string;
-}
-
-const FORBIDDEN_ERROR_CODES: ReadonlySet<string> = new Set([
-  "FORBIDDEN",
-  "CSRF_REJECTED",
-  "ACCESS_NOT_PROVISIONED",
-]);
-
-const isForbiddenFailure = (status: number, code: string | null): boolean =>
-  status === 403 || (code !== null && FORBIDDEN_ERROR_CODES.has(code));
-
-const resolveFailure = (
-  status: number,
-  code: string | null
-): GenerationFailure => {
-  if (status === 401 || code === "UNAUTHENTICATED") {
-    return { unauthorized: true, message: "" };
-  }
-
-  if (status === 429 || code === "RATE_LIMITED") {
-    return { unauthorized: false, message: ERROR_COPY.rateLimited };
-  }
-
-  if (status === 503 || code === "AUTH_UNAVAILABLE") {
-    return { unauthorized: false, message: ERROR_COPY.unavailable };
-  }
-
-  return {
-    unauthorized: false,
-    message: isForbiddenFailure(status, code)
-      ? ERROR_COPY.forbidden
-      : ERROR_COPY.generic,
-  };
-};
-
 type GenerationAttempt =
   | { readonly kind: "result"; readonly result: PublicGenerationResult }
   | { readonly kind: "unauthorized" }
@@ -288,22 +234,19 @@ const postGenerationRequest = async (
       body: JSON.stringify(input),
     });
   } catch {
-    return { kind: "error", message: ERROR_COPY.generic };
+    return { kind: "error", message: GENERIC_GENERATION_FAILURE_MESSAGE };
   }
 
   const payload = await readResponseJson(response);
 
   if (!response.ok) {
-    const failure = resolveFailure(response.status, readErrorCode(payload));
-    return failure.unauthorized
-      ? { kind: "unauthorized" }
-      : { kind: "error", message: failure.message };
+    return resolveFailure(response.status, payload);
   }
 
   const parsed = publicGenerationResultSchema.safeParse(payload);
   return parsed.success
     ? { kind: "result", result: parsed.data }
-    : { kind: "error", message: ERROR_COPY.generic };
+    : { kind: "error", message: GENERIC_GENERATION_FAILURE_MESSAGE };
 };
 
 const PromptSignals = ({

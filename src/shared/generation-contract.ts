@@ -39,6 +39,38 @@ export const lessonGenerationInputSchema = z
   })
   .strict();
 
+/**
+Stable machine codes the generation delivery seam rejects requests with, and
+the transport status each maps to, following the seam conventions (identity
+`CONFLICT` 409, `INVALID_INPUT` 422) and the design-doc error table
+(`NOT_FOUND` 404; conflict-family codes 409; revise-the-request codes 422).
+The client reads the same table to learn which rejections carry a curated, teacher-ready server message it must surface verbatim.
+*/
+export const generationRequestErrorCodeValues = [
+  "GENERATION_INPUT_INVALID",
+  "IDEMPOTENCY_CONFLICT",
+  "MODERATION_REVISION_REQUIRED",
+  "DRAFT_NOT_FOUND",
+  "DRAFT_NOT_RETRYABLE",
+  "RETRY_METADATA_MISMATCH",
+  "DRAFT_SUPERSEDED",
+  "CANCELLATION_FORBIDDEN",
+] as const;
+
+export type GenerationRequestErrorCode =
+  (typeof generationRequestErrorCodeValues)[number];
+
+export const generationRequestErrorStatusByCode = {
+  GENERATION_INPUT_INVALID: 422,
+  IDEMPOTENCY_CONFLICT: 409,
+  MODERATION_REVISION_REQUIRED: 422,
+  DRAFT_NOT_FOUND: 404,
+  DRAFT_NOT_RETRYABLE: 409,
+  RETRY_METADATA_MISMATCH: 409,
+  DRAFT_SUPERSEDED: 409,
+  CANCELLATION_FORBIDDEN: 409,
+} as const satisfies Record<GenerationRequestErrorCode, number>;
+
 export type LessonGenerationInput = z.infer<typeof lessonGenerationInputSchema>;
 export type LessonLanguage = (typeof languageValues)[number];
 export type LessonDifficulty = (typeof difficultyValues)[number];

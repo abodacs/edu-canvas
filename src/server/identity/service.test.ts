@@ -18,9 +18,25 @@ import type { IdentityError } from "./errors";
 
 import type { DeterministicAccount } from "./provider/deterministic";
 import type { IdentityServiceOptions } from "./service";
+import type { PendingMembershipOption } from "./types";
 
 const issuer = syntheticProviderIssuer;
 const fixturePassword = syntheticPasswordForTests;
+const curriculumTenantName = "Edu-Canvas Synthetic Classroom";
+
+/**
+The curriculum classroom membership is the designed default for harnesses that need an active session; the fixture teachers hold it next to their school tenancies.
+*/
+const curriculumMembershipOption = (
+  memberships: readonly PendingMembershipOption[]
+): PendingMembershipOption | undefined => {
+  return (
+    memberships.find((option) => option.tenantName === curriculumTenantName) ??
+    memberships.find((option) => option.membershipId.includes("_demo")) ??
+    memberships.find((option) => option.role === "teacher") ??
+    memberships[0]
+  );
+};
 
 const createHarness = async (
   overrides: Partial<IdentityServiceOptions> = {},
@@ -78,11 +94,20 @@ const expectCode = async (
 
 const activeSession = async () => {
   const harness = await createHarness();
-  const outcome = await harness.service.signIn({
+  const signIn = await harness.service.signIn({
     email: "bilal.north@example.test",
     password: fixturePassword,
     sourceAddress: "203.0.113.30",
   });
+  const outcome =
+    signIn.status === "membership-required"
+      ? await harness.service.selectMembership({
+          pendingCredential: signIn.pendingCredential,
+          membershipId:
+            curriculumMembershipOption(signIn.memberships)?.membershipId ?? "",
+          sourceAddress: "203.0.113.30",
+        })
+      : signIn;
   if (outcome.status !== "active") {
     throw new Error("expected an active session");
   }
@@ -90,11 +115,22 @@ const activeSession = async () => {
 };
 
 describe("sign-in and session establishment", () => {
-  it("establishes a teacher session for a single-membership actor", async () => {
+  it("establishes a teacher session for the selected school membership", async () => {
     const { service } = await createHarness();
-    const outcome = await service.signIn({
+    const signIn = await service.signIn({
       email: "bilal.north@example.test",
       password: fixturePassword,
+      sourceAddress: "203.0.113.7",
+    });
+    if (signIn.status !== "membership-required") {
+      throw new Error("expected a pending membership state");
+    }
+    const north = signIn.memberships.find(
+      (membership) => membership.tenantName === "Northside Elementary"
+    );
+    const outcome = await service.selectMembership({
+      pendingCredential: signIn.pendingCredential,
+      membershipId: north?.membershipId ?? "",
       sourceAddress: "203.0.113.7",
     });
 
@@ -215,12 +251,18 @@ describe("membership selection", () => {
       return;
     }
 
-    expect(outcome.memberships).toHaveLength(2);
+    // The fixture teachers also hold the curriculum classroom membership, so
+    // Amira's own list is now three tenancies.
+    expect(outcome.memberships).toHaveLength(3);
     expect(
       outcome.memberships
         .map((m) => m.tenantName)
         .toSorted((a, b) => a.localeCompare(b))
-    ).toStrictEqual(["Northside Elementary", "Southside Middle"]);
+    ).toStrictEqual([
+      "Edu-Canvas Synthetic Classroom",
+      "Northside Elementary",
+      "Southside Middle",
+    ]);
   });
 
   it("selects an own active membership and rotates the credential", async () => {

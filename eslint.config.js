@@ -54,6 +54,8 @@ export default [
       ".output/**",
       ".nitro/**",
       "teaching/**",
+      // Local evidence and scratch runs: gitignored one-off diagnostics.
+      ".scratch/**",
       // Vendored agent skills: upstream code, reviewed as a dependency.
       ".agents/skills/**",
       ".claude/skills/**",

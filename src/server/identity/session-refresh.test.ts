@@ -90,11 +90,24 @@ const createHarness = async (
     rateLimiter: createRateLimiter(),
   });
 
-  const signedIn = await service.signIn({
+  const signIn = await service.signIn({
     email,
     password,
     sourceAddress: "203.0.113.90",
   });
+  // The fixture teachers also hold the curriculum classroom membership, so the
+  // harness completes the designed selection with it before anything else.
+  const signedIn =
+    signIn.status === "membership-required"
+      ? await service.selectMembership({
+          pendingCredential: signIn.pendingCredential,
+          membershipId:
+            signIn.memberships.find(
+              (option) => option.tenantName === "Edu-Canvas Synthetic Classroom"
+            )?.membershipId ?? "",
+          sourceAddress: "203.0.113.90",
+        })
+      : signIn;
   if (signedIn.status !== "active") {
     throw new Error("expected an active session");
   }
