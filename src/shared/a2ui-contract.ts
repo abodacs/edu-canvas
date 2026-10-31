@@ -1,11 +1,24 @@
 import { z } from "zod";
 
+import { isAllowedLatexInput, parseLatexToMathML } from "@/shared/latex-mathml";
+
 export const A2UI_PROTOCOL_VERSION = "v0.9.1" as const;
 export const A2UI_CATALOG_VERSION = "matching-v1" as const;
 export const A2UI_CATALOG_ID =
   "https://edu-canvas.app/a2ui/v0.9.1/catalogs/matching-v1" as const;
 
-export const a2uiActionNames = [
+// #116: fractions-v2 joins as an explicit catalog on the same A2UI protocol.
+// matching-v1 keeps its original component and action set; the fraction catalog adds MathText, FractionDiagram, setFractionValue, and advanceStage.
+// Unknown components and actions fail closed per pinned catalog.
+export const FRACTIONS_CATALOG_VERSION = "fractions-v2" as const;
+export const FRACTIONS_CATALOG_ID =
+  "https://edu-canvas.app/a2ui/v0.9.1/catalogs/fractions-v2" as const;
+
+export const a2uiCatalogVersions = ["matching-v1", "fractions-v2"] as const;
+
+export type A2UICatalogVersion = (typeof a2uiCatalogVersions)[number];
+
+const matchingCatalogActionNames = [
   "selectSource",
   "selectTarget",
   "clearSelection",
@@ -16,9 +29,12 @@ export const a2uiActionNames = [
   "saveProgress",
 ] as const;
 
-export type A2UIActionName = (typeof a2uiActionNames)[number];
+const fractionsCatalogActionNames = [
+  "setFractionValue",
+  "advanceStage",
+] as const;
 
-export const a2uiComponentNames = [
+const matchingCatalogComponentNames = [
   "Column",
   "Row",
   "Card",
@@ -29,7 +45,57 @@ export const a2uiComponentNames = [
   "LearningPath",
 ] as const;
 
+const fractionsCatalogComponentNames = [
+  "Column",
+  "Row",
+  "Card",
+  "Text",
+  "MathText",
+  "FractionDiagram",
+  "Button",
+  "Status",
+] as const;
+
+export const a2uiActionNames = [
+  ...matchingCatalogActionNames,
+  ...fractionsCatalogActionNames,
+] as const;
+
+export type A2UIActionName = (typeof a2uiActionNames)[number];
+
+export const a2uiComponentNames = [
+  ...matchingCatalogComponentNames,
+  ...fractionsCatalogComponentNames,
+] as const;
+
 export type A2UIComponentName = (typeof a2uiComponentNames)[number];
+
+interface A2UICatalogDefinition {
+  readonly catalogId: string;
+  readonly components: readonly A2UIComponentName[];
+  readonly actions: readonly A2UIActionName[];
+}
+
+export const a2uiCatalogs = {
+  "matching-v1": {
+    catalogId: A2UI_CATALOG_ID,
+    components: matchingCatalogComponentNames,
+    actions: matchingCatalogActionNames,
+  },
+  "fractions-v2": {
+    catalogId: FRACTIONS_CATALOG_ID,
+    components: fractionsCatalogComponentNames,
+    actions: fractionsCatalogActionNames,
+  },
+} as const satisfies Record<A2UICatalogVersion, A2UICatalogDefinition>;
+
+export const a2uiCatalogVersionForId = (
+  catalogId: string
+): A2UICatalogVersion | undefined => {
+  return a2uiCatalogVersions.find(
+    (version) => a2uiCatalogs[version].catalogId === catalogId
+  );
+};
 
 const unsupportedMarkupPatterns = [
   /<\s{0,3}\/?\s{0,3}[a-z][^>]*>/iu,
@@ -38,14 +104,14 @@ const unsupportedMarkupPatterns = [
   /\bon\w+\s*=/iu,
 ];
 
-const componentIdSchema = z
+export const componentIdSchema = z
   .string()
   .trim()
   .min(1)
   .max(120)
   .regex(/^[A-Za-z0-9:_./-]+$/u);
 
-const safeTextSchema = z
+export const safeTextSchema = z
   .string()
   .trim()
   .min(1)
@@ -64,6 +130,8 @@ const actionContextSchema = z.strictObject({
   surfaceId: componentIdSchema,
   itemId: componentIdSchema.optional(),
   variantId: componentIdSchema.optional(),
+  // #116: stage changes name the section they advance from.
+  sectionId: componentIdSchema.optional(),
 });
 
 const actionSchema = z.strictObject({
@@ -111,6 +179,50 @@ const matchCardSchema = z.strictObject({
   action: actionSchema,
 });
 
+// #116 MathText: at most 500 characters of a bounded LaTeX subset. Markup,
+// executable handlers, external resources, and untrusted macros fail closed.
+// The structural parse runs again in validateA2UIMessage and at compile time.
+const latexSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(500)
+  .refine(
+    (value) =>
+      unsupportedMarkupPatterns.every((pattern) => !pattern.test(value)),
+    {
+      message: "Math text contains unsupported executable markup.",
+    }
+  )
+  .refine((value) => isAllowedLatexInput(value), {
+    message: "Math text uses a command or character outside the LaTeX subset.",
+  });
+
+const mathTextSchema = z.strictObject({
+  id: componentIdSchema,
+  component: z.literal("MathText"),
+  latex: latexSchema,
+  textEquivalent: safeTextSchema.optional(),
+});
+
+// #116 FractionDiagram: integer numerator 0 through denominator, whole
+// denominators 1-12, equal-sized wholes, labeled controls, and a text
+// equivalent. The numerator bound is enforced again in validateA2UIMessage.
+const fractionDiagramSchema = z.strictObject({
+  id: componentIdSchema,
+  component: z.literal("FractionDiagram"),
+  denominator: z.number().int().min(1).max(12),
+  numerator: z.number().int().min(0),
+  label: safeTextSchema,
+  textEquivalent: safeTextSchema.optional(),
+  action: z.strictObject({
+    event: z.strictObject({
+      name: z.literal("setFractionValue"),
+      context: actionContextSchema,
+    }),
+  }),
+});
+
 const buttonSchema = z.strictObject({
   id: componentIdSchema,
   component: z.literal("Button"),
@@ -136,6 +248,8 @@ export const a2uiComponentSchema = z.discriminatedUnion("component", [
   rowSchema,
   cardSchema,
   textSchema,
+  mathTextSchema,
+  fractionDiagramSchema,
   matchCardSchema,
   buttonSchema,
   statusSchema,
@@ -146,7 +260,10 @@ const createSurfaceSchema = z.strictObject({
   version: z.literal(A2UI_PROTOCOL_VERSION),
   createSurface: z.strictObject({
     surfaceId: componentIdSchema,
-    catalogId: z.literal(A2UI_CATALOG_ID),
+    catalogId: z.union([
+      z.literal(A2UI_CATALOG_ID),
+      z.literal(FRACTIONS_CATALOG_ID),
+    ]),
   }),
 });
 
@@ -196,12 +313,31 @@ const previewDataModelSchema = z
   })
   .readonly();
 
+// #116: fraction stages carry a leaner data model; no matching selection or
+// learning-path projection leaks into a fraction surface.
+const fractionDataModelSchema = z
+  .strictObject({
+    sectionId: componentIdSchema,
+    purpose: safeTextSchema,
+    standardId: componentIdSchema,
+    grade: z.number().int().min(3).max(6),
+    language: z.enum(["en", "ar"]),
+    direction: z.enum(["ltr", "rtl"]),
+    validationState: z.literal("ready-for-review"),
+  })
+  .readonly();
+
+export const a2uiDataModelSchema = z.union([
+  previewDataModelSchema,
+  fractionDataModelSchema,
+]);
+
 const updateDataModelSchema = z.strictObject({
   version: z.literal(A2UI_PROTOCOL_VERSION),
   updateDataModel: z.strictObject({
     surfaceId: componentIdSchema,
     path: z.literal("/"),
-    value: previewDataModelSchema,
+    value: a2uiDataModelSchema,
   }),
 });
 
@@ -222,6 +358,8 @@ export const a2uiMessageSchema = z.union([
 export type A2UIComponent = z.infer<typeof a2uiComponentSchema>;
 export type A2UIMessage = z.infer<typeof a2uiMessageSchema>;
 export type A2UIPreviewDataModel = z.infer<typeof previewDataModelSchema>;
+export type A2UIFractionDataModel = z.infer<typeof fractionDataModelSchema>;
+export type A2UIDataModel = z.infer<typeof a2uiDataModelSchema>;
 
 export type A2UIValidationResult =
   | { ok: true; value: A2UIMessage }
@@ -299,6 +437,86 @@ const hasUnknownComponent = (value: unknown): boolean => {
   });
 };
 
+const listUpdateComponents = (value: unknown): readonly unknown[] => {
+  if (!isRecord(value)) {
+    return [];
+  }
+  const components = value.updateComponents;
+  return isRecord(components) && Array.isArray(components.components)
+    ? components.components
+    : [];
+};
+
+const hasUnknownCatalog = (value: unknown): boolean => {
+  if (!isRecord(value) || !isRecord(value.createSurface)) {
+    return false;
+  }
+  const { catalogId } = value.createSurface;
+  return (
+    typeof catalogId === "string" &&
+    a2uiCatalogVersionForId(catalogId) === undefined
+  );
+};
+
+const hasComponentOutsideCatalog = (
+  value: unknown,
+  catalogVersion: A2UICatalogVersion
+): boolean => {
+  const catalog = a2uiCatalogs[catalogVersion];
+  return listUpdateComponents(value).some((component) => {
+    return (
+      isRecord(component) &&
+      typeof component.component === "string" &&
+      !(catalog.components as readonly string[]).includes(component.component)
+    );
+  });
+};
+
+const hasActionOutsideCatalog = (
+  value: unknown,
+  catalogVersion: A2UICatalogVersion
+): boolean => {
+  const catalog = a2uiCatalogs[catalogVersion];
+  return listUpdateComponents(value).some((component) => {
+    if (!isRecord(component) || !isRecord(component.action)) {
+      return false;
+    }
+    const { event } = component.action;
+    return (
+      isRecord(event) &&
+      typeof event.name === "string" &&
+      !(catalog.actions as readonly string[]).includes(event.name)
+    );
+  });
+};
+
+// #116: MathText payloads must parse into the MathML tree, not only pass the
+// character allowlist, so unbalanced groups and bad \frac arity fail closed.
+const hasInvalidMath = (value: unknown): boolean => {
+  return listUpdateComponents(value).some((component) => {
+    if (!isRecord(component) || component.component !== "MathText") {
+      return false;
+    }
+    const { latex } = component;
+    return typeof latex !== "string" || !parseLatexToMathML(latex).ok;
+  });
+};
+
+// #116: a fraction value may never exceed its whole.
+const hasInvalidFractionValue = (value: unknown): boolean => {
+  return listUpdateComponents(value).some((component) => {
+    if (!isRecord(component) || component.component !== "FractionDiagram") {
+      return false;
+    }
+    const { numerator, denominator } = component;
+    return (
+      typeof numerator === "number" &&
+      typeof denominator === "number" &&
+      numerator > denominator
+    );
+  });
+};
+
 const hasUnknownAction = (value: unknown): boolean => {
   if (!isRecord(value)) {
     return false;
@@ -340,7 +558,38 @@ const hasDuplicateComponentIds = (value: unknown): boolean => {
   return uniqueIds.size !== ids.length;
 };
 
-export const validateA2UIMessage = (value: unknown): A2UIValidationResult => {
+const catalogScopedFailure = (
+  value: unknown,
+  catalogVersion: A2UICatalogVersion
+): A2UIValidationResult | null => {
+  if (hasComponentOutsideCatalog(value, catalogVersion)) {
+    return {
+      ok: false,
+      code: "UNKNOWN_COMPONENT",
+      message: "The preview requested a component outside the trusted catalog.",
+    };
+  }
+  if (hasActionOutsideCatalog(value, catalogVersion)) {
+    return {
+      ok: false,
+      code: "UNKNOWN_ACTION",
+      message: "The preview requested an action outside the trusted catalog.",
+    };
+  }
+  return null;
+};
+
+export interface A2UIValidationOptions {
+  // When the caller pins a surface's catalog (the renderer pins it from
+  // createSurface), components and actions outside that catalog fail closed
+  // even though they belong to another known catalog.
+  readonly catalogVersion?: A2UICatalogVersion;
+}
+
+export const validateA2UIMessage = (
+  value: unknown,
+  options: A2UIValidationOptions = {}
+): A2UIValidationResult => {
   if (!isRecord(value)) {
     return {
       ok: false,
@@ -355,6 +604,21 @@ export const validateA2UIMessage = (value: unknown): A2UIValidationResult => {
       code: "UNSUPPORTED_VERSION",
       message: "This preview uses an unsupported A2UI protocol version.",
     };
+  }
+
+  if (hasUnknownCatalog(value)) {
+    return {
+      ok: false,
+      code: "UNSUPPORTED_CATALOG",
+      message: "This preview catalog version is not supported.",
+    };
+  }
+
+  const scopedFailure = options.catalogVersion
+    ? catalogScopedFailure(value, options.catalogVersion)
+    : null;
+  if (scopedFailure) {
+    return scopedFailure;
   }
 
   if (hasUnknownComponent(value)) {
@@ -395,6 +659,24 @@ export const validateA2UIMessage = (value: unknown): A2UIValidationResult => {
       ok: false,
       code: "UNSUPPORTED_PROPERTY",
       message: "The preview requested styling outside the trusted catalog.",
+    };
+  }
+
+  if (hasInvalidMath(value)) {
+    return {
+      ok: false,
+      code: "INVALID_MATH",
+      message:
+        "The preview contained math that does not parse and was blocked.",
+    };
+  }
+
+  if (hasInvalidFractionValue(value)) {
+    return {
+      ok: false,
+      code: "INVALID_FRACTION_VALUE",
+      message:
+        "The preview contained a fraction value outside its whole and was blocked.",
     };
   }
 

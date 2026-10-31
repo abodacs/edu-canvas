@@ -129,7 +129,14 @@ describe("lesson preview compiler", () => {
     );
 
     expect(pathComponents).toHaveLength(4);
-    expect(dataModels[0]?.learningPath).toMatchObject({
+
+    const [firstDataModel] = dataModels;
+
+    expect(
+      firstDataModel && "learningPath" in firstDataModel
+        ? firstDataModel.learningPath
+        : undefined
+    ).toMatchObject({
       direction: "forward",
       steps: [
         { role: "prerequisite", nodeId: "graph_node_equal_parts" },

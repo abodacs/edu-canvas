@@ -4,6 +4,7 @@ import type {
   LessonLanguage,
   PublicGenerationResult,
 } from "@/shared/generation-contract";
+import type { FractionLessonDraft } from "@/shared/fractions-contract";
 
 export interface NormalizedGenerationRequest {
   prompt: string;
@@ -176,6 +177,9 @@ export interface LessonGenerationRecord {
   diagnostics: GenerationDiagnostic[];
   provenance?: ProviderProvenance;
   draft?: LessonDraft | null;
+  // #116: a fraction-pinned record hydrates its draft here, leaving the
+  // matching draft contract untouched for every existing consumer.
+  fractionDraft?: FractionLessonDraft | null;
   attempts: GenerationAttemptRecord[];
   createdAt: string;
   updatedAt: string;

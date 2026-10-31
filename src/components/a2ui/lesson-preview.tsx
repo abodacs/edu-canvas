@@ -33,6 +33,9 @@ type PreviewStatus =
 
 interface LessonPreviewProperties {
   readonly requestId: string;
+  // The record's pinned catalog (from generation provenance). matching-v1
+  // stays the default for records that predate catalog pinning.
+  readonly catalogVersion?: string;
 }
 
 const describeSelection = (selection: SelectionState | undefined): string => {
@@ -54,9 +57,10 @@ const describeSelection = (selection: SelectionState | undefined): string => {
 
 interface SurfaceEntry {
   surfaceId: string;
-  variantId: string;
-  purpose: string;
-  scaffold: string;
+  tabId: string;
+  label: string;
+  sublabel: string;
+  description: string;
   direction: "ltr" | "rtl";
   language: "en" | "ar";
 }
@@ -72,12 +76,16 @@ const PreviewLoading = () => {
         <div />
         <div />
       </div>
-      <output>Receiving the four semantic lesson surfaces…</output>
+      <output>Receiving the semantic lesson surfaces…</output>
     </div>
   );
 };
 
-const usePreviewStream = (requestId: string, retryToken: number) => {
+const usePreviewStream = (
+  requestId: string,
+  retryToken: number,
+  catalogVersion: string
+) => {
   const [renderState, setRenderState] = useState<A2UIRenderState>(() =>
     createA2UIRenderState()
   );
@@ -102,7 +110,7 @@ const usePreviewStream = (requestId: string, retryToken: number) => {
 
     const url = new URL("/api/a2ui/preview", window.location.origin);
     url.searchParams.set("requestId", requestId);
-    url.searchParams.set("catalogVersion", A2UI_CATALOG_VERSION);
+    url.searchParams.set("catalogVersion", catalogVersion);
 
     const streamPreview = async () => {
       setStatus("loading");
@@ -133,7 +141,10 @@ const usePreviewStream = (requestId: string, retryToken: number) => {
         const surfaceCount = Object.keys(
           renderStateReference.current.surfaces
         ).length;
-        if (surfaceCount !== 4 || outcome.surfaceCount !== 4) {
+        // The stream declares how many surfaces the record compiles to; the
+        // count differs per catalog (four matching variants, one surface per
+        // fraction section), so the client checks integrity, not a fixed 4.
+        if (outcome.surfaceCount < 1 || surfaceCount !== outcome.surfaceCount) {
           setStatus("blocked");
           setStatusMessage(
             "The preview was incomplete, so it was stopped safely. Try opening it again."
@@ -142,7 +153,7 @@ const usePreviewStream = (requestId: string, retryToken: number) => {
         }
 
         setStatus("ready");
-        setStatusMessage("Four lesson variants are ready to explore.");
+        setStatusMessage("The lesson surfaces are ready to explore.");
         return;
       }
 
@@ -152,6 +163,9 @@ const usePreviewStream = (requestId: string, retryToken: number) => {
           "UNKNOWN_ACTION",
           "UNSAFE_PAYLOAD",
           "UNSUPPORTED_PROPERTY",
+          "UNSUPPORTED_CATALOG",
+          "INVALID_MATH",
+          "INVALID_FRACTION_VALUE",
         ].includes(outcome.code)
       ) {
         setStatus("blocked");
@@ -183,7 +197,7 @@ const usePreviewStream = (requestId: string, retryToken: number) => {
       controller.abort();
       clearTimeout(timeoutId);
     };
-  }, [requestId, retryToken]);
+  }, [requestId, retryToken, catalogVersion]);
 
   return { renderState, status, statusMessage };
 };
@@ -193,13 +207,15 @@ interface PreviewHeaderProperties {
   readonly statusMessage: string;
 }
 
-const PreviewHeader = ({ status, statusMessage }: PreviewHeaderProperties) => {
+const PreviewHeader = ({
+  status,
+  statusMessage,
+  catalogVersion,
+}: PreviewHeaderProperties & { readonly catalogVersion: string }) => {
   return (
     <div className="a2ui-preview__header">
       <div>
-        <p className="eyebrow">
-          Safe A2UI preview · catalog {A2UI_CATALOG_VERSION}
-        </p>
+        <p className="eyebrow">Safe A2UI preview · catalog {catalogVersion}</p>
         <h3 id="a2ui-preview-heading">
           Explore the lesson, one learning move at a time.
         </h3>
@@ -242,10 +258,10 @@ const VariantTabs = ({
         return (
           <button
             className={cn("a2ui-tab", { "is-active": isSelected })}
-            id={`a2ui-tab-${surface.variantId}`}
+            id={`a2ui-tab-${surface.tabId}`}
             key={surface.surfaceId}
             role="tab"
-            aria-controls={`a2ui-panel-${surface.variantId}`}
+            aria-controls={`a2ui-panel-${surface.tabId}`}
             aria-selected={isSelected}
             tabIndex={isSelected ? 0 : -1}
             ref={(element) => {
@@ -269,8 +285,8 @@ const VariantTabs = ({
               tabReferences.current[next.surfaceId]?.focus();
             }}
           >
-            <span>{surface.purpose}</span>
-            <small>{surface.scaffold}</small>
+            <span>{surface.label}</span>
+            {surface.sublabel ? <small>{surface.sublabel}</small> : null}
           </button>
         );
       })}
@@ -298,9 +314,9 @@ const SurfacePanel = ({
   return (
     <div
       className="a2ui-surface-panel"
-      id={`a2ui-panel-${entry.variantId}`}
+      id={`a2ui-panel-${entry.tabId}`}
       role="tabpanel"
-      aria-labelledby={`a2ui-tab-${entry.variantId}`}
+      aria-labelledby={`a2ui-tab-${entry.tabId}`}
       // WAI-ARIA APG: a panel with no focusable control must itself be
       // reachable by keyboard so screen-reader users can read its content.
       // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- tabpanel is a valid tab stop.
@@ -310,7 +326,7 @@ const SurfacePanel = ({
         className="a2ui-surface"
         dir={entry.direction}
         lang={entry.language}
-        aria-label={surface.dataModel?.accessibilityDescription}
+        aria-label={entry.description}
       >
         <A2UIComponentRenderer
           surface={surface}
@@ -319,9 +335,11 @@ const SurfacePanel = ({
           onAction={onAction}
           selection={selection}
         />
-        <p className="a2ui-selection-feedback" aria-live="polite">
-          {describeSelection(selection)}
-        </p>
+        {surface.catalogVersion === A2UI_CATALOG_VERSION && (
+          <p className="a2ui-selection-feedback" aria-live="polite">
+            {describeSelection(selection)}
+          </p>
+        )}
       </section>
     </div>
   );
@@ -356,11 +374,16 @@ const PreviewRecovery = ({
   );
 };
 
-export const LessonPreview = ({ requestId }: LessonPreviewProperties) => {
+export const LessonPreview = ({
+  requestId,
+  catalogVersion,
+}: LessonPreviewProperties) => {
   const [retryToken, setRetryToken] = useState(0);
+  const pinnedCatalogVersion = catalogVersion ?? A2UI_CATALOG_VERSION;
   const { renderState, status, statusMessage } = usePreviewStream(
     requestId,
-    retryToken
+    retryToken,
+    pinnedCatalogVersion
   );
   const [requestedSurfaceId, setRequestedSurfaceId] = useState<string | null>(
     null
@@ -373,12 +396,26 @@ export const LessonPreview = ({ requestId }: LessonPreviewProperties) => {
     const entries: SurfaceEntry[] = [];
     for (const [surfaceId, surface] of Object.entries(renderState.surfaces)) {
       const model = surface?.dataModel;
-      if (model) {
+      if (!model) {
+        continue;
+      }
+      if ("variantId" in model) {
         entries.push({
           surfaceId,
-          variantId: model.variantId,
-          purpose: model.purpose,
-          scaffold: model.scaffold,
+          tabId: model.variantId,
+          label: model.purpose,
+          sublabel: model.scaffold,
+          description: model.accessibilityDescription,
+          direction: model.direction,
+          language: model.language,
+        });
+      } else {
+        entries.push({
+          surfaceId,
+          tabId: model.sectionId,
+          label: model.purpose,
+          sublabel: "",
+          description: model.purpose,
           direction: model.direction,
           language: model.language,
         });
@@ -408,6 +445,19 @@ export const LessonPreview = ({ requestId }: LessonPreviewProperties) => {
         ? { ...current, [surfaceId]: {} }
         : current;
     });
+    // #116: in the teacher preview, advanceStage moves the previewed stage
+    // forward; the server-authorized learner transition lands with learner
+    // delivery and never persists anything from this preview.
+    if (action !== "advanceStage") {
+      return;
+    }
+    const currentIndex = surfaces.findIndex(
+      (surface) => surface.surfaceId === surfaceId
+    );
+    const next = surfaces[currentIndex + 1];
+    if (next) {
+      setRequestedSurfaceId(next.surfaceId);
+    }
   };
 
   const retryPreview = () => {
@@ -426,7 +476,11 @@ export const LessonPreview = ({ requestId }: LessonPreviewProperties) => {
 
   return (
     <section className="a2ui-preview" aria-labelledby="a2ui-preview-heading">
-      <PreviewHeader status={status} statusMessage={statusMessage} />
+      <PreviewHeader
+        status={status}
+        statusMessage={statusMessage}
+        catalogVersion={pinnedCatalogVersion}
+      />
 
       {status === "loading" && surfaces.length === 0 ? (
         <PreviewLoading />

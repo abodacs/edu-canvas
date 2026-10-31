@@ -577,6 +577,7 @@ const GenerationResult = ({ result, onRetry }: GenerationResultProperties) => {
             <LessonPreview
               key={result.requestId}
               requestId={result.requestId}
+              catalogVersion={result.provenance?.catalogVersion}
             />
           ) : null}
         </>

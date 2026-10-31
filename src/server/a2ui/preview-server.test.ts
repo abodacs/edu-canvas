@@ -253,3 +253,116 @@ describe("teacher lesson preview delivery seam", () => {
     expect(body).not.toContain("provenance");
   });
 });
+
+describe("fractions-v2 preview negotiation", () => {
+  const fractionRecord = {
+    requestId: draftRequestId,
+    tenantId: owningTeacher.tenantId,
+    teacherId: owningTeacher.actorId,
+    input: {
+      prompt: "equivalent fractions",
+      grade: 4,
+      standardId: demoSeed.standard.id,
+      language: "en",
+      difficulty: "on-level",
+      idempotencyKey: "fraction-preview-test",
+    },
+    state: "ready-for-review",
+    attempt: 1,
+    diagnostics: [],
+    attempts: [],
+    provenance: { catalogVersion: "fractions-v2" },
+    fractionDraft: {
+      requestId: draftRequestId,
+      standardId: demoSeed.standard.id,
+      grade: 4,
+      language: "en",
+      direction: "ltr",
+      title: "Equivalent fractions",
+      sections: [
+        {
+          sectionId: "section-equal-parts",
+          purpose: "Recognize equal parts",
+          stem: "\\frac{1}{2}",
+          stemTextEquivalent: "One half.",
+          diagramLabel: "Shade one half",
+          denominator: 2,
+          numerator: 1,
+        },
+        {
+          sectionId: "section-equivalence",
+          purpose: "Match equivalent names",
+          stem: "\\frac{2}{4} = \\frac{1}{2}",
+          diagramLabel: "Shade two quarters",
+          denominator: 4,
+          numerator: 2,
+        },
+      ],
+    },
+  };
+
+  const fractionRequest = (catalogVersion?: string): Request => {
+    const query = catalogVersion
+      ? `?requestId=${draftRequestId}&catalogVersion=${catalogVersion}`
+      : `?requestId=${draftRequestId}`;
+    return new Request(`http://localhost/api/a2ui/preview${query}`, {
+      headers: { cookie: "edu_canvas_session=owner-credential" },
+    });
+  };
+
+  beforeEach(() => {
+    sessionState.resolution = activeSession(owningTeacher);
+  });
+
+  it("refuses a request whose catalog does not match the pinned record", async () => {
+    persistenceState.current = {
+      readGeneration: () => fractionRecord,
+    };
+
+    const response = await handleLessonPreviewRequest(
+      fractionRequest("matching-v1")
+    );
+
+    expect(response.status).toBe(406);
+    await expect(response.json()).resolves.toMatchObject({
+      code: "UNSUPPORTED_CATALOG",
+    });
+  });
+
+  it("streams the fraction draft as one surface per section", async () => {
+    persistenceState.current = {
+      readGeneration: () => fractionRecord,
+    };
+
+    const response = await handleLessonPreviewRequest(
+      fractionRequest("fractions-v2")
+    );
+    const body = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-edu-canvas-catalog")).toBe("fractions-v2");
+    expect(body).toContain('"component":"MathText"');
+    expect(body).toContain('"component":"FractionDiagram"');
+    expect(body).toContain('"surfaceCount":2');
+  });
+
+  it("blocks a pinned fraction record whose draft breaks the contract", async () => {
+    persistenceState.current = {
+      readGeneration: () => {
+        return {
+          ...fractionRecord,
+          fractionDraft: { variants: [] },
+        };
+      },
+    };
+
+    const response = await handleLessonPreviewRequest(
+      fractionRequest("fractions-v2")
+    );
+
+    expect(response.status).toBe(422);
+    await expect(response.json()).resolves.toMatchObject({
+      code: "PREVIEW_BLOCKED",
+    });
+  });
+});

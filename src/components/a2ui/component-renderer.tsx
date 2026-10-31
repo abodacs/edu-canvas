@@ -1,4 +1,6 @@
 import { cn } from "@/lib/utilities";
+import { FractionDiagram } from "./fraction-diagram";
+import { MathText } from "./math-text";
 import type { ElementType, ReactNode } from "react";
 
 import type { A2UIComponent } from "@/shared/a2ui-contract";
@@ -13,7 +15,7 @@ const renderLearningPath = (
   dataModel: A2UIRenderSurface["dataModel"],
   surfaceId: string
 ): ReactNode => {
-  if (!dataModel?.learningPath) {
+  if (!dataModel || !("learningPath" in dataModel) || !dataModel.learningPath) {
     return null;
   }
   const { learningPath } = dataModel;
@@ -234,6 +236,12 @@ export const A2UIComponentRenderer = ({
       const variant = textVariants[component.variant ?? "body"];
       const Element = variant.element;
       return <Element className={variant.className}>{component.text}</Element>;
+    }
+    case "MathText": {
+      return <MathText component={component} />;
+    }
+    case "FractionDiagram": {
+      return <FractionDiagram component={component} />;
     }
     case "MatchCard": {
       return (
