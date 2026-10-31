@@ -695,31 +695,6 @@ h2 {
   margin-block-start: 0.5rem;
 }
 
-/* Progressive-enhancement scroll reveal. Animates only when the browser
-   supports scroll-driven animations AND motion is allowed; base state is
-   always visible, so content is never hidden by an unsupported feature. */
-@media (prefers-reduced-motion: no-preference) {
-  @supports (animation-timeline: view()) {
-    .reveal-in {
-      animation: lp-rise linear both;
-      animation-range: entry 6% cover 30%;
-      animation-timeline: view();
-    }
-
-    @keyframes lp-rise {
-      from {
-        opacity: 0.05;
-        translate: 0 1.75rem;
-      }
-
-      to {
-        opacity: 1;
-        translate: 0 0;
-      }
-    }
-  }
-}
-
 .site-footer {
   justify-content: space-between;
   border-block-start: 1px solid var(--border);
@@ -1113,9 +1088,9 @@ h2 {
   padding-inline: 0.85rem;
   text-align: start;
   transition:
-    border-color 0.2s cubic-bezier(0.25, 1, 0.5, 1),
-    background-color 0.2s cubic-bezier(0.25, 1, 0.5, 1),
-    transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+    border-color 150ms var(--ease-out),
+    background-color 150ms var(--ease-out),
+    transform 150ms var(--ease-out);
 }
 
 .a2ui-tab span {
@@ -1135,12 +1110,19 @@ h2 {
   box-shadow: inset 0 -2px 0 var(--primary);
 }
 
+.a2ui-tab:active,
+.a2ui-match-card:active,
+.a2ui-action:active,
+.a2ui-retry:active {
+  transform: scale(0.97);
+}
+
 @media (hover: hover) {
-  .a2ui-tab:hover,
+  .a2ui-tab:hover:not(.is-active),
   .a2ui-match-card:hover,
   .a2ui-action:hover,
   .a2ui-retry:hover {
-    transform: translateY(-2px);
+    border-color: color-mix(in oklch, var(--primary) 38%, var(--border));
   }
 }
 
@@ -1401,10 +1383,10 @@ h2 {
   font: inherit;
   min-block-size: 3rem;
   transition:
-    border-color 0.16s cubic-bezier(0.25, 1, 0.5, 1),
-    background-color 0.16s cubic-bezier(0.25, 1, 0.5, 1),
-    color 0.16s cubic-bezier(0.25, 1, 0.5, 1),
-    transform 0.16s cubic-bezier(0.25, 1, 0.5, 1);
+    border-color 160ms var(--ease-out),
+    background-color 160ms var(--ease-out),
+    color 160ms var(--ease-out),
+    transform 160ms var(--ease-out);
 }
 
 .a2ui-match-card {
@@ -1771,29 +1753,25 @@ h2 {
   }
 
   .reveal__target {
-    animation: reveal-settle 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: reveal-settle 240ms var(--ease-out) forwards;
     opacity: 0;
-    transform: translateY(6px);
-  }
-
-  .reveal__target:nth-child(1) {
-    animation-delay: 0.05s;
+    transform: translateY(4px);
   }
 
   .reveal__target:nth-child(2) {
-    animation-delay: 0.15s;
+    animation-delay: 30ms;
   }
 
   .reveal__target:nth-child(3) {
-    animation-delay: 0.25s;
+    animation-delay: 60ms;
   }
 
   .reveal__target:nth-child(4) {
-    animation-delay: 0.35s;
+    animation-delay: 90ms;
   }
 
   .reveal__equal-fill {
-    animation: reveal-fill 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+    animation: reveal-fill 400ms var(--ease-out) 120ms forwards;
     transform: scaleX(0);
     transform-origin: left;
   }
@@ -1927,7 +1905,6 @@ h2 {
 .studio-nav__exit svg {
   block-size: 0.9rem;
   inline-size: 0.9rem;
-  transition: transform 180ms var(--ease-out);
 }
 
 .teacher-studio {
@@ -2227,9 +2204,8 @@ h2 {
   min-block-size: 3.5rem;
   padding-inline: 1.25rem;
   transition:
-    background-color 180ms ease,
-    transform 140ms var(--ease-out),
-    box-shadow 180ms ease;
+    background-color 150ms ease,
+    transform 140ms var(--ease-out);
 }
 
 .prompt-composer__submit:active {
@@ -2321,10 +2297,7 @@ h2 {
   gap: 1.2rem;
   grid-column: span 4;
   min-block-size: 14rem;
-  transition:
-    transform 220ms var(--ease-out),
-    border-color 180ms ease,
-    box-shadow 180ms ease;
+  transition: border-color 150ms ease;
 }
 
 .insight-card--wide {
@@ -2489,11 +2462,6 @@ h2 {
 
 .guidance-panel > svg {
   color: var(--primary);
-  transition: transform 180ms var(--ease-out);
-}
-
-.guidance-panel.is-active > svg {
-  transform: translateX(3px);
 }
 
 .teacher-marquee {
@@ -2508,10 +2476,10 @@ h2 {
 }
 
 .teacher-marquee__track {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  animation: teacher-marquee 28s linear infinite;
-  min-inline-size: max-content;
+  gap: 0.25rem;
 }
 
 .teacher-marquee__track span {
@@ -2531,12 +2499,6 @@ h2 {
   background: var(--teacher-clay);
   block-size: 0.3rem;
   inline-size: 0.3rem;
-}
-
-@keyframes teacher-marquee {
-  to {
-    transform: translateX(-50%);
-  }
 }
 
 .teacher-generation-status {
@@ -2867,10 +2829,7 @@ h2 {
     color-mix(in oklch, var(--teacher-ink) 7%, transparent);
   gap: 0.85rem;
   min-inline-size: 0;
-  transition:
-    transform 220ms var(--ease-out),
-    border-color 180ms ease,
-    box-shadow 180ms ease;
+  transition: border-color 150ms ease;
 }
 
 .variant-card + .variant-card {
@@ -2998,18 +2957,12 @@ h2 {
     text-decoration-color: currentcolor;
   }
 
-  .studio-nav__exit:hover svg {
-    transform: translate(2px, -2px);
-  }
-
   .prompt-composer__submit:hover {
     background: color-mix(
       in oklch,
       var(--teacher-forest) 88%,
       var(--foreground)
     );
-    box-shadow: 0 1rem 2rem
-      color-mix(in oklch, var(--teacher-forest) 22%, transparent);
   }
 
   .guidance-panel:hover {
@@ -3017,23 +2970,13 @@ h2 {
     background: color-mix(in oklch, var(--teacher-mint) 65%, var(--card));
   }
 
-  .guidance-panel:hover > svg {
-    transform: translateX(3px);
-  }
-
   .insight-card:hover {
     border-color: color-mix(in oklch, var(--primary) 34%, var(--border));
-    box-shadow: 0 1.1rem 2.5rem
-      color-mix(in oklch, var(--teacher-forest) 10%, transparent);
-    transform: translateY(-0.3rem);
   }
 
   .variant-card:hover {
     z-index: 5;
     border-color: color-mix(in oklch, var(--primary) 36%, var(--border));
-    box-shadow: 0 1.4rem 2.8rem
-      color-mix(in oklch, var(--teacher-forest) 12%, transparent);
-    transform: translateY(-0.3rem);
   }
 }
 
@@ -3179,27 +3122,18 @@ h2 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .teacher-marquee__track {
-    animation-play-state: paused;
-    transform: none;
-  }
-
   .status-pulse > span {
     animation: none;
   }
 
   .studio-nav__exit,
-  .studio-nav__exit svg,
   .prompt-composer__submit,
   .insight-card,
   .guidance-panel,
-  .guidance-panel > svg,
   .variant-card {
     transition: none;
   }
 
-  .insight-card:hover,
-  .variant-card:hover,
   .guidance-panel:active,
   .prompt-composer__submit:active {
     transform: none;
@@ -3564,7 +3498,6 @@ h2 {
   padding-block: 0.55rem;
   padding-inline: 0.9rem;
   transform: translateY(-150%);
-  transition: transform 150ms var(--ease-out);
 }
 
 .skip-link:focus-visible {
@@ -3737,7 +3670,6 @@ h2 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .skip-link,
   .membership-option {
     transition: none;
   }
@@ -4167,7 +4099,7 @@ h2 {
   .source-panel,
   .source-panel__choose {
     transform: none;
-    transition: opacity 200ms ease;
+    transition: none;
   }
 
   .source-panel__choose:active {

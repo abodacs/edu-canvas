@@ -92,10 +92,7 @@ const TeacherHome = () => {
           <RevealPreview />
         </section>
 
-        <section
-          className="metric reveal-in"
-          aria-label="Teacher preparation time"
-        >
+        <section className="metric" aria-label="Teacher preparation time">
           <p className="metric__lead">Less prep. More teaching.</p>
           <div className="metric__row">
             <div className="metric__cell metric__cell--from">
@@ -113,10 +110,7 @@ const TeacherHome = () => {
           </p>
         </section>
 
-        <section
-          className="control reveal-in"
-          aria-labelledby="control-heading"
-        >
+        <section className="control" aria-labelledby="control-heading">
           <h2 id="control-heading">You stay in charge.</h2>
           <ul className="control__list">
             <li>
@@ -142,10 +136,7 @@ const TeacherHome = () => {
           </ul>
         </section>
 
-        <section
-          className="cta-final reveal-in"
-          aria-labelledby="cta-final-heading"
-        >
+        <section className="cta-final" aria-labelledby="cta-final-heading">
           <div className="cta-final__inner">
             <h2 id="cta-final-heading">Draft your first lesson in minutes.</h2>
             <p className="cta-final__sub">

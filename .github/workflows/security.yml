@@ -140,11 +140,13 @@ jobs:
         with:
           version: 10.17.1
 
+      # No pnpm cache: this job only reads the lockfile, so it never populates
+      # a store. setup-node's post step fails the job when the cache path it
+      # was given does not exist, which a lockfile change triggers.
       - name: Set up Node.js
         uses: actions/setup-node@v7.1.0
         with:
           node-version: 26
-          cache: pnpm
 
       - name: Run pnpm audit
         run: |

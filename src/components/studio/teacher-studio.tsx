@@ -9,8 +9,6 @@ import {
   WandSparkles,
   FileText,
 } from "lucide-react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef, useState } from "react";
 
 import { readResponseJson } from "@/lib/http";
@@ -432,23 +430,19 @@ const TeacherGuidance = ({
 
         <div className="teacher-marquee" aria-hidden="true">
           <div className="teacher-marquee__track">
-            {Array.from({ length: 2 }, () => {
-              return [
-                "clear target",
-                "visible support",
-                "teacher approval",
-                "a reason to continue",
-              ];
-            })
-              .flat()
-              .map((item, index) => {
-                return (
-                  <span key={`${item}-${index}`}>
-                    {item}
-                    <i aria-hidden="true" />
-                  </span>
-                );
-              })}
+            {[
+              "clear target",
+              "visible support",
+              "teacher approval",
+              "a reason to continue",
+            ].map((item) => {
+              return (
+                <span key={item}>
+                  {item}
+                  <i aria-hidden="true" />
+                </span>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -477,33 +471,8 @@ const GenerationResult = ({
   const hasValidationFindings =
     result.diagnosticsRollup.screens.length > 0 ||
     result.diagnosticsRollup.flow.length > 0;
-  const isShowsValidationPanel = isBlockedByValidation && hasValidationFindings;
-  const stackReference = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const stack = stackReference.current;
-    if (
-      !stack ||
-      typeof window === "undefined" ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
-      return () => {
-        // Nothing was animated, so there is nothing to clean up.
-      };
-    }
-
-    const animationContext = gsap.context(() => {
-      gsap.from(".variant-card", {
-        opacity: 0,
-        transform: "translate3d(0, 24px, 0) scale(0.97)",
-        duration: 0.48,
-        ease: "expo.out",
-        stagger: 0.07,
-      });
-    }, stack);
-
-    return () => animationContext.revert();
-  }, [result.requestId]);
+  const hasVisibleValidationPanel =
+    isBlockedByValidation && hasValidationFindings;
 
   return (
     <div
@@ -530,7 +499,7 @@ const GenerationResult = ({
         </span>
       </div>
 
-      {isShowsValidationPanel ? (
+      {hasVisibleValidationPanel ? (
         <ValidationDiagnostics
           rollup={result.diagnosticsRollup}
           requestId={result.requestId}
@@ -540,7 +509,7 @@ const GenerationResult = ({
         />
       ) : null}
 
-      {!isShowsValidationPanel && result.diagnostics.length > 0 ? (
+      {!hasVisibleValidationPanel && result.diagnostics.length > 0 ? (
         <ul
           className="diagnostic-list teacher-diagnostics"
           aria-label="Draft notes"
@@ -602,7 +571,6 @@ const GenerationResult = ({
 
             <section
               className="variant-stack"
-              ref={stackReference}
               aria-label="Generated lesson variants"
             >
               {result.draft.variants.map((variant) => {
@@ -695,59 +663,11 @@ const TeacherLessonComposer = ({
   // The reviewed source snapshot the next draft is grounded in (#114). Null
   // keeps the prompt-only path the focused event composer relies on.
   const [boundSource, setBoundSource] = useState<BoundSource | null>(null);
-  const studioReference = useRef<HTMLElement>(null);
   const context = getPromptContext(prompt);
 
   useEffect(() => {
     generationReference.current = generation;
   }, [generation]);
-
-  useEffect(() => {
-    const root = studioReference.current;
-    if (!root || typeof window === "undefined") {
-      return () => {
-        // Nothing was animated, so there is nothing to clean up.
-      };
-    }
-
-    gsap.registerPlugin(ScrollTrigger);
-
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return () => {
-        // Nothing was animated, so there is nothing to clean up.
-      };
-    }
-
-    const animationContext = gsap.context(() => {
-      gsap.from(".insight-card", {
-        opacity: 0,
-        transform: "translate3d(0, 18px, 0)",
-        duration: 0.62,
-        ease: "expo.out",
-        stagger: 0.06,
-        scrollTrigger: {
-          trigger: ".insight-grid",
-          start: "top 80%",
-          once: true,
-        },
-      });
-
-      const guidance = root.querySelector<HTMLElement>(".teacher-guidance");
-      const rail = root.querySelector<HTMLElement>(".teacher-guidance__rail");
-
-      if (guidance && rail && window.matchMedia("(min-width: 60rem)").matches) {
-        ScrollTrigger.create({
-          trigger: guidance,
-          start: "top top+=96",
-          end: "bottom bottom-=64",
-          pin: rail,
-          pinSpacing: false,
-        });
-      }
-    }, root);
-
-    return () => animationContext.revert();
-  }, []);
 
   const updateRequestKey = () => {
     requestKeyReference.current = "";
@@ -821,11 +741,7 @@ const TeacherLessonComposer = ({
   };
 
   return (
-    <section
-      ref={studioReference}
-      className="teacher-studio"
-      aria-labelledby="generation-heading"
-    >
+    <section className="teacher-studio" aria-labelledby="generation-heading">
       <div className="teacher-hero">
         <div className="teacher-hero__copy">
           <p className="studio-kicker">
