@@ -1,6 +1,5 @@
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
 
-import "@fontsource-variable/hanken-grotesk/index.css";
 import appCss from "../styles.css?url";
 
 import type { ReactNode } from "react";
@@ -39,6 +38,13 @@ export const Route = createRootRoute({
       ],
       links: [
         { rel: "stylesheet", href: appCss },
+        {
+          rel: "preload",
+          href: "/fonts/hanken-grotesk-variable-core.woff2",
+          as: "font",
+          type: "font/woff2",
+          crossOrigin: "anonymous",
+        },
         { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       ],
     };

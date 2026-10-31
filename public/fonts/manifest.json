@@ -1,0 +1,65 @@
+{
+  "family": "Hanken Grotesk Variable",
+  "weightRange": [
+    400,
+    800
+  ],
+  "featuresKept": [
+    "ccmp",
+    "kern",
+    "liga",
+    "locl",
+    "mark",
+    "mkmk"
+  ],
+  "vendor": {
+    "file": "scripts/fonts/vendor/HankenGrotesk-wght.ttf",
+    "sha256": "813b3f8fa0965405669a89b38e51bbefd95eef6b8e20d1cb2d8c10cce062662f",
+    "fontsourceReferenceVersion": "absent"
+  },
+  "tools": {
+    "python": "3.13.5",
+    "fonttools": "4.68.0",
+    "brotli": "1.2.1"
+  },
+  "outputs": {
+    "hanken-grotesk-variable-core.woff2": {
+      "bytes": 21536,
+      "sha256": "e885d20751a657141a97ce053f01abc4b2cbdfaa68f944349f0a297409897637",
+      "glyphs": 118,
+      "axes": [
+        [
+          "wght",
+          100.0,
+          900.0
+        ]
+      ],
+      "features": [
+        "ccmp",
+        "kern",
+        "liga",
+        "locl"
+      ],
+      "unicodeRange": "U+0020-007E, U+00B7, U+2013-2014, U+2018-2019, U+201C-201D, U+2026",
+      "codepoints": 103
+    },
+    "hanken-grotesk-variable-extended.woff2": {
+      "bytes": 20180,
+      "sha256": "dc21cfadcc22eee5fe6dce4c09374a88b0c67399b9caf64239f4f7ad2ae1f4b1",
+      "glyphs": 302,
+      "axes": [
+        [
+          "wght",
+          100.0,
+          900.0
+        ]
+      ],
+      "features": [
+        "kern",
+        "locl"
+      ],
+      "unicodeRange": "U+00A0-00B6, U+00B8-017E",
+      "codepoints": 222
+    }
+  }
+}
