@@ -2,7 +2,7 @@
 
 Use this guide to report a problem, propose a bounded change, or prepare a contribution for review. Follow [CODING_STANDARDS.md](CODING_STANDARDS.md) for code rules and [coding patterns](docs/engineering/coding-patterns.md) for design guidance.
 
-## Run the synthetic demo
+## Run with synthetic fixtures
 
 Use Node.js 26 or newer and the pnpm version pinned in [package.json](package.json), currently 10.17.1.
 
@@ -11,7 +11,9 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-Open `http://localhost:3000`. Without an environment file, the demo uses deterministic synthetic fixtures and needs no database or provider credentials. See the [foundation runbook](docs/foundation-runbook.md) for environment overrides, Git worktrees, and PostgreSQL setup.
+Open `http://localhost:3000`. Without an environment file, the app uses deterministic synthetic fixtures and needs no database or provider credentials. The fixture provider drives the same generation, validation, safety, and preview seams as a live model.
+
+To generate with a real model, set `DEMO_MODE=false` and provide `OPENAI_API_KEY`; PostgreSQL is then required. See the [foundation runbook](docs/foundation-runbook.md) for environment overrides, Git worktrees, and PostgreSQL setup.
 
 Keep private answer keys, mastery, permissions, and credentials on the server. Use synthetic examples in contributions. Preserve the [architecture boundaries](docs/architecture-harness.md) and [safety boundaries](README.md#safety-boundaries-non-negotiable-even-under-deadline-pressure).
 
@@ -71,7 +73,7 @@ Choose checks that exercise the change and relevant failure paths. [package.json
 | Application code | Run `pnpm check` and relevant behavior tests; run `pnpm test:coverage` for coverage evidence |
 | Persistence or migrations | Follow the [database runbook](docs/foundation-runbook.md#postgresql-migration-and-seed); run `pnpm test:database` against a configured local PostgreSQL database |
 | Runtime or API behavior | After building, start the server with `pnpm start`; run `pnpm smoke` in another terminal |
-| UI or interaction | Exercise the affected flow, keyboard controls, responsive layout, and applicable Arabic/RTL behavior |
+| UI or interaction | Exercise the affected flow, keyboard controls, and responsive layout. |
 
 For example, check the root contribution guides and issue forms with:
 
