@@ -3,6 +3,7 @@ import type {
   LessonDifficulty,
   LessonLanguage,
   PublicGenerationResult,
+  SemanticValidationVerdict,
 } from "@/shared/generation-contract";
 import type { FractionLessonDraft } from "@/shared/fractions-contract";
 
@@ -129,7 +130,7 @@ export interface GenerationDiagnostic {
   field?: string;
   nodeId?: string;
   validator?: "curriculum" | "learning-quality";
-  verdict?: "pass" | "warning" | "block";
+  verdict?: SemanticValidationVerdict;
   validatorVersion?: string;
   recommendation?: string;
 }

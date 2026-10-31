@@ -11,9 +11,11 @@ import {
 import type {
   SemanticValidationInput,
   SemanticValidationReport,
+  SemanticValidationVerdict,
   VersionedCurriculumContext,
 } from "./semantic-validation";
 import type {
+  DiagnosticSeverity,
   GenerationDiagnostic,
   NormalizedGenerationRequest,
   ProviderLessonDraft,
@@ -83,6 +85,27 @@ const curriculumContextDiagnostic = (
       );
 };
 
+const diagnosticSeverity = (
+  verdict: SemanticValidationVerdict
+): DiagnosticSeverity => {
+  switch (verdict) {
+    case "pass": {
+      // Pass findings are filtered before this mapping runs.
+      return "warning";
+    }
+    case "warning": {
+      return "warning";
+    }
+    case "hard_block": {
+      return "error";
+    }
+    default: {
+      const exhaustive: never = verdict;
+      throw new Error(`Unhandled semantic validation verdict: ${exhaustive}`);
+    }
+  }
+};
+
 const semanticValidationDiagnostics = (
   report: SemanticValidationReport
 ): GenerationDiagnostic[] => {
@@ -90,7 +113,7 @@ const semanticValidationDiagnostics = (
     .filter((finding) => finding.verdict !== "pass")
     .map((finding) => {
       return {
-        severity: finding.verdict === "warning" ? "warning" : "error",
+        severity: diagnosticSeverity(finding.verdict),
         code: finding.code,
         message: finding.reason,
         ...(finding.variantId && { variantId: finding.variantId }),
@@ -205,7 +228,7 @@ export const reviewDraftForAcceptance = async (
     ...structuralDiagnostics,
     ...semanticValidationDiagnostics(report),
   ];
-  if (report.status === "retryable" || report.verdict === "block") {
+  if (report.status === "retryable" || report.verdict === "hard_block") {
     return {
       state:
         report.status === "retryable"

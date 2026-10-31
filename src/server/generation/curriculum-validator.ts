@@ -89,7 +89,7 @@ const validatePathNodes = (
     if (!nodeIds.has(nodeId)) {
       findings.push(
         finding("curriculum", curriculumValidatorVersion, {
-          verdict: "block",
+          verdict: "hard_block",
           code: "UNKNOWN_PATH_NODE",
           field: PATH_NODE_IDS_FIELD,
           nodeId,
@@ -103,7 +103,7 @@ const validatePathNodes = (
     if (seen.has(nodeId)) {
       findings.push(
         finding("curriculum", curriculumValidatorVersion, {
-          verdict: "block",
+          verdict: "hard_block",
           code: "PATH_CYCLE",
           field: PATH_NODE_IDS_FIELD,
           nodeId,
@@ -156,7 +156,7 @@ const validatePathEdges = (
 
     findings.push(
       finding("curriculum", curriculumValidatorVersion, {
-        verdict: "block",
+        verdict: "hard_block",
         code: "INVALID_PATH_EDGE",
         field: PATH_NODE_IDS_FIELD,
         nodeId: current,
@@ -181,7 +181,7 @@ const validatePathScreenPurposes = (
   if (path.screenPurposeIds.length !== path.nodeIds.length) {
     findings.push(
       finding("curriculum", curriculumValidatorVersion, {
-        verdict: "block",
+        verdict: "hard_block",
         code: "PATH_SCREEN_PURPOSE_MISMATCH",
         field: "path.screenPurposeIds",
         reason:
@@ -204,7 +204,7 @@ const validatePathScreenPurposes = (
 
     findings.push(
       finding("curriculum", curriculumValidatorVersion, {
-        verdict: "block",
+        verdict: "hard_block",
         code: "UNAPPROVED_SCREEN_PURPOSE",
         field: "path.screenPurposeIds",
         ...(nodeId && { nodeId }),
@@ -230,7 +230,7 @@ const validatePathTarget = (
 
   findings.push(
     finding("curriculum", curriculumValidatorVersion, {
-      verdict: "block",
+      verdict: "hard_block",
       code: "PATH_TARGET_MISMATCH",
       field: PATH_NODE_IDS_FIELD,
       nodeId: targetNode,
@@ -255,7 +255,7 @@ const validatePath = (
   if (path.nodeIds.length < 2) {
     findings.push(
       finding("curriculum", curriculumValidatorVersion, {
-        verdict: "block",
+        verdict: "hard_block",
         code: "PATH_TOO_SHORT",
         field: PATH_NODE_IDS_FIELD,
         reason:
@@ -298,7 +298,7 @@ const validateRelationships = (
       ) {
         findings.push(
           finding("curriculum", curriculumValidatorVersion, {
-            verdict: "block",
+            verdict: "hard_block",
             code: "ANSWER_MISMATCH",
             field: "relationships",
             variantId: variant.id,
@@ -341,7 +341,7 @@ export const reviewCurriculum = (
     if (!value.trim()) {
       findings.push(
         finding("curriculum", curriculumValidatorVersion, {
-          verdict: "block",
+          verdict: "hard_block",
           code: "CURRICULUM_CONTEXT_INVALID",
           field,
           reason: "The versioned curriculum context is incomplete.",
@@ -355,7 +355,7 @@ export const reviewCurriculum = (
   if (!nodeIds.has(input.context.targetNodeId)) {
     findings.push(
       finding("curriculum", curriculumValidatorVersion, {
-        verdict: "block",
+        verdict: "hard_block",
         code: "UNKNOWN_TARGET_NODE",
         field: "curriculum.targetNodeId",
         nodeId: input.context.targetNodeId,
@@ -371,7 +371,7 @@ export const reviewCurriculum = (
     if (!nodeIds.has(edge.prerequisiteId)) {
       findings.push(
         finding("curriculum", curriculumValidatorVersion, {
-          verdict: "block",
+          verdict: "hard_block",
           code: "UNKNOWN_GRAPH_NODE",
           field: CURRICULUM_EDGES_FIELD,
           nodeId: edge.prerequisiteId,
@@ -384,7 +384,7 @@ export const reviewCurriculum = (
     if (!nodeIds.has(edge.successorId)) {
       findings.push(
         finding("curriculum", curriculumValidatorVersion, {
-          verdict: "block",
+          verdict: "hard_block",
           code: "UNKNOWN_GRAPH_NODE",
           field: CURRICULUM_EDGES_FIELD,
           nodeId: edge.successorId,
@@ -399,7 +399,7 @@ export const reviewCurriculum = (
   if (hasGraphCycle(input.context)) {
     findings.push(
       finding("curriculum", curriculumValidatorVersion, {
-        verdict: "block",
+        verdict: "hard_block",
         code: "GRAPH_CYCLE",
         field: CURRICULUM_EDGES_FIELD,
         reason:

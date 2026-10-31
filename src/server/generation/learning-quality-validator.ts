@@ -160,7 +160,7 @@ const reviewVariantLanguage = (
   if (variant.languageMetadata.language !== language) {
     findings.push(
       finding(LEARNING_QUALITY_VALIDATOR_ID, learningQualityValidatorVersion, {
-        verdict: "block",
+        verdict: "hard_block",
         code: "LANGUAGE_MISMATCH",
         field: "languageMetadata",
         variantId: variant.id,
@@ -175,7 +175,7 @@ const reviewVariantLanguage = (
   if (variant.languageMetadata.direction !== expectedDirection) {
     findings.push(
       finding(LEARNING_QUALITY_VALIDATOR_ID, learningQualityValidatorVersion, {
-        verdict: "block",
+        verdict: "hard_block",
         code: "DIRECTION_MISMATCH",
         field: "languageMetadata",
         variantId: variant.id,
@@ -190,7 +190,7 @@ const reviewVariantLanguage = (
   if (language === "ar" && !hasArabicText(variant)) {
     findings.push(
       finding(LEARNING_QUALITY_VALIDATOR_ID, learningQualityValidatorVersion, {
-        verdict: "block",
+        verdict: "hard_block",
         code: "LANGUAGE_CONTENT_MISSING",
         field: "instructions",
         variantId: variant.id,
@@ -214,7 +214,7 @@ const reviewVariantCopy = (
           LEARNING_QUALITY_VALIDATOR_ID,
           learningQualityValidatorVersion,
           {
-            verdict: "block",
+            verdict: "hard_block",
             code: "ACCESSIBILITY_METADATA_MISSING",
             field,
             variantId: variant.id,
@@ -230,7 +230,7 @@ const reviewVariantCopy = (
           LEARNING_QUALITY_VALIDATOR_ID,
           learningQualityValidatorVersion,
           {
-            verdict: "block",
+            verdict: "hard_block",
             code: "UNSAFE_CLAIM",
             field,
             variantId: variant.id,
@@ -247,7 +247,7 @@ const reviewVariantCopy = (
           LEARNING_QUALITY_VALIDATOR_ID,
           learningQualityValidatorVersion,
           {
-            verdict: "block",
+            verdict: "hard_block",
             code: "UNSUPPORTED_CLAIM",
             field,
             variantId: variant.id,
@@ -318,7 +318,7 @@ export const reviewLearningQuality = (
   ) {
     findings.push(
       finding(LEARNING_QUALITY_VALIDATOR_ID, learningQualityValidatorVersion, {
-        verdict: "block",
+        verdict: "hard_block",
         code: "GRADE_LEVEL_MISMATCH",
         field: "curriculum.grade",
         reason:

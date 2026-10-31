@@ -134,12 +134,12 @@ describe("bounded semantic lesson validation", () => {
       context: createDemoCurriculumContext(input),
     });
 
-    expect(result.verdict).toBe("block");
+    expect(result.verdict).toBe("hard_block");
     expect(result.findings).toStrictEqual(
       expect.arrayContaining([
         expect.objectContaining({
           code: "ANSWER_MISMATCH",
-          verdict: "block",
+          verdict: "hard_block",
           field: "relationships",
           variantId: firstVariant.id,
           reason: expect.any(String),
@@ -162,12 +162,12 @@ describe("bounded semantic lesson validation", () => {
       },
     });
 
-    expect(result.verdict).toBe("block");
+    expect(result.verdict).toBe("hard_block");
     expect(result.findings).toStrictEqual(
       expect.arrayContaining([
         expect.objectContaining({
           code: "INVALID_PATH_EDGE",
-          verdict: "block",
+          verdict: "hard_block",
           field: "path.nodeIds",
           nodeId: "graph_node_equal_parts",
         }),
@@ -227,14 +227,14 @@ describe("bounded semantic lesson validation", () => {
       },
     });
 
-    expect(result.verdict).toBe("block");
+    expect(result.verdict).toBe("hard_block");
     expect(result.findings).toStrictEqual(
       expect.arrayContaining([
         expect.objectContaining({
           code: "UNAPPROVED_SCREEN_PURPOSE",
           field: "path.screenPurposeIds",
           nodeId: "graph_node_equal_parts",
-          verdict: "block",
+          verdict: "hard_block",
         }),
       ])
     );
@@ -261,7 +261,7 @@ describe("bounded semantic lesson validation", () => {
       },
     });
 
-    expect(result.verdict).toBe("block");
+    expect(result.verdict).toBe("hard_block");
     expect(result.findings).toStrictEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -289,18 +289,18 @@ describe("bounded semantic lesson validation", () => {
       context: createDemoCurriculumContext(input),
     });
 
-    expect(result.verdict).toBe("block");
+    expect(result.verdict).toBe("hard_block");
     expect(result.findings).toStrictEqual(
       expect.arrayContaining([
         expect.objectContaining({
           code: "UNSAFE_CLAIM",
-          verdict: "block",
+          verdict: "hard_block",
           field: "instructions",
           variantId: firstVariant.id,
         }),
         expect.objectContaining({
           code: "DIRECTION_MISMATCH",
-          verdict: "block",
+          verdict: "hard_block",
           field: "languageMetadata",
           variantId: firstVariant.id,
         }),
@@ -320,7 +320,7 @@ describe("bounded semantic lesson validation", () => {
       context: createDemoCurriculumContext(input),
     });
 
-    expect(result.verdict).toBe("block");
+    expect(result.verdict).toBe("hard_block");
     expect(result.findings).toStrictEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -374,13 +374,13 @@ describe("bounded semantic lesson validation", () => {
       }
     );
 
-    expect(result.verdict).toBe("block");
+    expect(result.verdict).toBe("hard_block");
     expect(result.findings).toStrictEqual(
       expect.arrayContaining([
         expect.objectContaining({
           code: "ANSWER_MISMATCH",
           validator: "curriculum",
-          verdict: "block",
+          verdict: "hard_block",
         }),
       ])
     );
@@ -470,13 +470,13 @@ describe("bounded semantic lesson validation", () => {
 
     expect(calls).toBe(2);
     expect(result.status).toBe("retryable");
-    expect(result.verdict).toBe("block");
+    expect(result.verdict).toBe("hard_block");
     expect(result.retry.available).toBeTruthy();
     expect(result.findings).toStrictEqual(
       expect.arrayContaining([
         expect.objectContaining({
           code: "VALIDATION_TIMEOUT",
-          verdict: "block",
+          verdict: "hard_block",
           field: "validation",
           validatorVersion: "agent-timeout-fixture-v1",
         }),
