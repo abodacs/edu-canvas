@@ -44,7 +44,7 @@ Never weaken a property or probe to make the check pass. Findings stay findings.
 
 - The **semantic validators** (`curriculum-validator.ts`, `learning-quality-validator.ts`, `semantic-validation.ts`) and the service orchestration in `service.ts` (claiming, idempotency, retry states) are outside this check — the properties cover the two structural gate functions only.
 - **Level:** the checks sample a seeded, structured generator plus a shallow JSON fuzz per run (200 runs by default, bounded shapes) — a strong sampling bound, not exhaustive proofs. A fixed-input guarantee would need a different tool class than TypeScript supports natively.
-- **Content-safety depth:** the pattern scans re-checked here are the current official spot-checks; the cross-cutting hard safety gate (#28) remains unimplemented and is out of scope here. `verify:client-boundary` and `verify:boundaries` own delivery and layer rules, not this content gate.
+- **Content-safety depth:** the pattern scans re-checked here are the current official spot-checks; the cross-cutting hard safety gate (#28) lives in `src/server/safety` and is out of scope here. `verify:client-boundary` and `verify:boundaries` own delivery and layer rules, not this content gate.
 - The **provider adapter, persistence round-trip (`generation-codec.ts`), and A2UI rendering** are separate seams with their own tests.
 
 ## When a change touches verified code
@@ -58,5 +58,16 @@ Never weaken a property or probe to make the check pass. Findings stay findings.
 | Checks | Covered code | Last confirmed at commit |
 | --- | --- | --- |
 | All four property blocks | `validateProviderDraft` in src/server/generation/validation.ts; `buildValidatedLearningPath` in src/server/generation/learning-path.ts | 3a6f7e57e728ff8447a826184554cc5b08f84991 (verification introduced right after this commit; move this forward only after re-running a pass on the new commit and confirming the re-checks still describe the code) |
+| Fifth block: story projection (#19) | `buildStoryPlan` in src/shared/story-plan.ts, over paths built by `buildValidatedLearningPath` | branch `impl/19-forward-story`, 2026-10-31 — pass recorded before the merge commit exists; move the hash here at merge |
+
+The fifth block adds no gate rule. Its oracle reads the accepted path, never the
+story: every beat's label, narrative, transition, and screen purpose must be a
+substring of the approved path copy (step labels, screen purposes, rationale,
+next-screen rationale), or equal a beat's own `roleLabel`. Role labels are the
+only declared chrome, because "Prerequisite" and "Connection reveal" are surface
+words rather than facts. The block also rejects two story-side breaks with named
+codes (`STORY_PATH_TOO_SHORT`, `STORY_SOURCE_COPY_EMPTY`). Put an invented fact
+into a beat and this block fails; the clause the hinge carries stays a verbatim
+slice of `rationale`, so recasing approved copy fails it too.
 
 Move the sync commit forward only after confirming that the verification still describes the code at that commit. If you have edited the gate without rereading this skill, treat the next distinctive failure as suspect and verify against the re-check rules first. To bring a stale skill back in line after edits it missed, follow `/maintain-formal-verification-skill`.

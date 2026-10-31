@@ -4,8 +4,10 @@ import {
   A2UI_PROTOCOL_VERSION,
   validateA2UIMessage,
 } from "@/shared/a2ui-contract";
+import { buildStoryPlan, StoryPlanBuildError } from "@/shared/story-plan";
 import { isRenderableArtifact } from "@/server/safety/artifact-gate";
 import type { LessonLanguage } from "@/shared/generation-contract";
+import type { StoryPlan } from "@/shared/story-plan";
 import type { RenderableArtifact } from "@/server/safety/artifact-gate";
 import type {
   A2UIComponent,
@@ -138,6 +140,83 @@ const action = (
   };
 };
 
+// #19: the story is compiled into the existing catalog components. The action
+// sentence restates the matching surface's approved action set (selectSource,
+// selectTarget); no new component or action is added. Every other story string
+// comes from the plan, so this table holds no role or beat copy.
+const storySurfaceCopy = {
+  en: {
+    learnerAction: "Select a source card, then a target card.",
+    actionPrefix: "What the learner does",
+    transitionPrefix: "Next",
+  },
+  ar: {
+    learnerAction: "اختر بطاقة مصدر ثم بطاقة هدف.",
+    actionPrefix: "ما يفعله المتعلم",
+    transitionPrefix: "التالي",
+  },
+} as const satisfies Record<
+  LessonLanguage,
+  { learnerAction: string; actionPrefix: string; transitionPrefix: string }
+>;
+
+const storyComponents = (
+  storyPlan: StoryPlan,
+  language: LessonLanguage
+): A2UIComponent[] => {
+  const copy = storySurfaceCopy[language];
+
+  const beatComponents = storyPlan.beats.flatMap((beat) => {
+    const roleId = `${beat.id}-role`;
+    const labelId = `${beat.id}-label`;
+    const narrativeId = `${beat.id}-narrative`;
+    const transitionId = `${beat.id}-transition`;
+    // The hinge has no approved path label, so its label is its role name and a
+    // second line would only repeat the role. Every other beat names its node.
+    const isRoleRepeated = beat.label === beat.roleLabel;
+
+    return [
+      {
+        id: beat.id,
+        component: "Column",
+        children: [
+          roleId,
+          ...(isRoleRepeated ? [] : [labelId]),
+          narrativeId,
+          transitionId,
+        ],
+      },
+      text(roleId, `${beat.position} · ${beat.roleLabel}`, "label"),
+      ...(isRoleRepeated ? [] : [text(labelId, beat.label, "subheading")]),
+      text(narrativeId, beat.narrative, "body"),
+      text(
+        transitionId,
+        `${copy.transitionPrefix}: ${beat.transition}`,
+        "caption"
+      ),
+    ] satisfies A2UIComponent[];
+  });
+
+  return [
+    {
+      id: "story-plan",
+      component: "Column",
+      children: [
+        "story-title",
+        "story-action",
+        ...storyPlan.beats.map((beat) => beat.id),
+      ],
+    },
+    text("story-title", storyPlan.heading, "label"),
+    text(
+      "story-action",
+      `${copy.actionPrefix}: ${copy.learnerAction}`,
+      "caption"
+    ),
+    ...beatComponents,
+  ] satisfies A2UIComponent[];
+};
+
 const matchCard = (
   surfaceId: string,
   item: { id: string; label: string },
@@ -164,7 +243,8 @@ const matchCard = (
 const previewMessagesForVariant = (
   input: LessonPreviewCompileInput,
   variant: ProviderVariant,
-  index: number
+  index: number,
+  storyPlan: StoryPlan
 ): A2UIMessage[] => {
   const variantId = assertComponentId(variant.id, "variant id", {
     field: "variants",
@@ -196,6 +276,7 @@ const previewMessagesForVariant = (
         "metadata",
         "instructions",
         "learning-path",
+        "story-plan",
         "matching-board",
         "preview-actions",
         "preview-status",
@@ -213,6 +294,7 @@ const previewMessagesForVariant = (
       id: "learning-path",
       component: "LearningPath",
     },
+    ...storyComponents(storyPlan, input.language),
     {
       id: "matching-board",
       component: "Row",
@@ -317,6 +399,30 @@ const previewMessagesForVariant = (
 };
 
 /**
+ * The compile seam owns one error contract: the preview server feeds every
+ * `LessonPreviewCompileError` back into the gate as a pre-render refusal. A
+ * story that cannot be built is therefore translated here, so it reaches the
+ * teacher as a named refusal instead of an unhandled failure.
+ */
+const buildStoryForInput = (input: LessonPreviewCompileInput): StoryPlan => {
+  try {
+    return buildStoryPlan({
+      path: input.learningPath,
+      language: input.language,
+      learnerAction: storySurfaceCopy[input.language].learnerAction,
+    });
+  } catch (error) {
+    if (error instanceof StoryPlanBuildError) {
+      throw new LessonPreviewCompileError(error.code, error.message, {
+        cause: error,
+        field: "learningPath",
+      });
+    }
+    throw error;
+  }
+};
+
+/**
  * The raw compiler is the test and differential-oracle seam. It accepts an
  * unattested draft, so production code must call `compileLessonPreview`.
  */
@@ -352,8 +458,9 @@ export const compileRawLessonPreview = (
     );
   }
 
+  const storyPlan = buildStoryForInput(input);
   const messages = input.draft.variants.flatMap((variant, index) =>
-    previewMessagesForVariant(input, variant, index)
+    previewMessagesForVariant(input, variant, index, storyPlan)
   );
 
   return {

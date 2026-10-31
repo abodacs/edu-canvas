@@ -11,6 +11,120 @@ import {
   compileRawLessonPreview,
   LessonPreviewCompileError,
 } from "./compiler";
+import type { A2UIComponent } from "@/shared/a2ui-contract";
+import type {
+  CompiledLessonPreview,
+  LessonPreviewCompileInput,
+} from "./compiler";
+
+/**
+ * The production seam accepts only the branded artifact that `gateArtifact`
+ * mints, so every preview test enters through that gate.
+ */
+const compileGatedPreview = (input: LessonPreviewCompileInput) => {
+  const gate = gateArtifact({
+    kind: "lesson",
+    draft: { variants: input.draft.variants },
+    learningPath: input.learningPath,
+  });
+
+  if (gate.renderable?.kind !== "lesson") {
+    throw new Error("The fixture gate must mint a renderable lesson.");
+  }
+
+  return compileLessonPreview(gate.renderable, {
+    requestId: input.requestId,
+    grade: input.grade,
+    standardId: input.standardId,
+    language: input.language,
+  });
+};
+
+const textById = (
+  byId: ReadonlyMap<string, A2UIComponent>,
+  ids: readonly string[]
+): (string | undefined)[] => {
+  return ids.map((id) => {
+    const component = byId.get(id);
+    return component?.component === "Text" ? component.text : undefined;
+  });
+};
+
+const collectStoryText = (
+  byId: ReadonlyMap<string, A2UIComponent>,
+  ids: readonly string[]
+): string[] => {
+  return ids.flatMap((id) => {
+    const component = byId.get(id);
+    if (component?.component === "Text") {
+      return [component.text];
+    }
+    return component?.component === "Column"
+      ? collectStoryText(byId, component.children)
+      : [];
+  });
+};
+
+interface StorySurface {
+  readonly rootChildren: readonly string[];
+  readonly storyChildren: readonly string[];
+  readonly beatChildren: readonly (readonly string[])[];
+  readonly labels: readonly (string | undefined)[];
+  readonly roleLines: readonly (string | undefined)[];
+  readonly transitions: readonly (string | undefined)[];
+  readonly action: readonly (string | undefined)[];
+  readonly lines: readonly string[];
+}
+
+const toStorySurface = (components: readonly A2UIComponent[]): StorySurface => {
+  const byId = new Map<string, A2UIComponent>(
+    components.map((component) => [component.id, component])
+  );
+  const root = byId.get("root");
+  const story = byId.get("story-plan");
+  if (root?.component !== "Column" || story?.component !== "Column") {
+    throw new Error("Expected a root column and a story column.");
+  }
+
+  return {
+    rootChildren: root.children,
+    storyChildren: story.children,
+    beatChildren: ["story-beat-1", "story-beat-2", "story-beat-3"].map((id) => {
+      const beat = byId.get(id);
+      return beat?.component === "Column" ? beat.children : [];
+    }),
+    labels: textById(byId, [
+      "story-beat-1-label",
+      "story-beat-2-label",
+      "story-beat-3-label",
+    ]),
+    roleLines: textById(byId, [
+      "story-beat-1-role",
+      "story-beat-2-role",
+      "story-beat-3-role",
+    ]),
+    transitions: textById(byId, [
+      "story-beat-1-transition",
+      "story-beat-2-transition",
+      "story-beat-3-transition",
+    ]),
+    action: textById(byId, ["story-action"]),
+    lines: collectStoryText(byId, ["story-plan"]),
+  };
+};
+
+const storySurfaces = (preview: CompiledLessonPreview): StorySurface[] => {
+  const surfaces: StorySurface[] = [];
+
+  for (const message of preview.messages) {
+    if (!("updateComponents" in message)) {
+      continue;
+    }
+    surfaces.push(toStorySurface(message.updateComponents.components));
+  }
+
+  return surfaces;
+};
 
 const requireLearningPath = <T extends { learningPath?: unknown }>(
   draft: T
@@ -122,6 +236,20 @@ describe("lesson preview compiler", () => {
     );
   });
 
+  it("reports a story that cannot be built as a compile rejection", () => {
+    const singleStepRequest = structuredClone(request);
+    singleStepRequest.learningPath.steps =
+      singleStepRequest.learningPath.steps.slice(0, 1);
+
+    expect(() => compileRawLessonPreview(singleStepRequest)).toThrow(
+      expect.objectContaining({
+        code: "STORY_PATH_TOO_SHORT",
+        field: "learningPath",
+        name: "LessonPreviewCompileError",
+      })
+    );
+  });
+
   it("names the unsupported grade as an edit target", () => {
     const unsupportedGrade = { ...request, grade: 9 };
 
@@ -146,22 +274,7 @@ describe("lesson preview compiler", () => {
   });
 
   it("compiles only a gate-accepted renderable artifact", () => {
-    const gate = gateArtifact({
-      kind: "lesson",
-      draft: { variants: request.draft.variants },
-      learningPath: request.learningPath,
-    });
-
-    if (gate.renderable?.kind !== "lesson") {
-      throw new Error("The fixture gate must mint a renderable lesson.");
-    }
-
-    const preview = compileLessonPreview(gate.renderable, {
-      requestId: request.requestId,
-      grade: request.grade,
-      standardId: request.standardId,
-      language: request.language,
-    });
+    const preview = compileGatedPreview(request);
 
     expect(preview.messages).toHaveLength(12);
   });
@@ -214,5 +327,140 @@ describe("lesson preview compiler", () => {
         modelVersion: "equivalent-fractions-fixture-v1",
       },
     });
+  });
+
+  it("renders the forward story in path order inside every surface", () => {
+    const stories = storySurfaces(compileGatedPreview(request));
+
+    expect(stories).toHaveLength(4);
+    expect(stories[0]?.storyChildren).toStrictEqual([
+      "story-title",
+      "story-action",
+      "story-beat-1",
+      "story-beat-2",
+      "story-beat-3",
+    ]);
+    expect(stories.map((story) => story.labels)).toStrictEqual(
+      stories.map(() => {
+        return [
+          "Understand equal parts",
+          undefined,
+          "Recognize equivalent fractions",
+        ];
+      })
+    );
+    expect(stories.map((story) => story.roleLines)).toStrictEqual(
+      stories.map(() => {
+        return [
+          "1 · Prerequisite",
+          "2 · Connection reveal",
+          "3 · Target concept",
+        ];
+      })
+    );
+    expect(stories.map((story) => story.transitions)).toStrictEqual(
+      stories.map(() => {
+        return [
+          "Next: Connection reveal",
+          "Next: Recognize equivalent fractions",
+          "Next: The matching screen makes that connection visible before teacher review.",
+        ];
+      })
+    );
+  });
+
+  it("states the learner action once and never repeats a story line", () => {
+    const stories = storySurfaces(compileGatedPreview(request));
+
+    expect(stories.map((story) => story.action)).toStrictEqual(
+      stories.map(() => {
+        return [
+          "What the learner does: Select a source card, then a target card.",
+        ];
+      })
+    );
+    expect(stories[0]?.beatChildren[1]).toStrictEqual([
+      "story-beat-2-role",
+      "story-beat-2-narrative",
+      "story-beat-2-transition",
+    ]);
+
+    for (const story of stories) {
+      const uniqueLines = new Set(story.lines);
+
+      expect(uniqueLines.size).toBe(story.lines.length);
+    }
+  });
+
+  it("places the story directly after the accepted path section", () => {
+    const stories = storySurfaces(compileGatedPreview(request));
+
+    expect(
+      stories.map((story) => {
+        return (
+          story.rootChildren.indexOf("story-plan") -
+          story.rootChildren.indexOf("learning-path")
+        );
+      })
+    ).toStrictEqual([1, 1, 1, 1]);
+  });
+
+  it("keeps the story inside the pinned catalog component set", () => {
+    const preview = compileGatedPreview(request);
+    const allowed = new Set([
+      "Column",
+      "Row",
+      "Card",
+      "Text",
+      "MatchCard",
+      "Button",
+      "Status",
+      "LearningPath",
+    ]);
+
+    for (const message of preview.messages) {
+      if (!("updateComponents" in message)) {
+        continue;
+      }
+      for (const component of message.updateComponents.components) {
+        expect(allowed.has(component.component)).toBeTruthy();
+      }
+    }
+  });
+
+  it("renders the story copy in Arabic on an Arabic surface", () => {
+    const arabicDraft = createEquivalentFractionsDraft({
+      prompt: "equivalent fractions for grade 4",
+      grade: 4,
+      standardId: "standard_ccss_4_nf_a_01",
+      language: "ar",
+      difficulty: "on-level",
+    });
+    const arabicRequest = {
+      ...baseRequest,
+      language: "ar" as const,
+      draft: arabicDraft,
+    };
+    const arabicPath = buildValidatedLearningPath({
+      proposal: requireLearningPath(arabicDraft),
+      context: createDemoCurriculumContext(arabicRequest),
+      draftId: arabicRequest.requestId,
+      provenance: {
+        provider: "deterministic-fixture",
+        model: "equivalent-fractions-fixture-v1",
+        promptTemplateVersion: "lesson-prompt-v1",
+        validatorVersion: "lesson-validator-v2",
+      },
+      validatorVersion: "semantic-validation-runner-v1",
+    });
+    const preview = compileGatedPreview({
+      ...arabicRequest,
+      learningPath: arabicPath,
+    });
+    const serialized = JSON.stringify(preview.messages);
+
+    expect(serialized).toContain("كشف الارتباط");
+    expect(serialized).toContain("قصة المتعلم");
+    expect(serialized).toContain("ما يفعله المتعلم");
   });
 });
