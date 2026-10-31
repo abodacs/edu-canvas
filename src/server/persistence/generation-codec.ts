@@ -59,33 +59,6 @@ const lessonDraftSchema: z.ZodType<LessonDraft> = providerDraftSchema
 const diagnosticsSchema = publicGenerationDiagnosticSchema.array();
 const stateSchema = z.enum(generationStateValues);
 
-// #116: a fraction-pinned record stores a fractions-v2 draft; every other
-// record keeps the matching draft contract. One boundary, catalog-aware.
-const parseStoredDrafts = (
-  value: unknown,
-  catalogVersion: string | undefined
-): {
-  draft: LessonDraft | undefined;
-  fractionDraft: FractionLessonDraft | undefined;
-} => {
-  if (catalogVersion === FRACTIONS_CATALOG_VERSION) {
-    const fractionDraft = parseStoredJson<FractionLessonDraft>(
-      value,
-      fractionLessonDraftSchema,
-      "lesson draft"
-    );
-    return { draft: undefined, fractionDraft };
-  }
-  return {
-    draft: parseStoredJson<LessonDraft>(
-      value,
-      lessonDraftSchema,
-      "lesson draft"
-    ),
-    fractionDraft: undefined,
-  };
-};
-
 export interface StoredGenerationRequestRow {
   requestId: string;
   tenantId: string;
@@ -151,6 +124,29 @@ const timestamp = (value: string | Date, field: string): string => {
     throw new TypeError(`Stored ${field} is not a valid timestamp.`);
   }
   return parsed.toISOString();
+};
+
+// #116: a fraction-pinned record stores a fractions-v2 draft; every other
+// record keeps the matching draft contract. One boundary, catalog-aware.
+const parseStoredDrafts = (
+  value: unknown,
+  catalogVersion: string | undefined
+): {
+  draft?: LessonDraft;
+  fractionDraft?: FractionLessonDraft;
+} => {
+  if (catalogVersion === FRACTIONS_CATALOG_VERSION) {
+    return {
+      fractionDraft: parseStoredJson<FractionLessonDraft>(
+        value,
+        fractionLessonDraftSchema,
+        "lesson draft"
+      ),
+    };
+  }
+  return {
+    draft: parseStoredJson<LessonDraft>(value, lessonDraftSchema, "lesson draft"),
+  };
 };
 
 export const hydrateGenerationRecord = (

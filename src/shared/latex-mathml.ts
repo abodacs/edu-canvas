@@ -24,7 +24,7 @@ export type LatexMathResult =
 // this allowlist before any structural parsing happens.
 const allowedLatexCharacters = /^[A-Za-z0-9\s{}()[\]/+.=,<>×÷≤≥≠·\\-]+$/u;
 
-const commandNamePattern = /\\([A-Za-z]+)/gu;
+const commandNamePattern = /\\(?<name>[A-Za-z]+)/gu;
 
 const commandTranslations = {
   times: "×",
@@ -43,6 +43,11 @@ const allowedCommandNames = new Set<string>([
 ]);
 
 const maximumNestingDepth = 16;
+
+const spaceCharacters = [" ", "\n", "\t"] as const;
+
+const isSpace = (character: string): boolean =>
+  (spaceCharacters as readonly string[]).includes(character);
 
 const isDigit = (character: string): boolean =>
   character >= "0" && character <= "9";
@@ -80,12 +85,16 @@ export const isAllowedLatexInput = (value: string): boolean => {
     return false;
   }
   for (const match of value.matchAll(commandNamePattern)) {
-    if (!allowedCommandNames.has(match[1] ?? "")) {
+    if (!allowedCommandNames.has(match.groups?.name ?? "")) {
       return false;
     }
   }
   return true;
 };
+
+// The parser helpers are mutually recursive: brace groups contain
+// sequences and sequences contain commands and groups.
+/* eslint-disable @typescript-eslint/no-use-before-define -- mutual recursion */
 
 interface ParseState {
   readonly input: string;
@@ -104,7 +113,8 @@ const parseBraceGroup = (
   state: ParseState,
   depth: number
 ): ParseOutcome | { ok: true; nodes: MathMLNode[]; closed: boolean } => {
-  state.position += 1; // consume the opening brace
+  // Consume the opening brace before the group body.
+  state.position += 1;
   const inner = parseSequence(state, depth + 1);
   if (!inner.ok) {
     return inner;
@@ -120,7 +130,8 @@ const parseCommand = (
   state: ParseState,
   depth: number
 ): ParseOutcome | { ok: true; nodes: MathMLNode[] } => {
-  state.position += 1; // consume the backslash
+  // Consume the backslash before the command name.
+  state.position += 1;
   const start = state.position;
   while (
     state.position < state.input.length &&
@@ -169,76 +180,84 @@ const parseCommand = (
     : failure(`Math text contains the unsupported command \\${name}.`);
 };
 
+const consumeSpaces = (state: ParseState): void => {
+  while (isSpace(state.input[state.position] ?? "")) {
+    state.position += 1;
+  }
+};
+
+const parseNumberRun = (state: ParseState): MathMLNode => {
+  const start = state.position;
+  let hasDecimalPoint = false;
+  while (state.position < state.input.length) {
+    const next = state.input[state.position] ?? "";
+    if (!isDigit(next) && (next !== "." || hasDecimalPoint)) {
+      break;
+    }
+    hasDecimalPoint = next === "." ? true : hasDecimalPoint;
+    state.position += 1;
+  }
+  return { kind: "number", value: state.input.slice(start, state.position) };
+};
+
+type NodeParse =
+  | { ok: true; nodes: MathMLNode[] }
+  | { ok: false; message: string };
+
+const parseNextNode = (state: ParseState, depth: number): NodeParse => {
+  const character = state.input[state.position] ?? "";
+  if (character === "\\") {
+    return parseCommand(state, depth);
+  }
+  if (character === "{") {
+    const group = parseBraceGroup(state, depth);
+    return group.ok
+      ? { ok: true, nodes: [{ kind: "row", children: group.nodes }] }
+      : group;
+  }
+  if (isDigit(character)) {
+    return { ok: true, nodes: [parseNumberRun(state)] };
+  }
+  if (isLatinLetter(character)) {
+    state.position += 1;
+    return { ok: true, nodes: [{ kind: "identifier", value: character }] };
+  }
+  if (operatorCharacters.has(character)) {
+    state.position += 1;
+    return { ok: true, nodes: [{ kind: "operator", value: character }] };
+  }
+  return { ok: false, message: invalidCharacter(character) };
+};
+
+const isAtStop = (state: ParseState): boolean => {
+  const character = state.input[state.position];
+  return character === undefined || character === "}";
+};
+
 const parseSequence = (state: ParseState, depth: number): ParseOutcome => {
   if (depth > maximumNestingDepth) {
     return failure("Math text nests its groups too deeply.");
   }
 
   const nodes: MathMLNode[] = [];
-  while (state.position < state.input.length) {
-    const character = state.input[state.position] ?? "";
-    if (character === "}") {
+  while (!isAtStop(state)) {
+    consumeSpaces(state);
+    if (isAtStop(state)) {
       break;
     }
-    if (character === " " || character === "\n" || character === "\t") {
-      state.position += 1;
-      continue;
+    const next = parseNextNode(state, depth);
+    if (!next.ok) {
+      return next;
     }
-    if (character === "\\") {
-      const command = parseCommand(state, depth);
-      if (!command.ok) {
-        return command;
-      }
-      nodes.push(...command.nodes);
-      continue;
-    }
-    if (character === "{") {
-      const group = parseBraceGroup(state, depth);
-      if (!group.ok) {
-        return group;
-      }
-      nodes.push({ kind: "row", children: group.nodes });
-      continue;
-    }
-    if (isDigit(character)) {
-      const start = state.position;
-      let isSawDecimalPoint = false;
-      while (state.position < state.input.length) {
-        const next = state.input[state.position] ?? "";
-        if (isDigit(next)) {
-          state.position += 1;
-          continue;
-        }
-        if (next === "." && !isSawDecimalPoint) {
-          isSawDecimalPoint = true;
-          state.position += 1;
-          continue;
-        }
-        break;
-      }
-      nodes.push({
-        kind: "number",
-        value: state.input.slice(start, state.position),
-      });
-      continue;
-    }
-    if (isLatinLetter(character)) {
-      nodes.push({ kind: "identifier", value: character });
-      state.position += 1;
-      continue;
-    }
-    if (operatorCharacters.has(character)) {
-      nodes.push({ kind: "operator", value: character });
-      state.position += 1;
-      continue;
-    }
-    return failure(invalidCharacter(character));
+    nodes.push(...next.nodes);
   }
 
   return nodes.length === 0
     ? failure("Math text is empty after parsing.")
     : { ok: true, nodes };
 };
+
+/* eslint-enable @typescript-eslint/no-use-before-define -- mutual recursion */
 
 export const parseLatexToMathML = (input: string): LatexMathResult => {
   const state: ParseState = { input, position: 0 };

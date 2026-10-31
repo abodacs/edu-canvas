@@ -37,43 +37,58 @@ const fractionDraft = {
   ],
 };
 
+const renderFirstFractionSurface = (): { markup: string } => {
+  const preview = compileFractionPreview({ draft: fractionDraft });
+  let state = createA2UIRenderState();
+  for (const message of preview.messages) {
+    const applied = applyA2UIMessage(state, message);
+    if (!applied.ok) {
+      throw new Error(applied.message);
+    }
+    ({ state } = applied);
+  }
+
+  const firstSurfaceId =
+    "fraction-draft_req_fraction_render-section-equal-parts";
+  const surface = state.surfaces[firstSurfaceId];
+  if (!surface) {
+    throw new Error("Expected the first fraction surface.");
+  }
+
+  const markup = renderToStaticMarkup(
+    createElement(A2UIComponentRenderer, {
+      surface,
+      surfaceId: firstSurfaceId,
+      componentId: "root",
+      onAction: vi.fn<() => void>(),
+    })
+  );
+  return { markup };
+};
+
 describe("compiled fraction preview rendering", () => {
-  it("renders native MathML, the bar, and labeled keyboard controls", () => {
-    const preview = compileFractionPreview({ draft: fractionDraft });
-    let state = createA2UIRenderState();
-    for (const message of preview.messages) {
-      const applied = applyA2UIMessage(state, message);
-      if (!applied.ok) {
-        throw new Error(applied.message);
-      }
-      ({ state } = applied);
-    }
-
-    const firstSurfaceId =
-      "fraction-draft_req_fraction_render-section-equal-parts";
-    const surface = state.surfaces[firstSurfaceId];
-    if (!surface) {
-      throw new Error("Expected the first fraction surface.");
-    }
-
-    const markup = renderToStaticMarkup(
-      createElement(A2UIComponentRenderer, {
-        surface,
-        surfaceId: firstSurfaceId,
-        componentId: "root",
-        onAction: vi.fn<() => void>(),
-      })
-    );
+  it("renders native MathML with an accessible equivalent", () => {
+    const { markup } = renderFirstFractionSurface();
 
     expect(markup).toContain("<math");
     expect(markup).toContain("<mfrac");
     expect(markup).toContain("<mn>1</mn>");
     expect(markup).toContain("<mn>2</mn>");
+  });
+
+  it("renders the bar and labeled keyboard controls", () => {
+    const { markup } = renderFirstFractionSurface();
+
     expect(markup).toContain("a2ui-fraction-bar__part");
     expect(markup).toContain("is-shaded");
     expect(markup).toContain('type="number"');
     expect(markup).toContain("Parts shaded out of 2");
     expect(markup).toContain("Shade one more part");
+  });
+
+  it("announces the shaded count and the stage control", () => {
+    const { markup } = renderFirstFractionSurface();
+
     expect(markup).toContain("1 of 2 equal parts shaded.");
     expect(markup).toContain("Next stage");
   });
@@ -83,10 +98,13 @@ describe("compiled fraction preview rendering", () => {
     const dataModel = preview.messages.find(
       (message) => "updateDataModel" in message
     );
+
     expect(dataModel).toBeTruthy();
+
     if (!dataModel || !("updateDataModel" in dataModel)) {
       return;
     }
+
     expect(dataModel.updateDataModel.value).toMatchObject({
       sectionId: "section-equal-parts",
       direction: "ltr",
@@ -94,6 +112,6 @@ describe("compiled fraction preview rendering", () => {
     });
     expect(
       Object.hasOwn(dataModel.updateDataModel.value, "selectedItemIds")
-    ).toBe(false);
+    ).toBeFalsy();
   });
 });

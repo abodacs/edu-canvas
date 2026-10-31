@@ -558,6 +558,27 @@ const hasDuplicateComponentIds = (value: unknown): boolean => {
   return uniqueIds.size !== ids.length;
 };
 
+const catalogScopedFailure = (
+  value: unknown,
+  catalogVersion: A2UICatalogVersion
+): A2UIValidationResult | null => {
+  if (hasComponentOutsideCatalog(value, catalogVersion)) {
+    return {
+      ok: false,
+      code: "UNKNOWN_COMPONENT",
+      message: "The preview requested a component outside the trusted catalog.",
+    };
+  }
+  if (hasActionOutsideCatalog(value, catalogVersion)) {
+    return {
+      ok: false,
+      code: "UNKNOWN_ACTION",
+      message: "The preview requested an action outside the trusted catalog.",
+    };
+  }
+  return null;
+};
+
 export interface A2UIValidationOptions {
   // When the caller pins a surface's catalog (the renderer pins it from
   // createSurface), components and actions outside that catalog fail closed
@@ -593,23 +614,11 @@ export const validateA2UIMessage = (
     };
   }
 
-  if (options.catalogVersion) {
-    if (hasComponentOutsideCatalog(value, options.catalogVersion)) {
-      return {
-        ok: false,
-        code: "UNKNOWN_COMPONENT",
-        message:
-          "The preview requested a component outside the trusted catalog.",
-      };
-    }
-
-    if (hasActionOutsideCatalog(value, options.catalogVersion)) {
-      return {
-        ok: false,
-        code: "UNKNOWN_ACTION",
-        message: "The preview requested an action outside the trusted catalog.",
-      };
-    }
+  const scopedFailure = options.catalogVersion
+    ? catalogScopedFailure(value, options.catalogVersion)
+    : null;
+  if (scopedFailure) {
+    return scopedFailure;
   }
 
   if (hasUnknownComponent(value)) {

@@ -18,7 +18,7 @@ export const permittedStageAfter = (
   completedSectionId: string
 ): FractionStageDecision => {
   const index = orderedSectionIds.indexOf(completedSectionId);
-  if (index < 0) {
+  if (index === -1) {
     return {
       ok: false,
       code: "STAGE_NOT_FOUND",
@@ -48,20 +48,26 @@ export const FRACTION_DENOMINATOR_MAXIMUM = 12;
 // The fraction value authorization: an integer numerator 0 through a whole
 // denominator 1-12. Mirrors the contract bounds so a learner event and the
 // compiled surface agree on the trusted range.
+const isTrustedDenominator = (denominator: number): boolean => {
+  return (
+    Number.isSafeInteger(denominator) &&
+    denominator >= FRACTION_DENOMINATOR_MINIMUM &&
+    denominator <= FRACTION_DENOMINATOR_MAXIMUM
+  );
+};
+
+const isTrustedNumerator = (numerator: number, denominator: number): boolean =>
+  Number.isSafeInteger(numerator) && numerator >= 0 && numerator <= denominator;
+
 export const decideFractionValue = (input: {
   numerator: number;
   denominator: number;
 }): FractionValueDecision => {
   const { numerator, denominator } = input;
-  const integersInBounds =
-    Number.isSafeInteger(numerator) &&
-    Number.isSafeInteger(denominator) &&
-    denominator >= FRACTION_DENOMINATOR_MINIMUM &&
-    denominator <= FRACTION_DENOMINATOR_MAXIMUM &&
-    numerator >= 0 &&
-    numerator <= denominator;
+  const areBoundsTrusted =
+    isTrustedDenominator(denominator) && isTrustedNumerator(numerator, denominator);
 
-  if (!integersInBounds) {
+  if (!areBoundsTrusted) {
     return {
       ok: false,
       code: "INVALID_FRACTION_VALUE",

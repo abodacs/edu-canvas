@@ -43,7 +43,7 @@ export const FractionDiagram = ({
       setError(boundsMessage);
       return;
     }
-    const parsed = Number.parseInt(trimmed, 10);
+    const parsed = Number(trimmed);
     if (parsed > denominator) {
       setError(boundsMessage);
       return;
@@ -62,7 +62,8 @@ export const FractionDiagram = ({
   };
 
   return (
-    <div className="a2ui-fraction" role="group" aria-label={label}>
+    <fieldset className="a2ui-fraction">
+      <legend className="sr-only">{label}</legend>
       <div className="a2ui-fraction-bar" aria-hidden="true">
         {parts.map((part) => {
           return (
@@ -119,6 +120,6 @@ export const FractionDiagram = ({
         {component.textEquivalent ??
           `${component.numerator} of ${denominator} equal parts shown in the lesson.`}
       </p>
-    </div>
+    </fieldset>
   );
 };

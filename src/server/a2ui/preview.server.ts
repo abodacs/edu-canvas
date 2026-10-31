@@ -19,6 +19,8 @@ import type { ServerConfig } from "../config";
 
 const previewUnavailableMessage =
   "The preview is temporarily unavailable. Try again later.";
+const previewBlockedMessage =
+  "This draft could not be rendered safely. Try generating it again.";
 
 const requestIdSchema = z
   .string()
@@ -27,6 +29,24 @@ const requestIdSchema = z
 
 const sseError = (code: string, message: string, status: number) =>
   noStoreJson({ code, message }, status);
+
+const streamPreview = (
+  preview: CompiledLessonPreview | CompiledFractionPreview,
+  signal: AbortSignal | null
+): Response => {
+  return new Response(
+    createPreviewSSEStream(preview.messages, signal ?? undefined),
+    {
+      headers: {
+        "cache-control": "no-store, no-transform",
+        connection: "keep-alive",
+        "content-type": "text/event-stream; charset=utf-8",
+        "x-edu-canvas-catalog": preview.catalogVersion,
+      },
+    }
+  );
+};
+
 
 const buildPreviewResponse = async ({
   config,
@@ -98,7 +118,7 @@ const buildPreviewResponse = async ({
         )
       : sseError(
           "PREVIEW_BLOCKED",
-          "This draft could not be rendered safely. Try generating it again.",
+          previewBlockedMessage,
           422
         );
   }
@@ -106,7 +126,7 @@ const buildPreviewResponse = async ({
   if (!record.draft) {
     return sseError(
       "PREVIEW_BLOCKED",
-      "This draft could not be rendered safely. Try generating it again.",
+      previewBlockedMessage,
       422
     );
   }
@@ -121,23 +141,6 @@ const buildPreviewResponse = async ({
       learningPath: record.draft.learningPath,
     }),
     signal
-  );
-};
-
-const streamPreview = (
-  preview: CompiledLessonPreview | CompiledFractionPreview,
-  signal: AbortSignal | null
-): Response => {
-  return new Response(
-    createPreviewSSEStream(preview.messages, signal ?? undefined),
-    {
-      headers: {
-        "cache-control": "no-store, no-transform",
-        connection: "keep-alive",
-        "content-type": "text/event-stream; charset=utf-8",
-        "x-edu-canvas-catalog": preview.catalogVersion,
-      },
-    }
   );
 };
 
@@ -188,7 +191,7 @@ export const handleLessonPreviewRequest = async (
     return error instanceof LessonPreviewCompileError
       ? sseError(
           "PREVIEW_BLOCKED",
-          "This draft could not be rendered safely. Try generating it again.",
+          previewBlockedMessage,
           422
         )
       : sseError("PREVIEW_UNAVAILABLE", previewUnavailableMessage, 503);

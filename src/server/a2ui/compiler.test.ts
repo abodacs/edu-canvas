@@ -130,7 +130,7 @@ describe("lesson preview compiler", () => {
 
     expect(pathComponents).toHaveLength(4);
 
-    const firstDataModel = dataModels[0];
+    const [firstDataModel] = dataModels;
 
     expect(
       firstDataModel && "learningPath" in firstDataModel

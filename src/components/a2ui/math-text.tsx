@@ -51,6 +51,9 @@ const renderMathMLNode = (node: MathMLNode, key: string): ReactNode => {
     case "operator": {
       return createElement("mo", { key }, node.value);
     }
+    default: {
+      return null;
+    }
   }
 };
 

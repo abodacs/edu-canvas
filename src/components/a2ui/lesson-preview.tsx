@@ -409,17 +409,17 @@ export const LessonPreview = ({
           direction: model.direction,
           language: model.language,
         });
-        continue;
+      } else {
+        entries.push({
+          surfaceId,
+          tabId: model.sectionId,
+          label: model.purpose,
+          sublabel: "",
+          description: model.purpose,
+          direction: model.direction,
+          language: model.language,
+        });
       }
-      entries.push({
-        surfaceId,
-        tabId: model.sectionId,
-        label: model.purpose,
-        sublabel: "",
-        description: model.purpose,
-        direction: model.direction,
-        language: model.language,
-      });
     }
     return entries;
   }, [renderState.surfaces]);
@@ -448,14 +448,15 @@ export const LessonPreview = ({
     // #116: in the teacher preview, advanceStage moves the previewed stage
     // forward; the server-authorized learner transition lands with learner
     // delivery and never persists anything from this preview.
-    if (action === "advanceStage") {
-      const currentIndex = surfaces.findIndex(
-        (surface) => surface.surfaceId === surfaceId
-      );
-      const next = surfaces[currentIndex + 1];
-      if (next) {
-        setRequestedSurfaceId(next.surfaceId);
-      }
+    if (action !== "advanceStage") {
+      return;
+    }
+    const currentIndex = surfaces.findIndex(
+      (surface) => surface.surfaceId === surfaceId
+    );
+    const next = surfaces[currentIndex + 1];
+    if (next) {
+      setRequestedSurfaceId(next.surfaceId);
     }
   };
 

@@ -4,17 +4,18 @@ import {
   FRACTIONS_CATALOG_VERSION,
   validateA2UIMessage,
 } from "@/shared/a2ui-contract";
+import { fractionLessonDraftSchema } from "@/shared/fractions-contract";
+import { parseLatexToMathML } from "@/shared/latex-mathml";
+
+import { LessonPreviewCompileError } from "./compiler";
+import { decideFractionValue } from "./fraction-stage";
+
 import type {
   A2UIComponent,
   A2UIDataModel,
   A2UIMessage,
 } from "@/shared/a2ui-contract";
 import type { FractionLessonDraft } from "@/shared/fractions-contract";
-import { fractionLessonDraftSchema } from "@/shared/fractions-contract";
-import { parseLatexToMathML } from "@/shared/latex-mathml";
-
-import { LessonPreviewCompileError } from "./compiler";
-import { decideFractionValue } from "./fraction-stage";
 
 export interface CompiledFractionPreview {
   protocolVersion: typeof A2UI_PROTOCOL_VERSION;
