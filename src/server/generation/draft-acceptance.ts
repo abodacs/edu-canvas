@@ -1,4 +1,9 @@
 import {
+  gateArtifact,
+  snapshotArtifactGateResult,
+} from "@/server/safety/artifact-gate";
+
+import {
   buildValidatedLearningPath,
   LearningPathBuildError,
   toNormalizedReasoningPath,
@@ -8,6 +13,11 @@ import {
   semanticValidationRunnerVersion,
   validateSemanticLesson,
 } from "./semantic-validation";
+import type {
+  ArtifactGateInput,
+  ArtifactGateResult,
+  ArtifactGateSnapshot,
+} from "@/server/safety/artifact-gate";
 import type {
   SemanticValidationInput,
   SemanticValidationReport,
@@ -30,6 +40,10 @@ export interface DraftAcceptanceOptions {
   semanticValidation?: (
     input: SemanticValidationInput
   ) => Promise<SemanticValidationReport>;
+  /**
+   * Overridable only for fail-closed tests; production uses `gateArtifact`.
+   */
+  artifactGate?: (input: ArtifactGateInput) => ArtifactGateResult;
 }
 
 type DraftAcceptanceResult =
@@ -37,6 +51,7 @@ type DraftAcceptanceResult =
       state: "ready-for-review";
       learningPath: ValidatedLearningPath;
       diagnostics: GenerationDiagnostic[];
+      gate: ArtifactGateSnapshot;
     }
   | {
       state: "blocked-by-validation" | "failed-retryable";
@@ -44,6 +59,7 @@ type DraftAcceptanceResult =
     };
 
 const BLOCKED_BY_VALIDATION_STATE = "blocked-by-validation";
+const FAILED_RETRYABLE_STATE = "failed-retryable";
 
 const diagnostic = (code: string, message: string): GenerationDiagnostic => {
   return {
@@ -51,6 +67,17 @@ const diagnostic = (code: string, message: string): GenerationDiagnostic => {
     code,
     message,
   };
+};
+
+/**
+ * Fail closed: an unavailable gate is infrastructure, not artifact evidence.
+ * The attempt stays retryable and never becomes ready-for-review.
+ */
+const gateUnavailableDiagnostic = (): GenerationDiagnostic => {
+  return diagnostic(
+    "ARTIFACT_GATE_UNAVAILABLE",
+    "The safety gate could not complete safely. Try this draft again."
+  );
 };
 
 const curriculumContextDiagnostic = (
@@ -210,7 +237,7 @@ export const reviewDraftForAcceptance = async (
     });
   } catch {
     return {
-      state: "failed-retryable",
+      state: FAILED_RETRYABLE_STATE,
       diagnostics: [
         ...structuralDiagnostics,
         {
@@ -232,21 +259,21 @@ export const reviewDraftForAcceptance = async (
     return {
       state:
         report.status === "retryable"
-          ? "failed-retryable"
+          ? FAILED_RETRYABLE_STATE
           : BLOCKED_BY_VALIDATION_STATE,
       diagnostics,
     };
   }
 
+  let learningPath: ValidatedLearningPath;
   try {
-    const learningPath = buildValidatedLearningPath({
+    learningPath = buildValidatedLearningPath({
       proposal: draft.learningPath,
       context,
       draftId: requestId,
       provenance,
       validatorVersion: semanticValidationRunnerVersion,
     });
-    return { state: "ready-for-review", learningPath, diagnostics };
   } catch (error) {
     return {
       state: BLOCKED_BY_VALIDATION_STATE,
@@ -259,6 +286,41 @@ export const reviewDraftForAcceptance = async (
             : "The learning path could not be accepted safely. Review the draft before trying again."
         ),
       ],
+    };
+  }
+
+  const runGate = options.artifactGate ?? gateArtifact;
+  let gateResult: ArtifactGateResult;
+  try {
+    gateResult = runGate({
+      kind: "lesson",
+      draft: { variants: draft.variants },
+      learningPath,
+      report,
+      structuralDiagnostics,
+    });
+  } catch {
+    return {
+      state: FAILED_RETRYABLE_STATE,
+      diagnostics: [...diagnostics, gateUnavailableDiagnostic()],
+    };
+  }
+
+  if (gateResult.verdict === "hard_block") {
+    return { state: BLOCKED_BY_VALIDATION_STATE, diagnostics };
+  }
+
+  try {
+    return {
+      state: "ready-for-review",
+      learningPath,
+      diagnostics,
+      gate: snapshotArtifactGateResult(gateResult),
+    };
+  } catch {
+    return {
+      state: FAILED_RETRYABLE_STATE,
+      diagnostics: [...diagnostics, gateUnavailableDiagnostic()],
     };
   }
 };

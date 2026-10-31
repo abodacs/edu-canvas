@@ -9,11 +9,13 @@ import {
 import { FRACTIONS_CATALOG_VERSION } from "@/shared/a2ui-contract";
 import { fractionLessonDraftSchema } from "@/shared/fractions-contract";
 
+import { artifactGateSnapshotSchema } from "@/server/safety/artifact-gate-contract";
 import {
   providerDraftSchema,
   validatedLearningPathSchema,
 } from "../generation/validation";
 import { createGenerationRequestHash } from "../generation/types";
+import type { ArtifactGateSnapshot } from "@/server/safety/artifact-gate-contract";
 import type { FractionLessonDraft } from "@/shared/fractions-contract";
 import type {
   GenerationAttemptRecord,
@@ -25,6 +27,8 @@ import type {
   NormalizedGenerationRequest,
   ProviderProvenance,
 } from "../generation/provider";
+
+const LESSON_DRAFT_LABEL = "lesson draft";
 
 const normalizedGenerationRequestSchema: z.ZodType<NormalizedGenerationRequest> =
   z.object({
@@ -128,29 +132,68 @@ const timestamp = (value: string | Date, field: string): string => {
 
 // #116: a fraction-pinned record stores a fractions-v2 draft; every other
 // record keeps the matching draft contract. One boundary, catalog-aware.
+//
+// #28: a lesson draft may be stored as an envelope carrying the acceptance
+// gate snapshot. Legacy rows keep the bare draft shape and hydrate without a
+// snapshot, which preview refuses.
+const lessonDraftEnvelopeSchema = z
+  .object({
+    artifact: lessonDraftSchema,
+    gate: artifactGateSnapshotSchema,
+  })
+  .strict();
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
 const parseStoredDrafts = (
   value: unknown,
   catalogVersion: string | undefined
 ): {
   draft?: LessonDraft;
   fractionDraft?: FractionLessonDraft;
+  gate?: ArtifactGateSnapshot;
 } => {
   if (catalogVersion === FRACTIONS_CATALOG_VERSION) {
     return {
       fractionDraft: parseStoredJson<FractionLessonDraft>(
         value,
         fractionLessonDraftSchema,
-        "lesson draft"
+        LESSON_DRAFT_LABEL
       ),
     };
   }
+
+  const decoded = decodeJson(value, LESSON_DRAFT_LABEL);
+  if (isRecord(decoded) && "artifact" in decoded && "gate" in decoded) {
+    const parsed = lessonDraftEnvelopeSchema.safeParse(decoded);
+    if (!parsed.success) {
+      throw new Error("Stored lesson draft does not match its contract.");
+    }
+    return { draft: parsed.data.artifact, gate: parsed.data.gate };
+  }
+
   return {
     draft: parseStoredJson<LessonDraft>(
-      value,
+      decoded,
       lessonDraftSchema,
-      "lesson draft"
+      LESSON_DRAFT_LABEL
     ),
   };
+};
+
+/**
+ * Encodes the record's draft column. The gate snapshot rides beside the draft in the existing JSON column instead of a new migration.
+ */
+export const storedGenerationDraft = (
+  record: LessonGenerationRecord
+): unknown => {
+  if (!record.draft) {
+    return null;
+  }
+  return record.gate
+    ? { artifact: record.draft, gate: record.gate }
+    : record.draft;
 };
 
 export const hydrateGenerationRecord = (
@@ -168,7 +211,7 @@ export const hydrateGenerationRecord = (
     provenanceSchema,
     "request provenance"
   );
-  const { draft, fractionDraft } = parseStoredDrafts(
+  const { draft, fractionDraft, gate } = parseStoredDrafts(
     row.draft,
     provenance?.catalogVersion
   );
@@ -192,6 +235,7 @@ export const hydrateGenerationRecord = (
     diagnostics,
     ...(draft && { draft }),
     ...(fractionDraft && { fractionDraft }),
+    ...(gate && { gate }),
     ...(provenance && { provenance }),
     attempts: attempts.map<GenerationAttemptRecord>((attempt) => {
       const attemptProvenance = parseStoredJson<ProviderProvenance>(

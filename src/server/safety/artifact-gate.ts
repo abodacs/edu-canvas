@@ -1,19 +1,24 @@
 import { createHash } from "node:crypto";
 
-import { validatorVersion as lessonValidatorVersion } from "./validation";
+import { validatorVersion as lessonValidatorVersion } from "@/server/generation/validation";
+import { artifactGateSnapshotSchema } from "./artifact-gate-contract";
 import type { FractionLessonDraft } from "@/shared/fractions-contract";
+
+import type {
+  ArtifactGateFinding,
+  ArtifactGateSnapshot,
+} from "./artifact-gate-contract";
 
 import type {
   RecoveryAction,
   SemanticValidationFinding,
   SemanticValidationReport,
-  SemanticValidatorRole,
-} from "./semantic-validation-contract";
+} from "@/server/generation/semantic-validation-contract";
 import type {
   GenerationDiagnostic,
   ProviderLessonDraft,
   ValidatedLearningPath,
-} from "./types";
+} from "@/server/generation/types";
 
 export const artifactGatePolicyVersion = "artifact-gate-policy-v1";
 export const a2uiCompileGuardVersion = "a2ui-compile-guard-v1";
@@ -50,24 +55,6 @@ export interface ArtifactPreRenderFailure {
   field: string;
   variantId?: string;
   reason: string;
-}
-
-export type ArtifactGateValidator = "structural" | SemanticValidatorRole;
-
-export interface ArtifactGateFinding {
-  /**
-   * `structural` covers the deterministic draft gate and the pre-render
-   * compile guard; the other values keep the semantic validator provenance.
-   */
-  validator: ArtifactGateValidator;
-  validatorVersion: string;
-  verdict: "warning" | "hard_block";
-  code: string;
-  field: string;
-  variantId?: string;
-  nodeId?: string;
-  reason: string;
-  recovery: RecoveryAction;
 }
 
 interface ArtifactGateInputBase {
@@ -204,6 +191,7 @@ const retryStructuralCodes: ReadonlySet<string> = new Set([
   "VALIDATION_TIMEOUT",
   "VALIDATION_RETRY_EXHAUSTED",
   "SEMANTIC_VALIDATION_UNAVAILABLE",
+  "ARTIFACT_GATE_UNAVAILABLE",
 ]);
 
 const structuralRecovery = (
@@ -425,3 +413,30 @@ export const gateArtifact = (input: ArtifactGateInput): ArtifactGateResult => {
     }
   }
 };
+
+/**
+ * Serializes a renderable gate result into the evidence acceptance stores on the record. Hard-blocked results have no snapshot: they never persist.
+ */
+export const snapshotArtifactGateResult = (
+  result: ArtifactGateResult
+): ArtifactGateSnapshot => {
+  if (result.verdict === "hard_block" || !result.renderable) {
+    throw new Error(
+      "A hard-blocked artifact gate result cannot produce a shareable snapshot."
+    );
+  }
+
+  return artifactGateSnapshotSchema.parse({
+    verdict: result.verdict,
+    recovery: result.recovery,
+    policyVersion: result.policyVersion,
+    artifactHash: result.artifactHash,
+    findings: result.findings,
+  });
+};
+
+export {
+  type ArtifactGateValidator,
+  type ArtifactGateFinding,
+  type ArtifactGateSnapshot,
+} from "./artifact-gate-contract";

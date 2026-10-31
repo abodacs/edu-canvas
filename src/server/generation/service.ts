@@ -30,6 +30,7 @@ import { validateProviderDraft } from "./validation";
 import type { SourceGate } from "../grounding/types";
 import type { ContentSafety } from "../moderation/content-safety";
 import type { Actor } from "@/server/identity/types";
+import type { ArtifactGateSnapshot } from "@/server/safety/artifact-gate";
 import type { DraftAcceptanceOptions } from "./draft-acceptance";
 import type {
   GenerationCommand,
@@ -55,6 +56,7 @@ import type { LessonDifficulty } from "@/shared/generation-contract";
 const BLOCKED_BY_MODERATION_STATE = "blocked-by-moderation";
 
 const BLOCKED_BY_VALIDATION_STATE = "blocked-by-validation";
+const READY_FOR_REVIEW_STATE = "ready-for-review";
 
 const FAILED_RETRYABLE_STATE = "failed-retryable";
 
@@ -436,6 +438,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       | {
           state: "ready-for-review";
           draft: LessonDraft;
+          gate: ArtifactGateSnapshot;
           diagnostics: GenerationDiagnostic[];
         }
       | {
@@ -447,6 +450,11 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         },
     attemptDiagnostics = outcome.diagnostics
   ): Promise<GenerationServiceResult> => {
+    if (outcome.state === READY_FOR_REVIEW_STATE && !outcome.gate) {
+      throw new Error(
+        "A ready-for-review generation record requires an artifact gate snapshot."
+      );
+    }
     const provenance = baseRecord.provenance ?? options.provider.provenance;
     const draft = "draft" in outcome ? outcome.draft : null;
     const record: LessonGenerationRecord = {
@@ -454,6 +462,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       state: outcome.state,
       diagnostics: outcome.diagnostics,
       draft,
+      gate: "gate" in outcome ? outcome.gate : null,
       provenance,
       updatedAt: draft ? draft.createdAt : now(),
       attempts: updateAttempt(baseRecord, baseRecord.attempt, {
@@ -541,13 +550,14 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       },
       options
     );
-    if (acceptance.state !== "ready-for-review") {
+    if (acceptance.state !== READY_FOR_REVIEW_STATE) {
       return finishAttempt(baseRecord, acceptance);
     }
 
     return finishAttempt(baseRecord, {
       state: acceptance.state,
       diagnostics: acceptance.diagnostics,
+      gate: acceptance.gate,
       draft: {
         ...providerDraft,
         learningPath: acceptance.learningPath,
@@ -882,7 +892,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     if (
       input.sourceSnapshotId &&
       options.sourceGate &&
-      result.record.state === "ready-for-review"
+      result.record.state === READY_FOR_REVIEW_STATE
     ) {
       try {
         await options.sourceGate.markUsed(

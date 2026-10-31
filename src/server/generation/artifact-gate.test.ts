@@ -4,7 +4,10 @@ import { describe, expect, it } from "vitest";
 
 import { demoSeed } from "@/server/seed-data";
 
-import { artifactGatePolicyVersion, gateArtifact } from "./artifact-gate";
+import {
+  artifactGatePolicyVersion,
+  gateArtifact,
+} from "@/server/safety/artifact-gate";
 import {
   breakFirstRelationshipAnswer,
   validFractionDraft,
@@ -18,7 +21,10 @@ import {
 } from "./semantic-validation";
 import { curriculumValidatorVersion } from "./semantic-validation-contract";
 import { validatorVersion } from "./validation";
-import type { ArtifactGateResult, RenderableArtifact } from "./artifact-gate";
+import type {
+  ArtifactGateResult,
+  RenderableArtifact,
+} from "@/server/safety/artifact-gate";
 import type { SemanticValidationReport } from "./semantic-validation-contract";
 import type {
   ProviderLessonDraft,

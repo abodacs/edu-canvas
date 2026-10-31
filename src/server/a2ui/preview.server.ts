@@ -5,6 +5,7 @@ import {
   FRACTIONS_CATALOG_VERSION,
   a2uiCatalogVersions,
 } from "@/shared/a2ui-contract";
+import { gateStoredArtifact } from "@/server/safety/artifact-enforcement";
 
 import { resolveTeacherActor } from "../identity/api.server";
 import { noStoreJson } from "../http.server";
@@ -13,6 +14,8 @@ import { compileFractionPreview } from "./fraction-compiler";
 import { createPreviewSSEStream } from "./stream";
 import type { CompiledFractionPreview } from "./fraction-compiler";
 import type { A2UICatalogVersion } from "@/shared/a2ui-contract";
+import type { StoredArtifactGateRefusal } from "@/server/safety/artifact-enforcement";
+import type { ArtifactPreRenderFailure } from "@/server/safety/artifact-gate";
 
 import type { CompiledLessonPreview } from "./compiler";
 import type { ServerConfig } from "../config";
@@ -29,6 +32,53 @@ const requestIdSchema = z
 
 const sseError = (code: string, message: string, status: number) =>
   noStoreJson({ code, message }, status);
+
+/**
+ * The structured refusal shape: hard blocks name the verdict, findings, and recovery; an infrastructure or snapshot refusal stays retryable.
+ */
+const gateRefusal = (refusal: StoredArtifactGateRefusal): Response => {
+  return noStoreJson(
+    {
+      code:
+        refusal.code === "GATE_HARD_BLOCKED" ? "PREVIEW_BLOCKED" : refusal.code,
+      message: refusal.message,
+      ...(refusal.verdict && { verdict: refusal.verdict }),
+      findings: refusal.findings,
+      recovery: refusal.recovery,
+    },
+    422
+  );
+};
+
+// `LessonPreviewCompileError` carries no code, so the preview seam owns the
+// deterministic mapping into the gate's pre-render failure shape.
+const compileFailureCode = (message: string): string => {
+  if (message.includes("fraction draft does not match")) {
+    return "FRACTION_CONTRACT_INVALID";
+  }
+  if (message.includes("four-variant lesson")) {
+    return "INCOMPLETE_VARIANT_SET";
+  }
+  if (message.includes("duplicate variant identifiers")) {
+    return "DUPLICATE_VARIANT_ID";
+  }
+  if (message.includes("grade is not supported")) {
+    return "UNSUPPORTED_GRADE";
+  }
+  return message.includes("invalid ")
+    ? "INVALID_COMPONENT_ID"
+    : "PREVIEW_COMPILE_REJECTED";
+};
+
+const compileFailure = (
+  error: LessonPreviewCompileError
+): ArtifactPreRenderFailure => {
+  return {
+    code: compileFailureCode(error.message),
+    field: "preview",
+    reason: error.message,
+  };
+};
 
 const streamPreview = (
   preview: CompiledLessonPreview | CompiledFractionPreview,
@@ -107,32 +157,63 @@ const buildPreviewResponse = async ({
     );
   }
 
+  // #28: never trust the stored verdict alone. Re-derive the gate from the
+  // stored artifact and prove the acceptance snapshot still describes it.
+  const gateOutcome = gateStoredArtifact(record);
+  if (!gateOutcome.ok) {
+    return gateRefusal(gateOutcome.refusal);
+  }
+
+  const compileGuarded = (compile: () => Response): Response => {
+    try {
+      return compile();
+    } catch (error) {
+      if (!(error instanceof LessonPreviewCompileError)) {
+        throw error;
+      }
+      // The compile guard failed closed. Feed the deterministic rejection
+      // back into the gate so the refusal carries findings and recovery.
+      const blocked = gateStoredArtifact(record, {
+        preRenderFailures: [compileFailure(error)],
+      });
+      return blocked.ok
+        ? sseError("PREVIEW_UNAVAILABLE", previewUnavailableMessage, 503)
+        : gateRefusal(blocked.refusal);
+    }
+  };
+
   if (pinnedCatalog === FRACTIONS_CATALOG_VERSION) {
     // Fail closed when a fraction-pinned record lacks a fraction draft; the
     // state gate above only proves a matching-shaped draft exists or not.
-    return record.fractionDraft
-      ? streamPreview(
-          compileFractionPreview({ draft: record.fractionDraft }),
-          signal
-        )
+    const { fractionDraft } = record;
+    return fractionDraft
+      ? compileGuarded(() => {
+          return streamPreview(
+            compileFractionPreview({ draft: fractionDraft }),
+            signal
+          );
+        })
       : sseError("PREVIEW_BLOCKED", previewBlockedMessage, 422);
   }
 
-  if (!record.draft) {
+  const { draft } = record;
+  if (!draft) {
     return sseError("PREVIEW_BLOCKED", previewBlockedMessage, 422);
   }
 
-  return streamPreview(
-    compileLessonPreview({
-      requestId: record.requestId,
-      grade: record.input.grade,
-      standardId: record.input.standardId,
-      language: record.input.language,
-      draft: record.draft,
-      learningPath: record.draft.learningPath,
-    }),
-    signal
-  );
+  return compileGuarded(() => {
+    return streamPreview(
+      compileLessonPreview({
+        requestId: record.requestId,
+        grade: record.input.grade,
+        standardId: record.input.standardId,
+        language: record.input.language,
+        draft,
+        learningPath: draft.learningPath,
+      }),
+      signal
+    );
+  });
 };
 
 export const handleLessonPreviewRequest = async (
