@@ -1,5 +1,6 @@
 import { csrfHeaderName } from "@/shared/identity-contract";
 import {
+  publicationFindingSchema,
   publicationPublishResultSchema,
   reviewPackSchema,
 } from "@/shared/publication-contract";
@@ -44,15 +45,22 @@ const readError = async (
 ): Promise<PublicationClientError> => {
   const body = await readJson(response);
   const record = isRecord(body) ? body : {};
+  const findings: PublicationFinding[] = [];
+  if (Array.isArray(record.findings)) {
+    for (const candidate of record.findings) {
+      const parsed = publicationFindingSchema.safeParse(candidate);
+      if (parsed.success) {
+        findings.push(parsed.data);
+      }
+    }
+  }
   return {
     status: response.status,
     code:
       typeof record.code === "string" ? record.code : "PUBLICATION_UNAVAILABLE",
     message:
       typeof record.message === "string" ? record.message : fallbackMessage,
-    findings: Array.isArray(record.findings)
-      ? (record.findings as PublicationFinding[])
-      : [],
+    findings,
     ...(typeof record.detail === "string" && { detail: record.detail }),
   };
 };

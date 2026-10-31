@@ -2,8 +2,10 @@ import {
   publicationApproveInputSchema,
   publicationPublishInputSchema,
   publicationReviseInputSchema,
+  publicationTargetKey,
   reversePathTargetId,
   reviewPackSchema,
+  warningsForTarget,
 } from "@/shared/publication-contract";
 import { compileLessonPreview } from "@/server/a2ui/compiler";
 import { createId } from "@/server/ids";
@@ -89,33 +91,12 @@ const withoutOperationKey = (input: Record<string, unknown>) => {
 const inputHashOf = (input: Record<string, unknown>): string =>
   createCanonicalHash(withoutOperationKey(input));
 
-const warningFindingsFor = (
-  decoded: DecodedPackVersion,
-  targetKind: string,
-  targetId: string
-): string[] => {
-  const findings = decoded.validationResult.findings.filter(
-    (finding) => finding.verdict === "warning"
-  );
-  const codes = findings
-    .filter((finding) => {
-      return targetKind === "variant"
-        ? !finding.variantId || finding.variantId === targetId
-        : !finding.variantId && finding.field === "learningPath";
-    })
-    .map((finding) => finding.code);
-  return [...new Set(codes)];
-};
-
 const allWarningCodes = (decoded: DecodedPackVersion): string[] => {
   const codes = decoded.validationResult.findings
     .filter((finding) => finding.verdict === "warning")
     .map((finding) => finding.code);
   return [...new Set(codes)];
 };
-
-const approvedTargetKey = (approval: PackApprovalRecord): string =>
-  `${approval.targetKind}:${approval.targetId}`;
 
 const projectVersion = (
   version: PackVersionRecord,
@@ -161,7 +142,11 @@ const publishBlockersFor = (
     blockers.push("GATE_NOT_READY");
   }
 
-  const approved = new Set(approvals.map(approvedTargetKey));
+  const approved = new Set(
+    approvals.map((approval) =>
+      publicationTargetKey(approval.targetKind, approval.targetId)
+    )
+  );
   for (const variant of decoded.publicContent.variants) {
     if (!approved.has(`variant:${variant.id}`)) {
       blockers.push(`MISSING_VARIANT_APPROVAL:${variant.id}`);
@@ -458,11 +443,11 @@ export const createPublicationService = (
       );
     }
 
-    const requiredWarnings = warningFindingsFor(
-      decoded,
+    const requiredWarnings = warningsForTarget(
+      decoded.validationResult.findings,
       input.targetKind,
       input.targetId
-    );
+    ).map((finding) => finding.code);
     const acknowledged = new Set(input.acknowledgedFindingCodes);
     const missingWarnings = requiredWarnings.filter(
       (code) => !acknowledged.has(code)
@@ -721,8 +706,14 @@ export const createPublicationService = (
         actor.tenantId,
         publicationId
       );
-      if (!concurrent || concurrent.learnerId !== learner.id) {
+      if (!concurrent) {
         throw error;
+      }
+      if (concurrent.learnerId !== learner.id) {
+        throw publicationError(
+          "IDEMPOTENCY_CONFLICT",
+          "This publication is already assigned to another learner."
+        );
       }
       assignmentId = concurrent.id;
     }

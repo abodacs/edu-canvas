@@ -1,0 +1,1 @@
+ALTER TABLE "pack_assignments" ADD CONSTRAINT "pack_assignments_tenant_publication_key" UNIQUE("tenant_id","publication_id");

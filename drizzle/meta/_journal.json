@@ -64,6 +64,13 @@
       "when": 1793482870244,
       "tag": "0008_pack_behaviors",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793487819824,
+      "tag": "0009_single_assignment",
+      "breakpoints": true
     }
   ]
 }

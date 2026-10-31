@@ -1,8 +1,10 @@
 import { ArrowLeft, Pencil, ShieldCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { LessonPreview } from "@/components/a2ui/lesson-preview";
 import { Button } from "@/components/ui/button";
 import { variantPurposeLabels } from "@/shared/a2ui-contract";
+import { publicationTextLimit } from "@/shared/publication-contract";
 import { ApprovalState, WarningAcknowledgements } from "./review-shared";
 import {
   areValuesFilled,
@@ -170,7 +172,7 @@ export const VariantEditor = ({
                   type="text"
                   aria-label={`Source piece ${itemIndex + 1}`}
                   value={sourceLabels[itemIndex] ?? ""}
-                  maxLength={400}
+                  maxLength={publicationTextLimit}
                   onChange={(event) => {
                     setSourceLabels(
                       replaceAt(sourceLabels, itemIndex, event.target.value)
@@ -192,7 +194,7 @@ export const VariantEditor = ({
                   type="text"
                   aria-label={`Target piece ${itemIndex + 1}`}
                   value={targetLabels[itemIndex] ?? ""}
-                  maxLength={400}
+                  maxLength={publicationTextLimit}
                   onChange={(event) => {
                     setTargetLabels(
                       replaceAt(targetLabels, itemIndex, event.target.value)
@@ -211,7 +213,7 @@ export const VariantEditor = ({
           type="text"
           aria-label="First hint"
           value={hint}
-          maxLength={400}
+          maxLength={publicationTextLimit}
           onChange={(event) => setHint(event.target.value)}
         />
       </label>
@@ -223,7 +225,7 @@ export const VariantEditor = ({
             type="text"
             aria-label="Feedback when correct"
             value={feedbackCorrect}
-            maxLength={400}
+            maxLength={publicationTextLimit}
             onChange={(event) => setFeedbackCorrect(event.target.value)}
           />
         </label>
@@ -233,7 +235,7 @@ export const VariantEditor = ({
             type="text"
             aria-label="Feedback when incorrect"
             value={feedbackIncorrect}
-            maxLength={400}
+            maxLength={publicationTextLimit}
             onChange={(event) => setFeedbackIncorrect(event.target.value)}
           />
         </label>
@@ -265,6 +267,13 @@ export const VariantEditor = ({
           Save edits and revalidate
         </Button>
       </div>
+
+      <LessonPreview
+        key={`${review.version.id}:${variant.id}`}
+        requestId={review.requestId}
+        previewVersionId={review.version.id}
+        catalogVersion={review.provenance.catalogVersion ?? undefined}
+      />
 
       <WarningAcknowledgements
         findings={warnings}

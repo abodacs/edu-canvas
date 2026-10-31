@@ -17,6 +17,12 @@ import type { ReviewPack } from "@/shared/publication-contract";
 
 const reversePathKey = targetKey("reverse-path", reversePathTargetId);
 
+const learnerStateByKind = {
+  standard: "Ready for the core idea",
+  scaffold: "Needs a guided step",
+  challenge: "Ready to stretch",
+} as const;
+
 const BlockerList = ({
   blockers,
 }: {
@@ -105,7 +111,8 @@ export const ReviewGallery = ({
           {review.version.gateVerdict === "pass"
             ? "validation passed"
             : "validation found warnings"}{" "}
-          · {review.version.approvals.length} of 5 approvals
+          · {review.version.approvals.length} of{" "}
+          {review.draft.variants.length + 1} approvals
         </p>
       </header>
 
@@ -141,6 +148,27 @@ export const ReviewGallery = ({
                       <dd>
                         {variant.sourceItems.length} →{" "}
                         {variant.targetItems.length}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Learner state</dt>
+                      <dd>{learnerStateByKind[variant.kind]}</dd>
+                    </div>
+                    <div>
+                      <dt>Standard</dt>
+                      <dd>{review.draft.standardId}</dd>
+                    </div>
+                    <div>
+                      <dt>Validation notes</dt>
+                      <dd>
+                        {
+                          review.version.findings.filter((finding) => {
+                            return (
+                              !finding.variantId ||
+                              finding.variantId === variant.id
+                            );
+                          }).length
+                        }
                       </dd>
                     </div>
                   </dl>

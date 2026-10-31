@@ -1198,6 +1198,10 @@ export const packAssignments = pgTable(
         table.publicationId,
         table.learnerId
       ),
+      unique("pack_assignments_tenant_publication_key").on(
+        table.tenantId,
+        table.publicationId
+      ),
       pgPolicy("pack_assignments_are_tenant_scoped", {
         as: "permissive",
         for: "all",

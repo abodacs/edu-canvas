@@ -213,9 +213,19 @@ export const createSeededPackPersistence = (
         record.publicationId,
         record.learnerId
       );
-      if (store.assignments.has(key)) {
+      const publicationAlreadyAssigned = store.assignments
+        .values()
+        .some((assignment) => {
+          return (
+            assignment.tenantId === record.tenantId &&
+            assignment.publicationId === record.publicationId
+          );
+        });
+      if (publicationAlreadyAssigned) {
         throw new PackUniqueViolationError(
-          "pack_assignments_tenant_publication_learner_key"
+          store.assignments.has(key)
+            ? "pack_assignments_tenant_publication_learner_key"
+            : "pack_assignments_tenant_publication_key"
         );
       }
       store.assignments.set(key, clone(record));

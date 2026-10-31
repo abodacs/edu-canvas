@@ -37,10 +37,7 @@ import type {
   ProviderVariant,
   ValidatedLearningPath,
 } from "@/server/generation/types";
-import type {
-  PublicationEdit,
-  PublicationFinding,
-} from "@/shared/publication-contract";
+import type { PublicationEdit } from "@/shared/publication-contract";
 import type { PackVersionRecord } from "@/server/persistence/pack-port";
 
 const initialRevision = 1;
@@ -713,24 +710,6 @@ export const deriveVersionArtifact = (
     gate: gateResult,
     snapshot: decoded.gateSnapshot ?? snapshotArtifactGateResult(gateResult),
   };
-};
-
-export const publicFindings = (
-  findings: readonly PublicationFinding[]
-): PublicationFinding[] => {
-  return findings.map((finding) => {
-    return {
-      validator: finding.validator,
-      validatorVersion: finding.validatorVersion,
-      verdict: finding.verdict,
-      code: finding.code,
-      field: finding.field,
-      ...(finding.variantId && { variantId: finding.variantId }),
-      ...(finding.nodeId && { nodeId: finding.nodeId }),
-      reason: finding.reason,
-      recovery: finding.recovery,
-    };
-  });
 };
 
 export { initialRevision };

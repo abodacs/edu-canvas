@@ -21,6 +21,7 @@ const teacherId = `actor_pack_teacher_${runId}`;
 const otherTeacherId = `actor_pack_teacher_other_${runId}`;
 const membershipId = `membership_pack_${runId}`;
 const learnerId = `identity_pack_learner_${runId}`;
+const secondLearnerId = `identity_pack_learner_second_${runId}`;
 const standardId = `standard_pack_${runId}`;
 const requestId = `request_pack_${runId}`;
 const versionId = `version_pack_${runId}`;
@@ -73,7 +74,9 @@ const seedFixtures = async (): Promise<void> => {
       insert into identities (
         id, tenant_id, role, display_name, demo_handle, is_active
       )
-      values (${learnerId}, ${tenantId}, 'student', 'Pack Learner', ${`pack-${runId}`}, true)
+      values
+        (${learnerId}, ${tenantId}, 'student', 'Pack Learner', ${`pack-${runId}`}, true),
+        (${secondLearnerId}, ${tenantId}, 'student', 'Second Learner', ${`pack-second-${runId}`}, true)
     `;
     await sql`
       insert into standards (id, tenant_id, code, name, subject, grade_band)
@@ -332,6 +335,31 @@ describe.skipIf(!isRunDatabaseTests)("pack records in PostgreSQL", () => {
         inputHash: hash("f"),
         resultKind: "pack-publication",
         resultIds: [publicationId, assignmentId],
+        createdAt: versionRecord.createdAt,
+      })
+    ).rejects.toBeInstanceOf(PackUniqueViolationError);
+  });
+
+  it("allows only one assignment per publication", async () => {
+    const publication = await packs().readPublicationForVersion(
+      tenantId,
+      versionId
+    );
+
+    expect(publication).toBeDefined();
+
+    if (!publication) {
+      throw new Error("The fixture did not store a publication.");
+    }
+
+    await expect(
+      packs().insertAssignment({
+        id: `assignment_second_${runId}`,
+        tenantId,
+        schemaVersion: "pack-assignment-v1",
+        publicationId: publication.id,
+        learnerId: secondLearnerId,
+        assigningActorId: teacherId,
         createdAt: versionRecord.createdAt,
       })
     ).rejects.toBeInstanceOf(PackUniqueViolationError);

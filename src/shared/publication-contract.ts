@@ -25,7 +25,6 @@ export const publicationErrorCodeValues = [
   "WARNINGS_UNACKNOWLEDGED",
   "GATE_BLOCKED",
   "GATE_STALE",
-  "LEARNER_NOT_FOUND",
   "IDEMPOTENCY_CONFLICT",
   "PUBLICATION_UNAVAILABLE",
 ] as const;
@@ -42,7 +41,6 @@ export const publicationErrorStatusByCode = {
   WARNINGS_UNACKNOWLEDGED: 422,
   GATE_BLOCKED: 422,
   GATE_STALE: 409,
-  LEARNER_NOT_FOUND: 422,
   IDEMPOTENCY_CONFLICT: 409,
   PUBLICATION_UNAVAILABLE: 503,
 } as const satisfies Record<PublicationErrorCode, number>;
@@ -77,6 +75,40 @@ export const publicationFindingSchema = z
   .strict();
 
 export type PublicationFinding = z.infer<typeof publicationFindingSchema>;
+
+export const publicationTextLimit = 400;
+
+/**
+One key format for approval targets; the publish gate and the gallery must agree.
+*/
+export const publicationTargetKey = (kind: string, id: string): string =>
+  `${kind}:${id}`;
+
+/**
+The warnings a target must acknowledge; duplicate validator codes collapse to one.
+*/
+export const warningsForTarget = (
+  findings: readonly PublicationFinding[],
+  targetKind: "variant" | "reverse-path",
+  targetId: string
+): PublicationFinding[] => {
+  const relevant = findings.filter((finding) => {
+    if (finding.verdict !== "warning") {
+      return false;
+    }
+    return targetKind === "variant"
+      ? !finding.variantId || finding.variantId === targetId
+      : !finding.variantId && finding.field === "learningPath";
+  });
+  const seen = new Set<string>();
+  return relevant.filter((finding) => {
+    if (seen.has(finding.code)) {
+      return false;
+    }
+    seen.add(finding.code);
+    return true;
+  });
+};
 
 export const reviewLearningPathSchema = z
   .object({
@@ -209,13 +241,6 @@ export const publicationOpenInputSchema = z
   })
   .strict();
 
-export const publicationTargetSchema = z
-  .object({
-    targetKind: z.enum(reviewTargetKindValues),
-    targetId: z.string().trim().min(1).max(80),
-  })
-  .strict();
-
 export const publicationApproveInputSchema = z
   .object({
     requestId: z.string().trim().min(1).max(80),
@@ -313,7 +338,6 @@ export type PublicationPublishInput = z.infer<
 >;
 
 export const publicationActionValues = [
-  "open-review",
   "approve-target",
   "revise-version",
   "publish",

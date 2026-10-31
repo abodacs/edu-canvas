@@ -50,6 +50,12 @@ const demoLearner: SeededPackLearner = {
   tenantId: demoSeed.tenant.id,
 };
 
+const secondLearner: SeededPackLearner = {
+  id: "learner_lina",
+  displayName: "Lina Farouk",
+  tenantId: demoSeed.tenant.id,
+};
+
 interface Fixture {
   teacher: TeacherActor;
   open: () => Promise<ReviewPack>;
@@ -75,7 +81,7 @@ const createFixture = async (): Promise<Fixture> => {
     },
   });
 
-  const store = createSeededPackStore([demoLearner]);
+  const store = createSeededPackStore([demoLearner, secondLearner]);
   const packs = createSeededPackPersistence({ store });
   const publishService = createPublicationService({
     generation: persistence,
@@ -173,7 +179,10 @@ describe("publication service", () => {
       hasPath: true,
       canPublish: false,
       missingApprovals: 5,
-      learners: [{ id: "learner_omar", displayName: "Omar Nabil" }],
+      learners: [
+        { id: "learner_omar", displayName: "Omar Nabil" },
+        { id: "learner_lina", displayName: "Lina Farouk" },
+      ],
     });
 
     const uniqueBlockers = new Set(review.publishBlockers);
@@ -260,6 +269,16 @@ describe("publication service", () => {
 
     expect(secondKey.publicationId).toBe(first.publicationId);
     expect(secondKey.assignmentId).toBe(first.assignmentId);
+
+    await expectPublicationError(() => {
+      return fixture.publishService.publish(fixture.teacher, {
+        requestId,
+        versionId: approved.version.id,
+        expectedArtifactHash: approved.version.artifactHash,
+        learnerId: secondLearner.id,
+        operationKey: "publish-key-0003",
+      });
+    }, "IDEMPOTENCY_CONFLICT");
   });
 
   it("rejects an operation key reused with a different payload", async () => {
@@ -317,6 +336,41 @@ describe("publication service", () => {
       canPublish: false,
       hint: "A freshly rewritten hint.",
     });
+  });
+
+  it("blocks an edit that breaks the safety gate", async () => {
+    const fixture = await createFixture();
+    const review = await fixture.open();
+
+    const error = await expectPublicationError(() => {
+      return fixture.publishService.revise(fixture.teacher, {
+        requestId,
+        versionId: review.version.id,
+        expectedArtifactHash: review.version.artifactHash,
+        edits: [
+          {
+            variantId: review.draft.variants[0]?.id ?? "",
+            field: "sourceItem",
+            index: 0,
+            value: "<script>alert(1)</script>",
+          },
+        ],
+        operationKey: "revise-key-blocked",
+      });
+    }, "GATE_BLOCKED");
+
+    expect(error.findings.length).toBeGreaterThan(0);
+  });
+
+  it("returns persisted approvals after reopening the review", async () => {
+    const fixture = await createFixture();
+    const review = await fixture.open();
+    await approveAll(fixture, review);
+
+    const reopened = await fixture.open();
+
+    expect(reopened.version.approvals).toHaveLength(5);
+    expect(reopened.canPublish).toBeTruthy();
   });
 
   it("rejects a stale revision hash", async () => {

@@ -9,7 +9,7 @@ Recorded 2026-11-01 against `main` at `36ba6c8`. Parent contracts: [AgDR-0005](A
 1. **#5 owns five additive tables**: `pack_versions`, `pack_approvals`, `pack_publications`, `pack_assignments`, and `pack_receipts`. They are tenant-scoped, RLS-forced, and append-only by trigger. A revision inserts a new version row; nothing updates or deletes.
 2. **The generated pack is a version shape, not a curated one.** `pack_versions` stores the four public variants, the validated learning path, the accepted gate snapshot, the validation result, rule versions, provenance, and the private answer relationships. `lesson-package-generated-v1` is the schema version.
 3. **Approval is a separate fact per target.** One row each for the four variants and one for the reverse-reasoning path, pinned to the version's artifact hash and validation-result hash. Warnings require explicit acknowledgement on the approval; a changed hash resets every approval.
-4. **Publication is gated and idempotent.** Publish re-derives the gate from the stored revision, refuses a stale hash or a missing approval, writes one publication and one assignment, and replays through `pack_receipts` and unique keys.
+4. **Publication is gated and idempotent.** Publish re-derives the gate from the stored revision, refuses a stale hash or a missing approval, writes one publication and one assignment, and replays through `pack_receipts` and unique keys. One publication has exactly one assignment; a second learner is a conflict, not a second row.
 5. **The public review projection never carries private answers.** The shared `reviewPackSchema` has no `relationships`, `privateAnswers`, or answer-key field; the payload scrub test fails if one appears.
 
 ## Alternatives considered
