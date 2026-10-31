@@ -1,0 +1,32 @@
+# gitleaks configuration — extends the default ruleset (Refs #71).
+#
+# The repository's contribution policy (CONTRIBUTING.md) requires synthetic
+# examples, and AgDR-0011 keeps demo fixtures synthetic by design, so test
+# files legitimately contain key-shaped strings (idempotency keys, credential
+# keys). The allowlist below scopes those false positives; it does not weaken
+# any rule for production paths.
+#
+# Tradeoff: a real secret hardcoded inside a test file would also be
+# allowlisted. Reviewers should keep treating test files as synthetic-only.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Synthetic fixtures and documented test-only values (no real secrets)"
+
+# Test fixtures: synthetic-only by policy (AgDR-0011).
+paths = [
+  '''\.(test|spec)\.[cm]?[jt]sx?$''',
+]
+
+# base64("edu-canvas-...") synthetic credential keys: the CI value in
+# foundation.yml (marked test-only) and the development default in
+# src/server/config.ts. Only matches values starting with this prefix.
+regexes = [
+  '''ZWR1LWNhbnZhcy[A-Za-z0-9+/=]*''',
+  # gitleaks matches these regexes against the captured secret. A bare UUID is
+  # a request identifier (e.g. an idempotency key quoted in the hackathon
+  # evidence README), never a credential.
+  '''[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}''',
+]

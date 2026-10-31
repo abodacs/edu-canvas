@@ -1,0 +1,87 @@
+# PR Title Check — adapted from ApexYard golden-paths/pipelines/pr-title-check.yml (Refs #71).
+#
+# The golden path enforced ticket IDs in PR titles; this repository does not
+# (recent PRs #139–#146 carry none). The check verifies the repository
+# convention from CONTRIBUTING.md instead: "<type>: <effect>" or
+# "<type>(scope): <effect>".
+
+name: PR Title Check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  check-title:
+    name: Verify title convention
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR title type prefix
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = context.payload.pull_request.title;
+
+            // Types: the set CONTRIBUTING.md names plus the conventional
+            // changelog types the history may adopt. Scope is optional.
+            const types = 'feat|fix|docs|style|refactor|perf|test|build|ci|chore';
+            const pattern = new RegExp(`^(${types})(\\([^)]+\\))?(!)?: \\S.*`);
+
+            if (!pattern.test(title)) {
+              core.setFailed(
+                `❌ PR title must follow the repository convention\n\n` +
+                `Current title: "${title}"\n\n` +
+                `Valid formats:\n` +
+                `  <type>: <effect>\n` +
+                `  <type>(scope): <effect>\n\n` +
+                `Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore\n` +
+                `Example: "fix: keep blocked drafts out of lesson previews"`
+              );
+              return;
+            }
+
+            console.log(`✅ PR title follows the convention: "${title}"`);
+
+      - name: Post guidance on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = context.payload.pull_request.title;
+
+            const body = `## ❌ PR title does not follow the convention
+
+            **Current title**: \`${title}\`
+
+            ### Valid formats (CONTRIBUTING.md)
+            - \`<type>: <effect>\`
+            - \`<type>(scope): <effect>\`
+
+            ### Types
+            feat, fix, docs, style, refactor, perf, test, build, ci, chore
+
+            ### Example
+            \`fix: keep blocked drafts out of lesson previews\``;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('PR title does not follow the convention')
+            );
+
+            if (!botComment) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body
+              });
+            }
