@@ -4,6 +4,7 @@ import { serverObservability } from "../observability.server";
 import { demoSeed } from "../seed-data";
 import { hydrateGenerationRecord } from "./generation-codec";
 import { createGenerationPersistence } from "./generation-persistence";
+import { createPostgresSourcePersistence } from "./source-postgres";
 import type { SeedCounts } from "../seed-data";
 
 import type { LessonGenerationRecord } from "../generation/types";
@@ -34,6 +35,7 @@ interface GenerationRequestRow {
   diagnostics: unknown;
   draft: unknown;
   provenance: unknown;
+  source_snapshot_id: string | null;
   created_at: string | Date;
   updated_at: string | Date;
 }
@@ -139,6 +141,7 @@ const hydrateStoredGeneration = async (
     diagnostics: row.diagnostics,
     draft: row.draft,
     provenance: row.provenance,
+    sourceSnapshotId: row.source_snapshot_id,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -280,6 +283,7 @@ const createPostgresGenerationBackend = (
           diagnostics,
           draft,
           provenance,
+          source_snapshot_id,
           created_at,
           updated_at
         )
@@ -297,6 +301,7 @@ const createPostgresGenerationBackend = (
           ${transaction.json(jsonValue(record.diagnostics))}::jsonb,
           ${transaction.json(jsonValue(record.draft ?? null))}::jsonb,
           ${transaction.json(jsonValue(record.provenance ?? null))}::jsonb,
+          ${record.input.sourceSnapshotId ?? null},
           ${record.createdAt},
           ${record.updatedAt}
         )
@@ -506,6 +511,7 @@ export const createPostgresPersistence = (
   return {
     kind: "postgres",
     ...generationPersistence,
+    ...createPostgresSourcePersistence(databaseUrl),
 
     async check() {
       try {

@@ -17,6 +17,7 @@ import {
 } from "../../../drizzle/schema";
 import { hydrateGenerationRecord } from "./generation-codec";
 import { createGenerationPersistence } from "./generation-persistence";
+import { createDrizzleSourcePersistence } from "./source-drizzle";
 import type { ExtractTablesWithRelations } from "drizzle-orm";
 import type {
   PostgresJsDatabase,
@@ -154,6 +155,7 @@ const hydrateStoredGeneration = async (
     diagnostics: row.diagnostics,
     draft: row.draft,
     provenance: row.provenance,
+    sourceSnapshotId: row.sourceSnapshotId,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -503,6 +505,7 @@ export const createDrizzlePersistence = (
   return {
     kind: "postgres",
     ...generationPersistence,
+    ...createDrizzleSourcePersistence(databaseUrl),
 
     async check() {
       try {

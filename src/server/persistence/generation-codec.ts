@@ -30,6 +30,7 @@ const normalizedGenerationRequestSchema: z.ZodType<NormalizedGenerationRequest> 
     standardId: z.string(),
     language: z.enum(languageValues),
     difficulty: z.enum(difficultyValues),
+    sourceSnapshotId: z.string().optional(),
   });
 
 const provenanceSchema: z.ZodType<ProviderProvenance> = z
@@ -69,6 +70,7 @@ export interface StoredGenerationRequestRow {
   diagnostics: unknown;
   draft: unknown;
   provenance: unknown;
+  sourceSnapshotId: string | null;
   createdAt: string | Date;
   updatedAt: string | Date;
 }
@@ -147,6 +149,7 @@ export const hydrateGenerationRecord = (
     standardId: row.standardId,
     language: row.language,
     difficulty: row.difficulty,
+    ...(row.sourceSnapshotId && { sourceSnapshotId: row.sourceSnapshotId }),
   });
   const state = stateSchema.parse(row.state);
 
