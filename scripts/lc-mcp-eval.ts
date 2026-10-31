@@ -15,6 +15,7 @@
  * Never writes credentials, objectives, or teacher/student data.
  */
 
+import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -41,12 +42,21 @@ const USAGE_EXIT_CODE = 2;
 const RATE_LIMIT_HEADER = "x-ratelimit-remaining-minute";
 const UPSTREAM_LATENCY_HEADER = "x-kong-upstream-latency";
 const DEFAULT_OUTPUT_DIRECTORY = "docs/research/142-mcp-eval";
+const EVIDENCE_FILE = "evidence.json";
+const SCHEMAS_FILE = "tool-schemas.json";
+const MEASUREMENTS_FILE = "measurements.md";
+// Absolute path keeps the spawn independent of PATH.
+const GIT_BINARY = "/usr/bin/git";
 const ROW_HEADER = "Row";
 const VISIBLE_CALLS_HEADER = "Visible calls";
 const PROVENANCE_FIELD_PATTERN =
   /^(?:license|licence|attribution|url|uri|sourceUrl|sourceLink|modified|modifiedAt|modificationDate|isCurrent|current|framework|frameworkIdentifier|frameworkId|version|source|retrieved|retrievedAt)$/iu;
 const EXCLUDED_HASH_KEYS = new Set(["session_id"]);
 const STANDARD_SUBJECT = "Mathematics";
+
+const MODES = ["cold", "warm", "repeat"] as const;
+
+type Mode = (typeof MODES)[number];
 
 const MULTI_STATE = "Multi-State";
 const CALIFORNIA = "California";
@@ -71,6 +81,7 @@ const NEGATIVE_PROBES: readonly NegativeProbe[] = [
     code: "4.NF.A.1",
   },
   { id: "negative-unsupported-code", code: "9.ZZ.Z.9" },
+  { id: "negative-valid-absent-code", code: "4.NF.A.99" },
 ];
 
 // Boundary probe: an ELA standard has no CCSS-M progression.
@@ -89,8 +100,6 @@ interface RowRequest {
 interface NegativeProbe extends Partial<RowRequest> {
   id: string;
 }
-
-type Mode = "cold" | "warm" | "repeat";
 
 interface GatewayInfo {
   httpStatus: number;
@@ -230,6 +239,8 @@ interface Evidence {
     origin: string;
     credentialEnv: string;
     credentialPresent: boolean;
+    clientName: string;
+    clientVersion: string;
   };
   protocol: {
     requested: string;
@@ -240,11 +251,19 @@ interface Evidence {
     serverVersion: string | null;
     instructions: string | null;
     instructionsHash: string;
+    initializedNotificationStatus: number;
+    clientName: string;
+    clientVersion: string;
   };
   toolCatalog: {
     count: number;
     names: string[];
     descriptionHash: string;
+    schemas: {
+      name: string;
+      inputSchemaHash: string;
+      outputSchemaHash: string;
+    }[];
     provenanceAudit: ProvenanceAudit[];
   };
   runs: RunEvidence[];
@@ -381,6 +400,26 @@ const createClient = (apiKey: string) => {
   };
 };
 
+const sendNotification = async (
+  apiKey: string,
+  method: string,
+  parameters: unknown
+): Promise<number> => {
+  const response = await fetch(ORIGIN, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      accept: "application/json, text/event-stream",
+      authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({ jsonrpc: "2.0", method, params: parameters }),
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    redirect: "error",
+  });
+  await response.text();
+  return response.status;
+};
+
 const tryParseJson = (text: string): unknown => {
   try {
     return JSON.parse(text) as unknown;
@@ -439,7 +478,7 @@ const buildStage = ({
     responseBytes: Buffer.byteLength(text, "utf-8"),
     hasStructuredContent,
     semanticHash: sha256(canonicalize(stable)),
-    excerpt: text.slice(0, MAX_TEXT_EXCERPT),
+    excerpt: JSON.stringify(stable).slice(0, MAX_TEXT_EXCERPT),
     shape: shapeOf(stable),
     payload,
     sessionAfter: readString(payload.session_id),
@@ -567,9 +606,14 @@ interface RowInput {
   sessionId: string | null;
 }
 
+interface StageWithSession extends StageEvidence {
+  payload: Record<string, unknown>;
+  sessionAfter: string | null;
+}
+
 interface AttemptState {
   session: string | null;
-  stages: StageEvidence[];
+  stages: StageWithSession[];
   startedAt: number;
 }
 
@@ -665,6 +709,11 @@ const attemptRow = async (
   state.stages.push(progressionStage);
   state.session = progressionStage.sessionAfter ?? state.session;
 
+  const sessionIds = state.stages
+    .map((stage) => stage.sessionAfter)
+    .filter((value): value is string => value !== null);
+  const sessionStable =
+    sessionIds.length > 0 && sessionIds.every((id) => id === sessionIds[0]);
   const stripped = state.stages.map(stripStage);
   return {
     run: {
@@ -680,7 +729,7 @@ const attemptRow = async (
       visibleCalls: state.stages.length,
       elapsedMs: Math.round(performance.now() - state.startedAt),
       sessionHash: state.session ? shortHash(state.session) : null,
-      sessionStableAcrossStages: state.stages.length === VISIBLE_CALL_CAP,
+      sessionStableAcrossStages: sessionStable,
       chainHash: chainHash(stripped),
       standardFacts: standardsFacts(standardStage),
       componentFacts: componentsFacts(componentStage),
@@ -835,8 +884,22 @@ const readToolSchema = (value: unknown): ToolSchema | null => {
   };
 };
 
+const readRevision = (): string => {
+  if (process.env.GIT_REVISION) {
+    return process.env.GIT_REVISION;
+  }
+  try {
+    return execFileSync(GIT_BINARY, ["rev-parse", "HEAD"], {
+      encoding: "utf-8",
+    }).trim();
+  } catch {
+    return "unknown";
+  }
+};
+
 const record = async (outputDirectory: string): Promise<Evidence> => {
-  const rpc = createClient(readApiKey());
+  const apiKey = readApiKey();
+  const rpc = createClient(apiKey);
   const init = await rpc("initialize", {
     protocolVersion: PROTOCOL_VERSION,
     capabilities: {},
@@ -845,6 +908,11 @@ const record = async (outputDirectory: string): Promise<Evidence> => {
   if (init.error) {
     throw new Error(`initialize failed: ${init.error.message ?? "unknown"}`);
   }
+  const initializedNotificationStatus = await sendNotification(
+    apiKey,
+    "notifications/initialized",
+    {}
+  );
   const initResult = isRecord(init.result) ? init.result : {};
   const serverInfo = isRecord(initResult.serverInfo)
     ? initResult.serverInfo
@@ -889,13 +957,15 @@ const record = async (outputDirectory: string): Promise<Evidence> => {
     schemaVersion: EVIDENCE_SCHEMA_VERSION,
     kind: "lc-mcp-eval",
     capturedAt,
-    revision: process.env.GIT_REVISION ?? "unknown",
+    revision: readRevision(),
     environment: {
       node: process.version,
       platform: process.platform,
       origin: ORIGIN,
       credentialEnv: KEY_ENV,
       credentialPresent: true,
+      clientName: CLIENT_NAME,
+      clientVersion: CLIENT_VERSION,
     },
     protocol: {
       requested: PROTOCOL_VERSION,
@@ -906,6 +976,9 @@ const record = async (outputDirectory: string): Promise<Evidence> => {
       serverVersion: readString(serverInfo.version),
       instructions,
       instructionsHash: sha256(instructions ?? ""),
+      initializedNotificationStatus,
+      clientName: CLIENT_NAME,
+      clientVersion: CLIENT_VERSION,
     },
     toolCatalog: {
       count: tools.length,
@@ -920,6 +993,13 @@ const record = async (outputDirectory: string): Promise<Evidence> => {
           })
         )
       ),
+      schemas: tools.map((tool) => {
+        return {
+          name: tool.name,
+          inputSchemaHash: sha256(canonicalize(tool.inputSchema)),
+          outputSchemaHash: sha256(canonicalize(tool.outputSchema)),
+        };
+      }),
       provenanceAudit: auditProvenance(tools),
     },
     runs,
@@ -929,11 +1009,11 @@ const record = async (outputDirectory: string): Promise<Evidence> => {
 
   await mkdir(outputDirectory, { recursive: true });
   await writeFile(
-    join(outputDirectory, "evidence.json"),
+    join(outputDirectory, EVIDENCE_FILE),
     `${JSON.stringify(evidence, null, JSON_INDENT)}\n`
   );
   await writeFile(
-    join(outputDirectory, "tool-schemas.json"),
+    join(outputDirectory, SCHEMAS_FILE),
     `${JSON.stringify(
       {
         schemaVersion: EVIDENCE_SCHEMA_VERSION,
@@ -1002,7 +1082,48 @@ const checkRowGroup = (
   }
 };
 
+const expectedRowKeys = (): string[] => {
+  return SUPPORTED_ROWS.map(
+    (row) => `${row.jurisdiction}/${row.code}`
+  ).toSorted((a, b) => a.localeCompare(b));
+};
+
+const checkMatrix = (evidence: Evidence, failures: string[]): void => {
+  const expected = SUPPORTED_ROWS.length * MODES.length;
+  if (evidence.runs.length !== expected) {
+    failures.push(
+      `expected ${expected} runs (${SUPPORTED_ROWS.length} rows x ${MODES.length} modes), saw ${evidence.runs.length}`
+    );
+  }
+  const keys = [...new Set(expectedRowKeys())].toSorted((a, b) =>
+    a.localeCompare(b)
+  );
+  const seen = [
+    ...new Set(
+      evidence.runs.map((run) => `${run.row.jurisdiction}/${run.row.code}`)
+    ),
+  ].toSorted((a, b) => a.localeCompare(b));
+  if (JSON.stringify(seen) !== JSON.stringify(keys)) {
+    failures.push(
+      `row set drifted: expected ${keys.join(", ")}, saw ${seen.join(", ")}`
+    );
+  }
+  for (const key of keys) {
+    const modes = evidence.runs
+      .filter((run) => `${run.row.jurisdiction}/${run.row.code}` === key)
+      .map((run) => run.mode)
+      .toSorted((a, b) => a.localeCompare(b));
+    const wanted = [...MODES].toSorted((a, b) => a.localeCompare(b));
+    if (JSON.stringify(modes) !== JSON.stringify(wanted)) {
+      failures.push(
+        `${key}: expected modes ${wanted.join(", ")}, saw ${modes.join(", ")}`
+      );
+    }
+  }
+};
+
 const checkRuns = (evidence: Evidence, failures: string[]): void => {
+  checkMatrix(evidence, failures);
   const byRow = new Map<string, RunEvidence[]>();
   for (const run of evidence.runs) {
     const key = `${run.row.jurisdiction}/${run.row.code}`;
@@ -1062,8 +1183,23 @@ const checkEvidence = (evidence: Evidence): string[] => {
   return failures;
 };
 
+const contractFingerprint = (evidence: Evidence): string => {
+  return JSON.stringify({
+    schemaVersion: evidence.schemaVersion,
+    origin: evidence.environment.origin,
+    protocol: evidence.protocol.negotiated,
+    serverName: evidence.protocol.serverName,
+    serverVersion: evidence.protocol.serverVersion,
+    tools: evidence.toolCatalog.names,
+    schemas: evidence.toolCatalog.schemas,
+  });
+};
+
 const compareEvidence = (left: Evidence, right: Evidence): string[] => {
   const failures: string[] = [];
+  if (contractFingerprint(left) !== contractFingerprint(right)) {
+    failures.push("contract fingerprint differs between runs");
+  }
   const index = (evidence: Evidence): Map<string, string | undefined> => {
     const map = new Map<string, string | undefined>();
     for (const run of evidence.runs) {
@@ -1321,9 +1457,116 @@ const parseArguments = (argv: string[]): Arguments => {
   return { command, output, positional };
 };
 
-const readEvidence = async (directory: string): Promise<Evidence> => {
-  const raw = await readFile(join(directory, "evidence.json"), "utf-8");
-  return JSON.parse(raw) as Evidence;
+const hasEvidenceMetadata = (value: Record<string, unknown>): boolean => {
+  return (
+    typeof value.schemaVersion === "number" &&
+    isRecord(value.environment) &&
+    isRecord(value.protocol)
+  );
+};
+
+const hasEvidenceArtifacts = (value: Record<string, unknown>): boolean => {
+  return (
+    isRecord(value.toolCatalog) &&
+    isRecord(value.elaBoundary) &&
+    Array.isArray(value.runs) &&
+    Array.isArray(value.negatives)
+  );
+};
+
+const parseEvidence = (value: unknown): Evidence | null => {
+  return isRecord(value) &&
+    hasEvidenceMetadata(value) &&
+    hasEvidenceArtifacts(value)
+    ? (value as unknown as Evidence)
+    : null;
+};
+
+const readEvidenceFile = async (filePath: string): Promise<Evidence> => {
+  const parsed = parseEvidence(tryParseJson(await readFile(filePath, "utf-8")));
+  if (!parsed) {
+    throw new Error(`${filePath}: malformed evidence`);
+  }
+  return parsed;
+};
+
+const readEvidence = (directory: string): Promise<Evidence> =>
+  readEvidenceFile(join(directory, EVIDENCE_FILE));
+
+// 4 and 6. Verify the schema artifact and the rendered report, not just evidence.json.
+const checkToolSchemas = async (
+  directory: string,
+  evidence: Evidence,
+  failures: string[]
+): Promise<void> => {
+  const parsed = tryParseJson(
+    await readFile(join(directory, SCHEMAS_FILE), "utf-8")
+  );
+  if (!isRecord(parsed) || !Array.isArray(parsed.tools)) {
+    failures.push("tool-schemas.json is missing or malformed");
+    return;
+  }
+  const tools = readRecords(parsed.tools);
+  if (tools.length !== evidence.toolCatalog.count) {
+    failures.push(
+      `tool-schemas.json has ${tools.length} tools, evidence has ${evidence.toolCatalog.count}`
+    );
+  }
+  if (readString(parsed.protocol) !== evidence.protocol.negotiated) {
+    failures.push("tool-schemas.json protocol drifted from evidence");
+  }
+  if (readString(parsed.serverVersion) !== evidence.protocol.serverVersion) {
+    failures.push("tool-schemas.json server version drifted from evidence");
+  }
+  const names = tools
+    .map((tool) => readString(tool.name))
+    .filter((name): name is string => name !== null);
+  if (JSON.stringify(names) !== JSON.stringify(evidence.toolCatalog.names)) {
+    failures.push("tool-schemas.json tool names drifted from evidence");
+  }
+  for (const tool of tools) {
+    const name = readString(tool.name) ?? "unknown";
+    const inputSchemaHash = sha256(canonicalize(tool.inputSchema));
+    const outputSchemaHash = sha256(canonicalize(tool.outputSchema));
+    if (inputSchemaHash !== readString(tool.inputSchemaHash)) {
+      failures.push(`${name}: input schema hash does not match its schema`);
+    }
+    if (outputSchemaHash !== readString(tool.outputSchemaHash)) {
+      failures.push(`${name}: output schema hash does not match its schema`);
+    }
+    const recorded = evidence.toolCatalog.schemas.find(
+      (schema) => schema.name === name
+    );
+    if (!recorded) {
+      failures.push(`${name}: missing from the evidence schema catalog`);
+    } else if (
+      recorded.inputSchemaHash !== inputSchemaHash ||
+      recorded.outputSchemaHash !== outputSchemaHash
+    ) {
+      failures.push(
+        `${name}: evidence schema hash disagrees with tool-schemas.json`
+      );
+    }
+  }
+};
+
+const checkRendered = async (
+  directory: string,
+  evidence: Evidence,
+  failures: string[]
+): Promise<void> => {
+  const committed = await readFile(join(directory, MEASUREMENTS_FILE), "utf-8");
+  if (committed !== renderMarkdown(evidence)) {
+    failures.push("measurements.md is stale; run the render command");
+  }
+};
+
+const runCheck = async (directory: string): Promise<string[]> => {
+  const evidence = await readEvidence(directory);
+  const failures = checkEvidence(evidence);
+  await checkToolSchemas(directory, evidence, failures);
+  await checkRendered(directory, evidence, failures);
+  return failures;
 };
 
 const reportFailures = (heading: string, failures: string[]): number => {
@@ -1337,7 +1580,7 @@ const reportFailures = (heading: string, failures: string[]): number => {
   return 1;
 };
 
-const main = async (): Promise<number> => {
+const runCommand = async (): Promise<number> => {
   const { command, output, positional } = parseArguments(process.argv.slice(2));
 
   if (command === "record") {
@@ -1358,7 +1601,7 @@ const main = async (): Promise<number> => {
   if (command === "check") {
     const status = reportFailures(
       "FAIL lc-mcp-eval evidence",
-      checkEvidence(await readEvidence(directory))
+      await runCheck(directory)
     );
     if (status === 0) {
       console.log("OK lc-mcp-eval evidence.");
@@ -1371,8 +1614,8 @@ const main = async (): Promise<number> => {
       console.error("compare needs two evidence.json paths.");
       return USAGE_EXIT_CODE;
     }
-    const left = JSON.parse(await readFile(leftPath, "utf-8")) as Evidence;
-    const right = JSON.parse(await readFile(rightPath, "utf-8")) as Evidence;
+    const left = await readEvidenceFile(leftPath);
+    const right = await readEvidenceFile(rightPath);
     const status = reportFailures(
       "FAIL determinism comparison",
       compareEvidence(left, right)
@@ -1385,16 +1628,25 @@ const main = async (): Promise<number> => {
   if (command === "render") {
     const evidence = await readEvidence(directory);
     await writeFile(
-      join(directory, "measurements.md"),
+      join(directory, MEASUREMENTS_FILE),
       renderMarkdown(evidence)
     );
-    console.log(`Rendered ${join(directory, "measurements.md")}.`);
+    console.log(`Rendered ${join(directory, MEASUREMENTS_FILE)}.`);
     return 0;
   }
   console.error(
     "Usage: lc-mcp-eval.ts record --out <dir> | check [dir] | compare <a> <b> | render [dir]"
   );
   return USAGE_EXIT_CODE;
+};
+
+const main = async (): Promise<number> => {
+  try {
+    return await runCommand();
+  } catch (error) {
+    console.error(Error.isError(error) ? error.message : String(error));
+    return 1;
+  }
 };
 
 process.exitCode = await main();
