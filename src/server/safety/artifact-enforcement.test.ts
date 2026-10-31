@@ -204,6 +204,16 @@ describe("acceptance gate snapshot", () => {
 
     expect(acceptance.state).toBe("blocked-by-validation");
     expect(acceptance).not.toHaveProperty("gate");
+    expect(acceptance.diagnostics).toStrictEqual([
+      expect.objectContaining({
+        severity: "error",
+        code: "ANSWER_MISMATCH",
+        field: "relationships",
+        verdict: "hard_block",
+        validator: "curriculum",
+        recovery: "edit",
+      }),
+    ]);
   });
 
   it("never reports ready-for-review when structural diagnostics hard-block", async () => {
@@ -220,6 +230,15 @@ describe("acceptance gate snapshot", () => {
 
     expect(acceptance.state).toBe("blocked-by-validation");
     expect(acceptance).not.toHaveProperty("gate");
+    expect(acceptance.diagnostics).toStrictEqual([
+      expect.objectContaining({
+        severity: "error",
+        code: "TARGET_REUSED",
+        field: "relationships",
+        verdict: "hard_block",
+        recovery: "edit",
+      }),
+    ]);
   });
 
   it("fails closed as retryable when the gate throws", async () => {

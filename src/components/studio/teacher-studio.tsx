@@ -22,12 +22,14 @@ import { cn } from "@/lib/utilities";
 import { LessonPreview } from "@/components/a2ui/lesson-preview";
 import { Button } from "@/components/ui/button";
 import { SourcePanel } from "@/components/studio/source-panel";
+import { ValidationDiagnostics } from "@/components/studio/validation-diagnostics";
 import { csrfHeaderName } from "@/shared/identity-contract";
 import { publicGenerationResultSchema } from "@/shared/generation-contract";
 import type { BoundSource } from "@/components/studio/source-panel";
 import type {
   LessonGenerationInput,
   PublicGenerationResult,
+  RecoveryAction,
 } from "@/shared/generation-contract";
 
 import type { SyntheticEvent } from "react";
@@ -111,6 +113,7 @@ const getPromptContext = (prompt: string): PromptContext => {
 };
 
 const READY_FOR_REVIEW_STATE = "ready-for-review";
+const BLOCKED_BY_VALIDATION_STATE = "blocked-by-validation";
 
 const getDisplayStandardId = (standardId: string) =>
   standardId === DEFAULT_STANDARD_ID ? "4.NF.A.1" : standardId;
@@ -215,6 +218,19 @@ const getDiagnosticLabel = (
   return TEACHER_REVIEW_DIAGNOSTIC_CODES.has(diagnostic.code)
     ? "Teacher review"
     : DIAGNOSTIC_SEVERITY_LABELS[diagnostic.severity];
+};
+
+/**
+ * The edit recovery action returns the teacher to the objective field. The field keeps its current text and the caret moves to the logical end, so an edit never replaces what the teacher already wrote.
+ */
+const focusLessonPrompt = (): void => {
+  const field = document.querySelector<HTMLTextAreaElement>("#lesson-prompt");
+  if (!field) {
+    return;
+  }
+  field.focus();
+  const end = field.value.length;
+  field.setSelectionRange(end, end);
 };
 
 type GenerationAttempt =
@@ -417,14 +433,24 @@ const TeacherGuidance = ({
 interface GenerationResultProperties {
   readonly result: PublicGenerationResult;
   readonly onRetry: (event: SyntheticEvent<HTMLFormElement>) => void;
+  readonly onRecover: (action: RecoveryAction, variantId?: string) => void;
 }
 
-const GenerationResult = ({ result, onRetry }: GenerationResultProperties) => {
+const GenerationResult = ({
+  result,
+  onRetry,
+  onRecover,
+}: GenerationResultProperties) => {
   const direction =
     result.draft?.variants[0]?.languageMetadata.direction ?? "ltr";
   const requiresTeacherReview = result.diagnostics.some((diagnostic) =>
     isTeacherReviewDiagnostic(diagnostic.code)
   );
+  const isBlockedByValidation = result.state === BLOCKED_BY_VALIDATION_STATE;
+  const hasValidationFindings =
+    result.diagnosticsRollup.screens.length > 0 ||
+    result.diagnosticsRollup.flow.length > 0;
+  const isShowsValidationPanel = isBlockedByValidation && hasValidationFindings;
   const stackReference = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -458,7 +484,11 @@ const GenerationResult = ({ result, onRetry }: GenerationResultProperties) => {
       dir={direction}
       lang={result.draft?.language ?? "en"}
     >
-      <output className="sr-only">{getStatusAnnouncement(result.state)}</output>
+      {isBlockedByValidation ? null : (
+        <output className="sr-only">
+          {getStatusAnnouncement(result.state)}
+        </output>
+      )}
       <div className="generation-result__header teacher-result__header">
         <div>
           <p className="studio-kicker">Your first pass</p>
@@ -473,7 +503,17 @@ const GenerationResult = ({ result, onRetry }: GenerationResultProperties) => {
         </span>
       </div>
 
-      {result.diagnostics.length > 0 ? (
+      {isShowsValidationPanel ? (
+        <ValidationDiagnostics
+          rollup={result.diagnosticsRollup}
+          requestId={result.requestId}
+          direction={direction}
+          language={result.draft?.language ?? "en"}
+          onRecover={onRecover}
+        />
+      ) : null}
+
+      {!isShowsValidationPanel && result.diagnostics.length > 0 ? (
         <ul
           className="diagnostic-list teacher-diagnostics"
           aria-label="Draft notes"
@@ -689,10 +729,10 @@ const TeacherLessonComposer = ({
   };
 
   const submitGeneration = async (
-    event: SyntheticEvent<HTMLFormElement>,
+    event: SyntheticEvent<HTMLFormElement> | undefined,
     retryOfRequestId?: string
   ): Promise<void> => {
-    event.preventDefault();
+    event?.preventDefault();
     if (submittingReference.current) {
       return;
     }
@@ -879,6 +919,13 @@ const TeacherLessonComposer = ({
           result={result}
           onRetry={(event) => {
             submitGeneration(event, result.requestId);
+          }}
+          onRecover={(action) => {
+            if (action === "edit") {
+              focusLessonPrompt();
+              return;
+            }
+            void submitGeneration(undefined, result.requestId);
           }}
         />
       ) : (

@@ -14,6 +14,7 @@ import {
   validateSemanticLesson,
 } from "./semantic-validation";
 import type {
+  ArtifactGateFinding,
   ArtifactGateInput,
   ArtifactGateResult,
   ArtifactGateSnapshot,
@@ -61,11 +62,16 @@ type DraftAcceptanceResult =
 const BLOCKED_BY_VALIDATION_STATE = "blocked-by-validation";
 const FAILED_RETRYABLE_STATE = "failed-retryable";
 
-const diagnostic = (code: string, message: string): GenerationDiagnostic => {
+const diagnostic = (
+  code: string,
+  message: string,
+  recovery?: GenerationDiagnostic["recovery"]
+): GenerationDiagnostic => {
   return {
     severity: "error",
     code,
     message,
+    ...(recovery && { recovery }),
   };
 };
 
@@ -89,7 +95,8 @@ const curriculumContextDiagnostic = (
   if (context.tenantId !== tenantId) {
     return diagnostic(
       "CURRICULUM_TENANT_MISMATCH",
-      "The approved prerequisite graph belongs to a different classroom. Teacher review is required before student content can be generated."
+      "The approved prerequisite graph belongs to a different classroom. Teacher review is required before student content can be generated.",
+      "edit"
     );
   }
 
@@ -100,7 +107,8 @@ const curriculumContextDiagnostic = (
   ) {
     return diagnostic(
       "CURRICULUM_CONTEXT_MISMATCH",
-      "The approved prerequisite graph does not match this lesson request. Teacher review is required before student content can be generated."
+      "The approved prerequisite graph does not match this lesson request. Teacher review is required before student content can be generated.",
+      "edit"
     );
   }
 
@@ -108,7 +116,8 @@ const curriculumContextDiagnostic = (
     ? undefined
     : diagnostic(
         "CURRICULUM_GRAPH_VERSION_UNSUPPORTED",
-        "The approved prerequisite graph version is not available for this lesson. Teacher review is required before student content can be generated."
+        "The approved prerequisite graph version is not available for this lesson. Teacher review is required before student content can be generated.",
+        "edit"
       );
 };
 
@@ -149,11 +158,63 @@ const semanticValidationDiagnostics = (
         validator: finding.validator,
         verdict: finding.verdict,
         validatorVersion: finding.validatorVersion,
+        recovery: finding.recovery,
         ...(finding.recommendation && {
           recommendation: finding.recommendation,
         }),
       };
     });
+};
+
+const diagnosticIdentity = (entry: GenerationDiagnostic): string => {
+  return [
+    entry.validator ?? "structural",
+    entry.code,
+    entry.field ?? "draft",
+    entry.variantId ?? "",
+    entry.nodeId ?? "",
+  ].join("|");
+};
+
+const findingIdentity = (finding: ArtifactGateFinding): string => {
+  return [
+    finding.validator,
+    finding.code,
+    finding.field,
+    finding.variantId ?? "",
+    finding.nodeId ?? "",
+  ].join("|");
+};
+
+/**
+ * The gate decides the verdict for the whole artifact, so its findings become the record diagnostics on a hard block. Each one keeps its recovery action; a prior diagnostic with the same identity contributes its recommendation.
+ */
+const gateDiagnostics = (
+  findings: readonly ArtifactGateFinding[],
+  existing: readonly GenerationDiagnostic[]
+): GenerationDiagnostic[] => {
+  const existingByIdentity = new Map(
+    existing.map((entry) => [diagnosticIdentity(entry), entry])
+  );
+
+  return findings.map((finding): GenerationDiagnostic => {
+    const prior = existingByIdentity.get(findingIdentity(finding));
+    return {
+      severity: finding.verdict === "hard_block" ? "error" : "warning",
+      code: finding.code,
+      message: finding.reason,
+      field: finding.field,
+      ...(finding.variantId && { variantId: finding.variantId }),
+      ...(finding.nodeId && { nodeId: finding.nodeId }),
+      ...(finding.validator !== "structural" && {
+        validator: finding.validator,
+      }),
+      verdict: finding.verdict,
+      validatorVersion: finding.validatorVersion,
+      recovery: finding.recovery,
+      ...(prior?.recommendation && { recommendation: prior.recommendation }),
+    };
+  });
 };
 
 export const resolveCurriculumContext = (
@@ -193,7 +254,8 @@ export const reviewDraftForAcceptance = async (
         ...structuralDiagnostics,
         diagnostic(
           "PREREQUISITE_PATH_MISSING",
-          "The approved prerequisite path is missing. Review the draft before trying again."
+          "The approved prerequisite path is missing. Review the draft before trying again.",
+          "retry"
         ),
       ],
     };
@@ -207,7 +269,8 @@ export const reviewDraftForAcceptance = async (
         ...structuralDiagnostics,
         diagnostic(
           "PREREQUISITE_PACK_MISSING",
-          "The approved prerequisite graph is unavailable. Teacher review is required before student content can be generated."
+          "The approved prerequisite graph is unavailable. Teacher review is required before student content can be generated.",
+          "retry"
         ),
       ],
     };
@@ -283,7 +346,8 @@ export const reviewDraftForAcceptance = async (
           "LEARNING_PATH_BLOCKED",
           error instanceof LearningPathBuildError
             ? error.message
-            : "The learning path could not be accepted safely. Review the draft before trying again."
+            : "The learning path could not be accepted safely. Review the draft before trying again.",
+          "edit"
         ),
       ],
     };
@@ -307,7 +371,10 @@ export const reviewDraftForAcceptance = async (
   }
 
   if (gateResult.verdict === "hard_block") {
-    return { state: BLOCKED_BY_VALIDATION_STATE, diagnostics };
+    return {
+      state: BLOCKED_BY_VALIDATION_STATE,
+      diagnostics: gateDiagnostics(gateResult.findings, diagnostics),
+    };
   }
 
   try {

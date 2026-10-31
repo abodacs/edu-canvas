@@ -4,6 +4,7 @@ import type {
   LessonDifficulty,
   LessonLanguage,
   PublicGenerationResult,
+  RecoveryAction,
   SemanticValidationVerdict,
 } from "@/shared/generation-contract";
 import type { FractionLessonDraft } from "@/shared/fractions-contract";
@@ -134,6 +135,11 @@ export interface GenerationDiagnostic {
   verdict?: SemanticValidationVerdict;
   validatorVersion?: string;
   recommendation?: string;
+  /**
+   * #28: the single teacher action for this finding, carried from the artifact
+   * gate so a blocked teacher sees the way out with the reason.
+   */
+  recovery?: RecoveryAction;
 }
 
 export interface ValidationSuccess {

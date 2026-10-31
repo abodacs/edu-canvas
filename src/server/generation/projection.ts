@@ -1,4 +1,5 @@
 import { publicGenerationResultSchema } from "@/shared/generation-contract";
+import { toPublicDiagnosticsPayload } from "./public-diagnostics";
 import type { PublicGenerationResult } from "@/shared/generation-contract";
 
 import type { LessonGenerationRecord } from "./types";
@@ -60,11 +61,14 @@ const retryForState = (record: LessonGenerationRecord) => {
 export const toPublicGenerationResult = (
   record: LessonGenerationRecord
 ): PublicGenerationResult => {
+  const publicDiagnostics = toPublicDiagnosticsPayload(record.diagnostics);
+
   return publicGenerationResultSchema.parse({
     requestId: record.requestId,
     state: record.state,
     attempt: Math.max(record.attempt, 1),
-    diagnostics: record.diagnostics,
+    diagnostics: publicDiagnostics.diagnostics,
+    diagnosticsRollup: publicDiagnostics.rollup,
     draft: publicDraft(record),
     provenance: record.provenance ?? null,
     retry: retryForState(record),
