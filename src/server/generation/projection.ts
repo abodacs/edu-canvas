@@ -67,6 +67,7 @@ export const toPublicGenerationResult = (
     requestId: record.requestId,
     state: record.state,
     attempt: Math.max(record.attempt, 1),
+    language: record.input.language,
     diagnostics: publicDiagnostics.diagnostics,
     diagnosticsRollup: publicDiagnostics.rollup,
     draft: publicDraft(record),

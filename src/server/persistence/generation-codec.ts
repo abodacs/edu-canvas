@@ -60,7 +60,24 @@ const lessonDraftSchema: z.ZodType<LessonDraft> = providerDraftSchema
   })
   .strict();
 
-const diagnosticsSchema = publicGenerationDiagnosticSchema.array();
+// #28: rows written before the hard_block rename stored `verdict: "block"`.
+// The legacy contract maps only that field on read; every other diagnostic
+// field keeps its strict contract.
+const legacyBlockDiagnosticSchema = publicGenerationDiagnosticSchema
+  .extend({ verdict: z.literal("block") })
+  .transform((diagnostic) => {
+    return {
+      ...diagnostic,
+      verdict: "hard_block" as const,
+    };
+  });
+
+const storedDiagnosticSchema = z.union([
+  publicGenerationDiagnosticSchema,
+  legacyBlockDiagnosticSchema,
+]);
+
+const diagnosticsSchema = z.array(storedDiagnosticSchema);
 const stateSchema = z.enum(generationStateValues);
 
 export interface StoredGenerationRequestRow {

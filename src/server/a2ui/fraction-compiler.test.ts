@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 
+import { gateArtifact } from "@/server/safety/artifact-gate";
 import {
   FRACTIONS_CATALOG_ID,
   FRACTIONS_CATALOG_VERSION,
 } from "@/shared/a2ui-contract";
-import { compileFractionPreview } from "./fraction-compiler";
-import { LessonPreviewCompileError } from "./compiler";
+import {
+  compileFractionPreview,
+  compileRawFractionPreview,
+} from "./fraction-compiler";
 
 const validFractionDraft = {
   requestId: "draft_req_fraction_test",
@@ -36,9 +39,9 @@ const validFractionDraft = {
   ],
 };
 
-describe(compileFractionPreview, () => {
+describe(compileRawFractionPreview, () => {
   it("compiles one fraction surface per section with the pinned catalog", () => {
-    const preview = compileFractionPreview({ draft: validFractionDraft });
+    const preview = compileRawFractionPreview({ draft: validFractionDraft });
 
     expect(preview.catalogId).toBe(FRACTIONS_CATALOG_ID);
     expect(preview.catalogVersion).toBe(FRACTIONS_CATALOG_VERSION);
@@ -67,7 +70,7 @@ describe(compileFractionPreview, () => {
   });
 
   it("omits the advance control on the final section", () => {
-    const preview = compileFractionPreview({
+    const preview = compileRawFractionPreview({
       draft: {
         ...validFractionDraft,
         sections: [validFractionDraft.sections[0]],
@@ -89,8 +92,13 @@ describe(compileFractionPreview, () => {
   });
 
   it("fails closed on a foreign draft shape", () => {
-    expect(() => compileFractionPreview({ draft: { variants: [] } })).toThrow(
-      LessonPreviewCompileError
+    expect(() =>
+      compileRawFractionPreview({ draft: { variants: [] } })
+    ).toThrow(
+      expect.objectContaining({
+        code: "INVALID_CONTRACT",
+        field: "draft",
+      })
     );
   });
 
@@ -105,7 +113,13 @@ describe(compileFractionPreview, () => {
       ],
     };
 
-    expect(() => compileFractionPreview({ draft: broken })).toThrow(
+    expect(() => compileRawFractionPreview({ draft: broken })).toThrow(
+      expect.objectContaining({
+        code: "INVALID_MATH",
+        field: "stem",
+      })
+    );
+    expect(() => compileRawFractionPreview({ draft: broken })).toThrow(
       /section-equal-parts/u
     );
   });
@@ -121,8 +135,31 @@ describe(compileFractionPreview, () => {
       ],
     };
 
-    expect(() => compileFractionPreview({ draft: outside })).toThrow(
-      LessonPreviewCompileError
+    // The trusted contract rejects the value first; the compiler still keeps
+    // its own bounds check as the second, fail-closed seam.
+    expect(() => compileRawFractionPreview({ draft: outside })).toThrow(
+      expect.objectContaining({
+        code: "INVALID_CONTRACT",
+      })
     );
+  });
+
+  it("compiles only a gate-accepted renderable artifact", () => {
+    const gate = gateArtifact({
+      kind: "fraction",
+      draft: validFractionDraft as never,
+    });
+
+    if (gate.renderable?.kind !== "fraction") {
+      throw new Error("The fixture gate must mint a renderable fraction.");
+    }
+
+    expect(compileFractionPreview(gate.renderable).messages).toHaveLength(6);
+  });
+
+  it("refuses an unbranded draft at the production seam", () => {
+    expect(() =>
+      compileFractionPreview({ draft: validFractionDraft } as never)
+    ).toThrow(/gate-accepted/iu);
   });
 });

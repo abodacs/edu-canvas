@@ -4,7 +4,7 @@ import { createEquivalentFractionsDraft } from "@/server/generation/provider";
 import { buildValidatedLearningPath } from "@/server/generation/learning-path";
 import { createDemoCurriculumContext } from "@/server/generation/semantic-validation";
 
-import { compileLessonPreview } from "./compiler";
+import { compileRawLessonPreview } from "./compiler";
 import { createPreviewSSEStream } from "./stream";
 
 const requireLearningPath = <T extends { learningPath?: unknown }>(
@@ -41,7 +41,7 @@ describe("lesson preview SSE delivery", () => {
       },
       validatorVersion: "semantic-validation-runner-v1",
     });
-    const preview = compileLessonPreview({
+    const preview = compileRawLessonPreview({
       requestId: "draft_req_stream_test",
       grade: 4,
       standardId: "standard_ccss_4_nf_a_01",

@@ -7,7 +7,7 @@ import {
   createA2UIRenderState,
 } from "@/components/a2ui/renderer";
 import { A2UIComponentRenderer } from "@/components/a2ui/component-renderer";
-import { compileFractionPreview } from "@/server/a2ui/fraction-compiler";
+import { compileRawFractionPreview } from "@/server/a2ui/fraction-compiler";
 
 const fractionDraft = {
   requestId: "draft_req_fraction_render",
@@ -38,7 +38,7 @@ const fractionDraft = {
 };
 
 const renderFirstFractionSurface = (): { markup: string } => {
-  const preview = compileFractionPreview({ draft: fractionDraft });
+  const preview = compileRawFractionPreview({ draft: fractionDraft });
   let state = createA2UIRenderState();
   for (const message of preview.messages) {
     const applied = applyA2UIMessage(state, message);
@@ -94,7 +94,7 @@ describe("compiled fraction preview rendering", () => {
   });
 
   it("keeps the fraction data model lean and directional", () => {
-    const preview = compileFractionPreview({ draft: fractionDraft });
+    const preview = compileRawFractionPreview({ draft: fractionDraft });
     const dataModel = preview.messages.find(
       (message) => "updateDataModel" in message
     );

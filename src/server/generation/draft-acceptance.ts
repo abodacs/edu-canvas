@@ -2,6 +2,7 @@ import {
   gateArtifact,
   snapshotArtifactGateResult,
 } from "@/server/safety/artifact-gate";
+import { recoveryForCode } from "@/server/safety/recovery-policy";
 
 import {
   buildValidatedLearningPath,
@@ -20,6 +21,7 @@ import type {
   ArtifactGateSnapshot,
 } from "@/server/safety/artifact-gate";
 import type {
+  SemanticValidationFinding,
   SemanticValidationInput,
   SemanticValidationReport,
   SemanticValidationVerdict,
@@ -96,7 +98,7 @@ const curriculumContextDiagnostic = (
     return diagnostic(
       "CURRICULUM_TENANT_MISMATCH",
       "The approved prerequisite graph belongs to a different classroom. Teacher review is required before student content can be generated.",
-      "edit"
+      recoveryForCode("CURRICULUM_TENANT_MISMATCH")
     );
   }
 
@@ -108,7 +110,7 @@ const curriculumContextDiagnostic = (
     return diagnostic(
       "CURRICULUM_CONTEXT_MISMATCH",
       "The approved prerequisite graph does not match this lesson request. Teacher review is required before student content can be generated.",
-      "edit"
+      recoveryForCode("CURRICULUM_CONTEXT_MISMATCH")
     );
   }
 
@@ -117,18 +119,24 @@ const curriculumContextDiagnostic = (
     : diagnostic(
         "CURRICULUM_GRAPH_VERSION_UNSUPPORTED",
         "The approved prerequisite graph version is not available for this lesson. Teacher review is required before student content can be generated.",
-        "edit"
+        recoveryForCode("CURRICULUM_GRAPH_VERSION_UNSUPPORTED")
       );
 };
 
+type ActionableSemanticVerdict = Exclude<SemanticValidationVerdict, "pass">;
+type ActionableSemanticFinding = Extract<
+  SemanticValidationFinding,
+  { verdict: "warning" | "hard_block" }
+>;
+
+const isActionableSemanticFinding = (
+  finding: SemanticValidationFinding
+): finding is ActionableSemanticFinding => finding.verdict !== "pass";
+
 const diagnosticSeverity = (
-  verdict: SemanticValidationVerdict
+  verdict: ActionableSemanticVerdict
 ): DiagnosticSeverity => {
   switch (verdict) {
-    case "pass": {
-      // Pass findings are filtered before this mapping runs.
-      return "warning";
-    }
     case "warning": {
       return "warning";
     }
@@ -145,25 +153,23 @@ const diagnosticSeverity = (
 const semanticValidationDiagnostics = (
   report: SemanticValidationReport
 ): GenerationDiagnostic[] => {
-  return report.findings
-    .filter((finding) => finding.verdict !== "pass")
-    .map((finding) => {
-      return {
-        severity: diagnosticSeverity(finding.verdict),
-        code: finding.code,
-        message: finding.reason,
-        ...(finding.variantId && { variantId: finding.variantId }),
-        ...(finding.field && { field: finding.field }),
-        ...(finding.nodeId && { nodeId: finding.nodeId }),
-        validator: finding.validator,
-        verdict: finding.verdict,
-        validatorVersion: finding.validatorVersion,
-        recovery: finding.recovery,
-        ...(finding.recommendation && {
-          recommendation: finding.recommendation,
-        }),
-      };
-    });
+  return report.findings.filter(isActionableSemanticFinding).map((finding) => {
+    return {
+      severity: diagnosticSeverity(finding.verdict),
+      code: finding.code,
+      message: finding.reason,
+      ...(finding.variantId && { variantId: finding.variantId }),
+      ...(finding.field && { field: finding.field }),
+      ...(finding.nodeId && { nodeId: finding.nodeId }),
+      validator: finding.validator,
+      verdict: finding.verdict,
+      validatorVersion: finding.validatorVersion,
+      recovery: finding.recovery,
+      ...(finding.recommendation && {
+        recommendation: finding.recommendation,
+      }),
+    };
+  });
 };
 
 const diagnosticIdentity = (entry: GenerationDiagnostic): string => {
@@ -255,7 +261,7 @@ export const reviewDraftForAcceptance = async (
         diagnostic(
           "PREREQUISITE_PATH_MISSING",
           "The approved prerequisite path is missing. Review the draft before trying again.",
-          "retry"
+          recoveryForCode("PREREQUISITE_PATH_MISSING")
         ),
       ],
     };
@@ -270,7 +276,7 @@ export const reviewDraftForAcceptance = async (
         diagnostic(
           "PREREQUISITE_PACK_MISSING",
           "The approved prerequisite graph is unavailable. Teacher review is required before student content can be generated.",
-          "retry"
+          recoveryForCode("PREREQUISITE_PACK_MISSING")
         ),
       ],
     };
@@ -347,7 +353,7 @@ export const reviewDraftForAcceptance = async (
           error instanceof LearningPathBuildError
             ? error.message
             : "The learning path could not be accepted safely. Review the draft before trying again.",
-          "edit"
+          recoveryForCode("LEARNING_PATH_BLOCKED")
         ),
       ],
     };

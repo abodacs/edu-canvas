@@ -9,16 +9,16 @@ import type {
 
 type RecoveryScope = "screen" | "flow";
 
-const recoveryLabel = (
-  recovery: RecoveryAction,
-  scope: RecoveryScope
-): string => {
+/**
+ * The label states what the control does. Both regenerate actions request a new generation; they never claim to replace a single screen.
+ */
+const recoveryLabel = (recovery: RecoveryAction): string => {
   switch (recovery) {
     case "edit": {
-      return scope === "screen" ? "Edit this screen" : "Edit this lesson";
+      return "Edit this lesson";
     }
     case "replace": {
-      return scope === "screen" ? "Replace this screen" : "Replace this lesson";
+      return "Regenerate this lesson";
     }
     case "retry": {
       return "Try again";
@@ -28,6 +28,20 @@ const recoveryLabel = (
       throw new Error(`Unhandled recovery action: ${exhaustive}`);
     }
   }
+};
+
+const findingKey = (
+  finding: PublicGenerationDiagnostic,
+  scope: RecoveryScope
+): string => {
+  return [
+    scope,
+    finding.code,
+    finding.field ?? "draft",
+    finding.variantId ?? "",
+    finding.nodeId ?? "",
+    finding.message,
+  ].join("|");
 };
 
 const screenLabel = (variantId: string, index: number): string => {
@@ -74,13 +88,11 @@ const announcementKey = (
 
 interface ValidationFindingProperties {
   readonly finding: PublicGenerationDiagnostic;
-  readonly scope: RecoveryScope;
   readonly onRecover: (action: RecoveryAction) => void;
 }
 
 const ValidationFinding = ({
   finding,
-  scope,
   onRecover,
 }: ValidationFindingProperties) => {
   const recovery = finding.recovery ?? "edit";
@@ -99,7 +111,7 @@ const ValidationFinding = ({
         className="validation-diagnostics__action"
         onClick={() => onRecover(recovery)}
       >
-        {recoveryLabel(recovery, scope)}
+        {recoveryLabel(recovery)}
       </button>
     </li>
   );
@@ -198,12 +210,11 @@ export const ValidationDiagnostics = ({
               className="validation-diagnostics__findings"
               aria-labelledby={headingId}
             >
-              {screen.findings.map((finding, findingIndex) => {
+              {screen.findings.map((finding) => {
                 return (
                   <ValidationFinding
-                    key={`${screen.variantId}-${finding.code}-${findingIndex}`}
+                    key={findingKey(finding, "screen")}
                     finding={finding}
-                    scope="screen"
                     onRecover={(action) => onRecover(action, screen.variantId)}
                   />
                 );
@@ -220,12 +231,11 @@ export const ValidationDiagnostics = ({
             className="validation-diagnostics__findings"
             aria-labelledby="validation-diagnostics-flow"
           >
-            {rollup.flow.map((finding, findingIndex) => {
+            {rollup.flow.map((finding) => {
               return (
                 <ValidationFinding
-                  key={`flow-${finding.code}-${findingIndex}`}
+                  key={findingKey(finding, "flow")}
                   finding={finding}
-                  scope="flow"
                   onRecover={(action) => onRecover(action)}
                 />
               );

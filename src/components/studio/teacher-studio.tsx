@@ -233,6 +233,32 @@ const focusLessonPrompt = (): void => {
   field.setSelectionRange(end, end);
 };
 
+/**
+ * What each recovery action does today. Edit returns to the objective and keeps the teacher's text. Replace and retry both ask for a new generation; neither can regenerate a single screen yet, so the action label says "regenerate".
+ */
+const recoveryEffect = (
+  action: RecoveryAction
+): "focus-objective" | "regenerate" => {
+  switch (action) {
+    case "edit": {
+      return "focus-objective";
+    }
+    case "replace": {
+      return "regenerate";
+    }
+    case "retry": {
+      return "regenerate";
+    }
+    default: {
+      const exhaustive: never = action;
+      throw new Error(`Unhandled recovery action: ${exhaustive}`);
+    }
+  }
+};
+
+const directionForLanguage = (language: PublicGenerationResult["language"]) =>
+  language === "ar" ? "rtl" : "ltr";
+
 type GenerationAttempt =
   | { readonly kind: "result"; readonly result: PublicGenerationResult }
   | { readonly kind: "unauthorized" }
@@ -441,8 +467,9 @@ const GenerationResult = ({
   onRetry,
   onRecover,
 }: GenerationResultProperties) => {
-  const direction =
-    result.draft?.variants[0]?.languageMetadata.direction ?? "ltr";
+  // A blocked record has no draft, so the record input language keeps the
+  // result in its own reading direction.
+  const direction = directionForLanguage(result.language);
   const requiresTeacherReview = result.diagnostics.some((diagnostic) =>
     isTeacherReviewDiagnostic(diagnostic.code)
   );
@@ -482,7 +509,7 @@ const GenerationResult = ({
     <div
       className="generation-result teacher-result"
       dir={direction}
-      lang={result.draft?.language ?? "en"}
+      lang={result.language}
     >
       {isBlockedByValidation ? null : (
         <output className="sr-only">
@@ -508,7 +535,7 @@ const GenerationResult = ({
           rollup={result.diagnosticsRollup}
           requestId={result.requestId}
           direction={direction}
-          language={result.draft?.language ?? "en"}
+          language={result.language}
           onRecover={onRecover}
         />
       ) : null}
@@ -921,7 +948,7 @@ const TeacherLessonComposer = ({
             submitGeneration(event, result.requestId);
           }}
           onRecover={(action) => {
-            if (action === "edit") {
+            if (recoveryEffect(action) === "focus-objective") {
               focusLessonPrompt();
               return;
             }

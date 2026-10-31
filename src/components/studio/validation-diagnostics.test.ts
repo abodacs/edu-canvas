@@ -107,10 +107,29 @@ describe("validation diagnostics panel", () => {
       )
     ).toBeTruthy();
     expect(
-      ["Edit this screen", "Replace this screen", "Try again"].filter(
+      ["Edit this lesson", "Regenerate this lesson", "Try again"].filter(
         (label) => !markup.includes(label)
       )
     ).toStrictEqual([]);
+  });
+
+  it("labels replace as regeneration instead of collapsing it into retry", () => {
+    const markup = render("ltr", {
+      ...rollup,
+      affectedScreens: ["variant-2"],
+      screens: [
+        rollup.screens[1] as PublicDiagnosticsRollup["screens"][number],
+      ],
+      flow: [],
+    });
+    const labels = markup
+      .matchAll(/<button[^>]*>(?<label>[^<]+)<\/button>/gu)
+      .map((match) => match.groups?.label)
+      .toArray();
+
+    expect(labels).toStrictEqual(["Regenerate this lesson"]);
+    expect(markup).not.toContain("Try again");
+    expect(markup).not.toContain("Replace this screen");
   });
 
   it("uses one empty polite live region", () => {

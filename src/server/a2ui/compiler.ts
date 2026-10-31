@@ -4,7 +4,9 @@ import {
   A2UI_PROTOCOL_VERSION,
   validateA2UIMessage,
 } from "@/shared/a2ui-contract";
+import { isRenderableArtifact } from "@/server/safety/artifact-gate";
 import type { LessonLanguage } from "@/shared/generation-contract";
+import type { RenderableArtifact } from "@/server/safety/artifact-gate";
 import type {
   A2UIComponent,
   A2UIMessage,
@@ -39,6 +41,13 @@ export interface LessonPreviewCompileInput {
   learningPath: ValidatedLearningPath;
 }
 
+export interface LessonPreviewMetadata {
+  requestId: string;
+  grade: number;
+  standardId: string;
+  language: LessonLanguage;
+}
+
 export interface CompiledLessonPreview {
   protocolVersion: typeof A2UI_PROTOCOL_VERSION;
   catalogId: typeof A2UI_CATALOG_ID;
@@ -46,17 +55,51 @@ export interface CompiledLessonPreview {
   messages: A2UIMessage[];
 }
 
+export interface LessonPreviewCompileErrorOptions extends ErrorOptions {
+  /**
+   * The artifact field the teacher can correct. The refusal names it instead
+   * of a generic `preview` field.
+   */
+  field?: string;
+  /**
+   * The screen that produced the rejection, when the throw site knows it.
+   */
+  variantId?: string;
+}
+
 export class LessonPreviewCompileError extends Error {
-  constructor(message: string, options?: ErrorOptions) {
-    super(message, options);
+  readonly code: string;
+  readonly field?: string;
+  readonly variantId?: string;
+
+  constructor(
+    code: string,
+    message: string,
+    options: LessonPreviewCompileErrorOptions = {}
+  ) {
+    super(message, { cause: options.cause });
     this.name = "LessonPreviewCompileError";
+    this.code = code;
+    this.field = options.field;
+    this.variantId = options.variantId;
   }
 }
 
-const assertComponentId = (value: string, label: string): string => {
+interface CompileFindingLocation {
+  field: string;
+  variantId?: string;
+}
+
+const assertComponentId = (
+  value: string,
+  label: string,
+  location: CompileFindingLocation
+): string => {
   if (!/^[A-Za-z0-9:_./-]{1,120}$/u.test(value)) {
     throw new LessonPreviewCompileError(
-      `The lesson preview contains an invalid ${label}.`
+      "INVALID_COMPONENT_ID",
+      `The lesson preview contains an invalid ${label}.`,
+      location
     );
   }
 
@@ -99,12 +142,14 @@ const matchCard = (
   surfaceId: string,
   item: { id: string; label: string },
   group: "source" | "target",
-  description: string
+  description: string,
+  variantId: string
 ): Extract<A2UIComponent, { component: "MatchCard" }> => {
+  const location = { field: "items", variantId };
   return {
-    id: `${group}-card-${assertComponentId(item.id, "item id")}`,
+    id: `${group}-card-${assertComponentId(item.id, "item id", location)}`,
     component: "MatchCard",
-    itemId: assertComponentId(item.id, "item id"),
+    itemId: assertComponentId(item.id, "item id", location),
     label: item.label,
     group,
     description,
@@ -121,19 +166,22 @@ const previewMessagesForVariant = (
   variant: ProviderVariant,
   index: number
 ): A2UIMessage[] => {
-  const variantId = assertComponentId(variant.id, "variant id");
+  const variantId = assertComponentId(variant.id, "variant id", {
+    field: "variants",
+  });
   const surfaceId = assertComponentId(
     `preview-${input.requestId}-${variantId}`,
-    "surface id"
+    "surface id",
+    { field: "surfaces", variantId }
   );
   const purpose = purposeLabels[index] ?? "Lesson practice";
   const sourceLabel = variant.accessibilityMetadata.sourceGroupLabel;
   const targetLabel = variant.accessibilityMetadata.targetGroupLabel;
   const sourceCards = variant.sourceItems.map((item) =>
-    matchCard(surfaceId, item, "source", sourceLabel)
+    matchCard(surfaceId, item, "source", sourceLabel, variantId)
   );
   const targetCards = [...variant.targetItems, ...variant.distractorItems].map(
-    (item) => matchCard(surfaceId, item, "target", targetLabel)
+    (item) => matchCard(surfaceId, item, "target", targetLabel, variantId)
   );
   const sourceCardIds = sourceCards.map((card) => card.id);
   const targetCardIds = targetCards.map((card) => card.id);
@@ -258,26 +306,37 @@ const previewMessagesForVariant = (
   for (const message of messages) {
     const validation = validateA2UIMessage(message);
     if (!validation.ok) {
-      throw new LessonPreviewCompileError(validation.message);
+      throw new LessonPreviewCompileError(validation.code, validation.message, {
+        field: "preview",
+        variantId,
+      });
     }
   }
 
   return messages;
 };
 
-export const compileLessonPreview = (
+/**
+ * The raw compiler is the test and differential-oracle seam. It accepts an
+ * unattested draft, so production code must call `compileLessonPreview`.
+ */
+export const compileRawLessonPreview = (
   input: LessonPreviewCompileInput
 ): CompiledLessonPreview => {
   if (input.draft.variants.length !== 4) {
     throw new LessonPreviewCompileError(
-      "Only a complete four-variant lesson can enter the preview."
+      "INCOMPLETE_VARIANT_SET",
+      "Only a complete four-variant lesson can enter the preview.",
+      { field: "variants" }
     );
   }
 
   const variantIds = new Set(input.draft.variants.map((variant) => variant.id));
   if (variantIds.size !== input.draft.variants.length) {
     throw new LessonPreviewCompileError(
-      "The lesson preview contains duplicate variant identifiers."
+      "DUPLICATE_VARIANT_ID",
+      "The lesson preview contains duplicate variant identifiers.",
+      { field: "variants" }
     );
   }
 
@@ -286,7 +345,11 @@ export const compileLessonPreview = (
     input.grade < 3 ||
     input.grade > 6
   ) {
-    throw new LessonPreviewCompileError("The lesson grade is not supported.");
+    throw new LessonPreviewCompileError(
+      "UNSUPPORTED_GRADE",
+      "The lesson grade is not supported.",
+      { field: "grade" }
+    );
   }
 
   const messages = input.draft.variants.flatMap((variant, index) =>
@@ -299,4 +362,29 @@ export const compileLessonPreview = (
     catalogVersion: A2UI_CATALOG_VERSION,
     messages,
   };
+};
+
+/**
+ * The production compile seam. It accepts only the branded renderable
+ * artifact that `gateArtifact` mints, so preview can never compile a draft the
+ * safety gate refused.
+ */
+export const compileLessonPreview = (
+  artifact: RenderableArtifact,
+  metadata: LessonPreviewMetadata
+): CompiledLessonPreview => {
+  if (!isRenderableArtifact(artifact) || artifact.kind !== "lesson") {
+    throw new TypeError(
+      "compileLessonPreview requires a gate-accepted lesson artifact."
+    );
+  }
+
+  return compileRawLessonPreview({
+    requestId: metadata.requestId,
+    grade: metadata.grade,
+    standardId: metadata.standardId,
+    language: metadata.language,
+    draft: artifact.draft,
+    learningPath: artifact.learningPath,
+  });
 };

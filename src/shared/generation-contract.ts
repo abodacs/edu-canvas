@@ -185,6 +185,10 @@ export const publicGenerationResultSchema = z
     requestId: z.string(),
     state: z.enum(generationStateValues),
     attempt: z.number().int().min(1),
+    /**
+     * The record input language. It stays available when a blocked record has no draft, so the result can keep its reading direction.
+     */
+    language: z.enum(languageValues),
     diagnostics: z.array(publicGenerationDiagnosticSchema),
     diagnosticsRollup: publicDiagnosticsRollupSchema,
     draft: publicLessonDraftSchema.nullable(),
