@@ -111,11 +111,11 @@ module.exports = {
         path: "^src/",
         pathNot: [
           "\\.test\\.tsx?$",
-          "^src/server/persistence/(seeded|source-seeded|identity-seeded)\\.ts$",
+          "^src/server/persistence/(seeded|source-seeded|identity-seeded|pack-seeded)\\.ts$",
         ],
       },
       to: {
-        path: "^src/server/persistence/(seeded|source-seeded|identity-seeded)\\.ts$",
+        path: "^src/server/persistence/(seeded|source-seeded|identity-seeded|pack-seeded)\\.ts$",
       },
     },
     {
