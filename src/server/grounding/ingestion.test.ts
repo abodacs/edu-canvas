@@ -80,10 +80,10 @@ describe(hasPdfEncryptionMarker, () => {
     expect(hasPdfEncryptionMarker(bytes)).toBe(true);
   });
 
-  it("does not match /Encrypt in the body text", () => {
-    const bytes = new TextEncoder().encode(
-      "%PDF-1.4 A document that mentions /Encrypt early and ends without it."
-    );
+  it("does not match /Encrypt beyond the trailer region", () => {
+    const header = "%PDF-1.4 A document that mentions /Encrypt early.";
+    const filler = "x".repeat(4096);
+    const bytes = new TextEncoder().encode(`${header}${filler}%%EOF`);
     expect(hasPdfEncryptionMarker(bytes)).toBe(false);
   });
 });
