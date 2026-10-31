@@ -119,7 +119,7 @@ Each unit records:
   "starting_paths": ["repo/relative/path"],
   "ordinary_attack_class_block": "ATTACK-CLASSES.md#Access control",
   "selected_companion_blocks": ["FILE.md#section"],
-  "excluded_blocks": [{"block": "FILE.md#section", "reason": "..."}],
+  "excluded_blocks": [{ "block": "FILE.md#section", "reason": "..." }],
   "prior_status": "new|prior_confirmed_same_source|prior_confirmed_changed_source|prior_needs_validation|prior_deferred|prior_blocked|prior_out_of_scope|prior_covered_same_source|prior_covered_changed_source|prior_rejected_claim_changed|none",
   "attempts": [],
   "wave": 1,
@@ -141,7 +141,7 @@ The parent may add bookkeeping fields but keeps the semantic fields above stable
 Enforce this state table exactly:
 
 | Status | Unit `agent_id` | `reviewed_paths` / `local_checks` | `result_fingerprints` | `unresolved` |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | `planned` | null | empty | empty | empty |
 | `not_applicable`, `out_of_scope`, `deferred` | null | empty | empty | nonempty reason |
 | `in_progress` | canonical owner | empty | empty | empty |

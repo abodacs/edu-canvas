@@ -1,7 +1,9 @@
 import { generationClaimExpiredDiagnostic } from "../generation/types";
 import { serverObservability } from "../observability.server";
 import { getDemoSeedCounts } from "../seed-data";
+import { createSeededSourcePersistence } from "./source-seeded";
 import type { FoundationPersistence } from "./types";
+import type { SourceSnapshotRecord } from "../grounding/types";
 import type { LessonGenerationRecord } from "../generation/types";
 import type { ServerObservability } from "../observability.server";
 
@@ -10,6 +12,7 @@ const SEEDED_DEMO_KIND = "seeded-demo";
 export interface SeededPersistenceOptions {
   observability?: ServerObservability;
   generationStore?: Map<string, LessonGenerationRecord>;
+  snapshotStore?: Map<string, SourceSnapshotRecord>;
 }
 
 export const createSeededPersistence = (
@@ -18,6 +21,9 @@ export const createSeededPersistence = (
   const observability = options.observability ?? serverObservability;
   const generationStore =
     options.generationStore ?? new Map<string, LessonGenerationRecord>();
+  const sourcePersistence = createSeededSourcePersistence({
+    snapshotStore: options.snapshotStore,
+  });
 
   const findStoredGenerationByIdempotencyKey = (
     tenantId: string,
@@ -41,6 +47,7 @@ export const createSeededPersistence = (
 
   return {
     kind: SEEDED_DEMO_KIND,
+    ...sourcePersistence,
 
     check() {
       try {

@@ -651,6 +651,32 @@ export const identityErrorJson = (error: IdentityError): Response =>
   errorResponse(error);
 
 /**
+Full protected-mutation teacher resolution: session actor plus the origin and
+forgery guard. Delivery seams call this before any domain work; transport
+stays with the caller as a ready `Response`.
+*/
+export const resolveProtectedTeacher = async (
+  request: Request,
+  config: ServerConfig = readServerConfig()
+): Promise<
+  { ok: true; actor: TeacherActor } | { ok: false; response: Response }
+> => {
+  const resolved = await resolveTeacherActor(request, config);
+  if (!resolved.ok) {
+    return { ok: false, response: identityErrorJson(resolved.error) };
+  }
+
+  const guard = guardProtectedMutation(
+    request,
+    resolved.dependencies,
+    resolved.sessionId
+  );
+  return guard
+    ? { ok: false, response: identityErrorJson(guard) }
+    : { ok: true, actor: resolved.actor };
+};
+
+/**
 Resolve the composition or return a fail-closed 503 response.
 */
 export const resolveAuthOrError = async (): Promise<

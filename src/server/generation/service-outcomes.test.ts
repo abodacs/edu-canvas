@@ -36,6 +36,7 @@ describe("generation attempt outcomes", () => {
       safety: {
         checkPrompt: () => ({ allowed: true }),
         checkGeneratedContent: () => ({ allowed: provider.calls === 1 }),
+        checkSourceText: () => ({ allowed: true }),
       },
     });
 

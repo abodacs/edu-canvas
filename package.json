@@ -18,7 +18,7 @@
     "start": "node .output/server/index.mjs",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:database": "RUN_DATABASE_TESTS=true vitest run src/server/persistence/persistence-contract.test.ts",
+    "test:database": "RUN_DATABASE_TESTS=true vitest run src/server/persistence/persistence-contract.test.ts src/server/persistence/source-contract.test.ts",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "lint": "eslint .",
@@ -63,6 +63,7 @@
     "react-dom": "19.2.8",
     "tailwind-merge": "3.6.0",
     "tailwindcss": "4.3.3",
+    "unpdf": "2.0.1",
     "zod": "4.4.3"
   },
   "devDependencies": {

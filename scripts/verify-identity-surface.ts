@@ -30,6 +30,7 @@ const serverImportPattern = /from\s+['"](?<specifier>@\/server\/[^'"]+)['"]/gu;
 const sessionResolutionMarkers = [
   "resolveRequestSession",
   "resolveTeacherActor",
+  "resolveProtectedTeacher",
 ];
 
 const listRouteFiles = async (directory: string): Promise<string[]> => {
