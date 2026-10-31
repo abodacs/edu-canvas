@@ -471,7 +471,8 @@ const GenerationResult = ({
   const hasValidationFindings =
     result.diagnosticsRollup.screens.length > 0 ||
     result.diagnosticsRollup.flow.length > 0;
-  const showsValidationPanel = isBlockedByValidation && hasValidationFindings;
+  const hasVisibleValidationPanel =
+    isBlockedByValidation && hasValidationFindings;
 
   return (
     <div
@@ -498,7 +499,7 @@ const GenerationResult = ({
         </span>
       </div>
 
-      {showsValidationPanel ? (
+      {hasVisibleValidationPanel ? (
         <ValidationDiagnostics
           rollup={result.diagnosticsRollup}
           requestId={result.requestId}
@@ -508,7 +509,7 @@ const GenerationResult = ({
         />
       ) : null}
 
-      {!showsValidationPanel && result.diagnostics.length > 0 ? (
+      {!hasVisibleValidationPanel && result.diagnostics.length > 0 ? (
         <ul
           className="diagnostic-list teacher-diagnostics"
           aria-label="Draft notes"
