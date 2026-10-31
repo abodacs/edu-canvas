@@ -252,6 +252,38 @@ describe("teacher lesson preview delivery seam", () => {
     expect(body).not.toContain("relationship-");
     expect(body).not.toContain("provenance");
   });
+
+  it("renders the forward story with the accepted path", async () => {
+    const { body } = await requestOwnedPreview();
+
+    expect(body).toContain('"id":"story-plan","component":"Column"');
+    expect(body).toContain("Forward learner story");
+    expect(body).toContain("Connection reveal");
+  });
+
+  it("never compiles a story for a blocked draft", async () => {
+    const ownedRecord = await (
+      persistenceState.current as FoundationPersistence
+    ).readGeneration(owningTeacher.tenantId, draftRequestId);
+    if (!ownedRecord) {
+      throw new Error("Expected the owned draft to be persisted.");
+    }
+    const blockedRecord = {
+      ...ownedRecord,
+      state: "blocked-by-validation" as const,
+    };
+    // eslint-disable-next-line require-atomic-updates -- test seam, fixed fixture
+    persistenceState.current = {
+      readGeneration: () => blockedRecord,
+    };
+
+    const { body, response } = await requestOwnedPreview();
+
+    expect(response.status).toBe(409);
+    expect(body).toContain("PREVIEW_NOT_READY");
+    expect(body).not.toContain("story-plan");
+    expect(body).not.toContain("Forward learner story");
+  });
 });
 
 describe("fractions-v2 preview negotiation", () => {

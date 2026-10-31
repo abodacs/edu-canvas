@@ -4,6 +4,7 @@ import {
   A2UI_PROTOCOL_VERSION,
   validateA2UIMessage,
 } from "@/shared/a2ui-contract";
+import { buildStoryPlan } from "@/shared/story-plan";
 import type { LessonLanguage } from "@/shared/generation-contract";
 import type {
   A2UIComponent,
@@ -95,6 +96,80 @@ const action = (
   };
 };
 
+// #19: the story is compiled into the existing catalog components. The action
+// sentence below restates the matching surface's approved action set
+// (selectSource, selectTarget); no new component or action is added.
+const storyLearnerAction = {
+  en: "Select a source card, then a target card.",
+  ar: "اختر بطاقة مصدر ثم بطاقة هدف.",
+} as const;
+
+const storyCopy = {
+  en: {
+    actionPrefix: "What the learner does",
+    transitionPrefix: "Next",
+    roles: {
+      prerequisite: "Prerequisite",
+      hinge: "Connection reveal",
+      target: "Target concept",
+    },
+  },
+  ar: {
+    actionPrefix: "ما يفعله المتعلم",
+    transitionPrefix: "التالي",
+    roles: {
+      prerequisite: "متطلب سابق",
+      hinge: "كشف الارتباط",
+      target: "المفهوم المستهدف",
+    },
+  },
+} as const;
+
+const storyComponents = (
+  input: LessonPreviewCompileInput
+): A2UIComponent[] => {
+  const copy = storyCopy[input.language];
+  const storyPlan = buildStoryPlan({
+    path: input.learningPath,
+    language: input.language,
+    learnerAction: storyLearnerAction[input.language],
+  });
+
+  const beatComponents = storyPlan.beats.flatMap((beat) => {
+    const roleId = `${beat.id}-role`;
+    const labelId = `${beat.id}-label`;
+    const narrativeId = `${beat.id}-narrative`;
+    const transitionId = `${beat.id}-transition`;
+
+    return [
+      {
+        id: beat.id,
+        component: "Column",
+        children: [roleId, labelId, narrativeId, transitionId],
+      },
+      text(roleId, `${beat.position} · ${copy.roles[beat.role]}`, "label"),
+      text(labelId, beat.label, "subheading"),
+      text(narrativeId, beat.narrative, "body"),
+      text(
+        transitionId,
+        `${copy.transitionPrefix}: ${beat.transition}`,
+        "caption"
+      ),
+    ] satisfies A2UIComponent[];
+  });
+
+  return [
+    {
+      id: "story-plan",
+      component: "Column",
+      children: ["story-title", "story-action", ...storyPlan.beats.map((beat) => beat.id)],
+    },
+    text("story-title", storyPlan.heading, "label"),
+    text("story-action", `${copy.actionPrefix}: ${storyPlan.beats[0]?.learnerAction ?? ""}`, "caption"),
+    ...beatComponents,
+  ] satisfies A2UIComponent[];
+};
+
 const matchCard = (
   surfaceId: string,
   item: { id: string; label: string },
@@ -148,6 +223,7 @@ const previewMessagesForVariant = (
         "metadata",
         "instructions",
         "learning-path",
+        "story-plan",
         "matching-board",
         "preview-actions",
         "preview-status",
@@ -165,6 +241,7 @@ const previewMessagesForVariant = (
       id: "learning-path",
       component: "LearningPath",
     },
+    ...storyComponents(input),
     {
       id: "matching-board",
       component: "Row",

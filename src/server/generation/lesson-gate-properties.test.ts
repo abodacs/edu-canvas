@@ -9,6 +9,7 @@ import {
 } from "fast-check";
 import { describe, expect, it } from "vitest";
 
+import { buildStoryPlan, StoryPlanBuildError } from "@/shared/story-plan";
 import {
   buildValidatedLearningPath,
   LearningPathBuildError,
@@ -880,6 +881,83 @@ const pathProvenance: ProviderProvenance = {
   validatorVersion: "lesson-validator-v2",
 };
 
+interface StoryMutationProbe {
+  readonly name: string;
+  readonly apply: (path: ValidatedLearningPath) => void;
+  readonly expectedCode: string;
+}
+
+// #19: the story plan is a pure projection, so its only new rejections are a
+// path that cannot carry a beat and a path whose approved copy is blank.
+const storyMutationProbes: StoryMutationProbe[] = [
+  {
+    name: "a path with no approved prerequisite edge",
+    apply(path) {
+      path.steps = path.steps.slice(0, 1);
+    },
+    expectedCode: "STORY_PATH_TOO_SHORT",
+  },
+  {
+    name: "a path with blank step copy",
+    apply(path) {
+      path.steps[0].label = ' '.repeat(3);
+    },
+    expectedCode: "STORY_SOURCE_COPY_EMPTY",
+  },
+];
+
+const buildAcceptedPath = (plan: PathPlan): ValidatedLearningPath => {
+  const context = buildVersionedPlanContext(plan);
+  const proposal = buildBaseLearningPathProposal(context);
+
+  return buildValidatedLearningPath({
+    proposal,
+    context,
+    draftId: "draft_property_fixture",
+    provenance: pathProvenance,
+    validatorVersion: "lesson-validator-v2",
+  });
+};
+
+const storyViolations = (
+  story: ReturnType<typeof buildStoryPlan>,
+  path: ValidatedLearningPath
+): string[] => {
+  const hinge = story.beats.find((beat) => beat.role === "hinge");
+  const allowedLabels = new Set([
+    ...path.steps.map((step) => step.label),
+    hinge?.label ?? "",
+  ]);
+  const allowedNarratives = new Set([
+    ...path.steps.map((step) => step.screenPurpose),
+    story.connectionExplanation,
+  ]);
+  const allowedTransitions = new Set([
+    ...story.beats.map((beat) => beat.label),
+    path.nextScreenRationale,
+  ]);
+  const allowedScreenPurposeIds = new Set(
+    path.steps.map((step) => step.screenPurposeId)
+  );
+
+  return story.beats.flatMap((beat) => {
+    const violations: string[] = [];
+    if (!allowedLabels.has(beat.label)) {
+      violations.push(`invented label: ${beat.label}`);
+    }
+    if (!allowedNarratives.has(beat.narrative)) {
+      violations.push(`invented narrative: ${beat.narrative}`);
+    }
+    if (!allowedTransitions.has(beat.transition)) {
+      violations.push(`invented transition: ${beat.transition}`);
+    }
+    if (!allowedScreenPurposeIds.has(beat.screenPurposeId)) {
+      violations.push(`unapproved screen purpose: ${beat.screenPurposeId}`);
+    }
+    return violations;
+  });
+};
+
 describe("lesson gate properties", () => {
   it("every accepted draft satisfies every rule the gate enforces (re-checked)", () => {
     assertProperty(
@@ -970,6 +1048,65 @@ describe("lesson gate properties", () => {
               validatorVersion: "lesson-validator-v2",
             });
           }).toThrow(LearningPathBuildError);
+        }
+      }),
+      propertyOptions()
+    );
+  });
+
+  it("every story beat traces to the accepted path, and every story probe is rejected", () => {
+    assertProperty(
+      property(pathPlanArb, (plan) => {
+        const path = buildAcceptedPath(plan);
+        const story = buildStoryPlan({
+          path,
+          language: plan.language,
+          learnerAction: "Match each source to a target.",
+        });
+
+        const hingeBeats = story.beats.filter((beat) => beat.role === "hinge");
+        const storyShape = {
+          beatCount: story.beats.length,
+          expectedBeatCount: path.steps.length + 1,
+          violations: storyViolations(story, path),
+          hingeCount: hingeBeats.length,
+          hingeReveal: hingeBeats.map((beat) => beat.reveal),
+          lastRole: story.beats.at(-1)?.role,
+          positions: story.beats.map((beat) => beat.position),
+          expectedPositions: story.beats.map((_beat, index) => index + 1),
+        };
+
+        expect(storyShape).toStrictEqual({
+          beatCount: storyShape.expectedBeatCount,
+          expectedBeatCount: storyShape.expectedBeatCount,
+          violations: [],
+          hingeCount: 1,
+          hingeReveal: [true],
+          lastRole: "target",
+          positions: storyShape.expectedPositions,
+          expectedPositions: storyShape.expectedPositions,
+        });
+
+        for (const probe of storyMutationProbes) {
+          const mutated = structuredClone(path);
+          probe.apply(mutated);
+
+          const buildMutatedStory = () => {
+            return buildStoryPlan({
+              path: mutated,
+              language: plan.language,
+              learnerAction: "Match each source to a target.",
+            });
+          };
+          let reportedCode = "none";
+          try {
+            buildMutatedStory();
+          } catch (error) {
+            reportedCode =
+              error instanceof StoryPlanBuildError ? error.code : "none";
+          }
+
+          expect(reportedCode).toBe(probe.expectedCode);
         }
       }),
       propertyOptions()
