@@ -5,6 +5,10 @@ import { describe, expect, it } from "vitest";
 import { demoSeed } from "@/server/seed-data";
 
 import { artifactGatePolicyVersion, gateArtifact } from "./artifact-gate";
+import {
+  breakFirstRelationshipAnswer,
+  validFractionDraft,
+} from "./artifact-corpus";
 import { buildValidatedLearningPath } from "./learning-path";
 import { createEquivalentFractionsDraft } from "./provider";
 import {
@@ -13,6 +17,7 @@ import {
   validateSemanticLesson,
 } from "./semantic-validation";
 import { curriculumValidatorVersion } from "./semantic-validation-contract";
+import { validatorVersion } from "./validation";
 import type { ArtifactGateResult, RenderableArtifact } from "./artifact-gate";
 import type { SemanticValidationReport } from "./semantic-validation-contract";
 import type {
@@ -81,11 +86,7 @@ const differentiatedDraft = () => {
 
 const answerMismatchDraft = () => {
   const draft = createEquivalentFractionsDraft(validInput());
-  const [firstVariant] = draft.variants;
-  firstVariant.targetItems[0] = {
-    id: firstVariant.targetItems[0]?.id ?? "target-1-1",
-    label: "3/4",
-  };
+  breakFirstRelationshipAnswer(draft);
   return draft;
 };
 
@@ -139,7 +140,12 @@ describe("artifact gate contract", () => {
     );
     const report = await validateSemanticLesson({ draft, context });
 
-    const result = gateArtifact({ draft, learningPath, report });
+    const result = gateArtifact({
+      kind: "lesson",
+      draft,
+      learningPath,
+      report,
+    });
 
     expect(report.verdict).toBe("pass");
     expect(result).toMatchObject({
@@ -162,6 +168,7 @@ describe("artifact gate contract", () => {
     );
 
     const result = gateArtifact({
+      kind: "lesson",
       draft,
       learningPath,
       report: emptyPassReport,
@@ -179,7 +186,12 @@ describe("artifact gate contract", () => {
     );
     const report = await validateSemanticLesson({ draft, context });
 
-    const result = gateArtifact({ draft, learningPath, report });
+    const result = gateArtifact({
+      kind: "lesson",
+      draft,
+      learningPath,
+      report,
+    });
 
     expect(result).toMatchObject({ verdict: "warning", recovery: "edit" });
     expect(result.findings.length).toBeGreaterThan(0);
@@ -196,7 +208,12 @@ describe("artifact gate contract", () => {
     );
     const report = await validateSemanticLesson({ draft, context });
 
-    const result = gateArtifact({ draft, learningPath, report });
+    const result = gateArtifact({
+      kind: "lesson",
+      draft,
+      learningPath,
+      report,
+    });
 
     expect(result.verdict).toBe("hard_block");
     expect(result.recovery).toBe("edit");
@@ -225,7 +242,12 @@ describe("artifact gate contract", () => {
       },
     });
 
-    const result = gateArtifact({ draft, learningPath, report });
+    const result = gateArtifact({
+      kind: "lesson",
+      draft,
+      learningPath,
+      report,
+    });
 
     expect(result.verdict).toBe("hard_block");
     expect(result.findings).toStrictEqual(
@@ -233,6 +255,7 @@ describe("artifact gate contract", () => {
         {
           validator: "curriculum",
           validatorVersion: curriculumValidatorVersion,
+          verdict: "hard_block",
           code: "UNKNOWN_PATH_NODE",
           field: "path.nodeIds",
           nodeId: "graph_node_ghost",
@@ -278,7 +301,12 @@ describe("artifact gate contract", () => {
       }
     );
 
-    const result = gateArtifact({ draft, learningPath, report });
+    const result = gateArtifact({
+      kind: "lesson",
+      draft,
+      learningPath,
+      report,
+    });
 
     expect(report.status).toBe("retryable");
     expect(result).toMatchObject({
@@ -304,9 +332,15 @@ describe("artifact gate contract", () => {
     );
     const report = await validateSemanticLesson({ draft, context });
 
-    const first = gateArtifact({ draft, learningPath, report });
-    const second = gateArtifact({ draft, learningPath, report });
+    const first = gateArtifact({ kind: "lesson", draft, learningPath, report });
+    const second = gateArtifact({
+      kind: "lesson",
+      draft,
+      learningPath,
+      report,
+    });
     const reordered = gateArtifact({
+      kind: "lesson",
       draft: reverseKeys(draft) as ProviderLessonDraft,
       learningPath: reverseKeys(learningPath) as ValidatedLearningPath,
       report,
@@ -323,6 +357,7 @@ describe("artifact gate contract", () => {
     );
 
     const result = gateArtifact({
+      kind: "lesson",
       draft,
       learningPath,
       report: emptyPassReport,
@@ -342,6 +377,7 @@ describe("artifact gate contract", () => {
 
     // @ts-expect-error -- the brand is private to the gate module; only gateArtifact can mint it.
     const forged: RenderableArtifact = {
+      kind: "lesson",
       draft,
       learningPath,
       artifactHash: "forged",
@@ -350,7 +386,200 @@ describe("artifact gate contract", () => {
 
     expect(forged.artifactHash).toBe("forged");
     expect(forged.policyVersion).toBe(artifactGatePolicyVersion);
+    expect(forged.kind).toBe("lesson");
+
+    if (forged.kind !== "lesson") {
+      return;
+    }
+
     expect(forged.draft.variants).toHaveLength(4);
     expect(forged.learningPath.steps.length).toBeGreaterThan(0);
+  });
+
+  it("maps executable structural diagnostics to replace and withholds the brand", () => {
+    const { draft, learningPath } = buildArtifact(
+      createEquivalentFractionsDraft(validInput())
+    );
+
+    const result = gateArtifact({
+      kind: "lesson",
+      draft,
+      learningPath,
+      report: emptyPassReport,
+      structuralDiagnostics: [
+        {
+          severity: "error",
+          code: "EXECUTABLE_CONTENT",
+          message: "Generated content contains executable markup.",
+          variantId: draft.variants[0]?.id,
+          field: "instructions",
+        },
+      ],
+    });
+
+    expect(result).toMatchObject({
+      verdict: "hard_block",
+      recovery: "replace",
+      renderable: null,
+    });
+    expect(result.findings).toStrictEqual([
+      {
+        validator: "structural",
+        validatorVersion,
+        verdict: "hard_block",
+        code: "EXECUTABLE_CONTENT",
+        field: "instructions",
+        variantId: draft.variants[0]?.id,
+        reason: "Generated content contains executable markup.",
+        recovery: "replace",
+      },
+    ]);
+  });
+
+  it("maps schema and relationship diagnostics to edit", () => {
+    const { draft, learningPath } = buildArtifact(
+      createEquivalentFractionsDraft(validInput())
+    );
+
+    const result = gateArtifact({
+      kind: "lesson",
+      draft,
+      learningPath,
+      report: emptyPassReport,
+      structuralDiagnostics: [
+        {
+          severity: "error",
+          code: "TARGET_REUSED",
+          message: "A target cannot be related to more than one source item.",
+          field: "relationships",
+        },
+      ],
+    });
+
+    expect(result).toMatchObject({
+      verdict: "hard_block",
+      recovery: "edit",
+      renderable: null,
+    });
+    expect(result.findings[0]).toMatchObject({
+      code: "TARGET_REUSED",
+      recovery: "edit",
+    });
+  });
+
+  it("treats a structural warning as renderable and actionable", () => {
+    const { draft, learningPath } = buildArtifact(
+      createEquivalentFractionsDraft(validInput())
+    );
+
+    const result = gateArtifact({
+      kind: "lesson",
+      draft,
+      learningPath,
+      report: emptyPassReport,
+      structuralDiagnostics: [
+        {
+          severity: "warning",
+          code: "CONTENT_TOO_LONG",
+          message: "Instructions are long.",
+          field: "instructions",
+        },
+      ],
+    });
+
+    expect(result).toMatchObject({ verdict: "warning", recovery: "edit" });
+    expect(result.renderable).not.toBeNull();
+  });
+
+  it("maps unknown pre-render payloads to replace and id breaks to edit", () => {
+    const { draft, learningPath } = buildArtifact(
+      createEquivalentFractionsDraft(validInput())
+    );
+
+    const unknownComponent = gateArtifact({
+      kind: "lesson",
+      draft,
+      learningPath,
+      report: emptyPassReport,
+      preRenderFailures: [
+        {
+          code: "UNKNOWN_COMPONENT",
+          field: "preview",
+          reason: "The preview requested a component outside the catalog.",
+        },
+      ],
+    });
+    const duplicateComponent = gateArtifact({
+      kind: "lesson",
+      draft,
+      learningPath,
+      report: emptyPassReport,
+      preRenderFailures: [
+        {
+          code: "DUPLICATE_COMPONENT",
+          field: "preview",
+          reason: "The preview sent duplicate component identifiers.",
+        },
+      ],
+    });
+
+    expect(unknownComponent).toMatchObject({
+      verdict: "hard_block",
+      recovery: "replace",
+      renderable: null,
+    });
+    expect(unknownComponent.findings[0]).toMatchObject({
+      validator: "structural",
+      validatorVersion: "a2ui-compile-guard-v1",
+      code: "UNKNOWN_COMPONENT",
+      recovery: "replace",
+    });
+    expect(duplicateComponent).toMatchObject({
+      verdict: "hard_block",
+      recovery: "edit",
+      renderable: null,
+    });
+  });
+
+  it("hard-blocks a lesson without a validated learning path", () => {
+    const { draft } = buildArtifact(
+      createEquivalentFractionsDraft(validInput())
+    );
+
+    const result = gateArtifact({
+      kind: "lesson",
+      draft,
+      report: emptyPassReport,
+    });
+
+    expect(result).toMatchObject({ verdict: "hard_block", renderable: null });
+    expect(result.findings).toStrictEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "LEARNING_PATH_MISSING",
+          validator: "structural",
+          recovery: "edit",
+        }),
+      ])
+    );
+  });
+
+  it("mints a fraction renderable artifact with a deterministic hash", () => {
+    const first = gateArtifact({
+      kind: "fraction",
+      draft: validFractionDraft,
+    });
+    const second = gateArtifact({
+      kind: "fraction",
+      draft: structuredClone(validFractionDraft),
+    });
+
+    expect(first.verdict).toBe("pass");
+    expect(first.renderable).toMatchObject({
+      kind: "fraction",
+      draft: validFractionDraft,
+      artifactHash: expect.stringMatching(/^[a-f\d]{64}$/u),
+    });
+    expect(second.artifactHash).toBe(first.artifactHash);
   });
 });

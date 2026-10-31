@@ -1,43 +1,67 @@
 import { createHash } from "node:crypto";
 
-import { reportRecovery, reviewVerdict } from "./semantic-validation-utilities";
+import { validatorVersion as lessonValidatorVersion } from "./validation";
+import type { FractionLessonDraft } from "@/shared/fractions-contract";
+
 import type {
   RecoveryAction,
   SemanticValidationFinding,
   SemanticValidationReport,
+  SemanticValidatorRole,
 } from "./semantic-validation-contract";
-import type { ProviderLessonDraft, ValidatedLearningPath } from "./types";
+import type {
+  GenerationDiagnostic,
+  ProviderLessonDraft,
+  ValidatedLearningPath,
+} from "./types";
 
 export const artifactGatePolicyVersion = "artifact-gate-policy-v1";
+export const a2uiCompileGuardVersion = "a2ui-compile-guard-v1";
 
 const renderableArtifactBrand = Symbol("edu-canvas.renderable-artifact");
 
-/**
- * A draft and learning path that cleared the gate. The module-private symbol
- * makes an object literal outside this module a type error; `gateArtifact`
- * is the only producer.
- */
-export interface RenderableArtifact {
+interface RenderableArtifactBase {
   readonly [renderableArtifactBrand]: typeof renderableArtifactBrand;
-  readonly draft: ProviderLessonDraft;
-  readonly learningPath: ValidatedLearningPath;
   readonly artifactHash: string;
   readonly policyVersion: string;
 }
 
-export interface ArtifactGateInput {
-  draft: ProviderLessonDraft;
-  learningPath: ValidatedLearningPath;
-  report: SemanticValidationReport;
-  /**
-   * Overrides the default policy. The result echoes the version it used, so a later derivation under a new policy never looks byte-identical.
-   */
-  policyVersion?: string;
+/**
+ * A draft that cleared the gate. The module-private symbol makes an object
+ * literal outside this module a type error; `gateArtifact` is the only
+ * producer. A hard-blocked artifact never carries this brand.
+ */
+export type RenderableArtifact =
+  | (RenderableArtifactBase & {
+      readonly kind: "lesson";
+      readonly draft: ProviderLessonDraft;
+      readonly learningPath: ValidatedLearningPath;
+    })
+  | (RenderableArtifactBase & {
+      readonly kind: "fraction";
+      readonly draft: FractionLessonDraft;
+    });
+
+/**
+ * A deterministic pre-render rejection produced by the A2UI compile guard or the payload validator it runs. The drafting context cannot import the preview compiler, so the compile seam maps its failure into this shape and the gate owns the verdict.
+ */
+export interface ArtifactPreRenderFailure {
+  code: string;
+  field: string;
+  variantId?: string;
+  reason: string;
 }
 
+export type ArtifactGateValidator = "structural" | SemanticValidatorRole;
+
 export interface ArtifactGateFinding {
-  validator: "curriculum" | "learning-quality";
+  /**
+   * `structural` covers the deterministic draft gate and the pre-render
+   * compile guard; the other values keep the semantic validator provenance.
+   */
+  validator: ArtifactGateValidator;
   validatorVersion: string;
+  verdict: "warning" | "hard_block";
   code: string;
   field: string;
   variantId?: string;
@@ -45,6 +69,33 @@ export interface ArtifactGateFinding {
   reason: string;
   recovery: RecoveryAction;
 }
+
+interface ArtifactGateInputBase {
+  structuralDiagnostics?: readonly GenerationDiagnostic[];
+  preRenderFailures?: readonly ArtifactPreRenderFailure[];
+  /**
+   * Overrides the default policy. The result echoes the version it used, so a later derivation under a new policy never looks byte-identical.
+   */
+  policyVersion?: string;
+}
+
+export interface LessonArtifactGateInput extends ArtifactGateInputBase {
+  kind: "lesson";
+  draft: ProviderLessonDraft;
+  /**
+  Absent when the draft gate blocked the artifact before a path was accepted.
+  */
+  learningPath?: ValidatedLearningPath;
+  report?: SemanticValidationReport;
+}
+
+export interface FractionArtifactGateInput extends ArtifactGateInputBase {
+  kind: "fraction";
+  draft: FractionLessonDraft;
+}
+
+export type ArtifactGateInput =
+  LessonArtifactGateInput | FractionArtifactGateInput;
 
 interface ArtifactGateResultBase {
   policyVersion: string;
@@ -99,57 +150,216 @@ const canonicalize = (value: unknown): string => {
   return JSON.stringify(value);
 };
 
-const hashArtifact = (input: {
-  draft: ProviderLessonDraft;
-  learningPath: ValidatedLearningPath;
-}): string => {
+const hashArtifact = (input: ArtifactGateInput): string => {
+  const canonicalArtifact =
+    input.kind === "fraction"
+      ? { kind: input.kind, draft: input.draft }
+      : {
+          kind: input.kind,
+          draft: input.draft,
+          learningPath: input.learningPath ?? null,
+        };
   return createHash("sha256")
-    .update(
-      canonicalize({
-        draft: input.draft,
-        learningPath: input.learningPath,
-      }),
-      "utf-8"
-    )
+    .update(canonicalize(canonicalArtifact), "utf-8")
     .digest("hex");
 };
 
-const isActionableFinding = (
+const isActionableSemanticFinding = (
   item: SemanticValidationFinding
 ): item is Extract<
   SemanticValidationFinding,
   { verdict: "warning" | "hard_block" }
 > => item.verdict !== "pass";
 
-const gateFindings = (
-  report: SemanticValidationReport
+const semanticFindings = (
+  report: SemanticValidationReport | undefined
 ): ArtifactGateFinding[] => {
-  return report.findings.filter(isActionableFinding).map((item) => {
-    return {
-      validator: item.validator,
-      validatorVersion: item.validatorVersion,
-      code: item.code,
-      field: item.field,
-      ...(item.variantId && { variantId: item.variantId }),
-      ...(item.nodeId && { nodeId: item.nodeId }),
-      reason: item.reason,
-      recovery: item.recovery,
-    };
-  });
+  return (report?.findings ?? [])
+    .filter(isActionableSemanticFinding)
+    .map((item) => {
+      return {
+        validator: item.validator,
+        validatorVersion: item.validatorVersion,
+        verdict: item.verdict,
+        code: item.code,
+        field: item.field,
+        ...(item.variantId && { variantId: item.variantId }),
+        ...(item.nodeId && { nodeId: item.nodeId }),
+        reason: item.reason,
+        recovery: item.recovery,
+      };
+    });
 };
 
-const createRenderableArtifact = (input: {
-  draft: ProviderLessonDraft;
-  learningPath: ValidatedLearningPath;
-  artifactHash: string;
-  policyVersion: string;
-}): RenderableArtifact => {
+// Issue #28's recovery decision: executable or untrusted payloads are
+// replaced; schema and relationship breaks are repaired by editing. Bounded
+// infrastructure failures are retried.
+const replacementStructuralCodes: ReadonlySet<string> = new Set([
+  "EXECUTABLE_CONTENT",
+  "UNTRUSTED_FIELD",
+  "UNSAFE_PAYLOAD",
+]);
+
+const retryStructuralCodes: ReadonlySet<string> = new Set([
+  "VALIDATION_TIMEOUT",
+  "VALIDATION_RETRY_EXHAUSTED",
+  "SEMANTIC_VALIDATION_UNAVAILABLE",
+]);
+
+const structuralRecovery = (
+  code: string,
+  verdict: "warning" | "hard_block"
+): RecoveryAction => {
+  if (verdict === "warning") {
+    return "edit";
+  }
+  if (retryStructuralCodes.has(code)) {
+    return "retry";
+  }
+  return replacementStructuralCodes.has(code) ? "replace" : "edit";
+};
+
+const structuralFinding = (
+  diagnostic: GenerationDiagnostic
+): ArtifactGateFinding | null => {
+  const verdict =
+    diagnostic.verdict ??
+    (diagnostic.severity === "error" ? "hard_block" : "warning");
+  if (verdict === "pass") {
+    return null;
+  }
+
+  return {
+    validator: diagnostic.validator ?? "structural",
+    validatorVersion: diagnostic.validatorVersion ?? lessonValidatorVersion,
+    verdict,
+    code: diagnostic.code,
+    field: diagnostic.field ?? "draft",
+    ...(diagnostic.variantId && { variantId: diagnostic.variantId }),
+    ...(diagnostic.nodeId && { nodeId: diagnostic.nodeId }),
+    reason: diagnostic.message,
+    recovery: structuralRecovery(diagnostic.code, verdict),
+  };
+};
+
+const replacementPreRenderCodes: ReadonlySet<string> = new Set([
+  "UNKNOWN_COMPONENT",
+  "UNKNOWN_ACTION",
+  "UNSUPPORTED_CATALOG",
+  "UNSAFE_PAYLOAD",
+  "UNSUPPORTED_PROPERTY",
+]);
+
+// The compile guard is fail-closed: any pre-render rejection is a hard block.
+// Unknown component, action, catalog, or payload is replaced; every schema,
+// id, or math break is edited.
+const preRenderRecovery = (code: string): RecoveryAction =>
+  replacementPreRenderCodes.has(code) ? "replace" : "edit";
+
+const preRenderFinding = (
+  failure: ArtifactPreRenderFailure
+): ArtifactGateFinding => {
+  return {
+    validator: "structural",
+    validatorVersion: a2uiCompileGuardVersion,
+    verdict: "hard_block",
+    code: failure.code,
+    field: failure.field,
+    ...(failure.variantId && { variantId: failure.variantId }),
+    reason: failure.reason,
+    recovery: preRenderRecovery(failure.code),
+  };
+};
+
+const missingLearningPathFinding = (): ArtifactGateFinding => {
+  return {
+    validator: "structural",
+    validatorVersion: lessonValidatorVersion,
+    verdict: "hard_block",
+    code: "LEARNING_PATH_MISSING",
+    field: "learningPath",
+    reason:
+      "The lesson draft has no validated prerequisite path and cannot be rendered.",
+    recovery: "edit",
+  };
+};
+
+const gateFindings = (input: ArtifactGateInput): ArtifactGateFinding[] => {
+  const structuralFindings = (input.structuralDiagnostics ?? []).flatMap(
+    (diagnostic) => {
+      const finding = structuralFinding(diagnostic);
+      return finding ? [finding] : [];
+    }
+  );
+  const missingLearningPath =
+    input.kind === "lesson" && !input.learningPath
+      ? [missingLearningPathFinding()]
+      : [];
+
+  return [
+    ...structuralFindings,
+    ...missingLearningPath,
+    ...semanticFindings(input.kind === "lesson" ? input.report : undefined),
+    ...(input.preRenderFailures ?? []).map(preRenderFinding),
+  ];
+};
+
+const findingsVerdict = (
+  findings: readonly ArtifactGateFinding[]
+): "pass" | "warning" | "hard_block" => {
+  if (findings.some((finding) => finding.verdict === "hard_block")) {
+    return "hard_block";
+  }
+  return findings.some((finding) => finding.verdict === "warning")
+    ? "warning"
+    : "pass";
+};
+
+const recoveryPriority: Record<RecoveryAction, number> = {
+  retry: 0,
+  replace: 1,
+  edit: 2,
+};
+
+const findingsRecovery = (
+  findings: readonly ArtifactGateFinding[]
+): RecoveryAction => {
+  let recovery: RecoveryAction | undefined;
+  for (const { recovery: candidate } of findings) {
+    if (!recovery || recoveryPriority[candidate] < recoveryPriority[recovery]) {
+      recovery = candidate;
+    }
+  }
+  if (!recovery) {
+    throw new Error("A non-pass gate result needs an actionable finding.");
+  }
+  return recovery;
+};
+
+const createRenderableArtifact = (
+  input: ArtifactGateInput,
+  artifactHash: string,
+  policyVersion: string
+): RenderableArtifact | null => {
+  if (input.kind === "fraction") {
+    return {
+      [renderableArtifactBrand]: renderableArtifactBrand,
+      kind: "fraction",
+      draft: input.draft,
+      artifactHash,
+      policyVersion,
+    };
+  }
+  if (!input.learningPath) {
+    return null;
+  }
   return {
     [renderableArtifactBrand]: renderableArtifactBrand,
+    kind: "lesson",
     draft: input.draft,
     learningPath: input.learningPath,
-    artifactHash: input.artifactHash,
-    policyVersion: input.policyVersion,
+    artifactHash,
+    policyVersion,
   };
 };
 
@@ -160,44 +370,49 @@ export const gateArtifact = (input: ArtifactGateInput): ArtifactGateResult => {
   }
 
   const artifactHash = hashArtifact(input);
-  const findings = gateFindings(input.report);
-  const verdict = reviewVerdict(input.report.findings);
+  const findings = gateFindings(input);
+  const verdict = findingsVerdict(findings);
+  const renderable = createRenderableArtifact(
+    input,
+    artifactHash,
+    policyVersion
+  );
 
   switch (verdict) {
     case "pass": {
+      if (!renderable) {
+        throw new Error(
+          "A passing artifact gate result must produce a renderable artifact."
+        );
+      }
       return {
         verdict,
         recovery: null,
         findings: [],
         policyVersion,
         artifactHash,
-        renderable: createRenderableArtifact({
-          draft: input.draft,
-          learningPath: input.learningPath,
-          artifactHash,
-          policyVersion,
-        }),
+        renderable,
       };
     }
     case "warning": {
+      if (!renderable) {
+        throw new Error(
+          "A warning artifact gate result must produce a renderable artifact."
+        );
+      }
       return {
         verdict,
-        recovery: reportRecovery(input.report.findings),
+        recovery: findingsRecovery(findings),
         findings,
         policyVersion,
         artifactHash,
-        renderable: createRenderableArtifact({
-          draft: input.draft,
-          learningPath: input.learningPath,
-          artifactHash,
-          policyVersion,
-        }),
+        renderable,
       };
     }
     case "hard_block": {
       return {
         verdict,
-        recovery: reportRecovery(input.report.findings),
+        recovery: findingsRecovery(findings),
         findings,
         policyVersion,
         artifactHash,
