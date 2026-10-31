@@ -104,14 +104,14 @@ const unsupportedMarkupPatterns = [
   /\bon\w+\s*=/iu,
 ];
 
-const componentIdSchema = z
+export const componentIdSchema = z
   .string()
   .trim()
   .min(1)
   .max(120)
   .regex(/^[A-Za-z0-9:_./-]+$/u);
 
-const safeTextSchema = z
+export const safeTextSchema = z
   .string()
   .trim()
   .min(1)

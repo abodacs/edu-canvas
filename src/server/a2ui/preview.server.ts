@@ -1,10 +1,16 @@
 import { z } from "zod";
 
-import { A2UI_CATALOG_ID, A2UI_CATALOG_VERSION } from "@/shared/a2ui-contract";
+import {
+  A2UI_CATALOG_VERSION,
+  FRACTIONS_CATALOG_VERSION,
+  a2uiCatalogVersions,
+} from "@/shared/a2ui-contract";
+import type { A2UICatalogVersion } from "@/shared/a2ui-contract";
 
 import { resolveTeacherActor } from "../identity/api.server";
 import { noStoreJson } from "../http.server";
 import { compileLessonPreview, LessonPreviewCompileError } from "./compiler";
+import { compileFractionPreview } from "./fraction-compiler";
 import { createPreviewSSEStream } from "./stream";
 
 import type { ServerConfig } from "../config";
@@ -25,12 +31,14 @@ const buildPreviewResponse = async ({
   requestId,
   tenantId,
   actorId,
+  requestedCatalog,
   signal,
 }: {
   config: ServerConfig;
   requestId: string;
   tenantId: string;
   actorId: string;
+  requestedCatalog: A2UICatalogVersion;
   signal: AbortSignal | null;
 }): Promise<Response> => {
   /* eslint-disable unicorn/single-line-block-comment-style -- Vite reads a dynamic import's chunkname only from a single-line block comment. */
@@ -60,14 +68,32 @@ const buildPreviewResponse = async ({
     );
   }
 
-  const preview = compileLessonPreview({
-    requestId: record.requestId,
-    grade: record.input.grade,
-    standardId: record.input.standardId,
-    language: record.input.language,
-    draft: record.draft,
-    learningPath: record.draft.learningPath,
-  });
+  // #116: the record's pinned catalog is the authority. Records without a
+  // provenance pin are matching-v1; the request must ask for exactly what is
+  // pinned so a surface never renders under a foreign catalog.
+  const pinnedCatalog =
+    record.provenance?.catalogVersion === FRACTIONS_CATALOG_VERSION
+      ? FRACTIONS_CATALOG_VERSION
+      : A2UI_CATALOG_VERSION;
+  if (requestedCatalog !== pinnedCatalog) {
+    return sseError(
+      "UNSUPPORTED_CATALOG",
+      `This preview is pinned to ${pinnedCatalog}.`,
+      406
+    );
+  }
+
+  const preview =
+    pinnedCatalog === FRACTIONS_CATALOG_VERSION
+      ? compileFractionPreview({ draft: record.draft })
+      : compileLessonPreview({
+          requestId: record.requestId,
+          grade: record.input.grade,
+          standardId: record.input.standardId,
+          language: record.input.language,
+          draft: record.draft,
+          learningPath: record.draft.learningPath,
+        });
 
   return new Response(
     createPreviewSSEStream(preview.messages, signal ?? undefined),
@@ -97,12 +123,12 @@ export const handleLessonPreviewRequest = async (
     );
   }
 
-  const catalogVersion =
+  const requestedCatalog =
     url.searchParams.get("catalogVersion") ?? A2UI_CATALOG_VERSION;
-  if (catalogVersion !== A2UI_CATALOG_VERSION) {
+  if (!a2uiCatalogVersions.includes(requestedCatalog as A2UICatalogVersion)) {
     return sseError(
       "UNSUPPORTED_CATALOG",
-      `This browser supports ${A2UI_CATALOG_ID} only.`,
+      "This preview catalog version is not supported.",
       406
     );
   }
@@ -122,6 +148,7 @@ export const handleLessonPreviewRequest = async (
       requestId: parsedRequestId.data,
       tenantId: resolved.actor.tenantId,
       actorId: resolved.actor.actorId,
+      requestedCatalog: requestedCatalog as A2UICatalogVersion,
       signal: request.signal,
     });
   } catch (error) {
