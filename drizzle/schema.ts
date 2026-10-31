@@ -1279,3 +1279,673 @@ export const packReceipts = pgTable(
     ];
   }
 ).enableRLS();
+
+// Focused-loop records (issue #112): approval, assignment, run, attempt,
+// assistance, teacher choice. The demo activity tables are fixtures and receive
+// no DDL. Owner columns reference actors, which are not tenant-scoped; learner
+// columns reference the tenant-local learner identity.
+export const curatedReferences = pgTable(
+  "curated_references",
+  {
+    id: text().primaryKey().notNull(),
+    tenantId: text("tenant_id").notNull(),
+    teacherActorId: text("teacher_actor_id").notNull(),
+    schemaVersion: text("schema_version").notNull(),
+    kind: text().notNull(),
+    standardId: text("standard_id").notNull(),
+    referenceKey: text("reference_key").notNull(),
+    referenceVersion: text("reference_version").notNull(),
+    title: text().notNull(),
+    attribution: text().notNull(),
+    sourceLocator: text("source_locator").notNull(),
+    reviewedContent: jsonb("reviewed_content").notNull(),
+    contentHash: text("content_hash").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => {
+    return [
+      index("curated_references_tenant_idx").using(
+        "btree",
+        table.tenantId.asc().nullsLast().op("text_ops")
+      ),
+      foreignKey({
+        columns: [table.tenantId],
+        foreignColumns: [tenants.id],
+        name: "curated_references_tenant_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.teacherActorId],
+        foreignColumns: [actors.id],
+        name: "curated_references_teacher_actor_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.standardId],
+        foreignColumns: [standards.tenantId, standards.id],
+        name: "curated_references_tenant_id_standard_id_fkey",
+      }),
+      unique("curated_references_tenant_id_id_key").on(
+        table.tenantId,
+        table.id
+      ),
+      pgPolicy("curated_references_are_tenant_scoped", {
+        as: "permissive",
+        for: "all",
+        to: ["public"],
+        using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
+      }),
+      check(
+        "curated_references_schema_version_check",
+        sql`schema_version = 'curated-reference-v1'`
+      ),
+      check("curated_references_kind_check", sql`kind = 'curated'`),
+    ];
+  }
+).enableRLS();
+
+export const lessonPackages = pgTable(
+  "lesson_packages",
+  {
+    id: text().primaryKey().notNull(),
+    tenantId: text("tenant_id").notNull(),
+    teacherActorId: text("teacher_actor_id").notNull(),
+    standardId: text("standard_id").notNull(),
+    title: text().notNull(),
+    headRevision: integer("head_revision").default(0).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => {
+    return [
+      index("lesson_packages_tenant_idx").using(
+        "btree",
+        table.tenantId.asc().nullsLast().op("text_ops")
+      ),
+      foreignKey({
+        columns: [table.tenantId],
+        foreignColumns: [tenants.id],
+        name: "lesson_packages_tenant_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.teacherActorId],
+        foreignColumns: [actors.id],
+        name: "lesson_packages_teacher_actor_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.standardId],
+        foreignColumns: [standards.tenantId, standards.id],
+        name: "lesson_packages_tenant_id_standard_id_fkey",
+      }),
+      unique("lesson_packages_tenant_id_id_key").on(table.tenantId, table.id),
+      pgPolicy("lesson_packages_are_tenant_scoped", {
+        as: "permissive",
+        for: "all",
+        to: ["public"],
+        using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
+      }),
+      check("lesson_packages_head_revision_check", sql`head_revision >= 0`),
+    ];
+  }
+).enableRLS();
+
+export const lessonVersions = pgTable(
+  "lesson_versions",
+  {
+    id: text().primaryKey().notNull(),
+    tenantId: text("tenant_id").notNull(),
+    packageId: text("package_id").notNull(),
+    revision: integer().notNull(),
+    schemaVersion: text("schema_version").notNull(),
+    parentVersionId: text("parent_version_id"),
+    predecessorVersionId: text("predecessor_version_id"),
+    curatedReferenceId: text("curated_reference_id").notNull(),
+    generationRequestId: text("generation_request_id"),
+    conceptIds: jsonb("concept_ids").notNull(),
+    variantReferences: jsonb("variant_references").notNull(),
+    objectiveHash: text("objective_hash").notNull(),
+    sections: jsonb().notNull(),
+    provenance: jsonb().notNull(),
+    revisionKind: text("revision_kind").notNull(),
+    changedSectionIds: jsonb("changed_section_ids").notNull(),
+    contentHash: text("content_hash").notNull(),
+    packageHash: text("package_hash").notNull(),
+    privateAnswerDigest: text("private_answer_digest").notNull(),
+    privateAnswerRelationships: jsonb("private_answer_relationships").notNull(),
+    validationResult: jsonb("validation_result").notNull(),
+    validationResultHash: text("validation_result_hash").notNull(),
+    ruleVersions: jsonb("rule_versions").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => {
+    return [
+      index("lesson_versions_tenant_idx").using(
+        "btree",
+        table.tenantId.asc().nullsLast().op("text_ops")
+      ),
+      foreignKey({
+        columns: [table.tenantId, table.packageId],
+        foreignColumns: [lessonPackages.tenantId, lessonPackages.id],
+        name: "lesson_versions_tenant_id_package_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.parentVersionId],
+        foreignColumns: [table.tenantId, table.id],
+        name: "lesson_versions_tenant_id_parent_version_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.predecessorVersionId],
+        foreignColumns: [table.tenantId, table.id],
+        name: "lesson_versions_tenant_id_predecessor_version_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.curatedReferenceId],
+        foreignColumns: [curatedReferences.tenantId, curatedReferences.id],
+        name: "lesson_versions_tenant_id_curated_reference_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.generationRequestId],
+        foreignColumns: [lessonDraftRequests.tenantId, lessonDraftRequests.id],
+        name: "lesson_versions_tenant_id_generation_request_id_fkey",
+      }),
+      unique("lesson_versions_tenant_id_id_key").on(table.tenantId, table.id),
+      unique("lesson_versions_package_id_revision_key").on(
+        table.tenantId,
+        table.packageId,
+        table.revision
+      ),
+      pgPolicy("lesson_versions_are_tenant_scoped", {
+        as: "permissive",
+        for: "all",
+        to: ["public"],
+        using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
+      }),
+      check("lesson_versions_revision_check", sql`revision > 0`),
+      check(
+        "lesson_versions_schema_version_check",
+        sql`schema_version = 'lesson-package-curated-v1'`
+      ),
+      check(
+        "lesson_versions_revision_kind_check",
+        sql`revision_kind = ANY (ARRAY['initial'::text, 'section-revision'::text, 'reframe'::text, 'fresh-draft'::text])`
+      ),
+      check(
+        "lesson_versions_lineage_check",
+        sql`((revision_kind = 'initial'::text) AND (parent_version_id IS NULL) AND (predecessor_version_id IS NULL) AND (revision = 1)) OR ((revision_kind = 'section-revision'::text) AND (parent_version_id IS NOT NULL) AND (predecessor_version_id IS NULL) AND (revision > 1)) OR ((revision_kind = 'reframe'::text) AND (parent_version_id IS NOT NULL) AND (predecessor_version_id IS NULL) AND (revision > 1)) OR ((revision_kind = 'fresh-draft'::text) AND (parent_version_id IS NULL) AND (revision = 1))`
+      ),
+    ];
+  }
+).enableRLS();
+
+export const publications = pgTable(
+  "publications",
+  {
+    id: text().primaryKey().notNull(),
+    tenantId: text("tenant_id").notNull(),
+    schemaVersion: text("schema_version").notNull(),
+    lessonVersionId: text("lesson_version_id").notNull(),
+    approvingActorId: text("approving_actor_id").notNull(),
+    contentHash: text("content_hash").notNull(),
+    packageHash: text("package_hash").notNull(),
+    privateAnswerDigest: text("private_answer_digest").notNull(),
+    validationResultHash: text("validation_result_hash").notNull(),
+    ruleVersions: jsonb("rule_versions").notNull(),
+    approvedAt: timestamp("approved_at", {
+      withTimezone: true,
+      mode: "string",
+    }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => {
+    return [
+      index("publications_tenant_idx").using(
+        "btree",
+        table.tenantId.asc().nullsLast().op("text_ops")
+      ),
+      foreignKey({
+        columns: [table.tenantId],
+        foreignColumns: [tenants.id],
+        name: "publications_tenant_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.lessonVersionId],
+        foreignColumns: [lessonVersions.tenantId, lessonVersions.id],
+        name: "publications_tenant_id_lesson_version_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.approvingActorId],
+        foreignColumns: [actors.id],
+        name: "publications_approving_actor_id_fkey",
+      }),
+      unique("publications_tenant_id_id_key").on(table.tenantId, table.id),
+      unique("publications_tenant_id_lesson_version_id_key").on(
+        table.tenantId,
+        table.lessonVersionId
+      ),
+      pgPolicy("publications_are_tenant_scoped", {
+        as: "permissive",
+        for: "all",
+        to: ["public"],
+        using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
+      }),
+      check(
+        "publications_schema_version_check",
+        sql`schema_version = 'publication-v1'`
+      ),
+    ];
+  }
+).enableRLS();
+
+export const assignments = pgTable(
+  "assignments",
+  {
+    id: text().primaryKey().notNull(),
+    tenantId: text("tenant_id").notNull(),
+    schemaVersion: text("schema_version").notNull(),
+    publicationId: text("publication_id").notNull(),
+    learnerId: text("learner_id").notNull(),
+    assigningActorId: text("assigning_actor_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => {
+    return [
+      index("assignments_tenant_idx").using(
+        "btree",
+        table.tenantId.asc().nullsLast().op("text_ops")
+      ),
+      foreignKey({
+        columns: [table.tenantId],
+        foreignColumns: [tenants.id],
+        name: "assignments_tenant_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.publicationId],
+        foreignColumns: [publications.tenantId, publications.id],
+        name: "assignments_tenant_id_publication_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.learnerId],
+        foreignColumns: [identities.tenantId, identities.id],
+        name: "assignments_tenant_id_learner_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.assigningActorId],
+        foreignColumns: [actors.id],
+        name: "assignments_assigning_actor_id_fkey",
+      }),
+      unique("assignments_tenant_id_id_key").on(table.tenantId, table.id),
+      pgPolicy("assignments_are_tenant_scoped", {
+        as: "permissive",
+        for: "all",
+        to: ["public"],
+        using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
+      }),
+      check(
+        "assignments_schema_version_check",
+        sql`schema_version = 'assignment-v1'`
+      ),
+    ];
+  }
+).enableRLS();
+
+export const learnerRuns = pgTable(
+  "learner_runs",
+  {
+    id: text().primaryKey().notNull(),
+    tenantId: text("tenant_id").notNull(),
+    schemaVersion: text("schema_version").notNull(),
+    assignmentId: text("assignment_id").notNull(),
+    learnerId: text("learner_id").notNull(),
+    publicationId: text("publication_id").notNull(),
+    assignedVariantId: text("assigned_variant_id").notNull(),
+    stage: text().notNull(),
+    firstResponseStatus: text("first_response_status")
+      .default("pending")
+      .notNull(),
+    revision: integer().default(0).notNull(),
+    nextActivity: jsonb("next_activity"),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => {
+    return [
+      index("learner_runs_tenant_idx").using(
+        "btree",
+        table.tenantId.asc().nullsLast().op("text_ops")
+      ),
+      foreignKey({
+        columns: [table.tenantId],
+        foreignColumns: [tenants.id],
+        name: "learner_runs_tenant_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.assignmentId],
+        foreignColumns: [assignments.tenantId, assignments.id],
+        name: "learner_runs_tenant_id_assignment_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.learnerId],
+        foreignColumns: [identities.tenantId, identities.id],
+        name: "learner_runs_tenant_id_learner_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.publicationId],
+        foreignColumns: [publications.tenantId, publications.id],
+        name: "learner_runs_tenant_id_publication_id_fkey",
+      }),
+      unique("learner_runs_tenant_id_id_key").on(table.tenantId, table.id),
+      unique("learner_runs_tenant_id_assignment_id_key").on(
+        table.tenantId,
+        table.assignmentId
+      ),
+      pgPolicy("learner_runs_are_tenant_scoped", {
+        as: "permissive",
+        for: "all",
+        to: ["public"],
+        using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
+      }),
+      check(
+        "learner_runs_schema_version_check",
+        sql`schema_version = 'learner-run-v1'`
+      ),
+      check(
+        "learner_runs_stage_check",
+        sql`stage = ANY (ARRAY['assigned'::text, 'active'::text, 'awaiting-decision'::text, 'paused'::text, 'advanced'::text, 'completed'::text])`
+      ),
+      check(
+        "learner_runs_first_response_status_check",
+        sql`first_response_status = ANY (ARRAY['pending'::text, 'submitted'::text])`
+      ),
+      check("learner_runs_revision_check", sql`revision >= 0`),
+    ];
+  }
+).enableRLS();
+
+export const assistanceEvents = pgTable(
+  "assistance_events",
+  {
+    id: text().primaryKey().notNull(),
+    tenantId: text("tenant_id").notNull(),
+    schemaVersion: text("schema_version").notNull(),
+    runId: text("run_id").notNull(),
+    itemId: text("item_id").notNull(),
+    kind: text().notNull(),
+    ordinal: integer().notNull(),
+    recordedAt: timestamp("recorded_at", {
+      withTimezone: true,
+      mode: "string",
+    }).notNull(),
+  },
+  (table) => {
+    return [
+      index("assistance_events_run_idx").using(
+        "btree",
+        table.runId.asc().nullsLast().op("text_ops")
+      ),
+      foreignKey({
+        columns: [table.tenantId],
+        foreignColumns: [tenants.id],
+        name: "assistance_events_tenant_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.runId],
+        foreignColumns: [learnerRuns.tenantId, learnerRuns.id],
+        name: "assistance_events_tenant_id_run_id_fkey",
+      }),
+      unique("assistance_events_tenant_id_id_key").on(table.tenantId, table.id),
+      unique("assistance_events_run_item_ordinal_key").on(
+        table.tenantId,
+        table.runId,
+        table.itemId,
+        table.ordinal
+      ),
+      pgPolicy("assistance_events_are_tenant_scoped", {
+        as: "permissive",
+        for: "all",
+        to: ["public"],
+        using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
+      }),
+      check(
+        "assistance_events_schema_version_check",
+        sql`schema_version = 'assistance-event-v1'`
+      ),
+      check(
+        "assistance_events_kind_check",
+        sql`kind = ANY (ARRAY['hint'::text, 'other'::text])`
+      ),
+      check("assistance_events_ordinal_check", sql`ordinal > 0`),
+    ];
+  }
+).enableRLS();
+
+export const learnerAttempts = pgTable(
+  "learner_attempts",
+  {
+    id: text().primaryKey().notNull(),
+    tenantId: text("tenant_id").notNull(),
+    schemaVersion: text("schema_version").notNull(),
+    runId: text("run_id").notNull(),
+    publicationId: text("publication_id").notNull(),
+    lessonVersionId: text("lesson_version_id").notNull(),
+    itemId: text("item_id").notNull(),
+    ordinal: integer().notNull(),
+    priorAttemptId: text("prior_attempt_id"),
+    selectedPairs: jsonb("selected_pairs").notNull(),
+    assistanceState: text("assistance_state").notNull(),
+    assistanceEventIds: jsonb("assistance_event_ids").notNull(),
+    score: integer().notNull(),
+    correctness: text().notNull(),
+    gradingRuleVersion: text("grading_rule_version").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => {
+    return [
+      index("learner_attempts_run_idx").using(
+        "btree",
+        table.runId.asc().nullsLast().op("text_ops")
+      ),
+      foreignKey({
+        columns: [table.tenantId],
+        foreignColumns: [tenants.id],
+        name: "learner_attempts_tenant_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.runId],
+        foreignColumns: [learnerRuns.tenantId, learnerRuns.id],
+        name: "learner_attempts_tenant_id_run_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.publicationId],
+        foreignColumns: [publications.tenantId, publications.id],
+        name: "learner_attempts_tenant_id_publication_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.lessonVersionId],
+        foreignColumns: [lessonVersions.tenantId, lessonVersions.id],
+        name: "learner_attempts_tenant_id_lesson_version_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.priorAttemptId],
+        foreignColumns: [table.tenantId, table.id],
+        name: "learner_attempts_tenant_id_prior_attempt_id_fkey",
+      }),
+      unique("learner_attempts_tenant_id_id_key").on(table.tenantId, table.id),
+      unique("learner_attempts_run_item_ordinal_key").on(
+        table.tenantId,
+        table.runId,
+        table.itemId,
+        table.ordinal
+      ),
+      pgPolicy("learner_attempts_are_tenant_scoped", {
+        as: "permissive",
+        for: "all",
+        to: ["public"],
+        using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
+      }),
+      check(
+        "learner_attempts_schema_version_check",
+        sql`schema_version = 'attempt-v2'`
+      ),
+      check("learner_attempts_ordinal_check", sql`ordinal > 0`),
+      check(
+        "learner_attempts_score_check",
+        sql`(score >= 0) AND (score <= 100)`
+      ),
+      check(
+        "learner_attempts_correctness_check",
+        sql`correctness = ANY (ARRAY['correct'::text, 'partial'::text, 'incorrect'::text])`
+      ),
+      check(
+        "learner_attempts_assistance_state_check",
+        sql`assistance_state = ANY (ARRAY['none'::text, 'hinted'::text])`
+      ),
+    ];
+  }
+).enableRLS();
+
+export const teacherDecisions = pgTable(
+  "teacher_decisions",
+  {
+    id: text().primaryKey().notNull(),
+    tenantId: text("tenant_id").notNull(),
+    schemaVersion: text("schema_version").notNull(),
+    runId: text("run_id").notNull(),
+    teacherActorId: text("teacher_actor_id").notNull(),
+    evidenceHash: text("evidence_hash").notNull(),
+    proposal: jsonb().notNull(),
+    action: text().notNull(),
+    approvedTargetId: text("approved_target_id"),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => {
+    return [
+      index("teacher_decisions_run_idx").using(
+        "btree",
+        table.runId.asc().nullsLast().op("text_ops")
+      ),
+      foreignKey({
+        columns: [table.tenantId],
+        foreignColumns: [tenants.id],
+        name: "teacher_decisions_tenant_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.runId],
+        foreignColumns: [learnerRuns.tenantId, learnerRuns.id],
+        name: "teacher_decisions_tenant_id_run_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.teacherActorId],
+        foreignColumns: [actors.id],
+        name: "teacher_decisions_teacher_actor_id_fkey",
+      }),
+      unique("teacher_decisions_tenant_id_id_key").on(table.tenantId, table.id),
+      pgPolicy("teacher_decisions_are_tenant_scoped", {
+        as: "permissive",
+        for: "all",
+        to: ["public"],
+        using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
+      }),
+      check(
+        "teacher_decisions_schema_version_check",
+        sql`schema_version = 'teacher-decision-v1'`
+      ),
+      check(
+        "teacher_decisions_action_check",
+        sql`action = ANY (ARRAY['accept'::text, 'pause'::text, 'override'::text])`
+      ),
+      check(
+        "teacher_decisions_target_check",
+        sql`((action = 'pause'::text) AND (approved_target_id IS NULL)) OR ((action = ANY (ARRAY['accept'::text, 'override'::text])) AND (approved_target_id IS NOT NULL))`
+      ),
+    ];
+  }
+).enableRLS();
+
+export const operationReceipts = pgTable(
+  "operation_receipts",
+  {
+    id: text().primaryKey().notNull(),
+    tenantId: text("tenant_id").notNull(),
+    schemaVersion: text("schema_version").notNull(),
+    actorId: text("actor_id").notNull(),
+    membershipId: text("membership_id").notNull(),
+    authorizationRevision: integer("authorization_revision").notNull(),
+    action: text().notNull(),
+    operationKey: text("operation_key").notNull(),
+    inputHash: text("input_hash").notNull(),
+    resultKind: text("result_kind").notNull(),
+    resultIds: jsonb("result_ids").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => {
+    return [
+      index("operation_receipts_tenant_idx").using(
+        "btree",
+        table.tenantId.asc().nullsLast().op("text_ops")
+      ),
+      foreignKey({
+        columns: [table.tenantId],
+        foreignColumns: [tenants.id],
+        name: "operation_receipts_tenant_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.actorId],
+        foreignColumns: [actors.id],
+        name: "operation_receipts_actor_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.membershipId],
+        foreignColumns: [memberships.tenantId, memberships.id],
+        name: "operation_receipts_tenant_id_membership_id_fkey",
+      }),
+      unique("operation_receipts_tenant_id_id_key").on(
+        table.tenantId,
+        table.id
+      ),
+      unique("operation_receipts_actor_action_key_key").on(
+        table.tenantId,
+        table.actorId,
+        table.action,
+        table.operationKey
+      ),
+      pgPolicy("operation_receipts_are_tenant_scoped", {
+        as: "permissive",
+        for: "all",
+        to: ["public"],
+        using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
+      }),
+      check(
+        "operation_receipts_schema_version_check",
+        sql`schema_version = 'operation-receipt-v1'`
+      ),
+      check(
+        "operation_receipts_authorization_revision_check",
+        sql`authorization_revision >= 0`
+      ),
+      check(
+        "operation_receipts_action_check",
+        sql`action = ANY (ARRAY['store-grounding'::text, 'append-version'::text, 'publish'::text, 'assign'::text, 'start-run'::text, 'record-hint'::text, 'record-attempt'::text, 'choose'::text])`
+      ),
+    ];
+  }
+).enableRLS();

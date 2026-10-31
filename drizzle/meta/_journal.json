@@ -71,6 +71,20 @@
       "when": 1793487819824,
       "tag": "0009_single_assignment",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793490375152,
+      "tag": "0010_sparkling_abomination",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793490378680,
+      "tag": "0011_focused_record_behaviors",
+      "breakpoints": true
     }
   ]
 }
