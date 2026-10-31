@@ -5,14 +5,16 @@ import {
   FRACTIONS_CATALOG_VERSION,
   a2uiCatalogVersions,
 } from "@/shared/a2ui-contract";
-import type { A2UICatalogVersion } from "@/shared/a2ui-contract";
 
 import { resolveTeacherActor } from "../identity/api.server";
 import { noStoreJson } from "../http.server";
 import { compileLessonPreview, LessonPreviewCompileError } from "./compiler";
 import { compileFractionPreview } from "./fraction-compiler";
 import { createPreviewSSEStream } from "./stream";
+import type { CompiledFractionPreview } from "./fraction-compiler";
+import type { A2UICatalogVersion } from "@/shared/a2ui-contract";
 
+import type { CompiledLessonPreview } from "./compiler";
 import type { ServerConfig } from "../config";
 
 const previewUnavailableMessage =
@@ -60,7 +62,10 @@ const buildPreviewResponse = async ({
     );
   }
 
-  if (record.state !== "ready-for-review" || !record.draft) {
+  if (
+    record.state !== "ready-for-review" ||
+    (!record.draft && !record.fractionDraft)
+  ) {
     return sseError(
       "PREVIEW_NOT_READY",
       "This draft is not ready for a teacher preview. Review its status and try again.",
@@ -83,18 +88,46 @@ const buildPreviewResponse = async ({
     );
   }
 
-  const preview =
-    pinnedCatalog === FRACTIONS_CATALOG_VERSION
-      ? compileFractionPreview({ draft: record.draft })
-      : compileLessonPreview({
-          requestId: record.requestId,
-          grade: record.input.grade,
-          standardId: record.input.standardId,
-          language: record.input.language,
-          draft: record.draft,
-          learningPath: record.draft.learningPath,
-        });
+  if (pinnedCatalog === FRACTIONS_CATALOG_VERSION) {
+    // Fail closed when a fraction-pinned record lacks a fraction draft; the
+    // state gate above only proves a matching-shaped draft exists or not.
+    return record.fractionDraft
+      ? streamPreview(
+          compileFractionPreview({ draft: record.fractionDraft }),
+          signal
+        )
+      : sseError(
+          "PREVIEW_BLOCKED",
+          "This draft could not be rendered safely. Try generating it again.",
+          422
+        );
+  }
 
+  if (!record.draft) {
+    return sseError(
+      "PREVIEW_BLOCKED",
+      "This draft could not be rendered safely. Try generating it again.",
+      422
+    );
+  }
+
+  return streamPreview(
+    compileLessonPreview({
+      requestId: record.requestId,
+      grade: record.input.grade,
+      standardId: record.input.standardId,
+      language: record.input.language,
+      draft: record.draft,
+      learningPath: record.draft.learningPath,
+    }),
+    signal
+  );
+};
+
+const streamPreview = (
+  preview: CompiledLessonPreview | CompiledFractionPreview,
+  signal: AbortSignal | null
+): Response => {
   return new Response(
     createPreviewSSEStream(preview.messages, signal ?? undefined),
     {

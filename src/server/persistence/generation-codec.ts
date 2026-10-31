@@ -6,12 +6,15 @@ import {
   languageValues,
   publicGenerationDiagnosticSchema,
 } from "@/shared/generation-contract";
+import { FRACTIONS_CATALOG_VERSION } from "@/shared/a2ui-contract";
+import { fractionLessonDraftSchema } from "@/shared/fractions-contract";
 
 import {
   providerDraftSchema,
   validatedLearningPathSchema,
 } from "../generation/validation";
 import { createGenerationRequestHash } from "../generation/types";
+import type { FractionLessonDraft } from "@/shared/fractions-contract";
 import type {
   GenerationAttemptRecord,
   GenerationDiagnostic,
@@ -55,6 +58,33 @@ const lessonDraftSchema: z.ZodType<LessonDraft> = providerDraftSchema
 
 const diagnosticsSchema = publicGenerationDiagnosticSchema.array();
 const stateSchema = z.enum(generationStateValues);
+
+// #116: a fraction-pinned record stores a fractions-v2 draft; every other
+// record keeps the matching draft contract. One boundary, catalog-aware.
+const parseStoredDrafts = (
+  value: unknown,
+  catalogVersion: string | undefined
+): {
+  draft: LessonDraft | undefined;
+  fractionDraft: FractionLessonDraft | undefined;
+} => {
+  if (catalogVersion === FRACTIONS_CATALOG_VERSION) {
+    const fractionDraft = parseStoredJson<FractionLessonDraft>(
+      value,
+      fractionLessonDraftSchema,
+      "lesson draft"
+    );
+    return { draft: undefined, fractionDraft };
+  }
+  return {
+    draft: parseStoredJson<LessonDraft>(
+      value,
+      lessonDraftSchema,
+      "lesson draft"
+    ),
+    fractionDraft: undefined,
+  };
+};
 
 export interface StoredGenerationRequestRow {
   requestId: string;
@@ -133,15 +163,14 @@ export const hydrateGenerationRecord = (
       diagnosticsSchema,
       "request diagnostics"
     ) ?? [];
-  const draft = parseStoredJson<LessonDraft>(
-    row.draft,
-    lessonDraftSchema,
-    "lesson draft"
-  );
   const provenance = parseStoredJson<ProviderProvenance>(
     row.provenance,
     provenanceSchema,
     "request provenance"
+  );
+  const { draft, fractionDraft } = parseStoredDrafts(
+    row.draft,
+    provenance?.catalogVersion
   );
   const input = normalizedGenerationRequestSchema.parse({
     prompt: row.prompt,
@@ -162,6 +191,7 @@ export const hydrateGenerationRecord = (
     attempt: row.attempt,
     diagnostics,
     ...(draft && { draft }),
+    ...(fractionDraft && { fractionDraft }),
     ...(provenance && { provenance }),
     attempts: attempts.map<GenerationAttemptRecord>((attempt) => {
       const attemptProvenance = parseStoredJson<ProviderProvenance>(

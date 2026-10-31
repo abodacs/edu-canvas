@@ -272,7 +272,7 @@ describe("fractions-v2 preview negotiation", () => {
     diagnostics: [],
     attempts: [],
     provenance: { catalogVersion: "fractions-v2" },
-    draft: {
+    fractionDraft: {
       requestId: draftRequestId,
       standardId: demoSeed.standard.id,
       grade: 4,
@@ -348,10 +348,12 @@ describe("fractions-v2 preview negotiation", () => {
 
   it("blocks a pinned fraction record whose draft breaks the contract", async () => {
     persistenceState.current = {
-      readGeneration: () => ({
-        ...fractionRecord,
-        draft: { variants: [] },
-      }),
+      readGeneration: () => {
+        return {
+          ...fractionRecord,
+          fractionDraft: { variants: [] },
+        };
+      },
     };
 
     const response = await handleLessonPreviewRequest(
