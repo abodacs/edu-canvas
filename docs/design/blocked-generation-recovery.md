@@ -18,7 +18,7 @@ A Grade 4 teacher submits a benign mathematics objective. Safety review blocks i
 
 In scope: both block moments, panel anatomy, copy per category code, variants with and without a draft, the post-revision contract, the five failure classes, copy rules, and benign-math evidence.
 
-Out of scope: detection rules (#132), UI implementation (#115), keyboard focus and announcements (ticket 02 of this series), provider moderation, and any change under `src/`.
+Out of scope: detection rules (#132), UI implementation (#115), keyboard focus and announcements ([ticket 02](blocked-generation-keyboard.md) of this series), provider moderation, and any change under `src/`.
 
 Evidence limit: no UI exists for this state today. No statement here records runtime UI behavior.
 
