@@ -15,7 +15,10 @@ import {
   standards,
   tenants,
 } from "../../../drizzle/schema";
-import { hydrateGenerationRecord } from "./generation-codec";
+import {
+  hydrateGenerationRecord,
+  storedGenerationDraft,
+} from "./generation-codec";
 import { createGenerationPersistence } from "./generation-persistence";
 import { createDrizzleSourcePersistence } from "./source-drizzle";
 import type { ExtractTablesWithRelations } from "drizzle-orm";
@@ -107,7 +110,7 @@ const generationRequestValues = (record: LessonGenerationRecord) => {
     state: record.state,
     attempt: record.attempt,
     diagnostics: record.diagnostics,
-    draft: record.draft ?? null,
+    draft: storedGenerationDraft(record),
     provenance: record.provenance ?? null,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
@@ -119,7 +122,7 @@ const generationMutableValues = (record: LessonGenerationRecord) => {
     state: record.state,
     attempt: record.attempt,
     diagnostics: record.diagnostics,
-    draft: record.draft ?? null,
+    draft: storedGenerationDraft(record),
     provenance: record.provenance ?? null,
     updatedAt: record.updatedAt,
   };

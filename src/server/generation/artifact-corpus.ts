@@ -1,4 +1,4 @@
-import { gateArtifact } from "./artifact-gate";
+import { gateArtifact } from "@/server/safety/artifact-gate";
 import {
   buildValidatedLearningPath,
   toNormalizedReasoningPath,
@@ -20,7 +20,7 @@ import type {
   ArtifactGateFinding,
   ArtifactGateResult,
   ArtifactPreRenderFailure,
-} from "./artifact-gate";
+} from "@/server/safety/artifact-gate";
 import type {
   CurriculumNode,
   SemanticValidationReport,

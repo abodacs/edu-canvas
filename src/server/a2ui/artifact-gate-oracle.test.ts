@@ -17,7 +17,7 @@ import type {
   ArtifactCorpusCase,
   CorpusEvaluation,
 } from "@/server/generation/artifact-corpus";
-import type { ArtifactGateResult } from "@/server/generation/artifact-gate";
+import type { ArtifactGateResult } from "@/server/safety/artifact-gate";
 import type { A2UICatalogVersion, A2UIMessage } from "@/shared/a2ui-contract";
 
 // Differential oracle for issue #28. It lives under `src/server/a2ui` because

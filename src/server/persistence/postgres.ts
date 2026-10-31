@@ -2,7 +2,10 @@ import postgres from "postgres";
 
 import { serverObservability } from "../observability.server";
 import { demoSeed } from "../seed-data";
-import { hydrateGenerationRecord } from "./generation-codec";
+import {
+  hydrateGenerationRecord,
+  storedGenerationDraft,
+} from "./generation-codec";
 import { createGenerationPersistence } from "./generation-persistence";
 import { createPostgresSourcePersistence } from "./source-postgres";
 import type { SeedCounts } from "../seed-data";
@@ -299,7 +302,7 @@ const createPostgresGenerationBackend = (
           ${record.state},
           ${record.attempt},
           ${transaction.json(jsonValue(record.diagnostics))}::jsonb,
-          ${transaction.json(jsonValue(record.draft ?? null))}::jsonb,
+          ${transaction.json(jsonValue(storedGenerationDraft(record)))}::jsonb,
           ${transaction.json(jsonValue(record.provenance ?? null))}::jsonb,
           ${record.input.sourceSnapshotId ?? null},
           ${record.createdAt},
@@ -350,7 +353,7 @@ const createPostgresGenerationBackend = (
           state = ${record.state},
           attempt = ${record.attempt},
           diagnostics = ${transaction.json(jsonValue(record.diagnostics))}::jsonb,
-          draft = ${transaction.json(jsonValue(record.draft ?? null))}::jsonb,
+          draft = ${transaction.json(jsonValue(storedGenerationDraft(record)))}::jsonb,
           provenance = ${transaction.json(jsonValue(record.provenance ?? null))}::jsonb,
           updated_at = ${record.updatedAt}
         where tenant_id = ${record.tenantId} and id = ${record.requestId}
@@ -425,7 +428,7 @@ const createPostgresGenerationBackend = (
           state = ${record.state},
           attempt = ${record.attempt},
           diagnostics = ${transaction.json(jsonValue(record.diagnostics))}::jsonb,
-          draft = ${transaction.json(jsonValue(record.draft ?? null))}::jsonb,
+          draft = ${transaction.json(jsonValue(storedGenerationDraft(record)))}::jsonb,
           provenance = ${transaction.json(jsonValue(record.provenance ?? null))}::jsonb,
           updated_at = ${record.updatedAt}
         where tenant_id = ${record.tenantId}
