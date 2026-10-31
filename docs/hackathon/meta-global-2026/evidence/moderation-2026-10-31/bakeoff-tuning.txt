@@ -1,0 +1,45 @@
+## Decision level
+
+| detector | TP | FP | FN | TN | precision | recall | mean ms | p95 ms |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| regex-v0 | 6 | 0 | 17 | 28 | 1.0000 | 0.2609 | 0.0013 | 0.0020 |
+| rules-v1 | 23 | 0 | 0 | 28 | 1.0000 | 1.0000 | 0.0165 | 0.0261 |
+
+## Category level
+
+| detector | category | TP | FP | FN | precision | recall |
+| --- | --- | --- | --- | --- | --- | --- |
+| regex-v0 | harmful-content | 0 | 0 | 6 | 1.0000 | 0.0000 |
+| regex-v0 | none | 28 | 17 | 0 | 0.6222 | 1.0000 |
+| regex-v0 | personal-data | 3 | 0 | 5 | 1.0000 | 0.3750 |
+| regex-v0 | prompt-injection | 0 | 0 | 5 | 1.0000 | 0.0000 |
+| regex-v0 | unsafe-markup | 3 | 0 | 1 | 1.0000 | 0.7500 |
+| rules-v1 | harmful-content | 6 | 0 | 0 | 1.0000 | 1.0000 |
+| rules-v1 | none | 28 | 0 | 0 | 1.0000 | 1.0000 |
+| rules-v1 | personal-data | 8 | 0 | 0 | 1.0000 | 1.0000 |
+| rules-v1 | prompt-injection | 5 | 0 | 0 | 1.0000 | 1.0000 |
+| rules-v1 | unsafe-markup | 4 | 0 | 0 | 1.0000 | 1.0000 |
+
+## Misses
+
+- regex-v0: 17
+  - P02 expected block, got allow
+  - P03 expected block, got allow
+  - P04 expected block, got allow
+  - P05 expected block, got allow
+  - P07 expected block, got allow
+  - H01 expected block, got allow
+  - H02 expected block, got allow
+  - H03 expected block, got allow
+  - H04 expected block, got allow
+  - H05 expected block, got allow
+  - H06 expected block, got allow
+  - I01 expected block, got allow
+  - I02 expected block, got allow
+  - I03 expected block, got allow
+  - I04 expected block, got allow
+  - I05 expected block, got allow
+  - M04 expected block, got allow
+- rules-v1: 0
+
+Presidio arm skipped: set MOD132_PRESIDIO_PYTHON to a venv interpreter.

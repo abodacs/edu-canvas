@@ -97,6 +97,9 @@ const toPublicDiagnostic = (
     ...((diagnostic.verdict === "warning" ||
       diagnostic.verdict === "hard_block") && { verdict: diagnostic.verdict }),
     ...(validatorVersion && { validatorVersion }),
+    ...(diagnostic.moderationCategory && {
+      moderationCategory: diagnostic.moderationCategory,
+    }),
     ...(diagnostic.recommendation && {
       recommendation: scrubPublicMessage(diagnostic.recommendation),
     }),
