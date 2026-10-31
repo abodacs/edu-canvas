@@ -153,4 +153,122 @@ describe("lesson preview compiler", () => {
       },
     });
   });
+
+  it("renders the forward story in path order inside every surface", () => {
+    const preview = compileLessonPreview(request);
+    const surfaces = preview.messages.flatMap((message) => {
+      return "updateComponents" in message
+        ? [message.updateComponents.components]
+        : [];
+    });
+
+    const stories = surfaces.map((components) => {
+      const byId = new Map(
+        components.map((component) => [component.id, component])
+      );
+      const root = byId.get("root");
+      const story = byId.get("story-plan");
+      if (root?.component !== "Column" || story?.component !== "Column") {
+        throw new Error("Expected a root column and a story column.");
+      }
+
+      return {
+        rootChildren: root.children,
+        storyChildren: story.children,
+        labels: [
+          "story-beat-1-label",
+          "story-beat-2-label",
+          "story-beat-3-label",
+        ].map((id) => {
+          const component = byId.get(id);
+          return component?.component === "Text" ? component.text : undefined;
+        }),
+      };
+    });
+
+    expect(stories).toHaveLength(4);
+    expect(stories[0]?.storyChildren).toStrictEqual([
+      "story-title",
+      "story-action",
+      "story-beat-1",
+      "story-beat-2",
+      "story-beat-3",
+    ]);
+    expect(stories.map((story) => story.labels)).toStrictEqual(
+      stories.map(() => {
+        return [
+          "Understand equal parts",
+          "Connection reveal",
+          "Recognize equivalent fractions",
+        ];
+      })
+    );
+
+    const storyOffsets = stories.map((story) => {
+      return (
+        story.rootChildren.indexOf("story-plan") -
+        story.rootChildren.indexOf("learning-path")
+      );
+    });
+
+    expect(storyOffsets).toStrictEqual([1, 1, 1, 1]);
+  });
+
+  it("keeps the story inside the pinned catalog component set", () => {
+    const preview = compileLessonPreview(request);
+    const allowed = new Set([
+      "Column",
+      "Row",
+      "Card",
+      "Text",
+      "MatchCard",
+      "Button",
+      "Status",
+      "LearningPath",
+    ]);
+
+    for (const message of preview.messages) {
+      if (!("updateComponents" in message)) {
+        continue;
+      }
+      for (const component of message.updateComponents.components) {
+        expect(allowed.has(component.component)).toBeTruthy();
+      }
+    }
+  });
+
+  it("renders the story copy in Arabic on an Arabic surface", () => {
+    const arabicDraft = createEquivalentFractionsDraft({
+      prompt: "equivalent fractions for grade 4",
+      grade: 4,
+      standardId: "standard_ccss_4_nf_a_01",
+      language: "ar",
+      difficulty: "on-level",
+    });
+    const arabicRequest = {
+      ...baseRequest,
+      language: "ar" as const,
+      draft: arabicDraft,
+    };
+    const arabicPath = buildValidatedLearningPath({
+      proposal: requireLearningPath(arabicDraft),
+      context: createDemoCurriculumContext(arabicRequest),
+      draftId: arabicRequest.requestId,
+      provenance: {
+        provider: "deterministic-fixture",
+        model: "equivalent-fractions-fixture-v1",
+        promptTemplateVersion: "lesson-prompt-v1",
+        validatorVersion: "lesson-validator-v2",
+      },
+      validatorVersion: "semantic-validation-runner-v1",
+    });
+    const preview = compileLessonPreview({
+      ...arabicRequest,
+      learningPath: arabicPath,
+    });
+    const serialized = JSON.stringify(preview.messages);
+
+    expect(serialized).toContain("كشف الارتباط");
+    expect(serialized).toContain("قصة المتعلم");
+  });
 });
