@@ -18,7 +18,7 @@
     "start": "node .output/server/index.mjs",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:database": "RUN_DATABASE_TESTS=true vitest run src/server/persistence/persistence-contract.test.ts src/server/persistence/source-contract.test.ts",
+    "test:database": "RUN_DATABASE_TESTS=true vitest run src/server/persistence/persistence-contract.test.ts src/server/persistence/source-contract.test.ts src/server/persistence/pack-database.test.ts",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "lint": "eslint .",

@@ -1,10 +1,12 @@
 import { serverObservability } from "./observability.server";
 import { createDrizzlePersistence } from "./persistence/drizzle";
 import { createPostgresIdentityPersistence } from "./persistence/identity-postgres";
+import { createPostgresPackPersistence } from "./persistence/pack-postgres";
 import { createPostgresPersistence } from "./persistence/postgres";
 
 import type { ServerConfig } from "./config";
 import type { IdentityPersistence } from "./identity/persistence-port";
+import type { PackPersistence } from "./persistence/pack-port";
 import type {
   FoundationPersistence,
   FoundationPersistenceOptions,
@@ -59,6 +61,25 @@ export const createFoundationPersistence = (
   return config.persistenceAdapter === "drizzle"
     ? createDrizzlePersistence(config.databaseUrl, options)
     : createPostgresPersistence(config.databaseUrl, options);
+};
+
+/**
+The generated-pack port (#5). It is separate from the foundation port so the
+publication context owns its tables and the generation context keeps its own
+record.
+*/
+export const createPackPersistence = (
+  config: ServerConfig
+): PackPersistence => {
+  if (config.issues.length > 0) {
+    throw new Error("Cannot create pack persistence for invalid config.");
+  }
+
+  if (!config.databaseUrl) {
+    throw new Error("PostgreSQL pack persistence requires DATABASE_URL.");
+  }
+
+  return createPostgresPackPersistence(config.databaseUrl);
 };
 
 export {

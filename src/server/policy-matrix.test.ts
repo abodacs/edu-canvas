@@ -30,7 +30,13 @@ import {
 import {
   createFoundationPersistence,
   createIdentityPersistence,
+  createPackPersistence,
 } from "@/server/persistence";
+import {
+  handleApproveRequest,
+  handleOpenReviewRequest,
+  handlePublishRequest,
+} from "@/server/publication/delivery.server";
 import { createSeededPersistence } from "@/server/persistence/seeded";
 import { syntheticSeed } from "@/server/seed-data";
 import { testServerEnvironment } from "@/server/test-environment";
@@ -43,6 +49,7 @@ import type { LessonGenerationRecord } from "@/server/generation/types";
 import type { FoundationPersistence } from "@/server/persistence/types";
 import type { PublicGenerationResult } from "@/shared/generation-contract";
 import type { SessionProjection } from "@/shared/identity-contract";
+import type { ReviewPack } from "@/shared/publication-contract";
 
 /**
  * Domain policy matrix PT-01..PT-57 (§12.1) plus the §12.3 concurrency barriers.
@@ -91,12 +98,26 @@ vi.mock(
       /* webpackChunkName: "policy-matrix-seeded-identity" */
       "@/server/persistence/identity-seeded"
     );
+    const seededPack = await import(
+      /* webpackChunkName: "policy-matrix-seeded-pack" */
+      "@/server/persistence/pack-seeded"
+    );
+    const synthetic = await import(
+      /* webpackChunkName: "policy-matrix-synthetic-fixture" */
+      "@/server/identity/synthetic-fixture"
+    );
     const foundation = seededStore.createSeededPersistence();
     const identity = seededIdentity.createSeededIdentityPersistence();
+    const packs = seededPack.createSeededPackPersistence({
+      store: seededPack.createSeededPackStore(
+        synthetic.syntheticLearnerDirectory
+      ),
+    });
     return {
       ...actual,
       createFoundationPersistence: () => foundation,
       createIdentityPersistence: () => identity,
+      createPackPersistence: () => packs,
     };
   }
 );
@@ -156,11 +177,6 @@ const isDeferred = true;
  * handler exists). Each block below asserts its own row set.
  */
 const deferredUnitB = {
-  publication: {
-    issue: "#5",
-    entry: "POST /api/publications",
-    rows: ["PT-04", "PT-12", "PT-20", "PT-28", "PT-29", "PT-47"],
-  },
   readAssignment: {
     issue: "#6",
     entry: "GET /api/publications/:publicationId",
@@ -422,6 +438,122 @@ const generateReadyDraft = async (
   }
   return body;
 };
+
+const openReview = async (
+  dependencies: AuthDependencies,
+  auth: MutationAuth,
+  requestId: string
+): Promise<{ response: Response; review: ReviewPack }> => {
+  const response = await handleOpenReviewRequest(
+    mutationRequest(dependencies, "/api/publications/review", auth, {
+      requestId,
+    })
+  );
+  return {
+    response,
+    review: (await response.clone().json()) as ReviewPack,
+  };
+};
+
+const approveTarget = async (
+  dependencies: AuthDependencies,
+  auth: MutationAuth,
+  input: {
+    requestId: string;
+    versionId: string;
+    targetKind: "variant" | "reverse-path";
+    targetId: string;
+    acknowledgedFindingCodes: readonly string[];
+    operationKey: string;
+  }
+) => {
+  const response = await handleApproveRequest(
+    mutationRequest(dependencies, "/api/publications/approvals", auth, input)
+  );
+  return {
+    response,
+    review: (await response.clone().json()) as ReviewPack,
+  };
+};
+
+const approveEveryScreen = async (
+  dependencies: AuthDependencies,
+  auth: MutationAuth,
+  requestId: string
+): Promise<ReviewPack> => {
+  const { response: opened, review } = await openReview(
+    dependencies,
+    auth,
+    requestId
+  );
+  if (opened.status !== 200) {
+    throw new Error(`Opening review ${requestId} returned ${opened.status}.`);
+  }
+  const warnings = review.version.findings
+    .filter((finding) => finding.verdict === "warning")
+    .map((finding) => finding.code);
+
+  for (const variant of review.draft.variants) {
+    // Approvals are independent rows but the helper keeps each request in
+    // order so a failure names the exact screen.
+    // eslint-disable-next-line no-await-in-loop
+    const approved = await approveTarget(dependencies, auth, {
+      requestId,
+      versionId: review.version.id,
+      targetKind: "variant",
+      targetId: variant.id,
+      acknowledgedFindingCodes: warnings,
+      operationKey: `policy-approve-${requestId}-${variant.id}`,
+    });
+    if (approved.response.status !== 200) {
+      throw new Error(
+        `Approving ${variant.id} returned ${approved.response.status}.`
+      );
+    }
+  }
+
+  const reverse = await approveTarget(dependencies, auth, {
+    requestId,
+    versionId: review.version.id,
+    targetKind: "reverse-path",
+    targetId: "learning-path",
+    acknowledgedFindingCodes: warnings,
+    operationKey: `policy-approve-${requestId}-reverse`,
+  });
+  if (reverse.response.status !== 200) {
+    throw new Error(
+      `Approving the reverse path returned ${reverse.response.status}.`
+    );
+  }
+  return reverse.review;
+};
+
+const publishPack = async (
+  dependencies: AuthDependencies,
+  auth: MutationAuth,
+  input: {
+    requestId: string;
+    versionId: string;
+    expectedArtifactHash: string;
+    learnerId: string;
+    operationKey: string;
+  }
+) => {
+  const response = await handlePublishRequest(
+    mutationRequest(dependencies, "/api/publications", auth, input)
+  );
+  return {
+    response,
+    body: (await response.clone().json()) as {
+      publicationId?: string;
+      assignmentId?: string;
+      code?: string;
+      review?: ReviewPack;
+    },
+  };
+};
+
+const packPersistence = () => createPackPersistence(serverConfig());
 
 const errorBody = async (
   response: Response
@@ -1602,23 +1734,205 @@ describe("protected domain policy matrix", () => {
     });
   });
 
+  it("PT-04 a teacher publishes an approved pack to a learner", async () => {
+    const dependencies = await authDependencies();
+    const teacher = await signInDirect(dependencies, teacherEmail);
+    const draft = await generateReadyDraft(
+      dependencies,
+      teacher,
+      "policy-pt-04-generate"
+    );
+    const approved = await approveEveryScreen(
+      dependencies,
+      teacher,
+      draft.requestId
+    );
+
+    const { response, body } = await publishPack(dependencies, teacher, {
+      requestId: draft.requestId,
+      versionId: approved.version.id,
+      expectedArtifactHash: approved.version.artifactHash,
+      learnerId: "learner_lina",
+      operationKey: "policy-pt-04-publish",
+    });
+
+    const stored = await packPersistence().readPublicationForVersion(
+      northTenantId,
+      approved.version.id
+    );
+
+    expect({
+      status: response.status,
+      published: Boolean(body.publicationId),
+      assignedTo: body.review?.assignment?.learnerId,
+      storedVersion: stored?.versionId,
+    }).toStrictEqual({
+      status: 201,
+      published: true,
+      assignedTo: "learner_lina",
+      storedVersion: approved.version.id,
+    });
+  });
+
+  it("PT-12 a learner cannot publish", async () => {
+    const dependencies = await authDependencies();
+    const learner = await signInDirect(dependencies, learnerEmail);
+    const response = await handlePublishRequest(
+      mutationRequest(dependencies, "/api/publications", learner, {
+        requestId: "policy-pt-12-draft",
+        versionId: "policy-pt-12-version",
+        expectedArtifactHash: "a".repeat(64),
+        learnerId: "learner_lina",
+        operationKey: "policy-pt-12-publish",
+      })
+    );
+
+    expect({
+      status: response.status,
+      code: await errorCode(response),
+    }).toStrictEqual({ status: 403, code: "FORBIDDEN" });
+  });
+
+  it("PT-20 a teacher cannot publish outside their tenant scope", async () => {
+    const dependencies = await authDependencies();
+    const owner = await signInDirect(dependencies, teacherEmail);
+    const draft = await generateReadyDraft(
+      dependencies,
+      owner,
+      "policy-pt-20-generate"
+    );
+    const approved = await approveEveryScreen(
+      dependencies,
+      owner,
+      draft.requestId
+    );
+    const outsider = await signInForTenant(dependencies, southTenantName);
+
+    const { response, body } = await publishPack(dependencies, outsider, {
+      requestId: draft.requestId,
+      versionId: approved.version.id,
+      expectedArtifactHash: approved.version.artifactHash,
+      learnerId: "learner_lina",
+      operationKey: "policy-pt-20-publish",
+    });
+
+    expect({
+      status: response.status,
+      code: body.code,
+      published: Boolean(
+        await packPersistence().readPublicationForVersion(
+          northTenantId,
+          approved.version.id
+        )
+      ),
+    }).toStrictEqual({
+      status: 403,
+      code: "PUBLICATION_FORBIDDEN",
+      published: false,
+    });
+  });
+
+  it("PT-28 a teacher cannot publish another teacher's draft", async () => {
+    const dependencies = await authDependencies();
+    const owner = await signInDirect(dependencies, teacherEmail);
+    const draft = await generateReadyDraft(
+      dependencies,
+      owner,
+      "policy-pt-28-generate"
+    );
+    const approved = await approveEveryScreen(
+      dependencies,
+      owner,
+      draft.requestId
+    );
+    const colleague = await signInForTenant(dependencies, northTenantName);
+
+    const { response, body } = await publishPack(dependencies, colleague, {
+      requestId: draft.requestId,
+      versionId: approved.version.id,
+      expectedArtifactHash: approved.version.artifactHash,
+      learnerId: "learner_lina",
+      operationKey: "policy-pt-28-publish",
+    });
+
+    expect({
+      status: response.status,
+      code: body.code,
+    }).toStrictEqual({
+      status: 403,
+      code: "PUBLICATION_FORBIDDEN",
+    });
+  });
+
+  it("PT-29 a teacher cannot assign a learner from another tenant", async () => {
+    const dependencies = await authDependencies();
+    const teacher = await signInDirect(dependencies, teacherEmail);
+    const draft = await generateReadyDraft(
+      dependencies,
+      teacher,
+      "policy-pt-29-generate"
+    );
+    const approved = await approveEveryScreen(
+      dependencies,
+      teacher,
+      draft.requestId
+    );
+
+    const { response, body } = await publishPack(dependencies, teacher, {
+      requestId: draft.requestId,
+      versionId: approved.version.id,
+      expectedArtifactHash: approved.version.artifactHash,
+      learnerId: "learner_omar",
+      operationKey: "policy-pt-29-publish",
+    });
+
+    expect({
+      status: response.status,
+      code: body.code,
+      published: Boolean(
+        await packPersistence().readPublicationForVersion(
+          northTenantId,
+          approved.version.id
+        )
+      ),
+    }).toStrictEqual({
+      status: 403,
+      code: "PUBLICATION_FORBIDDEN",
+      published: false,
+    });
+  });
+
+  it("PT-47 an unauthenticated caller cannot publish", async () => {
+    const dependencies = await authDependencies();
+    const response = await handlePublishRequest(
+      new Request(`${dependencies.publicOrigin}/api/publications`, {
+        method: "POST",
+        headers: {
+          origin: dependencies.publicOrigin,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          requestId: "policy-pt-47-draft",
+          versionId: "policy-pt-47-version",
+          expectedArtifactHash: "a".repeat(64),
+          learnerId: "learner_lina",
+          operationKey: "policy-pt-47-publish",
+        }),
+      })
+    );
+
+    expect({
+      status: response.status,
+      code: await errorCode(response),
+    }).toStrictEqual({ status: 401, code: "UNAUTHENTICATED" });
+  });
+
   describe("release unit B — protected entries absent from this branch", () => {
     /**
      * The specification keeps the owning issue open while a handler is missing
      * (§11; §14 "absent handlers keep #98 open"). No endpoint is invented here; the
      * blocks record the deferral and the rows each absent entry owns.
      */
-
-    it.skipIf(isDeferred)(
-      "PT-04/PT-12/PT-20/PT-28/PT-29/PT-47 publication entry (issue #5)",
-      () => {
-        expect(deferredUnitB.publication).toStrictEqual({
-          issue: "#5",
-          entry: "POST /api/publications",
-          rows: ["PT-04", "PT-12", "PT-20", "PT-28", "PT-29", "PT-47"],
-        });
-      }
-    );
 
     it.skipIf(isDeferred)(
       "PT-05/PT-13/PT-21/PT-25/PT-48 read assignment entry (issue #6)",

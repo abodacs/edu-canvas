@@ -3,6 +3,7 @@ import {
   A2UI_CATALOG_VERSION,
   A2UI_PROTOCOL_VERSION,
   validateA2UIMessage,
+  variantPurposeLabels as purposeLabels,
 } from "@/shared/a2ui-contract";
 import { buildStoryPlan, StoryPlanBuildError } from "@/shared/story-plan";
 import { isRenderableArtifact } from "@/server/safety/artifact-gate";
@@ -20,13 +21,6 @@ import type {
   ProviderVariant,
   ValidatedLearningPath,
 } from "../generation/types";
-
-const purposeLabels = [
-  "Teach the model",
-  "Independent practice",
-  "Guided practice",
-  "Review and challenge",
-] as const;
 
 const scaffoldLabels = {
   standard: "Core matching scaffold",
