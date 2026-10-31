@@ -1,9 +1,4 @@
-import {
-  Link,
-  Navigate,
-  createFileRoute,
-  useNavigate,
-} from "@tanstack/react-router";
+import { Link, Navigate, createFileRoute } from "@tanstack/react-router";
 import { ArrowRight, ShieldAlert } from "lucide-react";
 import { useEffect, useRef } from "react";
 
@@ -98,7 +93,8 @@ const SessionEnded = (): ReactElement => {
 };
 
 const WorkspacePage = (): ReactElement => {
-  const navigate = useNavigate();
+  const navigate = Route.useNavigate();
+  const { review: reviewRequestId } = Route.useSearch();
   const session = useAuthSession();
   const bannerReference = useRef<HTMLDivElement>(null);
   const contentReference = useRef<HTMLDivElement>(null);
@@ -247,6 +243,13 @@ const WorkspacePage = (): ReactElement => {
             key={generation}
             csrf={csrf}
             generation={generation}
+            reviewRequestId={reviewRequestId}
+            onOpenReview={(requestId) => {
+              void navigate({ search: { review: requestId } });
+            }}
+            onCloseReview={() => {
+              void navigate({ search: {} });
+            }}
             onUnauthorized={handleUnauthorized}
           />
         </div>
@@ -261,6 +264,11 @@ const WorkspacePage = (): ReactElement => {
 };
 
 export const Route = createFileRoute("/workspace")({
+  validateSearch: (search: Record<string, unknown>): { review?: string } => {
+    return typeof search.review === "string" && search.review.length > 0
+      ? { review: search.review }
+      : {};
+  },
   head: () => ({ meta: [{ title: "Teacher studio | Edu-Canvas" }] }),
   component: WorkspacePage,
 });

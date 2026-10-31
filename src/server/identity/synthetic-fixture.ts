@@ -14,9 +14,10 @@ import type { DeterministicAccount } from "./provider/deterministic";
 /**
  * Synthetic identity fixture for explicit local development and tests. Two
  * schools plus the curriculum-owning synthetic classroom, two teachers in one
- * school, two classes, and two learners, per the spec's fixture requirement
+ * school, two classes, and three learners, per the spec's fixture requirement
  * (the classroom membership the focused generation gate signs in through was
- * added for issue #115). It is invoked only by the development
+ * added for issue #115; the demo-tenant learner was added for issue #5 so a
+ * published pack has a real assignment referent). It is invoked only by the development
  * composition and by tests; it can never supply authority to a deployed
  * request because the deterministic provider is unreachable outside
  * development (config forces the hosted provider elsewhere).
@@ -50,6 +51,12 @@ export const syntheticAccounts: readonly DeterministicAccount[] = [
     subject: "subject_learner_yusuf",
     emailVerified: true,
   },
+  {
+    email: "omar.demo@example.test",
+    password: syntheticPassword,
+    subject: "subject_learner_omar",
+    emailVerified: true,
+  },
 ];
 
 export const syntheticPasswordForTests = syntheticPassword;
@@ -70,6 +77,7 @@ const fixture = {
     { id: "actor_teacher_bilal", displayName: "Bilal Nasser" },
     { id: "actor_learner_lina", displayName: "Lina Farouk" },
     { id: "actor_learner_yusuf", displayName: "Yusuf Karim" },
+    { id: "actor_learner_omar", displayName: "Omar Nabil" },
   ],
   memberships: [
     {
@@ -124,6 +132,17 @@ const fixture = {
         demoHandle: "yusuf.demo",
       },
     },
+    {
+      membershipId: "membership_omar_demo",
+      actorId: "actor_learner_omar",
+      tenantKey: "demo" as const,
+      role: "student" as const,
+      learner: {
+        id: "learner_omar",
+        displayName: "Omar Nabil",
+        demoHandle: "omar.demo",
+      },
+    },
   ],
   classAssignments: [
     { membershipId: "membership_amira_north", classId: "class_north_4a" },
@@ -132,6 +151,29 @@ const fixture = {
 } as const;
 
 const tenantFor = (key: keyof typeof fixture.tenants) => fixture.tenants[key];
+
+export interface SyntheticLearner {
+  readonly id: string;
+  readonly displayName: string;
+  readonly tenantId: string;
+}
+
+/**
+The learner directory the seeded pack store assigns against. Derived from the same fixture so a membership and an assignment referent cannot drift.
+*/
+export const syntheticLearnerDirectory: readonly SyntheticLearner[] = (() => {
+  const learners: SyntheticLearner[] = [];
+  for (const membership of fixture.memberships) {
+    if (membership.role === "student" && "learner" in membership) {
+      learners.push({
+        id: membership.learner.id,
+        displayName: membership.learner.displayName,
+        tenantId: tenantFor(membership.tenantKey).id,
+      });
+    }
+  }
+  return learners;
+})();
 
 /**
  * Idempotent: provisioning operations are safe to replay. Running the fixture twice leaves one actor, membership, and binding per entry.

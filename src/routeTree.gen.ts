@@ -25,11 +25,16 @@ import { Route as ApiAuthSessionRouteImport } from './routes/api/auth/session'
 import { Route as ApiAuthSignInRouteImport } from './routes/api/auth/sign-in'
 import { Route as ApiAuthSignUpRouteImport } from './routes/api/auth/sign-up'
 import { Route as ApiLessonsGenerateRouteImport } from './routes/api/lessons/generate'
+import { Route as ApiPublicationsIndexRouteImport } from './routes/api/publications/index'
+import { Route as ApiPublicationsApprovalsRouteImport } from './routes/api/publications/approvals'
+import { Route as ApiPublicationsReviewRouteImport } from './routes/api/publications/review'
+import { Route as ApiPublicationsRevisionsRouteImport } from './routes/api/publications/revisions'
 import { Route as ApiLessonsDraftIdCancelRouteImport } from './routes/api/lessons/$draftId/cancel'
 import { Route as ApiLessonsSourcesIndexRouteImport } from './routes/api/lessons/sources/index'
 import { Route as ApiLessonsSourcesSourceIdIndexRouteImport } from './routes/api/lessons/sources/$sourceId/index'
 import { Route as ApiLessonsSourcesSourceIdCancelRouteImport } from './routes/api/lessons/sources/$sourceId/cancel'
 import { Route as ApiLessonsSourcesSourceIdReviewRouteImport } from './routes/api/lessons/sources/$sourceId/review'
+import { Route as ApiPublicationsVersionsVersionIdPreviewRouteImport } from './routes/api/publications/versions/$versionId/preview'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -111,6 +116,28 @@ const ApiLessonsGenerateRoute = ApiLessonsGenerateRouteImport.update({
   path: '/api/lessons/generate',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicationsIndexRoute = ApiPublicationsIndexRouteImport.update({
+  id: '/api/publications/',
+  path: '/api/publications/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicationsApprovalsRoute =
+  ApiPublicationsApprovalsRouteImport.update({
+    id: '/api/publications/approvals',
+    path: '/api/publications/approvals',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicationsReviewRoute = ApiPublicationsReviewRouteImport.update({
+  id: '/api/publications/review',
+  path: '/api/publications/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicationsRevisionsRoute =
+  ApiPublicationsRevisionsRouteImport.update({
+    id: '/api/publications/revisions',
+    path: '/api/publications/revisions',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiLessonsDraftIdCancelRoute = ApiLessonsDraftIdCancelRouteImport.update({
   id: '/api/lessons/$draftId/cancel',
   path: '/api/lessons/$draftId/cancel',
@@ -139,6 +166,12 @@ const ApiLessonsSourcesSourceIdReviewRoute =
     path: '/api/lessons/sources/$sourceId/review',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicationsVersionsVersionIdPreviewRoute =
+  ApiPublicationsVersionsVersionIdPreviewRouteImport.update({
+    id: '/api/publications/versions/$versionId/preview',
+    path: '/api/publications/versions/$versionId/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -157,10 +190,15 @@ export interface FileRoutesByFullPath {
   '/api/auth/sign-in': typeof ApiAuthSignInRoute
   '/api/auth/sign-up': typeof ApiAuthSignUpRoute
   '/api/lessons/generate': typeof ApiLessonsGenerateRoute
+  '/api/publications/approvals': typeof ApiPublicationsApprovalsRoute
+  '/api/publications/review': typeof ApiPublicationsReviewRoute
+  '/api/publications/revisions': typeof ApiPublicationsRevisionsRoute
+  '/api/publications/': typeof ApiPublicationsIndexRoute
   '/api/lessons/$draftId/cancel': typeof ApiLessonsDraftIdCancelRoute
   '/api/lessons/sources/': typeof ApiLessonsSourcesIndexRoute
   '/api/lessons/sources/$sourceId/cancel': typeof ApiLessonsSourcesSourceIdCancelRoute
   '/api/lessons/sources/$sourceId/review': typeof ApiLessonsSourcesSourceIdReviewRoute
+  '/api/publications/versions/$versionId/preview': typeof ApiPublicationsVersionsVersionIdPreviewRoute
   '/api/lessons/sources/$sourceId/': typeof ApiLessonsSourcesSourceIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -180,10 +218,15 @@ export interface FileRoutesByTo {
   '/api/auth/sign-in': typeof ApiAuthSignInRoute
   '/api/auth/sign-up': typeof ApiAuthSignUpRoute
   '/api/lessons/generate': typeof ApiLessonsGenerateRoute
+  '/api/publications/approvals': typeof ApiPublicationsApprovalsRoute
+  '/api/publications/review': typeof ApiPublicationsReviewRoute
+  '/api/publications/revisions': typeof ApiPublicationsRevisionsRoute
+  '/api/publications': typeof ApiPublicationsIndexRoute
   '/api/lessons/$draftId/cancel': typeof ApiLessonsDraftIdCancelRoute
   '/api/lessons/sources': typeof ApiLessonsSourcesIndexRoute
   '/api/lessons/sources/$sourceId/cancel': typeof ApiLessonsSourcesSourceIdCancelRoute
   '/api/lessons/sources/$sourceId/review': typeof ApiLessonsSourcesSourceIdReviewRoute
+  '/api/publications/versions/$versionId/preview': typeof ApiPublicationsVersionsVersionIdPreviewRoute
   '/api/lessons/sources/$sourceId': typeof ApiLessonsSourcesSourceIdIndexRoute
 }
 export interface FileRoutesById {
@@ -204,10 +247,15 @@ export interface FileRoutesById {
   '/api/auth/sign-in': typeof ApiAuthSignInRoute
   '/api/auth/sign-up': typeof ApiAuthSignUpRoute
   '/api/lessons/generate': typeof ApiLessonsGenerateRoute
+  '/api/publications/approvals': typeof ApiPublicationsApprovalsRoute
+  '/api/publications/review': typeof ApiPublicationsReviewRoute
+  '/api/publications/revisions': typeof ApiPublicationsRevisionsRoute
+  '/api/publications/': typeof ApiPublicationsIndexRoute
   '/api/lessons/$draftId/cancel': typeof ApiLessonsDraftIdCancelRoute
   '/api/lessons/sources/': typeof ApiLessonsSourcesIndexRoute
   '/api/lessons/sources/$sourceId/cancel': typeof ApiLessonsSourcesSourceIdCancelRoute
   '/api/lessons/sources/$sourceId/review': typeof ApiLessonsSourcesSourceIdReviewRoute
+  '/api/publications/versions/$versionId/preview': typeof ApiPublicationsVersionsVersionIdPreviewRoute
   '/api/lessons/sources/$sourceId/': typeof ApiLessonsSourcesSourceIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -229,10 +277,15 @@ export interface FileRouteTypes {
     | '/api/auth/sign-in'
     | '/api/auth/sign-up'
     | '/api/lessons/generate'
+    | '/api/publications/approvals'
+    | '/api/publications/review'
+    | '/api/publications/revisions'
+    | '/api/publications/'
     | '/api/lessons/$draftId/cancel'
     | '/api/lessons/sources/'
     | '/api/lessons/sources/$sourceId/cancel'
     | '/api/lessons/sources/$sourceId/review'
+    | '/api/publications/versions/$versionId/preview'
     | '/api/lessons/sources/$sourceId/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -252,10 +305,15 @@ export interface FileRouteTypes {
     | '/api/auth/sign-in'
     | '/api/auth/sign-up'
     | '/api/lessons/generate'
+    | '/api/publications/approvals'
+    | '/api/publications/review'
+    | '/api/publications/revisions'
+    | '/api/publications'
     | '/api/lessons/$draftId/cancel'
     | '/api/lessons/sources'
     | '/api/lessons/sources/$sourceId/cancel'
     | '/api/lessons/sources/$sourceId/review'
+    | '/api/publications/versions/$versionId/preview'
     | '/api/lessons/sources/$sourceId'
   id:
     | '__root__'
@@ -275,10 +333,15 @@ export interface FileRouteTypes {
     | '/api/auth/sign-in'
     | '/api/auth/sign-up'
     | '/api/lessons/generate'
+    | '/api/publications/approvals'
+    | '/api/publications/review'
+    | '/api/publications/revisions'
+    | '/api/publications/'
     | '/api/lessons/$draftId/cancel'
     | '/api/lessons/sources/'
     | '/api/lessons/sources/$sourceId/cancel'
     | '/api/lessons/sources/$sourceId/review'
+    | '/api/publications/versions/$versionId/preview'
     | '/api/lessons/sources/$sourceId/'
   fileRoutesById: FileRoutesById
 }
@@ -298,10 +361,15 @@ export interface RootRouteChildren {
   ApiAuthSignInRoute: typeof ApiAuthSignInRoute
   ApiAuthSignUpRoute: typeof ApiAuthSignUpRoute
   ApiLessonsGenerateRoute: typeof ApiLessonsGenerateRoute
+  ApiPublicationsApprovalsRoute: typeof ApiPublicationsApprovalsRoute
+  ApiPublicationsReviewRoute: typeof ApiPublicationsReviewRoute
+  ApiPublicationsRevisionsRoute: typeof ApiPublicationsRevisionsRoute
+  ApiPublicationsIndexRoute: typeof ApiPublicationsIndexRoute
   ApiLessonsDraftIdCancelRoute: typeof ApiLessonsDraftIdCancelRoute
   ApiLessonsSourcesIndexRoute: typeof ApiLessonsSourcesIndexRoute
   ApiLessonsSourcesSourceIdCancelRoute: typeof ApiLessonsSourcesSourceIdCancelRoute
   ApiLessonsSourcesSourceIdReviewRoute: typeof ApiLessonsSourcesSourceIdReviewRoute
+  ApiPublicationsVersionsVersionIdPreviewRoute: typeof ApiPublicationsVersionsVersionIdPreviewRoute
   ApiLessonsSourcesSourceIdIndexRoute: typeof ApiLessonsSourcesSourceIdIndexRoute
 }
 
@@ -419,6 +487,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLessonsGenerateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/publications/': {
+      id: '/api/publications/'
+      path: '/api/publications'
+      fullPath: '/api/publications/'
+      preLoaderRoute: typeof ApiPublicationsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/publications/approvals': {
+      id: '/api/publications/approvals'
+      path: '/api/publications/approvals'
+      fullPath: '/api/publications/approvals'
+      preLoaderRoute: typeof ApiPublicationsApprovalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/publications/review': {
+      id: '/api/publications/review'
+      path: '/api/publications/review'
+      fullPath: '/api/publications/review'
+      preLoaderRoute: typeof ApiPublicationsReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/publications/revisions': {
+      id: '/api/publications/revisions'
+      path: '/api/publications/revisions'
+      fullPath: '/api/publications/revisions'
+      preLoaderRoute: typeof ApiPublicationsRevisionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/lessons/$draftId/cancel': {
       id: '/api/lessons/$draftId/cancel'
       path: '/api/lessons/$draftId/cancel'
@@ -454,6 +550,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLessonsSourcesSourceIdReviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/publications/versions/$versionId/preview': {
+      id: '/api/publications/versions/$versionId/preview'
+      path: '/api/publications/versions/$versionId/preview'
+      fullPath: '/api/publications/versions/$versionId/preview'
+      preLoaderRoute: typeof ApiPublicationsVersionsVersionIdPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -483,10 +586,16 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthSignInRoute: ApiAuthSignInRoute,
   ApiAuthSignUpRoute: ApiAuthSignUpRoute,
   ApiLessonsGenerateRoute: ApiLessonsGenerateRoute,
+  ApiPublicationsApprovalsRoute: ApiPublicationsApprovalsRoute,
+  ApiPublicationsReviewRoute: ApiPublicationsReviewRoute,
+  ApiPublicationsRevisionsRoute: ApiPublicationsRevisionsRoute,
+  ApiPublicationsIndexRoute: ApiPublicationsIndexRoute,
   ApiLessonsDraftIdCancelRoute: ApiLessonsDraftIdCancelRoute,
   ApiLessonsSourcesIndexRoute: ApiLessonsSourcesIndexRoute,
   ApiLessonsSourcesSourceIdCancelRoute: ApiLessonsSourcesSourceIdCancelRoute,
   ApiLessonsSourcesSourceIdReviewRoute: ApiLessonsSourcesSourceIdReviewRoute,
+  ApiPublicationsVersionsVersionIdPreviewRoute:
+    ApiPublicationsVersionsVersionIdPreviewRoute,
   ApiLessonsSourcesSourceIdIndexRoute: ApiLessonsSourcesSourceIdIndexRoute,
 }
 export const routeTree = rootRouteImport

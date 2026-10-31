@@ -95,7 +95,7 @@ const publicItemSchema = z
   })
   .strict();
 
-const publicVariantSchema = z
+export const publicVariantSchema = z
   .object({
     id: z.string(),
     kind: z.enum(variantKindValues),

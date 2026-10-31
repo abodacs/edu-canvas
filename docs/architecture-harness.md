@@ -42,6 +42,17 @@ The identity boundary replaced browser-selected demo roles. Its rules:
 - **Edit rerun seam.** When the edit endpoints land, the rerun path is `gateStoredArtifact` plus re-acceptance. A stored draft is never compiled or shared without a fresh gate result and a matching acceptance snapshot.
 - **Ownership limit.** The compile guard sees the rendered projection only. A draft or semantic rule it cannot observe stays with the gate; the differential oracle records each such case instead of weakening the gate.
 
+## Publication context (#5)
+
+`src/server/publication/` owns the generated-pack review path: immutable review versions, per-target approvals, the publication fact, the learner assignment, and the delivery seam.
+
+- **Allowed imports:** `src/shared/` contracts; `src/server/safety/artifact-gate.ts` and `artifact-enforcement.ts`; `src/server/generation/types.ts` and `src/server/generation/validation.ts` (record contracts and the structural validator only); `src/server/persistence/` pack port and generation port types; `src/server/identity/types.ts`; `src/server/a2ui/compiler.ts` for the branded version preview; `node:crypto`.
+- **One version owner.** A review revision is a `pack_versions` row. An edit inserts a new row with a parent link; nothing updates or deletes a row. The generation record stays generation-owned.
+- **Approval is per target.** Four variant approvals and one reverse-path approval are pinned to the version's artifact hash and validation-result hash. Publish refuses a stale hash or a missing target.
+- **Publish re-derives.** The service re-runs `gateArtifact` over the stored revision, compares the artifact hash and gate policy version, and only then writes one publication and one assignment. Receipts and unique keys make a retry return the same records.
+- **Private answers stay private.** `src/shared/publication-contract.ts` has no relationship or answer-key field; the payload scrub test fails if one appears in the review projection.
+- **Ownership limit.** The review projection is teacher-scoped at the delivery seam; the learner assignment read belongs to #6. The `pack_*` names are temporary until AgDR-0012's reconciliation with #144 lands.
+
 Severity contract: error rules must stay green in every PR. Warn rules are named boundary debt — each comment states the migration wave that retires it (see the [context migration waves](../ARCHITECTURE.md#target-layout-and-migration-waves)). A new warn outside a planned wave is a review blocker; flipping a warn to error is part of its wave. Context rules apply to production modules; test modules may assemble cross-context fixtures.
 
 The harness is not a substitute for review. When a new global state holder or cross-seam import is genuinely required, give it a named owner, record the reason in the relevant architecture decision, and then update this harness deliberately.
