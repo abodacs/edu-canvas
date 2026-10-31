@@ -750,6 +750,7 @@ describe("generation service conformance: retries and moderation", () => {
       safety: {
         checkPrompt: (prompt) => ({ allowed: !prompt.includes("unsafe") }),
         checkGeneratedContent: () => ({ allowed: true }),
+        checkSourceText: () => ({ allowed: true }),
       },
       requestIdFactory: () => {
         requestNumber += 1;
@@ -791,6 +792,7 @@ describe("generation service conformance: retries and moderation", () => {
       safety: {
         checkPrompt: (prompt) => ({ allowed: !prompt.includes("unsafe") }),
         checkGeneratedContent: () => ({ allowed: true }),
+        checkSourceText: () => ({ allowed: true }),
       },
       requestIdFactory: () => {
         requestNumber += 1;
@@ -818,6 +820,7 @@ describe("generation service conformance: retries and moderation", () => {
       safety: {
         checkPrompt: () => ({ allowed: true }),
         checkGeneratedContent: () => ({ allowed: false }),
+        checkSourceText: () => ({ allowed: true }),
       },
       requestIdFactory: () => "draft_req_conformance_moderated_output",
     });
@@ -842,6 +845,7 @@ describe("generation service conformance: retries and moderation", () => {
       safety: {
         checkPrompt: () => ({ allowed: false }),
         checkGeneratedContent: () => ({ allowed: true }),
+        checkSourceText: () => ({ allowed: true }),
       },
       requestIdFactory: () => "draft_req_conformance_moderated_retry",
     });

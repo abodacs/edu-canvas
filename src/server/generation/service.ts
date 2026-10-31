@@ -6,6 +6,7 @@ import { createId } from "@/server/ids";
 import { demoSeed } from "@/server/seed-data";
 
 import { IdentityError } from "../identity/errors";
+import { createDefaultContentSafety } from "../moderation/content-safety";
 
 import {
   GenerationRequestError,
@@ -26,6 +27,8 @@ import {
   isGenerationClaimExpired,
 } from "./types";
 import { validateProviderDraft } from "./validation";
+import type { SourceGate } from "../grounding/types";
+import type { ContentSafety } from "../moderation/content-safety";
 import type { Actor } from "@/server/identity/types";
 import type { DraftAcceptanceOptions } from "./draft-acceptance";
 import type {
@@ -60,19 +63,15 @@ const DRAFT_NOT_FOUND_MESSAGE = "The requested draft was not found.";
 
 const DEADLINE_DIAGNOSTIC_CODE = "GENERATION_DEADLINE_EXCEEDED";
 
-export interface ContentSafetyResult {
-  allowed: boolean;
-}
-
-export interface ContentSafety {
-  checkPrompt: (prompt: string) => ContentSafetyResult;
-  checkGeneratedContent: (content: unknown) => ContentSafetyResult;
-}
-
 export interface GenerationServiceOptions extends DraftAcceptanceOptions {
   persistence: GenerationPersistence;
   provider: LessonDraftProvider;
   safety?: ContentSafety;
+  /**
+  Blocks generation behind an incomplete or unreviewed source snapshot (#114).
+  Optional: prompt-only requests never touch it.
+  */
+  sourceGate?: SourceGate;
   now?: () => string;
   clock?: () => number;
   deadlines?: Partial<GenerationDeadlines>;
@@ -112,16 +111,6 @@ class GenerationAbortError extends Error {
   }
 }
 
-const unsafeContentPatterns = [
-  /<\s*\/?(?:script|iframe|object|embed)/iu,
-  /javascript\s*:/iu,
-  /ignore\s+(?:all|any|the|previous)\s+instructions/iu,
-  /\b(?:api|secret|access)\s+key\b/iu,
-];
-
-const hasUnsafeContent = (value: string): boolean =>
-  unsafeContentPatterns.some((pattern) => pattern.test(value));
-
 const supportedStandardIds: ReadonlySet<string> = new Set([
   demoSeed.standard.id,
   demoSeed.standard.code,
@@ -141,7 +130,12 @@ const hashForIdempotency = (value: string): string => {
 const createImplicitIdempotencyKey = (
   input: Pick<
     NormalizedCommandInput,
-    "prompt" | "grade" | "standardId" | "language" | "difficulty"
+    | "prompt"
+    | "grade"
+    | "standardId"
+    | "language"
+    | "difficulty"
+    | "sourceSnapshotId"
   >,
   retryOfRequestId?: string
 ): string => {
@@ -189,6 +183,9 @@ export const normalizeGenerationInput = (
     standardId,
     language: parsed.data.language,
     difficulty,
+    ...(parsed.data.sourceSnapshotId && {
+      sourceSnapshotId: parsed.data.sourceSnapshotId,
+    }),
   };
 
   return {
@@ -198,21 +195,6 @@ export const normalizeGenerationInput = (
       createImplicitIdempotencyKey(normalized, retryOfRequestId),
     requestHash: createGenerationRequestHash(normalized),
     ...(retryOfRequestId && { retryOfRequestId }),
-  };
-};
-
-export const createDefaultContentSafety = (): ContentSafety => {
-  return {
-    checkPrompt: (prompt) => ({ allowed: !hasUnsafeContent(prompt) }),
-    checkGeneratedContent(content) {
-      let text: string;
-      try {
-        text = JSON.stringify(content);
-      } catch {
-        return { allowed: false };
-      }
-      return { allowed: !hasUnsafeContent(text) };
-    },
   };
 };
 
@@ -300,6 +282,7 @@ const requestMetadataKeys = [
   "standardId",
   "language",
   "difficulty",
+  "sourceSnapshotId",
 ] as const;
 
 const hasSameRequestMetadata = (
@@ -873,12 +856,56 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     );
   };
 
+  const assertSourceReady = async (
+    actor: GenerationCommand["actor"],
+    sourceSnapshotId: string | undefined
+  ): Promise<void> => {
+    if (!sourceSnapshotId || !options.sourceGate) {
+      return;
+    }
+    const resolution = await options.sourceGate.resolveForGeneration(
+      { tenantId: actor.tenantId, teacherId: actor.actorId },
+      sourceSnapshotId
+    );
+    if (!resolution.ok) {
+      throw new GenerationRequestError(resolution.message, {
+        code: "GENERATION_SOURCE_NOT_READY",
+      });
+    }
+  };
+
+  const runAttemptWithSourceUsage = async (
+    baseRecord: LessonGenerationRecord,
+    input: NormalizedCommandInput
+  ): Promise<GenerationServiceResult> => {
+    const result = await runAttempt(baseRecord, input);
+    if (
+      input.sourceSnapshotId &&
+      options.sourceGate &&
+      result.record.state === "ready-for-review"
+    ) {
+      try {
+        await options.sourceGate.markUsed(
+          result.record.tenantId,
+          result.record.teacherId,
+          input.sourceSnapshotId,
+          now()
+        );
+      } catch {
+        // Usage tracking must not fail an accepted draft; the hourly sweep
+        // still expires the snapshot on its original 24-hour bound.
+      }
+    }
+    return result;
+  };
+
   return {
     async generate(
       command: GenerationCommand
     ): Promise<GenerationServiceResult> {
       assertTeacherCanGenerate(command.actor);
       const input = normalizeGenerationInput(command.input);
+      await assertSourceReady(command.actor, input.sourceSnapshotId);
       const existing = await options.persistence.findGenerationByIdempotencyKey(
         command.actor.tenantId,
         command.actor.actorId,
@@ -915,19 +942,34 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
             code: "DRAFT_NOT_FOUND",
           });
         }
+        // A retry that does not name a source inherits the original request's
+        // reviewed source, so its metadata and hash stay comparable.
+        let effectiveInput: NormalizedCommandInput = input;
+        const inheritedSource = retryRecord.input.sourceSnapshotId;
+        if (inheritedSource && !input.sourceSnapshotId) {
+          effectiveInput = {
+            ...input,
+            sourceSnapshotId: inheritedSource,
+            requestHash: createGenerationRequestHash({
+              ...input,
+              sourceSnapshotId: inheritedSource,
+            }),
+          };
+        }
+        await assertSourceReady(command.actor, effectiveInput.sourceSnapshotId);
         if (!isRetryableState(retryRecord.state)) {
           throw new GenerationRequestError(
             "This draft is not in a state that can be retried.",
             { code: "DRAFT_NOT_RETRYABLE" }
           );
         }
-        if (!hasSameRequestMetadata(retryRecord.input, input)) {
+        if (!hasSameRequestMetadata(retryRecord.input, effectiveInput)) {
           throw new GenerationRequestError(
             "A retry must keep the original lesson request metadata.",
             { code: "RETRY_METADATA_MISMATCH" }
           );
         }
-        return runAttempt(retryRecord, input);
+        return runAttemptWithSourceUsage(retryRecord, effectiveInput);
       }
 
       const timestamp = now();
@@ -941,6 +983,9 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
           standardId: input.standardId,
           language: input.language,
           difficulty: input.difficulty,
+          ...(input.sourceSnapshotId && {
+            sourceSnapshotId: input.sourceSnapshotId,
+          }),
         },
         state: "requested",
         attempt: 0,
@@ -950,7 +995,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         createdAt: timestamp,
         updatedAt: timestamp,
       };
-      return runAttempt(record, input);
+      return runAttemptWithSourceUsage(record, input);
     },
 
     async cancel(
