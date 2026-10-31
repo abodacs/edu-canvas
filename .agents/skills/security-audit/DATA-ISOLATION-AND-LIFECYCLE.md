@@ -18,56 +18,41 @@ Split large targets by primary storage, cache/search, object/blob storage, analy
 
 ## Tenant and object-isolation attack classes (subagent_type: `general`)
 
-**Missing tenant or owner enforcement**
-A read, update, delete, list, count, or bulk query identifies an object without binding it to the authenticated tenant/owner, or trusts body fields to supply that identity. Compare direct lookup, nested relationship, background, admin, import, and legacy paths.
+**Missing tenant or owner enforcement** A read, update, delete, list, count, or bulk query identifies an object without binding it to the authenticated tenant/owner, or trusts body fields to supply that identity. Compare direct lookup, nested relationship, background, admin, import, and legacy paths.
 
-**Composite-key and namespace collision**
-Cache keys, object paths, database uniqueness, search document IDs, temporary files, or deduplication keys omit tenant or environment. Two principals can overwrite or retrieve the same logical key even though application records carry separate owners.
+**Composite-key and namespace collision** Cache keys, object paths, database uniqueness, search document IDs, temporary files, or deduplication keys omit tenant or environment. Two principals can overwrite or retrieve the same logical key even though application records carry separate owners.
 
-**Policy and query disagreement**
-Row-level policy, ORM default scopes, authorization filters, and raw/bypass clients apply different predicates. Check joins, aggregates, aliases, views, transactions, `unscoped` or service clients, and error paths where context is missing.
+**Policy and query disagreement** Row-level policy, ORM default scopes, authorization filters, and raw/bypass clients apply different predicates. Check joins, aggregates, aliases, views, transactions, `unscoped` or service clients, and error paths where context is missing.
 
-**Blob and signed-reference overreach**
-Object keys, attachment IDs, version IDs, shared links, or signed URLs permit operations or namespaces beyond the issuing principal's access, or remain valid after the underlying ACL changes. Bind operation, exact object/version, audience, expiry, and tenant.
+**Blob and signed-reference overreach** Object keys, attachment IDs, version IDs, shared links, or signed URLs permit operations or namespaces beyond the issuing principal's access, or remain valid after the underlying ACL changes. Bind operation, exact object/version, audience, expiry, and tenant.
 
 ## Derived-data and disclosure attack classes (subagent_type: `general`)
 
-**Search, cache, and index ACL drift**
-A primary record's ACL or lifecycle changes without invalidating a searchable, cached, embedded, thumbnail, RSS, preview, or index copy. Validate filtering at retrieval time as well as document ingestion and invalidation.
+**Search, cache, and index ACL drift** A primary record's ACL or lifecycle changes without invalidating a searchable, cached, embedded, thumbnail, RSS, preview, or index copy. Validate filtering at retrieval time as well as document ingestion and invalidation.
 
-**Analytics, logs, traces, and diagnostics as alternate readers**
-Private content or credentials are emitted into systems with broader access, longer retention, or tenant mixing. Confirm the data class and realistic reader; field names, public identifiers, and operator-only content under intended policy are not enough.
+**Analytics, logs, traces, and diagnostics as alternate readers** Private content or credentials are emitted into systems with broader access, longer retention, or tenant mixing. Confirm the data class and realistic reader; field names, public identifiers, and operator-only content under intended policy are not enough.
 
-**Enumeration and aggregate oracles**
-Counts, filters, ordering, errors, unique constraints, timings, notification behavior, or existence checks disclose protected object or account state. Require a concrete confidential predicate and observable distinction, not general response variance.
+**Enumeration and aggregate oracles** Counts, filters, ordering, errors, unique constraints, timings, notification behavior, or existence checks disclose protected object or account state. Require a concrete confidential predicate and observable distinction, not general response variance.
 
 ## Export, backup, restore, and migration attack classes (subagent_type: `general`)
 
-**Export and backup scope expansion**
-An export, snapshot, portability package, report, or backup includes other tenants, inaccessible object fields, soft-deleted data, secret values, or history above the requester's access. Check per-item authorization after selection and authorization to download the final artifact.
+**Export and backup scope expansion** An export, snapshot, portability package, report, or backup includes other tenants, inaccessible object fields, soft-deleted data, secret values, or history above the requester's access. Check per-item authorization after selection and authorization to download the final artifact.
 
-**Import and restore authority expansion**
-Restore/import bypasses owner, schema, ACL, uniqueness, or validation rules, overwrites existing resources, or recreates records in a tenant the requester cannot write. Validate archive contents as untrusted and authorize the resulting operation rather than trusting prior provenance.
+**Import and restore authority expansion** Restore/import bypasses owner, schema, ACL, uniqueness, or validation rules, overwrites existing resources, or recreates records in a tenant the requester cannot write. Validate archive contents as untrusted and authorize the resulting operation rather than trusting prior provenance.
 
-**Migration default and ownership confusion**
-Old records lack tenant/ACL/lifecycle fields, incompatible IDs collide, or partial rollout makes new and old readers apply different defaults. Review backfill, dual-read/write, compatibility, rollback, and resumed-migration paths.
+**Migration default and ownership confusion** Old records lack tenant/ACL/lifecycle fields, incompatible IDs collide, or partial rollout makes new and old readers apply different defaults. Review backfill, dual-read/write, compatibility, rollback, and resumed-migration paths.
 
-**Backup and replication boundary drift**
-Encryption keys, storage accounts, cross-region replicas, restoration environments, or support snapshots have broader identity or tenant scope than primary data. Source can confirm only in-repo policy; hosted access and retention require `needs_validation`.
+**Backup and replication boundary drift** Encryption keys, storage accounts, cross-region replicas, restoration environments, or support snapshots have broader identity or tenant scope than primary data. Source can confirm only in-repo policy; hosted access and retention require `needs_validation`.
 
 ## Deletion, revocation, and lifecycle attack classes (subagent_type: `general`)
 
-**Soft-delete and tombstone bypass**
-Direct lookup, search, relation traversal, object link, background processor, or restore ignores the lifecycle predicate and returns or acts on a deleted/revoked record. Check whether soft-deleted identifiers can be re-registered before all references are gone.
+**Soft-delete and tombstone bypass** Direct lookup, search, relation traversal, object link, background processor, or restore ignores the lifecycle predicate and returns or acts on a deleted/revoked record. Check whether soft-deleted identifiers can be re-registered before all references are gone.
 
-**Stale authorization and derived copy use**
-Membership removal, ACL update, consent withdrawal, secret revocation, or role downgrade does not invalidate sessions, caches, subscriptions, jobs, or materialized data that continue to authorize future operations.
+**Stale authorization and derived copy use** Membership removal, ACL update, consent withdrawal, secret revocation, or role downgrade does not invalidate sessions, caches, subscriptions, jobs, or materialized data that continue to authorize future operations.
 
-**Retention and queued-work overrun**
-Deletion completes in primary storage while queued processors, retries, exports, analytics, or generated artifacts recreate or retain the data beyond the promised boundary. Find idempotent deletion and tombstone propagation.
+**Retention and queued-work overrun** Deletion completes in primary storage while queued processors, retries, exports, analytics, or generated artifacts recreate or retain the data beyond the promised boundary. Find idempotent deletion and tombstone propagation.
 
-**Restore reintroduces invalid state**
-Backup, undo, undelete, or replica recovery restores data, credentials, memberships, or permissions that current policy no longer allows. Re-authorize restored state and reapply lifecycle changes made after the snapshot.
+**Restore reintroduces invalid state** Backup, undo, undelete, or replica recovery restores data, credentials, memberships, or permissions that current policy no longer allows. Re-authorize restored state and reapply lifecycle changes made after the snapshot.
 
 ## Universal moves (apply across the above)
 

@@ -17,12 +17,12 @@ const teacherActor = syntheticTeacherActor({
 });
 
 const createService = (
-  resolveStandardPack?: (standardId: string, tenantId: string) => boolean
+  hasRequiredSkillPack?: (standardId: string, tenantId: string) => boolean
 ) => {
   return createSourceService({
     persistence: createSeededSourcePersistence(),
     safety: createDefaultContentSafety(),
-    ...(resolveStandardPack && { resolveStandardPack }),
+    ...(hasRequiredSkillPack && { resolveStandardPack: hasRequiredSkillPack }),
     now: () => "2026-10-31T10:00:00.000Z",
     createSnapshotId: (() => {
       let sequence = 0;
@@ -34,7 +34,11 @@ const createService = (
   });
 };
 
-const TEXT_BYTES = new TextEncoder().encode(
+const encoder = new TextEncoder();
+
+const encodeSource = (value: string): Uint8Array => encoder.encode(value);
+
+const TEXT_BYTES = encodeSource(
   "Equivalent fractions name the same amount.\nOne half equals two fourths."
 );
 
@@ -50,12 +54,14 @@ describe(createSourceService, () => {
 
     expect(snapshot.state).toBe("complete");
     expect(snapshot.fileFormat).toBe("txt");
-    expect(snapshot.extractedText).toContain("Equivalent fractions");
     expect(snapshot.pageCount).toBe(1);
-    expect(snapshot.gaps.map((gap) => gap.code)).toEqual([
+    expect(snapshot.gaps.map((gap) => gap.code)).toStrictEqual([
       "unverified-external-alignment",
     ]);
-    expect(snapshot.reviewedAt).toBeNull();
+    expect([
+      snapshot.extractedText?.includes("Equivalent fractions"),
+      snapshot.reviewedAt,
+    ]).toStrictEqual([true, null]);
   });
 
   it("rejects an upload without the synthetic-material confirmation", async () => {
@@ -77,7 +83,7 @@ describe(createSourceService, () => {
     const failure = service.upload({
       actor: teacherActor,
       fileName: "photo.pdf",
-      bytes: new TextEncoder().encode("not actually a pdf"),
+      bytes: encodeSource("not actually a pdf"),
       syntheticMaterialConfirmed: true,
     });
 
@@ -91,7 +97,7 @@ describe(createSourceService, () => {
     const rosterName = demoSeed.identities.find(
       (identity) => identity.role === "student"
     )?.displayName;
-    const bytes = new TextEncoder().encode(
+    const bytes = encodeSource(
       `Worksheet for ${rosterName}: reach me at guardian@example.com.`
     );
     const snapshot = await service.upload({
@@ -111,7 +117,7 @@ describe(createSourceService, () => {
     const scanned = await service.upload({
       actor: teacherActor,
       fileName: "scanned.txt",
-      bytes: new TextEncoder().encode("only page one has text"),
+      bytes: encodeSource("only page one has text"),
       syntheticMaterialConfirmed: true,
     });
 
@@ -121,7 +127,7 @@ describe(createSourceService, () => {
     const partial = await missingPack.upload({
       actor: teacherActor,
       fileName: "gapped.txt",
-      bytes: new TextEncoder().encode("readable but pack is missing"),
+      bytes: encodeSource("readable but pack is missing"),
       syntheticMaterialConfirmed: true,
     });
 
@@ -155,7 +161,7 @@ describe(createSourceService, () => {
     const first = await service.upload({
       actor: teacherActor,
       fileName: "broken.txt",
-      bytes: new TextEncoder().encode("readable original"),
+      bytes: encodeSource("readable original"),
       syntheticMaterialConfirmed: true,
     });
     const repaired = await service.addCorrectedText({
@@ -173,6 +179,7 @@ describe(createSourceService, () => {
       snapshotId: repaired.id,
       input: { requiredSkillsConfirmed: true, alignmentAcknowledged: true },
     });
+
     expect(reviewed.reviewedAt).not.toBeNull();
   });
 
@@ -185,6 +192,7 @@ describe(createSourceService, () => {
       syntheticMaterialConfirmed: true,
     });
     await service.cancel(teacherActor, snapshot.id);
+
     await expect(service.read(teacherActor, snapshot.id)).rejects.toMatchObject(
       {
         code: "SOURCE_NOT_FOUND",
@@ -208,6 +216,7 @@ describe(createSourceService, () => {
     });
 
     const expired = await service.runCleanup("2026-11-02T10:00:00.000Z");
+
     expect(expired.expired).toBe(1);
     await expect(
       service.read(teacherActor, "snapshot_cleanup")
@@ -240,41 +249,47 @@ describe(createSourceService, () => {
       updatedAt: "2026-10-31T09:00:00.000Z",
     });
     const stale = await service.runCleanup("2026-10-31T11:00:00.000Z");
+
     expect(stale.interrupted).toBe(1);
+
     const interrupted = await service.read(teacherActor, "snapshot_stale");
-    expect(interrupted.state).toBe("failed");
-    expect(interrupted.failureReason).toBe("interrupted");
+
+    expect([interrupted.state, interrupted.failureReason]).toStrictEqual([
+      "failed",
+      "interrupted",
+    ]);
   });
 });
 
-describe(createPersistenceSourceGate, () => {
-  const createGateWorld = async () => {
-    const persistence = createSeededSourcePersistence();
-    const service = createSourceService({
-      persistence,
-      safety: createDefaultContentSafety(),
-      now: () => "2026-10-31T10:00:00.000Z",
-    });
-    const gate = createPersistenceSourceGate(
-      persistence,
-      () => "2026-10-31T10:00:00.000Z"
-    );
-    const snapshot: PublicSourceSnapshot = await service.upload({
-      actor: teacherActor,
-      fileName: "notes.txt",
-      bytes: TEXT_BYTES,
-      syntheticMaterialConfirmed: true,
-    });
-    return { persistence, gate, snapshot };
-  };
+const createGateWorld = async () => {
+  const persistence = createSeededSourcePersistence();
+  const service = createSourceService({
+    persistence,
+    safety: createDefaultContentSafety(),
+    now: () => "2026-10-31T10:00:00.000Z",
+  });
+  const gate = createPersistenceSourceGate(
+    persistence,
+    () => "2026-10-31T10:00:00.000Z"
+  );
+  const snapshot: PublicSourceSnapshot = await service.upload({
+    actor: teacherActor,
+    fileName: "notes.txt",
+    bytes: TEXT_BYTES,
+    syntheticMaterialConfirmed: true,
+  });
+  return { persistence, gate, snapshot };
+};
 
+describe(createPersistenceSourceGate, () => {
   it("blocks an unreviewed source before the claim", async () => {
     const { gate, snapshot } = await createGateWorld();
     const resolution = await gate.resolveForGeneration(
       { tenantId: teacherActor.tenantId, teacherId: teacherActor.actorId },
       snapshot.id
     );
-    expect(resolution.ok).toBe(false);
+
+    expect(resolution.ok).toBeFalsy();
   });
 
   it("admits a reviewed source and marks it used with a seven-day expiry", async () => {
@@ -284,7 +299,13 @@ describe(createPersistenceSourceGate, () => {
       teacherActor.actorId,
       snapshot.id
     );
-    expect(reviewBase?.state).toBe("complete");
+
+    if (!reviewBase) {
+      throw new Error("The uploaded snapshot is missing from the store.");
+    }
+
+    expect(reviewBase.state).toBe("complete");
+
     await persistence.updateSnapshot(
       {
         ...reviewBase,
@@ -298,7 +319,8 @@ describe(createPersistenceSourceGate, () => {
       { tenantId: teacherActor.tenantId, teacherId: teacherActor.actorId },
       snapshot.id
     );
-    expect(resolution).toEqual({ ok: true, snapshotId: snapshot.id });
+
+    expect(resolution).toStrictEqual({ ok: true, snapshotId: snapshot.id });
 
     await gate.markUsed(
       teacherActor.tenantId,
@@ -311,8 +333,11 @@ describe(createPersistenceSourceGate, () => {
       teacherActor.actorId,
       snapshot.id
     );
-    expect(stored?.usedAt).toBe("2026-10-31T10:00:00.000Z");
-    expect(stored?.expiresAt).toBe("2026-11-07T10:00:00.000Z");
+
+    expect([stored?.usedAt, stored?.expiresAt]).toStrictEqual([
+      "2026-10-31T10:00:00.000Z",
+      "2026-11-07T10:00:00.000Z",
+    ]);
   });
 
   it("names the reason when the source is missing", async () => {
@@ -321,7 +346,8 @@ describe(createPersistenceSourceGate, () => {
       { tenantId: teacherActor.tenantId, teacherId: teacherActor.actorId },
       "snapshot_missing"
     );
-    expect(resolution.ok).toBe(false);
+
+    expect(resolution.ok).toBeFalsy();
   });
 });
 
@@ -330,6 +356,7 @@ describe(SourceRequestError, () => {
     const error = new SourceRequestError("not found", {
       code: "SOURCE_NOT_FOUND",
     });
+
     expect(error.status).toBe(404);
   });
 });

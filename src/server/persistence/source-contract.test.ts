@@ -145,12 +145,14 @@ describe.skipIf(!isRunDatabaseTests)(
         fixture.teacherId,
         record.id
       );
-      expect(stored).toEqual(record);
+
+      expect(stored).toStrictEqual(record);
 
       const listed = await persistence.listSnapshots(
         fixture.tenantId,
         fixture.teacherId
       );
+
       expect(listed.map((entry) => entry.id)).toContain(record.id);
     });
 
@@ -173,7 +175,7 @@ describe.skipIf(!isRunDatabaseTests)(
       ).resolves.toBeUndefined();
       await expect(
         persistence.listSnapshots(fixture.tenantId, fixture.otherTeacherId)
-      ).resolves.toEqual([]);
+      ).resolves.toStrictEqual([]);
     });
 
     it("updates only against the expected timestamp and marks used once", async () => {
@@ -191,12 +193,13 @@ describe.skipIf(!isRunDatabaseTests)(
         reviewedAt: "2026-10-31T10:05:00.000Z",
         updatedAt: "2026-10-31T10:05:00.000Z",
       };
+
       await expect(
         persistence.updateSnapshot(reviewed, "2026-10-31T09:00:00.000Z")
-      ).resolves.toBe(false);
+      ).resolves.toBeFalsy();
       await expect(
         persistence.updateSnapshot(reviewed, record.updatedAt)
-      ).resolves.toBe(true);
+      ).resolves.toBeTruthy();
 
       await expect(
         persistence.markSnapshotUsed(
@@ -206,7 +209,7 @@ describe.skipIf(!isRunDatabaseTests)(
           "2026-10-31T10:06:00.000Z",
           "2026-11-07T10:06:00.000Z"
         )
-      ).resolves.toBe(true);
+      ).resolves.toBeTruthy();
       await expect(
         persistence.markSnapshotUsed(
           fixture.tenantId,
@@ -215,15 +218,18 @@ describe.skipIf(!isRunDatabaseTests)(
           "2026-10-31T10:07:00.000Z",
           "2026-11-07T10:07:00.000Z"
         )
-      ).resolves.toBe(false);
+      ).resolves.toBeFalsy();
 
       const used = await persistence.readSnapshot(
         fixture.tenantId,
         fixture.teacherId,
         record.id
       );
-      expect(used?.usedAt).toBe("2026-10-31T10:06:00.000Z");
-      expect(used?.expiresAt).toBe("2026-11-07T10:06:00.000Z");
+
+      expect([used?.usedAt, used?.expiresAt]).toStrictEqual([
+        "2026-10-31T10:06:00.000Z",
+        "2026-11-07T10:06:00.000Z",
+      ]);
     });
 
     it("sweeps expired rows and stale extractions, then deletes", async () => {
@@ -261,8 +267,11 @@ describe.skipIf(!isRunDatabaseTests)(
         fixture.teacherId,
         staleRecord.id
       );
-      expect(interrupted?.state).toBe("failed");
-      expect(interrupted?.failureReason).toBe("interrupted");
+
+      expect([interrupted?.state, interrupted?.failureReason]).toStrictEqual([
+        "failed",
+        "interrupted",
+      ]);
 
       await expect(
         persistence.deleteSnapshot(
@@ -270,7 +279,7 @@ describe.skipIf(!isRunDatabaseTests)(
           fixture.teacherId,
           staleRecord.id
         )
-      ).resolves.toBe(true);
+      ).resolves.toBeTruthy();
       await expect(
         persistence.readSnapshot(
           fixture.tenantId,

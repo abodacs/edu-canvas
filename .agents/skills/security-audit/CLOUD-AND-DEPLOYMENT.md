@@ -18,58 +18,43 @@ Use `SUPPLY-CHAIN-AND-RELEASE.md` for build and promotion trust, `WEB-PROTOCOL-A
 
 ## Workload identity and IAM attack classes (subagent_type: `general`)
 
-**Workload identity overreach**
-A workload, pod, function, edge worker, or node identity can act on tenants, accounts, resources, or APIs beyond its role, and untrusted request or job input selects that target. Review cloud policy conditions, resource patterns, service-account attachment, namespace mapping, and fallback credentials.
+**Workload identity overreach** A workload, pod, function, edge worker, or node identity can act on tenants, accounts, resources, or APIs beyond its role, and untrusted request or job input selects that target. Review cloud policy conditions, resource patterns, service-account attachment, namespace mapping, and fallback credentials.
 
-**Cross-account or cross-tenant role confusion**
-Role assumption, external IDs, token exchange, workload federation, or resource policies accept identity claims not bound to the intended source account, audience, repository, namespace, or workload. Establish both trust policy and caller-controlled claim.
+**Cross-account or cross-tenant role confusion** Role assumption, external IDs, token exchange, workload federation, or resource policies accept identity claims not bound to the intended source account, audience, repository, namespace, or workload. Establish both trust policy and caller-controlled claim.
 
-**Application authorization delegated to cloud metadata**
-An app trusts caller-supplied identity headers, tags, labels, account IDs, or resource metadata without verifying they came from the cloud control plane or a trusted proxy. Cloud IAM and application authorization are separate checks.
+**Application authorization delegated to cloud metadata** An app trusts caller-supplied identity headers, tags, labels, account IDs, or resource metadata without verifying they came from the cloud control plane or a trusted proxy. Cloud IAM and application authorization are separate checks.
 
 ## Ingress, network, and control-plane attack classes (subagent_type: `general`)
 
-**Unexpected service or management-plane reachability**
-An ingress, service, listener, security group, load-balancer annotation, port mapping, or server bind exposes an admin, debug, metrics, node, control-plane, or internal API to a lower-trust network. Missing network controls alone are `needs_validation`; a repository-controlled public route to a sensitive handler can be `confirmed`.
+**Unexpected service or management-plane reachability** An ingress, service, listener, security group, load-balancer annotation, port mapping, or server bind exposes an admin, debug, metrics, node, control-plane, or internal API to a lower-trust network. Missing network controls alone are `needs_validation`; a repository-controlled public route to a sensitive handler can be `confirmed`.
 
-**Trusted-proxy and mesh identity bypass**
-A backend accepts forwarded identity, mTLS subject, or authorization metadata from peers outside the intended ingress/sidecar, or an alternate port and health/legacy path bypasses the mesh. Verify header stripping, peer reachability, and fail-open behavior when the proxy is absent.
+**Trusted-proxy and mesh identity bypass** A backend accepts forwarded identity, mTLS subject, or authorization metadata from peers outside the intended ingress/sidecar, or an alternate port and health/legacy path bypasses the mesh. Verify header stripping, peer reachability, and fail-open behavior when the proxy is absent.
 
-**Metadata and internal-service reachability**
-An untrusted URL, destination, or protocol selection reaches instance/container metadata, control-plane sockets, or internal APIs with workload credentials. Trace URL parsing and redirect handling under `ATTACK-CLASSES.md`; here establish deployed network, metadata-version, and identity boundaries.
+**Metadata and internal-service reachability** An untrusted URL, destination, or protocol selection reaches instance/container metadata, control-plane sockets, or internal APIs with workload credentials. Trace URL parsing and redirect handling under `ATTACK-CLASSES.md`; here establish deployed network, metadata-version, and identity boundaries.
 
 ## Container and orchestration attack classes (subagent_type: `general`)
 
-**Host or control-plane capability exposure**
-A lower-trust workload can select privileged mode, capabilities, host namespaces, host paths, device mounts, container runtime sockets, or service-account tokens that cross into node/control-plane authority. Bare absence of seccomp or read-only filesystem is hardening unless a reachable operation crosses that boundary.
+**Host or control-plane capability exposure** A lower-trust workload can select privileged mode, capabilities, host namespaces, host paths, device mounts, container runtime sockets, or service-account tokens that cross into node/control-plane authority. Bare absence of seccomp or read-only filesystem is hardening unless a reachable operation crosses that boundary.
 
-**Admission and policy path inconsistency**
-One deployment route enforces image identity, namespace, resource, secret, or privilege policy while another controller, job, upgrade, restore, or compatibility path does not. Confirm the alternate route and resulting deployed object.
+**Admission and policy path inconsistency** One deployment route enforces image identity, namespace, resource, secret, or privilege policy while another controller, job, upgrade, restore, or compatibility path does not. Confirm the alternate route and resulting deployed object.
 
-**Namespace and label trust confusion**
-Network, admission, secret, or workload-identity policy relies on labels, annotations, names, or namespaces that a less-trusted principal can set. Compare who controls selectors with what authority matching grants.
+**Namespace and label trust confusion** Network, admission, secret, or workload-identity policy relies on labels, annotations, names, or namespaces that a less-trusted principal can set. Compare who controls selectors with what authority matching grants.
 
 ## Configuration and secret lifecycle attack classes (subagent_type: `general`)
 
-**Security-control precedence drift**
-Development values, chart defaults, environment variables, command-line flags, feature gates, sidecar injection, or per-region overlays disable authentication, transport security, tenant scoping, or audit policy in a deployed environment. Render the final configuration for each maintained deployment, not just the base file.
+**Security-control precedence drift** Development values, chart defaults, environment variables, command-line flags, feature gates, sidecar injection, or per-region overlays disable authentication, transport security, tenant scoping, or audit policy in a deployed environment. Render the final configuration for each maintained deployment, not just the base file.
 
-**Secret exposure across workload boundaries**
-Secrets enter logs, crash reports, process arguments, shared environment, broad volumes, build outputs, service discovery, or read APIs accessible to another workload or tenant. Check secret type and authority; a public endpoint or key ID is not a credential.
+**Secret exposure across workload boundaries** Secrets enter logs, crash reports, process arguments, shared environment, broad volumes, build outputs, service discovery, or read APIs accessible to another workload or tenant. Check secret type and authority; a public endpoint or key ID is not a credential.
 
-**Credential renewal and outage fallback**
-Failure to mount, refresh, rotate, or revoke a workload credential causes stale credentials to remain active or an app to accept a less trusted identity mode. Review startup, readiness, reconnect, and cached-client behavior.
+**Credential renewal and outage fallback** Failure to mount, refresh, rotate, or revoke a workload credential causes stale credentials to remain active or an app to accept a less trusted identity mode. Review startup, readiness, reconnect, and cached-client behavior.
 
 ## Managed storage, events, and edge attack classes (subagent_type: `general`)
 
-**Object and signed-URL policy confusion**
-Bucket/container policy, object keys, CDN origins, or signed URLs fail to bind principal, operation, object namespace, audience, or expiry. Review list/version operations and write paths as well as reads.
+**Object and signed-URL policy confusion** Bucket/container policy, object keys, CDN origins, or signed URLs fail to bind principal, operation, object namespace, audience, or expiry. Review list/version operations and write paths as well as reads.
 
-**Event-source identity confusion**
-A function or worker trusts event body fields as source identity without validating provider-signed envelope, subscription/topic, account, region, and replay state. Compare push, pull, retry, and dead-letter paths.
+**Event-source identity confusion** A function or worker trusts event body fields as source identity without validating provider-signed envelope, subscription/topic, account, region, and replay state. Compare push, pull, retry, and dead-letter paths.
 
-**Edge/runtime boundary mismatch**
-An edge or serverless runtime assumes a secret, API, filesystem, isolation, or tenant policy that differs from the origin runtime, and fallback to origin changes authority or cache behavior. Confirm which configuration selects each path.
+**Edge/runtime boundary mismatch** An edge or serverless runtime assumes a secret, API, filesystem, isolation, or tenant policy that differs from the origin runtime, and fallback to origin changes authority or cache behavior. Confirm which configuration selects each path.
 
 ## Universal moves (apply across the above)
 
