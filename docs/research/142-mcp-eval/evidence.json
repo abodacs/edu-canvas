@@ -1,0 +1,4227 @@
+{
+  "schemaVersion": 1,
+  "kind": "lc-mcp-eval",
+  "capturedAt": "2026-10-31T00:01:58.156Z",
+  "revision": "7847d46",
+  "environment": {
+    "node": "v26.8.1",
+    "platform": "linux",
+    "origin": "https://kg.mcp.learningcommons.org/mcp",
+    "credentialEnv": "LEARNING_COMMONS_API_KEY",
+    "credentialPresent": true
+  },
+  "protocol": {
+    "requested": "2025-03-26",
+    "negotiated": "2025-03-26",
+    "capabilities": {
+      "tools": {}
+    },
+    "capabilitiesHash": "ba8e230d1afc3aa130cb8466ad81050412fa42bbe94eee7a4d564a13bb37a019",
+    "serverName": "rmcp",
+    "serverVersion": "3.2.0",
+    "instructions": "MCP server for knowledge graph access\n\nIMPORTANT: Pass the `session_id` argument on every tool call, including each intermediate call of a multi-step chain, copying the value from this conversation's most recent tool result. A conversation's first call has none to copy; the server assigns one in its result.",
+    "instructionsHash": "c66e74103422d945e067b6069ae22b9b47107385cca74800b692b6e016b10c59"
+  },
+  "toolCatalog": {
+    "count": 5,
+    "names": [
+      "find_curriculum_lessons",
+      "find_learning_components_from_standard",
+      "find_misconceptions_for_standard",
+      "find_standard_statement",
+      "find_standards_progression_from_standard"
+    ],
+    "descriptionHash": "87c5043883026ba43b7d5226b418be9612cf5aa24bff8b3e3c55b69cef68bbb3",
+    "provenanceAudit": [
+      {
+        "tool": "find_curriculum_lessons",
+        "outputPropertyCount": 11,
+        "provenanceProperties": [],
+        "mentionsCommonCorePivot": true,
+        "mentionsEquivalentStateStandards": false
+      },
+      {
+        "tool": "find_learning_components_from_standard",
+        "outputPropertyCount": 4,
+        "provenanceProperties": [],
+        "mentionsCommonCorePivot": true,
+        "mentionsEquivalentStateStandards": false
+      },
+      {
+        "tool": "find_misconceptions_for_standard",
+        "outputPropertyCount": 10,
+        "provenanceProperties": [],
+        "mentionsCommonCorePivot": false,
+        "mentionsEquivalentStateStandards": false
+      },
+      {
+        "tool": "find_standard_statement",
+        "outputPropertyCount": 10,
+        "provenanceProperties": [],
+        "mentionsCommonCorePivot": true,
+        "mentionsEquivalentStateStandards": false
+      },
+      {
+        "tool": "find_standards_progression_from_standard",
+        "outputPropertyCount": 12,
+        "provenanceProperties": [],
+        "mentionsCommonCorePivot": true,
+        "mentionsEquivalentStateStandards": true
+      }
+    ]
+  },
+  "runs": [
+    {
+      "id": "multi-state-4.NF.A.1",
+      "row": {
+        "jurisdiction": "Multi-State",
+        "code": "4.NF.A.1"
+      },
+      "mode": "cold",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "4.NF.A.1",
+        "caseIdentifierUUID": "6b9c09e2-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "Multi-State"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 1408,
+      "sessionHash": "c49a476c041be6d5",
+      "sessionStableAcrossStages": true,
+      "chainHash": "ca4463368db8119efbe83b7597bb46b0014e056db4e61586952ba146a34a1ece",
+      "standardFacts": {
+        "standardCount": 1,
+        "statementCodes": [
+          "4.NF.A.1"
+        ],
+        "jurisdictions": [
+          "Multi-State"
+        ],
+        "subjects": [
+          "Mathematics"
+        ],
+        "withSubStandards": 0,
+        "keyNames": [
+          "academicSubject",
+          "alternateStatementCode",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 5,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 2,
+        "jurisdictions": [
+          "Multi-State"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "4.OA.A.2",
+          "3.NF.A.3"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "4.NF.A.1",
+            "jurisdiction": "Multi-State"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 218,
+          "gatewayRemaining": "199",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 594,
+          "hasStructuredContent": true,
+          "semanticHash": "91c3e186192e830f47dc03cccb5b6edca1056829c38d2457e7f9a660352bc6b2",
+          "excerpt": "{\"session_id\":\"378fc14ab10244b4\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alternateStatementCode\":\"4.NF.1\",\"caseIdentifierUUID\":\"6b9c09e2-d7cc-11e8-824f-0242ac160002\",\"description\":\"Explain why a fraction $\\\\frac{a}{b}$ is equivalent ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alternateStatementCode:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9c09e2-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 244,
+          "gatewayRemaining": "199",
+          "gatewayUpstreamLatencyMs": "1",
+          "responseBytes": 921,
+          "hasStructuredContent": true,
+          "semanticHash": "f30e769245c46891c0f562a10af0161773b05f972955904a637c2324d8209898",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Generate equivalent fractions using the principle a/b = (n x a)/(n x b) (denominators limited to 2, 3, 4, 5, 6, 8, 10, 12, and 100)\",\"identifier\":\"13498e57-1a95-5b05-a073-f99ab6e932ff\"},{\"description\"",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9c09e2-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 936,
+          "gatewayRemaining": "199",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 898,
+          "hasStructuredContent": true,
+          "semanticHash": "139170a422f7725566a863113187738f64d22c91c7f6407af3f4c71af759a2ad",
+          "excerpt": "{\"session_id\":\"378fc14ab10244b4\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"6b9d51bd-d7cc-11e8-824f-0242ac160002\",\"description\":\"Multiply or divide to solve word problems involving multiplicativ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "multi-state-4.NF.A.1",
+      "row": {
+        "jurisdiction": "Multi-State",
+        "code": "4.NF.A.1"
+      },
+      "mode": "warm",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "4.NF.A.1",
+        "caseIdentifierUUID": "6b9c09e2-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "Multi-State"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 1057,
+      "sessionHash": "c49a476c041be6d5",
+      "sessionStableAcrossStages": true,
+      "chainHash": "ca4463368db8119efbe83b7597bb46b0014e056db4e61586952ba146a34a1ece",
+      "standardFacts": {
+        "standardCount": 1,
+        "statementCodes": [
+          "4.NF.A.1"
+        ],
+        "jurisdictions": [
+          "Multi-State"
+        ],
+        "subjects": [
+          "Mathematics"
+        ],
+        "withSubStandards": 0,
+        "keyNames": [
+          "academicSubject",
+          "alternateStatementCode",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 5,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 2,
+        "jurisdictions": [
+          "Multi-State"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "4.OA.A.2",
+          "3.NF.A.3"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "4.NF.A.1",
+            "jurisdiction": "Multi-State"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 424,
+          "gatewayRemaining": "199",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 594,
+          "hasStructuredContent": true,
+          "semanticHash": "91c3e186192e830f47dc03cccb5b6edca1056829c38d2457e7f9a660352bc6b2",
+          "excerpt": "{\"session_id\":\"378fc14ab10244b4\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alternateStatementCode\":\"4.NF.1\",\"caseIdentifierUUID\":\"6b9c09e2-d7cc-11e8-824f-0242ac160002\",\"description\":\"Explain why a fraction $\\\\frac{a}{b}$ is equivalent ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alternateStatementCode:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9c09e2-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 418,
+          "gatewayRemaining": "199",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 921,
+          "hasStructuredContent": true,
+          "semanticHash": "f30e769245c46891c0f562a10af0161773b05f972955904a637c2324d8209898",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Generate equivalent fractions using the principle a/b = (n x a)/(n x b) (denominators limited to 2, 3, 4, 5, 6, 8, 10, 12, and 100)\",\"identifier\":\"13498e57-1a95-5b05-a073-f99ab6e932ff\"},{\"description\"",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9c09e2-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 214,
+          "gatewayRemaining": "199",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 898,
+          "hasStructuredContent": true,
+          "semanticHash": "139170a422f7725566a863113187738f64d22c91c7f6407af3f4c71af759a2ad",
+          "excerpt": "{\"session_id\":\"378fc14ab10244b4\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"6b9d51bd-d7cc-11e8-824f-0242ac160002\",\"description\":\"Multiply or divide to solve word problems involving multiplicativ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "multi-state-4.NF.A.1",
+      "row": {
+        "jurisdiction": "Multi-State",
+        "code": "4.NF.A.1"
+      },
+      "mode": "repeat",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "4.NF.A.1",
+        "caseIdentifierUUID": "6b9c09e2-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "Multi-State"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 756,
+      "sessionHash": "663a3cbb01bbefad",
+      "sessionStableAcrossStages": true,
+      "chainHash": "ca4463368db8119efbe83b7597bb46b0014e056db4e61586952ba146a34a1ece",
+      "standardFacts": {
+        "standardCount": 1,
+        "statementCodes": [
+          "4.NF.A.1"
+        ],
+        "jurisdictions": [
+          "Multi-State"
+        ],
+        "subjects": [
+          "Mathematics"
+        ],
+        "withSubStandards": 0,
+        "keyNames": [
+          "academicSubject",
+          "alternateStatementCode",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 5,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 2,
+        "jurisdictions": [
+          "Multi-State"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "4.OA.A.2",
+          "3.NF.A.3"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "4.NF.A.1",
+            "jurisdiction": "Multi-State"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 328,
+          "gatewayRemaining": "199",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 594,
+          "hasStructuredContent": true,
+          "semanticHash": "91c3e186192e830f47dc03cccb5b6edca1056829c38d2457e7f9a660352bc6b2",
+          "excerpt": "{\"session_id\":\"f2a1b5f4d9d4451e\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alternateStatementCode\":\"4.NF.1\",\"caseIdentifierUUID\":\"6b9c09e2-d7cc-11e8-824f-0242ac160002\",\"description\":\"Explain why a fraction $\\\\frac{a}{b}$ is equivalent ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alternateStatementCode:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9c09e2-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 214,
+          "gatewayRemaining": "199",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 921,
+          "hasStructuredContent": true,
+          "semanticHash": "f30e769245c46891c0f562a10af0161773b05f972955904a637c2324d8209898",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Generate equivalent fractions using the principle a/b = (n x a)/(n x b) (denominators limited to 2, 3, 4, 5, 6, 8, 10, 12, and 100)\",\"identifier\":\"13498e57-1a95-5b05-a073-f99ab6e932ff\"},{\"description\"",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9c09e2-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 212,
+          "gatewayRemaining": "198",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 898,
+          "hasStructuredContent": true,
+          "semanticHash": "139170a422f7725566a863113187738f64d22c91c7f6407af3f4c71af759a2ad",
+          "excerpt": "{\"session_id\":\"f2a1b5f4d9d4451e\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"6b9d51bd-d7cc-11e8-824f-0242ac160002\",\"description\":\"Multiply or divide to solve word problems involving multiplicativ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "multi-state-4.NF.A.2",
+      "row": {
+        "jurisdiction": "Multi-State",
+        "code": "4.NF.A.2"
+      },
+      "mode": "cold",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "4.NF.A.2",
+        "caseIdentifierUUID": "6b9d4e66-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "Multi-State"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 647,
+      "sessionHash": "51ddb567b27f3e91",
+      "sessionStableAcrossStages": true,
+      "chainHash": "2e4a326457d502810ea95c5bc0ee20027cbff17d5d19c673da01f9e5a11d7dba",
+      "standardFacts": {
+        "standardCount": 1,
+        "statementCodes": [
+          "4.NF.A.2"
+        ],
+        "jurisdictions": [
+          "Multi-State"
+        ],
+        "subjects": [
+          "Mathematics"
+        ],
+        "withSubStandards": 0,
+        "keyNames": [
+          "academicSubject",
+          "alternateStatementCode",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 7,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 1,
+        "jurisdictions": [
+          "Multi-State"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "4.NF.A.1"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "4.NF.A.2",
+            "jurisdiction": "Multi-State"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 225,
+          "gatewayRemaining": "198",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 678,
+          "hasStructuredContent": true,
+          "semanticHash": "8e80cc32b53e5f9baed01bbc793f1d0c2b4b795b5a27b41e4526cd3311418b76",
+          "excerpt": "{\"session_id\":\"91e5a945dbb44551\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alternateStatementCode\":\"4.NF.2\",\"caseIdentifierUUID\":\"6b9d4e66-d7cc-11e8-824f-0242ac160002\",\"description\":\"Compare two fractions with different numerators and ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alternateStatementCode:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9d4e66-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 211,
+          "gatewayRemaining": "198",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 1409,
+          "hasStructuredContent": true,
+          "semanticHash": "419dce968a3773cb9fb528aed4f5db464f18b211d7b9ed53e64a826f6512afb5",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Justify comparison of fractions with different numerators and different denominators\",\"identifier\":\"1995cc98-1d9d-5fdb-a8da-63b3967883f6\"},{\"description\":\"Justify comparison of fractions with differen",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9d4e66-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 210,
+          "gatewayRemaining": "198",
+          "gatewayUpstreamLatencyMs": "1",
+          "responseBytes": 624,
+          "hasStructuredContent": true,
+          "semanticHash": "b13dac8baa45080c502101d33ead2c25e4d1a2aadfdfc715d5734f43f3349282",
+          "excerpt": "{\"session_id\":\"91e5a945dbb44551\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"6b9c09e2-d7cc-11e8-824f-0242ac160002\",\"description\":\"Explain why a fraction $\\\\frac{a}{b}$ is equivalent to a fraction",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "multi-state-4.NF.A.2",
+      "row": {
+        "jurisdiction": "Multi-State",
+        "code": "4.NF.A.2"
+      },
+      "mode": "warm",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "4.NF.A.2",
+        "caseIdentifierUUID": "6b9d4e66-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "Multi-State"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 646,
+      "sessionHash": "51ddb567b27f3e91",
+      "sessionStableAcrossStages": true,
+      "chainHash": "2e4a326457d502810ea95c5bc0ee20027cbff17d5d19c673da01f9e5a11d7dba",
+      "standardFacts": {
+        "standardCount": 1,
+        "statementCodes": [
+          "4.NF.A.2"
+        ],
+        "jurisdictions": [
+          "Multi-State"
+        ],
+        "subjects": [
+          "Mathematics"
+        ],
+        "withSubStandards": 0,
+        "keyNames": [
+          "academicSubject",
+          "alternateStatementCode",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 7,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 1,
+        "jurisdictions": [
+          "Multi-State"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "4.NF.A.1"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "4.NF.A.2",
+            "jurisdiction": "Multi-State"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 215,
+          "gatewayRemaining": "198",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 678,
+          "hasStructuredContent": true,
+          "semanticHash": "8e80cc32b53e5f9baed01bbc793f1d0c2b4b795b5a27b41e4526cd3311418b76",
+          "excerpt": "{\"session_id\":\"91e5a945dbb44551\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alternateStatementCode\":\"4.NF.2\",\"caseIdentifierUUID\":\"6b9d4e66-d7cc-11e8-824f-0242ac160002\",\"description\":\"Compare two fractions with different numerators and ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alternateStatementCode:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9d4e66-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 216,
+          "gatewayRemaining": "198",
+          "gatewayUpstreamLatencyMs": "3",
+          "responseBytes": 1409,
+          "hasStructuredContent": true,
+          "semanticHash": "419dce968a3773cb9fb528aed4f5db464f18b211d7b9ed53e64a826f6512afb5",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Justify comparison of fractions with different numerators and different denominators\",\"identifier\":\"1995cc98-1d9d-5fdb-a8da-63b3967883f6\"},{\"description\":\"Justify comparison of fractions with differen",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9d4e66-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 213,
+          "gatewayRemaining": "198",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 624,
+          "hasStructuredContent": true,
+          "semanticHash": "b13dac8baa45080c502101d33ead2c25e4d1a2aadfdfc715d5734f43f3349282",
+          "excerpt": "{\"session_id\":\"91e5a945dbb44551\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"6b9c09e2-d7cc-11e8-824f-0242ac160002\",\"description\":\"Explain why a fraction $\\\\frac{a}{b}$ is equivalent to a fraction",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "multi-state-4.NF.A.2",
+      "row": {
+        "jurisdiction": "Multi-State",
+        "code": "4.NF.A.2"
+      },
+      "mode": "repeat",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "4.NF.A.2",
+        "caseIdentifierUUID": "6b9d4e66-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "Multi-State"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 664,
+      "sessionHash": "e0c4e16a4373a213",
+      "sessionStableAcrossStages": true,
+      "chainHash": "2e4a326457d502810ea95c5bc0ee20027cbff17d5d19c673da01f9e5a11d7dba",
+      "standardFacts": {
+        "standardCount": 1,
+        "statementCodes": [
+          "4.NF.A.2"
+        ],
+        "jurisdictions": [
+          "Multi-State"
+        ],
+        "subjects": [
+          "Mathematics"
+        ],
+        "withSubStandards": 0,
+        "keyNames": [
+          "academicSubject",
+          "alternateStatementCode",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 7,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 1,
+        "jurisdictions": [
+          "Multi-State"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "4.NF.A.1"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "4.NF.A.2",
+            "jurisdiction": "Multi-State"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 238,
+          "gatewayRemaining": "198",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 678,
+          "hasStructuredContent": true,
+          "semanticHash": "8e80cc32b53e5f9baed01bbc793f1d0c2b4b795b5a27b41e4526cd3311418b76",
+          "excerpt": "{\"session_id\":\"3802988d09af44ba\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alternateStatementCode\":\"4.NF.2\",\"caseIdentifierUUID\":\"6b9d4e66-d7cc-11e8-824f-0242ac160002\",\"description\":\"Compare two fractions with different numerators and ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alternateStatementCode:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9d4e66-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 211,
+          "gatewayRemaining": "198",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 1409,
+          "hasStructuredContent": true,
+          "semanticHash": "419dce968a3773cb9fb528aed4f5db464f18b211d7b9ed53e64a826f6512afb5",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Justify comparison of fractions with different numerators and different denominators\",\"identifier\":\"1995cc98-1d9d-5fdb-a8da-63b3967883f6\"},{\"description\":\"Justify comparison of fractions with differen",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9d4e66-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 214,
+          "gatewayRemaining": "197",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 624,
+          "hasStructuredContent": true,
+          "semanticHash": "b13dac8baa45080c502101d33ead2c25e4d1a2aadfdfc715d5734f43f3349282",
+          "excerpt": "{\"session_id\":\"3802988d09af44ba\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"6b9c09e2-d7cc-11e8-824f-0242ac160002\",\"description\":\"Explain why a fraction $\\\\frac{a}{b}$ is equivalent to a fraction",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "multi-state-3.NF.A.3",
+      "row": {
+        "jurisdiction": "Multi-State",
+        "code": "3.NF.A.3"
+      },
+      "mode": "cold",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "3.NF.A.3",
+        "caseIdentifierUUID": "6b9e210d-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "Multi-State"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 1019,
+      "sessionHash": "d790b7232d1001a9",
+      "sessionStableAcrossStages": true,
+      "chainHash": "74a653750de25a212df308f9384437473cc949faf61c9efd07d67250e7bd84d6",
+      "standardFacts": {
+        "standardCount": 5,
+        "statementCodes": [
+          "3.NF.A.3",
+          "3.NF.A.3.a",
+          "3.NF.A.3.b",
+          "3.NF.A.3.c",
+          "3.NF.A.3.d"
+        ],
+        "jurisdictions": [
+          "Multi-State",
+          "Multi-State",
+          "Multi-State",
+          "Multi-State",
+          "Multi-State"
+        ],
+        "subjects": [
+          "Mathematics",
+          "Mathematics",
+          "Mathematics",
+          "Mathematics",
+          "Mathematics"
+        ],
+        "withSubStandards": 1,
+        "keyNames": [
+          "academicSubject",
+          "alternateStatementCode",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode",
+          "subStandards"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 2,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 2,
+        "jurisdictions": [
+          "Multi-State"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "3.NF.A.1",
+          "3.NF.A.2"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "3.NF.A.3",
+            "jurisdiction": "Multi-State"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 214,
+          "gatewayRemaining": "197",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 3180,
+          "hasStructuredContent": true,
+          "semanticHash": "3d7d843b7f685bf88e0768915ce302bd65dc15d81e722ae9bd78070465fd4897",
+          "excerpt": "{\"session_id\":\"4153c60cac574bb1\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alternateStatementCode\":\"3.NF.3\",\"caseIdentifierUUID\":\"6b9e210d-d7cc-11e8-824f-0242ac160002\",\"description\":\"Explain equivalence of fractions in special cases, a",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alternateStatementCode:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string",
+            "standards[].subStandards:array",
+            "standards[].subStandards[]:object",
+            "standards[].subStandards[].caseIdentifierUUID:string",
+            "standards[].subStandards[].description:string",
+            "standards[].subStandards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9e210d-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 343,
+          "gatewayRemaining": "197",
+          "gatewayUpstreamLatencyMs": "1",
+          "responseBytes": 333,
+          "hasStructuredContent": true,
+          "semanticHash": "af275751a4a3069ed1a7c21b176730d4b6c3d68b9556a37dc060d588535de6ad",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Compare fractions by reasoning about their size (with denominators 2, 3, 4, 6, and 8)\",\"identifier\":\"2bfc7496-6e00-5c7d-9d81-1df05d4642c5\"},{\"description\":\"Explain equivalence of fractions in special ",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9e210d-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 460,
+          "gatewayRemaining": "198",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 860,
+          "hasStructuredContent": true,
+          "semanticHash": "49a18a57164f2d2c94444b81ce48b1e40e0b57c1ae6a06e19f5cde4fb08bd10e",
+          "excerpt": "{\"session_id\":\"4153c60cac574bb1\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"6b9bf846-d7cc-11e8-824f-0242ac160002\",\"description\":\"Understand a fraction $\\\\frac{1}{b}$ as the quantity formed by 1 ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "multi-state-3.NF.A.3",
+      "row": {
+        "jurisdiction": "Multi-State",
+        "code": "3.NF.A.3"
+      },
+      "mode": "warm",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "3.NF.A.3",
+        "caseIdentifierUUID": "6b9e210d-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "Multi-State"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 702,
+      "sessionHash": "d790b7232d1001a9",
+      "sessionStableAcrossStages": true,
+      "chainHash": "74a653750de25a212df308f9384437473cc949faf61c9efd07d67250e7bd84d6",
+      "standardFacts": {
+        "standardCount": 5,
+        "statementCodes": [
+          "3.NF.A.3",
+          "3.NF.A.3.a",
+          "3.NF.A.3.b",
+          "3.NF.A.3.c",
+          "3.NF.A.3.d"
+        ],
+        "jurisdictions": [
+          "Multi-State",
+          "Multi-State",
+          "Multi-State",
+          "Multi-State",
+          "Multi-State"
+        ],
+        "subjects": [
+          "Mathematics",
+          "Mathematics",
+          "Mathematics",
+          "Mathematics",
+          "Mathematics"
+        ],
+        "withSubStandards": 1,
+        "keyNames": [
+          "academicSubject",
+          "alternateStatementCode",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode",
+          "subStandards"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 2,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 2,
+        "jurisdictions": [
+          "Multi-State"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "3.NF.A.1",
+          "3.NF.A.2"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "3.NF.A.3",
+            "jurisdiction": "Multi-State"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 271,
+          "gatewayRemaining": "197",
+          "gatewayUpstreamLatencyMs": "3",
+          "responseBytes": 3180,
+          "hasStructuredContent": true,
+          "semanticHash": "3d7d843b7f685bf88e0768915ce302bd65dc15d81e722ae9bd78070465fd4897",
+          "excerpt": "{\"session_id\":\"4153c60cac574bb1\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alternateStatementCode\":\"3.NF.3\",\"caseIdentifierUUID\":\"6b9e210d-d7cc-11e8-824f-0242ac160002\",\"description\":\"Explain equivalence of fractions in special cases, a",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alternateStatementCode:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string",
+            "standards[].subStandards:array",
+            "standards[].subStandards[]:object",
+            "standards[].subStandards[].caseIdentifierUUID:string",
+            "standards[].subStandards[].description:string",
+            "standards[].subStandards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9e210d-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 213,
+          "gatewayRemaining": "197",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 333,
+          "hasStructuredContent": true,
+          "semanticHash": "af275751a4a3069ed1a7c21b176730d4b6c3d68b9556a37dc060d588535de6ad",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Compare fractions by reasoning about their size (with denominators 2, 3, 4, 6, and 8)\",\"identifier\":\"2bfc7496-6e00-5c7d-9d81-1df05d4642c5\"},{\"description\":\"Explain equivalence of fractions in special ",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9e210d-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 216,
+          "gatewayRemaining": "197",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 860,
+          "hasStructuredContent": true,
+          "semanticHash": "49a18a57164f2d2c94444b81ce48b1e40e0b57c1ae6a06e19f5cde4fb08bd10e",
+          "excerpt": "{\"session_id\":\"4153c60cac574bb1\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"6b9bf846-d7cc-11e8-824f-0242ac160002\",\"description\":\"Understand a fraction $\\\\frac{1}{b}$ as the quantity formed by 1 ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "multi-state-3.NF.A.3",
+      "row": {
+        "jurisdiction": "Multi-State",
+        "code": "3.NF.A.3"
+      },
+      "mode": "repeat",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "3.NF.A.3",
+        "caseIdentifierUUID": "6b9e210d-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "Multi-State"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 785,
+      "sessionHash": "f9ee5332cb8d733d",
+      "sessionStableAcrossStages": true,
+      "chainHash": "74a653750de25a212df308f9384437473cc949faf61c9efd07d67250e7bd84d6",
+      "standardFacts": {
+        "standardCount": 5,
+        "statementCodes": [
+          "3.NF.A.3",
+          "3.NF.A.3.a",
+          "3.NF.A.3.b",
+          "3.NF.A.3.c",
+          "3.NF.A.3.d"
+        ],
+        "jurisdictions": [
+          "Multi-State",
+          "Multi-State",
+          "Multi-State",
+          "Multi-State",
+          "Multi-State"
+        ],
+        "subjects": [
+          "Mathematics",
+          "Mathematics",
+          "Mathematics",
+          "Mathematics",
+          "Mathematics"
+        ],
+        "withSubStandards": 1,
+        "keyNames": [
+          "academicSubject",
+          "alternateStatementCode",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode",
+          "subStandards"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 2,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 2,
+        "jurisdictions": [
+          "Multi-State"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "3.NF.A.1",
+          "3.NF.A.2"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "3.NF.A.3",
+            "jurisdiction": "Multi-State"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 215,
+          "gatewayRemaining": "197",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 3180,
+          "hasStructuredContent": true,
+          "semanticHash": "3d7d843b7f685bf88e0768915ce302bd65dc15d81e722ae9bd78070465fd4897",
+          "excerpt": "{\"session_id\":\"055df425357a4fab\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alternateStatementCode\":\"3.NF.3\",\"caseIdentifierUUID\":\"6b9e210d-d7cc-11e8-824f-0242ac160002\",\"description\":\"Explain equivalence of fractions in special cases, a",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alternateStatementCode:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string",
+            "standards[].subStandards:array",
+            "standards[].subStandards[]:object",
+            "standards[].subStandards[].caseIdentifierUUID:string",
+            "standards[].subStandards[].description:string",
+            "standards[].subStandards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9e210d-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 276,
+          "gatewayRemaining": "197",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 333,
+          "hasStructuredContent": true,
+          "semanticHash": "af275751a4a3069ed1a7c21b176730d4b6c3d68b9556a37dc060d588535de6ad",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Compare fractions by reasoning about their size (with denominators 2, 3, 4, 6, and 8)\",\"identifier\":\"2bfc7496-6e00-5c7d-9d81-1df05d4642c5\"},{\"description\":\"Explain equivalence of fractions in special ",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9e210d-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 294,
+          "gatewayRemaining": "197",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 860,
+          "hasStructuredContent": true,
+          "semanticHash": "49a18a57164f2d2c94444b81ce48b1e40e0b57c1ae6a06e19f5cde4fb08bd10e",
+          "excerpt": "{\"session_id\":\"055df425357a4fab\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"6b9bf846-d7cc-11e8-824f-0242ac160002\",\"description\":\"Understand a fraction $\\\\frac{1}{b}$ as the quantity formed by 1 ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "multi-state-4.OA.A.3",
+      "row": {
+        "jurisdiction": "Multi-State",
+        "code": "4.OA.A.3"
+      },
+      "mode": "cold",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "4.OA.A.3",
+        "caseIdentifierUUID": "6b9e2e91-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "Multi-State"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 638,
+      "sessionHash": "77d46f84736c2287",
+      "sessionStableAcrossStages": true,
+      "chainHash": "fde5ed556d5f6b32872fb277c82c91f2e76e1ea3504b1e9338a063d6fe734637",
+      "standardFacts": {
+        "standardCount": 1,
+        "statementCodes": [
+          "4.OA.A.3"
+        ],
+        "jurisdictions": [
+          "Multi-State"
+        ],
+        "subjects": [
+          "Mathematics"
+        ],
+        "withSubStandards": 0,
+        "keyNames": [
+          "academicSubject",
+          "alternateStatementCode",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 18,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 3,
+        "jurisdictions": [
+          "Multi-State"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "4.NBT.A.3",
+          "4.NBT.B.6",
+          "3.OA.D.8"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "4.OA.A.3",
+            "jurisdiction": "Multi-State"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 211,
+          "gatewayRemaining": "196",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 639,
+          "hasStructuredContent": true,
+          "semanticHash": "9a60f44062239689ac8af4afb8a671bfe245210f2cc9bcc141bd13c32ba03073",
+          "excerpt": "{\"session_id\":\"c94970e8431941d9\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alternateStatementCode\":\"4.OA.3\",\"caseIdentifierUUID\":\"6b9e2e91-d7cc-11e8-824f-0242ac160002\",\"description\":\"Solve multistep word problems posed with whole numbe",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alternateStatementCode:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9e2e91-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 214,
+          "gatewayRemaining": "196",
+          "gatewayUpstreamLatencyMs": "1",
+          "responseBytes": 3942,
+          "hasStructuredContent": true,
+          "semanticHash": "76b0d47abe46518572a45a02d8a6d33023a161a31ee96f1cdac01fd09f73dd80",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Represent multi-step real-world problems using the four operations with an equation with a letter standing for the unknown\",\"identifier\":\"140c9070-138f-59f7-a1a1-ad3f1815b981\"},{\"description\":\"Solve m",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9e2e91-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 212,
+          "gatewayRemaining": "196",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 1460,
+          "hasStructuredContent": true,
+          "semanticHash": "7efba7e887bff18c6e0b6303dd5d8121c38706a7cee7f7249062e755788cf617",
+          "excerpt": "{\"session_id\":\"c94970e8431941d9\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"6b9e2a5e-d7cc-11e8-824f-0242ac160002\",\"description\":\"Use place value understanding to round multi-digit whole numbers ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "multi-state-4.OA.A.3",
+      "row": {
+        "jurisdiction": "Multi-State",
+        "code": "4.OA.A.3"
+      },
+      "mode": "warm",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "4.OA.A.3",
+        "caseIdentifierUUID": "6b9e2e91-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "Multi-State"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 650,
+      "sessionHash": "77d46f84736c2287",
+      "sessionStableAcrossStages": true,
+      "chainHash": "fde5ed556d5f6b32872fb277c82c91f2e76e1ea3504b1e9338a063d6fe734637",
+      "standardFacts": {
+        "standardCount": 1,
+        "statementCodes": [
+          "4.OA.A.3"
+        ],
+        "jurisdictions": [
+          "Multi-State"
+        ],
+        "subjects": [
+          "Mathematics"
+        ],
+        "withSubStandards": 0,
+        "keyNames": [
+          "academicSubject",
+          "alternateStatementCode",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 18,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 3,
+        "jurisdictions": [
+          "Multi-State"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "4.NBT.A.3",
+          "4.NBT.B.6",
+          "3.OA.D.8"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "4.OA.A.3",
+            "jurisdiction": "Multi-State"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 210,
+          "gatewayRemaining": "197",
+          "gatewayUpstreamLatencyMs": "1",
+          "responseBytes": 639,
+          "hasStructuredContent": true,
+          "semanticHash": "9a60f44062239689ac8af4afb8a671bfe245210f2cc9bcc141bd13c32ba03073",
+          "excerpt": "{\"session_id\":\"c94970e8431941d9\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alternateStatementCode\":\"4.OA.3\",\"caseIdentifierUUID\":\"6b9e2e91-d7cc-11e8-824f-0242ac160002\",\"description\":\"Solve multistep word problems posed with whole numbe",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alternateStatementCode:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9e2e91-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 216,
+          "gatewayRemaining": "196",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 3942,
+          "hasStructuredContent": true,
+          "semanticHash": "76b0d47abe46518572a45a02d8a6d33023a161a31ee96f1cdac01fd09f73dd80",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Represent multi-step real-world problems using the four operations with an equation with a letter standing for the unknown\",\"identifier\":\"140c9070-138f-59f7-a1a1-ad3f1815b981\"},{\"description\":\"Solve m",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9e2e91-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 222,
+          "gatewayRemaining": "196",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 1460,
+          "hasStructuredContent": true,
+          "semanticHash": "7efba7e887bff18c6e0b6303dd5d8121c38706a7cee7f7249062e755788cf617",
+          "excerpt": "{\"session_id\":\"c94970e8431941d9\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"6b9e2a5e-d7cc-11e8-824f-0242ac160002\",\"description\":\"Use place value understanding to round multi-digit whole numbers ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "multi-state-4.OA.A.3",
+      "row": {
+        "jurisdiction": "Multi-State",
+        "code": "4.OA.A.3"
+      },
+      "mode": "repeat",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "4.OA.A.3",
+        "caseIdentifierUUID": "6b9e2e91-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "Multi-State"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 645,
+      "sessionHash": "053b2e335a24c3c1",
+      "sessionStableAcrossStages": true,
+      "chainHash": "fde5ed556d5f6b32872fb277c82c91f2e76e1ea3504b1e9338a063d6fe734637",
+      "standardFacts": {
+        "standardCount": 1,
+        "statementCodes": [
+          "4.OA.A.3"
+        ],
+        "jurisdictions": [
+          "Multi-State"
+        ],
+        "subjects": [
+          "Mathematics"
+        ],
+        "withSubStandards": 0,
+        "keyNames": [
+          "academicSubject",
+          "alternateStatementCode",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 18,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 3,
+        "jurisdictions": [
+          "Multi-State"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "4.NBT.A.3",
+          "4.NBT.B.6",
+          "3.OA.D.8"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "4.OA.A.3",
+            "jurisdiction": "Multi-State"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 211,
+          "gatewayRemaining": "196",
+          "gatewayUpstreamLatencyMs": "1",
+          "responseBytes": 639,
+          "hasStructuredContent": true,
+          "semanticHash": "9a60f44062239689ac8af4afb8a671bfe245210f2cc9bcc141bd13c32ba03073",
+          "excerpt": "{\"session_id\":\"cf4f04dd194347ff\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alternateStatementCode\":\"4.OA.3\",\"caseIdentifierUUID\":\"6b9e2e91-d7cc-11e8-824f-0242ac160002\",\"description\":\"Solve multistep word problems posed with whole numbe",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alternateStatementCode:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9e2e91-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 213,
+          "gatewayRemaining": "196",
+          "gatewayUpstreamLatencyMs": "1",
+          "responseBytes": 3942,
+          "hasStructuredContent": true,
+          "semanticHash": "76b0d47abe46518572a45a02d8a6d33023a161a31ee96f1cdac01fd09f73dd80",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Represent multi-step real-world problems using the four operations with an equation with a letter standing for the unknown\",\"identifier\":\"140c9070-138f-59f7-a1a1-ad3f1815b981\"},{\"description\":\"Solve m",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "6b9e2e91-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 219,
+          "gatewayRemaining": "196",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 1460,
+          "hasStructuredContent": true,
+          "semanticHash": "7efba7e887bff18c6e0b6303dd5d8121c38706a7cee7f7249062e755788cf617",
+          "excerpt": "{\"session_id\":\"cf4f04dd194347ff\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"6b9e2a5e-d7cc-11e8-824f-0242ac160002\",\"description\":\"Use place value understanding to round multi-digit whole numbers ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "california-4.NF.A.1",
+      "row": {
+        "jurisdiction": "California",
+        "code": "4.NF.A.1"
+      },
+      "mode": "cold",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "4.NF.A.1",
+        "caseIdentifierUUID": "5ebefbed-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "California"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 760,
+      "sessionHash": "5ed430687cd4b587",
+      "sessionStableAcrossStages": true,
+      "chainHash": "35191ff709c961ae592d4feb34aab73c41cde88435ccc041277170ef67a6316e",
+      "standardFacts": {
+        "standardCount": 1,
+        "statementCodes": [
+          "4.NF.A.1"
+        ],
+        "jurisdictions": [
+          "California"
+        ],
+        "subjects": [
+          "Mathematics"
+        ],
+        "withSubStandards": 0,
+        "keyNames": [
+          "academicSubject",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 5,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 2,
+        "jurisdictions": [
+          "California"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "4.OA.A.2",
+          "3.NF.A.3"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "4.NF.A.1",
+            "jurisdiction": "California"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 264,
+          "gatewayRemaining": "196",
+          "gatewayUpstreamLatencyMs": "1",
+          "responseBytes": 559,
+          "hasStructuredContent": true,
+          "semanticHash": "503b72529d68536a2bb916d1906818849073cda549e907e378f17045602c7193",
+          "excerpt": "{\"session_id\":\"df948589721c415d\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"caseIdentifierUUID\":\"5ebefbed-d7cc-11e8-824f-0242ac160002\",\"description\":\"Explain why a fraction $\\\\frac{a}{b}$ is equivalent to a fraction ($\\\\frac {n \\\\times ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ebefbed-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 270,
+          "gatewayRemaining": "195",
+          "gatewayUpstreamLatencyMs": "1",
+          "responseBytes": 921,
+          "hasStructuredContent": true,
+          "semanticHash": "f30e769245c46891c0f562a10af0161773b05f972955904a637c2324d8209898",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Generate equivalent fractions using the principle a/b = (n x a)/(n x b) (denominators limited to 2, 3, 4, 5, 6, 8, 10, 12, and 100)\",\"identifier\":\"13498e57-1a95-5b05-a073-f99ab6e932ff\"},{\"description\"",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ebefbed-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 224,
+          "gatewayRemaining": "195",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 896,
+          "hasStructuredContent": true,
+          "semanticHash": "32db2fde12b24aaea589f30e2130d6f80ae0a142a7fe6f47508f7f4f62db308f",
+          "excerpt": "{\"session_id\":\"df948589721c415d\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"5ec029cd-d7cc-11e8-824f-0242ac160002\",\"description\":\"Multiply or divide to solve word problems involving multiplicativ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "california-4.NF.A.1",
+      "row": {
+        "jurisdiction": "California",
+        "code": "4.NF.A.1"
+      },
+      "mode": "warm",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "4.NF.A.1",
+        "caseIdentifierUUID": "5ebefbed-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "California"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 721,
+      "sessionHash": "5ed430687cd4b587",
+      "sessionStableAcrossStages": true,
+      "chainHash": "35191ff709c961ae592d4feb34aab73c41cde88435ccc041277170ef67a6316e",
+      "standardFacts": {
+        "standardCount": 1,
+        "statementCodes": [
+          "4.NF.A.1"
+        ],
+        "jurisdictions": [
+          "California"
+        ],
+        "subjects": [
+          "Mathematics"
+        ],
+        "withSubStandards": 0,
+        "keyNames": [
+          "academicSubject",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 5,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 2,
+        "jurisdictions": [
+          "California"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "4.OA.A.2",
+          "3.NF.A.3"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "4.NF.A.1",
+            "jurisdiction": "California"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 228,
+          "gatewayRemaining": "195",
+          "gatewayUpstreamLatencyMs": "1",
+          "responseBytes": 559,
+          "hasStructuredContent": true,
+          "semanticHash": "503b72529d68536a2bb916d1906818849073cda549e907e378f17045602c7193",
+          "excerpt": "{\"session_id\":\"df948589721c415d\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"caseIdentifierUUID\":\"5ebefbed-d7cc-11e8-824f-0242ac160002\",\"description\":\"Explain why a fraction $\\\\frac{a}{b}$ is equivalent to a fraction ($\\\\frac {n \\\\times ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ebefbed-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 216,
+          "gatewayRemaining": "196",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 921,
+          "hasStructuredContent": true,
+          "semanticHash": "f30e769245c46891c0f562a10af0161773b05f972955904a637c2324d8209898",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Generate equivalent fractions using the principle a/b = (n x a)/(n x b) (denominators limited to 2, 3, 4, 5, 6, 8, 10, 12, and 100)\",\"identifier\":\"13498e57-1a95-5b05-a073-f99ab6e932ff\"},{\"description\"",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ebefbed-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 276,
+          "gatewayRemaining": "195",
+          "gatewayUpstreamLatencyMs": "3",
+          "responseBytes": 896,
+          "hasStructuredContent": true,
+          "semanticHash": "32db2fde12b24aaea589f30e2130d6f80ae0a142a7fe6f47508f7f4f62db308f",
+          "excerpt": "{\"session_id\":\"df948589721c415d\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"5ec029cd-d7cc-11e8-824f-0242ac160002\",\"description\":\"Multiply or divide to solve word problems involving multiplicativ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "california-4.NF.A.1",
+      "row": {
+        "jurisdiction": "California",
+        "code": "4.NF.A.1"
+      },
+      "mode": "repeat",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "4.NF.A.1",
+        "caseIdentifierUUID": "5ebefbed-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "California"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 1324,
+      "sessionHash": "1bf0fd3924d6d77b",
+      "sessionStableAcrossStages": true,
+      "chainHash": "35191ff709c961ae592d4feb34aab73c41cde88435ccc041277170ef67a6316e",
+      "standardFacts": {
+        "standardCount": 1,
+        "statementCodes": [
+          "4.NF.A.1"
+        ],
+        "jurisdictions": [
+          "California"
+        ],
+        "subjects": [
+          "Mathematics"
+        ],
+        "withSubStandards": 0,
+        "keyNames": [
+          "academicSubject",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 5,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 2,
+        "jurisdictions": [
+          "California"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "4.OA.A.2",
+          "3.NF.A.3"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "4.NF.A.1",
+            "jurisdiction": "California"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 476,
+          "gatewayRemaining": "195",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 559,
+          "hasStructuredContent": true,
+          "semanticHash": "503b72529d68536a2bb916d1906818849073cda549e907e378f17045602c7193",
+          "excerpt": "{\"session_id\":\"0b2e198e67d64b23\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"caseIdentifierUUID\":\"5ebefbed-d7cc-11e8-824f-0242ac160002\",\"description\":\"Explain why a fraction $\\\\frac{a}{b}$ is equivalent to a fraction ($\\\\frac {n \\\\times ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ebefbed-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 527,
+          "gatewayRemaining": "195",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 921,
+          "hasStructuredContent": true,
+          "semanticHash": "f30e769245c46891c0f562a10af0161773b05f972955904a637c2324d8209898",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Generate equivalent fractions using the principle a/b = (n x a)/(n x b) (denominators limited to 2, 3, 4, 5, 6, 8, 10, 12, and 100)\",\"identifier\":\"13498e57-1a95-5b05-a073-f99ab6e932ff\"},{\"description\"",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ebefbed-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 320,
+          "gatewayRemaining": "195",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 896,
+          "hasStructuredContent": true,
+          "semanticHash": "32db2fde12b24aaea589f30e2130d6f80ae0a142a7fe6f47508f7f4f62db308f",
+          "excerpt": "{\"session_id\":\"0b2e198e67d64b23\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"5ec029cd-d7cc-11e8-824f-0242ac160002\",\"description\":\"Multiply or divide to solve word problems involving multiplicativ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "california-4.NF.A.2",
+      "row": {
+        "jurisdiction": "California",
+        "code": "4.NF.A.2"
+      },
+      "mode": "cold",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "4.NF.A.2",
+        "caseIdentifierUUID": "5ec026d1-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "California"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 908,
+      "sessionHash": "649487bf6cc3e654",
+      "sessionStableAcrossStages": true,
+      "chainHash": "ca106199bfded725e9875c47e48f5103d3af87275fddc9ec80e9162d81ea2675",
+      "standardFacts": {
+        "standardCount": 1,
+        "statementCodes": [
+          "4.NF.A.2"
+        ],
+        "jurisdictions": [
+          "California"
+        ],
+        "subjects": [
+          "Mathematics"
+        ],
+        "withSubStandards": 0,
+        "keyNames": [
+          "academicSubject",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 7,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 1,
+        "jurisdictions": [
+          "California"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "4.NF.A.1"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "4.NF.A.2",
+            "jurisdiction": "California"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 250,
+          "gatewayRemaining": "195",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 644,
+          "hasStructuredContent": true,
+          "semanticHash": "8204ab0bdc7b8f48373a47a3825c82f570fb8108e4db13d131c556cc7efa8c29",
+          "excerpt": "{\"session_id\":\"a5704a43a7714a7c\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"caseIdentifierUUID\":\"5ec026d1-d7cc-11e8-824f-0242ac160002\",\"description\":\"Compare two fractions with different numerators and different denominators, e.g., by c",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ec026d1-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 228,
+          "gatewayRemaining": "195",
+          "gatewayUpstreamLatencyMs": "1",
+          "responseBytes": 1409,
+          "hasStructuredContent": true,
+          "semanticHash": "419dce968a3773cb9fb528aed4f5db464f18b211d7b9ed53e64a826f6512afb5",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Justify comparison of fractions with different numerators and different denominators\",\"identifier\":\"1995cc98-1d9d-5fdb-a8da-63b3967883f6\"},{\"description\":\"Justify comparison of fractions with differen",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ec026d1-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 429,
+          "gatewayRemaining": "194",
+          "gatewayUpstreamLatencyMs": "3",
+          "responseBytes": 623,
+          "hasStructuredContent": true,
+          "semanticHash": "9b7ea80714080d4aa15998f0aa4f5b0c4b196e8b5f5329d1f3fad9ac492c71ee",
+          "excerpt": "{\"session_id\":\"a5704a43a7714a7c\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"5ebefbed-d7cc-11e8-824f-0242ac160002\",\"description\":\"Explain why a fraction $\\\\frac{a}{b}$ is equivalent to a fraction",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "california-4.NF.A.2",
+      "row": {
+        "jurisdiction": "California",
+        "code": "4.NF.A.2"
+      },
+      "mode": "warm",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "4.NF.A.2",
+        "caseIdentifierUUID": "5ec026d1-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "California"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 1104,
+      "sessionHash": "649487bf6cc3e654",
+      "sessionStableAcrossStages": true,
+      "chainHash": "ca106199bfded725e9875c47e48f5103d3af87275fddc9ec80e9162d81ea2675",
+      "standardFacts": {
+        "standardCount": 1,
+        "statementCodes": [
+          "4.NF.A.2"
+        ],
+        "jurisdictions": [
+          "California"
+        ],
+        "subjects": [
+          "Mathematics"
+        ],
+        "withSubStandards": 0,
+        "keyNames": [
+          "academicSubject",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 7,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 1,
+        "jurisdictions": [
+          "California"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "4.NF.A.1"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "4.NF.A.2",
+            "jurisdiction": "California"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 551,
+          "gatewayRemaining": "194",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 644,
+          "hasStructuredContent": true,
+          "semanticHash": "8204ab0bdc7b8f48373a47a3825c82f570fb8108e4db13d131c556cc7efa8c29",
+          "excerpt": "{\"session_id\":\"a5704a43a7714a7c\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"caseIdentifierUUID\":\"5ec026d1-d7cc-11e8-824f-0242ac160002\",\"description\":\"Compare two fractions with different numerators and different denominators, e.g., by c",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ec026d1-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 210,
+          "gatewayRemaining": "194",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 1409,
+          "hasStructuredContent": true,
+          "semanticHash": "419dce968a3773cb9fb528aed4f5db464f18b211d7b9ed53e64a826f6512afb5",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Justify comparison of fractions with different numerators and different denominators\",\"identifier\":\"1995cc98-1d9d-5fdb-a8da-63b3967883f6\"},{\"description\":\"Justify comparison of fractions with differen",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ec026d1-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 342,
+          "gatewayRemaining": "195",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 623,
+          "hasStructuredContent": true,
+          "semanticHash": "9b7ea80714080d4aa15998f0aa4f5b0c4b196e8b5f5329d1f3fad9ac492c71ee",
+          "excerpt": "{\"session_id\":\"a5704a43a7714a7c\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"5ebefbed-d7cc-11e8-824f-0242ac160002\",\"description\":\"Explain why a fraction $\\\\frac{a}{b}$ is equivalent to a fraction",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "california-4.NF.A.2",
+      "row": {
+        "jurisdiction": "California",
+        "code": "4.NF.A.2"
+      },
+      "mode": "repeat",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "4.NF.A.2",
+        "caseIdentifierUUID": "5ec026d1-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "California"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 1117,
+      "sessionHash": "cb3c9757323a7ba3",
+      "sessionStableAcrossStages": true,
+      "chainHash": "ca106199bfded725e9875c47e48f5103d3af87275fddc9ec80e9162d81ea2675",
+      "standardFacts": {
+        "standardCount": 1,
+        "statementCodes": [
+          "4.NF.A.2"
+        ],
+        "jurisdictions": [
+          "California"
+        ],
+        "subjects": [
+          "Mathematics"
+        ],
+        "withSubStandards": 0,
+        "keyNames": [
+          "academicSubject",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 7,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 1,
+        "jurisdictions": [
+          "California"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "4.NF.A.1"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "4.NF.A.2",
+            "jurisdiction": "California"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 354,
+          "gatewayRemaining": "194",
+          "gatewayUpstreamLatencyMs": "3",
+          "responseBytes": 644,
+          "hasStructuredContent": true,
+          "semanticHash": "8204ab0bdc7b8f48373a47a3825c82f570fb8108e4db13d131c556cc7efa8c29",
+          "excerpt": "{\"session_id\":\"367bebd8820a4fde\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"caseIdentifierUUID\":\"5ec026d1-d7cc-11e8-824f-0242ac160002\",\"description\":\"Compare two fractions with different numerators and different denominators, e.g., by c",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ec026d1-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 369,
+          "gatewayRemaining": "194",
+          "gatewayUpstreamLatencyMs": "1",
+          "responseBytes": 1409,
+          "hasStructuredContent": true,
+          "semanticHash": "419dce968a3773cb9fb528aed4f5db464f18b211d7b9ed53e64a826f6512afb5",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Justify comparison of fractions with different numerators and different denominators\",\"identifier\":\"1995cc98-1d9d-5fdb-a8da-63b3967883f6\"},{\"description\":\"Justify comparison of fractions with differen",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ec026d1-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 393,
+          "gatewayRemaining": "194",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 623,
+          "hasStructuredContent": true,
+          "semanticHash": "9b7ea80714080d4aa15998f0aa4f5b0c4b196e8b5f5329d1f3fad9ac492c71ee",
+          "excerpt": "{\"session_id\":\"367bebd8820a4fde\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"5ebefbed-d7cc-11e8-824f-0242ac160002\",\"description\":\"Explain why a fraction $\\\\frac{a}{b}$ is equivalent to a fraction",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "california-3.NF.A.3",
+      "row": {
+        "jurisdiction": "California",
+        "code": "3.NF.A.3"
+      },
+      "mode": "cold",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "3.NF.A.3",
+        "caseIdentifierUUID": "5ec0f3b6-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "California"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 1326,
+      "sessionHash": "2efb8b776fe69d46",
+      "sessionStableAcrossStages": true,
+      "chainHash": "1fc51f29fd79918d15f009f001fea277e853bc2ea510aa0a706f6d4bf1c6ceee",
+      "standardFacts": {
+        "standardCount": 5,
+        "statementCodes": [
+          "3.NF.A.3",
+          "3.NF.A.3.a",
+          "3.NF.A.3.b",
+          "3.NF.A.3.c",
+          "3.NF.A.3.d"
+        ],
+        "jurisdictions": [
+          "California",
+          "California",
+          "California",
+          "California",
+          "California"
+        ],
+        "subjects": [
+          "Mathematics",
+          "Mathematics",
+          "Mathematics",
+          "Mathematics",
+          "Mathematics"
+        ],
+        "withSubStandards": 1,
+        "keyNames": [
+          "academicSubject",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode",
+          "subStandards"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 2,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 2,
+        "jurisdictions": [
+          "California"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "3.NF.A.1",
+          "3.NF.A.2"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "3.NF.A.3",
+            "jurisdiction": "California"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 416,
+          "gatewayRemaining": "194",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 2997,
+          "hasStructuredContent": true,
+          "semanticHash": "be9d479cf0288edc821875c4883404f40fc5e0d46179140d91098fa3b55c55e8",
+          "excerpt": "{\"session_id\":\"77dfec7387694b7b\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"caseIdentifierUUID\":\"5ec0f3b6-d7cc-11e8-824f-0242ac160002\",\"description\":\"Explain equivalence of fractions in special cases, and compare fractions by reasoning ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string",
+            "standards[].subStandards:array",
+            "standards[].subStandards[]:object",
+            "standards[].subStandards[].caseIdentifierUUID:string",
+            "standards[].subStandards[].description:string",
+            "standards[].subStandards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ec0f3b6-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 431,
+          "gatewayRemaining": "194",
+          "gatewayUpstreamLatencyMs": "1",
+          "responseBytes": 333,
+          "hasStructuredContent": true,
+          "semanticHash": "af275751a4a3069ed1a7c21b176730d4b6c3d68b9556a37dc060d588535de6ad",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Compare fractions by reasoning about their size (with denominators 2, 3, 4, 6, and 8)\",\"identifier\":\"2bfc7496-6e00-5c7d-9d81-1df05d4642c5\"},{\"description\":\"Explain equivalence of fractions in special ",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ec0f3b6-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 478,
+          "gatewayRemaining": "194",
+          "gatewayUpstreamLatencyMs": "1",
+          "responseBytes": 858,
+          "hasStructuredContent": true,
+          "semanticHash": "dc96ba27d22f002128ce7ff4160a892a96e8975902ec93d8c76bb229427231c8",
+          "excerpt": "{\"session_id\":\"77dfec7387694b7b\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"5ebef26f-d7cc-11e8-824f-0242ac160002\",\"description\":\"Understand a fraction $\\\\frac{1}{b}$ as the quantity formed by 1 ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "california-3.NF.A.3",
+      "row": {
+        "jurisdiction": "California",
+        "code": "3.NF.A.3"
+      },
+      "mode": "warm",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "3.NF.A.3",
+        "caseIdentifierUUID": "5ec0f3b6-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "California"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 917,
+      "sessionHash": "2efb8b776fe69d46",
+      "sessionStableAcrossStages": true,
+      "chainHash": "1fc51f29fd79918d15f009f001fea277e853bc2ea510aa0a706f6d4bf1c6ceee",
+      "standardFacts": {
+        "standardCount": 5,
+        "statementCodes": [
+          "3.NF.A.3",
+          "3.NF.A.3.a",
+          "3.NF.A.3.b",
+          "3.NF.A.3.c",
+          "3.NF.A.3.d"
+        ],
+        "jurisdictions": [
+          "California",
+          "California",
+          "California",
+          "California",
+          "California"
+        ],
+        "subjects": [
+          "Mathematics",
+          "Mathematics",
+          "Mathematics",
+          "Mathematics",
+          "Mathematics"
+        ],
+        "withSubStandards": 1,
+        "keyNames": [
+          "academicSubject",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode",
+          "subStandards"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 2,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 2,
+        "jurisdictions": [
+          "California"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "3.NF.A.1",
+          "3.NF.A.2"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "3.NF.A.3",
+            "jurisdiction": "California"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 494,
+          "gatewayRemaining": "193",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 2997,
+          "hasStructuredContent": true,
+          "semanticHash": "be9d479cf0288edc821875c4883404f40fc5e0d46179140d91098fa3b55c55e8",
+          "excerpt": "{\"session_id\":\"77dfec7387694b7b\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"caseIdentifierUUID\":\"5ec0f3b6-d7cc-11e8-824f-0242ac160002\",\"description\":\"Explain equivalence of fractions in special cases, and compare fractions by reasoning ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string",
+            "standards[].subStandards:array",
+            "standards[].subStandards[]:object",
+            "standards[].subStandards[].caseIdentifierUUID:string",
+            "standards[].subStandards[].description:string",
+            "standards[].subStandards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ec0f3b6-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 210,
+          "gatewayRemaining": "193",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 333,
+          "hasStructuredContent": true,
+          "semanticHash": "af275751a4a3069ed1a7c21b176730d4b6c3d68b9556a37dc060d588535de6ad",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Compare fractions by reasoning about their size (with denominators 2, 3, 4, 6, and 8)\",\"identifier\":\"2bfc7496-6e00-5c7d-9d81-1df05d4642c5\"},{\"description\":\"Explain equivalence of fractions in special ",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ec0f3b6-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 212,
+          "gatewayRemaining": "193",
+          "gatewayUpstreamLatencyMs": "3",
+          "responseBytes": 858,
+          "hasStructuredContent": true,
+          "semanticHash": "dc96ba27d22f002128ce7ff4160a892a96e8975902ec93d8c76bb229427231c8",
+          "excerpt": "{\"session_id\":\"77dfec7387694b7b\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"5ebef26f-d7cc-11e8-824f-0242ac160002\",\"description\":\"Understand a fraction $\\\\frac{1}{b}$ as the quantity formed by 1 ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "california-3.NF.A.3",
+      "row": {
+        "jurisdiction": "California",
+        "code": "3.NF.A.3"
+      },
+      "mode": "repeat",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "3.NF.A.3",
+        "caseIdentifierUUID": "5ec0f3b6-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "California"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 796,
+      "sessionHash": "7e92f793a8ebdf05",
+      "sessionStableAcrossStages": true,
+      "chainHash": "1fc51f29fd79918d15f009f001fea277e853bc2ea510aa0a706f6d4bf1c6ceee",
+      "standardFacts": {
+        "standardCount": 5,
+        "statementCodes": [
+          "3.NF.A.3",
+          "3.NF.A.3.a",
+          "3.NF.A.3.b",
+          "3.NF.A.3.c",
+          "3.NF.A.3.d"
+        ],
+        "jurisdictions": [
+          "California",
+          "California",
+          "California",
+          "California",
+          "California"
+        ],
+        "subjects": [
+          "Mathematics",
+          "Mathematics",
+          "Mathematics",
+          "Mathematics",
+          "Mathematics"
+        ],
+        "withSubStandards": 1,
+        "keyNames": [
+          "academicSubject",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode",
+          "subStandards"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 2,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 2,
+        "jurisdictions": [
+          "California"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "3.NF.A.1",
+          "3.NF.A.2"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "3.NF.A.3",
+            "jurisdiction": "California"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 211,
+          "gatewayRemaining": "194",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 2997,
+          "hasStructuredContent": true,
+          "semanticHash": "be9d479cf0288edc821875c4883404f40fc5e0d46179140d91098fa3b55c55e8",
+          "excerpt": "{\"session_id\":\"8762a3a59f6243e6\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"caseIdentifierUUID\":\"5ec0f3b6-d7cc-11e8-824f-0242ac160002\",\"description\":\"Explain equivalence of fractions in special cases, and compare fractions by reasoning ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string",
+            "standards[].subStandards:array",
+            "standards[].subStandards[]:object",
+            "standards[].subStandards[].caseIdentifierUUID:string",
+            "standards[].subStandards[].description:string",
+            "standards[].subStandards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ec0f3b6-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 227,
+          "gatewayRemaining": "193",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 333,
+          "hasStructuredContent": true,
+          "semanticHash": "af275751a4a3069ed1a7c21b176730d4b6c3d68b9556a37dc060d588535de6ad",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Compare fractions by reasoning about their size (with denominators 2, 3, 4, 6, and 8)\",\"identifier\":\"2bfc7496-6e00-5c7d-9d81-1df05d4642c5\"},{\"description\":\"Explain equivalence of fractions in special ",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ec0f3b6-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 357,
+          "gatewayRemaining": "193",
+          "gatewayUpstreamLatencyMs": "1",
+          "responseBytes": 858,
+          "hasStructuredContent": true,
+          "semanticHash": "dc96ba27d22f002128ce7ff4160a892a96e8975902ec93d8c76bb229427231c8",
+          "excerpt": "{\"session_id\":\"8762a3a59f6243e6\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"5ebef26f-d7cc-11e8-824f-0242ac160002\",\"description\":\"Understand a fraction $\\\\frac{1}{b}$ as the quantity formed by 1 ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "california-4.OA.A.3",
+      "row": {
+        "jurisdiction": "California",
+        "code": "4.OA.A.3"
+      },
+      "mode": "cold",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "4.OA.A.3",
+        "caseIdentifierUUID": "5ec100e3-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "California"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 639,
+      "sessionHash": "67b70857c929df1d",
+      "sessionStableAcrossStages": true,
+      "chainHash": "26e47b2ee5a73ef3950338fc0a74c7dfd8d1cf59bcc72d91f285139887c03626",
+      "standardFacts": {
+        "standardCount": 1,
+        "statementCodes": [
+          "4.OA.A.3"
+        ],
+        "jurisdictions": [
+          "California"
+        ],
+        "subjects": [
+          "Mathematics"
+        ],
+        "withSubStandards": 0,
+        "keyNames": [
+          "academicSubject",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 18,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 3,
+        "jurisdictions": [
+          "California"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "4.NBT.A.3",
+          "4.NBT.B.6",
+          "3.OA.D.8"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "4.OA.A.3",
+            "jurisdiction": "California"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 210,
+          "gatewayRemaining": "193",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 604,
+          "hasStructuredContent": true,
+          "semanticHash": "cd593cf213683544a91bc5887a3d2b42217c823f21ac675de7f3de4ba84be98b",
+          "excerpt": "{\"session_id\":\"6bb82cf3de154c07\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"caseIdentifierUUID\":\"5ec100e3-d7cc-11e8-824f-0242ac160002\",\"description\":\"Solve multistep word problems posed with whole numbers and having whole-number answers",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ec100e3-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 212,
+          "gatewayRemaining": "193",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 3942,
+          "hasStructuredContent": true,
+          "semanticHash": "76b0d47abe46518572a45a02d8a6d33023a161a31ee96f1cdac01fd09f73dd80",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Represent multi-step real-world problems using the four operations with an equation with a letter standing for the unknown\",\"identifier\":\"140c9070-138f-59f7-a1a1-ad3f1815b981\"},{\"description\":\"Solve m",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ec100e3-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 216,
+          "gatewayRemaining": "193",
+          "gatewayUpstreamLatencyMs": "1",
+          "responseBytes": 1457,
+          "hasStructuredContent": true,
+          "semanticHash": "db35183c2b5f355091e4ef88416be1ce84036dd817136a16934ab97186840b68",
+          "excerpt": "{\"session_id\":\"6bb82cf3de154c07\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"5ec0fc51-d7cc-11e8-824f-0242ac160002\",\"description\":\"Use place value understanding to round multi-digit whole numbers ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "california-4.OA.A.3",
+      "row": {
+        "jurisdiction": "California",
+        "code": "4.OA.A.3"
+      },
+      "mode": "warm",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "4.OA.A.3",
+        "caseIdentifierUUID": "5ec100e3-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "California"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 637,
+      "sessionHash": "67b70857c929df1d",
+      "sessionStableAcrossStages": true,
+      "chainHash": "26e47b2ee5a73ef3950338fc0a74c7dfd8d1cf59bcc72d91f285139887c03626",
+      "standardFacts": {
+        "standardCount": 1,
+        "statementCodes": [
+          "4.OA.A.3"
+        ],
+        "jurisdictions": [
+          "California"
+        ],
+        "subjects": [
+          "Mathematics"
+        ],
+        "withSubStandards": 0,
+        "keyNames": [
+          "academicSubject",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 18,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 3,
+        "jurisdictions": [
+          "California"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "4.NBT.A.3",
+          "4.NBT.B.6",
+          "3.OA.D.8"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "4.OA.A.3",
+            "jurisdiction": "California"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 212,
+          "gatewayRemaining": "193",
+          "gatewayUpstreamLatencyMs": "1",
+          "responseBytes": 604,
+          "hasStructuredContent": true,
+          "semanticHash": "cd593cf213683544a91bc5887a3d2b42217c823f21ac675de7f3de4ba84be98b",
+          "excerpt": "{\"session_id\":\"6bb82cf3de154c07\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"caseIdentifierUUID\":\"5ec100e3-d7cc-11e8-824f-0242ac160002\",\"description\":\"Solve multistep word problems posed with whole numbers and having whole-number answers",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ec100e3-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 212,
+          "gatewayRemaining": "192",
+          "gatewayUpstreamLatencyMs": "1",
+          "responseBytes": 3942,
+          "hasStructuredContent": true,
+          "semanticHash": "76b0d47abe46518572a45a02d8a6d33023a161a31ee96f1cdac01fd09f73dd80",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Represent multi-step real-world problems using the four operations with an equation with a letter standing for the unknown\",\"identifier\":\"140c9070-138f-59f7-a1a1-ad3f1815b981\"},{\"description\":\"Solve m",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ec100e3-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 212,
+          "gatewayRemaining": "192",
+          "gatewayUpstreamLatencyMs": "1",
+          "responseBytes": 1457,
+          "hasStructuredContent": true,
+          "semanticHash": "db35183c2b5f355091e4ef88416be1ce84036dd817136a16934ab97186840b68",
+          "excerpt": "{\"session_id\":\"6bb82cf3de154c07\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"5ec0fc51-d7cc-11e8-824f-0242ac160002\",\"description\":\"Use place value understanding to round multi-digit whole numbers ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "california-4.OA.A.3",
+      "row": {
+        "jurisdiction": "California",
+        "code": "4.OA.A.3"
+      },
+      "mode": "repeat",
+      "ok": true,
+      "resolvedStandard": {
+        "statementCode": "4.OA.A.3",
+        "caseIdentifierUUID": "5ec100e3-d7cc-11e8-824f-0242ac160002",
+        "jurisdiction": "California"
+      },
+      "visibleCalls": 3,
+      "elapsedMs": 643,
+      "sessionHash": "3e70ac4f16b9d26e",
+      "sessionStableAcrossStages": true,
+      "chainHash": "26e47b2ee5a73ef3950338fc0a74c7dfd8d1cf59bcc72d91f285139887c03626",
+      "standardFacts": {
+        "standardCount": 1,
+        "statementCodes": [
+          "4.OA.A.3"
+        ],
+        "jurisdictions": [
+          "California"
+        ],
+        "subjects": [
+          "Mathematics"
+        ],
+        "withSubStandards": 0,
+        "keyNames": [
+          "academicSubject",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevels",
+          "jurisdiction",
+          "statementCode"
+        ],
+        "hasFrameworkIdentifier": false,
+        "hasModifiedDate": false,
+        "hasCurrencyFlag": false,
+        "hasSourceLink": false
+      },
+      "componentFacts": {
+        "componentCount": 18,
+        "allHaveIdentifier": true,
+        "allHaveDescription": true,
+        "keyNames": [
+          "description",
+          "identifier"
+        ],
+        "hasAttribution": false
+      },
+      "progression": {
+        "prerequisiteCount": 3,
+        "jurisdictions": [
+          "California"
+        ],
+        "matchTypes": [
+          "exact"
+        ],
+        "statementCodes": [
+          "4.NBT.A.3",
+          "4.NBT.B.6",
+          "3.OA.D.8"
+        ],
+        "minAlignmentScore": 1,
+        "maxAlignmentScore": 1,
+        "hasJaccard": false,
+        "hasImmediateFlag": false,
+        "keyNames": [
+          "academicSubject",
+          "alignmentScore",
+          "caseIdentifierUUID",
+          "description",
+          "gradeLevel",
+          "jurisdiction",
+          "learningComponents",
+          "matchType",
+          "statementCode"
+        ],
+        "errorMessage": null
+      },
+      "stages": [
+        {
+          "tool": "find_standard_statement",
+          "args": {
+            "code": "4.OA.A.3",
+            "jurisdiction": "California"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 216,
+          "gatewayRemaining": "193",
+          "gatewayUpstreamLatencyMs": "1",
+          "responseBytes": 604,
+          "hasStructuredContent": true,
+          "semanticHash": "cd593cf213683544a91bc5887a3d2b42217c823f21ac675de7f3de4ba84be98b",
+          "excerpt": "{\"session_id\":\"b0db9ad45b5c4168\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"caseIdentifierUUID\":\"5ec100e3-d7cc-11e8-824f-0242ac160002\",\"description\":\"Solve multistep word problems posed with whole numbers and having whole-number answers",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevels:array",
+            "standards[].gradeLevels[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].statementCode:string"
+          ]
+        },
+        {
+          "tool": "find_learning_components_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ec100e3-d7cc-11e8-824f-0242ac160002"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 211,
+          "gatewayRemaining": "192",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 3942,
+          "hasStructuredContent": true,
+          "semanticHash": "76b0d47abe46518572a45a02d8a6d33023a161a31ee96f1cdac01fd09f73dd80",
+          "excerpt": "{\"learning_components\":[{\"description\":\"Represent multi-step real-world problems using the four operations with an equation with a letter standing for the unknown\",\"identifier\":\"140c9070-138f-59f7-a1a1-ad3f1815b981\"},{\"description\":\"Solve m",
+          "shape": [
+            "$:object",
+            "learning_components:array",
+            "learning_components[]:object",
+            "learning_components[].description:string",
+            "learning_components[].identifier:string"
+          ]
+        },
+        {
+          "tool": "find_standards_progression_from_standard",
+          "args": {
+            "caseIdentifierUUID": "5ec100e3-d7cc-11e8-824f-0242ac160002",
+            "direction": "backward"
+          },
+          "httpStatus": 200,
+          "isError": false,
+          "elapsedMs": 215,
+          "gatewayRemaining": "192",
+          "gatewayUpstreamLatencyMs": "2",
+          "responseBytes": 1457,
+          "hasStructuredContent": true,
+          "semanticHash": "db35183c2b5f355091e4ef88416be1ce84036dd817136a16934ab97186840b68",
+          "excerpt": "{\"session_id\":\"b0db9ad45b5c4168\",\"standards\":[{\"academicSubject\":\"Mathematics\",\"alignmentScore\":1.0,\"caseIdentifierUUID\":\"5ec0fc51-d7cc-11e8-824f-0242ac160002\",\"description\":\"Use place value understanding to round multi-digit whole numbers ",
+          "shape": [
+            "$:object",
+            "standards:array",
+            "standards[]:object",
+            "standards[].academicSubject:string",
+            "standards[].alignmentScore:number",
+            "standards[].caseIdentifierUUID:string",
+            "standards[].description:string",
+            "standards[].gradeLevel:array",
+            "standards[].gradeLevel[]:string",
+            "standards[].jurisdiction:string",
+            "standards[].learningComponents:array",
+            "standards[].matchType:string",
+            "standards[].statementCode:string"
+          ]
+        }
+      ]
+    }
+  ],
+  "negatives": [
+    {
+      "id": "negative-unsupported-jurisdiction",
+      "probe": {
+        "jurisdiction": "Atlantis",
+        "code": "4.NF.A.1"
+      },
+      "visibleCalls": 1,
+      "isError": true,
+      "standardCount": 0,
+      "semanticHash": "87c07b00ed84196c19976221999ca6fd501096ed616edd376764c1332821ae3a",
+      "excerpt": "Unknown jurisdiction 'Atlantis'. Expected a US state name, 'Washington, D.C.', or 'Multi-State' (the Common Core / canonical version)."
+    },
+    {
+      "id": "negative-unsupported-code",
+      "probe": {
+        "code": "9.ZZ.Z.9"
+      },
+      "visibleCalls": 1,
+      "isError": false,
+      "standardCount": 0,
+      "semanticHash": "46963b83f9943f6b5fca1321813ffa08d2cceea6d431b8b1c188803b7613613b",
+      "excerpt": "{\"session_id\":\"5fb9df324ad1410a\",\"standards\":[]}"
+    }
+  ],
+  "elaBoundary": {
+    "id": "boundary-ela-progression",
+    "visibleCalls": 2,
+    "standardCount": 1,
+    "resolvedCode": "RI.5.2",
+    "progressionIsError": true,
+    "progressionRows": 0,
+    "message": "Progressions are only available for Common Core State Standard - Mathematics and supported state frameworks with crosswalk coverage to it. In this case, the target was not a math standard.",
+    "semanticHash": "af6b1cf957ba021355c6723ce3d9f4a8a09e65f37254d9b72fcea0a454d7a9e0",
+    "excerpt": "Progressions are only available for Common Core State Standard - Mathematics and supported state frameworks with crosswalk coverage to it. In this case, the target was not a math standard."
+  }
+}

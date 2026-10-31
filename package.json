@@ -28,7 +28,7 @@
     "typecheck": "tsc --noEmit",
     "typecheck:tsrs": "tsrs --noEmit",
     "bench:typecheck": "node scripts/bench-typecheck.mjs",
-    "check": "pnpm format:check && pnpm lint && pnpm lint:styles && pnpm typecheck && pnpm typecheck:tsrs && pnpm test && pnpm build && pnpm verify:client-boundary && pnpm verify:architecture && pnpm verify:identity-surface && pnpm verify:boundaries",
+    "check": "pnpm format:check && pnpm lint && pnpm lint:styles && pnpm typecheck && pnpm typecheck:tsrs && pnpm test && pnpm build && pnpm verify:client-boundary && pnpm verify:architecture && pnpm verify:identity-surface && pnpm verify:lc-mcp-eval && pnpm verify:boundaries",
     "db:migrate": "node --import tsx scripts/database-migrate.ts",
     "db:seed": "node --import tsx scripts/database-seed.ts",
     "db:setup": "pnpm db:migrate && pnpm db:seed",
@@ -41,7 +41,8 @@
     "verify:lesson-gate": "vitest run src/server/generation/lesson-gate-properties.test.ts",
     "verify:config": "node --import tsx scripts/verify-config.ts",
     "smoke": "node --import tsx scripts/smoke.ts",
-    "fix": "ultracite fix"
+    "fix": "ultracite fix",
+    "verify:lc-mcp-eval": "node --import tsx scripts/lc-mcp-eval.ts check"
   },
   "dependencies": {
     "@base-ui/react": "1.6.0",
