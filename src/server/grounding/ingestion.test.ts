@@ -132,8 +132,10 @@ describe(decideExtractedLength, () => {
 
   it("counts code points, not UTF-16 units", () => {
     expect(countCodePoints("\u{1F600}")).toBe(1);
-    const surrogatePair = "\u{1F600}".repeat(SOURCE_MAX_EXTRACTED_CHARS);
-    expect(decideExtractedLength(surrogatePair)).toEqual({
+    const atCap = "\u{1F600}".repeat(SOURCE_MAX_EXTRACTED_CHARS);
+    expect(decideExtractedLength(atCap)).toEqual({ ok: true, value: atCap });
+    const overCap = "\u{1F600}".repeat(SOURCE_MAX_EXTRACTED_CHARS + 1);
+    expect(decideExtractedLength(overCap)).toEqual({
       ok: false,
       reason: "character-limit-exceeded",
     });
@@ -150,7 +152,7 @@ describe(decidePageGaps, () => {
 
   it("flags suspected broken math and encoding faults separately", () => {
     const symbolPage =
-      "\u00BD \u00D7 \u2215 \u2212 \u2261 \u221E \u2211 \u221A";
+      "\u00D7 \u2215 \u2212 \u2261 \u221E \u2211 \u221A \u2202";
     const encodingPage = "readable start \u{FFFD}\u{FFFD}\u{FFFD}";
     const gaps = decidePageGaps(["fine prose page", symbolPage, encodingPage]);
     const codes = gaps.map((gap) => gap.code);
