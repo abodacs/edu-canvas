@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { decideFractionValue, permittedStageAfter } from "./fraction-stage";
 
-describe("permittedStageAfter", () => {
+describe(permittedStageAfter, () => {
   const stages = ["section-a", "section-b", "section-c"] as const;
 
   it("returns only the immediately next permitted stage", () => {
@@ -24,7 +24,7 @@ describe("permittedStageAfter", () => {
   });
 });
 
-describe("decideFractionValue", () => {
+describe(decideFractionValue, () => {
   it("accepts integers 0 through the whole", () => {
     expect(decideFractionValue({ numerator: 0, denominator: 1 })).toMatchObject(
       { ok: true, numerator: 0 }
@@ -48,7 +48,7 @@ describe("decideFractionValue", () => {
       code: "INVALID_FRACTION_VALUE",
     });
     expect(
-      decideFractionValue({ numerator: Number.NaN, denominator: 4 })
+      decideFractionValue({ numerator: NaN, denominator: 4 })
     ).toMatchObject({ ok: false, code: "INVALID_FRACTION_VALUE" });
   });
 });

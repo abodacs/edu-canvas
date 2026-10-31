@@ -36,7 +36,7 @@ const validFractionDraft = {
   ],
 };
 
-describe("compileFractionPreview", () => {
+describe(compileFractionPreview, () => {
   it("compiles one fraction surface per section with the pinned catalog", () => {
     const preview = compileFractionPreview({ draft: validFractionDraft });
 
@@ -44,7 +44,8 @@ describe("compileFractionPreview", () => {
     expect(preview.catalogVersion).toBe(FRACTIONS_CATALOG_VERSION);
     expect(preview.messages).toHaveLength(6);
 
-    const createSurface = preview.messages[0];
+    const [createSurface] = preview.messages;
+
     expect(
       createSurface && "createSurface" in createSurface
         ? createSurface.createSurface.catalogId
@@ -54,13 +55,15 @@ describe("compileFractionPreview", () => {
     const components = preview.messages.flatMap((message) =>
       "updateComponents" in message ? message.updateComponents.components : []
     );
+
     expect(
-      components.some(
-        (component) =>
+      components.some((component) => {
+        return (
           component.component === "Button" &&
           component.action.event.name === "advanceStage"
-      )
-    ).toBe(true);
+        );
+      })
+    ).toBeTruthy();
   });
 
   it("omits the advance control on the final section", () => {
@@ -74,13 +77,15 @@ describe("compileFractionPreview", () => {
     const components = preview.messages.flatMap((message) =>
       "updateComponents" in message ? message.updateComponents.components : []
     );
+
     expect(
-      components.some(
-        (component) =>
+      components.some((component) => {
+        return (
           component.component === "Button" &&
           component.action.event.name === "advanceStage"
-      )
-    ).toBe(false);
+        );
+      })
+    ).toBeFalsy();
   });
 
   it("fails closed on a foreign draft shape", () => {
