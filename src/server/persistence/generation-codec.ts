@@ -145,7 +145,11 @@ const parseStoredDrafts = (
     };
   }
   return {
-    draft: parseStoredJson<LessonDraft>(value, lessonDraftSchema, "lesson draft"),
+    draft: parseStoredJson<LessonDraft>(
+      value,
+      lessonDraftSchema,
+      "lesson draft"
+    ),
   };
 };
 

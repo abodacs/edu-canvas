@@ -47,7 +47,6 @@ const streamPreview = (
   );
 };
 
-
 const buildPreviewResponse = async ({
   config,
   requestId,
@@ -116,19 +115,11 @@ const buildPreviewResponse = async ({
           compileFractionPreview({ draft: record.fractionDraft }),
           signal
         )
-      : sseError(
-          "PREVIEW_BLOCKED",
-          previewBlockedMessage,
-          422
-        );
+      : sseError("PREVIEW_BLOCKED", previewBlockedMessage, 422);
   }
 
   if (!record.draft) {
-    return sseError(
-      "PREVIEW_BLOCKED",
-      previewBlockedMessage,
-      422
-    );
+    return sseError("PREVIEW_BLOCKED", previewBlockedMessage, 422);
   }
 
   return streamPreview(
@@ -189,11 +180,7 @@ export const handleLessonPreviewRequest = async (
     });
   } catch (error) {
     return error instanceof LessonPreviewCompileError
-      ? sseError(
-          "PREVIEW_BLOCKED",
-          previewBlockedMessage,
-          422
-        )
+      ? sseError("PREVIEW_BLOCKED", previewBlockedMessage, 422)
       : sseError("PREVIEW_UNAVAILABLE", previewUnavailableMessage, 503);
   }
 };

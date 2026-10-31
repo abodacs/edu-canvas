@@ -65,7 +65,8 @@ export const decideFractionValue = (input: {
 }): FractionValueDecision => {
   const { numerator, denominator } = input;
   const areBoundsTrusted =
-    isTrustedDenominator(denominator) && isTrustedNumerator(numerator, denominator);
+    isTrustedDenominator(denominator) &&
+    isTrustedNumerator(numerator, denominator);
 
   if (!areBoundsTrusted) {
     return {

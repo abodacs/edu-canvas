@@ -164,7 +164,6 @@ const applyDeleteSurface = (
     return { ok: true, state };
   }
 
-
   const nextSurfaces = Object.fromEntries(
     Object.entries(state.surfaces).filter(([key]) => key !== surfaceId)
   );

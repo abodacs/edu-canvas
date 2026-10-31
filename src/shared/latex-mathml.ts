@@ -201,8 +201,7 @@ const parseNumberRun = (state: ParseState): MathMLNode => {
 };
 
 type NodeParse =
-  | { ok: true; nodes: MathMLNode[] }
-  | { ok: false; message: string };
+  { ok: true; nodes: MathMLNode[] } | { ok: false; message: string };
 
 const parseNextNode = (state: ParseState, depth: number): NodeParse => {
   const character = state.input[state.position] ?? "";
