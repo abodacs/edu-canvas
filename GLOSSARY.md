@@ -73,3 +73,45 @@ One named, always-run test in the authentication and domain-policy matrices. Bas
 ### Referent
 
 The record a protected operation names — a draft, roster, publication, activity version, learner, or attempt. A referent must both belong to the authorized scope and match the intended relationship.
+
+## Records, versions, and evidence
+
+### Lesson package
+
+The teacher-owned identity a version chain belongs to. It carries the owner, the target standard, the title, and the head revision used for concurrency. It carries no lesson content.
+
+### Lesson version
+
+An immutable revision of a package: ordered sections, variant references, provenance, private answer relationships, content and package hashes, validation evidence, and rule versions. A section revision keeps the package; a fresh draft starts a new package.
+
+### Publication
+
+The immutable fact that a teacher approved one exact lesson version. It pins the content hash, package hash, private-answer digest, validation-result hash, and rule versions. It never mutates the version.
+
+### Published lesson projection
+
+The learner-facing view derived from a lesson version by a versioned projection function. It is not a stored copy, and its hash must match the publication.
+
+### Learner attempt
+
+An immutable response record in `learner_attempts`, keyed to the learner run, item, and publication. It is not the demo `attempts` table, which remains fixture data.
+
+### Assistance event
+
+An append-only record that a learner used a hint or other assistance on a specific run and item, before any feedback release that claims it was saved.
+
+### Learner run
+
+The mutable progress record for one assignment: stage, first-response status, revision, and next activity. Its publication, learner, and variant never change.
+
+### Teacher decision
+
+The immutable choice — accept, pause, or override — bound to the current evidence hash and the assigning teacher.
+
+### Operation receipt
+
+The record that makes a write replay-safe: tenant, actor, membership, authorization revision, action, operation key, input hash, and result ids.
+
+### Curated reference
+
+Human-supplied evidence for the focused path. It is explicitly not a source snapshot and carries no retrieval time or native match confidence.
