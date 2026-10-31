@@ -5,6 +5,7 @@ import { reviewLearningQuality } from "./learning-quality-validator";
 import {
   createReview,
   finding,
+  reportRecovery,
   reviewVerdict,
 } from "./semantic-validation-utilities";
 import type {
@@ -210,7 +211,7 @@ const failedAgentReview = (
     ? "The semantic validator timed out before completing. Try this draft again."
     : "The semantic validator could not complete after a bounded retry. Try this draft again.";
   const findingValue = finding(agent.role, agent.version, {
-    verdict: "block",
+    verdict: "hard_block",
     code: findingCode,
     field: "validation",
     reason,
@@ -228,19 +229,35 @@ const combineReviews = (
   status: SemanticValidationStatus = "complete"
 ): SemanticValidationReport => {
   const findings = reviews.flatMap((review) => review.findings);
-  return {
-    status,
-    verdict: reviewVerdict(findings),
-    reviews,
-    findings,
-    retry: {
-      available: status === "retryable",
-      message:
-        status === "retryable"
-          ? "Validation did not finish safely. Try this draft again."
-          : "This validation result does not need a retry.",
-    },
+  const verdict = reviewVerdict(findings);
+  const retry = {
+    available: status === "retryable",
+    message:
+      status === "retryable"
+        ? "Validation did not finish safely. Try this draft again."
+        : "This validation result does not need a retry.",
   };
+
+  switch (verdict) {
+    case "pass": {
+      return { status, verdict, recovery: null, reviews, findings, retry };
+    }
+    case "warning":
+    case "hard_block": {
+      return {
+        status,
+        verdict,
+        recovery: reportRecovery(findings),
+        reviews,
+        findings,
+        retry,
+      };
+    }
+    default: {
+      const exhaustive: never = verdict;
+      throw new Error(`Unhandled semantic validation verdict: ${exhaustive}`);
+    }
+  }
 };
 
 const boundedAgentOptions = (options: SemanticValidationOptions) => {

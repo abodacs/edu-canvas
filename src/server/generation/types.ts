@@ -1,8 +1,11 @@
 import type { TeacherActor } from "@/server/identity/types";
+import type { ArtifactGateSnapshot } from "@/server/safety/artifact-gate-contract";
 import type {
   LessonDifficulty,
   LessonLanguage,
   PublicGenerationResult,
+  RecoveryAction,
+  SemanticValidationVerdict,
 } from "@/shared/generation-contract";
 import type { FractionLessonDraft } from "@/shared/fractions-contract";
 
@@ -129,9 +132,14 @@ export interface GenerationDiagnostic {
   field?: string;
   nodeId?: string;
   validator?: "curriculum" | "learning-quality";
-  verdict?: "pass" | "warning" | "block";
+  verdict?: SemanticValidationVerdict;
   validatorVersion?: string;
   recommendation?: string;
+  /**
+   * #28: the single teacher action for this finding, carried from the artifact
+   * gate so a blocked teacher sees the way out with the reason.
+   */
+  recovery?: RecoveryAction;
 }
 
 export interface ValidationSuccess {
@@ -180,6 +188,11 @@ export interface LessonGenerationRecord {
   // #116: a fraction-pinned record hydrates its draft here, leaving the
   // matching draft contract untouched for every existing consumer.
   fractionDraft?: FractionLessonDraft | null;
+  /**
+   * #28: acceptance evidence. Present only on a `ready-for-review` record; a
+   * missing snapshot refuses preview and Share. Persisted beside the draft.
+   */
+  gate?: ArtifactGateSnapshot | null;
   attempts: GenerationAttemptRecord[];
   createdAt: string;
   updatedAt: string;

@@ -1,5 +1,9 @@
 import { demoSeed } from "@/server/seed-data";
-import type { LessonLanguage } from "@/shared/generation-contract";
+import type {
+  LessonLanguage,
+  RecoveryAction,
+  SemanticValidationVerdict,
+} from "@/shared/generation-contract";
 
 import type { NormalizedGenerationRequest } from "./provider";
 import type { ProviderLessonDraft } from "./types";
@@ -8,7 +12,6 @@ export const curriculumValidatorVersion = "curriculum-validator-v1";
 export const learningQualityValidatorVersion = "learning-quality-validator-v1";
 export const semanticValidationRunnerVersion = "semantic-validation-runner-v1";
 
-export type SemanticValidationVerdict = "pass" | "warning" | "block";
 export type SemanticValidatorRole = "curriculum" | "learning-quality";
 export type SemanticValidationStatus = "complete" | "retryable";
 
@@ -51,10 +54,9 @@ export interface SemanticValidationInput {
   path?: NormalizedReasoningPath;
 }
 
-export interface SemanticValidationFinding {
+interface SemanticValidationFindingBase {
   validator: SemanticValidatorRole;
   validatorVersion: string;
-  verdict: SemanticValidationVerdict;
   code: string;
   field: string;
   reason: string;
@@ -62,6 +64,13 @@ export interface SemanticValidationFinding {
   nodeId?: string;
   recommendation?: string;
 }
+
+export type SemanticValidationFinding =
+  | (SemanticValidationFindingBase & { verdict: "pass" })
+  | (SemanticValidationFindingBase & {
+      verdict: "warning" | "hard_block";
+      recovery: RecoveryAction;
+    });
 
 export interface SemanticValidatorReview {
   validator: SemanticValidatorRole;
@@ -73,9 +82,8 @@ export interface SemanticValidatorReview {
   findings: readonly SemanticValidationFinding[];
 }
 
-export interface SemanticValidationReport {
+interface SemanticValidationReportBase {
   status: SemanticValidationStatus;
-  verdict: SemanticValidationVerdict;
   reviews: readonly SemanticValidatorReview[];
   findings: readonly SemanticValidationFinding[];
   retry: {
@@ -83,6 +91,13 @@ export interface SemanticValidationReport {
     message: string;
   };
 }
+
+export type SemanticValidationReport =
+  | (SemanticValidationReportBase & { verdict: "pass"; recovery: null })
+  | (SemanticValidationReportBase & {
+      verdict: "warning" | "hard_block";
+      recovery: RecoveryAction;
+    });
 
 export interface SemanticAgentRecommendation {
   verdict: SemanticValidationVerdict;
@@ -132,3 +147,8 @@ export const createDemoCurriculumContext = (
     edges: demoSeed.graphEdges,
   };
 };
+
+export {
+  type RecoveryAction,
+  type SemanticValidationVerdict,
+} from "@/shared/generation-contract";

@@ -179,6 +179,7 @@ describe("generation attempt outcomes", () => {
         return Promise.resolve({
           status: "complete",
           verdict: "pass",
+          recovery: null,
           reviews: [],
           findings: [],
           retry: { available: false, message: "No retry needed." },

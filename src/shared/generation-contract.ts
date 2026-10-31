@@ -11,8 +11,9 @@ export const semanticValidatorRoleValues = [
 export const semanticValidationVerdictValues = [
   "pass",
   "warning",
-  "block",
+  "hard_block",
 ] as const;
+export const recoveryActionValues = ["edit", "replace", "retry"] as const;
 const variantKindValues = ["standard", "scaffold", "challenge"] as const;
 export const generationStateValues = [
   "requested",
@@ -78,6 +79,9 @@ export const generationRequestErrorStatusByCode = {
   GENERATION_SOURCE_NOT_READY: 422,
 } as const satisfies Record<GenerationRequestErrorCode, number>;
 
+export type SemanticValidationVerdict =
+  (typeof semanticValidationVerdictValues)[number];
+export type RecoveryAction = (typeof recoveryActionValues)[number];
 export type LessonGenerationInput = z.infer<typeof lessonGenerationInputSchema>;
 export type LessonLanguage = (typeof languageValues)[number];
 export type LessonDifficulty = (typeof difficultyValues)[number];
@@ -148,6 +152,31 @@ export const publicGenerationDiagnosticSchema = z
     verdict: z.enum(semanticValidationVerdictValues).optional(),
     validatorVersion: z.string().optional(),
     recommendation: z.string().optional(),
+    /**
+     * The single teacher action for this finding. Optional so a payload from an older server still parses; the current server always sets it.
+     */
+    recovery: z.enum(recoveryActionValues).optional(),
+  })
+  .strict();
+
+export const publicScreenDiagnosticsSchema = z
+  .object({
+    variantId: z.string(),
+    verdict: z.enum(["warning", "hard_block"]),
+    findings: z.array(publicGenerationDiagnosticSchema).min(1),
+  })
+  .strict();
+
+export const publicDiagnosticsRollupSchema = z
+  .object({
+    verdict: z.enum(semanticValidationVerdictValues),
+    recovery: z.enum(recoveryActionValues).nullable(),
+    /**
+     * One entry per screen with a non-pass finding. The flow-level roll-up names every affected screen here, so a warning never disappears between the screen and the lesson.
+     */
+    screens: z.array(publicScreenDiagnosticsSchema),
+    flow: z.array(publicGenerationDiagnosticSchema),
+    affectedScreens: z.array(z.string()),
   })
   .strict();
 
@@ -156,7 +185,12 @@ export const publicGenerationResultSchema = z
     requestId: z.string(),
     state: z.enum(generationStateValues),
     attempt: z.number().int().min(1),
+    /**
+     * The record input language. It stays available when a blocked record has no draft, so the result can keep its reading direction.
+     */
+    language: z.enum(languageValues),
     diagnostics: z.array(publicGenerationDiagnosticSchema),
+    diagnosticsRollup: publicDiagnosticsRollupSchema,
     draft: publicLessonDraftSchema.nullable(),
     provenance: z
       .object({
@@ -180,6 +214,12 @@ export const publicGenerationResultSchema = z
 export type PublicLessonDraft = z.infer<typeof publicLessonDraftSchema>;
 export type PublicGenerationDiagnostic = z.infer<
   typeof publicGenerationDiagnosticSchema
+>;
+export type PublicScreenDiagnostics = z.infer<
+  typeof publicScreenDiagnosticsSchema
+>;
+export type PublicDiagnosticsRollup = z.infer<
+  typeof publicDiagnosticsRollupSchema
 >;
 export type PublicGenerationResult = z.infer<
   typeof publicGenerationResultSchema

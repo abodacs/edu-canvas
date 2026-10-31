@@ -10,30 +10,33 @@ import {
 import { describe, expect, it } from "vitest";
 
 import {
+  artifactCorpus,
+  buildBaseLearningPathProposal,
+  buildValidBaseDraft,
+  buildVersionedPlanContext,
+  draftMutationProbes,
+  evaluateCorpusArtifact,
+  learningPathMutationProbes,
+  qualifyingExtraPairs,
+} from "./artifact-corpus";
+import {
   buildValidatedLearningPath,
   LearningPathBuildError,
 } from "./learning-path";
 import { validateProviderDraft } from "./validation";
+import type { DraftPlan, PathPlan } from "./artifact-corpus";
 import type { ProviderProvenance } from "./provider";
 import type {
   CurriculumNode,
   VersionedCurriculumContext,
 } from "./semantic-validation-contract";
-import type {
-  ProviderLessonDraft,
-  ProviderVariant,
-  ValidatedLearningPath,
-} from "./types";
+import type { ProviderLessonDraft, ValidatedLearningPath } from "./types";
 import type { LessonLanguage } from "@/shared/generation-contract";
 
 // Property checks for the Validation & Safety gate. Run directly with
 // `pnpm verify:lesson-gate`; the operating skill lives in
-// .agents/skills/verify-lesson-gate.
-
-interface DraftPlan {
-  sourceCount: number;
-  language: LessonLanguage;
-}
+// .agents/skills/verify-lesson-gate. Break fixtures and expected verdicts
+// live in ./artifact-corpus.ts.
 
 const propertyOptions = () => {
   return {
@@ -324,243 +327,11 @@ const checkAcceptedDraft = (
   return violations;
 };
 
-const buildValidBaseDraft = (
-  sourceCount: number,
-  language: LessonLanguage
-): ProviderLessonDraft => {
-  return {
-    variants: (["standard", "standard", "scaffold", "challenge"] as const).map(
-      (kind, variantIndex): ProviderVariant => {
-        const sourceItems = Array.from(
-          { length: sourceCount },
-          (_, itemIndex) => {
-            return {
-              id: `variant-${variantIndex}-source-${itemIndex}`,
-              label: `${itemIndex + 1}/2`,
-            };
-          }
-        );
-        const targetItems = sourceItems.map((_, itemIndex) => {
-          return {
-            id: `variant-${variantIndex}-target-${itemIndex}`,
-            label: `${itemIndex + 1}/1`,
-          };
-        });
-        const distractorItems = Array.from(
-          { length: Math.floor(sourceCount / 4) },
-          (_, itemIndex) => {
-            return {
-              id: `variant-${variantIndex}-distractor-${itemIndex}`,
-              label: "7/2",
-            };
-          }
-        );
-
-        return {
-          id: `variant-${variantIndex}`,
-          kind,
-          title: `Equivalent fractions set ${variantIndex}`,
-          instructions:
-            "Match each fraction with another name for the same part.",
-          sourceItems,
-          targetItems,
-          distractorItems,
-          relationships: sourceItems.map((source, itemIndex) => {
-            return {
-              id: `variant-${variantIndex}-relationship-${itemIndex}`,
-              sourceId: source.id,
-              targetId: targetItems[itemIndex].id,
-            };
-          }),
-          hints: ["Look for fractions that name the same portion of a whole."],
-          feedback: {
-            correct: "These fractions name the same part of a whole.",
-            incorrect: "Try comparing the equal parts in each fraction.",
-          },
-          languageMetadata: {
-            language,
-            direction: language === "ar" ? "rtl" : "ltr",
-            locale: language === "ar" ? "ar-SA" : "en-US",
-          },
-          accessibilityMetadata: {
-            instructions: "Instructions for matching equivalent fractions",
-            sourceGroupLabel: "Fractions to match",
-            targetGroupLabel: "Possible equivalent fractions",
-          },
-        };
-      }
-    ),
-  };
-};
-
-const draftPlanArb = integer({ min: 3, max: 8 }).chain((sourceCount) =>
-  constantFrom("en", "ar").map((language) => ({ sourceCount, language }))
-);
-
-const languageFlip: Record<LessonLanguage, LessonLanguage> = {
-  en: "ar",
-  ar: "en",
-};
-
-interface DraftMutationProbe {
-  name: string;
-  expectedCode: string;
-  applies?: ({ sourceCount }: { sourceCount: number }) => boolean;
-  apply: (draft: ProviderLessonDraft, plan: DraftPlan) => void;
-}
-
-const draftMutationProbes: DraftMutationProbe[] = [
-  {
-    name: "a source id reused as a target id",
-    expectedCode: "DUPLICATE_ID",
-    apply(draft) {
-      const [, variant] = draft.variants;
-      variant.targetItems[1] = {
-        id: variant.sourceItems[1].id,
-        label: "Reused",
-      };
-    },
-  },
-  {
-    name: "a distractor past the four-source limit",
-    expectedCode: "DISTRACTOR_LIMIT",
-    // At eight source items the contract itself caps distractors at two,
-    // so the probe only exercises the limit rule below the contract cap.
-    applies: ({ sourceCount }) => sourceCount <= 7,
-    apply(draft, plan) {
-      const [variant] = draft.variants;
-      const maximumDistractors = Math.floor(plan.sourceCount / 4);
-      variant.distractorItems = Array.from(
-        // The contract itself caps the distractor list at two items, so
-        // cap the overflow there; below eight source items one more
-        // distractor than the limit still fits the contract shape.
-        { length: Math.min(maximumDistractors + 1, 2) },
-        (_, itemIndex) => {
-          return {
-            id: `probe-guard-distractor-${itemIndex}`,
-            label: "9/4",
-          };
-        }
-      );
-    },
-  },
-  {
-    name: "a target requested by two sources",
-    expectedCode: "TARGET_REUSED",
-    apply(draft) {
-      const [variant] = draft.variants;
-      const { relationships } = variant;
-      relationships[2] = {
-        ...relationships[2],
-        targetId: relationships[0].targetId,
-      };
-    },
-  },
-  {
-    name: "a source item with no relationship",
-    expectedCode: "SOURCE_WITHOUT_TARGET",
-    apply(draft) {
-      const [variant] = draft.variants;
-      variant.relationships = variant.relationships.filter(
-        (_relationship, index) => index !== 2
-      );
-    },
-  },
-  {
-    name: "a relationship pointing at an unknown source",
-    expectedCode: "UNKNOWN_SOURCE",
-    apply(draft) {
-      const [variant] = draft.variants;
-      variant.relationships[2].sourceId = "probe-guard-ghost-source";
-    },
-  },
-  {
-    name: "a relationship pointing at an unknown target",
-    expectedCode: "UNKNOWN_TARGET",
-    apply(draft) {
-      const [variant] = draft.variants;
-      variant.relationships[2].targetId = "probe-guard-ghost-target";
-    },
-  },
-  {
-    name: "a draft leaning on too many standard variants",
-    expectedCode: "MISSING_VARIANT_KIND",
-    apply(draft) {
-      draft.variants[3].kind = "standard";
-    },
-  },
-  {
-    name: "a language the teacher did not request",
-    expectedCode: "LANGUAGE_MISMATCH",
-    apply(draft, plan) {
-      draft.variants[2].languageMetadata = {
-        language: languageFlip[plan.language],
-        direction: plan.language === "ar" ? "ltr" : "rtl",
-        locale: plan.language === "ar" ? "en-US" : "ar-SA",
-      };
-    },
-  },
-  {
-    name: "script markup inside teacher copy",
-    expectedCode: "EXECUTABLE_CONTENT",
-    apply(draft) {
-      const [variant] = draft.variants;
-      variant.instructions = "<script>alert(1)</script>";
-    },
-  },
-  {
-    name: "an untrusted field smuggled into a variant",
-    expectedCode: "UNTRUSTED_FIELD",
-    apply(draft) {
-      const [variant] = draft.variants as (ProviderVariant & {
-        untrustedField?: string;
-      })[];
-      variant.untrustedField = "smuggled";
-    },
-  },
-  {
-    name: "a draft with no hints",
-    expectedCode: "INVALID_CONTRACT",
-    apply(draft) {
-      const [variant] = draft.variants;
-      variant.hints = [];
-    },
-  },
-  {
-    name: "a relationship id reused inside one variant",
-    expectedCode: "DUPLICATE_ID",
-    apply(draft) {
-      const [variant] = draft.variants;
-      const { relationships } = variant;
-      relationships[2].id = relationships[1].id;
-    },
-  },
-];
-
 // ------------------------------------------------------------------
 // Learning path gate: `buildValidatedLearningPath` accepts a provider
 // proposal for a teacher preview. The context is built from a random
 // plan; the properties pin the accepted path to the context.
 // ------------------------------------------------------------------
-
-interface PathPlan {
-  nodeCount: number;
-  language: LessonLanguage;
-  extraEdgeFlags: boolean[];
-  arabicLabels: boolean[];
-}
-
-const qualifyingExtraPairs = (nodeCount: number): [number, number][] => {
-  return Array.from(
-    { length: Math.max(0, nodeCount - 2) },
-    (_, from) => from
-  ).flatMap((from) => {
-    return Array.from(
-      { length: Math.max(0, nodeCount - 2 - from - 1) },
-      (_, offset) => [from, from + 2 + offset] as [number, number]
-    );
-  });
-};
 
 const pathPlanArb = integer({ min: 3, max: 6 }).chain((nodeCount) => {
   return array(boolean(), {
@@ -577,75 +348,11 @@ const pathPlanArb = integer({ min: 3, max: 6 }).chain((nodeCount) => {
           language,
           extraEdgeFlags,
           arabicLabels,
-        };
+        } satisfies PathPlan;
       });
     });
   });
 });
-
-const buildVersionedPlanContext = (
-  plan: PathPlan
-): VersionedCurriculumContext => {
-  const nodes = Array.from(
-    { length: plan.nodeCount },
-    (_, index): CurriculumNode => {
-      return {
-        id: `graph_node_${index}`,
-        label: `Equal-parts node ${index}`,
-        sequence: index,
-        screenPurposeId: `screen_purpose_${index}`,
-        screenPurpose: `Screen purpose ${index}`,
-        ...(plan.arabicLabels[index] && {
-          labelAr: "Equivalence nodes Arabic",
-          screenPurposeAr: "Screen purpose Arabic",
-        }),
-      };
-    }
-  );
-  const chainEdges = nodes.slice(1).map((node, index) => {
-    return {
-      prerequisiteId: nodes[index].id,
-      successorId: node.id,
-    };
-  });
-  const extraEdges = qualifyingExtraPairs(plan.nodeCount)
-    .filter((_pair, index) => plan.extraEdgeFlags[index])
-    .map(([from, to]) => {
-      return {
-        prerequisiteId: nodes[from].id,
-        successorId: nodes[to].id,
-      };
-    });
-
-  return {
-    tenantId: "tenant_demo",
-    standardId: "standard_test",
-    standardCode: "TEST.1",
-    grade: 4,
-    language: plan.language,
-    graphVersion: "graph-v-test-1",
-    targetNodeId: `graph_node_${plan.nodeCount - 1}`,
-    nodes,
-    edges: [...chainEdges, ...extraEdges],
-  };
-};
-
-const buildBaseLearningPathProposal = (context: VersionedCurriculumContext) => {
-  const steps = context.nodes.map((node) => {
-    return {
-      nodeId: node.id,
-      screenPurposeId: node.screenPurposeId,
-    };
-  });
-  return {
-    direction: "forward" as const,
-    steps,
-    rationale:
-      "Begin with equal parts and walk every prerequisite until the new fraction name appears.",
-    nextScreenRationale:
-      "The teacher preview shows the matching screen that follows this lesson.",
-  };
-};
 
 const pathCopyPatterns: RegExp[] = [
   /<\s*\/?(?:script|iframe|object|embed|style)/iu,
@@ -812,67 +519,6 @@ const checkAcceptedPath = (
   return [...violations, ...checkAcceptedPathCopy(path)];
 };
 
-interface PathMutationProbe {
-  name: string;
-  apply: (proposal: NonNullable<ProviderLessonDraft["learningPath"]>) => void;
-}
-
-const learningPathMutationProbes: PathMutationProbe[] = [
-  {
-    name: "a reversed prerequisite walk",
-    apply(proposal) {
-      proposal.direction = "reverse";
-    },
-  },
-  {
-    name: "a single-step path",
-    apply(proposal) {
-      proposal.steps = proposal.steps.slice(0, 1);
-    },
-  },
-  {
-    name: "a repeated node",
-    apply(proposal) {
-      proposal.steps.splice(2, 0, {
-        nodeId: proposal.steps[0].nodeId,
-        screenPurposeId: proposal.steps[0].screenPurposeId,
-      });
-    },
-  },
-  {
-    name: "an unknown curriculum node",
-    apply(proposal) {
-      proposal.steps[1].nodeId = "graph_node_ghost";
-    },
-  },
-  {
-    name: "an unapproved screen purpose",
-    apply(proposal) {
-      proposal.steps[1].screenPurposeId = "screen_purpose_ghost";
-    },
-  },
-  {
-    name: "a skipped prerequisite edge",
-    apply(proposal) {
-      proposal.steps = proposal.steps.filter(
-        (_step, index, steps) => index === 0 || index === steps.length - 1
-      );
-    },
-  },
-  {
-    name: "a path that stops one node short of the target",
-    apply(proposal) {
-      proposal.steps = proposal.steps.slice(0, -1);
-    },
-  },
-  {
-    name: "copy that exposes the answer key",
-    apply(proposal) {
-      proposal.rationale = "reveal the answer key";
-    },
-  },
-];
-
 const pathProvenance: ProviderProvenance = {
   provider: "property-fixture",
   model: "fixture-model",
@@ -880,11 +526,17 @@ const pathProvenance: ProviderProvenance = {
   validatorVersion: "lesson-validator-v2",
 };
 
+const draftPlanArb = integer({ min: 3, max: 8 }).chain((sourceCount) => {
+  return constantFrom("en", "ar").map(
+    (language) => ({ sourceCount, language }) satisfies DraftPlan
+  );
+});
+
 describe("lesson gate properties", () => {
   it("every accepted draft satisfies every rule the gate enforces (re-checked)", () => {
     assertProperty(
       property(draftPlanArb, (plan) => {
-        const draft = buildValidBaseDraft(plan.sourceCount, plan.language);
+        const draft = buildValidBaseDraft(plan);
         const result = validateProviderDraft(draft, {
           expectedLanguage: plan.language,
         });
@@ -905,7 +557,7 @@ describe("lesson gate properties", () => {
   it("every draft probe in the break catalog is rejected and names its rule", () => {
     assertProperty(
       property(draftPlanArb, (plan) => {
-        const draft = buildValidBaseDraft(plan.sourceCount, plan.language);
+        const draft = buildValidBaseDraft(plan);
         for (const probe of draftMutationProbes) {
           if (probe.applies && !probe.applies(plan)) {
             continue;
@@ -990,5 +642,51 @@ describe("lesson gate properties", () => {
       }),
       propertyOptions()
     );
+  });
+});
+
+describe("artifact gate corpus", () => {
+  it("every corpus break yields hard_block and names its rule, and a warning-only artifact stays warning", async () => {
+    const evaluations = await Promise.all(
+      artifactCorpus.map(async (entry) => {
+        return {
+          entry,
+          evaluation: await evaluateCorpusArtifact(entry),
+        };
+      })
+    );
+    const failures: string[] = [];
+
+    for (const { entry, evaluation } of evaluations) {
+      if (evaluation.gate.verdict !== entry.expectedVerdict) {
+        failures.push(
+          `${entry.id}: verdict ${evaluation.gate.verdict}, expected ${entry.expectedVerdict}`
+        );
+      }
+
+      const shouldRender = entry.expectedVerdict !== "hard_block";
+      if (shouldRender !== (evaluation.gate.renderable !== null)) {
+        failures.push(
+          `${entry.id}: ${shouldRender ? "expected a renderable artifact" : "expected renderable to be null"}`
+        );
+      }
+
+      for (const expectation of entry.expectedFindings) {
+        const matched = evaluation.gate.findings.some((finding) => {
+          return (
+            finding.code === expectation.code &&
+            finding.validator === expectation.validator &&
+            finding.recovery === expectation.recovery
+          );
+        });
+        if (!matched) {
+          failures.push(
+            `${entry.id}: missing ${expectation.validator} finding ${expectation.code} (${expectation.recovery})`
+          );
+        }
+      }
+    }
+
+    expect(failures).toStrictEqual([]);
   });
 });

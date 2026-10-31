@@ -2,7 +2,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
-import { compileLessonPreview } from "@/server/a2ui/compiler";
+import { compileRawLessonPreview } from "@/server/a2ui/compiler";
 import { createGenerationService } from "@/server/generation/service";
 import { createDeterministicLessonDraftProvider } from "@/server/generation/provider";
 import { parseTenantId } from "@/server/identity/identifiers";
@@ -38,7 +38,7 @@ describe("compiled lesson preview", () => {
       if (!result.record.draft) {
         throw new Error("Expected the generated fixture to be reviewable.");
       }
-      const preview = compileLessonPreview({
+      const preview = compileRawLessonPreview({
         ...input,
         requestId: result.record.requestId,
         draft: result.record.draft,
