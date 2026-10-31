@@ -156,6 +156,15 @@ const canonicalize = (value: unknown): string => {
   return JSON.stringify(value);
 };
 
+/**
+One canonical JSON hash for the repository. The publication domain pins hashes that must compare byte-for-byte with the gate's artifact hash, so it imports this rather than repeating the canonicalizer.
+*/
+export const hashCanonicalJson = (value: unknown): string => {
+  return createHash("sha256")
+    .update(canonicalize(value), "utf-8")
+    .digest("hex");
+};
+
 const hashArtifact = (input: ArtifactGateInput): string => {
   const canonicalArtifact =
     input.kind === "fraction"
@@ -165,9 +174,7 @@ const hashArtifact = (input: ArtifactGateInput): string => {
           draft: input.draft,
           learningPath: input.learningPath ?? null,
         };
-  return createHash("sha256")
-    .update(canonicalize(canonicalArtifact), "utf-8")
-    .digest("hex");
+  return hashCanonicalJson(canonicalArtifact);
 };
 
 const isActionableSemanticFinding = (

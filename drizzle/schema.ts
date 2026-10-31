@@ -897,3 +897,385 @@ export const sourceSnapshots = pgTable(
     ];
   }
 ).enableRLS();
+
+// Publication records (#5). These are the generated-pack slice of the #112
+// model: one immutable row per review revision, per-target approvals pinned to
+// an artifact hash, the publication fact, the learner assignment, and the
+// actor-scoped receipt that makes every write replay-safe. Names are
+// pack-prefixed because #144's lesson_* tables are not on main; a later merge
+// reconciles them into the canonical record model.
+export const packVersions = pgTable(
+  "pack_versions",
+  {
+    id: text().primaryKey().notNull(),
+    tenantId: text("tenant_id").notNull(),
+    schemaVersion: text("schema_version").notNull(),
+    requestId: text("request_id").notNull(),
+    teacherActorId: text("teacher_actor_id").notNull(),
+    revision: integer().notNull(),
+    state: text().notNull(),
+    parentVersionId: text("parent_version_id"),
+    // The generation record's accepted hash when this revision was opened.
+    sourceArtifactHash: text("source_artifact_hash").notNull(),
+    // The revision's own hash: equal to source at v1, recomputed after an edit.
+    artifactHash: text("artifact_hash").notNull(),
+    gateVerdict: text("gate_verdict").notNull(),
+    gateSnapshot: jsonb("gate_snapshot"),
+    validationResult: jsonb("validation_result").notNull(),
+    validationResultHash: text("validation_result_hash").notNull(),
+    ruleVersions: jsonb("rule_versions").notNull(),
+    provenance: jsonb().notNull(),
+    publicContent: jsonb("public_content").notNull(),
+    // Answer key and private relationships. Never projected to a client.
+    privateAnswers: jsonb("private_answers").notNull(),
+    contentHash: text("content_hash").notNull(),
+    privateAnswerDigest: text("private_answer_digest").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => {
+    return [
+      index("pack_versions_request_idx").using(
+        "btree",
+        table.tenantId.asc().nullsLast(),
+        table.requestId.asc().nullsLast(),
+        table.revision.desc().nullsFirst()
+      ),
+      foreignKey({
+        columns: [table.tenantId],
+        foreignColumns: [tenants.id],
+        name: "pack_versions_tenant_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.teacherActorId],
+        foreignColumns: [actors.id],
+        name: "pack_versions_teacher_actor_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.requestId],
+        foreignColumns: [lessonDraftRequests.tenantId, lessonDraftRequests.id],
+        name: "pack_versions_tenant_id_request_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.parentVersionId],
+        foreignColumns: [table.tenantId, table.id],
+        name: "pack_versions_tenant_id_parent_version_id_fkey",
+      }),
+      unique("pack_versions_tenant_id_id_key").on(table.tenantId, table.id),
+      unique("pack_versions_tenant_id_request_id_revision_key").on(
+        table.tenantId,
+        table.requestId,
+        table.revision
+      ),
+      pgPolicy("pack_versions_are_tenant_scoped", {
+        as: "permissive",
+        for: "all",
+        to: ["public"],
+        using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
+      }),
+      check("pack_versions_revision_check", sql`revision >= 1`),
+      check(
+        "pack_versions_state_check",
+        sql`state = ANY (ARRAY['ready-for-review'::text, 'blocked-by-validation'::text])`
+      ),
+      check(
+        "pack_versions_gate_verdict_check",
+        sql`gate_verdict = ANY (ARRAY['pass'::text, 'warning'::text, 'hard_block'::text])`
+      ),
+      check(
+        "pack_versions_source_artifact_hash_check",
+        sql`source_artifact_hash ~ '^[a-f0-9]{64}$'`
+      ),
+      check(
+        "pack_versions_artifact_hash_check",
+        sql`artifact_hash ~ '^[a-f0-9]{64}$'`
+      ),
+      check(
+        "pack_versions_validation_result_hash_check",
+        sql`validation_result_hash ~ '^[a-f0-9]{64}$'`
+      ),
+      check(
+        "pack_versions_content_hash_check",
+        sql`content_hash ~ '^[a-f0-9]{64}$'`
+      ),
+      check(
+        "pack_versions_private_answer_digest_check",
+        sql`private_answer_digest ~ '^[a-f0-9]{64}$'`
+      ),
+    ];
+  }
+).enableRLS();
+
+export const packApprovals = pgTable(
+  "pack_approvals",
+  {
+    id: text().primaryKey().notNull(),
+    tenantId: text("tenant_id").notNull(),
+    schemaVersion: text("schema_version").notNull(),
+    versionId: text("version_id").notNull(),
+    targetKind: text("target_kind").notNull(),
+    targetId: text("target_id").notNull(),
+    approvingActorId: text("approving_actor_id").notNull(),
+    artifactHash: text("artifact_hash").notNull(),
+    validationResultHash: text("validation_result_hash").notNull(),
+    acknowledgedFindingCodes: jsonb("acknowledged_finding_codes")
+      .default([])
+      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => {
+    return [
+      index("pack_approvals_version_idx").using(
+        "btree",
+        table.tenantId.asc().nullsLast(),
+        table.versionId.asc().nullsLast()
+      ),
+      foreignKey({
+        columns: [table.tenantId],
+        foreignColumns: [tenants.id],
+        name: "pack_approvals_tenant_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.approvingActorId],
+        foreignColumns: [actors.id],
+        name: "pack_approvals_approving_actor_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.versionId],
+        foreignColumns: [packVersions.tenantId, packVersions.id],
+        name: "pack_approvals_tenant_id_version_id_fkey",
+      }),
+      unique("pack_approvals_tenant_id_id_key").on(table.tenantId, table.id),
+      unique("pack_approvals_tenant_version_target_key").on(
+        table.tenantId,
+        table.versionId,
+        table.targetKind,
+        table.targetId
+      ),
+      pgPolicy("pack_approvals_are_tenant_scoped", {
+        as: "permissive",
+        for: "all",
+        to: ["public"],
+        using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
+      }),
+      check(
+        "pack_approvals_target_kind_check",
+        sql`target_kind = ANY (ARRAY['variant'::text, 'reverse-path'::text])`
+      ),
+      check(
+        "pack_approvals_artifact_hash_check",
+        sql`artifact_hash ~ '^[a-f0-9]{64}$'`
+      ),
+      check(
+        "pack_approvals_validation_result_hash_check",
+        sql`validation_result_hash ~ '^[a-f0-9]{64}$'`
+      ),
+    ];
+  }
+).enableRLS();
+
+export const packPublications = pgTable(
+  "pack_publications",
+  {
+    id: text().primaryKey().notNull(),
+    tenantId: text("tenant_id").notNull(),
+    schemaVersion: text("schema_version").notNull(),
+    versionId: text("version_id").notNull(),
+    approvingActorId: text("approving_actor_id").notNull(),
+    artifactHash: text("artifact_hash").notNull(),
+    validationResultHash: text("validation_result_hash").notNull(),
+    contentHash: text("content_hash").notNull(),
+    privateAnswerDigest: text("private_answer_digest").notNull(),
+    ruleVersions: jsonb("rule_versions").notNull(),
+    approvedAt: timestamp("approved_at", {
+      withTimezone: true,
+      mode: "string",
+    }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => {
+    return [
+      index("pack_publications_tenant_idx").using(
+        "btree",
+        table.tenantId.asc().nullsLast(),
+        table.approvedAt.desc().nullsFirst()
+      ),
+      foreignKey({
+        columns: [table.tenantId],
+        foreignColumns: [tenants.id],
+        name: "pack_publications_tenant_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.approvingActorId],
+        foreignColumns: [actors.id],
+        name: "pack_publications_approving_actor_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.versionId],
+        foreignColumns: [packVersions.tenantId, packVersions.id],
+        name: "pack_publications_tenant_id_version_id_fkey",
+      }),
+      unique("pack_publications_tenant_id_id_key").on(table.tenantId, table.id),
+      unique("pack_publications_tenant_version_key").on(
+        table.tenantId,
+        table.versionId
+      ),
+      pgPolicy("pack_publications_are_tenant_scoped", {
+        as: "permissive",
+        for: "all",
+        to: ["public"],
+        using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
+      }),
+      check(
+        "pack_publications_artifact_hash_check",
+        sql`artifact_hash ~ '^[a-f0-9]{64}$'`
+      ),
+      check(
+        "pack_publications_validation_result_hash_check",
+        sql`validation_result_hash ~ '^[a-f0-9]{64}$'`
+      ),
+      check(
+        "pack_publications_content_hash_check",
+        sql`content_hash ~ '^[a-f0-9]{64}$'`
+      ),
+      check(
+        "pack_publications_private_answer_digest_check",
+        sql`private_answer_digest ~ '^[a-f0-9]{64}$'`
+      ),
+    ];
+  }
+).enableRLS();
+
+export const packAssignments = pgTable(
+  "pack_assignments",
+  {
+    id: text().primaryKey().notNull(),
+    tenantId: text("tenant_id").notNull(),
+    schemaVersion: text("schema_version").notNull(),
+    publicationId: text("publication_id").notNull(),
+    learnerId: text("learner_id").notNull(),
+    assigningActorId: text("assigning_actor_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => {
+    return [
+      index("pack_assignments_learner_idx").using(
+        "btree",
+        table.tenantId.asc().nullsLast(),
+        table.learnerId.asc().nullsLast(),
+        table.createdAt.desc().nullsFirst()
+      ),
+      foreignKey({
+        columns: [table.tenantId],
+        foreignColumns: [tenants.id],
+        name: "pack_assignments_tenant_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.assigningActorId],
+        foreignColumns: [actors.id],
+        name: "pack_assignments_assigning_actor_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.publicationId],
+        foreignColumns: [packPublications.tenantId, packPublications.id],
+        name: "pack_assignments_tenant_id_publication_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.learnerId],
+        foreignColumns: [identities.tenantId, identities.id],
+        name: "pack_assignments_tenant_id_learner_id_fkey",
+      }),
+      unique("pack_assignments_tenant_id_id_key").on(table.tenantId, table.id),
+      unique("pack_assignments_tenant_publication_learner_key").on(
+        table.tenantId,
+        table.publicationId,
+        table.learnerId
+      ),
+      unique("pack_assignments_tenant_publication_key").on(
+        table.tenantId,
+        table.publicationId
+      ),
+      pgPolicy("pack_assignments_are_tenant_scoped", {
+        as: "permissive",
+        for: "all",
+        to: ["public"],
+        using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
+      }),
+    ];
+  }
+).enableRLS();
+
+export const packReceipts = pgTable(
+  "pack_receipts",
+  {
+    id: text().primaryKey().notNull(),
+    tenantId: text("tenant_id").notNull(),
+    schemaVersion: text("schema_version").notNull(),
+    actorId: text("actor_id").notNull(),
+    membershipId: text("membership_id").notNull(),
+    authorizationRevision: integer("authorization_revision").notNull(),
+    action: text().notNull(),
+    operationKey: text("operation_key").notNull(),
+    inputHash: text("input_hash").notNull(),
+    resultKind: text("result_kind").notNull(),
+    resultIds: jsonb("result_ids").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => {
+    return [
+      foreignKey({
+        columns: [table.tenantId],
+        foreignColumns: [tenants.id],
+        name: "pack_receipts_tenant_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.actorId],
+        foreignColumns: [actors.id],
+        name: "pack_receipts_actor_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.membershipId],
+        foreignColumns: [memberships.tenantId, memberships.id],
+        name: "pack_receipts_tenant_id_membership_id_fkey",
+      }),
+      unique("pack_receipts_tenant_id_id_key").on(table.tenantId, table.id),
+      unique("pack_receipts_tenant_actor_action_key_key").on(
+        table.tenantId,
+        table.actorId,
+        table.action,
+        table.operationKey
+      ),
+      pgPolicy("pack_receipts_are_tenant_scoped", {
+        as: "permissive",
+        for: "all",
+        to: ["public"],
+        using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
+      }),
+      check(
+        "pack_receipts_authorization_revision_check",
+        sql`authorization_revision >= 0`
+      ),
+      check(
+        "pack_receipts_action_check",
+        sql`action = ANY (ARRAY['open-review'::text, 'approve-target'::text, 'revise-version'::text, 'publish'::text])`
+      ),
+      check(
+        "pack_receipts_input_hash_check",
+        sql`input_hash ~ '^[a-f0-9]{64}$'`
+      ),
+      check(
+        "pack_receipts_operation_key_check",
+        sql`char_length(operation_key) >= 8 AND char_length(operation_key) <= 128`
+      ),
+    ];
+  }
+).enableRLS();

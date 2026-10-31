@@ -36,6 +36,8 @@ interface LessonPreviewProperties {
   // The record's pinned catalog (from generation provenance). matching-v1
   // stays the default for records that predate catalog pinning.
   readonly catalogVersion?: string;
+  // #5: render a persisted review revision instead of the generation record.
+  readonly previewVersionId?: string;
 }
 
 const describeSelection = (selection: SelectionState | undefined): string => {
@@ -84,7 +86,8 @@ const PreviewLoading = () => {
 const usePreviewStream = (
   requestId: string,
   retryToken: number,
-  catalogVersion: string
+  catalogVersion: string,
+  previewVersionId?: string
 ) => {
   const [renderState, setRenderState] = useState<A2UIRenderState>(() =>
     createA2UIRenderState()
@@ -108,9 +111,14 @@ const usePreviewStream = (
       controller.abort();
     }, PREVIEW_STREAM_TIMEOUT_MS);
 
-    const url = new URL("/api/a2ui/preview", window.location.origin);
-    url.searchParams.set("requestId", requestId);
-    url.searchParams.set("catalogVersion", catalogVersion);
+    const previewPath = previewVersionId
+      ? `/api/publications/versions/${encodeURIComponent(previewVersionId)}/preview`
+      : "/api/a2ui/preview";
+    const url = new URL(previewPath, window.location.origin);
+    if (!previewVersionId) {
+      url.searchParams.set("requestId", requestId);
+      url.searchParams.set("catalogVersion", catalogVersion);
+    }
 
     const streamPreview = async () => {
       setStatus("loading");
@@ -197,7 +205,7 @@ const usePreviewStream = (
       controller.abort();
       clearTimeout(timeoutId);
     };
-  }, [requestId, retryToken, catalogVersion]);
+  }, [requestId, retryToken, catalogVersion, previewVersionId]);
 
   return { renderState, status, statusMessage };
 };
@@ -377,13 +385,15 @@ const PreviewRecovery = ({
 export const LessonPreview = ({
   requestId,
   catalogVersion,
+  previewVersionId,
 }: LessonPreviewProperties) => {
   const [retryToken, setRetryToken] = useState(0);
   const pinnedCatalogVersion = catalogVersion ?? A2UI_CATALOG_VERSION;
   const { renderState, status, statusMessage } = usePreviewStream(
     requestId,
     retryToken,
-    pinnedCatalogVersion
+    pinnedCatalogVersion,
+    previewVersionId
   );
   const [requestedSurfaceId, setRequestedSurfaceId] = useState<string | null>(
     null

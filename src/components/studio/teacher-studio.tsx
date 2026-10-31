@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utilities";
 import { LessonPreview } from "@/components/a2ui/lesson-preview";
 import { Button } from "@/components/ui/button";
+import { ReviewStudio } from "@/components/studio/review-studio";
 import { SourcePanel } from "@/components/studio/source-panel";
 import { ValidationDiagnostics } from "@/components/studio/validation-diagnostics";
 import { csrfHeaderName } from "@/shared/identity-contract";
@@ -35,6 +36,9 @@ import type { SyntheticEvent } from "react";
 interface TeacherStudioProperties {
   readonly csrf: string;
   readonly generation: string;
+  readonly reviewRequestId?: string;
+  readonly onOpenReview: (requestId: string) => void;
+  readonly onCloseReview: () => void;
   readonly onUnauthorized: () => void;
 }
 
@@ -454,12 +458,14 @@ interface GenerationResultProperties {
   readonly result: PublicGenerationResult;
   readonly onRetry: (event: SyntheticEvent<HTMLFormElement>) => void;
   readonly onRecover: (action: RecoveryAction, variantId?: string) => void;
+  readonly onOpenReview: (requestId: string) => void;
 }
 
 const GenerationResult = ({
   result,
   onRetry,
   onRecover,
+  onOpenReview,
 }: GenerationResultProperties) => {
   // A blocked record has no draft, so the record input language keeps the
   // result in its own reading direction.
@@ -609,11 +615,27 @@ const GenerationResult = ({
           </div>
 
           {result.state === READY_FOR_REVIEW_STATE ? (
-            <LessonPreview
-              key={result.requestId}
-              requestId={result.requestId}
-              catalogVersion={result.provenance?.catalogVersion}
-            />
+            <>
+              <LessonPreview
+                key={result.requestId}
+                requestId={result.requestId}
+                catalogVersion={result.provenance?.catalogVersion}
+              />
+              <div className="teacher-result__cta">
+                <Button
+                  type="button"
+                  onClick={() => onOpenReview(result.requestId)}
+                >
+                  <ShieldCheck aria-hidden="true" />
+                  Review and publish this pack
+                  <ArrowRight aria-hidden="true" />
+                </Button>
+                <p>
+                  Approve every screen and the reverse path. Nothing reaches
+                  students until you publish.
+                </p>
+              </div>
+            </>
           ) : null}
         </>
       ) : null}
@@ -641,6 +663,7 @@ const GenerationResult = ({
 interface TeacherLessonComposerProperties {
   readonly csrf: string;
   readonly generation: string;
+  readonly onOpenReview: (requestId: string) => void;
   readonly onUnauthorized: () => void;
   readonly standardId: string;
 }
@@ -648,6 +671,7 @@ interface TeacherLessonComposerProperties {
 const TeacherLessonComposer = ({
   csrf,
   generation,
+  onOpenReview,
   onUnauthorized,
   standardId,
 }: TeacherLessonComposerProperties) => {
@@ -860,6 +884,7 @@ const TeacherLessonComposer = ({
       {result ? (
         <GenerationResult
           result={result}
+          onOpenReview={onOpenReview}
           onRetry={(event) => {
             submitGeneration(event, result.requestId);
           }}
@@ -895,12 +920,27 @@ the workspace route can hide private content.
 export const TeacherStudio = ({
   csrf,
   generation,
+  reviewRequestId,
+  onOpenReview,
+  onCloseReview,
   onUnauthorized,
 }: TeacherStudioProperties) => {
+  if (reviewRequestId) {
+    return (
+      <ReviewStudio
+        requestId={reviewRequestId}
+        csrf={csrf}
+        onClose={onCloseReview}
+        onUnauthorized={onUnauthorized}
+      />
+    );
+  }
+
   return (
     <TeacherLessonComposer
       csrf={csrf}
       generation={generation}
+      onOpenReview={onOpenReview}
       onUnauthorized={onUnauthorized}
       standardId={DEFAULT_STANDARD_ID}
     />

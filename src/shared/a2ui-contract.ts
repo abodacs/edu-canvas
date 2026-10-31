@@ -3,6 +3,16 @@ import { z } from "zod";
 import { isAllowedLatexInput, parseLatexToMathML } from "@/shared/latex-mathml";
 
 export const A2UI_PROTOCOL_VERSION = "v0.9.1" as const;
+/**
+The teacher-facing purpose of each generated screen, in pack order. One source so the review gallery and the rendered surface never disagree.
+*/
+export const variantPurposeLabels = [
+  "Teach the model",
+  "Independent practice",
+  "Guided practice",
+  "Review and challenge",
+] as const;
+
 export const A2UI_CATALOG_VERSION = "matching-v1" as const;
 export const A2UI_CATALOG_ID =
   "https://edu-canvas.app/a2ui/v0.9.1/catalogs/matching-v1" as const;
