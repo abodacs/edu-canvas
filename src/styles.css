@@ -1471,6 +1471,102 @@ h2 {
   min-block-size: 1.4rem;
 }
 
+.a2ui-math-text {
+  display: block;
+  margin: 0;
+}
+
+.a2ui-math-text__math {
+  font-size: 1.3rem;
+  line-height: 1.7;
+}
+
+.a2ui-math-text--blocked {
+  border: 1px dashed color-mix(in oklch, var(--destructive) 35%, var(--border));
+  border-radius: 0.5rem;
+  color: var(--destructive);
+  font-size: 0.85rem;
+  padding-block: 0.4rem;
+  padding-inline: 0.6rem;
+}
+
+.a2ui-fraction {
+  display: grid;
+  gap: 0.55rem;
+  justify-items: start;
+}
+
+.a2ui-fraction-bar {
+  display: flex;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--card);
+  block-size: 2.25rem;
+  inline-size: min(100%, 18rem);
+}
+
+.a2ui-fraction-bar__part {
+  flex: 1 1 0;
+  border-inline-end: 1px solid var(--border);
+}
+
+.a2ui-fraction-bar__part:last-child {
+  border-inline-end: none;
+}
+
+.a2ui-fraction-bar__part.is-shaded {
+  background: color-mix(in oklch, var(--primary) 30%, var(--card));
+}
+
+.a2ui-fraction__controls {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.a2ui-fraction__step {
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--card);
+  block-size: 2.2rem;
+  color: var(--foreground);
+  font-size: 1rem;
+  font-weight: 750;
+  inline-size: 2.2rem;
+  line-height: 1;
+}
+
+.a2ui-fraction__step:disabled {
+  color: var(--muted-foreground);
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.a2ui-fraction__value {
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--card);
+  block-size: 2.2rem;
+  color: var(--foreground);
+  font-size: 0.95rem;
+  font-weight: 700;
+  inline-size: 3.6rem;
+  text-align: center;
+}
+
+.a2ui-fraction__error {
+  border: 1px solid color-mix(in oklch, var(--destructive) 28%, var(--border));
+  border-radius: 0.5rem;
+  margin: 0;
+  background: color-mix(in oklch, var(--destructive) 6%, var(--card));
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  padding-block: 0.45rem;
+  padding-inline: 0.6rem;
+}
+
 .a2ui-loading {
   display: grid;
   align-content: center;

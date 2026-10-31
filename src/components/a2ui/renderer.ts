@@ -1,14 +1,19 @@
-import { validateA2UIMessage } from "@/shared/a2ui-contract";
+import {
+  a2uiCatalogVersionForId,
+  validateA2UIMessage,
+} from "@/shared/a2ui-contract";
 import type {
   A2UIComponent,
+  A2UICatalogVersion,
+  A2UIDataModel,
   A2UIMessage,
-  A2UIPreviewDataModel,
 } from "@/shared/a2ui-contract";
 
 export interface A2UIRenderSurface {
   catalogId: string;
+  catalogVersion: A2UICatalogVersion;
   components: Partial<Record<string, A2UIComponent>>;
-  dataModel?: A2UIPreviewDataModel;
+  dataModel?: A2UIDataModel;
 }
 
 export interface A2UIRenderState {
@@ -40,6 +45,15 @@ export const applyA2UIMessage = (
 
   if ("createSurface" in message) {
     const { surfaceId, catalogId } = message.createSurface;
+    const catalogVersion = a2uiCatalogVersionForId(catalogId);
+    if (!catalogVersion) {
+      return failure(
+        state,
+        "UNSUPPORTED_CATALOG",
+        "This preview catalog version is not supported."
+      );
+    }
+
     const existing = state.surfaces[surfaceId];
     if (existing && existing.catalogId !== catalogId) {
       return failure(
@@ -60,6 +74,7 @@ export const applyA2UIMessage = (
           ...state.surfaces,
           [surfaceId]: {
             catalogId,
+            catalogVersion,
             components: {},
           },
         },
@@ -68,7 +83,7 @@ export const applyA2UIMessage = (
   }
 
   if ("updateComponents" in message) {
-    const { surfaceId, components } = message.updateComponents;
+    const { surfaceId } = message.updateComponents;
     const surface = state.surfaces[surfaceId];
     if (!surface) {
       return failure(
@@ -78,8 +93,21 @@ export const applyA2UIMessage = (
       );
     }
 
+    // #116: the surface's pinned catalog scopes components and actions; a
+    // foreign component fails closed even though another catalog knows it.
+    const scoped = validateA2UIMessage(input, {
+      catalogVersion: surface.catalogVersion,
+    });
+    if (!scoped.ok || !("updateComponents" in scoped.value)) {
+      return failure(
+        state,
+        scoped.ok ? "INVALID_MESSAGE" : scoped.code,
+        scoped.ok ? "The preview components were rejected." : scoped.message
+      );
+    }
+
     const nextComponents = { ...surface.components };
-    for (const component of components) {
+    for (const component of scoped.value.updateComponents.components) {
       nextComponents[component.id] = component;
     }
 

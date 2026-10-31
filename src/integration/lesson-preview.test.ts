@@ -56,8 +56,11 @@ describe("compiled lesson preview", () => {
         if (!surface) {
           throw new Error("Expected a compiled surface.");
         }
+        const model = surface.dataModel;
+        const variantId =
+          model && "variantId" in model ? model.variantId : undefined;
         const variant = result.record.draft.variants.find(
-          (entry) => entry.id === surface.dataModel?.variantId
+          (entry) => entry.id === variantId
         );
         if (!variant) {
           throw new Error("Expected a generated variant for the surface.");

@@ -2,7 +2,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
-import { A2UI_CATALOG_ID } from "@/shared/a2ui-contract";
+import { A2UI_CATALOG_ID, A2UI_CATALOG_VERSION } from "@/shared/a2ui-contract";
 
 import { A2UIComponentRenderer } from "./component-renderer";
 import type { A2UIRenderSurface } from "./renderer";
@@ -11,6 +11,7 @@ describe("semantic A2UI lesson surface", () => {
   it("stops cyclic references and omits missing children without hiding siblings", () => {
     const surface: A2UIRenderSurface = {
       catalogId: A2UI_CATALOG_ID,
+      catalogVersion: A2UI_CATALOG_VERSION,
       components: {
         root: {
           id: "root",
@@ -38,6 +39,7 @@ describe("semantic A2UI lesson surface", () => {
   it("renders child components without React missing-key warnings", () => {
     const surface: A2UIRenderSurface = {
       catalogId: A2UI_CATALOG_ID,
+      catalogVersion: A2UI_CATALOG_VERSION,
       components: {
         root: {
           id: "root",
