@@ -1,0 +1,593 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-31T00:14:56.435Z",
+  "serverName": "rmcp",
+  "serverVersion": "3.2.0",
+  "protocol": "2025-03-26",
+  "tools": [
+    {
+      "name": "find_curriculum_lessons",
+      "title": "Find curriculum lessons by standard, position, or title",
+      "description": "Find curriculum lessons — lessons that teach a specific standard, or a lesson a teacher refers to by its curriculum position or title. Provide exactly ONE of three mutually exclusive mode params; see each param's description for how to format it.\n  - `caseIdentifierUUID` — lessons that teach a standard (UUID from find_standard_statement). Works with Common Core / Multi-State standards; a state standard works only when it has an exact Common Core equivalent, otherwise returns no lessons. For science, pass a Multi-State (NGSS) science standard's UUID — state-specific science standards return no lessons. Lessons that merely build on or build toward the standard are excluded.\n  - `ordinalName` — a lesson's curriculum position. Component vocabulary by curriculum:\n      - Illustrative Mathematics: course ('Kindergarten' | 'Grade 1'-'Grade 8' | 'Algebra 1'/'2' | 'Geometry' | 'Integrated Math 1'-'3' | 'Accelerated 6'/'7'), 'Unit N', 'Section A'-'F', 'Lesson N'\n      - OpenSciEd: course ('Science Grade K' | 'Science Grade 1'-'Science Grade 11' | 'Computer Science Grade 6'-'Computer Science Grade 8'), 'Unit N', 'Lesson Set N', 'Lesson N'\n  - `lessonName` — words from a lesson's descriptive title.\nProviding more than one mode is an error (blank values count as absent). Optionally scope any mode with `author`: 'Illustrative Mathematics' (math, K-12) or 'OpenSciEd' (science, K-12).\n\nResults carry the lesson's title, description, grade level, subject, `fullOrdinalName` (its position, e.g. 'Grade 6, Unit 5, Section C, Lesson 12') and `standards` — every standard the lesson teaches, as code and UUID, so no further search is needed to see its alignment. When several plausible lessons return, echo `fullOrdinalName` and `lessonName` back to the teacher to confirm which is meant (distinct lessons can share the same curriculum position). To read a chosen lesson's materials, follow up with find_materials_for_lesson using the returned `lessonIdentifier`.\n\nSearch strategy: if a search returns nothing, drop the least-certain `ordinalName` component or retry with fewer/different `lessonName` words (for a state standard, no rows usually means it has no exact Common Core equivalent); if it returns too much, add `author` or switch to an `ordinalName` search.\n\nResults include only datasets covered by your license. Always pass session_id, copied from the most recent tool result (analytics only).",
+      "inputSchema": {
+        "oneOf": [
+          {
+            "properties": {
+              "caseIdentifierUUID": {
+                "minLength": 1
+              }
+            },
+            "required": [
+              "caseIdentifierUUID"
+            ]
+          },
+          {
+            "properties": {
+              "ordinalName": {
+                "minLength": 1
+              }
+            },
+            "required": [
+              "ordinalName"
+            ]
+          },
+          {
+            "properties": {
+              "lessonName": {
+                "minLength": 1
+              }
+            },
+            "required": [
+              "lessonName"
+            ]
+          }
+        ],
+        "properties": {
+          "author": {
+            "description": "Optional. Filter to a specific curriculum author: 'Illustrative Mathematics' (math) or 'OpenSciEd' (science). If omitted, lessons from any author are returned.",
+            "enum": [
+              "Illustrative Mathematics",
+              "OpenSciEd"
+            ],
+            "maxLength": 256,
+            "type": "string"
+          },
+          "caseIdentifierUUID": {
+            "description": "UUID of a standard (from find_standard_statement); returns lessons that teach that standard. Do not combine with ordinalName or lessonName.",
+            "maxLength": 256,
+            "type": "string"
+          },
+          "lessonName": {
+            "description": "Words from the lesson's descriptive title (e.g. 'dividing decimals'). Word-by-word matching against lesson titles; word-form variants match; results come back best-match-first. Do not include grade/unit/lesson numbers — put those in ordinalName.",
+            "maxLength": 256,
+            "type": "string"
+          },
+          "ordinalName": {
+            "description": "The lesson's curriculum position as comma-separated components, e.g. 'Grade 6, Unit 1, Lesson 19'. Expand abbreviations ('G6 U1 L19' → 'Grade 6, Unit 1, Lesson 19'). Components match in any order; omit any you're unsure of. Numbers match exactly ('Unit 1' ≠ 'Unit 10'); letter suffixes are tolerated ('Module 2' matches 'Module 2N'). Do not combine with caseIdentifierUUID or lessonName.",
+            "maxLength": 256,
+            "type": "string"
+          },
+          "session_id": {
+            "description": "Copy the session_id value from this conversation's most recent tool result, exactly. Only a conversation's very first tool call has no value to copy; the server then assigns one in its result. Analytics only — never affects the tool's result.",
+            "maxLength": 128,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "lessons": {
+            "description": "Matching curriculum lessons. Standard mode returns up to 150 teaching lessons (above the largest standard known today, but if exactly 150 come back the list may be capped); ordinal and name modes return up to 25 candidates, name mode best-match-first.",
+            "items": {
+              "properties": {
+                "academicSubject": {
+                  "description": "Academic subject of the lesson, e.g. 'Mathematics'.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "fullOrdinalName": {
+                  "description": "Full ordinal path of the lesson from its course, e.g. 'Grade 6, Unit 1, Section F, Lesson 19'. Shows where the lesson sits in the curriculum.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "gradeLevel": {
+                  "description": "Grade level(s) of the lesson, e.g. [\"2\"].",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": [
+                    "array",
+                    "null"
+                  ]
+                },
+                "lessonDescription": {
+                  "description": "Short summary of the lesson — for OpenSciEd, the lesson's narrative; for Illustrative Mathematics, its teacher-facing learning goals. Null only for the few lessons lacking a summary source.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "lessonIdentifier": {
+                  "description": "Identifier of the lesson; pass to find_materials_for_lesson.",
+                  "type": "string"
+                },
+                "lessonName": {
+                  "description": "Display name of the lesson.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "standards": {
+                  "description": "Every standard the lesson teaches, by code.",
+                  "items": {
+                    "properties": {
+                      "caseIdentifierUUID": {
+                        "description": "UUID of the standard, for find_standard_statement.",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "statementCode": {
+                        "description": "Code of the standard, e.g. '3.NF.A.1'.",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "lessonIdentifier",
+                "standards"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "session_id": {
+            "description": "Session id for this conversation; pass it back as the session_id argument on your next tool call.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lessons"
+        ],
+        "type": "object"
+      },
+      "inputSchemaHash": "87f024775c1cede3b6762d0f076b0368a82a4a3223ae5cbf3f3589c6f9105c29",
+      "outputSchemaHash": "0f62a8b0adfafd3250761d91e3478de834e4fcc03c187c86ce4a7724ce9637ba"
+    },
+    {
+      "name": "find_learning_components_from_standard",
+      "title": "Find learning components from academic standards",
+      "description": "Given a CASE caseIdentifierUUID for a standard (obtained via find_standard_statement), return the authoritative Learning Components (LCs), aligned to that standard. Learning Components break broad standards into smaller, teachable skills. This can be useful when an educator or prompt needs to focus instruction at a finer grain size—for example, creating practice problems, assessment items, or interventions where each item targets a different learning component.\n\nLearning components are currently available for Mathematics standards (Common Core State Standard - Mathematics and adopting state frameworks) and English Language Arts standards for grades K-2. Always pass session_id, copied from the most recent tool result (analytics only).",
+      "inputSchema": {
+        "properties": {
+          "caseIdentifierUUID": {
+            "description": "Case identifier UUID of the standard (obtained from find_standard_statement tool)",
+            "maxLength": 256,
+            "type": "string"
+          },
+          "session_id": {
+            "description": "Copy the session_id value from this conversation's most recent tool result, exactly. Only a conversation's very first tool call has no value to copy; the server then assigns one in its result. Analytics only — never affects the tool's result.",
+            "maxLength": 128,
+            "type": "string"
+          }
+        },
+        "required": [
+          "caseIdentifierUUID"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "learning_components": {
+            "description": "Array of learning components aligned to the standard.",
+            "items": {
+              "properties": {
+                "description": {
+                  "description": "Description of the learning component.",
+                  "type": "string"
+                },
+                "identifier": {
+                  "description": "Learning component identifier.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "identifier",
+                "description"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "session_id": {
+            "description": "Session id for this conversation; pass it back as the session_id argument on your next tool call.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "learning_components"
+        ],
+        "type": "object"
+      },
+      "inputSchemaHash": "1447e30044892cf9635bd358a96a97ec6bf115413601ed981160453a5d100147",
+      "outputSchemaHash": "4845b1c0c650a1b1bd6625417e5d6735d1a6a1c6412011e9a490d513d03e550a"
+    },
+    {
+      "name": "find_misconceptions_for_standard",
+      "title": "Find common misconceptions for a standard",
+      "description": "Return misconceptions (common student misunderstandings) for a specific math standard — useful for anticipating where students struggle or planning supports. They come from Illustrative Mathematics guidance, or Eedi as a fallback.\n\nMath standards only: pass subject='Mathematics'. A non-math standard (ELA, science, social studies) returns an error. A math standard with no match in either source returns an empty list.\n\nResults come from one of two places, and a response is entirely one or the other:\n  - Illustrative Mathematics: curated \"Building on Student Thinking\" teacher guidance for this standard. Authoritative. These rows carry activity/material fields and may include a `content` HTML or Markdown block.\n  - Eedi (fallback, returned only when there is no Illustrative Mathematics guidance for the standard): approximate — matched to the standard by text similarity, not a curated alignment. Each row names the `matchedConstruct` (skill) it came from. Check that the matched construct actually fits the standard, surface it to the user, and disregard any off-topic note.\n\nResults include only datasets covered by your license. Always pass session_id, copied from the most recent tool result (analytics only).",
+      "inputSchema": {
+        "properties": {
+          "caseIdentifierUUID": {
+            "description": "UUID of the standard (from find_standard_statement).",
+            "maxLength": 256,
+            "type": "string"
+          },
+          "session_id": {
+            "description": "Copy the session_id value from this conversation's most recent tool result, exactly. Only a conversation's very first tool call has no value to copy; the server then assigns one in its result. Analytics only — never affects the tool's result.",
+            "maxLength": 128,
+            "type": "string"
+          },
+          "subject": {
+            "description": "Academic subject of the standard. Currently only 'Mathematics' yields results.",
+            "enum": [
+              "Mathematics"
+            ],
+            "maxLength": 256,
+            "type": "string"
+          }
+        },
+        "required": [
+          "caseIdentifierUUID",
+          "subject"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "misconceptions": {
+            "description": "Misconceptions for the standard. A response is entirely one shape — either IM 'Building on Student Thinking' rows (activity*/content set) or Eedi rows (misconception/matchedConstruct set); fields not relevant to the shape are omitted.",
+            "items": {
+              "properties": {
+                "activityIdentifier": {
+                  "description": "IM: identifier of the activity. Omitted on Eedi rows.",
+                  "type": "string"
+                },
+                "activityName": {
+                  "description": "IM: name of the activity the note belongs to. Omitted on Eedi rows.",
+                  "type": "string"
+                },
+                "constructIdentifier": {
+                  "description": "Eedi: identifier of the matched construct. Omitted on IM rows.",
+                  "type": "string"
+                },
+                "content": {
+                  "description": "IM: the 'Building on Student Thinking' HTML or Markdown block; truncated if very large. Omitted when no such block is present or on Eedi rows.",
+                  "type": "string"
+                },
+                "matchedConstruct": {
+                  "description": "Eedi: the construct (skill) text the misconception was matched through — judge relevance by comparing this to the standard. Omitted on IM rows.",
+                  "type": "string"
+                },
+                "materialIdentifier": {
+                  "description": "IM: identifier of the source material. Omitted on Eedi rows.",
+                  "type": "string"
+                },
+                "misconception": {
+                  "description": "Eedi: the misconception text. Omitted on IM rows.",
+                  "type": "string"
+                },
+                "misconceptionIdentifier": {
+                  "description": "Eedi: identifier of the misconception. Omitted on IM rows.",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "session_id": {
+            "description": "Session id for this conversation; pass it back as the session_id argument on your next tool call.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "misconceptions"
+        ],
+        "type": "object"
+      },
+      "inputSchemaHash": "e426d475eb661360d5b20297b3552c2f804e693ca33102f4cc0ca27408d74131",
+      "outputSchemaHash": "86a6dd64063c7ad4ea038a340b2d6a9121b280ac0b4c6361341cf5b27234b860"
+    },
+    {
+      "name": "find_standard_statement",
+      "title": "Find academic standard statement",
+      "description": "Find education standards, by ONE of two modes — provide exactly one of:\n  - `code`: an exact statementCode OR a code prefix (e.g. '3.NF.A.1' for that standard; '2.OA' for all '2.OA.*'). Matches the code itself or any code beneath it. Some standards also carry an alternate code (returned as `alternateStatementCode`); `code` matches that too, so a standard can be found by either code.\n  - `keywords`: standards whose description matches ANY of these words by stem (case-insensitive, whole-word — e.g. 'fraction' also matches 'fractions' — not substring; use when you know a topic but not a code).\nThe modes are not combined: if both are given, `code` wins. Optionally scope with `jurisdiction` (defaults to the Common Core / Multi-State version; pass a state for its adopted wording) and `academicSubject`.\n\nAlways pass the U.S. state in `jurisdiction` — never put a state name in `keywords` (keywords match description text, not the state). For Washington D.C., use exactly 'Washington, D.C.' (not 'District of Columbia'). Pass `academicSubject` whenever the subject is known — the same code can exist in more than one subject.\n\nSearch strategy: if a code search returns nothing, the code's format likely differs from how it appears here — retry with `keywords`; the results carry real `code` values that show the correct format, which you can then use to retry the code search. Conversely, a keyword match's `code` can seed a code search for related standards (e.g. its parent prefix to pull the whole family).\n\nReturns a `standards` array: usually one for an exact code, but a code can map to more than one standard (most often the same code across academic subjects, e.g. 'RI.5.2' as both ELA and Social Studies). Each standard includes a `subStandards` array when it has children (e.g. '3.NF.A.3' → '3.NF.A.3.a'-'d'). Always pass session_id, copied from the most recent tool result (analytics only).",
+      "inputSchema": {
+        "anyOf": [
+          {
+            "properties": {
+              "code": {
+                "minLength": 1
+              }
+            },
+            "required": [
+              "code"
+            ]
+          },
+          {
+            "properties": {
+              "keywords": {
+                "minItems": 1
+              }
+            },
+            "required": [
+              "keywords"
+            ]
+          }
+        ],
+        "properties": {
+          "academicSubject": {
+            "description": "Optional. Filter to one of these subjects (case-insensitive): 'Mathematics', 'English Language Arts', 'Science', 'Social Studies', or 'Other'. Any other value is rejected.",
+            "maxLength": 256,
+            "type": "string"
+          },
+          "code": {
+            "description": "Exact statementCode or a code prefix (e.g. '3.NF.A.1' or '2.OA'); matches the code itself or any code starting with it plus '.'. Also matches a standard's alternate code (alternateStatementCode) where one exists. Case-insensitive. Takes precedence over keywords if both are given.",
+            "maxLength": 256,
+            "type": "string"
+          },
+          "jurisdiction": {
+            "description": "Optional. State name (e.g. 'Maryland') for state-adopted standards; defaults to 'Multi-State' (Common Core). For Washington D.C., use exactly 'Washington, D.C.' (not 'District of Columbia').",
+            "maxLength": 256,
+            "type": "string"
+          },
+          "keywords": {
+            "description": "Topic words; a standard matches if ANY word matches a word in its description by stem (case-insensitive; e.g. 'fraction' also matches 'fractions'). Whole-word stemmed matching, not substring. Do NOT put the U.S. state name here — use the jurisdiction parameter for that.",
+            "items": {
+              "maxLength": 256,
+              "type": "string"
+            },
+            "maxItems": 32,
+            "type": "array"
+          },
+          "session_id": {
+            "description": "Copy the session_id value from this conversation's most recent tool result, exactly. Only a conversation's very first tool call has no value to copy; the server then assigns one in its result. Analytics only — never affects the tool's result.",
+            "maxLength": 128,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "session_id": {
+            "description": "Session id for this conversation; pass it back as the session_id argument on your next tool call.",
+            "type": "string"
+          },
+          "standards": {
+            "description": "Standards matching the request within the jurisdiction. An exact code usually returns one (more when the same code exists across academic subjects); a code prefix or a keyword search may return many. Empty when nothing matches.",
+            "items": {
+              "properties": {
+                "academicSubject": {
+                  "description": "The academic subject area of the standard.",
+                  "type": "string"
+                },
+                "alternateStatementCode": {
+                  "description": "A second code the standard also goes by, when it has one; also searchable via `code`. Omitted when the standard has none.",
+                  "type": "string"
+                },
+                "caseIdentifierUUID": {
+                  "description": "A UUID referencing the equivalent item in the CASE Network published by 1EdTech.",
+                  "type": "string"
+                },
+                "description": {
+                  "description": "The official statement text of the standard.",
+                  "type": "string"
+                },
+                "gradeLevels": {
+                  "description": "The educational grade levels for which the standard applies.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "jurisdiction": {
+                  "description": "The jurisdiction in which the standard applies (e.g., 'Maryland').",
+                  "type": "string"
+                },
+                "statementCode": {
+                  "description": "The standard's own primary code (e.g. '3.NF.A.1'). This is the matched standard's code, which may differ from the input: for a prefix or keyword search, or when the input matched the standard's `alternateStatementCode` (in which case the input is reflected in `alternateStatementCode`). Null when a code search matched a standard by its `alternateStatementCode` and it has no primary code.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "subStandards": {
+                  "description": "Sub-standards of this standard (e.g. '3.NF.A.3.a'-'d' under '3.NF.A.3'), where the teachable detail lives. Present only when the standard has children.",
+                  "items": {
+                    "properties": {
+                      "caseIdentifierUUID": {
+                        "description": "The sub-standard's CASE Network UUID.",
+                        "type": "string"
+                      },
+                      "description": {
+                        "description": "The official statement text of the sub-standard.",
+                        "type": "string"
+                      },
+                      "statementCode": {
+                        "description": "The sub-standard's short code.",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "statementCode",
+                      "caseIdentifierUUID",
+                      "description"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "caseIdentifierUUID",
+                "description",
+                "jurisdiction",
+                "gradeLevels",
+                "academicSubject"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "standards"
+        ],
+        "type": "object"
+      },
+      "inputSchemaHash": "d9840e513f98341662ae2295b192c7895a45b5d752bb87a2c62a96972b63e301",
+      "outputSchemaHash": "2b19ac5a44827fe98892742e946858dea18afe0a2e4e4e8806bdc48bd33ad647"
+    },
+    {
+      "name": "find_standards_progression_from_standard",
+      "title": "Find standards progression from academic standard",
+      "description": "Math standards only: given a CASE caseIdentifierUUID for a math standard, return the standards that come before or after it in a learning progression, based on the Student Achievement Partners (SAP) Coherence Map for Common Core State Standards in Mathematics. Calling with an ELA, science, or social studies standard returns an error, so do not call this tool for those subjects. The tool identifies prerequisite (backward) or subsequent (forward) standards and returns the equivalent state standards when an exact match exists. Use primarily to support unfinished learning (backward) and to provide forward context when appropriate. SAP guidance (summarized): unfinished learning is best addressed in the context of grade-level work; there is no single best path—multiple connected routes can be appropriate; avoid sending students more than two grade levels below the target; use progressions to identify the neighborhood of mathematics that can unlock learning while teachers bring the context for their learners. Supported frameworks include CCSS-M and state frameworks with crosswalk coverage to CCSS-M.\n\nEach result carries a matchType. 'exact' means the input matches a Common Core standard directly, so the progression standards are returned, mapped to the input's jurisdiction (progression standards with no exact equivalent there are omitted). 'partial' means the input only partially aligns; each progression standard is then returned with its Learning Components (learningComponents) so you can judge which components transfer. If the input is not a Mathematics standard, has no Common Core Mathematics alignment at all, or has no progression in the requested direction, the tool returns no standards and an explanatory message (isError: true) describing why. Always pass session_id, copied from the most recent tool result (analytics only).",
+      "inputSchema": {
+        "properties": {
+          "caseIdentifierUUID": {
+            "description": "UUID of the standard in the CASE Network (from find_standard_statement)",
+            "maxLength": 256,
+            "type": "string"
+          },
+          "direction": {
+            "description": "Traversal direction: 'backward' for prerequisite standards (unfinished learning) or 'forward' for subsequent standards",
+            "enum": [
+              "backward",
+              "forward"
+            ],
+            "maxLength": 256,
+            "type": "string"
+          },
+          "session_id": {
+            "description": "Copy the session_id value from this conversation's most recent tool result, exactly. Only a conversation's very first tool call has no value to copy; the server then assigns one in its result. Analytics only — never affects the tool's result.",
+            "maxLength": 128,
+            "type": "string"
+          }
+        },
+        "required": [
+          "caseIdentifierUUID",
+          "direction"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "session_id": {
+            "description": "Session id for this conversation; pass it back as the session_id argument on your next tool call.",
+            "type": "string"
+          },
+          "standards": {
+            "description": "Array of standards in the progression (prerequisite or extension)",
+            "items": {
+              "properties": {
+                "academicSubject": {
+                  "description": "Academic subject area of the returned standard.",
+                  "type": "string"
+                },
+                "alignmentScore": {
+                  "description": "How closely the input aligned to the Common Core standard used as the pivot (1.0 for an exact match, between 0 and 1 for a partial match).",
+                  "type": "number"
+                },
+                "caseIdentifierUUID": {
+                  "description": "UUID referencing the equivalent item in the CASE Network.",
+                  "type": "string"
+                },
+                "description": {
+                  "description": "Official statement text of the returned standard.",
+                  "type": "string"
+                },
+                "gradeLevel": {
+                  "description": "Educational grade levels for which the returned standard applies (e.g. [\"4\"], or [\"9\",\"10\",\"11\",\"12\"] for a high-school standard).",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "jurisdiction": {
+                  "description": "Jurisdiction where the returned standard applies.",
+                  "type": "string"
+                },
+                "learningComponents": {
+                  "description": "Learning Components of the progression standard, for downstream judgement of which transfer. Populated only on 'partial' matches; an empty array on 'exact' matches.",
+                  "items": {
+                    "properties": {
+                      "description": {
+                        "type": "string"
+                      },
+                      "identifier": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "identifier",
+                      "description"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "matchType": {
+                  "description": "'exact' when the input matched a Common Core standard directly (the returned standard is the progression standard, mapped to the input's jurisdiction where available); 'partial' when the input only partially aligned (the returned standard is the Common Core progression standard, accompanied by its learningComponents).",
+                  "enum": [
+                    "exact",
+                    "partial"
+                  ],
+                  "type": "string"
+                },
+                "statementCode": {
+                  "description": "Code of the returned standard.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "matchType",
+                "alignmentScore",
+                "statementCode",
+                "caseIdentifierUUID",
+                "description",
+                "jurisdiction",
+                "gradeLevel",
+                "academicSubject",
+                "learningComponents"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "standards"
+        ],
+        "type": "object"
+      },
+      "inputSchemaHash": "609699beb5fc312c62bc301fb934dff68ad10c6ceeb1dfb50c2a5d9ea0920792",
+      "outputSchemaHash": "95e9dd95575df8df655637f5fa0ba093e7eeefcf942b5f9314caa78b1349e2f9"
+    }
+  ]
+}
