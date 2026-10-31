@@ -43,6 +43,13 @@
       "when": 1793194749394,
       "tag": "0005_draft_ownership",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793408899568,
+      "tag": "0006_far_viper",
+      "breakpoints": true
     }
   ]
 }

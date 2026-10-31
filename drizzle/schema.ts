@@ -342,6 +342,11 @@ export const lessonDraftRequests = pgTable(
     diagnostics: jsonb().default([]).notNull(),
     draft: jsonb(),
     provenance: jsonb(),
+    // Soft reference to the reviewed source snapshot (#114). No FK on
+    // purpose: snapshots expire and are swept independently of request
+    // history, and a composite ON DELETE SET NULL cannot keep tenant_id
+    // NOT NULL.
+    sourceSnapshotId: text("source_snapshot_id"),
     createdAt: timestamp("created_at", {
       withTimezone: true,
       mode: "string",
@@ -772,3 +777,123 @@ export const provisioningAudit = pgTable("provisioning_audit", {
     .defaultNow()
     .notNull(),
 }).enableRLS();
+
+// Source snapshots (#114). One bounded source per row; upload mode only until
+// #113 adds the Learning Commons mode. Snapshots are immutable records:
+// correction or replacement inserts a new row that links back through
+// replaces_snapshot_id, never an overwrite.
+export const sourceSnapshots = pgTable(
+  "source_snapshots",
+  {
+    id: text().primaryKey().notNull(),
+    tenantId: text("tenant_id").notNull(),
+    teacherId: text("teacher_id").notNull(),
+    standardId: text("standard_id").notNull(),
+    mode: text().notNull(),
+    fileName: text("file_name").notNull(),
+    fileFormat: text("file_format").notNull(),
+    fileSizeBytes: integer("file_size_bytes").notNull(),
+    pageCount: integer("page_count"),
+    contentHash: text("content_hash"),
+    extractedText: text("extracted_text"),
+    state: text().notNull(),
+    gaps: jsonb().default([]).notNull(),
+    failureReason: text("failure_reason"),
+    unverifiedAlignment: boolean("unverified_alignment")
+      .default(true)
+      .notNull(),
+    alignmentAcknowledgedAt: timestamp("alignment_acknowledged_at", {
+      withTimezone: true,
+      mode: "string",
+    }),
+    syntheticMaterialConfirmed: boolean("synthetic_material_confirmed")
+      .default(false)
+      .notNull(),
+    requiredSkillsConfirmedAt: timestamp("required_skills_confirmed_at", {
+      withTimezone: true,
+      mode: "string",
+    }),
+    reviewedAt: timestamp("reviewed_at", {
+      withTimezone: true,
+      mode: "string",
+    }),
+    usedAt: timestamp("used_at", { withTimezone: true, mode: "string" }),
+    expiresAt: timestamp("expires_at", {
+      withTimezone: true,
+      mode: "string",
+    }).notNull(),
+    replacesSnapshotId: text("replaces_snapshot_id"),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", {
+      withTimezone: true,
+      mode: "string",
+    }).notNull(),
+  },
+  (table) => {
+    return [
+      index("source_snapshots_tenant_idx").using(
+        "btree",
+        table.tenantId.asc().nullsLast(),
+        table.createdAt.desc().nullsFirst()
+      ),
+      index("source_snapshots_expiry_idx").using(
+        "btree",
+        table.expiresAt.asc().nullsLast()
+      ),
+      foreignKey({
+        columns: [table.tenantId],
+        foreignColumns: [tenants.id],
+        name: "source_snapshots_tenant_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.teacherId],
+        foreignColumns: [actors.id],
+        name: "source_snapshots_teacher_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.standardId],
+        foreignColumns: [standards.tenantId, standards.id],
+        name: "source_snapshots_tenant_id_standard_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.replacesSnapshotId],
+        foreignColumns: [table.tenantId, table.id],
+        name: "source_snapshots_tenant_id_replaces_snapshot_id_fkey",
+      }),
+      unique("source_snapshots_tenant_id_id_key").on(table.tenantId, table.id),
+      pgPolicy("source_snapshots_are_tenant_scoped", {
+        as: "permissive",
+        for: "all",
+        to: ["public"],
+        using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
+      }),
+      check("source_snapshots_mode_check", sql`mode = 'upload'`),
+      check(
+        "source_snapshots_file_format_check",
+        sql`file_format = ANY (ARRAY['pdf'::text, 'txt'::text, 'markdown'::text])`
+      ),
+      check(
+        "source_snapshots_state_check",
+        sql`state = ANY (ARRAY['extracting'::text, 'complete'::text, 'partial'::text, 'failed'::text])`
+      ),
+      check(
+        "source_snapshots_file_size_check",
+        sql`file_size_bytes >= 0 AND file_size_bytes <= 5242880`
+      ),
+      check(
+        "source_snapshots_extracted_text_length_check",
+        sql`extracted_text IS NULL OR char_length(extracted_text) <= 30000`
+      ),
+      check(
+        "source_snapshots_page_count_check",
+        sql`page_count IS NULL OR (page_count >= 1 AND page_count <= 20)`
+      ),
+      check(
+        "source_snapshots_failure_reason_check",
+        sql`failure_reason IS NULL OR failure_reason = ANY (ARRAY['unsupported-format'::text, 'oversized-file'::text, 'too-many-pages'::text, 'encrypted'::text, 'empty-source'::text, 'encoding'::text, 'character-limit-exceeded'::text, 'parser-fault'::text, 'extraction-timeout'::text, 'interrupted'::text, 'personal-data'::text])`
+      ),
+    ];
+  }
+).enableRLS();
