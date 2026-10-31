@@ -398,7 +398,7 @@ describe("lesson generation service", () => {
           code: "ANSWER_MISMATCH",
           severity: "error",
           validator: "curriculum",
-          verdict: "block",
+          verdict: "hard_block",
           validatorVersion: expect.any(String),
         }),
       ])
@@ -417,17 +417,19 @@ describe("lesson generation service", () => {
         if (validationCalls === 1) {
           return Promise.resolve({
             status: "retryable",
-            verdict: "block",
+            verdict: "hard_block",
+            recovery: "retry",
             reviews: [],
             findings: [
               {
                 validator: "learning-quality",
                 validatorVersion: "agent-timeout-fixture-v1",
-                verdict: "block",
+                verdict: "hard_block",
                 code: "VALIDATION_TIMEOUT",
                 field: "validation",
                 reason:
                   "The semantic validator timed out before completing. Try this draft again.",
+                recovery: "retry",
               },
             ],
             retry: {

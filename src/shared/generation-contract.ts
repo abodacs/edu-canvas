@@ -11,8 +11,9 @@ export const semanticValidatorRoleValues = [
 export const semanticValidationVerdictValues = [
   "pass",
   "warning",
-  "block",
+  "hard_block",
 ] as const;
+export const recoveryActionValues = ["edit", "replace", "retry"] as const;
 const variantKindValues = ["standard", "scaffold", "challenge"] as const;
 export const generationStateValues = [
   "requested",
@@ -78,6 +79,9 @@ export const generationRequestErrorStatusByCode = {
   GENERATION_SOURCE_NOT_READY: 422,
 } as const satisfies Record<GenerationRequestErrorCode, number>;
 
+export type SemanticValidationVerdict =
+  (typeof semanticValidationVerdictValues)[number];
+export type RecoveryAction = (typeof recoveryActionValues)[number];
 export type LessonGenerationInput = z.infer<typeof lessonGenerationInputSchema>;
 export type LessonLanguage = (typeof languageValues)[number];
 export type LessonDifficulty = (typeof difficultyValues)[number];
