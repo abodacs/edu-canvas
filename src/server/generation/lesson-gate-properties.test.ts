@@ -900,7 +900,7 @@ const storyMutationProbes: StoryMutationProbe[] = [
   {
     name: "a path with blank step copy",
     apply(path) {
-      path.steps[0].label = ' '.repeat(3);
+      path.steps[0].label = " ".repeat(3);
     },
     expectedCode: "STORY_SOURCE_COPY_EMPTY",
   },

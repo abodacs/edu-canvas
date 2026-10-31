@@ -125,9 +125,7 @@ const storyCopy = {
   },
 } as const;
 
-const storyComponents = (
-  input: LessonPreviewCompileInput
-): A2UIComponent[] => {
+const storyComponents = (input: LessonPreviewCompileInput): A2UIComponent[] => {
   const copy = storyCopy[input.language];
   const storyPlan = buildStoryPlan({
     path: input.learningPath,
@@ -162,10 +160,18 @@ const storyComponents = (
     {
       id: "story-plan",
       component: "Column",
-      children: ["story-title", "story-action", ...storyPlan.beats.map((beat) => beat.id)],
+      children: [
+        "story-title",
+        "story-action",
+        ...storyPlan.beats.map((beat) => beat.id),
+      ],
     },
     text("story-title", storyPlan.heading, "label"),
-    text("story-action", `${copy.actionPrefix}: ${storyPlan.beats[0]?.learnerAction ?? ""}`, "caption"),
+    text(
+      "story-action",
+      `${copy.actionPrefix}: ${storyPlan.beats[0]?.learnerAction ?? ""}`,
+      "caption"
+    ),
     ...beatComponents,
   ] satisfies A2UIComponent[];
 };

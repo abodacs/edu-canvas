@@ -82,8 +82,7 @@ export interface StoryPlanBuildInput {
 }
 
 export type StoryPlanBuildErrorCode =
-  | "STORY_PATH_TOO_SHORT"
-  | "STORY_SOURCE_COPY_EMPTY";
+  "STORY_PATH_TOO_SHORT" | "STORY_SOURCE_COPY_EMPTY";
 
 export class StoryPlanBuildError extends Error {
   readonly code: StoryPlanBuildErrorCode;
@@ -123,10 +122,7 @@ const connectionConnectives = {
   ar: ["حتى", "لكي"],
 } as const satisfies Record<StoryLanguage, readonly string[]>;
 
-const sentenceCase = (
-  value: string,
-  language: StoryLanguage
-): string =>
+const sentenceCase = (value: string, language: StoryLanguage): string =>
   language === "ar" ? value : value.charAt(0).toUpperCase() + value.slice(1);
 
 const collapseWhitespace = (value: string): string =>
@@ -151,7 +147,8 @@ const findConnectiveEnd = (
     const start = haystack.indexOf(needle);
     const found =
       start === -1 ? undefined : { start, end: start + needle.length };
-    const isEarlier = found !== undefined && (!best || found.start < best.start);
+    const isEarlier =
+      found !== undefined && (!best || found.start < best.start);
     const isSameStartButLonger =
       found !== undefined &&
       best !== undefined &&
@@ -270,8 +267,7 @@ export const buildStoryPlan = ({
 
   const beats: StoryBeat[] = drafts.map((draft, index) => {
     const next = drafts[index + 1];
-    const transition =
-      next?.label ?? nextScreenRationale;
+    const transition = next?.label ?? nextScreenRationale;
 
     return {
       id: `story-beat-${index + 1}`,

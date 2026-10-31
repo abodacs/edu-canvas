@@ -175,12 +175,14 @@ describe("lesson preview compiler", () => {
       return {
         rootChildren: root.children,
         storyChildren: story.children,
-        labels: ["story-beat-1-label", "story-beat-2-label", "story-beat-3-label"].map(
-          (id) => {
-            const component = byId.get(id);
-            return component?.component === "Text" ? component.text : undefined;
-          }
-        ),
+        labels: [
+          "story-beat-1-label",
+          "story-beat-2-label",
+          "story-beat-3-label",
+        ].map((id) => {
+          const component = byId.get(id);
+          return component?.component === "Text" ? component.text : undefined;
+        }),
       };
     });
 
@@ -203,8 +205,10 @@ describe("lesson preview compiler", () => {
     );
 
     const storyOffsets = stories.map((story) => {
-      return story.rootChildren.indexOf("story-plan") -
-        story.rootChildren.indexOf("learning-path");
+      return (
+        story.rootChildren.indexOf("story-plan") -
+        story.rootChildren.indexOf("learning-path")
+      );
     });
 
     expect(storyOffsets).toStrictEqual([1, 1, 1, 1]);

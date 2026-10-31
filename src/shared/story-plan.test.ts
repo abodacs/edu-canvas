@@ -41,7 +41,8 @@ const acceptedPath: StoryPlanSource = {
 
 const learnerAction = "Select a source card, then a target card.";
 
-const buildPlan = (language: StoryLanguage = "en") => buildStoryPlan({ path: acceptedPath, language, learnerAction });
+const buildPlan = (language: StoryLanguage = "en") =>
+  buildStoryPlan({ path: acceptedPath, language, learnerAction });
 
 describe(buildStoryPlan, () => {
   it("returns identical bytes for the same accepted path", () => {
@@ -138,11 +139,9 @@ describe(buildStoryPlan, () => {
     expect(plan.connectionExplanation).toBe(
       "The lesson can connect the same whole to different fraction names."
     );
-    expect(
-      acceptedPath.rationale
-        .toLowerCase()
-        
-    ).toContain(plan.connectionExplanation.toLowerCase());
+    expect(acceptedPath.rationale.toLowerCase()).toContain(
+      plan.connectionExplanation.toLowerCase()
+    );
   });
 
   it("satisfies the published story plan schema", () => {
@@ -215,9 +214,9 @@ describe(extractConnectionExplanation, () => {
   });
 
   it("drops the premise only and keeps every remaining word", () => {
-    expect(
-      extractConnectionExplanation(acceptedPath.rationale, "en")
-    ).toBe("The lesson can connect the same whole to different fraction names.");
+    expect(extractConnectionExplanation(acceptedPath.rationale, "en")).toBe(
+      "The lesson can connect the same whole to different fraction names."
+    );
   });
 
   it("splits Arabic rationales on the Arabic connective", () => {
