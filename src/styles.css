@@ -776,7 +776,7 @@ h2 {
   text-transform: capitalize;
 }
 
-/* Demo: teacher lesson generation (issue #3). The shared section/fragment
+/* Teacher lesson generation (issue #3). The shared section/fragment
    selectors above pair this surface with the seeded-fixture proof it lands
    into. */
 .generation-section {

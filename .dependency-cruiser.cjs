@@ -103,20 +103,20 @@ module.exports = {
       to: { path: "^(jotai|mobx|redux|valtio|zustand|@reduxjs/toolkit)" },
     },
     {
-      name: "drafting-reaches-session-policy-directly",
+      name: "runtime-imports-in-memory-store",
       comment:
-        "BACKLOG (wave 3, identity port): generation hard-codes demo session policy. Extract an identity/authorization port so drafting depends on the port, not the demo composition. Prerequisite for issue #98.",
-      severity: "warn",
-      from: { path: "^src/server/generation", pathNot: "\\.test\\.tsx?$" },
-      to: { path: "^src/server/demo" },
-    },
-    {
-      name: "preview-reaches-session-policy-directly",
-      comment:
-        "BACKLOG (wave 4, identity port): preview access checks use demo session policy directly. Same port extraction as the drafting rule.",
-      severity: "warn",
-      from: { path: "^src/server/a2ui", pathNot: "\\.test\\.tsx?$" },
-      to: { path: "^src/server/demo" },
+        "In-memory persistence is a test double. Runtime modules must compose PostgreSQL.",
+      severity: "error",
+      from: {
+        path: "^src/",
+        pathNot: [
+          "\\.test\\.tsx?$",
+          "^src/server/persistence/(seeded|source-seeded|identity-seeded)\\.ts$",
+        ],
+      },
+      to: {
+        path: "^src/server/persistence/(seeded|source-seeded|identity-seeded)\\.ts$",
+      },
     },
     {
       name: "drafting-imports-seed-curriculum-directly",

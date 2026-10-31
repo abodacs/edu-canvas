@@ -1,4 +1,4 @@
-import { demoSeed } from "@/server/seed-data";
+import { syntheticSeed } from "@/server/seed-data";
 import type {
   LessonLanguage,
   RecoveryAction,
@@ -131,20 +131,20 @@ export interface SemanticValidationOptions {
  * signed-in teacher is not rejected by the tenant-match check. Replace this
  * default with tenant-owned graph resolution when it lands.
  */
-export const createDemoCurriculumContext = (
+export const createSyntheticCurriculumContext = (
   input: Pick<NormalizedGenerationRequest, "grade" | "language" | "standardId">,
-  tenantId: string = demoSeed.tenant.id
+  tenantId: string = syntheticSeed.tenant.id
 ): VersionedCurriculumContext => {
   return {
     tenantId,
     standardId: input.standardId,
-    standardCode: demoSeed.standard.code,
+    standardCode: syntheticSeed.standard.code,
     grade: input.grade,
     language: input.language,
-    graphVersion: demoSeed.activityVersion.graphVersion,
+    graphVersion: syntheticSeed.activityVersion.graphVersion,
     targetNodeId: "graph_node_equivalent_fractions",
-    nodes: demoSeed.graphNodes,
-    edges: demoSeed.graphEdges,
+    nodes: syntheticSeed.graphNodes,
+    edges: syntheticSeed.graphEdges,
   };
 };
 

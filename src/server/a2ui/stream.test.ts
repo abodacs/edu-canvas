@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { createEquivalentFractionsDraft } from "@/server/generation/provider";
 import { buildValidatedLearningPath } from "@/server/generation/learning-path";
-import { createDemoCurriculumContext } from "@/server/generation/semantic-validation";
+import { createSyntheticCurriculumContext } from "@/server/generation/semantic-validation";
 
 import { compileRawLessonPreview } from "./compiler";
 import { createPreviewSSEStream } from "./stream";
@@ -27,7 +27,7 @@ describe("lesson preview SSE delivery", () => {
     });
     const learningPath = buildValidatedLearningPath({
       proposal: requireLearningPath(draft),
-      context: createDemoCurriculumContext({
+      context: createSyntheticCurriculumContext({
         grade: 4,
         standardId: "standard_ccss_4_nf_a_01",
         language: "en",

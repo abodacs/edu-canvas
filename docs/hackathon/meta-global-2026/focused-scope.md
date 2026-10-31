@@ -138,7 +138,6 @@ Track and eligibility are working assumptions, not confirmed registration. Verif
 - [Current README and implementation boundary](https://github.com/abodacs/edu-canvas/blob/main/README.md)
 - [Full event plan](README.md)
 - [Product priorities](../../product/delivery-priorities.md)
-- [Demo script](demo-script.md)
 - [Validation tracker](validation-tracker.md)
 - [Expanded production epic #108](https://github.com/abodacs/edu-canvas/issues/108)
 - [Provider contract](https://github.com/abodacs/edu-canvas/blob/main/src/server/generation/provider.ts)

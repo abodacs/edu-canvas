@@ -12,7 +12,7 @@ body:
     attributes:
       label: Outcome
       description: What will a user or contributor be able to do when this is complete?
-      placeholder: "Contributors can run the synthetic demo from a clean checkout."
+      placeholder: "Contributors can start the app from a clean checkout with the documented setup."
     validations:
       required: true
   - type: textarea
@@ -29,7 +29,7 @@ body:
       label: Scope
       description: State the work included and any related work excluded from this task.
       placeholder: |
-        In scope: Document the clean-checkout setup and expected demo result.
+        In scope: Document the clean-checkout setup and the expected result.
         Out of scope: Change provider configuration or deployment behavior.
     validations:
       required: true
@@ -39,8 +39,8 @@ body:
       label: Acceptance criteria
       description: List observable results that let a reviewer decide whether the task is complete.
       placeholder: |
-        - [ ] A fresh checkout starts the synthetic demo using the documented commands.
-        - [ ] The guide explains how to confirm the demo is ready.
+        - [ ] A fresh checkout starts the app using the documented commands.
+        - [ ] The guide explains how to confirm readiness.
     validations:
       required: true
   - type: textarea
@@ -48,7 +48,7 @@ body:
     attributes:
       label: Verification
       description: Give the commands or manual steps and the result that demonstrates completion.
-      placeholder: "Follow the setup guide in a clean checkout. Open /demo/teacher and confirm the seeded lesson appears."
+      placeholder: "Follow the setup guide in a clean checkout. Open /workspace and confirm the signed-in teacher can request a draft."
     validations:
       required: true
   - type: textarea

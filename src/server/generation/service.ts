@@ -3,7 +3,7 @@ import { setTimeout as delay } from "node:timers/promises";
 import { lessonGenerationInputSchema } from "@/shared/generation-contract";
 
 import { createId } from "@/server/ids";
-import { demoSeed } from "@/server/seed-data";
+import { syntheticSeed } from "@/server/seed-data";
 
 import { IdentityError } from "../identity/errors";
 import { createDefaultContentSafety } from "../moderation/content-safety";
@@ -114,8 +114,8 @@ class GenerationAbortError extends Error {
 }
 
 const supportedStandardIds: ReadonlySet<string> = new Set([
-  demoSeed.standard.id,
-  demoSeed.standard.code,
+  syntheticSeed.standard.id,
+  syntheticSeed.standard.code,
 ]);
 
 // Idempotency keys are persisted and looked up across deploys; keep FNV-1a so a retry that spans a deployment still matches its record.
@@ -174,8 +174,8 @@ export const normalizeGenerationInput = (
   }
 
   const standardId =
-    parsed.data.standardId === demoSeed.standard.code
-      ? demoSeed.standard.id
+    parsed.data.standardId === syntheticSeed.standard.code
+      ? syntheticSeed.standard.id
       : parsed.data.standardId;
   const difficulty: LessonDifficulty = parsed.data.difficulty ?? "on-level";
   const { retryOfRequestId } = parsed.data;
@@ -315,13 +315,13 @@ const buildProviderContext = (
   diagnostics: GenerationDiagnostic[]
 ): ProviderGenerationContext => {
   const reference = {
-    id: demoSeed.activityVersion.id,
-    version: String(demoSeed.activityVersion.versionNumber),
-    graphVersion: demoSeed.activityVersion.graphVersion,
-    standardCode: demoSeed.standard.code,
-    source: demoSeed.activityVersion.publicContent.source,
-    targets: demoSeed.activityVersion.publicContent.targets,
-    prompt: demoSeed.activityVersion.publicContent.prompt,
+    id: syntheticSeed.activityVersion.id,
+    version: String(syntheticSeed.activityVersion.versionNumber),
+    graphVersion: syntheticSeed.activityVersion.graphVersion,
+    standardCode: syntheticSeed.standard.code,
+    source: syntheticSeed.activityVersion.publicContent.source,
+    targets: syntheticSeed.activityVersion.publicContent.targets,
+    prompt: syntheticSeed.activityVersion.publicContent.prompt,
   };
 
   return {
@@ -546,7 +546,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         requestId: baseRecord.requestId,
         provenance,
         structuralDiagnostics,
-        graphVersion: demoSeed.activityVersion.graphVersion,
+        graphVersion: syntheticSeed.activityVersion.graphVersion,
       },
       options
     );

@@ -11,7 +11,7 @@ const snapshotKey = (tenantId: string, snapshotId: string): string =>
   `${tenantId}:${snapshotId}`;
 
 /**
-In-memory source persistence for seeded demo mode. Mirrors the postgres backend's tenant and teacher scoping so the demo path behaves identically.
+In-memory source persistence for tests. Mirrors the postgres backend's tenant and teacher scoping so the test double behaves identically.
 */
 export const createSeededSourcePersistence = (
   options: SeededSourcePersistenceOptions = {}

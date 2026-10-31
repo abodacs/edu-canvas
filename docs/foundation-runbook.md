@@ -4,14 +4,18 @@ This runbook covers the deployable walking-skeleton foundation, the first teache
 
 ## Clean checkout
 
-The default path needs no database or manual seed step:
+The app requires PostgreSQL and a provider credential:
 
 ```bash
-pnpm install
+docker compose up -d postgres
+pnpm install --frozen-lockfile
+export DATABASE_URL=postgresql://edu_canvas:edu_canvas_dev@127.0.0.1:5432/edu_canvas
+export OPENAI_API_KEY=<server-side-key>
+pnpm db:setup
 pnpm dev
 ```
 
-The app starts in deterministic `seeded-demo` mode when no environment file is present. It serves the role-limited teacher and student demo views using synthetic fixtures only.
+There is no in-memory runtime fallback. Missing `DATABASE_URL` or `OPENAI_API_KEY` fails readiness with field-level diagnostics.
 
 ## Local Git worktrees
 
@@ -34,7 +38,7 @@ The release-shaped check is:
 pnpm check
 ```
 
-That runs formatting, lint, strict TypeScript, unit tests, and the production build. After `pnpm start`, the smoke check exercises `/`, both demo roles, `/api/health`, and `/api/readiness`:
+That runs formatting, lint, strict TypeScript, unit tests, and the production build. After `pnpm start`, the smoke check exercises `/`, `/login`, `/sign-up`, `/api/health`, and `/api/readiness`:
 
 ```bash
 pnpm smoke
@@ -47,12 +51,11 @@ Copy `.env.example` to `.env` only when you need local overrides. Unprefixed val
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `APP_ENV` | `development` | `development`, `preview`, or `production` |
-| `DEMO_MODE` | `true` outside production | Keeps the seeded demo path explicit |
 | `SYNTHETIC_DATA_ONLY` | `true` | Real-student mode is blocked by the foundation |
-| `DATABASE_URL` | unset | Optional `postgres://` or `postgresql://` persistence URL |
+| `DATABASE_URL` | required | `postgres://` or `postgresql://` persistence URL |
 | `PERSISTENCE_ADAPTER` | `postgres` | Server-only PostgreSQL implementation: `postgres` or `drizzle` |
 | `SENTRY_DSN` | unset | Optional server-only Sentry delivery for scrubbed errors |
-| `OPENAI_API_KEY` | unset in demo mode | Server-only provider credential required when `DEMO_MODE=false`; renamed with the provider migration ([AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md)) |
+| `OPENAI_API_KEY` | required | Server-only provider credential; startup fails without it ([AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md)) |
 | `OPENAI_MODEL` | `gpt-5.6` | Structured-output model code default. The value must change with the provider selection ([AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md)); it is not an asserted working model |
 | `OPENAI_BASE_URL` | OpenAI Responses API | HTTPS provider endpoint in the current code; moves with the provider selection; loopback HTTP is test-only |
 | `OPENAI_TIMEOUT_MS` | `100000` | Per-call provider timeout in milliseconds; integer from 1000 to 120000. The event decision allows 100 seconds for the current Meta model |
@@ -86,29 +89,20 @@ The PostgreSQL schema includes tenant columns on every tenant-owned table, force
 
 ## Module navigation
 
-For a request to `/demo/student`, use the file names as the trace:
+For a request to `/workspace`, use the file names as the trace:
 
-1. `src/routes/demo/$role.tsx` validates the delivery path.
-2. `src/server/demo/server-function.ts` validates server-function input.
-3. `src/server/demo/read-model.ts` assembles the public snapshot.
-4. `src/server/demo/policy.ts` resolves the seeded role and tenant policy.
-5. `src/server/persistence.ts` selects the persistence seam.
-6. `src/server/persistence/seeded.ts` or `src/server/persistence/postgres.ts` implements the selected adapter.
+1. `src/routes/workspace.tsx` renders the authenticated studio.
+2. `src/components/studio/teacher-studio.tsx` collects prompt, grade, standard, language, and optional difficulty.
+3. `src/server/identity/api.server.ts` resolves the server-owned session and teacher actor.
+4. `src/server/generation/delivery.server.ts` validates the request payload.
+5. `src/server/generation/service.ts` applies safety checks, idempotency, the one-shot correction rule, and the durable state machine.
+6. `src/server/generation/provider.ts` calls the server-only provider adapter. The deterministic provider is a test double only.
+7. `src/server/generation/validation.ts` validates the canonical lesson contract and separates warnings from blocking errors.
+8. `src/server/generation/semantic-validation.ts` runs deterministic curriculum and learning-quality validators against the normalized draft and the pinned graph context. It checks answer relationships, graph/path direction, grade, language/RTL, accessibility, explanation quality, and meaningful variant differentiation.
+9. `src/server/generation/projection.ts` strips private relationships before returning the browser-safe draft. Semantic warnings are visible in the public diagnostics; semantic blocks and incomplete retryable validation return no draft.
+10. `src/server/persistence/postgres.ts` or `src/server/persistence/drizzle.ts` stores the request, attempts, diagnostics, and provenance.
 
-The browser-safe contract is `src/shared/demo-contract.ts`. The private answer key remains in `src/server/seed-data.ts` and the PostgreSQL adapter; it is not part of the public snapshot.
-
-For teacher lesson generation, the trace is:
-
-1. `src/routes/demo/$role.tsx` collects prompt, grade, standard, language, and optional difficulty.
-2. `src/server/demo/server-function.ts` validates the server-function payload and resolves the seeded teacher session.
-3. `src/server/generation/service.ts` applies safety checks, idempotency, the one-shot correction rule, and the durable state machine.
-4. `src/server/generation/provider.ts` selects the deterministic fixture in seeded mode or the server-only generation-provider adapter in PostgreSQL mode.
-5. `src/server/generation/validation.ts` validates the canonical lesson contract and separates warnings from blocking errors.
-6. `src/server/generation/semantic-validation.ts` runs deterministic curriculum and learning-quality validators against the normalized draft and the pinned graph context. It checks answer relationships, graph/path direction, grade, language/RTL, accessibility, explanation quality, and meaningful variant differentiation.
-7. `src/server/generation/projection.ts` strips private relationships before returning the browser-safe draft. Semantic warnings are visible in the public diagnostics; semantic blocks and incomplete retryable validation return no draft.
-8. `src/server/persistence/seeded.ts` or `src/server/persistence/postgres.ts` stores the request, attempts, diagnostics, and provenance.
-
-The seeded teacher demo accepts `equivalent fractions for grade 4` and returns exactly two standard variants, one scaffold, and one challenge variant. The default fixture deliberately produces a teacher-visible quality warning when variants share the same interaction structure; this is not a rewrite of the canonical draft. A browser retry with the same idempotency key returns the existing attempt. The seeded adapter's claim is atomic within its single-process demo; the PostgreSQL adapter uses the database uniqueness constraint and transaction, so concurrent duplicate submissions cannot invoke the provider twice within the configured deployment. `Try this draft again` creates a new attempt on the same request history. Duplicate readers wait for a bounded window; an abandoned `generating` claim transitions to `failed-retryable` through a tenant- and timestamp-scoped compare-and-swap, and final writes use the same ownership guard so an expired worker cannot overwrite a later retry.
+The deterministic test provider accepts `equivalent fractions for grade 4` and returns exactly two standard variants, one scaffold, and one challenge variant. It deliberately produces a teacher-visible quality warning when variants share the same interaction structure; this is not a rewrite of the canonical draft. A retry with the same idempotency key returns the existing attempt. The PostgreSQL adapter uses the database uniqueness constraint and transaction, so concurrent duplicate submissions cannot invoke the provider twice within the configured deployment. `Try this draft again` creates a new attempt on the same request history. Duplicate readers wait for a bounded window; an abandoned `generating` claim transitions to `failed-retryable` through a tenant- and timestamp-scoped compare-and-swap, and final writes use the same ownership guard so an expired worker cannot overwrite a later retry.
 
 For a teacher preview, the route trace is:
 
@@ -122,7 +116,7 @@ The preview intentionally carries no answer key, mastery, permissions, provenanc
 ## Health and readiness
 
 - `GET /api/health` is a cheap liveness check. It does not touch PostgreSQL.
-- `GET /api/readiness` checks safe configuration and either the synthetic repository or PostgreSQL with a bounded five-second connection/query timeout.
+- `GET /api/readiness` checks safe configuration and PostgreSQL with a bounded five-second connection/query timeout.
 - Readiness returns `200` only when the app can serve the configured persistence mode; invalid configuration or unavailable PostgreSQL returns `503`.
 
 Use the endpoint output as deployment evidence, not as a place to expose connection details.
@@ -131,7 +125,7 @@ Use the endpoint output as deployment evidence, not as a place to expose connect
 
 1. Run `pnpm check` and record the commit/artifact identifier.
 2. Apply forward-only migrations before switching application traffic.
-3. Run the idempotent seed only for the synthetic demo environment.
+3. Run the idempotent seed only in a synthetic, non-production environment.
 4. Start the new artifact with the same server-only configuration.
 5. Require `/api/health`, `/api/readiness`, and `pnpm smoke` to pass before declaring the preview ready.
 6. If readiness fails, keep the previous application artifact serving traffic and fix configuration or persistence separately. Do not mutate or delete immutable activity/attempt rows to roll back a release.
@@ -140,7 +134,7 @@ Connection pools are deliberately small for this slice, health checks have bound
 
 ## UI guardrails
 
-The foundation shell uses current shadcn Base UI components and keeps the visual surface small. CSS uses logical properties (`padding-inline`, `margin-block`, `inset-inline`, `border-block`, and `border-inline`) so the layout can move to Arabic RTL without a second stylesheet. It also preserves browser zoom, uses semantic document order, keeps primary targets at least 48px on narrow screens, and honors `prefers-reduced-motion`. Core lesson interactions will use semantic DOM/A2UI components; HTML-in-Canvas is optional enhancement only and must never be required for the demo or accessibility path.
+The foundation shell uses current shadcn Base UI components and keeps the visual surface small. CSS uses logical properties (`padding-inline`, `margin-block`, `inset-inline`, `border-block`, and `border-inline`) so the layout can move to Arabic RTL without a second stylesheet. It also preserves browser zoom, uses semantic document order, keeps primary targets at least 48px on narrow screens, and honors `prefers-reduced-motion`. Core lesson interactions will use semantic DOM/A2UI components; HTML-in-Canvas is optional enhancement only and must never be required for the app or accessibility path.
 
 These choices follow Google’s responsive/accessibility guidance and Core Web Vitals priorities:
 
@@ -150,7 +144,7 @@ These choices follow Google’s responsive/accessibility guidance and Core Web V
 
 ## Known risks and deliberate gaps
 
-- Demo identities are seeded role fixtures, not production authentication. This is an explicit demo limitation.
-- PostgreSQL is optional in clean-demo mode; a deployed production environment should use managed PostgreSQL and verify the forced row-level policy path with a least-privilege database role.
+- Development uses a deterministic auth provider and seeded fixtures. Preview and production require Supabase; no development identity is reachable in those environments.
+- PostgreSQL is required in every environment. A deployed production environment should use managed PostgreSQL and verify the forced row-level policy path with a least-privilege database role.
 - Issue #18's bounded curriculum and learning-quality validation, issue #4's allowlisted semantic A2UI preview, and issue #17's validated prerequisite-path artifact are shipped; issue #28 still adds the cross-cutting hard safety gate. Teacher approval/publication, grading, and adaptation remain follow-up slices. A generated lesson is never auto-published.
 - The real-student compliance gate (DPA, EU residency, security, and consent) remains closed.

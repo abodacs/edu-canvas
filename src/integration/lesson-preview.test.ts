@@ -8,7 +8,7 @@ import { createDeterministicLessonDraftProvider } from "@/server/generation/prov
 import { parseTenantId } from "@/server/identity/identifiers";
 import { syntheticTeacherActor } from "@/server/identity/test-actors";
 import { createSeededPersistence } from "@/server/persistence/seeded";
-import { demoSeed } from "@/server/seed-data";
+import { syntheticSeed } from "@/server/seed-data";
 
 import { A2UIComponentRenderer } from "@/components/a2ui/component-renderer";
 import {
@@ -17,7 +17,7 @@ import {
 } from "@/components/a2ui/renderer";
 
 const teacherActor = syntheticTeacherActor({
-  tenantId: parseTenantId(demoSeed.tenant.id),
+  tenantId: parseTenantId(syntheticSeed.tenant.id),
 });
 
 describe("compiled lesson preview", () => {

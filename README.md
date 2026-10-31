@@ -29,7 +29,7 @@ The design differs in five ways:
 
 | Working now | Next |
 | --- | --- |
-| TanStack Start runtime, synthetic demo repository, PostgreSQL migrations and seed, health/readiness endpoints, and role-limited demo views ([#2](https://github.com/abodacs/edu-canvas/issues/2)) | Hard safety gate ([#28](https://github.com/abodacs/edu-canvas/issues/28)) |
+| TanStack Start runtime, PostgreSQL migrations and seed, server-owned authentication, and health/readiness endpoints ([#2](https://github.com/abodacs/edu-canvas/issues/2)) | Hard safety gate ([#28](https://github.com/abodacs/edu-canvas/issues/28)) |
 | Server-side generation with four structurally validated draft variants, persistence, diagnostics, and retry-safe generation ([#3](https://github.com/abodacs/edu-canvas/issues/3)) | Teacher approval and immutable publication ([#5](https://github.com/abodacs/edu-canvas/issues/5)) |
 | Deterministic curriculum and learning-quality reviews with bounded advisory-agent retries; warnings stay teacher-visible, and blocks keep drafts out of the public projection ([#18](https://github.com/abodacs/edu-canvas/issues/18)) | Learner attempts and server grading ([#6](https://github.com/abodacs/edu-canvas/issues/6)) |
 | Compiles accepted public drafts into a pinned, allowlisted A2UI v0.9.1 catalog and streams a semantic-DOM teacher preview with recoverable connection states ([#4](https://github.com/abodacs/edu-canvas/issues/4)) | Reveal and deterministic adaptation ([#7](https://github.com/abodacs/edu-canvas/issues/7)) |
@@ -65,19 +65,16 @@ Start from the delivery module, then follow the domain-named server module:
 | Behavior | Start here |
 | --- | --- |
 | Architecture rules and allowed change paths | [`ARCHITECTURE.md`](ARCHITECTURE.md) |
-| Seeded teacher/student demo | `src/routes/demo/$role.tsx` → `src/server/demo/` |
-| Teacher lesson generation | `src/routes/demo/$role.tsx` → `src/server/generation/` |
-| Demo role policy and tenant assertion | `src/server/demo/policy.ts` |
-| Public demo read model | `src/server/demo/read-model.ts` |
-| Server-function delivery seam | `src/server/demo/server-function.ts` |
+| Teacher workspace | `src/routes/workspace.tsx` → `src/components/studio/teacher-studio.tsx` |
+| Teacher lesson generation | `src/routes/api/lessons/generate.ts` → `src/server/generation/` |
+| Server-owned authentication | `src/routes/api/auth/` → `src/server/identity/` |
 | Semantic lesson validation | `src/server/generation/semantic-validation.ts` |
 | A2UI catalog contract and validation | `src/shared/a2ui-contract.ts` |
 | A2UI preview delivery seam | `src/server/a2ui/preview.server.ts` |
 | A2UI lesson compiler and SSE delivery | `src/server/a2ui/compiler.ts` → `src/server/a2ui/stream.ts` |
 | Semantic A2UI preview renderer | `src/components/a2ui/lesson-preview.tsx` |
-| Persistence choice and interface | `src/server/persistence.ts` |
-| Seeded/PostgreSQL persistence adapters | `src/server/persistence/` |
-| Browser-safe demo contract | `src/shared/demo-contract.ts` |
+| Persistence composition | `src/server/persistence.ts` |
+| PostgreSQL persistence adapters | `src/server/persistence/` |
 | Browser-safe generation contract | `src/shared/generation-contract.ts` |
 | Canonical synthetic curriculum fixture | `src/server/seed-data.ts` |
 | PostgreSQL seed implementation | `src/server/persistence/seed-postgres.ts` |
@@ -148,10 +145,14 @@ sequenceDiagram
 
 ## Quick start
 
-The default clean checkout is deterministic and synthetic-data-only; PostgreSQL is optional for local boot.
+PostgreSQL and a server-side provider credential are required:
 
 ```bash
+docker compose up -d postgres
 pnpm install
+export DATABASE_URL=postgresql://edu_canvas:edu_canvas_dev@127.0.0.1:5432/edu_canvas
+export OPENAI_API_KEY=<server-side-key>
+pnpm db:setup
 pnpm dev
 ```
 
@@ -162,15 +163,6 @@ pnpm check
 pnpm build
 pnpm start
 pnpm smoke
-```
-
-For the PostgreSQL-backed path, start the local dependency and apply the forward-only migration/seed:
-
-```bash
-docker compose up -d postgres
-set -a; source .env.example; set +a
-pnpm db:setup
-pnpm dev
 ```
 
 See [`docs/foundation-runbook.md`](docs/foundation-runbook.md) for configuration, readiness, and safe redeploy details.

@@ -30,7 +30,7 @@ const safeReasons = new Set([
   "persistence_unavailable",
   "seed_integrity_failed",
 ]);
-const safeDependencies = new Set(["postgres", "seeded-demo"]);
+const safeDependencies = new Set(["postgres", "in-memory"]);
 const safeRoutes = new Set([
   "/api/health",
   "/api/readiness",

@@ -105,7 +105,7 @@ Make the model draft the bounded sequence, not invent its pedagogy or execute ar
 
 For the event milestone, demonstrate a real model draft, teacher approval, an incorrect synthetic attempt, useful feedback, an independent check, and the teacher’s next decision. Identify any seeded content or simulated attempts clearly. The same boundaries carry into production; only the audience and data policy change.
 
-**Demo gate:** repeatable end-to-end run in under three minutes, core boundary checks passing, and access/cost guards before public hosting. Use the [current demo script](docs/hackathon/meta-global-2026/demo-script.md); verify independent access and ask unfamiliar viewers to describe the distinctive action (V9/V10). A recorded fallback is labeled as a recording; it does not imply a live service exists.
+**Demo gate:** repeatable end-to-end run in under three minutes, core boundary checks passing, and access/cost guards before public hosting. Verify independent access and ask unfamiliar viewers to describe the distinctive action (V9/V10). A recorded fallback is labeled as a recording; it does not imply a live service exists.
 
 After the event, complete a five-teacher value study, including the initial participants where practical. Then arrange a small, appropriately authorized learner pilot. Measure first independent attempts, support used, fresh transfer items, and a later retention check. Adult walkthroughs only establish usability, not child learning outcomes.
 

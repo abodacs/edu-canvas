@@ -62,7 +62,11 @@ import type { IdentityProvider } from "./provider/port";
  * rule.
  */
 
-const testEnvironment = { APP_ENV: "development", DEMO_MODE: "true" };
+const testEnvironment = {
+  APP_ENV: "development",
+  DATABASE_URL: "postgresql://test:test@127.0.0.1:5432/edu_canvas_test",
+  OPENAI_API_KEY: "test-server-key",
+};
 
 const password = syntheticPasswordForTests;
 const issuer = syntheticProviderIssuer;
@@ -149,8 +153,14 @@ interface SignUpBody {
   readonly email: string;
 }
 
+const configuredIdentityPersistence = createSeededIdentityPersistence();
+const configuredDependenciesPromise = resolveAuthDependencies(
+  readServerConfig({ ...testEnvironment }),
+  { identityPersistence: configuredIdentityPersistence }
+);
+
 const configuredDependencies = (): Promise<AuthDependencies> =>
-  resolveAuthDependencies(readServerConfig({ ...testEnvironment }));
+  configuredDependenciesPromise;
 
 const readJson = async <T>(response: Response): Promise<T> =>
   (await response.json()) as T;

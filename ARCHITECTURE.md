@@ -23,11 +23,11 @@ The browser and server are built together, but domain behavior lives under `src/
 ```mermaid
 flowchart LR
     subgraph Browser
-        Page[Demo page]
+        Page[Workspace page]
         Preview[Semantic DOM preview]
     end
     subgraph Server
-        Functions[Demo server functions]
+        Functions[HTTP delivery and session resolution]
         Generation[Generation service]
         PreviewAPI[Preview API]
         Compiler[A2UI compiler and SSE]
@@ -35,20 +35,17 @@ flowchart LR
     end
     Page -->|HTTPS| Functions
     Functions --> Generation
-    Generation -->|Generate or correct| Provider[Fixture or model provider]
+    Generation -->|Generate or correct| Provider[Model provider]
     Provider -->|Untrusted draft| Generation
     Generation --> Persistence
     Preview -->|GET preview| PreviewAPI
     PreviewAPI --> Persistence
     PreviewAPI --> Compiler
     Compiler -->|Validated A2UI messages| Preview
-    Persistence --> Seeded[Process-local seeded store]
     Persistence --> Database[(PostgreSQL)]
 ```
 
 Generation is request-driven. There is no background job queue. The generation response returns a public result; a separate request retrieves the persisted draft as an SSE preview. SSE transports an already compiled snapshot, not incremental model output.
-
-The student demo currently reads an environment snapshot. It does not run the planned activity, submission, or grading loop.
 
 ### Runtime and dependencies
 
@@ -110,7 +107,7 @@ Contexts are derived from the teaching loop's verbs — draft → validate → p
 | Teacher Review | Core | Preview access checks, A2UI compilation and SSE delivery, approval and replacement (target) | `src/server/a2ui/`, `src/components/a2ui/` |
 | Student Learning | Core (future) | Immutable publication, learner attempts, server-authoritative grading, mastery, adaptation | Not implemented; [#5](https://github.com/abodacs/edu-canvas/issues/5)–[#8](https://github.com/abodacs/edu-canvas/issues/8), [#19](https://github.com/abodacs/edu-canvas/issues/19); [AgDR-0002](docs/agdr/AgDR-0002-server-authoritative-grading.md) |
 | Curriculum & Standards | Supporting | Seeded standards, versioned prerequisite graph, Learning Commons grounding (target) | `src/server/seed-data.ts`; [AgDR-0005](docs/agdr/AgDR-0005-grounded-package-version-contracts.md) |
-| Identity & Tenancy | Supporting | Sessions, roles, capabilities, tenant membership | `src/server/demo/policy.ts`; [#98](https://github.com/abodacs/edu-canvas/issues/98), [#99](https://github.com/abodacs/edu-canvas/issues/99) |
+| Identity & Tenancy | Supporting | Sessions, roles, capabilities, tenant membership | `src/server/identity/`; [#98](https://github.com/abodacs/edu-canvas/issues/98), [#99](https://github.com/abodacs/edu-canvas/issues/99) |
 | A2UI Protocol | Supporting | Catalog governance, message schemas, compiler and renderer conformance | [a2ui-contract.ts](src/shared/a2ui-contract.ts); [AgDR-0001](docs/agdr/AgDR-0001-a2ui-catalog-governance.md) |
 | Shared contracts | Published language | Browser-safe input and output schemas | `src/shared/` |
 | Platform | Generic | Persistence adapters, configuration, observability, health, identifier minting, UI primitives | `src/server/persistence*`, `config.ts`, `observability.server.ts`, `ids.ts`, `src/lib/`, `src/components/ui/` |
@@ -169,7 +166,6 @@ src/
     contract.ts        #   browser-safe protocol contract
     server/            #   compiler, SSE stream, preview access
     ui/                #   stream consumption, render state, catalog rendering
-  demo/                # demo delivery composition — session assembly, read model
   platform/            # persistence, config, observability, health
   shared/              # published language — browser-safe Zod contracts
   ui/                  # generic UI primitives and browser-safe utilities
@@ -187,11 +183,9 @@ Old-path → new-path mapping (every physical move the waves will make):
 | 3 | `src/server/generation/` service, provider, factory, projection, errors, types | `src/drafting/` |
 | 3 | `src/server/generation/` validators and `learning-path.ts` | `src/validation/` |
 | 3 | `src/server/safety/` | `src/validation/safety/` |
-| 3 | `src/server/demo/policy.ts` | `src/identity/` behind an identity port |
 | 4 | `src/server/a2ui/` | `src/a2ui/server/` |
 | 4 | `src/shared/a2ui-contract.ts` | `src/a2ui/contract.ts` |
 | 4 | `src/components/a2ui/` | `src/a2ui/ui/` |
-| 4 | `src/server/demo/` (composition, read model) | `src/demo/` |
 | 5 | — (greenfield) | `src/student-learning/` |
 
 Wave rules: one context per PR, `pnpm check` (including `verify:boundaries`) green each step, rules and this document updated in the same PR. Ordered by hackathon risk first (nothing moves before the event), then by the issues each wave unblocks:
@@ -201,8 +195,8 @@ Wave rules: one context per PR, `pnpm check` (including `verify:boundaries`) gre
 | 0 (this change) | Context map, rules, backlog enumeration | — (breaks 2 type cycles) | All waves |
 | 1. Platform spine | Persistence, config, observability, health, UI primitives | — | Every later wave moves against a stable platform |
 | 2. Curriculum & Standards | Seed data behind a versioned context port | `drafting-imports-seed-curriculum-directly` | [#30](https://github.com/abodacs/edu-canvas/issues/30) standards packs; AgDR-0005 grounding adapter |
-| 3. Drafting + Validation | Split `generation/`; identity port | `drafting-reaches-session-policy-directly` | [#105](https://github.com/abodacs/edu-canvas/issues/105) AgDR-0006 conformance, [#106](https://github.com/abodacs/edu-canvas/issues/106) eval set, [#98](https://github.com/abodacs/edu-canvas/issues/98) auth prerequisite |
-| 4. Teacher Review | A2UI tri-fold (contract, server, ui); demo composition; preview identity port | `preview-reaches-session-policy-directly` | [#29](https://github.com/abodacs/edu-canvas/issues/29) catalog generalization, [#110](https://github.com/abodacs/edu-canvas/issues/110) catalog unify, [#5](https://github.com/abodacs/edu-canvas/issues/5) approval |
+| 3. Drafting + Validation | Split `generation/`; session-owned actor boundary | — | [#105](https://github.com/abodacs/edu-canvas/issues/105) AgDR-0006 conformance, [#106](https://github.com/abodacs/edu-canvas/issues/106) eval set, [#98](https://github.com/abodacs/edu-canvas/issues/98) auth prerequisite |
+| 4. Teacher Review | A2UI tri-fold (contract, server, ui); authenticated preview | — | [#29](https://github.com/abodacs/edu-canvas/issues/29) catalog generalization, [#110](https://github.com/abodacs/edu-canvas/issues/110) catalog unify, [#5](https://github.com/abodacs/edu-canvas/issues/5) approval |
 | 5. Student Learning | Greenfield in the target layout | — | [#5](https://github.com/abodacs/edu-canvas/issues/5)–[#8](https://github.com/abodacs/edu-canvas/issues/8), [#19](https://github.com/abodacs/edu-canvas/issues/19), [#107](https://github.com/abodacs/edu-canvas/issues/107) |
 
 Flipping a warn rule to error is part of its wave's PR. A new warn may not be introduced outside a planned wave.
@@ -211,34 +205,27 @@ Flipping a warn rule to error is part of its wave's PR. A new warn may not be in
 
 ### Browser requests and public results
 
-The existing route calls the delivery interface with a role and a schema-validated input:
+The existing route resolves the caller's session, then calls the delivery module with a schema-validated input:
 
 ```ts
-import { generateLessonDraft } from "@/server/demo/server-function";
-
-const result = await generateLessonDraft({
-  data: {
-    role: "teacher",
-    input: {
-      prompt: "Create an equivalent-fractions matching lesson.",
-      grade: 4,
-      standardId: "4.NF.A.1",
-      language: "en",
-      idempotencyKey: "fractions-request-001",
-    },
-  },
+const response = await fetch("/api/lessons/generate", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({
+    prompt: "Create an equivalent-fractions matching lesson.",
+    grade: 4,
+    standardId: "4.NF.A.1",
+    language: "en",
+    idempotencyKey: "fractions-request-001",
+  }),
 });
 ```
 
-`result` satisfies `PublicGenerationResult`, inferred from [generation-contract.ts](src/shared/generation-contract.ts). The input schema accepts grades 3–6; the service restricts the standard to the seeded equivalent-fractions standard ID or code. Current contracts accept English and Arabic, although the release scope is English-only.
+The response body satisfies `PublicGenerationResult`, inferred from [generation-contract.ts](src/shared/generation-contract.ts). The input schema accepts grades 3–6; the service restricts the standard to the seeded equivalent-fractions standard ID or code. Current contracts accept English and Arabic, although the release scope is English-only.
 
-The service returns both a private `LessonGenerationRecord` and a public result. The server function returns only the latter. [toPublicGenerationResult](src/server/generation/projection.ts) explicitly selects public fields and parses the strict output schema. It removes relationship mappings, tenant and teacher ownership, attempt history, and the private draft's learning path.
+The service returns both a private `LessonGenerationRecord` and a public result. The delivery module returns only the latter. [toPublicGenerationResult](src/server/generation/projection.ts) explicitly selects public fields and parses the strict output schema. It removes relationship mappings, tenant and teacher ownership, attempt history, and the private draft's learning path.
 
 That learning path has a separate, validated public representation in A2UI preview data. Removing it from the generation response does not mean all learning-path information is private.
-
-Demo snapshots use [demoSnapshotSchema](src/shared/demo-contract.schema.ts). They expose synthetic identity, tenant, role, and capability metadata, curriculum metadata, and counts. They contain neither the private activity answer key nor the full generation record.
-
-**Access limitation:** the browser supplies `role`, and `getDemoSession` maps it to a seeded identity. These checks enforce demo perspectives, not authenticated identity. Protected server sessions remain unimplemented.
 
 ### Provider output and validated drafts
 
@@ -258,15 +245,15 @@ Catalog actions such as `submitAttempt` describe allowed messages. Their presenc
 
 [config.ts](src/server/config.ts) parses application and database-bootstrap settings. Invalid settings produce typed `ConfigIssue` records. Generation, preview, readiness, and persistence reject invalid configuration.
 
-`DEMO_MODE` selects fixture generation and defaults to true outside production. `DATABASE_URL` independently selects PostgreSQL persistence; without it, storage is seeded and process-local. Live generation requires both a database URL and `OPENAI_API_KEY`. `PERSISTENCE_ADAPTER` selects raw SQL or Drizzle against the same database. `SYNTHETIC_DATA_ONLY=false` is rejected.
+`DATABASE_URL` is required: PostgreSQL is the only runtime persistence. `OPENAI_API_KEY` is required for server-side generation. `PERSISTENCE_ADAPTER` selects raw SQL or Drizzle against the same database. `SYNTHETIC_DATA_ONLY=false` is rejected. The deterministic provider and in-memory stores are test doubles and are unreachable from runtime composition.
 
 [observability.server.ts](src/server/observability.server.ts) emits structured errors, restricts context values, redacts sensitive patterns, and optionally sends scrubbed events to Sentry. Sentry uses `sendDefaultPii: false`. This is a server-only interface, not a browser SDK.
 
 ## Runtime flows
 
-### Read a demo snapshot
+### Read the authenticated session
 
-The `/demo/$role` loader validates the role and calls `getDemoSnapshot`. Its server function calls `readDemoSnapshot`, which reads configuration, resolves the seeded session, asserts tenant access, reads persistence counts, and parses the public snapshot. Teacher and student capabilities come from `demo/policy.ts`.
+`src/routes/api/auth/context.ts` and `src/routes/api/auth/session.ts` call `src/server/identity/api.server.ts`. The server resolves the opaque session cookie, verifies the provider credential, checks the session revision, and projects only the actor, memberships, and CSRF token.
 
 ### Generate a lesson
 
@@ -348,9 +335,9 @@ These are extension paths through existing owners. New domain behavior belongs i
 | Change | Implementation path | Constraints and verification |
 | --- | --- | --- |
 | Add a model provider | Implement `LessonDraftProvider` in `generation/provider.ts` or a sibling adapter. Select it in `factory.ts`; add settings in `config.ts` and `.env.example`. | Return unknown draft data and provenance. Map failures to `LessonProviderError`. Keep correction policy in the service. Extend provider, config, and service tests. Add new secret markers to the client scan. |
-| Add persisted state | Extend the domain type and persistence port. Implement storage in seeded, raw SQL, and Drizzle adapters. Change `drizzle/schema.ts`, run `pnpm db:generate`, and use `generate --custom` only for forced RLS, triggers, or functions. | Preserve tenant scoping, atomic claims, conditional writes, and adapter parity. Run database contract tests against a migrated database. |
-| Add a server operation | Use `demo/server-function.ts` for the existing demo composition, or a domain-owned `.server` delivery module for HTTP handlers. Parse inputs and project outputs at the boundary. | Keep domain rules and database access behind the delivery interface. Verify architecture imports and public schemas. |
-| Add a page | Add a file route using `routes/demo/$role.tsx` as the existing example. Load data through named server interfaces and keep interaction state local. | Regenerate routes with `pnpm generate-routes`. Do not hand-edit `routeTree.gen.ts`. Check the built client boundary. |
+| Add persisted state | Extend the domain type and persistence port. Implement storage in the raw SQL and Drizzle adapters; use the in-memory store only as a test double. Change `drizzle/schema.ts`, run `pnpm db:generate`, and use `generate --custom` only for forced RLS, triggers, or functions. | Preserve tenant scoping, atomic claims, conditional writes, and adapter parity. Run database contract tests against a migrated database. |
+| Add a server operation | Use a domain-owned `.server` delivery module for HTTP handlers. Parse inputs and project outputs at the boundary. | Keep domain rules and database access behind the delivery interface. Verify architecture imports and public schemas. |
+| Add a page | Add a file route using `src/routes/workspace.tsx` as the existing example. Load data through named server interfaces and keep interaction state local. | Regenerate routes with `pnpm generate-routes`. Do not hand-edit `routeTree.gen.ts`. Check the built client boundary. |
 | Change A2UI | Start with `shared/a2ui-contract.ts`, then update compiler, stream expectations, renderer, and their tests together. | Version catalog changes under the [catalog-governance decision](docs/agdr/AgDR-0001-a2ui-catalog-governance.md). Preserve rejection of unknown messages and private data. |
 | Change a public contract | Change the owning shared Zod schema, its server projection, consumers, and tests together. | Keep server record types private. A schema edit alone does not update an explicit projection. |
 | Add validation or configuration | Put draft acceptance rules in generation validation. Put application settings in `config.ts`, with typed issue codes and safe summaries. | Test pass, warning, block, or invalid-setting behavior as applicable. Keep secrets out of responses and diagnostics. |
@@ -368,7 +355,7 @@ The repository has no deterministic scaffold command for these recipes. [Coding 
 | Private markers stay out of shipped browser assets | `verify:client-boundary` scans `.output/public` | Fixed string list; does not inspect the server bundle or all possible sensitive values |
 | One claimant owns a generation write | Atomic claims and compare-and-set persistence; service and database contract tests | The 200-second generation budget is separate from the 220-second lease |
 | Retry metadata stays consistent | Service checks owner, retryable state, normalized request fields, and the persisted request hash | A hash collision would defeat changed-payload detection; FNV-1a is not cryptographic |
-| Only accepted, owned drafts reach preview | `preview.server.ts` access and state checks | Identity is still selected through the demo role |
+| Only accepted, owned drafts reach preview | `preview.server.ts` access and state checks | Identity derives from the server session |
 | A2UI remains a closed data protocol | Shared schemas, compiler, stream, and renderer validation | Catalog support does not implement the associated business operation |
 | Storage remains tenant-scoped | Tenant predicates, transaction-local tenant context, SQL policies, parity tests | Application access still depends on synthetic sessions |
 | Real-data mode remains disabled | Configuration rejects `SYNTHETIC_DATA_ONLY=false` | This flag cannot identify personal data embedded in free text |
@@ -408,7 +395,7 @@ These differences were checked against the source baseline above. They are not r
 | Teaching loop | Generation and teacher preview | Approval, immutable publication, learner attempts, grading, reveal, and adaptation remain unimplemented. |
 | Grounding | Seeded curriculum and prerequisite graph | Learning Commons, Jev matching, uploads, and grounded package contracts remain design work described in [AgDR-0005](docs/agdr/AgDR-0005-grounded-package-version-contracts.md). |
 | Safety | Pattern checks, structural validation, bounded semantic review | The cross-cutting hard safety gate remains unimplemented. |
-| Identity and cost controls | Server-owned opaque sessions with current membership checks, CSRF/origin guards, bounded counters, and trusted provisioning; the role-selected demo surface is retired | [#98](https://github.com/abodacs/edu-canvas/issues/98) release unit A is implemented on `impl/98-authentication`. Release unit B (publication, attempts, teacher decisions) stays open, and deployment/rollback/monitoring gates remain pending. Least-privilege database roles belong to [#100](https://github.com/abodacs/edu-canvas/issues/100). |
+| Identity and cost controls | Server-owned opaque sessions with current membership checks, CSRF/origin guards, bounded counters, and trusted provisioning; the demo-mode runtime is removed ([#162](https://github.com/abodacs/edu-canvas/issues/162)) | [#98](https://github.com/abodacs/edu-canvas/issues/98) release unit A is implemented on `impl/98-authentication`. Release unit B (publication, attempts, teacher decisions) stays open, and deployment/rollback/monitoring gates remain pending. Least-privilege database roles belong to [#100](https://github.com/abodacs/edu-canvas/issues/100). |
 | Provider selection | Fixture or OpenAI Responses adapter with `OPENAI_*` settings and a `gpt-5.6` code default | [AgDR-0006](docs/agdr/AgDR-0006-provider-selection-and-deadlines.md) selects a provider through access evidence. The code default is not evidence for an event-allowed provider. |
 | Deadlines | 100 seconds per provider call, 200 seconds for generation plus correction, and a 220-second claim lease; writes require an unexpired lease | AgDR-0006 event decision, 2026-10-27. |
 | Idempotency conflicts | An existing tenant-local key compares the persisted normalized request hash; changed input returns `IDEMPOTENCY_CONFLICT` without a provider call | AgDR-0006 requires the conflict; unchanged input reuses the original result. |
@@ -416,7 +403,7 @@ These differences were checked against the source baseline above. They are not r
 | Connections | Each database operation creates and closes a client | There is no application-wide connection pool. |
 | Seeded catalog | Fixture activity uses `edu-canvas-matching-v0` | Live preview uses `matching-v1`; the activity fixture is not the preview catalog authority. |
 | Decision identifiers | Three records share `AgDR-0003` | Citations need the full filename to distinguish canonical generation, Nitro compatibility, and observability. |
-| Context boundary debt | Drafting and preview import demo session policy and seed data directly | Identity port (wave 3–4) and curriculum context port (wave 2) per [AgDR-0008](docs/agdr/AgDR-0008-bounded-contexts-and-screaming-layout.md); tracked as `verify:boundaries` warn rules. |
+| Context boundary debt | Drafting imports seed data directly | Curriculum context port (wave 2) per [AgDR-0008](docs/agdr/AgDR-0008-bounded-contexts-and-screaming-layout.md); tracked as a `verify:boundaries` warn rule. |
 
 ## Document maintenance
 

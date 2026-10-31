@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { demoSeed } from "@/server/seed-data";
+import { syntheticSeed } from "@/server/seed-data";
 import {
   artifactGatePolicyVersion,
   snapshotArtifactGateResult,
@@ -22,7 +22,7 @@ const passingSnapshot = () => {
   const draft = createEquivalentFractionsDraft({
     prompt: "equivalent fractions for grade 4",
     grade: 4,
-    standardId: demoSeed.standard.id,
+    standardId: syntheticSeed.standard.id,
     language: "en",
     difficulty: "on-level",
   });
@@ -53,7 +53,7 @@ const passingSnapshot = () => {
         nextScreenRationale: "The target screen closes the prerequisite walk.",
         versionPins: {
           draftId: "draft_req_codec_fixture",
-          graphVersion: demoSeed.activityVersion.graphVersion,
+          graphVersion: syntheticSeed.activityVersion.graphVersion,
           catalogVersion: "matching-v1",
           modelVersion: "equivalent-fractions-fixture-v1",
           validatorVersion: "semantic-validation-runner-v1",
@@ -66,12 +66,12 @@ const passingSnapshot = () => {
 const readyRecord = (): LessonGenerationRecord => {
   return {
     requestId: "draft_req_codec_fixture",
-    tenantId: demoSeed.tenant.id,
+    tenantId: syntheticSeed.tenant.id,
     teacherId: "actor_teacher_fixture",
     input: {
       prompt: "equivalent fractions for grade 4",
       grade: 4,
-      standardId: demoSeed.standard.id,
+      standardId: syntheticSeed.standard.id,
       language: "en",
       difficulty: "on-level",
     },
@@ -88,7 +88,7 @@ const readyRecord = (): LessonGenerationRecord => {
       variants: createEquivalentFractionsDraft({
         prompt: "equivalent fractions for grade 4",
         grade: 4,
-        standardId: demoSeed.standard.id,
+        standardId: syntheticSeed.standard.id,
         language: "en",
         difficulty: "on-level",
       }).variants,
@@ -114,7 +114,7 @@ const readyRecord = (): LessonGenerationRecord => {
         nextScreenRationale: "The target screen closes the prerequisite walk.",
         versionPins: {
           draftId: "draft_req_codec_fixture",
-          graphVersion: demoSeed.activityVersion.graphVersion,
+          graphVersion: syntheticSeed.activityVersion.graphVersion,
           catalogVersion: "matching-v1",
           modelVersion: "equivalent-fractions-fixture-v1",
           validatorVersion: "semantic-validation-runner-v1",
@@ -124,7 +124,7 @@ const readyRecord = (): LessonGenerationRecord => {
       input: {
         prompt: "equivalent fractions for grade 4",
         grade: 4,
-        standardId: demoSeed.standard.id,
+        standardId: syntheticSeed.standard.id,
         language: "en",
         difficulty: "on-level",
       },

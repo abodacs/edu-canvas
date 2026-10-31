@@ -13,7 +13,6 @@ This is the full event plan and source of truth for eligibility, schedule, risks
 | This README | Full event plan: scope, decisions, schedule, risks, and experiments |
 | [Focused event scope](focused-scope.md) | Current execution decision: one loop, one builder, 30 + 6 hours, checkpoints, fallback ladder |
 | [Validation tracker](validation-tracker.md) | Evidence gates, test status, observations, and resulting decisions |
-| [Demo script](demo-script.md) | Recording story, shot list, and recording checks |
 | [Teacher UI decisions](../../product/teacher-ui.md) | Latest UI requirements, provider findings, approval gate, and open decisions |
 | [Product priorities](../../product/delivery-priorities.md) | Proposed full-scope sequence, product/ticketing skill recommendations, and writing guidance |
 
@@ -62,7 +61,7 @@ These timeboxes are scope controls, not guarantees. If a stage overruns, apply t
 
 ## Issue mapping and scope changes
 
-Existing anchors: #28 safety → #5 approval → #6 grading → #7 feedback and next activity → minimal #8 teacher evidence. #9/#10 cover necessary usability; #74 covers public-demo safeguards. The merged recording-script work (PR [#75](https://github.com/abodacs/edu-canvas/pull/75), not an open issue) is superseded for this sprint by the [current demo script](demo-script.md); use its shots and evidence from V9–V11. #58 now has a lightweight pre-event portion and a fuller post-event value gate.
+Existing anchors: #28 safety → #5 approval → #6 grading → #7 feedback and next activity → minimal #8 teacher evidence. #9/#10 cover necessary usability; #104 covers generation quotas. The merged recording-script work (PR [#75](https://github.com/abodacs/edu-canvas/pull/75), not an open issue) is superseded for this sprint; use the evidence from V9–V11. #58 now has a lightweight pre-event portion and a fuller post-event value gate.
 
 These references come from prior planning documents, not a fresh issue audit. Before coding, check existing acceptance criteria and implementation. Add the worked example, guided step, independent attempt, hint-use evidence, and teacher override to the relevant work items if missing; they are proposed scope, not assumed shipped capabilities.
 
@@ -101,7 +100,7 @@ Finish the five-teacher value gate, including matched comparison with reusable m
 
 Reviewed 2026-10-24 against the roadmap, execution plan, education notes, and primary sources linked below. No teacher interviews, competitor hands-on trials, provider benchmarks, or learner studies were performed in this review.
 
-The largest risk is building a correct, polished experience whose advantage nobody can explain. Further risks are measuring activity completion as learning and discovering integration problems too late. The scenarios below are proposed probes, not observed failures. Record outcomes in the [validation tracker](validation-tracker.md); use the [demo script](demo-script.md) for the current recording sequence.
+The largest risk is building a correct, polished experience whose advantage nobody can explain. Further risks are measuring activity completion as learning and discovering integration problems too late. The scenarios below are proposed probes, not observed failures. Record outcomes in the [validation tracker](validation-tracker.md); use the validation tracker for the current evidence sequence.
 
 ## Separate the two outcomes
 

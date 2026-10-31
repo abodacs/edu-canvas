@@ -1,5 +1,5 @@
 /**
- * The seeded foundation still ships synthetic curriculum, so the seed keeps its own browser-safe value shapes. The retired demo snapshot contract no longer owns them; the persistence seam and the seed read the same local types.
+ * The seeded foundation still ships synthetic curriculum, so the seed keeps its own browser-safe value shapes. The persistence seam and the seed read the same local types.
  */
 export interface SeedCounts {
   tenants: number;
@@ -14,7 +14,7 @@ export interface SeedCounts {
 
 export type SeedRole = "teacher" | "student";
 
-export const demoSeed = {
+export const syntheticSeed = {
   tenant: {
     id: "tenant_demo_eu_synthetic",
     slug: "eu-synthetic-demo",
@@ -70,7 +70,7 @@ export const demoSeed = {
   ],
   activity: {
     id: "activity_demo_equivalent_fractions",
-    slug: "equivalent-fractions-seeded-demo",
+    slug: "equivalent-fractions-synthetic",
     title: "Equivalent fractions: name the same whole",
     status: "published" as const,
   },
@@ -105,13 +105,13 @@ export const demoSeed = {
 
 export const assertSeedIntegrity = (): void => {
   const ids = [
-    demoSeed.tenant.id,
-    ...demoSeed.identities.map((identity) => identity.id),
-    demoSeed.standard.id,
-    ...demoSeed.graphNodes.map((node) => node.id),
-    demoSeed.activity.id,
-    demoSeed.activityVersion.id,
-    demoSeed.attempt.id,
+    syntheticSeed.tenant.id,
+    ...syntheticSeed.identities.map((identity) => identity.id),
+    syntheticSeed.standard.id,
+    ...syntheticSeed.graphNodes.map((node) => node.id),
+    syntheticSeed.activity.id,
+    syntheticSeed.activityVersion.id,
+    syntheticSeed.attempt.id,
   ];
 
   const uniqueIds = new Set(ids);
@@ -120,15 +120,15 @@ export const assertSeedIntegrity = (): void => {
   }
 };
 
-export const getDemoSeedCounts = (): SeedCounts => {
+export const getSyntheticSeedCounts = (): SeedCounts => {
   assertSeedIntegrity();
 
   return {
     tenants: 1,
-    identities: demoSeed.identities.length,
+    identities: syntheticSeed.identities.length,
     standards: 1,
-    graphNodes: demoSeed.graphNodes.length,
-    graphEdges: demoSeed.graphEdges.length,
+    graphNodes: syntheticSeed.graphNodes.length,
+    graphEdges: syntheticSeed.graphEdges.length,
     activities: 1,
     activityVersions: 1,
     attempts: 1,
@@ -136,7 +136,7 @@ export const getDemoSeedCounts = (): SeedCounts => {
 };
 
 export const getSeedIdentity = (role: SeedRole) => {
-  const identity = demoSeed.identities.find(
+  const identity = syntheticSeed.identities.find(
     (candidate) => candidate.role === role
   );
 

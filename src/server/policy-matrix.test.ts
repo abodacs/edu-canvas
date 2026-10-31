@@ -32,7 +32,7 @@ import {
   createIdentityPersistence,
 } from "@/server/persistence";
 import { createSeededPersistence } from "@/server/persistence/seeded";
-import { demoSeed } from "@/server/seed-data";
+import { syntheticSeed } from "@/server/seed-data";
 
 import type { AuthDependencies } from "@/server/identity/api.server";
 import type { NewSessionInput } from "@/server/identity/persistence-port";
@@ -62,16 +62,69 @@ import type { SessionProjection } from "@/shared/identity-contract";
  *     each row's `PRODUCTION GAP` comment).
  */
 
-// Never read the ambient DATABASE_URL: the delivery seams read process.env, so
-// the environment has to pin the deterministic provider and the seeded store.
-vi.stubEnv("DATABASE_URL", "");
+// The delivery seams read process.env, so pin a valid production-shaped config
+// and replace the PostgreSQL composition with the in-memory test double below.
+vi.stubEnv(
+  "DATABASE_URL",
+  "postgresql://test:test@127.0.0.1:5432/edu_canvas_test"
+);
 vi.stubEnv("APP_ENV", "development");
-vi.stubEnv("DEMO_MODE", "true");
+vi.stubEnv("OPENAI_API_KEY", "test-server-key");
 // CI sets AUTH_PROVIDER=supabase for the preview-shaped smoke job. The seams read
 // process.env, so without this pin the synthetic sessions never resolve here.
 vi.stubEnv("AUTH_PROVIDER", "deterministic");
 
-const testEnvironment = { APP_ENV: "development", DEMO_MODE: "true" };
+/* eslint-disable unicorn/single-line-block-comment-style -- Vite reads a dynamic import's chunkname only from a single-line block comment. */
+vi.mock(
+  import(
+    /* webpackChunkName: "policy-matrix-persistence-mock" */
+    "@/server/persistence"
+  ),
+  async (importOriginal) => {
+    const actual = await importOriginal();
+    const seededStore = await import(
+      /* webpackChunkName: "policy-matrix-seeded-store" */
+      "@/server/persistence/seeded"
+    );
+    const seededIdentity = await import(
+      /* webpackChunkName: "policy-matrix-seeded-identity" */
+      "@/server/persistence/identity-seeded"
+    );
+    const foundation = seededStore.createSeededPersistence();
+    const identity = seededIdentity.createSeededIdentityPersistence();
+    return {
+      ...actual,
+      createFoundationPersistence: () => foundation,
+      createIdentityPersistence: () => identity,
+    };
+  }
+);
+
+vi.mock(
+  import(
+    /* webpackChunkName: "policy-matrix-generation-mock" */
+    "@/server/generation/factory"
+  ),
+  async (importOriginal) => {
+    const actual = await importOriginal();
+    const provider = await import(
+      /* webpackChunkName: "policy-matrix-deterministic-provider" */
+      "@/server/generation/provider"
+    );
+    return {
+      ...actual,
+      createConfiguredLessonDraftProvider: () =>
+        provider.createDeterministicLessonDraftProvider(),
+    };
+  }
+);
+/* eslint-enable unicorn/single-line-block-comment-style */
+
+const testEnvironment = {
+  APP_ENV: "development",
+  DATABASE_URL: "postgresql://test:test@127.0.0.1:5432/edu_canvas_test",
+  OPENAI_API_KEY: "test-server-key",
+};
 const password = "synthetic-pass-1";
 const northTenantId = "tenant_school_north";
 const southTenantId = "tenant_school_south";
@@ -329,7 +382,7 @@ const generationInput = (
   return {
     prompt: "equivalent fractions for grade 4",
     grade: 4,
-    standardId: demoSeed.standard.id,
+    standardId: syntheticSeed.standard.id,
     language: "en",
     difficulty: "on-level",
     idempotencyKey,
@@ -412,7 +465,7 @@ const generatingRecord = (options: {
     input: {
       prompt: "equivalent fractions for grade 4",
       grade: 4,
-      standardId: demoSeed.standard.id,
+      standardId: syntheticSeed.standard.id,
       language: "en",
       difficulty: "on-level",
     },

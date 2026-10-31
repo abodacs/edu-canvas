@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { readServerConfig } from "../config";
+import { createSeededIdentityPersistence } from "../persistence/identity-seeded";
 import {
   handleAuthContext,
   handleMembership,
@@ -11,11 +12,20 @@ import {
 
 import type { AuthDependencies } from "./api.server";
 
-const testEnvironment = { APP_ENV: "development", DEMO_MODE: "true" };
+const testEnvironment = {
+  APP_ENV: "development",
+  DATABASE_URL: "postgresql://test:test@127.0.0.1:5432/edu_canvas_test",
+  OPENAI_API_KEY: "test-server-key",
+};
 const password = "synthetic-pass-1";
 
+const sessionDependenciesPromise = resolveAuthDependencies(
+  readServerConfig({ ...testEnvironment }),
+  { identityPersistence: createSeededIdentityPersistence() }
+);
+
 const sessionDependencies = (): Promise<AuthDependencies> =>
-  resolveAuthDependencies(readServerConfig({ ...testEnvironment }));
+  sessionDependenciesPromise;
 
 const cookiePairs = (response: Response): string[] => {
   return response.headers

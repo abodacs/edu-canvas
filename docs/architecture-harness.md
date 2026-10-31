@@ -8,7 +8,7 @@
 - **Layer ownership:** shared modules cannot import server, route, UI, Node, or PostgreSQL code; UI modules cannot import runtime behavior; server modules cannot import delivery or UI modules.
 - **Named delivery seams:** route modules may import only `.server` modules or `/server-function` modules from the server tree.
 - **Private entry points:** every HTTP route under `src/routes/api` is classified. `auth`, `health`, and `readiness` may serve anonymous callers; every other route must reach a server delivery module that resolves the caller's session (`scripts/verify-identity-surface.ts`). A new private route that forgets authentication fails the check.
-- **Contract ownership:** public projections are parsed by their shared schema at the server seam (`sessionProjectionSchema` for the authenticated session, `demoSnapshotSchema` historically).
+- **Contract ownership:** public projections are parsed by their shared schema at the server seam (`sessionProjectionSchema` for the authenticated session).
 
 ## Dependency boundaries (verify:boundaries)
 

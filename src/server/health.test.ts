@@ -15,20 +15,21 @@ describe("readiness", () => {
     expect(Number.isNaN(Date.parse(payload.timestamp))).toBeFalsy();
   });
 
-  it("reports the default synthetic repository as ready", async () => {
+  it("reports missing production configuration as not ready", async () => {
     const payload = await getReadinessPayload({});
 
-    expect(payload.status).toBe("ready");
+    expect(payload.status).toBe("not_ready");
     expect(payload.persistence).toMatchObject({
-      status: "ready",
-      kind: "seeded-demo",
+      status: "failed",
+      code: "CONFIG_INVALID",
     });
+    expect(JSON.stringify(payload)).toContain("DATABASE_URL");
+    expect(JSON.stringify(payload)).toContain("OPENAI_API_KEY");
   });
 
   it("reports actionable invalid configuration without secret values", async () => {
     const payload = await getReadinessPayload({
       APP_ENV: "production",
-      DEMO_MODE: "false",
       DATABASE_URL: "not-a-url",
       OPENAI_API_KEY: "test-server-key",
       AUTH_PUBLIC_ORIGIN: "https://app.example.com",
@@ -56,7 +57,6 @@ describe("readiness", () => {
     const payload = await getReadinessPayload(
       {
         APP_ENV: "production",
-        DEMO_MODE: "false",
         DATABASE_URL: "not-a-url",
         OPENAI_API_KEY: "test-server-key",
         AUTH_PUBLIC_ORIGIN: "https://app.example.com",

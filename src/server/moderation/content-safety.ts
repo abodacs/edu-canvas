@@ -1,4 +1,4 @@
-import { demoSeed } from "../seed-data";
+import { syntheticSeed } from "../seed-data";
 
 /**
 The deterministic safety seam every provider-boundary check goes through
@@ -42,7 +42,7 @@ Real-people detection is #132 scope; this stays honest about what it screens.
 */
 const personalDataPatterns: readonly RegExp[] = [
   emailPattern,
-  ...demoSeed.identities
+  ...syntheticSeed.identities
     .flatMap((identity) => {
       return identity.role === "student"
         ? [identity.displayName, identity.demoHandle]

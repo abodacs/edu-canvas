@@ -1,13 +1,13 @@
 import { generationClaimExpiredDiagnostic } from "../generation/types";
 import { serverObservability } from "../observability.server";
-import { getDemoSeedCounts } from "../seed-data";
+import { getSyntheticSeedCounts } from "../seed-data";
 import { createSeededSourcePersistence } from "./source-seeded";
 import type { FoundationPersistence } from "./types";
 import type { SourceSnapshotRecord } from "../grounding/types";
 import type { LessonGenerationRecord } from "../generation/types";
 import type { ServerObservability } from "../observability.server";
 
-const SEEDED_DEMO_KIND = "seeded-demo";
+const IN_MEMORY_KIND = "in-memory";
 
 export interface SeededPersistenceOptions {
   observability?: ServerObservability;
@@ -46,16 +46,16 @@ export const createSeededPersistence = (
   };
 
   return {
-    kind: SEEDED_DEMO_KIND,
+    kind: IN_MEMORY_KIND,
     ...sourcePersistence,
 
     check() {
       try {
-        getDemoSeedCounts();
+        getSyntheticSeedCounts();
       } catch (error) {
         observability.captureError(error, {
           operation: "persistence.seeded.check",
-          dependency: SEEDED_DEMO_KIND,
+          dependency: IN_MEMORY_KIND,
           reason: "seed_integrity_failed",
           code: "PERSISTENCE_UNAVAILABLE",
         });
@@ -64,19 +64,19 @@ export const createSeededPersistence = (
 
       return Promise.resolve({
         status: "ready",
-        kind: SEEDED_DEMO_KIND,
+        kind: IN_MEMORY_KIND,
         code: "READY",
         message: "Synthetic seed repository is loaded.",
       });
     },
 
-    readDemoCounts() {
+    readSeedCounts() {
       try {
-        return Promise.resolve(getDemoSeedCounts());
+        return Promise.resolve(getSyntheticSeedCounts());
       } catch (error) {
         observability.captureError(error, {
-          operation: "persistence.seeded.read-demo-counts",
-          dependency: SEEDED_DEMO_KIND,
+          operation: "persistence.seeded.read-seed-counts",
+          dependency: IN_MEMORY_KIND,
           reason: "seed_integrity_failed",
           code: "PERSISTENCE_UNAVAILABLE",
         });

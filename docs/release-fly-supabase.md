@@ -62,8 +62,8 @@ Run these commands from the repository root or from the release worktree.
 
    ```bash
    export DATABASE_URL='postgresql://postgres:<password>@<host>:5432/postgres?sslmode=require'
-   APP_ENV=preview DEMO_MODE=false SYNTHETIC_DATA_ONLY=true pnpm db:migrate
-   APP_ENV=preview DEMO_MODE=false SYNTHETIC_DATA_ONLY=true pnpm db:seed
+   APP_ENV=preview SYNTHETIC_DATA_ONLY=true pnpm db:migrate
+   APP_ENV=preview SYNTHETIC_DATA_ONLY=true pnpm db:seed
    unset DATABASE_URL
    ```
 

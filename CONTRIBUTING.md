@@ -2,16 +2,20 @@
 
 Use this guide to report a problem, propose a bounded change, or prepare a contribution for review. Follow [CODING_STANDARDS.md](CODING_STANDARDS.md) for code rules and [coding patterns](docs/engineering/coding-patterns.md) for design guidance.
 
-## Run the synthetic demo
+## Run the app locally
 
 Use Node.js 26 or newer and the pnpm version pinned in [package.json](package.json), currently 10.17.1.
 
 ```bash
+docker compose up -d postgres
 pnpm install --frozen-lockfile
+export DATABASE_URL=postgresql://edu_canvas:edu_canvas_dev@127.0.0.1:5432/edu_canvas
+export OPENAI_API_KEY=<server-side-key>
+pnpm db:setup
 pnpm dev
 ```
 
-Open `http://localhost:3000`. Without an environment file, the demo uses deterministic synthetic fixtures and needs no database or provider credentials. See the [foundation runbook](docs/foundation-runbook.md) for environment overrides, Git worktrees, and PostgreSQL setup.
+Open `http://localhost:3000`. PostgreSQL and a provider credential are required; the app has no in-memory runtime fallback. See the [foundation runbook](docs/foundation-runbook.md) for environment overrides, Git worktrees, and migration details.
 
 Keep private answer keys, mastery, permissions, and credentials on the server. Use synthetic examples in contributions. Preserve the [architecture boundaries](docs/architecture-harness.md) and [safety boundaries](README.md#safety-boundaries-non-negotiable-even-under-deadline-pressure).
 

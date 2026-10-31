@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { readServerConfig } from "../config";
+import { createSeededIdentityPersistence } from "../persistence/identity-seeded";
 import {
   handleAuthContext,
   handleContinue,
@@ -17,12 +18,22 @@ import type { AuthDependencies } from "./api.server";
 const password = "synthetic-pass-1";
 
 /**
- * Hermetic environment: never read the ambient DATABASE_URL, so these tests always exercise the deterministic provider and the in-memory identity store.
+ * Hermetic environment: a non-connecting database URL plus an injected in-memory identity store. The deterministic provider stays development-only.
  */
-const testEnvironment = { APP_ENV: "development", DEMO_MODE: "true" };
+const testEnvironment = {
+  APP_ENV: "development",
+  DATABASE_URL: "postgresql://test:test@127.0.0.1:5432/edu_canvas_test",
+  OPENAI_API_KEY: "test-server-key",
+};
 
-const dependencies = (): Promise<AuthDependencies> =>
-  resolveAuthDependencies(readServerConfig({ ...testEnvironment }));
+const testIdentityPersistence = createSeededIdentityPersistence();
+const testOptions = { identityPersistence: testIdentityPersistence };
+const dependenciesPromise = resolveAuthDependencies(
+  readServerConfig({ ...testEnvironment }),
+  testOptions
+);
+
+const dependencies = (): Promise<AuthDependencies> => dependenciesPromise;
 
 const cookiesFrom = (response: Response): string[] =>
   response.headers.getSetCookie();
@@ -428,7 +439,8 @@ describe("teacher delivery seam", () => {
 
     const resolved = await resolveTeacherActor(
       teacherRequest(sessionDependencies, sessionCookie),
-      sessionDependencies.config
+      sessionDependencies.config,
+      testOptions
     );
 
     expect(resolved).toMatchObject({
@@ -447,7 +459,8 @@ describe("teacher delivery seam", () => {
 
     const resolved = await resolveTeacherActor(
       teacherRequest(sessionDependencies, sessionCookie),
-      sessionDependencies.config
+      sessionDependencies.config,
+      testOptions
     );
 
     expect(resolved).toMatchObject({ ok: false, error: { code: "FORBIDDEN" } });
@@ -458,7 +471,8 @@ describe("teacher delivery seam", () => {
 
     const resolved = await resolveTeacherActor(
       teacherRequest(sessionDependencies, undefined),
-      sessionDependencies.config
+      sessionDependencies.config,
+      testOptions
     );
 
     expect(resolved).toMatchObject({

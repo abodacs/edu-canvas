@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { demoSeed } from "@/server/seed-data";
+import { syntheticSeed } from "@/server/seed-data";
 import { parseTenantId } from "@/server/identity/identifiers";
 import { syntheticTeacherActor } from "@/server/identity/test-actors";
 
@@ -28,14 +28,14 @@ import type {
 import type { GenerationServiceResult, LessonGenerationRecord } from "./types";
 
 const teacherActor = syntheticTeacherActor({
-  tenantId: parseTenantId(demoSeed.tenant.id),
+  tenantId: parseTenantId(syntheticSeed.tenant.id),
 });
 
 const baseInput = (overrides: Record<string, unknown> = {}) => {
   return {
     prompt: "equivalent fractions for grade 4",
     grade: 4,
-    standardId: demoSeed.standard.id,
+    standardId: syntheticSeed.standard.id,
     language: "en" as const,
     difficulty: "on-level" as const,
     idempotencyKey: "conformance-request-1",
@@ -47,7 +47,7 @@ const recordInput = (): NormalizedGenerationRequest => {
   return {
     prompt: "equivalent fractions for grade 4",
     grade: 4,
-    standardId: demoSeed.standard.id,
+    standardId: syntheticSeed.standard.id,
     language: "en",
     difficulty: "on-level",
   };
@@ -269,7 +269,7 @@ describe("generation service conformance: idempotency and ownership", () => {
     const right = normalizeGenerationInput({
       difficulty: "on-level",
       language: "en",
-      standardId: demoSeed.standard.id,
+      standardId: syntheticSeed.standard.id,
       grade: 4,
       prompt: "equivalent fractions for grade 4",
       idempotencyKey: "a-different-key",
@@ -287,12 +287,12 @@ describe("generation service conformance: idempotency and ownership", () => {
     const { provenance } = createDeterministicLessonDraftProvider();
     const claimed: LessonGenerationRecord = {
       requestId: "draft_req_conformance_owner",
-      tenantId: demoSeed.tenant.id,
+      tenantId: syntheticSeed.tenant.id,
       teacherId: teacherActor.actorId,
       input: {
         prompt: "equivalent fractions for grade 4",
         grade: 4,
-        standardId: demoSeed.standard.id,
+        standardId: syntheticSeed.standard.id,
         language: "en",
         difficulty: "on-level",
       },
@@ -307,7 +307,7 @@ describe("generation service conformance: idempotency and ownership", () => {
           requestHash: createGenerationRequestHash({
             prompt: "equivalent fractions for grade 4",
             grade: 4,
-            standardId: demoSeed.standard.id,
+            standardId: syntheticSeed.standard.id,
             language: "en",
             difficulty: "on-level",
           }),
@@ -450,12 +450,12 @@ describe("generation service conformance: idempotency and ownership", () => {
     const provider = createDeterministicLessonDraftProvider();
     const record: LessonGenerationRecord = {
       requestId: "draft_req_conformance_lease",
-      tenantId: demoSeed.tenant.id,
+      tenantId: syntheticSeed.tenant.id,
       teacherId: teacherActor.actorId,
       input: {
         prompt: "equivalent fractions for grade 4",
         grade: 4,
-        standardId: demoSeed.standard.id,
+        standardId: syntheticSeed.standard.id,
         language: "en",
         difficulty: "on-level",
       },

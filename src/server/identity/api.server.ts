@@ -29,6 +29,7 @@ import {
   projectMembershipRequired,
 } from "./projection";
 
+import type { ConfiguredIdentityOptions } from "./composition.server";
 import type { ServerConfig } from "../config";
 import type { IdentityService, SignInOutcome } from "./service";
 import type { SessionResolution, TeacherActor } from "./types";
@@ -156,9 +157,10 @@ export type TeacherResolution =
   | { readonly ok: false; readonly error: IdentityError };
 
 export const resolveAuthDependencies = async (
-  config: ServerConfig = readServerConfig()
+  config: ServerConfig = readServerConfig(),
+  options: ConfiguredIdentityOptions = {}
 ): Promise<AuthDependencies> => {
-  const configured = await createConfiguredIdentity(config);
+  const configured = await createConfiguredIdentity(config, options);
   return {
     identity: configured.service,
     sessionSecret: configured.sessionSecret,
@@ -615,7 +617,8 @@ export const guardProtectedMutation = (
 // Resolve the caller as a verified teacher, or name the reason. Transport stays with the caller.
 export const resolveTeacherActor = async (
   request: Request,
-  config: ServerConfig = readServerConfig()
+  config: ServerConfig = readServerConfig(),
+  options: ConfiguredIdentityOptions = {}
 ): Promise<TeacherResolution> => {
   if (config.issues.length > 0) {
     return { ok: false, error: new IdentityError("AUTH_UNAVAILABLE") };
@@ -623,7 +626,7 @@ export const resolveTeacherActor = async (
 
   let dependencies: AuthDependencies;
   try {
-    dependencies = await resolveAuthDependencies(config);
+    dependencies = await resolveAuthDependencies(config, options);
   } catch {
     return { ok: false, error: new IdentityError("AUTH_UNAVAILABLE") };
   }

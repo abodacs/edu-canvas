@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { createEquivalentFractionsDraft } from "@/server/generation/provider";
 import { buildValidatedLearningPath } from "@/server/generation/learning-path";
-import { createDemoCurriculumContext } from "@/server/generation/semantic-validation";
+import { createSyntheticCurriculumContext } from "@/server/generation/semantic-validation";
 import { gateArtifact } from "@/server/safety/artifact-gate";
 
 import { validateA2UIMessage } from "@/shared/a2ui-contract";
@@ -153,7 +153,7 @@ const request = {
   ...baseRequest,
   learningPath: buildValidatedLearningPath({
     proposal: requireLearningPath(baseRequest.draft),
-    context: createDemoCurriculumContext(baseRequest),
+    context: createSyntheticCurriculumContext(baseRequest),
     draftId: baseRequest.requestId,
     provenance: {
       provider: "deterministic-fixture",
@@ -443,7 +443,7 @@ describe("lesson preview compiler", () => {
     };
     const arabicPath = buildValidatedLearningPath({
       proposal: requireLearningPath(arabicDraft),
-      context: createDemoCurriculumContext(arabicRequest),
+      context: createSyntheticCurriculumContext(arabicRequest),
       draftId: arabicRequest.requestId,
       provenance: {
         provider: "deterministic-fixture",

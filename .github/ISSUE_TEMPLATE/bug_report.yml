@@ -21,7 +21,7 @@ body:
       label: Steps to reproduce
       description: Include the smallest synthetic input, starting state, and actions that trigger the failure.
       placeholder: |
-        1. Start the synthetic demo and open /demo/teacher.
+        1. Start the app locally with synthetic data and open /workspace.
         2. Enter the synthetic lesson request that triggers the problem.
         3. Describe the action after which the failure appears.
     validations:
@@ -51,8 +51,8 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: Include the commit or release, browser and OS, and relevant Node.js, pnpm, demo mode, or deployment details.
-      placeholder: "Commit SHA; browser and OS; Node.js 26; pnpm 10.17.1; synthetic demo"
+      description: Include the commit or release, browser and OS, and relevant Node.js, pnpm, database, or deployment details.
+      placeholder: "Commit SHA; browser and OS; Node.js 26; pnpm 10.17.1; synthetic data"
     validations:
       required: true
   - type: input

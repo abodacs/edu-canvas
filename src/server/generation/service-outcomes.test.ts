@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { demoSeed } from "@/server/seed-data";
+import { syntheticSeed } from "@/server/seed-data";
 import { parseTenantId } from "@/server/identity/identifiers";
 import { syntheticTeacherActor } from "@/server/identity/test-actors";
 
@@ -10,16 +10,16 @@ import {
   createEquivalentFractionsDraft,
 } from "./provider";
 import { createGenerationService } from "./service";
-import { createDemoCurriculumContext } from "./semantic-validation";
+import { createSyntheticCurriculumContext } from "./semantic-validation";
 
 const teacherActor = syntheticTeacherActor({
-  tenantId: parseTenantId(demoSeed.tenant.id),
+  tenantId: parseTenantId(syntheticSeed.tenant.id),
 });
 
 const input = {
   prompt: "equivalent fractions for grade 4",
   grade: 4,
-  standardId: demoSeed.standard.id,
+  standardId: syntheticSeed.standard.id,
   language: "en" as const,
   difficulty: "on-level" as const,
   idempotencyKey: "outcome-request",
@@ -140,7 +140,7 @@ describe("generation attempt outcomes", () => {
       provider: createDeterministicLessonDraftProvider(),
       curriculumContext: (request) => {
         return {
-          ...createDemoCurriculumContext(request),
+          ...createSyntheticCurriculumContext(request),
           grade: request.grade + 1,
         };
       },

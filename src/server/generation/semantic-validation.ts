@@ -20,7 +20,7 @@ import type {
 } from "./semantic-validation-contract";
 
 export {
-  createDemoCurriculumContext,
+  createSyntheticCurriculumContext,
   curriculumValidatorVersion,
   learningQualityValidatorVersion,
   semanticValidationRunnerVersion,
