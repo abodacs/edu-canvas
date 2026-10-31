@@ -12,7 +12,10 @@ import {
   hashExtractedText,
 } from "./ingestion";
 
-import { SOURCE_MAX_EXTRACTED_CHARS, SOURCE_MAX_FILE_BYTES } from "@/shared/source-contract";
+import {
+  SOURCE_MAX_EXTRACTED_CHARS,
+  SOURCE_MAX_FILE_BYTES,
+} from "@/shared/source-contract";
 
 const TEXT_PDF_BYTES = new TextEncoder().encode("%PDF-1.4 test content");
 
@@ -48,12 +51,18 @@ describe(decideFileFormat, () => {
 describe(decideFileSize, () => {
   it("accepts a file at the limit", () => {
     const bytes = new Uint8Array(SOURCE_MAX_FILE_BYTES);
-    expect(decideFileSize(bytes)).toEqual({ ok: true, value: bytes.byteLength });
+    expect(decideFileSize(bytes)).toEqual({
+      ok: true,
+      value: bytes.byteLength,
+    });
   });
 
   it("rejects one byte over the limit with the named reason", () => {
     const bytes = new Uint8Array(SOURCE_MAX_FILE_BYTES + 1);
-    expect(decideFileSize(bytes)).toEqual({ ok: false, reason: "oversized-file" });
+    expect(decideFileSize(bytes)).toEqual({
+      ok: false,
+      reason: "oversized-file",
+    });
   });
 });
 
@@ -62,7 +71,9 @@ describe(hasPdfEncryptionMarker, () => {
     const body = new TextEncoder().encode("%PDF-1.4 ");
     const filler = new Uint8Array(2100).fill(32);
     const trailer = new TextEncoder().encode("trailer << /Encrypt 99 0 R >>");
-    const bytes = new Uint8Array(body.byteLength + filler.byteLength + trailer.byteLength);
+    const bytes = new Uint8Array(
+      body.byteLength + filler.byteLength + trailer.byteLength
+    );
     bytes.set(body, 0);
     bytes.set(filler, body.byteLength);
     bytes.set(trailer, body.byteLength + filler.byteLength);
@@ -93,13 +104,19 @@ describe(decodeTextSource, () => {
 
   it("rejects an empty document", () => {
     const bytes = new TextEncoder().encode("   \n  ");
-    expect(decodeTextSource(bytes)).toEqual({ ok: false, reason: "empty-source" });
+    expect(decodeTextSource(bytes)).toEqual({
+      ok: false,
+      reason: "empty-source",
+    });
   });
 });
 
 describe(decidePageCount, () => {
   it("rejects more than twenty pages", () => {
-    expect(decidePageCount(21)).toEqual({ ok: false, reason: "too-many-pages" });
+    expect(decidePageCount(21)).toEqual({
+      ok: false,
+      reason: "too-many-pages",
+    });
     expect(decidePageCount(20)).toEqual({ ok: true, value: 20 });
   });
 });
@@ -132,7 +149,8 @@ describe(decidePageGaps, () => {
   });
 
   it("flags suspected broken math and encoding faults separately", () => {
-    const symbolPage = "\u00BD \u00D7 \u2215 \u2212 \u2261 \u221E \u2211 \u221A";
+    const symbolPage =
+      "\u00BD \u00D7 \u2215 \u2212 \u2261 \u221E \u2211 \u221A";
     const encodingPage = "readable start \u{FFFD}\u{FFFD}\u{FFFD}";
     const gaps = decidePageGaps(["fine prose page", symbolPage, encodingPage]);
     const codes = gaps.map((gap) => gap.code);

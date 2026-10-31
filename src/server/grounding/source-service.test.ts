@@ -185,9 +185,11 @@ describe(createSourceService, () => {
       syntheticMaterialConfirmed: true,
     });
     await service.cancel(teacherActor, snapshot.id);
-    await expect(service.read(teacherActor, snapshot.id)).rejects.toMatchObject({
-      code: "SOURCE_NOT_FOUND",
-    });
+    await expect(service.read(teacherActor, snapshot.id)).rejects.toMatchObject(
+      {
+        code: "SOURCE_NOT_FOUND",
+      }
+    );
   });
 
   it("expires unused snapshots and marks stale extractions on cleanup", async () => {
@@ -207,9 +209,9 @@ describe(createSourceService, () => {
 
     const expired = await service.runCleanup("2026-11-02T10:00:00.000Z");
     expect(expired.expired).toBe(1);
-    await expect(service.read(teacherActor, "snapshot_cleanup")).rejects.toMatchObject(
-      { code: "SOURCE_NOT_FOUND" }
-    );
+    await expect(
+      service.read(teacherActor, "snapshot_cleanup")
+    ).rejects.toMatchObject({ code: "SOURCE_NOT_FOUND" });
 
     await persistence.insertSnapshot({
       id: "snapshot_stale",
@@ -253,7 +255,10 @@ describe(createPersistenceSourceGate, () => {
       safety: createDefaultContentSafety(),
       now: () => "2026-10-31T10:00:00.000Z",
     });
-    const gate = createPersistenceSourceGate(persistence, () => "2026-10-31T10:00:00.000Z");
+    const gate = createPersistenceSourceGate(
+      persistence,
+      () => "2026-10-31T10:00:00.000Z"
+    );
     const snapshot: PublicSourceSnapshot = await service.upload({
       actor: teacherActor,
       fileName: "notes.txt",
