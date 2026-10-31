@@ -176,6 +176,10 @@ describe("publication service", () => {
       learners: [{ id: "learner_omar", displayName: "Omar Nabil" }],
     });
 
+    const uniqueBlockers = new Set(review.publishBlockers);
+
+    expect(uniqueBlockers.size).toBe(review.publishBlockers.length);
+
     const reopened = await fixture.open();
 
     expect(reopened.version.id).toBe(review.version.id);

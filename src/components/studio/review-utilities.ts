@@ -13,13 +13,21 @@ export const warningsForTarget = (
   targetKind: "variant" | "reverse-path",
   targetId: string
 ): PublicationFinding[] => {
-  return findings.filter((finding) => {
+  const relevant = findings.filter((finding) => {
     if (finding.verdict !== "warning") {
       return false;
     }
     return targetKind === "variant"
       ? !finding.variantId || finding.variantId === targetId
       : !finding.variantId && finding.field === "learningPath";
+  });
+  const seen = new Set<string>();
+  return relevant.filter((finding) => {
+    if (seen.has(finding.code)) {
+      return false;
+    }
+    seen.add(finding.code);
+    return true;
   });
 };
 

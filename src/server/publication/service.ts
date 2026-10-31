@@ -97,19 +97,21 @@ const warningFindingsFor = (
   const findings = decoded.validationResult.findings.filter(
     (finding) => finding.verdict === "warning"
   );
-  return findings
+  const codes = findings
     .filter((finding) => {
       return targetKind === "variant"
         ? !finding.variantId || finding.variantId === targetId
         : !finding.variantId && finding.field === "learningPath";
     })
     .map((finding) => finding.code);
+  return [...new Set(codes)];
 };
 
 const allWarningCodes = (decoded: DecodedPackVersion): string[] => {
-  return decoded.validationResult.findings
+  const codes = decoded.validationResult.findings
     .filter((finding) => finding.verdict === "warning")
     .map((finding) => finding.code);
+  return [...new Set(codes)];
 };
 
 const approvedTargetKey = (approval: PackApprovalRecord): string =>
