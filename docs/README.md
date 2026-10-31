@@ -39,6 +39,7 @@ Edu-Canvas is a production product; these documents define and verify one trustw
 
 ## Change log
 
+- 2026-11-01 (README): the root README leads with the problem, the teacher-controlled loop, and the demo story; status, safety boundaries, layout, and the code map stay below the fold. No behavior claims changed.
 - 2026-10-31 (recovery): the [blocked generation recovery](design/blocked-generation-recovery.md), [keyboard](design/blocked-generation-keyboard.md), and [scenarios](design/blocked-generation-scenarios.md) documents specify the moderation fallback for [#119](https://github.com/abodacs/edu-canvas/issues/119). The revision-link gap is [#148](https://github.com/abodacs/edu-canvas/issues/148).
 - 2026-10-27 (security): the [threat model](security/threat-model.md) was refreshed against the implemented generation, A2UI/SSE preview, tenant-scoping, and synthetic-data paths. Controls cite source paths; residual rows link to their owners where a follow-up exists, including the new follow-ups [#130](https://github.com/abodacs/edu-canvas/issues/130), [#131](https://github.com/abodacs/edu-canvas/issues/131), and [#132](https://github.com/abodacs/edu-canvas/issues/132) ([#73](https://github.com/abodacs/edu-canvas/issues/73)).
 - 2026-10-26 (alignment): north-star docs name the post-draft loop against free teacher copilots; dated method, triage, and hackathon-2026 import records moved to [archive/](archive/README.md) ([#96](https://github.com/abodacs/edu-canvas/issues/96)).
