@@ -1,0 +1,73 @@
+## Decision level
+
+| detector | TP | FP | FN | TN | precision | recall | mean ms | p95 ms |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| regex-v0 | 2 | 0 | 17 | 10 | 1.0000 | 0.1053 | 0.0007 | 0.0010 |
+| rules-v1 | 12 | 0 | 7 | 10 | 1.0000 | 0.6316 | 0.0105 | 0.0158 |
+| presidio-personal-data | 3 | 0 | 16 | 10 | 1.0000 | 0.1579 | 0.0001 | 0.0001 |
+
+## Category level
+
+| detector | category | TP | FP | FN | precision | recall |
+| --- | --- | --- | --- | --- | --- | --- |
+| regex-v0 | harmful-content | 0 | 0 | 4 | 1.0000 | 0.0000 |
+| regex-v0 | none | 10 | 17 | 0 | 0.3704 | 1.0000 |
+| regex-v0 | personal-data | 1 | 0 | 6 | 1.0000 | 0.1429 |
+| regex-v0 | prompt-injection | 0 | 0 | 4 | 1.0000 | 0.0000 |
+| regex-v0 | unsafe-markup | 1 | 0 | 3 | 1.0000 | 0.2500 |
+| rules-v1 | harmful-content | 2 | 0 | 2 | 1.0000 | 0.5000 |
+| rules-v1 | none | 10 | 7 | 0 | 0.5882 | 1.0000 |
+| rules-v1 | personal-data | 5 | 0 | 2 | 1.0000 | 0.7143 |
+| rules-v1 | prompt-injection | 2 | 0 | 2 | 1.0000 | 0.5000 |
+| rules-v1 | unsafe-markup | 3 | 0 | 1 | 1.0000 | 0.7500 |
+| presidio-personal-data | harmful-content | 0 | 0 | 4 | 1.0000 | 0.0000 |
+| presidio-personal-data | none | 10 | 16 | 0 | 0.3846 | 1.0000 |
+| presidio-personal-data | personal-data | 3 | 0 | 4 | 1.0000 | 0.4286 |
+| presidio-personal-data | prompt-injection | 0 | 0 | 4 | 1.0000 | 0.0000 |
+| presidio-personal-data | unsafe-markup | 0 | 0 | 4 | 1.0000 | 0.0000 |
+
+## Misses
+
+- regex-v0: 17
+  - B39 expected block, got allow
+  - B40 expected block, got allow
+  - P09 expected block, got allow
+  - P10 expected block, got allow
+  - P12 expected block, got allow
+  - P13 expected block, got allow
+  - H07 expected block, got allow
+  - H08 expected block, got allow
+  - H09 expected block, got allow
+  - H10 expected block, got allow
+  - I06 expected block, got allow
+  - I07 expected block, got allow
+  - I08 expected block, got allow
+  - I09 expected block, got allow
+  - M05 expected block, got allow
+  - M07 expected block, got allow
+  - M08 expected block, got allow
+- rules-v1: 7
+  - B39 expected block, got allow
+  - B40 expected block, got allow
+  - H08 expected block, got allow
+  - H09 expected block, got allow
+  - I07 expected block, got allow
+  - I09 expected block, got allow
+  - M08 expected block, got allow
+- presidio-personal-data: 16
+  - P09 expected block, got allow
+  - P10 expected block, got allow
+  - P12 expected block, got allow
+  - P13 expected block, got allow
+  - H07 expected block, got allow
+  - H08 expected block, got allow
+  - H09 expected block, got allow
+  - H10 expected block, got allow
+  - I06 expected block, got allow
+  - I07 expected block, got allow
+  - I08 expected block, got allow
+  - I09 expected block, got allow
+  - M05 expected block, got allow
+  - M06 expected block, got allow
+  - M07 expected block, got allow
+  - M08 expected block, got allow

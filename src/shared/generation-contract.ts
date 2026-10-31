@@ -140,11 +140,30 @@ export const publicLessonDraftSchema = z
   })
   .strict();
 
+/**
+#132: the reviewed moderation category. A teacher sees this word, never the
+internal diagnostic code. `unserializable` is the fail-closed case where the
+screened value could not be serialized at all.
+*/
+export const moderationCategoryValues = [
+  "personal-data",
+  "harmful-content",
+  "prompt-injection",
+  "unsafe-markup",
+  "unserializable",
+] as const;
+
+export type ModerationCategory = (typeof moderationCategoryValues)[number];
+
 export const publicGenerationDiagnosticSchema = z
   .object({
     severity: z.enum(["warning", "error"]),
     code: z.string(),
     message: z.string(),
+    /**
+     * Present only on a moderation block. It names the category the teacher must revise, without exposing the rule set or the matching text.
+     */
+    moderationCategory: z.enum(moderationCategoryValues).optional(),
     variantId: z.string().optional(),
     field: z.string().optional(),
     nodeId: z.string().optional(),

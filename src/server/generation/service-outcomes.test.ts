@@ -6,6 +6,10 @@ import { syntheticTeacherActor } from "@/server/identity/test-actors";
 
 import { createSeededPersistence } from "../persistence/seeded";
 import {
+  allowedSafetyResult,
+  blockedSafetyResult,
+} from "../moderation/content-safety";
+import {
   createDeterministicLessonDraftProvider,
   createEquivalentFractionsDraft,
 } from "./provider";
@@ -34,9 +38,13 @@ describe("generation attempt outcomes", () => {
       persistence,
       provider,
       safety: {
-        checkPrompt: () => ({ allowed: true }),
-        checkGeneratedContent: () => ({ allowed: provider.calls === 1 }),
-        checkSourceText: () => ({ allowed: true }),
+        checkPrompt: () => allowedSafetyResult(),
+        checkGeneratedContent: () => {
+          return provider.calls === 1
+            ? allowedSafetyResult()
+            : blockedSafetyResult("harmful-content");
+        },
+        checkSourceText: () => allowedSafetyResult(),
       },
     });
 

@@ -6,6 +6,10 @@ import { syntheticTeacherActor } from "@/server/identity/test-actors";
 
 import { createSeededPersistence } from "../persistence/seeded";
 import {
+  allowedSafetyResult,
+  blockedSafetyResult,
+} from "../moderation/content-safety";
+import {
   createDeterministicLessonDraftProvider,
   createEquivalentFractionsDraft,
   LessonProviderError,
@@ -750,9 +754,13 @@ describe("generation service conformance: retries and moderation", () => {
       persistence,
       provider,
       safety: {
-        checkPrompt: (prompt) => ({ allowed: !prompt.includes("unsafe") }),
-        checkGeneratedContent: () => ({ allowed: true }),
-        checkSourceText: () => ({ allowed: true }),
+        checkPrompt: (prompt) => {
+          return prompt.includes("unsafe")
+            ? blockedSafetyResult("personal-data")
+            : allowedSafetyResult();
+        },
+        checkGeneratedContent: () => allowedSafetyResult(),
+        checkSourceText: () => allowedSafetyResult(),
       },
       requestIdFactory: () => {
         requestNumber += 1;
@@ -792,9 +800,13 @@ describe("generation service conformance: retries and moderation", () => {
       persistence: createSeededPersistence(),
       provider,
       safety: {
-        checkPrompt: (prompt) => ({ allowed: !prompt.includes("unsafe") }),
-        checkGeneratedContent: () => ({ allowed: true }),
-        checkSourceText: () => ({ allowed: true }),
+        checkPrompt: (prompt) => {
+          return prompt.includes("unsafe")
+            ? blockedSafetyResult("personal-data")
+            : allowedSafetyResult();
+        },
+        checkGeneratedContent: () => allowedSafetyResult(),
+        checkSourceText: () => allowedSafetyResult(),
       },
       requestIdFactory: () => {
         requestNumber += 1;
@@ -820,9 +832,9 @@ describe("generation service conformance: retries and moderation", () => {
       persistence: createSeededPersistence(),
       provider,
       safety: {
-        checkPrompt: () => ({ allowed: true }),
-        checkGeneratedContent: () => ({ allowed: false }),
-        checkSourceText: () => ({ allowed: true }),
+        checkPrompt: () => allowedSafetyResult(),
+        checkGeneratedContent: () => blockedSafetyResult("harmful-content"),
+        checkSourceText: () => allowedSafetyResult(),
       },
       requestIdFactory: () => "draft_req_conformance_moderated_output",
     });
@@ -845,9 +857,9 @@ describe("generation service conformance: retries and moderation", () => {
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
       safety: {
-        checkPrompt: () => ({ allowed: false }),
-        checkGeneratedContent: () => ({ allowed: true }),
-        checkSourceText: () => ({ allowed: true }),
+        checkPrompt: () => blockedSafetyResult("personal-data"),
+        checkGeneratedContent: () => allowedSafetyResult(),
+        checkSourceText: () => allowedSafetyResult(),
       },
       requestIdFactory: () => "draft_req_conformance_moderated_retry",
     });

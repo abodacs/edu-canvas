@@ -3,6 +3,7 @@ import type { ArtifactGateSnapshot } from "@/server/safety/artifact-gate-contrac
 import type {
   LessonDifficulty,
   LessonLanguage,
+  ModerationCategory,
   PublicGenerationResult,
   RecoveryAction,
   SemanticValidationVerdict,
@@ -140,6 +141,11 @@ export interface GenerationDiagnostic {
    * gate so a blocked teacher sees the way out with the reason.
    */
   recovery?: RecoveryAction;
+  /**
+   * #132: the moderation category behind a block. It is teacher-safe and it
+   * never carries the rule set, the matched text, or the internal code.
+   */
+  moderationCategory?: ModerationCategory;
 }
 
 export interface ValidationSuccess {

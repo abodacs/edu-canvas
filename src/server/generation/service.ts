@@ -6,7 +6,10 @@ import { createId } from "@/server/ids";
 import { syntheticSeed } from "@/server/seed-data";
 
 import { IdentityError } from "../identity/errors";
-import { createDefaultContentSafety } from "../moderation/content-safety";
+import {
+  createDefaultContentSafety,
+  MODERATION_BLOCKED_CODE,
+} from "../moderation/content-safety";
 
 import {
   GenerationRequestError,
@@ -28,7 +31,10 @@ import {
 } from "./types";
 import { validateProviderDraft } from "./validation";
 import type { SourceGate } from "../grounding/types";
-import type { ContentSafety } from "../moderation/content-safety";
+import type {
+  ContentSafety,
+  ContentSafetyResult,
+} from "../moderation/content-safety";
 import type { Actor } from "@/server/identity/types";
 import type { ArtifactGateSnapshot } from "@/server/safety/artifact-gate";
 import type { DraftAcceptanceOptions } from "./draft-acceptance";
@@ -205,6 +211,23 @@ const diagnostic = (code: string, message: string): GenerationDiagnostic => {
     severity: "error",
     code,
     message,
+  };
+};
+
+/**
+#132: one code for every local moderation block, plus the category the teacher
+must revise. The rule set version stays out of the diagnostic: it is a server
+detail and it would leak the rule fingerprint to the client.
+*/
+const moderationDiagnostic = (
+  decision: ContentSafetyResult,
+  message: string
+): GenerationDiagnostic => {
+  return {
+    ...diagnostic(MODERATION_BLOCKED_CODE, message),
+    ...(decision.category !== "none" && {
+      moderationCategory: decision.category,
+    }),
   };
 };
 
@@ -718,10 +741,11 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     }
     ({ record } = claim);
 
-    if (!safety.checkPrompt(input.prompt).allowed) {
+    const promptDecision = safety.checkPrompt(input.prompt);
+    if (!promptDecision.allowed) {
       const diagnostics = [
-        diagnostic(
-          "MODERATION_BLOCKED",
+        moderationDiagnostic(
+          promptDecision,
           "This request was blocked by safety review. Revise the request before trying again."
         ),
       ];
@@ -754,10 +778,13 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       return persistCallFailure(record, firstOutcome);
     }
 
-    if (!safety.checkGeneratedContent(firstOutcome.response.draft).allowed) {
+    const firstDecision = safety.checkGeneratedContent(
+      firstOutcome.response.draft
+    );
+    if (!firstDecision.allowed) {
       const diagnostics = [
-        diagnostic(
-          "MODERATION_BLOCKED",
+        moderationDiagnostic(
+          firstDecision,
           "The generated lesson was blocked by safety review and was not shown."
         ),
       ];
@@ -821,12 +848,13 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       );
     }
 
-    if (
-      !safety.checkGeneratedContent(correctionOutcome.response.draft).allowed
-    ) {
+    const correctionDecision = safety.checkGeneratedContent(
+      correctionOutcome.response.draft
+    );
+    if (!correctionDecision.allowed) {
       const diagnostics = [
-        diagnostic(
-          "MODERATION_BLOCKED",
+        moderationDiagnostic(
+          correctionDecision,
           "The corrected lesson was blocked by safety review and was not shown."
         ),
       ];
