@@ -2,22 +2,15 @@
 
 > Turn one learning objective into a lesson your students understand.
 
-Edu-Canvas is an adaptive lesson-preparation workspace for teachers of Grades
-3–6. The current release focuses on Grade 4 equivalent fractions in Common Core
-Math. English ships first; Arabic is a deferred product goal.
+Edu-Canvas is an adaptive lesson-preparation workspace for teachers of Grades 3–6. The current release focuses on Grade 4 equivalent fractions in Common Core Math. English ships first; Arabic is a deferred product goal.
 
-A teacher describes an objective and gets four structured lesson variants,
-validated and ready to review in one place. The model drafts; the server checks
-structure, curriculum quality, and safety; the teacher keeps the final decision.
+A teacher describes an objective and gets four structured lesson variants, validated and ready to review in one place. The model drafts; the server checks structure, curriculum quality, and safety; the teacher keeps the final decision.
 
-This is not a chat wrapper. Generated content is structured data, validated
-before it renders, and compiled into a fixed UI catalog. No generated HTML or
-JavaScript executes in the browser.
+This is not a chat wrapper. Generated content is structured data, validated before it renders, and compiled into a fixed UI catalog. No generated HTML or JavaScript executes in the browser.
 
 ## The problem
 
-Lesson planning is slow, repetitive, and hard to adapt to the real needs of a
-classroom.
+Lesson planning is slow, repetitive, and hard to adapt to the real needs of a classroom.
 
 Most AI tools for teachers:
 
@@ -26,23 +19,19 @@ Most AI tools for teachers:
 - are not built for explainable adaptation
 - blur the line between teacher guidance and untrusted model output
 
-For Grades 3–6 the gap is sharper: teachers need content that is
-age-appropriate, aligned, and safe to put in front of students.
+For Grades 3–6 the gap is sharper: teachers need content that is age-appropriate, aligned, and safe to put in front of students.
 
 ## What Edu-Canvas does
 
 Edu-Canvas is built around one teacher-controlled loop:
 
 1. A teacher enters a topic, grade, standard, and learning goal.
-2. The system generates four structured lesson variants, each validated before
-   display.
+2. The system generates four structured lesson variants, each validated before display.
 3. The teacher reviews, edits, and approves the version students receive.
 4. Students work through the approved activity with server-side validation.
 5. The teacher sees the learning path, the evidence, and a proposed next step.
 
-Generation and teacher review work today. Approval, publication, and the
-student side are the next slices; the [Status](#status) section separates what
-ships from what is planned.
+Generation and teacher review work today. Approval, publication, and the student side are the next slices; the [Status](#status) section separates what ships from what is planned.
 
 ## Why it matters
 
@@ -54,19 +43,13 @@ ships from what is planned.
 
 ## Why it is different
 
-These are the design commitments. The status table below shows which ones the
-current build enforces end to end.
+These are the design commitments. The status table below shows which ones the current build enforces end to end.
 
-- **Teacher-gated.** Every variant is a content option, not a teaching stage.
-  Nothing reaches a student without a teacher-approved, immutable version.
-- **Server-authoritative.** Answer keys, mastery logic, and permissions stay
-  server-side; the client never submits a score.
-- **Explainable.** A curated prerequisite path and a forward story explain what
-  comes before and after, and why.
-- **Structured, not conversational.** The model returns a validated lesson
-  draft that compiles into an allowlisted **A2UI v0.9.1** catalog.
-- **Safety-first.** A deterministic gate hard-blocks unsafe drafts before
-  preview and before publication.
+- **Teacher-gated.** Every variant is a content option, not a teaching stage. Nothing reaches a student without a teacher-approved, immutable version.
+- **Server-authoritative.** Answer keys, mastery logic, and permissions stay server-side; the client never submits a score.
+- **Explainable.** A curated prerequisite path and a forward story explain what comes before and after, and why.
+- **Structured, not conversational.** The model returns a validated lesson draft that compiles into an allowlisted **A2UI v0.9.1** catalog.
+- **Safety-first.** A deterministic gate hard-blocks unsafe drafts before preview and before publication.
 
 ## Built with
 
@@ -79,8 +62,7 @@ current build enforces end to end.
 
 ## Product flow
 
-The loop below is the target contract. The green block is available now; the
-amber block is the work in flight.
+The loop below is the target contract. The green block is available now; the amber block is the work in flight.
 
 ```mermaid
 sequenceDiagram
@@ -120,16 +102,13 @@ sequenceDiagram
 
 ## Demo
 
-A short screen capture is the strongest proof of value. Record only the working
-teacher path:
+A short screen capture is the strongest proof of value. Record only the working teacher path:
 
 - a teacher prompt and the generated variants
 - the validation warnings and the blocked-draft state
 - the A2UI preview, learning path, and forward story
 
-Do not present the approval, student, or grading screens as live behavior until
-those slices land. The [demo script](docs/hackathon/meta-global-2026/demo-script.md)
-keeps the full shot list and the claim boundaries.
+Do not present the approval, student, or grading screens as live behavior until those slices land. The [demo script](docs/hackathon/meta-global-2026/demo-script.md) keeps the full shot list and the claim boundaries.
 
 ## Quick start
 
@@ -140,8 +119,7 @@ pnpm install
 pnpm dev
 ```
 
-Open `http://localhost:3000`. A clean checkout needs no environment file: it
-uses deterministic synthetic fixtures and a fixture provider.
+Open `http://localhost:3000`. A clean checkout needs no environment file: it uses deterministic synthetic fixtures and a fixture provider.
 
 Run the full verification pipeline:
 
@@ -161,15 +139,11 @@ pnpm db:setup
 pnpm dev
 ```
 
-To generate with a real model, set `DEMO_MODE=false` and provide
-`OPENAI_API_KEY`; PostgreSQL is then required. See the
-[foundation runbook](docs/foundation-runbook.md) for configuration, readiness,
-and redeploy details.
+To generate with a real model, set `DEMO_MODE=false` and provide `OPENAI_API_KEY`; PostgreSQL is then required. See the [foundation runbook](docs/foundation-runbook.md) for configuration, readiness, and redeploy details.
 
 ## Status
 
-🟡 **The generation, validation, and teacher-preview path works. The full
-teacher-to-student loop does not.**
+🟡 **The generation, validation, and teacher-preview path works. The full teacher-to-student loop does not.**
 
 | Working now | Next |
 | --- | --- |
@@ -181,19 +155,13 @@ teacher-to-student loop does not.**
 | PDF, TXT, and MD source upload with explicit gap states | Teacher-facing moderation recovery ([#119](https://github.com/abodacs/edu-canvas/issues/119)) |
 | PostgreSQL and seeded persistence, health checks, security headers | — |
 
-The [Meta AI Developer Hackathon 2026](docs/hackathon/meta-global-2026/README.md)
-(October 26 – November 4) is the first external validation milestone, not the
-product goal. The architecture document records the implemented flows and the
-gaps in detail: [`ARCHITECTURE.md`](ARCHITECTURE.md).
+The [Meta AI Developer Hackathon 2026](docs/hackathon/meta-global-2026/README.md) (October 26 – November 4) is the first external validation milestone, not the product goal. The architecture document records the implemented flows and the gaps in detail: [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 ## Safety boundaries (non-negotiable, even under deadline pressure)
 
-- Answer key, mastery, and permissions are **server-only** — never present in
-  any client bundle or A2UI message.
+- Answer key, mastery, and permissions are **server-only** — never present in any client bundle or A2UI message.
 - **No student images or identifying data** are sent to the model.
-- Real student data is blocked until a **data-processing agreement (DPA), EU
-  residency, security review, and consent** are in place; milestone deployments
-  use **synthetic data only**.
+- Real student data is blocked until a **data-processing agreement (DPA), EU residency, security review, and consent** are in place; milestone deployments use **synthetic data only**.
 
 ## Repository layout
 
@@ -224,14 +192,11 @@ gaps in detail: [`ARCHITECTURE.md`](ARCHITECTURE.md).
 | Source grounding and uploads | `src/server/grounding/` |
 | Health checks and operator scripts | `src/server/health.server.ts`, `scripts/` |
 
-Routes stay delivery modules. Domain rules, tenant checks, and public projections
-belong behind the named server seams; `src/shared/` holds only data the browser
-is allowed to receive.
+Routes stay delivery modules. Domain rules, tenant checks, and public projections belong behind the named server seams; `src/shared/` holds only data the browser is allowed to receive.
 
 ## Governance
 
-This project is governed under [ApexYard](https://github.com/me2resh/apexyard),
-with additional engineering and operational documentation stored in the repo.
+This project is governed under [ApexYard](https://github.com/me2resh/apexyard), with additional engineering and operational documentation stored in the repo.
 
 ## Additional documentation
 
