@@ -7,6 +7,7 @@ import {
   ShieldCheck,
   Sparkles,
   WandSparkles,
+  FileText,
 } from "lucide-react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -20,8 +21,10 @@ import {
 import { cn } from "@/lib/utilities";
 import { LessonPreview } from "@/components/a2ui/lesson-preview";
 import { Button } from "@/components/ui/button";
+import { SourcePanel } from "@/components/studio/source-panel";
 import { csrfHeaderName } from "@/shared/identity-contract";
 import { publicGenerationResultSchema } from "@/shared/generation-contract";
+import type { BoundSource } from "@/components/studio/source-panel";
 import type {
   LessonGenerationInput,
   PublicGenerationResult,
@@ -621,6 +624,9 @@ const TeacherLessonComposer = ({
   const [result, setResult] = useState<PublicGenerationResult | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [requestError, setRequestError] = useState<string | null>(null);
+  // The reviewed source snapshot the next draft is grounded in (#114). Null
+  // keeps the prompt-only path the focused event composer relies on.
+  const [boundSource, setBoundSource] = useState<BoundSource | null>(null);
   const studioReference = useRef<HTMLElement>(null);
   const context = getPromptContext(prompt);
 
@@ -711,6 +717,7 @@ const TeacherLessonComposer = ({
       difficulty: context.difficulty,
       idempotencyKey,
       ...(retryOfRequestId && { retryOfRequestId }),
+      ...(boundSource && { sourceSnapshotId: boundSource.id }),
     };
 
     const stopSubmitting = (): void => {
@@ -810,6 +817,14 @@ const TeacherLessonComposer = ({
         />
         <div className="prompt-composer__bottom">
           <PromptSignals context={context} standardId={standardId} />
+          {boundSource ? (
+            <span className="prompt-composer__source-chip">
+              <FileText aria-hidden="true" />
+              <span>
+                Source: <strong>{boundSource.fileName}</strong>
+              </span>
+            </span>
+          ) : null}
           <Button
             type="submit"
             size="lg"
@@ -822,6 +837,13 @@ const TeacherLessonComposer = ({
           </Button>
         </div>
       </form>
+
+      <SourcePanel
+        csrf={csrf}
+        onUnauthorized={onUnauthorized}
+        boundSource={boundSource}
+        onBoundSnapshotChange={setBoundSource}
+      />
 
       <div className="teacher-trust-line">
         <ShieldCheck aria-hidden="true" />

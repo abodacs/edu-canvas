@@ -26,6 +26,10 @@ import { Route as ApiAuthSignInRouteImport } from './routes/api/auth/sign-in'
 import { Route as ApiAuthSignUpRouteImport } from './routes/api/auth/sign-up'
 import { Route as ApiLessonsGenerateRouteImport } from './routes/api/lessons/generate'
 import { Route as ApiLessonsDraftIdCancelRouteImport } from './routes/api/lessons/$draftId/cancel'
+import { Route as ApiLessonsSourcesIndexRouteImport } from './routes/api/lessons/sources/index'
+import { Route as ApiLessonsSourcesSourceIdIndexRouteImport } from './routes/api/lessons/sources/$sourceId/index'
+import { Route as ApiLessonsSourcesSourceIdCancelRouteImport } from './routes/api/lessons/sources/$sourceId/cancel'
+import { Route as ApiLessonsSourcesSourceIdReviewRouteImport } from './routes/api/lessons/sources/$sourceId/review'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -112,6 +116,29 @@ const ApiLessonsDraftIdCancelRoute = ApiLessonsDraftIdCancelRouteImport.update({
   path: '/api/lessons/$draftId/cancel',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLessonsSourcesIndexRoute = ApiLessonsSourcesIndexRouteImport.update({
+  id: '/api/lessons/sources/',
+  path: '/api/lessons/sources/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLessonsSourcesSourceIdIndexRoute =
+  ApiLessonsSourcesSourceIdIndexRouteImport.update({
+    id: '/api/lessons/sources/$sourceId/',
+    path: '/api/lessons/sources/$sourceId/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiLessonsSourcesSourceIdCancelRoute =
+  ApiLessonsSourcesSourceIdCancelRouteImport.update({
+    id: '/api/lessons/sources/$sourceId/cancel',
+    path: '/api/lessons/sources/$sourceId/cancel',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiLessonsSourcesSourceIdReviewRoute =
+  ApiLessonsSourcesSourceIdReviewRouteImport.update({
+    id: '/api/lessons/sources/$sourceId/review',
+    path: '/api/lessons/sources/$sourceId/review',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -131,6 +158,10 @@ export interface FileRoutesByFullPath {
   '/api/auth/sign-up': typeof ApiAuthSignUpRoute
   '/api/lessons/generate': typeof ApiLessonsGenerateRoute
   '/api/lessons/$draftId/cancel': typeof ApiLessonsDraftIdCancelRoute
+  '/api/lessons/sources/': typeof ApiLessonsSourcesIndexRoute
+  '/api/lessons/sources/$sourceId/cancel': typeof ApiLessonsSourcesSourceIdCancelRoute
+  '/api/lessons/sources/$sourceId/review': typeof ApiLessonsSourcesSourceIdReviewRoute
+  '/api/lessons/sources/$sourceId/': typeof ApiLessonsSourcesSourceIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -150,6 +181,10 @@ export interface FileRoutesByTo {
   '/api/auth/sign-up': typeof ApiAuthSignUpRoute
   '/api/lessons/generate': typeof ApiLessonsGenerateRoute
   '/api/lessons/$draftId/cancel': typeof ApiLessonsDraftIdCancelRoute
+  '/api/lessons/sources': typeof ApiLessonsSourcesIndexRoute
+  '/api/lessons/sources/$sourceId/cancel': typeof ApiLessonsSourcesSourceIdCancelRoute
+  '/api/lessons/sources/$sourceId/review': typeof ApiLessonsSourcesSourceIdReviewRoute
+  '/api/lessons/sources/$sourceId': typeof ApiLessonsSourcesSourceIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -170,6 +205,10 @@ export interface FileRoutesById {
   '/api/auth/sign-up': typeof ApiAuthSignUpRoute
   '/api/lessons/generate': typeof ApiLessonsGenerateRoute
   '/api/lessons/$draftId/cancel': typeof ApiLessonsDraftIdCancelRoute
+  '/api/lessons/sources/': typeof ApiLessonsSourcesIndexRoute
+  '/api/lessons/sources/$sourceId/cancel': typeof ApiLessonsSourcesSourceIdCancelRoute
+  '/api/lessons/sources/$sourceId/review': typeof ApiLessonsSourcesSourceIdReviewRoute
+  '/api/lessons/sources/$sourceId/': typeof ApiLessonsSourcesSourceIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -191,6 +230,10 @@ export interface FileRouteTypes {
     | '/api/auth/sign-up'
     | '/api/lessons/generate'
     | '/api/lessons/$draftId/cancel'
+    | '/api/lessons/sources/'
+    | '/api/lessons/sources/$sourceId/cancel'
+    | '/api/lessons/sources/$sourceId/review'
+    | '/api/lessons/sources/$sourceId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -210,6 +253,10 @@ export interface FileRouteTypes {
     | '/api/auth/sign-up'
     | '/api/lessons/generate'
     | '/api/lessons/$draftId/cancel'
+    | '/api/lessons/sources'
+    | '/api/lessons/sources/$sourceId/cancel'
+    | '/api/lessons/sources/$sourceId/review'
+    | '/api/lessons/sources/$sourceId'
   id:
     | '__root__'
     | '/'
@@ -229,6 +276,10 @@ export interface FileRouteTypes {
     | '/api/auth/sign-up'
     | '/api/lessons/generate'
     | '/api/lessons/$draftId/cancel'
+    | '/api/lessons/sources/'
+    | '/api/lessons/sources/$sourceId/cancel'
+    | '/api/lessons/sources/$sourceId/review'
+    | '/api/lessons/sources/$sourceId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -248,6 +299,10 @@ export interface RootRouteChildren {
   ApiAuthSignUpRoute: typeof ApiAuthSignUpRoute
   ApiLessonsGenerateRoute: typeof ApiLessonsGenerateRoute
   ApiLessonsDraftIdCancelRoute: typeof ApiLessonsDraftIdCancelRoute
+  ApiLessonsSourcesIndexRoute: typeof ApiLessonsSourcesIndexRoute
+  ApiLessonsSourcesSourceIdCancelRoute: typeof ApiLessonsSourcesSourceIdCancelRoute
+  ApiLessonsSourcesSourceIdReviewRoute: typeof ApiLessonsSourcesSourceIdReviewRoute
+  ApiLessonsSourcesSourceIdIndexRoute: typeof ApiLessonsSourcesSourceIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -371,6 +426,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLessonsDraftIdCancelRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/lessons/sources/': {
+      id: '/api/lessons/sources/'
+      path: '/api/lessons/sources'
+      fullPath: '/api/lessons/sources/'
+      preLoaderRoute: typeof ApiLessonsSourcesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/lessons/sources/$sourceId/': {
+      id: '/api/lessons/sources/$sourceId/'
+      path: '/api/lessons/sources/$sourceId'
+      fullPath: '/api/lessons/sources/$sourceId/'
+      preLoaderRoute: typeof ApiLessonsSourcesSourceIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/lessons/sources/$sourceId/cancel': {
+      id: '/api/lessons/sources/$sourceId/cancel'
+      path: '/api/lessons/sources/$sourceId/cancel'
+      fullPath: '/api/lessons/sources/$sourceId/cancel'
+      preLoaderRoute: typeof ApiLessonsSourcesSourceIdCancelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/lessons/sources/$sourceId/review': {
+      id: '/api/lessons/sources/$sourceId/review'
+      path: '/api/lessons/sources/$sourceId/review'
+      fullPath: '/api/lessons/sources/$sourceId/review'
+      preLoaderRoute: typeof ApiLessonsSourcesSourceIdReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -401,6 +484,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthSignUpRoute: ApiAuthSignUpRoute,
   ApiLessonsGenerateRoute: ApiLessonsGenerateRoute,
   ApiLessonsDraftIdCancelRoute: ApiLessonsDraftIdCancelRoute,
+  ApiLessonsSourcesIndexRoute: ApiLessonsSourcesIndexRoute,
+  ApiLessonsSourcesSourceIdCancelRoute: ApiLessonsSourcesSourceIdCancelRoute,
+  ApiLessonsSourcesSourceIdReviewRoute: ApiLessonsSourcesSourceIdReviewRoute,
+  ApiLessonsSourcesSourceIdIndexRoute: ApiLessonsSourcesSourceIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
