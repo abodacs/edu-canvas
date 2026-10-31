@@ -10,8 +10,8 @@ import {
   validateA2UIMessage,
 } from "@/shared/a2ui-contract";
 
-import { compileLessonPreview, LessonPreviewCompileError } from "./compiler";
-import { compileFractionPreview } from "./fraction-compiler";
+import { compileRawLessonPreview, LessonPreviewCompileError } from "./compiler";
+import { compileRawFractionPreview } from "./fraction-compiler";
 
 import type {
   ArtifactCorpusCase,
@@ -42,14 +42,14 @@ const catalogFor = (entry: ArtifactCorpusCase): A2UICatalogVersion => {
 
 const messagesFor = (entry: ArtifactCorpusCase): A2UIMessage[] => {
   if (entry.artifact.kind === "fraction") {
-    return compileFractionPreview({ draft: entry.artifact.draft }).messages;
+    return compileRawFractionPreview({ draft: entry.artifact.draft }).messages;
   }
 
   const { draft, learningPath, context } = entry.artifact;
   if (!learningPath) {
     throw new Error("The corpus lesson has no validated learning path.");
   }
-  return compileLessonPreview({
+  return compileRawLessonPreview({
     requestId: "draft_corpus_oracle",
     grade: context.grade,
     standardId: context.standardId,
@@ -90,14 +90,11 @@ const rawCompile = (entry: ArtifactCorpusCase): CompileOutcome => {
     messages = messagesFor(entry);
   } catch (error) {
     const reason = Error.isError(error) ? error.message : String(error);
-    if (entry.compileFailure) {
-      return { kind: "rejected", code: entry.compileFailure.code, reason };
-    }
     return {
       kind: "rejected",
       code:
         error instanceof LessonPreviewCompileError
-          ? "PRE_RENDER_BLOCKED"
+          ? error.code
           : "PRE_RENDER_FAILED",
       reason,
     };
@@ -161,6 +158,18 @@ const rawOutcomeFailures = (
   if (entry.compileOutcome === "reject" && raw.kind !== "rejected") {
     failures.push(
       describeFailure(entry, `raw compile ${raw.kind}, expected rejected`)
+    );
+  }
+  if (
+    raw.kind === "rejected" &&
+    entry.compileFailure &&
+    raw.code !== entry.compileFailure.code
+  ) {
+    failures.push(
+      describeFailure(
+        entry,
+        `compile rejection code ${raw.code ?? ""}, expected ${entry.compileFailure.code}`
+      )
     );
   }
   if (

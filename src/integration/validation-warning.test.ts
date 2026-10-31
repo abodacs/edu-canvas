@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { compileLessonPreview } from "@/server/a2ui/compiler";
+import { compileRawLessonPreview } from "@/server/a2ui/compiler";
 import { createDeterministicLessonDraftProvider } from "@/server/generation/provider";
 import { createGenerationService } from "@/server/generation/service";
 import { parseTenantId } from "@/server/identity/identifiers";
@@ -89,7 +89,7 @@ describe("warning-only validation result", () => {
       throw new Error("A warning-only record must keep its draft.");
     }
 
-    const preview = compileLessonPreview({
+    const preview = compileRawLessonPreview({
       requestId: record.requestId,
       grade: record.input.grade,
       standardId: record.input.standardId,

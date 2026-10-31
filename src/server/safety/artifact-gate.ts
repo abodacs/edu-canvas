@@ -2,6 +2,11 @@ import { createHash } from "node:crypto";
 
 import { validatorVersion as lessonValidatorVersion } from "@/server/generation/validation";
 import { artifactGateSnapshotSchema } from "./artifact-gate-contract";
+import {
+  dominantRecovery,
+  recoveryForCode,
+  recoveryForFinding,
+} from "./recovery-policy";
 import type { FractionLessonDraft } from "@/shared/fractions-contract";
 
 import type {
@@ -46,6 +51,20 @@ export type RenderableArtifact =
       readonly kind: "fraction";
       readonly draft: FractionLessonDraft;
     });
+
+/**
+ * Runtime proof of the brand. Type signatures keep callers honest at compile time; this guard stops a JavaScript caller from compiling a raw draft.
+ */
+export const isRenderableArtifact = (
+  value: unknown
+): value is RenderableArtifact => {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    (value as RenderableArtifactBase)[renderableArtifactBrand] ===
+      renderableArtifactBrand
+  );
+};
 
 /**
  * A deterministic pre-render rejection produced by the A2UI compile guard or the payload validator it runs. The drafting context cannot import the preview compiler, so the compile seam maps its failure into this shape and the gate owns the verdict.
@@ -178,35 +197,9 @@ const semanticFindings = (
     });
 };
 
-// Issue #28's recovery decision: executable or untrusted payloads are
-// replaced; schema and relationship breaks are repaired by editing. Bounded
-// infrastructure failures are retried.
-const replacementStructuralCodes: ReadonlySet<string> = new Set([
-  "EXECUTABLE_CONTENT",
-  "UNTRUSTED_FIELD",
-  "UNSAFE_PAYLOAD",
-]);
-
-const retryStructuralCodes: ReadonlySet<string> = new Set([
-  "VALIDATION_TIMEOUT",
-  "VALIDATION_RETRY_EXHAUSTED",
-  "SEMANTIC_VALIDATION_UNAVAILABLE",
-  "ARTIFACT_GATE_UNAVAILABLE",
-]);
-
-const structuralRecovery = (
-  code: string,
-  verdict: "warning" | "hard_block"
-): RecoveryAction => {
-  if (verdict === "warning") {
-    return "edit";
-  }
-  if (retryStructuralCodes.has(code)) {
-    return "retry";
-  }
-  return replacementStructuralCodes.has(code) ? "replace" : "edit";
-};
-
+// Issue #28's recovery decision lives in one table (`recovery-policy.ts`):
+// executable or untrusted payloads are replaced, bounded infrastructure
+// failures are retried, and schema or relationship breaks are edited.
 const structuralFinding = (
   diagnostic: GenerationDiagnostic
 ): ArtifactGateFinding | null => {
@@ -226,24 +219,13 @@ const structuralFinding = (
     ...(diagnostic.variantId && { variantId: diagnostic.variantId }),
     ...(diagnostic.nodeId && { nodeId: diagnostic.nodeId }),
     reason: diagnostic.message,
-    recovery: structuralRecovery(diagnostic.code, verdict),
+    recovery: recoveryForFinding(diagnostic.code, verdict),
   };
 };
 
-const replacementPreRenderCodes: ReadonlySet<string> = new Set([
-  "UNKNOWN_COMPONENT",
-  "UNKNOWN_ACTION",
-  "UNSUPPORTED_CATALOG",
-  "UNSAFE_PAYLOAD",
-  "UNSUPPORTED_PROPERTY",
-]);
-
 // The compile guard is fail-closed: any pre-render rejection is a hard block.
 // Unknown component, action, catalog, or payload is replaced; every schema,
-// id, or math break is edited.
-const preRenderRecovery = (code: string): RecoveryAction =>
-  replacementPreRenderCodes.has(code) ? "replace" : "edit";
-
+// id, relationship, or math break is edited; infrastructure is retried.
 const preRenderFinding = (
   failure: ArtifactPreRenderFailure
 ): ArtifactGateFinding => {
@@ -255,7 +237,7 @@ const preRenderFinding = (
     field: failure.field,
     ...(failure.variantId && { variantId: failure.variantId }),
     reason: failure.reason,
-    recovery: preRenderRecovery(failure.code),
+    recovery: recoveryForCode(failure.code),
   };
 };
 
@@ -303,21 +285,12 @@ const findingsVerdict = (
     : "pass";
 };
 
-const recoveryPriority: Record<RecoveryAction, number> = {
-  retry: 0,
-  replace: 1,
-  edit: 2,
-};
-
 const findingsRecovery = (
   findings: readonly ArtifactGateFinding[]
 ): RecoveryAction => {
-  let recovery: RecoveryAction | undefined;
-  for (const { recovery: candidate } of findings) {
-    if (!recovery || recoveryPriority[candidate] < recoveryPriority[recovery]) {
-      recovery = candidate;
-    }
-  }
+  const recovery = dominantRecovery(
+    findings.map((finding) => finding.recovery)
+  );
   if (!recovery) {
     throw new Error("A non-pass gate result needs an actionable finding.");
   }

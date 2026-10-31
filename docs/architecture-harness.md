@@ -30,6 +30,18 @@ The identity boundary replaced browser-selected demo roles. Its rules:
 - `verify:identity-surface` is the entry-point gate. Its limit: it classifies routes statically and does not classify referents (drafts, rosters, publications, activity versions); those ownership checks live in each delivery module and the PT matrix.
 - The migration's pre-tenant credential lookup is a `security definer` function. The least-privilege role split that makes it safe belongs to [#100](https://github.com/abodacs/edu-canvas/issues/100); until it lands, the application connects as the table owner and the function is documented in `drizzle/0003_identity_definer_functions.sql`.
 
+## Safety context (#28)
+
+`src/server/safety/` owns the artifact gate: gate verdicts, findings, the renderable-artifact brand, the single recovery policy, stored-artifact re-derivation, and the structured refusal shape.
+
+- **Allowed imports:** `src/shared/` contracts; `src/server/generation/types.ts` and `src/server/generation/validation.ts` (record contracts and the structural validator only); `node:crypto`.
+- **Generation depends on safety.** Draft acceptance calls `gateArtifact`; a draft cannot become `ready-for-review` without a passing snapshot.
+- **Preview depends on safety.** `preview.server.ts` re-derives the gate with `gateStoredArtifact` and compiles only `gateOutcome.result.renderable`. The compilers accept the branded `RenderableArtifact`; `compileRawLessonPreview` and `compileRawFractionPreview` are the test and differential-oracle seam, not production entry points.
+- **Safety depends on generation only for contracts.** It must not import generation orchestration (service, provider, projection) or the preview context.
+- **One recovery table.** `recovery-policy.ts` owns every code-to-recovery decision and the single recovery priority order (retry, then replace, then edit).
+- **Edit rerun seam.** When the edit endpoints land, the rerun path is `gateStoredArtifact` plus re-acceptance. A stored draft is never compiled or shared without a fresh gate result and a matching acceptance snapshot.
+- **Ownership limit.** The compile guard sees the rendered projection only. A draft or semantic rule it cannot observe stays with the gate; the differential oracle records each such case instead of weakening the gate.
+
 Severity contract: error rules must stay green in every PR. Warn rules are named boundary debt — each comment states the migration wave that retires it (see the [context migration waves](../ARCHITECTURE.md#target-layout-and-migration-waves)). A new warn outside a planned wave is a review blocker; flipping a warn to error is part of its wave. Context rules apply to production modules; test modules may assemble cross-context fixtures.
 
 The harness is not a substitute for review. When a new global state holder or cross-seam import is genuinely required, give it a named owner, record the reason in the relevant architecture decision, and then update this harness deliberately.

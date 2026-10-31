@@ -106,7 +106,7 @@ Contexts are derived from the teaching loop's verbs — draft → validate → p
 | Context | Class | Owns | Code today |
 | --- | --- | --- | --- |
 | Lesson Drafting | Supporting | Provider port, attempts, idempotency, correction policy, public projection | `src/server/generation/` (service, provider, factory, projection, types) |
-| Validation & Safety | Core | Structural validation, curriculum alignment, learning-quality review, safety checks, validated learning path | Validators and `learning-path.ts` inside `src/server/generation/` |
+| Validation & Safety | Core | Structural validation, curriculum alignment, learning-quality review, artifact gate (verdicts, findings, renderable-artifact brand, recovery policy), validated learning path | Validators and `learning-path.ts` inside `src/server/generation/`; gate, enforcement, and recovery policy in `src/server/safety/` |
 | Teacher Review | Core | Preview access checks, A2UI compilation and SSE delivery, approval and replacement (target) | `src/server/a2ui/`, `src/components/a2ui/` |
 | Student Learning | Core (future) | Immutable publication, learner attempts, server-authoritative grading, mastery, adaptation | Not implemented; [#5](https://github.com/abodacs/edu-canvas/issues/5)–[#8](https://github.com/abodacs/edu-canvas/issues/8), [#19](https://github.com/abodacs/edu-canvas/issues/19); [AgDR-0002](docs/agdr/AgDR-0002-server-authoritative-grading.md) |
 | Curriculum & Standards | Supporting | Seeded standards, versioned prerequisite graph, Learning Commons grounding (target) | `src/server/seed-data.ts`; [AgDR-0005](docs/agdr/AgDR-0005-grounded-package-version-contracts.md) |
@@ -126,6 +126,7 @@ flowchart TB
     V -->|conformist to graph| C["Curriculum & Standards"]
     S -->|future consumer| C
     R -->|downstream of ready-for-review records| D
+    R -->|gate result and renderable brand| V
     R -->|protocol conformance| A["A2UI Protocol"]
     S -->|protocol conformance| A
     LC["Learning Commons"] -.->|planned ACL| C
@@ -140,6 +141,8 @@ flowchart TB
 | Relationship | Pattern | Status |
 | --- | --- | --- |
 | Drafting → Validation & Safety | Customer–supplier; the service orchestrates validators and owns acceptance | Implemented |
+| Drafting, Teacher Review → Validation & Safety (artifact gate) | Customer–supplier; only `gateArtifact` mints a renderable artifact, and both acceptance and preview consume it | Implemented; preview re-derives the gate on every request |
+| Validation & Safety (artifact gate) → Drafting | Conformist to the record contracts and the structural validator only | Implemented; no orchestration import |
 | Drafting, Validation → Curriculum & Standards | Conformist to the versioned prerequisite graph | Direct seed-data imports today; context port is wave 2 |
 | Learning Commons → Curriculum & Standards | Anticorruption layer (planned) | [AgDR-0005](docs/agdr/AgDR-0005-grounded-package-version-contracts.md) design; seed stand-in |
 | Teacher Review → Lesson Drafting | Downstream consumer of `ready-for-review` records | Read-only through the persistence port |
@@ -183,6 +186,7 @@ Old-path → new-path mapping (every physical move the waves will make):
 | 2 | `src/server/seed-data.ts` | `src/curriculum/` (with a versioned context port) |
 | 3 | `src/server/generation/` service, provider, factory, projection, errors, types | `src/drafting/` |
 | 3 | `src/server/generation/` validators and `learning-path.ts` | `src/validation/` |
+| 3 | `src/server/safety/` | `src/validation/safety/` |
 | 3 | `src/server/demo/policy.ts` | `src/identity/` behind an identity port |
 | 4 | `src/server/a2ui/` | `src/a2ui/server/` |
 | 4 | `src/shared/a2ui-contract.ts` | `src/a2ui/contract.ts` |

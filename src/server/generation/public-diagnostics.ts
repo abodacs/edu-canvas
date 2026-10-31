@@ -1,3 +1,8 @@
+import {
+  dominantRecovery,
+  recoveryForCode,
+} from "@/server/safety/recovery-policy";
+
 import type {
   PublicDiagnosticsRollup,
   PublicGenerationDiagnostic,
@@ -57,49 +62,9 @@ const safePublicIdentifier = (
 const safePublicField = (value: string | undefined): string | undefined =>
   value && /^[a-z][a-z\d_.:-]{0,119}$/iu.test(value) ? value : undefined;
 
-// Issue #28's recovery decision, mirrored for legacy diagnostics that predate
-// the gate's recovery field: unsafe or unknown payloads are replaced, bounded
-// infrastructure failures are retried, and schema or relationship breaks are
-// repaired by editing.
-const replacementCodes: ReadonlySet<string> = new Set([
-  "EXECUTABLE_CONTENT",
-  "UNTRUSTED_FIELD",
-  "UNSAFE_PAYLOAD",
-  "UNKNOWN_COMPONENT",
-  "UNKNOWN_ACTION",
-  "UNSUPPORTED_CATALOG",
-  "UNSUPPORTED_PROPERTY",
-]);
-
-const retryCodes: ReadonlySet<string> = new Set([
-  "ARTIFACT_GATE_UNAVAILABLE",
-  "SEMANTIC_VALIDATION_UNAVAILABLE",
-  "VALIDATION_TIMEOUT",
-  "VALIDATION_RETRY_EXHAUSTED",
-  "GENERATION_CLAIM_EXPIRED",
-  "PROVIDER_TIMEOUT",
-  "PROVIDER_RATE_LIMIT",
-  "PROVIDER_UNAVAILABLE",
-  "PREREQUISITE_PACK_MISSING",
-]);
-
-const recoveryPriority: Record<RecoveryAction, number> = {
-  retry: 0,
-  replace: 1,
-  edit: 2,
-};
-
 const recoveryForDiagnostic = (
   diagnostic: GenerationDiagnostic
-): RecoveryAction => {
-  if (diagnostic.recovery) {
-    return diagnostic.recovery;
-  }
-  if (retryCodes.has(diagnostic.code)) {
-    return "retry";
-  }
-  return replacementCodes.has(diagnostic.code) ? "replace" : "edit";
-};
+): RecoveryAction => diagnostic.recovery ?? recoveryForCode(diagnostic.code);
 
 const diagnosticVerdict = (
   diagnostic: PublicGenerationDiagnostic
@@ -150,17 +115,12 @@ const screenVerdict = (
     : "warning";
 };
 
-const dominantRecovery = (
+const dominantFindingRecovery = (
   findings: readonly PublicGenerationDiagnostic[]
 ): RecoveryAction | null => {
-  let recovery: RecoveryAction | null = null;
-  for (const finding of findings) {
-    const candidate = finding.recovery ?? "edit";
-    if (!recovery || recoveryPriority[candidate] < recoveryPriority[recovery]) {
-      recovery = candidate;
-    }
-  }
-  return recovery;
+  return dominantRecovery(
+    findings.map((finding) => finding.recovery ?? "edit")
+  );
 };
 
 const overallVerdict = (
@@ -225,7 +185,7 @@ export const toPublicDiagnosticsPayload = (
     rollup: {
       verdict,
       recovery:
-        verdict === "pass" ? null : dominantRecovery(actionableFindings),
+        verdict === "pass" ? null : dominantFindingRecovery(actionableFindings),
       screens,
       flow,
       affectedScreens: screens.map((screen) => screen.variantId),

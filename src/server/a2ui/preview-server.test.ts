@@ -20,7 +20,10 @@ import {
   snapshotArtifactGateResult,
 } from "@/server/safety/artifact-gate";
 
-import { handleLessonPreviewRequest } from "./preview.server";
+import {
+  handleLessonPreviewRequest,
+  previewRefusalSchema,
+} from "./preview.server";
 
 import type { LessonGenerationRecord } from "@/server/generation/types";
 
@@ -410,6 +413,36 @@ describe("safety-gate preview enforcement", () => {
 
   beforeEach(() => {
     sessionState.resolution = activeSession(owningTeacher);
+  });
+
+  it("parses the refusal payload before sending it", () => {
+    const finding = {
+      validator: "structural",
+      validatorVersion: "lesson-validator-v2",
+      verdict: "hard_block",
+      code: "DUPLICATE_ID",
+      field: "variants",
+      reason: "Variant identifiers must be unique.",
+      recovery: "edit",
+    };
+    const payload = {
+      code: "PREVIEW_BLOCKED",
+      message: "This draft could not be rendered safely.",
+      verdict: "hard_block",
+      findings: [finding],
+      recovery: "edit",
+    };
+
+    expect(previewRefusalSchema.parse(payload)).toStrictEqual(payload);
+    expect(
+      previewRefusalSchema.safeParse({
+        ...payload,
+        findings: [{ ...finding, rawProviderPayload: "secret" }],
+      }).success
+    ).toBeFalsy();
+    expect(
+      previewRefusalSchema.safeParse({ ...payload, recovery: "ignore" }).success
+    ).toBeFalsy();
   });
 
   it("re-derives the gate and streams a pass or warning artifact", async () => {

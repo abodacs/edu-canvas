@@ -116,6 +116,18 @@ const hardBlockDiagnostics: GenerationDiagnostic[] = [
 ];
 
 describe("public diagnostics payload", () => {
+  it("carries the record input language when the draft is blocked", () => {
+    const result = toPublicGenerationResult(
+      recordWith({
+        input: { ...fixtureInput, language: "ar" },
+        diagnostics: hardBlockDiagnostics,
+      })
+    );
+
+    expect(result.draft).toBeNull();
+    expect(result.language).toBe("ar");
+  });
+
   it("names every blocked screen and keeps the draft out of the payload", () => {
     const result = toPublicGenerationResult(
       recordWith({ diagnostics: hardBlockDiagnostics })

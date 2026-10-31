@@ -1,3 +1,8 @@
+import {
+  dominantRecovery,
+  recoveryForFinding,
+} from "@/server/safety/recovery-policy";
+
 import type {
   RecoveryAction,
   SemanticValidationFinding,
@@ -21,25 +26,6 @@ type SemanticValidationFindingSeed =
       verdict: "warning" | "hard_block";
     });
 
-// Fixed by issue #28's recovery decision: unknown payloads are replaced,
-// bounded infrastructure failures are retried, and every other contract or
-// relationship break is repaired by editing the artifact.
-const replacementRecoveryCodes: ReadonlySet<string> = new Set([
-  "UNSAFE_CLAIM",
-  "UNSUPPORTED_CLAIM",
-]);
-const retryRecoveryCodes: ReadonlySet<string> = new Set([
-  "VALIDATION_TIMEOUT",
-  "VALIDATION_RETRY_EXHAUSTED",
-]);
-
-const hardBlockRecovery = (code: string): RecoveryAction => {
-  if (retryRecoveryCodes.has(code)) {
-    return "retry";
-  }
-  return replacementRecoveryCodes.has(code) ? "replace" : "edit";
-};
-
 export const recoveryForVerdict = (
   verdict: SemanticValidationVerdict,
   code: string
@@ -48,11 +34,9 @@ export const recoveryForVerdict = (
     case "pass": {
       return null;
     }
-    case "warning": {
-      return "edit";
-    }
+    case "warning":
     case "hard_block": {
-      return hardBlockRecovery(code);
+      return recoveryForFinding(code, verdict);
     }
     default: {
       const exhaustive: never = verdict;
@@ -98,28 +82,12 @@ export const reviewVerdict = (
     : "pass";
 };
 
-const recoveryPriority: Record<RecoveryAction, number> = {
-  retry: 0,
-  replace: 1,
-  edit: 2,
-};
-
 export const reportRecovery = (
   findings: readonly SemanticValidationFinding[]
 ): RecoveryAction => {
-  let recovery: RecoveryAction | undefined;
-  for (const item of findings) {
-    if (item.verdict === "pass") {
-      continue;
-    }
-    const { recovery: candidateRecovery } = item;
-    if (
-      !recovery ||
-      recoveryPriority[candidateRecovery] < recoveryPriority[recovery]
-    ) {
-      recovery = candidateRecovery;
-    }
-  }
+  const recovery = dominantRecovery(
+    findings.flatMap((item) => (item.verdict === "pass" ? [] : [item.recovery]))
+  );
 
   if (!recovery) {
     throw new Error("A non-pass report needs at least one non-pass finding.");

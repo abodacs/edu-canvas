@@ -12,7 +12,10 @@ import {
   hydrateGenerationRecord,
   storedGenerationDraft,
 } from "./generation-codec";
-import type { StoredGenerationRequestRow } from "./generation-codec";
+import type {
+  StoredGenerationRequestRow,
+  StoredGenerationAttemptRow,
+} from "./generation-codec";
 import type { LessonGenerationRecord } from "../generation/types";
 
 const passingSnapshot = () => {
@@ -163,6 +166,18 @@ const storedRow = (
   };
 };
 
+const storedAttemptRow = (): StoredGenerationAttemptRow => {
+  return {
+    attemptNumber: 1,
+    idempotencyKey: "codec-legacy-attempt",
+    state: "blocked-by-validation",
+    correctionAttempted: false,
+    diagnostics: [],
+    provenance: null,
+    createdAt: "2026-10-31T00:00:00.000Z",
+  };
+};
+
 describe("generation codec gate snapshot", () => {
   it("round-trips the acceptance snapshot beside the stored draft", () => {
     const record = readyRecord();
@@ -191,6 +206,74 @@ describe("generation codec gate snapshot", () => {
         {
           ...row,
           draft: { artifact: record.draft, gate: { verdict: "hard_block" } },
+        },
+        []
+      );
+    }).toThrow(/does not match its contract/u);
+  });
+
+  it("maps a legacy block verdict to hard_block on read", () => {
+    const record = readyRecord();
+    const row = storedRow(record);
+    const legacyDiagnostic = {
+      severity: "error",
+      code: "ANSWER_MISMATCH",
+      message: "A relationship does not match the expected answer.",
+      field: "relationships",
+      verdict: "block",
+    };
+
+    const hydrated = hydrateGenerationRecord(
+      { ...row, diagnostics: [legacyDiagnostic] },
+      [{ ...storedAttemptRow(), diagnostics: [legacyDiagnostic] }]
+    );
+
+    expect(hydrated.diagnostics[0]).toStrictEqual({
+      ...legacyDiagnostic,
+      verdict: "hard_block",
+    });
+    expect(hydrated.attempts[0]?.diagnostics[0]?.verdict).toBe("hard_block");
+  });
+
+  it("still rejects a verdict outside the legacy alias", () => {
+    const record = readyRecord();
+    const row = storedRow(record);
+
+    expect(() => {
+      return hydrateGenerationRecord(
+        {
+          ...row,
+          diagnostics: [
+            {
+              severity: "error",
+              code: "ANSWER_MISMATCH",
+              message: "A relationship does not match the expected answer.",
+              verdict: "explode",
+            },
+          ],
+        },
+        []
+      );
+    }).toThrow(/does not match its contract/u);
+  });
+
+  it("still rejects an extra field on a legacy row", () => {
+    const record = readyRecord();
+    const row = storedRow(record);
+
+    expect(() => {
+      return hydrateGenerationRecord(
+        {
+          ...row,
+          diagnostics: [
+            {
+              severity: "error",
+              code: "ANSWER_MISMATCH",
+              message: "A relationship does not match the expected answer.",
+              verdict: "block",
+              rawProviderPayload: "secret",
+            },
+          ],
         },
         []
       );

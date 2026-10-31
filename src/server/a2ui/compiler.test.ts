@@ -3,9 +3,14 @@ import { describe, expect, it } from "vitest";
 import { createEquivalentFractionsDraft } from "@/server/generation/provider";
 import { buildValidatedLearningPath } from "@/server/generation/learning-path";
 import { createDemoCurriculumContext } from "@/server/generation/semantic-validation";
+import { gateArtifact } from "@/server/safety/artifact-gate";
 
 import { validateA2UIMessage } from "@/shared/a2ui-contract";
-import { compileLessonPreview, LessonPreviewCompileError } from "./compiler";
+import {
+  compileLessonPreview,
+  compileRawLessonPreview,
+  LessonPreviewCompileError,
+} from "./compiler";
 
 const requireLearningPath = <T extends { learningPath?: unknown }>(
   draft: T
@@ -48,7 +53,7 @@ const request = {
 
 describe("lesson preview compiler", () => {
   it("creates a surface, components, and data model for each variant", () => {
-    const preview = compileLessonPreview(request);
+    const preview = compileRawLessonPreview(request);
 
     expect(
       preview.messages.filter((message) => "createSurface" in message)
@@ -62,7 +67,7 @@ describe("lesson preview compiler", () => {
   });
 
   it("emits only valid A2UI messages", () => {
-    const preview = compileLessonPreview(request);
+    const preview = compileRawLessonPreview(request);
 
     for (const message of preview.messages) {
       expect(validateA2UIMessage(message)).toMatchObject({ ok: true });
@@ -70,7 +75,7 @@ describe("lesson preview compiler", () => {
   });
 
   it("keeps private relationship data out of the serialized preview", () => {
-    const preview = compileLessonPreview(request);
+    const preview = compileRawLessonPreview(request);
     const serialized = JSON.stringify(preview.messages);
 
     expect(serialized).not.toContain("relationship-");
@@ -79,7 +84,7 @@ describe("lesson preview compiler", () => {
   });
 
   it("orders the purposes and marks every model ready for review", () => {
-    const preview = compileLessonPreview(request);
+    const preview = compileRawLessonPreview(request);
     const dataModels = preview.messages.flatMap((message) =>
       "updateDataModel" in message ? [message.updateDataModel.value] : []
     );
@@ -100,7 +105,7 @@ describe("lesson preview compiler", () => {
     unsafeRequest.draft.variants[0].sourceItems[0].label =
       "<script>alert(1)</script>";
 
-    expect(() => compileLessonPreview(unsafeRequest)).toThrow(
+    expect(() => compileRawLessonPreview(unsafeRequest)).toThrow(
       LessonPreviewCompileError
     );
   });
@@ -110,13 +115,70 @@ describe("lesson preview compiler", () => {
     duplicateRequest.draft.variants[1].id =
       duplicateRequest.draft.variants[0].id;
 
-    expect(() => compileLessonPreview(duplicateRequest)).toThrow(
-      "duplicate variant identifiers"
+    expect(() => compileRawLessonPreview(duplicateRequest)).toThrow(
+      expect.objectContaining({
+        code: "DUPLICATE_VARIANT_ID",
+      })
     );
   });
 
+  it("names the unsupported grade as an edit target", () => {
+    const unsupportedGrade = { ...request, grade: 9 };
+
+    expect(() => compileRawLessonPreview(unsupportedGrade)).toThrow(
+      expect.objectContaining({
+        code: "UNSUPPORTED_GRADE",
+        field: "grade",
+      })
+    );
+  });
+
+  it("names the variant when a component id is invalid", () => {
+    const invalidId = structuredClone(request);
+    invalidId.draft.variants[1].sourceItems[0].id = "bad id!";
+
+    expect(() => compileRawLessonPreview(invalidId)).toThrow(
+      expect.objectContaining({
+        code: "INVALID_COMPONENT_ID",
+        variantId: invalidId.draft.variants[1].id,
+      })
+    );
+  });
+
+  it("compiles only a gate-accepted renderable artifact", () => {
+    const gate = gateArtifact({
+      kind: "lesson",
+      draft: { variants: request.draft.variants },
+      learningPath: request.learningPath,
+    });
+
+    if (gate.renderable?.kind !== "lesson") {
+      throw new Error("The fixture gate must mint a renderable lesson.");
+    }
+
+    const preview = compileLessonPreview(gate.renderable, {
+      requestId: request.requestId,
+      grade: request.grade,
+      standardId: request.standardId,
+      language: request.language,
+    });
+
+    expect(preview.messages).toHaveLength(12);
+  });
+
+  it("refuses an unbranded draft at the production seam", () => {
+    expect(() => {
+      return compileLessonPreview(request as never, {
+        requestId: request.requestId,
+        grade: request.grade,
+        standardId: request.standardId,
+        language: request.language,
+      });
+    }).toThrow(/gate-accepted/iu);
+  });
+
   it("compiles the accepted prerequisite path into every semantic preview surface", () => {
-    const preview = compileLessonPreview(request);
+    const preview = compileRawLessonPreview(request);
     const pathComponents = preview.messages.flatMap((message) => {
       return "updateComponents" in message
         ? message.updateComponents.components.filter(

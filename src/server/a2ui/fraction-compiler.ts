@@ -6,6 +6,7 @@ import {
 } from "@/shared/a2ui-contract";
 import { fractionLessonDraftSchema } from "@/shared/fractions-contract";
 import { parseLatexToMathML } from "@/shared/latex-mathml";
+import { isRenderableArtifact } from "@/server/safety/artifact-gate";
 
 import { LessonPreviewCompileError } from "./compiler";
 import { decideFractionValue } from "./fraction-stage";
@@ -15,6 +16,7 @@ import type {
   A2UIDataModel,
   A2UIMessage,
 } from "@/shared/a2ui-contract";
+import type { RenderableArtifact } from "@/server/safety/artifact-gate";
 import type { FractionLessonDraft } from "@/shared/fractions-contract";
 
 export interface CompiledFractionPreview {
@@ -33,7 +35,9 @@ export interface FractionPreviewCompileInput {
 const assertComponentId = (value: string, label: string): string => {
   if (!/^[A-Za-z0-9:_./-]{1,120}$/u.test(value)) {
     throw new LessonPreviewCompileError(
-      `The lesson preview contains an invalid ${label}.`
+      "INVALID_COMPONENT_ID",
+      `The lesson preview contains an invalid ${label}.`,
+      { field: "components" }
     );
   }
 
@@ -166,20 +170,29 @@ const sectionMessages = (
       catalogVersion: FRACTIONS_CATALOG_VERSION,
     });
     if (!validation.ok) {
-      throw new LessonPreviewCompileError(validation.message);
+      throw new LessonPreviewCompileError(validation.code, validation.message, {
+        field: "preview",
+      });
     }
   }
 
   return messages;
 };
 
-export const compileFractionPreview = (
+/**
+ * The raw fraction compiler is the test and differential-oracle seam. It
+ * accepts an unattested draft, so production code must call
+ * `compileFractionPreview`.
+ */
+export const compileRawFractionPreview = (
   input: FractionPreviewCompileInput
 ): CompiledFractionPreview => {
   const parsed = fractionLessonDraftSchema.safeParse(input.draft);
   if (!parsed.success) {
     throw new LessonPreviewCompileError(
-      "The fraction draft does not match the trusted contract."
+      "INVALID_CONTRACT",
+      "The fraction draft does not match the trusted contract.",
+      { field: "draft" }
     );
   }
   const draft = parsed.data;
@@ -190,7 +203,9 @@ export const compileFractionPreview = (
     const math = parseLatexToMathML(section.stem);
     if (!math.ok) {
       throw new LessonPreviewCompileError(
-        `The math in section ${section.sectionId} does not parse: ${math.message}`
+        "INVALID_MATH",
+        `The math in section ${section.sectionId} does not parse: ${math.message}`,
+        { field: "stem" }
       );
     }
 
@@ -200,7 +215,9 @@ export const compileFractionPreview = (
     });
     if (!range.ok) {
       throw new LessonPreviewCompileError(
-        `The fraction in section ${section.sectionId} is outside the trusted bounds.`
+        "INVALID_FRACTION_VALUE",
+        `The fraction in section ${section.sectionId} is outside the trusted bounds.`,
+        { field: "numerator" }
       );
     }
   }
@@ -215,4 +232,20 @@ export const compileFractionPreview = (
     catalogVersion: FRACTIONS_CATALOG_VERSION,
     messages,
   };
+};
+
+/**
+ * The production fraction compile seam. It accepts only the branded
+ * renderable artifact that `gateArtifact` mints.
+ */
+export const compileFractionPreview = (
+  artifact: RenderableArtifact
+): CompiledFractionPreview => {
+  if (!isRenderableArtifact(artifact) || artifact.kind !== "fraction") {
+    throw new TypeError(
+      "compileFractionPreview requires a gate-accepted fraction artifact."
+    );
+  }
+
+  return compileRawFractionPreview({ draft: artifact.draft });
 };
