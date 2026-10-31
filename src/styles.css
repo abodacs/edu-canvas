@@ -2688,6 +2688,84 @@ h2 {
   text-transform: none;
 }
 
+.validation-diagnostics {
+  display: grid;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid color-mix(in oklch, var(--destructive) 28%, var(--border));
+  border-radius: 0.9rem;
+  background: color-mix(in oklch, var(--destructive) 5%, var(--card));
+  gap: 0.9rem;
+}
+
+.validation-diagnostics h3 {
+  margin: 0;
+}
+
+.validation-diagnostics__screen {
+  display: grid;
+  border-block-start: 1px solid
+    color-mix(in oklch, var(--teacher-ink) 14%, transparent);
+  gap: 0.5rem;
+  padding-block-start: 0.9rem;
+}
+
+.validation-diagnostics__screen h4 {
+  margin: 0;
+  color: var(--primary);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.validation-diagnostics__findings {
+  display: grid;
+  padding: 0;
+  margin: 0;
+  gap: 0.65rem;
+  list-style: none;
+}
+
+.validation-diagnostics__finding {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  border-block-start: 1px solid
+    color-mix(in oklch, var(--teacher-ink) 10%, transparent);
+  gap: 0.65rem;
+  padding-block: 0.65rem;
+}
+
+.validation-diagnostics__field {
+  color: var(--muted-foreground);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.validation-diagnostics__finding p {
+  margin: 0.2rem 0 0;
+  color: var(--teacher-ink);
+  font-size: 0.9rem;
+}
+
+.validation-diagnostics__action {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--teacher-ink);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  min-block-size: 2.75rem;
+  padding-block: 0.55rem;
+  padding-inline: 1rem;
+}
+
+.validation-diagnostics__action:hover {
+  border-color: var(--primary);
+}
+
 .teacher-review-layout {
   display: grid;
   align-items: start;
