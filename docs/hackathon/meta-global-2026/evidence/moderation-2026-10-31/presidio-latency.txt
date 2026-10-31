@@ -1,0 +1,8 @@
+arm: presidio (AnalyzerEngine defaults, en_core_web_lg)
+corpus: corpus-holdout.tsv (29 rows)
+measurement: in-process, 3 passes, after model load; first call excluded by warm-up
+mean_ms: 11.54
+p95_ms: 12.09
+max_ms: 224.68 (cold first call)
+note: the harness latency column for this arm is a precomputed map lookup, not inference. Use these numbers instead.
+budget: 100 s per provider call, 200 s total (AgDR-0006). Headroom at p95 is about 8,000x.
