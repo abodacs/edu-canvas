@@ -2,6 +2,35 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/*
+ * Hanken Grotesk Variable, split into a preloaded core face (ASCII + the
+ * punctuation most pages use) and an extended face (Latin-1 + Latin
+ * Extended-A) that only downloads when a page renders one of its characters.
+ * Regenerate with scripts/fonts-subset.py; ranges must match
+ * public/fonts/manifest.json. font-display and the fallback stack are
+ * unchanged from the previous single-file setup.
+ */
+@font-face {
+  font-display: swap;
+  font-family: "Hanken Grotesk Variable";
+  font-style: normal;
+  font-weight: 100 900;
+  src: url("/fonts/hanken-grotesk-variable-core.woff2")
+    format("woff2-variations");
+  unicode-range:
+    U+0020-007E, U+00B7, U+2013-2014, U+2018-2019, U+201C-201D, U+2026;
+}
+
+@font-face {
+  font-display: swap;
+  font-family: "Hanken Grotesk Variable";
+  font-style: normal;
+  font-weight: 100 900;
+  src: url("/fonts/hanken-grotesk-variable-extended.woff2")
+    format("woff2-variations");
+  unicode-range: U+00A0-00B6, U+00B8-017E;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
