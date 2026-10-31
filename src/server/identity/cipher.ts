@@ -3,6 +3,7 @@ import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 const algorithm = "aes-256-gcm";
 const keyBytes = 32;
 const nonceBytes = 12;
+const tagBytes = 16;
 const versionSeparator = ":";
 
 export interface CredentialCipher {
@@ -58,7 +59,9 @@ export const createCredentialCipher = (
     keyVersion: keys.keyVersion,
     encrypt: (plaintext) => {
       const nonce = randomBytes(nonceBytes);
-      const cipher = createCipheriv(algorithm, activeKey, nonce);
+      const cipher = createCipheriv(algorithm, activeKey, nonce, {
+        authTagLength: tagBytes,
+      });
       const encrypted = Buffer.concat([
         cipher.update(plaintext, "utf-8"),
         cipher.final(),
@@ -86,7 +89,9 @@ export const createCredentialCipher = (
       const decipher = createDecipheriv(
         algorithm,
         key,
-        Uint8Array.fromBase64(noncePart, { alphabet: "base64url" })
+        Uint8Array.fromBase64(noncePart, { alphabet: "base64url" }),
+        // Rejects truncated tags; encryption always writes this length.
+        { authTagLength: tagBytes }
       );
       decipher.setAuthTag(
         Uint8Array.fromBase64(tagPart, { alphabet: "base64url" })

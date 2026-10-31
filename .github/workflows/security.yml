@@ -1,0 +1,226 @@
+# Security Scan — ported from ApexYard golden-paths/pipelines/security.yml (Refs #71).
+#
+# Automated security scanning for a children's-data surface: secrets, SAST,
+# dependency audit, and SBOM. Every tool is free/OSS and needs no account or
+# token beyond the workflow's own GITHUB_TOKEN:
+#   Secrets   : gitleaks/gitleaks-action@v2 over the full git history
+#   SAST      : Semgrep OSS via pip install + `semgrep scan`
+#   Dep audit : pnpm audit (adapted from the golden path's npm audit)
+#   SBOM      : anchore/sbom-action, CycloneDX format
+#
+# Severity policy (advisory first): the Semgrep job fails on ERROR (high)
+# findings only — WARNING (medium) findings are summarized but do not block —
+# and the dependency audit currently reports without failing because the
+# existing tree carries pre-existing advisories outside this workflow's scope.
+# Tighten both once the first findings are triaged.
+
+name: Security Scan
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  # Semgrep configs for this stack (TypeScript/Node web app).
+  SEMGREP_CONFIGS: "p/security-audit p/owasp-top-ten p/typescript p/nodejs"
+  # Fail on ERROR findings only; WARNING findings stay advisory.
+  SEMGREP_FAIL_SEVERITY: "ERROR"
+
+jobs:
+  # --------------------------------------------------------------------------
+  # Secrets scan — gitleaks over the full git history
+  # --------------------------------------------------------------------------
+  secrets-scan:
+    name: Secrets (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository (full history for gitleaks)
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # GITLEAKS_LICENSE is not required for public repositories.
+
+  # --------------------------------------------------------------------------
+  # SAST — Semgrep OSS (free, no token required)
+  # --------------------------------------------------------------------------
+  sast:
+    name: SAST (Semgrep OSS)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Install Semgrep OSS
+        run: pip install semgrep
+
+      - name: Run Semgrep
+        run: |
+          set +e
+          semgrep scan \
+            $(echo "$SEMGREP_CONFIGS" | sed 's/[^ ]*/--config=&/g') \
+            --metrics=off \
+            --no-autofix \
+            --json \
+            --output semgrep-results.json \
+            .
+          set -e
+
+          python3 - <<'PYEOF'
+          import json, os
+
+          data = json.load(open('semgrep-results.json'))
+          results = data.get('results', [])
+          counts = {}
+          for r in results:
+              sev = r.get('extra', {}).get('severity', 'UNKNOWN')
+              counts[sev] = counts.get(sev, 0) + 1
+
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
+              f.write('## SAST (Semgrep) Results\n')
+              f.write('| Severity | Count |\n|----------|-------|\n')
+              for sev in ('ERROR', 'WARNING', 'INFO'):
+                  f.write(f'| {sev} | {counts.get(sev, 0)} |\n')
+
+              medium_plus = [r for r in results
+                             if r.get('extra', {}).get('severity', '') in ('ERROR', 'WARNING')]
+              if medium_plus:
+                  f.write('\n### Medium+ Findings\n')
+                  for r in medium_plus:
+                      sev = r['extra']['severity']
+                      path = r['path']
+                      line = r['start']['line']
+                      rule = r['check_id'].split('.')[-1]
+                      msg = r['extra']['message'].split('\n')[0][:120]
+                      f.write(f'- [{sev}] `{path}:{line}` ({rule}): {msg}\n')
+          PYEOF
+
+          ERROR_COUNT=$(python3 -c "import json; d=json.load(open('semgrep-results.json')); r=d.get('results',[]); print(sum(1 for x in r if x.get('extra',{}).get('severity','') == 'ERROR'))")
+
+          if [ "$SEMGREP_FAIL_SEVERITY" = "WARNING" ]; then
+            WARNING_COUNT=$(python3 -c "import json; d=json.load(open('semgrep-results.json')); r=d.get('results',[]); print(sum(1 for x in r if x.get('extra',{}).get('severity','') == 'WARNING'))")
+            if [ "$((ERROR_COUNT + WARNING_COUNT))" -gt 0 ]; then
+              echo "::error::Semgrep found $ERROR_COUNT ERROR + $WARNING_COUNT WARNING findings"
+              exit 1
+            fi
+          elif [ "$ERROR_COUNT" -gt 0 ]; then
+            echo "::error::Semgrep found $ERROR_COUNT ERROR findings"
+            exit 1
+          fi
+
+      - name: Upload Semgrep results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-results
+          path: semgrep-results.json
+          retention-days: 30
+
+  # --------------------------------------------------------------------------
+  # Dependency audit — pnpm audit (advisory until the existing advisories
+  # are triaged; see the severity policy note in the header)
+  # --------------------------------------------------------------------------
+  dep-audit:
+    name: Dependency audit (pnpm)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6.1.0
+        with:
+          version: 10.17.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 26
+          cache: pnpm
+
+      - name: Run pnpm audit
+        run: |
+          pnpm audit --json > pnpm-audit.json || true
+          [ -s pnpm-audit.json ] || echo '{}' > pnpm-audit.json
+
+          CRITICAL=$(jq '.metadata.vulnerabilities.critical // 0' pnpm-audit.json)
+          HIGH=$(jq '.metadata.vulnerabilities.high // 0' pnpm-audit.json)
+          MODERATE=$(jq '.metadata.vulnerabilities.moderate // 0' pnpm-audit.json)
+          LOW=$(jq '.metadata.vulnerabilities.low // 0' pnpm-audit.json)
+
+          {
+            echo "## Dependency Vulnerabilities"
+            echo "| Severity | Count |"
+            echo "|----------|-------|"
+            echo "| Critical | $CRITICAL |"
+            echo "| High | $HIGH |"
+            echo "| Moderate | $MODERATE |"
+            echo "| Low | $LOW |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
+            echo "::warning::Found $CRITICAL critical and $HIGH high severity vulnerabilities — triage before enabling the blocking gate"
+          fi
+
+  # --------------------------------------------------------------------------
+  # SBOM — CycloneDX via anchore/sbom-action (free, no token)
+  # --------------------------------------------------------------------------
+  sbom:
+    name: SBOM (CycloneDX)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Generate CycloneDX SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          format: cyclonedx-json
+          output-file: sbom.cyclonedx.json
+          upload-artifact: true
+          artifact-name: sbom-cyclonedx
+
+  # --------------------------------------------------------------------------
+  # Security gate — all jobs must pass
+  # --------------------------------------------------------------------------
+  security-gate:
+    name: Security Gate
+    runs-on: ubuntu-latest
+    needs: [secrets-scan, sast, dep-audit, sbom]
+    if: always()
+    steps:
+      - name: Evaluate gate
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const jobs = {
+              'Secrets (gitleaks)': '${{ needs.secrets-scan.result }}',
+              'SAST (Semgrep OSS)': '${{ needs.sast.result }}',
+              'Dependency audit (pnpm)': '${{ needs.dep-audit.result }}',
+              'SBOM (CycloneDX)': '${{ needs.sbom.result }}',
+            };
+
+            let summary = '## Security Gate Summary\n| Job | Result |\n|-----|--------|\n';
+            let failed = false;
+
+            for (const [name, result] of Object.entries(jobs)) {
+              const icon = result === 'success' ? 'PASSED' : (result === 'skipped' ? 'SKIPPED' : 'FAILED');
+              summary += `| ${name} | ${icon} |\n`;
+              if (result === 'failure') failed = true;
+            }
+
+            await core.summary.addRaw(summary).write();
+
+            if (failed) {
+              core.setFailed('Security gate FAILED — resolve findings before merge.');
+            } else {
+              console.log('Security gate PASSED.');
+            }
