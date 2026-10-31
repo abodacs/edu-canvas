@@ -70,7 +70,7 @@ export const syntheticSeed = {
   ],
   activity: {
     id: "activity_demo_equivalent_fractions",
-    slug: "equivalent-fractions-synthetic",
+    slug: "equivalent-fractions-seeded-demo",
     title: "Equivalent fractions: name the same whole",
     status: "published" as const,
   },

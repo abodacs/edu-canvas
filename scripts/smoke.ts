@@ -1,3 +1,4 @@
+// Makes the script a module so top-level `await` type-checks; it exports nothing.
 export {};
 
 const baseUrl = process.env.SMOKE_URL ?? "http://127.0.0.1:3000";

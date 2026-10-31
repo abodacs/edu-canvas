@@ -1,6 +1,7 @@
 import { captureException, init, withIsolationScope } from "@sentry/node";
 
 import { isValidSentryDsn } from "./config";
+import { persistenceKinds } from "./persistence/kinds";
 import type { ServerEnvironment } from "./config";
 
 const REDACTED_VALUE = "[REDACTED]";
@@ -30,7 +31,7 @@ const safeReasons = new Set([
   "persistence_unavailable",
   "seed_integrity_failed",
 ]);
-const safeDependencies = new Set(["postgres", "in-memory"]);
+const safeDependencies = new Set<string>(persistenceKinds);
 const safeRoutes = new Set([
   "/api/health",
   "/api/readiness",

@@ -1,6 +1,7 @@
 import { readServerConfig, safeConfigSummary } from "./config";
 import { serverObservability } from "./observability.server";
 import { createFoundationPersistence } from "./persistence";
+import { postgresPersistenceKind } from "./persistence/kinds";
 import type { ServerObservability } from "./observability.server";
 
 export interface ReadinessOptions {
@@ -80,7 +81,7 @@ export const getReadinessWithSeedSummary = async (
   } catch (error) {
     observability.captureError(error, {
       operation: "health.readiness.seed-summary",
-      dependency: "postgres",
+      dependency: postgresPersistenceKind,
       reason: "persistence_read_failed",
       code: "PERSISTENCE_UNAVAILABLE",
     });

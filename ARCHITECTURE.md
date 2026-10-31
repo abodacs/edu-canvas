@@ -369,7 +369,7 @@ Additional checks have separate prerequisites:
 | `pnpm test:database` | Runs adapter parity tests when `DATABASE_URL` is supplied. Sets `RUN_DATABASE_TESTS=true`; the suite skips without a database URL. |
 | `pnpm test:coverage` | Enforces coverage floors from `vitest.config.ts`; separate from `pnpm check`. |
 | `pnpm verify:config` | Reports safe configuration and fails on configuration issues. |
-| `pnpm smoke` | Checks a running server, including deterministic generation. |
+| `pnpm smoke` | Checks the public HTTP routes of a running server. It does not exercise generation, which requires an authenticated session. |
 | `pnpm verify:client-boundary` | Requires an existing build. Run `pnpm build` first when validating a code change. |
 
 [Foundation CI](.github/workflows/foundation.yml) adds PostgreSQL setup, Drizzle-history and schema-drift checks, repeated migration and seed runs, coverage, adapter parity, Docker build, and container and native-server smoke checks.

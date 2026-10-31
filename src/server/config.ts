@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import type { PersistenceKind } from "./persistence/kinds";
+
 const environmentValues = ["development", "preview", "production"] as const;
 
 export type ServerEnvironment = (typeof environmentValues)[number];
@@ -537,7 +539,9 @@ export const safeConfigSummary = (config: ServerConfig) => {
   return {
     appEnv: config.appEnv,
     syntheticDataOnly: config.syntheticDataOnly,
-    persistence: "postgres",
+    persistence: config.databaseUrl
+      ? ("postgres" satisfies PersistenceKind)
+      : "unconfigured",
     provider: { timeoutMs: config.openAiTimeoutMs },
     auth: {
       provider: config.auth.provider,

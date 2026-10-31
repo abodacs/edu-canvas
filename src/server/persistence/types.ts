@@ -3,7 +3,9 @@ import type { GenerationPersistence } from "../generation/types";
 import type { SourcePersistence } from "../grounding/types";
 import type { ServerObservability } from "../observability.server";
 
-export type PersistenceKind = "postgres" | "in-memory";
+import type { PersistenceKind } from "./kinds";
+
+export type { PersistenceKind } from "./kinds";
 
 export interface PersistenceCheck {
   status: "ready" | "failed";

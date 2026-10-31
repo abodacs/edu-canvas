@@ -1,13 +1,12 @@
 import { generationClaimExpiredDiagnostic } from "../generation/types";
 import { serverObservability } from "../observability.server";
 import { getSyntheticSeedCounts } from "../seed-data";
+import { inMemoryPersistenceKind } from "./kinds";
 import { createSeededSourcePersistence } from "./source-seeded";
 import type { FoundationPersistence } from "./types";
 import type { SourceSnapshotRecord } from "../grounding/types";
 import type { LessonGenerationRecord } from "../generation/types";
 import type { ServerObservability } from "../observability.server";
-
-const IN_MEMORY_KIND = "in-memory";
 
 export interface SeededPersistenceOptions {
   observability?: ServerObservability;
@@ -46,7 +45,7 @@ export const createSeededPersistence = (
   };
 
   return {
-    kind: IN_MEMORY_KIND,
+    kind: inMemoryPersistenceKind,
     ...sourcePersistence,
 
     check() {
@@ -55,7 +54,7 @@ export const createSeededPersistence = (
       } catch (error) {
         observability.captureError(error, {
           operation: "persistence.seeded.check",
-          dependency: IN_MEMORY_KIND,
+          dependency: inMemoryPersistenceKind,
           reason: "seed_integrity_failed",
           code: "PERSISTENCE_UNAVAILABLE",
         });
@@ -64,7 +63,7 @@ export const createSeededPersistence = (
 
       return Promise.resolve({
         status: "ready",
-        kind: IN_MEMORY_KIND,
+        kind: inMemoryPersistenceKind,
         code: "READY",
         message: "Synthetic seed repository is loaded.",
       });
@@ -76,7 +75,7 @@ export const createSeededPersistence = (
       } catch (error) {
         observability.captureError(error, {
           operation: "persistence.seeded.read-seed-counts",
-          dependency: IN_MEMORY_KIND,
+          dependency: inMemoryPersistenceKind,
           reason: "seed_integrity_failed",
           code: "PERSISTENCE_UNAVAILABLE",
         });

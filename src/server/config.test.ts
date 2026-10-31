@@ -44,8 +44,9 @@ describe("server configuration", () => {
       "DATABASE_REQUIRED",
     ]);
     expect(config.sentryDsn).toBeUndefined();
+    // A summary must not claim a persistence backend the config never selected.
     expect(safeConfigSummary(config)).toMatchObject({
-      persistence: "postgres",
+      persistence: "unconfigured",
       observability: { sentry: "structured-log-only" },
     });
   });

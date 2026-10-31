@@ -67,7 +67,7 @@ order by created_at;
 
 ## Gate 2 — supported path through the GUI
 
-Open `http://localhost:3000/demo/teacher`.
+Sign in at `http://localhost:3000/login` with the synthetic teacher, then open `http://localhost:3000/workspace`.
 
 Exact input:
 

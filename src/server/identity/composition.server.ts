@@ -18,14 +18,7 @@ export interface ConfiguredIdentity {
   readonly publicOrigin: string;
 }
 
-/**
- * The composition root is memoized per configuration identity. The deterministic provider keeps provider sessions in memory, so a fresh instance per request would forget them; the hosted adapter is stateless but memoizing it keeps one client.
- */
 const configuredCache = new Map<string, Promise<ConfiguredIdentity>>();
-const injectedCache = new WeakMap<
-  IdentityPersistence,
-  Promise<ConfiguredIdentity>
->();
 
 const cacheKey = (config: ServerConfig): string => {
   return [config.auth.provider, config.appEnv, config.databaseUrl ?? ""].join(
@@ -33,13 +26,14 @@ const cacheKey = (config: ServerConfig): string => {
   );
 };
 
-export interface ConfiguredIdentityOptions {
-  readonly identityPersistence?: IdentityPersistence;
-}
-
-const build = async (
+/**
+Compose one identity instance over an explicit persistence port. Runtime
+composition goes through `createConfiguredIdentity`; tests call this with the
+in-memory identity store.
+*/
+export const buildConfiguredIdentity = async (
   config: ServerConfig,
-  options: ConfiguredIdentityOptions = {}
+  persistence: IdentityPersistence
 ): Promise<ConfiguredIdentity> => {
   if (config.issues.length > 0) {
     throw new Error("Authentication configuration is invalid.");
@@ -50,8 +44,6 @@ const build = async (
     throw new Error("Authentication secrets and public origin are required.");
   }
 
-  const persistence =
-    options.identityPersistence ?? createIdentityPersistence(config);
   if (auth.provider === "deterministic") {
     await ensureSyntheticIdentityFixture(persistence);
   }
@@ -76,25 +68,21 @@ const build = async (
   };
 };
 
+/**
+The composition root is memoized per configuration identity. The deterministic provider keeps provider sessions in memory, so a fresh instance per request would forget them; the hosted adapter is stateless but memoizing it keeps one client.
+*/
 export const createConfiguredIdentity = (
-  config: ServerConfig = readServerConfig(),
-  options: ConfiguredIdentityOptions = {}
+  config: ServerConfig = readServerConfig()
 ): Promise<ConfiguredIdentity> => {
-  if (options.identityPersistence) {
-    const existing = injectedCache.get(options.identityPersistence);
-    if (existing) {
-      return existing;
-    }
-    const created = build(config, options);
-    injectedCache.set(options.identityPersistence, created);
-    return created;
-  }
   const key = cacheKey(config);
   const existing = configuredCache.get(key);
   if (existing) {
     return existing;
   }
-  const created = build(config);
+  const created = buildConfiguredIdentity(
+    config,
+    createIdentityPersistence(config)
+  );
   configuredCache.set(key, created);
   return created;
 };

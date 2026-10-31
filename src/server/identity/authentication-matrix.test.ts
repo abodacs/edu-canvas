@@ -6,6 +6,8 @@ import {
   createSeededIdentityPersistence,
   createSeededIdentityStore,
 } from "../persistence/identity-seeded";
+import { testServerEnvironment } from "../test-environment";
+
 import {
   handleAuthContext,
   handleContinue,
@@ -14,9 +16,10 @@ import {
   handleSession,
   handleSignIn,
   handleSignUp,
-  resolveAuthDependencies,
+  authDependenciesFrom,
 } from "./api.server";
 import { createCredentialCipher } from "./cipher";
+import { buildConfiguredIdentity } from "./composition.server";
 import {
   parseActorId,
   parseClassId,
@@ -36,6 +39,7 @@ import {
 } from "./synthetic-fixture";
 
 import type { SeededIdentityStore } from "../persistence/identity-seeded";
+
 import type { AuthDependencies } from "./api.server";
 import type { IdentityError } from "./errors";
 import type { IdentityPersistence } from "./persistence-port";
@@ -61,12 +65,6 @@ import type { IdentityProvider } from "./provider/port";
  * reject it, and the autofixed placeholder is rejected by the vitest warning
  * rule.
  */
-
-const testEnvironment = {
-  APP_ENV: "development",
-  DATABASE_URL: "postgresql://test:test@127.0.0.1:5432/edu_canvas_test",
-  OPENAI_API_KEY: "test-server-key",
-};
 
 const password = syntheticPasswordForTests;
 const issuer = syntheticProviderIssuer;
@@ -153,14 +151,17 @@ interface SignUpBody {
   readonly email: string;
 }
 
-const configuredIdentityPersistence = createSeededIdentityPersistence();
-const configuredDependenciesPromise = resolveAuthDependencies(
-  readServerConfig({ ...testEnvironment }),
-  { identityPersistence: configuredIdentityPersistence }
+const configuredConfig = readServerConfig({ ...testServerEnvironment });
+const configuredTestDependencies = authDependenciesFrom(
+  configuredConfig,
+  await buildConfiguredIdentity(
+    configuredConfig,
+    createSeededIdentityPersistence()
+  )
 );
 
 const configuredDependencies = (): Promise<AuthDependencies> =>
-  configuredDependenciesPromise;
+  Promise.resolve(configuredTestDependencies);
 
 const readJson = async <T>(response: Response): Promise<T> =>
   (await response.json()) as T;
@@ -419,7 +420,7 @@ const createHarness = async (
     },
   };
 
-  const config = readServerConfig({ ...testEnvironment });
+  const config = readServerConfig({ ...testServerEnvironment });
   const service = createIdentityService({
     persistence,
     provider: options.decorateProvider?.(counted) ?? counted,

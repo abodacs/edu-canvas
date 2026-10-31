@@ -17,6 +17,7 @@ The two scanners split the work: `verify:architecture` owns the layer and state 
 - **No dependency cycles** (excluding the generated `routeTree.gen.ts`, whose edge to `router.tsx` the router plugin owns).
 - **Context decoupling:** `src/server/generation` and `src/server/a2ui` may not import each other’s logic; the persistence record (and its types) is their meeting point.
 - **Database-client ownership:** only `src/server/persistence` imports `postgres`.
+- **Test-double containment:** runtime modules may not import the in-memory persistence doubles (`persistence/seeded.ts`, `source-seeded.ts`, `identity-seeded.ts`). Only `.test.ts(x)` modules and the doubles' own modules may; the rule is an error (`runtime-imports-in-memory-store`).
 - **Layer rules mirrored** from `verify:architecture`, so a bypass via a resolved path cannot slip past one scanner.
 
 ## Identity boundary (#98)

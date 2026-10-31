@@ -33,6 +33,7 @@ import {
 } from "@/server/persistence";
 import { createSeededPersistence } from "@/server/persistence/seeded";
 import { syntheticSeed } from "@/server/seed-data";
+import { testServerEnvironment } from "@/server/test-environment";
 
 import type { AuthDependencies } from "@/server/identity/api.server";
 import type { NewSessionInput } from "@/server/identity/persistence-port";
@@ -120,11 +121,6 @@ vi.mock(
 );
 /* eslint-enable unicorn/single-line-block-comment-style */
 
-const testEnvironment = {
-  APP_ENV: "development",
-  DATABASE_URL: "postgresql://test:test@127.0.0.1:5432/edu_canvas_test",
-  OPENAI_API_KEY: "test-server-key",
-};
 const password = "synthetic-pass-1";
 const northTenantId = "tenant_school_north";
 const southTenantId = "tenant_school_south";
@@ -204,7 +200,7 @@ const cookieValue = (response: Response, name: string): string | undefined => {
 const sessionCookie = (response: Response): string =>
   `edu_canvas_session=${cookieValue(response, "edu_canvas_session") ?? ""}`;
 
-const serverConfig = () => readServerConfig({ ...testEnvironment });
+const serverConfig = () => readServerConfig({ ...testServerEnvironment });
 
 const authDependencies = (): Promise<AuthDependencies> =>
   resolveAuthDependencies(serverConfig());
