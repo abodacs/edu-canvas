@@ -46,7 +46,7 @@ The reason and reference copy above are illustrative. Ticket 01 and #132 own the
 
 ### Error path: `MODERATION_REVISION_REQUIRED`
 
-A same prompt under a new operation key is not a moderation state. The service returns an error response (`service.ts:889-899`). The route currently maps it to `GENERATION_FAILED` (`delivery.server.ts:47-58`), so the code does not reach the client today.
+A same prompt under a new operation key is not a moderation state. The service returns an error response (`service.ts:889-899`). The route currently maps it to `GENERATION_FAILED` (`delivery.server.ts:47-58`), so the code does not reach the client today. Fixing that is [#149](https://github.com/abodacs/edu-canvas/issues/149).
 
 #115 must render the same panel for this error. The panel uses the same heading focus, the same live-region text, and the same `Revise request` action. The preserved objective is the submitted prompt. The request reference may be absent; the service creates no record.
 

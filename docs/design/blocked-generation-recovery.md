@@ -141,7 +141,7 @@ Consequence: #119 requires `retryOfRequestId` to link back. Today the server rej
 
 The default is option B, an explicit `revisesRequestId` field ([#148](https://github.com/abodacs/edu-canvas/issues/148)). Until a service change lands, the panel shows the request reference. The client must not fake the link.
 
-Also: a same-hash request is refused even with a new key and before any retry check (`service.ts:889-899`). The error code is `MODERATION_REVISION_REQUIRED`, not a moderation state. #115 must map this error to the same panel, not to a generic error. Today the route maps every generation error to `GENERATION_FAILED` ([delivery.server.ts](../../src/server/generation/delivery.server.ts):47-58). #115 needs the code in the response.
+Also: a same-hash request is refused even with a new key and before any retry check (`service.ts:889-899`). The error code is `MODERATION_REVISION_REQUIRED`, not a moderation state. #115 must map this error to the same panel, not to a generic error. Today the route maps every generation error to `GENERATION_FAILED` ([delivery.server.ts](../../src/server/generation/delivery.server.ts):47-58). #115 needs the code in the response; that delivery change is [#149](https://github.com/abodacs/edu-canvas/issues/149).
 
 ## 7. Five failure classes
 
