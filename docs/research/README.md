@@ -17,7 +17,7 @@ The following materials are retained on the owner's machine only. They are not t
 
 ## Transport evaluations
 
-- [Option C: deterministic MCP dispatch, #142](142-mcp-eval/README.md): deferred. Eight registry rows cost three visible calls each, deterministically. Provider-internal reads stay unobservable, and the contract carries no currency, licence, attribution or source links. Recorded schemas, response hashes and the rerunnable runner are in the same directory.
+- [Option C: deterministic MCP dispatch, #142](142-mcp-eval/README.md): deferred. Eight registry rows cost three visible calls each, deterministically. Provider-internal reads stay unobservable, and the contract carries no currency, licence, attribution or source links. The same directory adds a free-text stage: 33 teacher sentences, MCP keywords against REST semantic search. MCP finds the expected standard in the top five on 0 of 30; REST finds it or a child on 24 of 30. Recorded schemas, response hashes and the rerunnable runner are in the same directory.
 
 ## Synthetic study rehearsals
 

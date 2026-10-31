@@ -1,11 +1,14 @@
 /**
- * Records and checks authenticated Learning Commons MCP evidence for #142.
+ * Records and checks authenticated Learning Commons evidence for #142.
  *
  * Commands:
  *   record --out <dir>   Call the MCP server, write evidence.json and tool-schemas.json
  *   check [dir]          Offline: verify committed evidence invariants
  *   compare <a> <b>      Offline: prove two independent runs produced the same facts
  *   render [dir]         Offline: regenerate measurements.md from evidence.json
+ *   free-text record     Resolve teacher sentences on MCP keywords and REST search
+ *   free-text check      Offline: verify free-text evidence invariants
+ *   free-text render     Offline: regenerate free-text.md
  *
  * The server is read-only and this client is stateless: every stage sends one
  * JSON-RPC request. The runner records what it can observe (visible calls,
@@ -400,9 +403,10 @@ const createClient = (apiKey: string) => {
   };
 };
 
+const INITIALIZED_NOTIFICATION = "notifications/initialized";
+
 const sendNotification = async (
   apiKey: string,
-  method: string,
   parameters: unknown
 ): Promise<number> => {
   const response = await fetch(ORIGIN, {
@@ -412,7 +416,11 @@ const sendNotification = async (
       accept: "application/json, text/event-stream",
       authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({ jsonrpc: "2.0", method, params: parameters }),
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      method: INITIALIZED_NOTIFICATION,
+      params: parameters,
+    }),
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     redirect: "error",
   });
@@ -908,11 +916,7 @@ const record = async (outputDirectory: string): Promise<Evidence> => {
   if (init.error) {
     throw new Error(`initialize failed: ${init.error.message ?? "unknown"}`);
   }
-  const initializedNotificationStatus = await sendNotification(
-    apiKey,
-    "notifications/initialized",
-    {}
-  );
+  const initializedNotificationStatus = await sendNotification(apiKey, {});
   const initResult = isRecord(init.result) ? init.result : {};
   const serverInfo = isRecord(initResult.serverInfo)
     ? initResult.serverInfo
@@ -1569,6 +1573,729 @@ const runCheck = async (directory: string): Promise<string[]> => {
   return failures;
 };
 
+/**
+ * Free-text stage: a teacher sentence resolves to candidate standards.
+ *
+ * The same corpus runs against the MCP `keywords` mode and the REST
+ * `/academic-standards/search` semantic mode. The MCP tool takes a word array
+ * and matches ANY word by stem; REST takes the sentence, ranks by vector
+ * similarity, and returns provenance. Both receive the same jurisdiction and
+ * subject, because the product passes those as explicit inputs.
+ */
+
+const FREE_TEXT_CORPUS_FILE = "free-text-corpus.json";
+const FREE_TEXT_EVIDENCE_FILE = "free-text-evidence.json";
+const FREE_TEXT_REPORT_FILE = "free-text.md";
+const FREE_TEXT_SCHEMA_VERSION = 1;
+const FREE_TEXT_TOOL = "find_standard_statement";
+const REST_ORIGIN = "https://api.learningcommons.org/knowledge-graph/v0";
+const REST_SEARCH_PATH = "/academic-standards/search";
+const REST_API_KEY_HEADER = "x-api-key";
+const KEYWORD_TOKEN_MAX = 32;
+const KEYWORD_MIN_LENGTH = 3;
+const TOP_K = 5;
+const PERCENT = 100;
+const MCP_OBSERVED_CAP = 25;
+const MEDIAN_DIVISOR = 2;
+const HTTP_OK = 200;
+const STOPWORDS = new Set([
+  "about",
+  "after",
+  "again",
+  "also",
+  "and",
+  "any",
+  "are",
+  "but",
+  "can",
+  "cant",
+  "could",
+  "does",
+  "doing",
+  "for",
+  "from",
+  "get",
+  "had",
+  "has",
+  "have",
+  "help",
+  "her",
+  "him",
+  "his",
+  "how",
+  "into",
+  "its",
+  "just",
+  "kids",
+  "like",
+  "make",
+  "more",
+  "most",
+  "much",
+  "must",
+  "not",
+  "now",
+  "our",
+  "out",
+  "own",
+  "same",
+  "see",
+  "she",
+  "should",
+  "show",
+  "some",
+  "students",
+  "such",
+  "than",
+  "that",
+  "the",
+  "their",
+  "them",
+  "then",
+  "there",
+  "these",
+  "they",
+  "this",
+  "those",
+  "through",
+  "too",
+  "under",
+  "use",
+  "using",
+  "very",
+  "want",
+  "was",
+  "way",
+  "were",
+  "what",
+  "when",
+  "where",
+  "which",
+  "while",
+  "who",
+  "why",
+  "will",
+  "with",
+  "would",
+  "you",
+  "your",
+]);
+
+interface FreeTextCorpusRow {
+  id: string;
+  text: string;
+  kind: "documented" | "variant" | "adversarial";
+  provenance: string;
+  jurisdiction: string;
+  subject: string;
+  grade: string | null;
+  expectedCode: string | null;
+  expectedNote: string | null;
+}
+
+interface FreeTextCorpus {
+  schemaVersion: number;
+  capturedAt: string;
+  description: string;
+  limits: string[];
+  rows: FreeTextCorpusRow[];
+}
+
+interface TransportResult {
+  ok: boolean;
+  httpStatus: number;
+  latencyMs: number;
+  codes: string[];
+  scores: number[];
+  total: number;
+  expectedRank: number | null;
+  familyRank: number | null;
+  hasProvenance: boolean;
+  capped: boolean;
+  error: string | null;
+}
+
+interface FreeTextRowEvidence {
+  id: string;
+  text: string;
+  kind: FreeTextCorpusRow["kind"];
+  jurisdiction: string;
+  subject: string;
+  grade: string | null;
+  expectedCode: string | null;
+  expectedNote: string | null;
+  keywords: string[];
+  mcp: TransportResult;
+  rest: TransportResult;
+}
+
+interface FreeTextEvidence {
+  schemaVersion: number;
+  kind: "lc-free-text-eval";
+  capturedAt: string;
+  revision: string;
+  corpusHash: string;
+  environment: {
+    node: string;
+    platform: string;
+    mcpOrigin: string;
+    restOrigin: string;
+    credentialEnv: string;
+    credentialPresent: boolean;
+    topK: number;
+  };
+  protocol: {
+    requested: string;
+    negotiated: string | null;
+    serverName: string | null;
+    serverVersion: string | null;
+  };
+  rows: FreeTextRowEvidence[];
+}
+
+const CORPUS_KINDS = new Set(["documented", "variant", "adversarial"]);
+
+const isNullableString = (value: unknown): boolean =>
+  value === null || typeof value === "string";
+
+const isFreeTextCorpusRow = (
+  value: Record<string, unknown>
+): value is Record<string, unknown> & FreeTextCorpusRow => {
+  const checks = [
+    typeof value.id === "string",
+    typeof value.text === "string",
+    typeof value.kind === "string",
+    CORPUS_KINDS.has(String(value.kind)),
+    typeof value.provenance === "string",
+    typeof value.jurisdiction === "string",
+    typeof value.subject === "string",
+    isNullableString(value.grade),
+    isNullableString(value.expectedCode),
+    isNullableString(value.expectedNote),
+  ];
+  return checks.every(Boolean);
+};
+
+const parseFreeTextCorpus = (value: unknown): FreeTextCorpus | null => {
+  if (!isRecord(value) || !Array.isArray(value.rows)) {
+    return null;
+  }
+  const rows = value.rows.filter(isRecord).filter(isFreeTextCorpusRow);
+  if (rows.length !== value.rows.length || rows.length === 0) {
+    return null;
+  }
+  return {
+    schemaVersion: readNumber(value.schemaVersion) ?? 0,
+    capturedAt: readString(value.capturedAt) ?? "",
+    description: readString(value.description) ?? "",
+    limits: readArray(value.limits).filter(
+      (item): item is string => typeof item === "string"
+    ),
+    rows,
+  };
+};
+
+const readFreeTextCorpus = async (
+  directory: string
+): Promise<FreeTextCorpus> => {
+  const parsed = parseFreeTextCorpus(
+    JSON.parse(await readFile(join(directory, FREE_TEXT_CORPUS_FILE), "utf-8"))
+  );
+  if (!parsed) {
+    throw new Error(`${FREE_TEXT_CORPUS_FILE} is not a valid corpus.`);
+  }
+  return parsed;
+};
+
+const corpusHash = (corpus: FreeTextCorpus): string =>
+  sha256(canonicalize(corpus.rows));
+
+const tokenizeTeacherText = (text: string): string[] => {
+  const tokens = text
+    .toLowerCase()
+    .split(/[^a-z0-9]+/u)
+    .filter((raw) => raw.length >= KEYWORD_MIN_LENGTH && !STOPWORDS.has(raw));
+  return [...new Set(tokens)].slice(0, KEYWORD_TOKEN_MAX);
+};
+
+const rankOf = (codes: string[], expected: string | null): number | null => {
+  if (expected === null) {
+    return null;
+  }
+  const index = codes.indexOf(expected);
+  return index === -1 ? null : index + 1;
+};
+
+// A teacher accepts a sub-standard: 3.MD.C.7.a teaches 3.MD.C.7.
+const familyRankOf = (
+  codes: string[],
+  expected: string | null
+): number | null => {
+  if (expected === null) {
+    return null;
+  }
+  const index = codes.findIndex(
+    (code) => code === expected || code.startsWith(`${expected}.`)
+  );
+  return index === -1 ? null : index + 1;
+};
+
+const median = (values: number[]): number => {
+  if (values.length === 0) {
+    return 0;
+  }
+  const sorted = values.toSorted((left, right) => left - right);
+  const middle = Math.floor(sorted.length / MEDIAN_DIVISOR);
+  return sorted.length % MEDIAN_DIVISOR === 0
+    ? Math.round((sorted[middle - 1] + sorted[middle]) / MEDIAN_DIVISOR)
+    : sorted[middle];
+};
+
+const emptyTransport = (error: string): TransportResult => {
+  return {
+    ok: false,
+    httpStatus: 0,
+    latencyMs: 0,
+    codes: [],
+    scores: [],
+    total: 0,
+    expectedRank: null,
+    familyRank: null,
+    hasProvenance: false,
+    capped: false,
+    error,
+  };
+};
+
+interface RestSnapshot {
+  body: unknown;
+  status: number;
+  latencyMs: number;
+}
+
+const fetchRestSearch = async (
+  apiKey: string,
+  row: FreeTextCorpusRow
+): Promise<RestSnapshot | null> => {
+  const url = new URL(`${REST_ORIGIN}${REST_SEARCH_PATH}`);
+  url.searchParams.set("query", row.text);
+  url.searchParams.set("jurisdiction", row.jurisdiction);
+  url.searchParams.set("academicSubject", row.subject);
+  url.searchParams.set("limit", String(TOP_K));
+  const startedAt = performance.now();
+  try {
+    const response = await fetch(url, {
+      headers: { [REST_API_KEY_HEADER]: apiKey },
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      redirect: "error",
+    });
+    const body = (await response.json()) as unknown;
+    return {
+      body,
+      status: response.status,
+      latencyMs: Math.round(performance.now() - startedAt),
+    };
+  } catch {
+    return null;
+  }
+};
+
+const callRestSearch = async (
+  apiKey: string,
+  row: FreeTextCorpusRow
+): Promise<TransportResult> => {
+  const snapshot = await fetchRestSearch(apiKey, row);
+  if (snapshot === null) {
+    return emptyTransport("REST search request failed.");
+  }
+  const { body, status, latencyMs } = snapshot;
+  if (status !== HTTP_OK || !Array.isArray(body)) {
+    return {
+      ...emptyTransport(`REST search failed with ${status}.`),
+      httpStatus: status,
+      latencyMs,
+    };
+  }
+  const items = body.filter(isRecord);
+  const codes = items
+    .map((item) => readString(item.statementCode))
+    .filter((code): code is string => code !== null);
+  return {
+    ok: true,
+    httpStatus: status,
+    latencyMs,
+    codes,
+    scores: items.map((item) => readNumber(item.score) ?? 0),
+    total: items.length,
+    expectedRank: rankOf(codes, row.expectedCode),
+    familyRank: familyRankOf(codes, row.expectedCode),
+    hasProvenance: items.some((item) => {
+      return (
+        readString(item.license) !== null &&
+        readString(item.attributionStatement) !== null
+      );
+    }),
+    capped: items.length >= TOP_K,
+    error: null,
+  };
+};
+
+interface FreeTextMcpSession {
+  call: (row: FreeTextCorpusRow) => Promise<TransportResult>;
+  protocol: FreeTextEvidence["protocol"];
+}
+
+const openFreeTextMcpSession = async (
+  apiKey: string
+): Promise<FreeTextMcpSession> => {
+  const rpc = createClient(apiKey);
+  const init = await rpc("initialize", {
+    protocolVersion: PROTOCOL_VERSION,
+    capabilities: {},
+    clientInfo: { name: CLIENT_NAME, version: CLIENT_VERSION },
+  });
+  if (init.error) {
+    throw new Error(`initialize failed: ${init.error.message ?? "unknown"}`);
+  }
+  await sendNotification(apiKey, {});
+  const initResult = isRecord(init.result) ? init.result : {};
+  const serverInfo = isRecord(initResult.serverInfo)
+    ? initResult.serverInfo
+    : {};
+  const protocol: FreeTextEvidence["protocol"] = {
+    requested: PROTOCOL_VERSION,
+    negotiated: readString(initResult.protocolVersion),
+    serverName: readString(serverInfo.name),
+    serverVersion: readString(serverInfo.version),
+  };
+  // The server echoes a session id after the first call; later calls may echo it.
+  const state: { sessionId: string | null } = { sessionId: null };
+  const call = async (row: FreeTextCorpusRow): Promise<TransportResult> => {
+    const toolArguments: Record<string, unknown> = {
+      keywords: tokenizeTeacherText(row.text),
+      jurisdiction: row.jurisdiction,
+      academicSubject: row.subject,
+    };
+    if (state.sessionId !== null) {
+      toolArguments.session_id = state.sessionId;
+    }
+    const startedAt = performance.now();
+    const response = await rpc("tools/call", {
+      name: FREE_TEXT_TOOL,
+      arguments: toolArguments,
+    });
+    const latencyMs = Math.round(performance.now() - startedAt);
+    if (response.error) {
+      return {
+        ...emptyTransport(response.error.message ?? "MCP tool error."),
+        httpStatus: response.httpStatus,
+        latencyMs,
+      };
+    }
+    let parsed: ReturnType<typeof readToolPayload>;
+    try {
+      parsed = readToolPayload(response.result);
+    } catch (error) {
+      return {
+        ...emptyTransport(Error.isError(error) ? error.message : String(error)),
+        httpStatus: response.httpStatus,
+        latencyMs,
+      };
+    }
+    const standards = readRecords(parsed.payload.standards);
+    const nextSessionId = readString(parsed.payload.session_id);
+    if (nextSessionId !== null) {
+      // Calls run one at a time, so this value cannot be stale.
+      // eslint-disable-next-line require-atomic-updates
+      state.sessionId = nextSessionId;
+    }
+    const codes = standards
+      .map((item) => readString(item.statementCode))
+      .filter((code): code is string => code !== null);
+    return {
+      ok: !parsed.isError,
+      httpStatus: response.httpStatus,
+      latencyMs,
+      codes,
+      scores: codes.map(() => 0),
+      total: codes.length,
+      expectedRank: rankOf(codes, row.expectedCode),
+      familyRank: familyRankOf(codes, row.expectedCode),
+      hasProvenance: false,
+      capped: codes.length === MCP_OBSERVED_CAP,
+      error: parsed.isError ? "Tool returned isError." : null,
+    };
+  };
+  return { call, protocol };
+};
+
+const recordFreeText = async (directory: string): Promise<FreeTextEvidence> => {
+  const apiKey = readApiKey();
+  const corpus = await readFreeTextCorpus(directory);
+  const session = await openFreeTextMcpSession(apiKey);
+  const rows: FreeTextRowEvidence[] = [];
+  for (const row of corpus.rows) {
+    // Sequential calls keep latency and rate-limit measurements honest.
+    // eslint-disable-next-line no-await-in-loop
+    const mcp = await session.call(row);
+    // eslint-disable-next-line no-await-in-loop
+    const rest = await callRestSearch(apiKey, row);
+    rows.push({
+      id: row.id,
+      text: row.text,
+      kind: row.kind,
+      jurisdiction: row.jurisdiction,
+      subject: row.subject,
+      grade: row.grade,
+      expectedCode: row.expectedCode,
+      expectedNote: row.expectedNote,
+      keywords: tokenizeTeacherText(row.text),
+      mcp,
+      rest,
+    });
+  }
+  const now = new Date();
+  const evidence: FreeTextEvidence = {
+    schemaVersion: FREE_TEXT_SCHEMA_VERSION,
+    kind: "lc-free-text-eval",
+    capturedAt: now.toISOString(),
+    revision: readRevision(),
+    corpusHash: corpusHash(corpus),
+    environment: {
+      node: process.version,
+      platform: process.platform,
+      mcpOrigin: ORIGIN,
+      restOrigin: REST_ORIGIN,
+      credentialEnv: KEY_ENV,
+      credentialPresent: true,
+      topK: TOP_K,
+    },
+    protocol: session.protocol,
+    rows,
+  };
+  await mkdir(directory, { recursive: true });
+  await writeFile(
+    join(directory, FREE_TEXT_EVIDENCE_FILE),
+    `${JSON.stringify(evidence, null, JSON_INDENT)}\n`
+  );
+  return evidence;
+};
+
+const readFreeTextEvidence = async (
+  directory: string
+): Promise<FreeTextEvidence> => {
+  const parsed = JSON.parse(
+    await readFile(join(directory, FREE_TEXT_EVIDENCE_FILE), "utf-8")
+  ) as unknown;
+  if (
+    !isRecord(parsed) ||
+    !Array.isArray(parsed.rows) ||
+    !isRecord(parsed.environment)
+  ) {
+    throw new Error(`${FREE_TEXT_EVIDENCE_FILE} is not valid evidence.`);
+  }
+  return parsed as unknown as FreeTextEvidence;
+};
+
+const scoredRows = (evidence: FreeTextEvidence): FreeTextRowEvidence[] =>
+  evidence.rows.filter((row) => row.expectedCode !== null);
+
+const countHits = (
+  rows: FreeTextRowEvidence[],
+  transport: "mcp" | "rest",
+  field: "expectedRank" | "familyRank",
+  at: number
+): number => {
+  return rows.filter((row) => {
+    const rank = row[transport][field];
+    return rank !== null && rank <= at;
+  }).length;
+};
+
+const formatPercent = (part: number, whole: number): string =>
+  whole === 0 ? "n/a" : `${Math.round((part / whole) * PERCENT)}%`;
+
+const formatRank = (
+  result: TransportResult,
+  expected: string | null
+): string => {
+  if (expected === null) {
+    return "gap";
+  }
+  if (result.expectedRank !== null) {
+    return `${result.expectedRank}`;
+  }
+  return result.familyRank === null
+    ? "miss"
+    : `miss (${result.familyRank} child)`;
+};
+
+const renderFreeText = (evidence: FreeTextEvidence): string => {
+  const { rows } = evidence;
+  const scored = scoredRows(evidence);
+  const restProvenance = rows.filter((row) => row.rest.hasProvenance).length;
+  const header = [
+    "# Free text to one standard: MCP keywords against REST semantic search",
+    "",
+    `Measured ${rows.length} teacher sentences on ${evidence.capturedAt}. ` +
+      `${scored.length} carry an expected standard; ${rows.length - scored.length} are gap probes.`,
+    "",
+    "## Summary",
+    "",
+    "| Measure | MCP `keywords` | REST `/academic-standards/search` |",
+    "| --- | --- | --- |",
+    `| hit@1 (exact code) | ${countHits(scored, "mcp", "expectedRank", 1)}/${scored.length} | ${countHits(scored, "rest", "expectedRank", 1)}/${scored.length} |`,
+    `| hit@${TOP_K} (exact code) | ${countHits(scored, "mcp", "expectedRank", TOP_K)}/${scored.length} | ${countHits(scored, "rest", "expectedRank", TOP_K)}/${scored.length} |`,
+    `| hit@1 (code or child) | ${countHits(scored, "mcp", "familyRank", 1)}/${scored.length} | ${countHits(scored, "rest", "familyRank", 1)}/${scored.length} |`,
+    `| hit@${TOP_K} (code or child) | ${countHits(scored, "mcp", "familyRank", TOP_K)}/${scored.length} | ${countHits(scored, "rest", "familyRank", TOP_K)}/${scored.length} |`,
+    `| hit@1 rate (exact) | ${formatPercent(countHits(scored, "mcp", "expectedRank", 1), scored.length)} | ${formatPercent(countHits(scored, "rest", "expectedRank", 1), scored.length)} |`,
+    `| Rows with zero results | ${rows.filter((row) => row.mcp.total === 0).length} | ${rows.filter((row) => row.rest.total === 0).length} |`,
+    `| Rows at the observed ${MCP_OBSERVED_CAP}-row cap | ${rows.filter((row) => row.mcp.capped).length} | n/a (limit ${TOP_K}) |`,
+    `| Median latency | ${median(rows.map((row) => row.mcp.latencyMs))} ms | ${median(rows.map((row) => row.rest.latencyMs))} ms |`,
+    `| Rows with license and attribution | 0 | ${restProvenance} |`,
+    "",
+    "## Per row",
+    "",
+    "| Row | Text | Expected | MCP rank | REST rank | MCP rows | REST rows | REST score | MCP ms | REST ms |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+  ];
+  const rowLines = rows.map((row) => {
+    const mcpRank = formatRank(row.mcp, row.expectedCode);
+    const restRank = formatRank(row.rest, row.expectedCode);
+    const restTop = row.rest.scores[0] ?? 0;
+    return `| ${row.id} | ${row.text.slice(0, MAX_TEXT_EXCERPT)} | ${row.expectedCode ?? "none"} | ${mcpRank} | ${restRank} | ${row.mcp.total} | ${row.rest.total} | ${restTop.toFixed(3)} | ${row.mcp.latencyMs} | ${row.rest.latencyMs} |`;
+  });
+  const childOnly = scored.filter(
+    (row) => row.rest.expectedRank === null && row.rest.familyRank !== null
+  ).length;
+  const familyMisses = scored
+    .filter((row) => row.rest.familyRank === null)
+    .map((row) => row.id);
+  const gapRows = rows.filter((row) => row.expectedCode === null);
+  const gapScores = gapRows.map((row) => row.rest.scores[0] ?? 0);
+  const gapReturned = gapRows.filter((row) => row.rest.total > 0).length;
+  const gapRange =
+    gapScores.length === 0
+      ? "n/a"
+      : `${Math.min(...gapScores).toFixed(3)} to ${Math.max(...gapScores).toFixed(3)}`;
+  const failureClasses = [
+    "",
+    "## Failure classes",
+    "",
+    `- **Exact code missed, child returned:** ${childOnly} of ${scored.length}. The teacher still sees the right family if the picker groups children under the parent.`,
+    `- **Expected family absent from the top ${TOP_K}:** ${familyMisses.length} of ${scored.length}. Rows: ${familyMisses.join(", ")}.`,
+    `- **Gap probe still returned rows:** ${gapReturned} of ${gapRows.length}. Top scores range ${gapRange}. The response carries no threshold, so the product must decide where "no match" starts.`,
+    "- **MCP ordering:** rows arrive in code order, not relevance order. The expected code is never in the top five, even when it is present in the full array.",
+    "- **Text tokens that are not topics:** a state name inside the sentence lowered the REST rank (`adv-state-name`). Grade words are not a filter on either transport. Both need structured inputs, not text inference.",
+    "",
+    "## Selector",
+    "",
+    `- Show the top ${TOP_K} REST candidates and require teacher confirmation. Top-1 is right on ${countHits(scored, "rest", "expectedRank", 1)} of ${scored.length} rows exact, and ${countHits(scored, "rest", "familyRank", 1)} of ${scored.length} with children. That rate is too low for an automatic pick.`,
+    "- The MCP keyword mode is not a candidate for stage one at any k.",
+  ];
+  const method = [
+    "",
+    "## Method",
+    "",
+    "- The corpus is `free-text-corpus.json`. Both transports receive the row's `jurisdiction` and `subject` and nothing else about the standard.",
+    `- MCP receives \`keywords\`: the sentence lowercased, split on non-alphanumerics, stopwords removed, capped at ${KEYWORD_TOKEN_MAX} tokens. The tool matches ANY word by stem, so a longer array trades precision for recall.`,
+    `- REST receives the full sentence as \`query\` with \`limit=${TOP_K}\`. Results are ranked by vector similarity and carry a \`score\`.`,
+    "- `hit@1` and `hit@5` count rows where the expected code lands at that rank. A row with no expected code is a gap probe and is excluded from both.",
+    "- `exact code` requires the expected code itself. `code or child` also accepts a sub-standard, such as `3.MD.C.7.a` for `3.MD.C.7`, because a teacher can teach the child.",
+    "- The MCP server returned the same row count on every broad query, which suggests a server cap. The evidence marks a row as capped when it equals the observed maximum.",
+    "",
+    "## Limits",
+    "",
+    "- No field transcript exists in this repository. Three rows quote documented text; the rest are authored teacher-register variants.",
+    "- Semantic ranking is a vendor model with unknown version. A second run may reorder near ties.",
+    "- Jurisdiction is an explicit input. This run never infers a state from text.",
+    "- The corpus covers one subject and grades 3 to 8. It does not prove recall for every topic.",
+    "",
+  ];
+  return [...header, ...rowLines, ...failureClasses, ...method].join("\n");
+};
+
+const transportFailures = (
+  row: FreeTextCorpusRow,
+  recorded: FreeTextRowEvidence,
+  transport: "mcp" | "rest"
+): string[] => {
+  const result = recorded[transport];
+  const failures: string[] = [];
+  if (result.expectedRank !== null && result.expectedRank > result.total) {
+    failures.push(`${row.id} ${transport} rank exceeds row count`);
+  }
+  if (result.familyRank !== null && result.familyRank > result.total) {
+    failures.push(`${row.id} ${transport} family rank exceeds row count`);
+  }
+  if (result.ok && result.error !== null) {
+    failures.push(`${row.id} ${transport} is ok with an error`);
+  }
+  return failures;
+};
+
+const checkFreeTextRows = (
+  corpus: FreeTextCorpus,
+  evidence: FreeTextEvidence
+): string[] => {
+  const failures: string[] = [];
+  for (const [index, row] of corpus.rows.entries()) {
+    const recorded = evidence.rows[index];
+    if (recorded && recorded.id === row.id) {
+      failures.push(
+        ...transportFailures(row, recorded, "mcp"),
+        ...transportFailures(row, recorded, "rest")
+      );
+    } else {
+      failures.push(`row ${index} id mismatch`);
+    }
+  }
+  return failures;
+};
+
+const readFreeTextReport = async (
+  directory: string
+): Promise<string | null> => {
+  try {
+    return await readFile(join(directory, FREE_TEXT_REPORT_FILE), "utf-8");
+  } catch {
+    return null;
+  }
+};
+
+const checkFreeTextRender = (
+  evidence: FreeTextEvidence,
+  rendered: string | null
+): string[] => {
+  if (rendered === null) {
+    return [`${FREE_TEXT_REPORT_FILE} is missing`];
+  }
+  return rendered === renderFreeText(evidence)
+    ? []
+    : [`${FREE_TEXT_REPORT_FILE} is stale; run free-text render`];
+};
+
+const checkFreeText = async (directory: string): Promise<string[]> => {
+  const corpus = await readFreeTextCorpus(directory);
+  const evidence = await readFreeTextEvidence(directory);
+  const failures = checkFreeTextRows(corpus, evidence);
+  if (evidence.corpusHash !== corpusHash(corpus)) {
+    failures.push("corpus hash drifted from the recorded evidence");
+  }
+  if (evidence.rows.length !== corpus.rows.length) {
+    failures.push(
+      `expected ${corpus.rows.length} rows, saw ${evidence.rows.length}`
+    );
+  }
+  failures.push(
+    ...checkFreeTextRender(evidence, await readFreeTextReport(directory))
+  );
+  if (JSON.stringify(evidence).includes("Bearer ")) {
+    failures.push("evidence contains an authorization header");
+  }
+  return failures;
+};
+
 const reportFailures = (heading: string, failures: string[]): number => {
   if (failures.length === 0) {
     return 0;
@@ -1578,6 +2305,45 @@ const reportFailures = (heading: string, failures: string[]): number => {
     console.error(`- ${failure}`);
   }
   return 1;
+};
+
+const runFreeTextCommand = async (
+  output: string | null,
+  positional: string[]
+): Promise<number> => {
+  const [action, ...rest] = positional;
+  const directory = output ?? rest[0] ?? DEFAULT_OUTPUT_DIRECTORY;
+  if (action === "record") {
+    const evidence = await recordFreeText(directory);
+    console.log(
+      `Recorded ${evidence.rows.length} free-text rows to ${directory}.`
+    );
+    return reportFailures(
+      "Recorded free-text evidence failed its own invariants:",
+      await checkFreeText(directory)
+    );
+  }
+  if (action === "check") {
+    const status = reportFailures(
+      "FAIL lc-free-text evidence",
+      await checkFreeText(directory)
+    );
+    if (status === 0) {
+      console.log("OK lc-free-text evidence.");
+    }
+    return status;
+  }
+  if (action === "render") {
+    const evidence = await readFreeTextEvidence(directory);
+    await writeFile(
+      join(directory, FREE_TEXT_REPORT_FILE),
+      renderFreeText(evidence)
+    );
+    console.log(`Rendered ${join(directory, FREE_TEXT_REPORT_FILE)}.`);
+    return 0;
+  }
+  console.error("Usage: lc-mcp-eval.ts free-text record|check|render [dir]");
+  return USAGE_EXIT_CODE;
 };
 
 const runCommand = async (): Promise<number> => {
@@ -1596,6 +2362,9 @@ const runCommand = async (): Promise<number> => {
       );
     }
     return status;
+  }
+  if (command === "free-text") {
+    return runFreeTextCommand(output, positional);
   }
   const directory = positional[0] ?? DEFAULT_OUTPUT_DIRECTORY;
   if (command === "check") {
@@ -1635,7 +2404,7 @@ const runCommand = async (): Promise<number> => {
     return 0;
   }
   console.error(
-    "Usage: lc-mcp-eval.ts record --out <dir> | check [dir] | compare <a> <b> | render [dir]"
+    "Usage: lc-mcp-eval.ts record --out <dir> | check [dir] | compare <a> <b> | render [dir] | free-text record|check|render [dir]"
   );
   return USAGE_EXIT_CODE;
 };
