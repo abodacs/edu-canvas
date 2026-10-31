@@ -1,170 +1,158 @@
 # Edu-Canvas
 
-> **Product promise:** turn a teacher's request into a validated matching lesson, then let the teacher decide the next step. The design keeps the teacher in control: they approve every variant, and AI never grades or publishes unreviewed content.
+> Turn one learning objective into a lesson your students understand.
 
-Edu-Canvas is building an adaptive visual-learning platform for **Grades 3–6**, starting with **Common Core Math**. The goal is a loop teachers return to because preparation, review, and follow-up take less total effort without giving up control. The **Meta AI Developer Hackathon 2026** (October 26 – November 4) is the first external validation milestone. Its event slice is Grade 4 equivalent fractions in English; Arabic is a deferred product goal.
+Edu-Canvas is an adaptive lesson-preparation workspace for teachers of Grades
+3–6. The current release focuses on Grade 4 equivalent fractions in Common Core
+Math. English ships first; Arabic is a deferred product goal.
 
-## Why it's different
+A teacher describes an objective and gets four structured lesson variants,
+validated and ready to review in one place. The model drafts; the server checks
+structure, curriculum quality, and safety; the teacher keeps the final decision.
 
-Our read: drafting standards-aligned materials is commoditizing. Free teacher copilots — Claude for Teachers, ChatGPT for Teachers, MagicSchool — generate plans, differentiation, and checks. The bet is the gated loop those tools do not run: a teacher approves an immutable version, students work through it, the server grades privately, and the teacher sees the evidence behind the next step.
+This is not a chat wrapper. Generated content is structured data, validated
+before it renders, and compiled into a fixed UI catalog. No generated HTML or
+JavaScript executes in the browser.
 
-The design differs in five ways:
+## The problem
 
-- **Generative UI, not a chat wrapper.** The generation model produces a structured _lesson draft_; the server validates it and compiles it into **A2UI v0.9.1** messages from a fixed, allowlisted Edu-Canvas catalog. No generated HTML or JavaScript executes.
-- **Browser-safe rendering.** Core lesson interaction uses semantic DOM components through A2UI. Experimental HTML-in-Canvas is optional visual polish and never required for authoring, accessibility, sharing, or grading.
-- **Teacher-gated.** Every generated variant must be teacher-approved in a bulk review flow before any student sees it. Variants are content options, not teaching stages.
-- **Server-authoritative grading.** The answer key stays on the server; the client cannot submit a score.
-- **Adaptive and explainable.** A curated prerequisite graph is intended to drive the next activity; teachers see the reason and can override.
+Lesson planning is slow, repetitive, and hard to adapt to the real needs of a
+classroom.
 
-## Stack
+Most AI tools for teachers:
 
-- **TanStack Start** (TypeScript, full-stack) · **PostgreSQL** (server-only, tenant-scoped, immutable versions, append-only events/audit)
-- Generation model behind a server-only provider interface; the exact event-allowed Meta model is recorded once access is proven ([decision C2](docs/design/design-doc-questions.md)) · **A2UI v0.9.1** wire protocol + custom catalog (SSE ↓ / HTTPS ↑)
-- **shadcn/ui Base UI** · Tailwind CSS · logical CSS properties
-- English (Arabic deferred) · WCAG 2.2 AA · responsive phone → desktop
+- generate generic content
+- do not validate against standards or learning quality
+- are not built for explainable adaptation
+- blur the line between teacher guidance and untrusted model output
 
-## Status
+For Grades 3–6 the gap is sharper: teachers need content that is
+age-appropriate, aligned, and safe to put in front of students.
 
-🟡 **The generation and teacher-preview path works; the full loop does not.**
+## What Edu-Canvas does
 
-| Working now | Next |
-| --- | --- |
-| TanStack Start runtime, synthetic demo repository, PostgreSQL migrations and seed, health/readiness endpoints, and role-limited demo views ([#2](https://github.com/abodacs/edu-canvas/issues/2)) | Hard safety gate ([#28](https://github.com/abodacs/edu-canvas/issues/28)) |
-| Server-side generation with four structurally validated draft variants, persistence, diagnostics, and retry-safe generation ([#3](https://github.com/abodacs/edu-canvas/issues/3)) | Teacher approval and immutable publication ([#5](https://github.com/abodacs/edu-canvas/issues/5)) |
-| Deterministic curriculum and learning-quality reviews with bounded advisory-agent retries; warnings stay teacher-visible, and blocks keep drafts out of the public projection ([#18](https://github.com/abodacs/edu-canvas/issues/18)) | Learner attempts and server grading ([#6](https://github.com/abodacs/edu-canvas/issues/6)) |
-| Compiles accepted public drafts into a pinned, allowlisted A2UI v0.9.1 catalog and streams a semantic-DOM teacher preview with recoverable connection states ([#4](https://github.com/abodacs/edu-canvas/issues/4)) | Reveal and deterministic adaptation ([#7](https://github.com/abodacs/edu-canvas/issues/7)) |
-| Validated, version-pinned prerequisite path and teacher-review blocking states in the preview ([#17](https://github.com/abodacs/edu-canvas/issues/17)) | Teacher evidence and override ([#8](https://github.com/abodacs/edu-canvas/issues/8), [#107](https://github.com/abodacs/edu-canvas/issues/107)) |
+Edu-Canvas is built around one teacher-controlled loop:
 
-[Issue #27](https://github.com/abodacs/edu-canvas/issues/27) is closed (2026-10-21). Re-verify its reported false-success behavior against the release candidate before any learner-safe claim. The issue-driven product strategy and observed-behaviour plan live in [`docs/product-strategy.md`](docs/product-strategy.md) and [`docs/observed-behaviour.md`](docs/observed-behaviour.md).
+1. A teacher enters a topic, grade, standard, and learning goal.
+2. The system generates four structured lesson variants, each validated before
+   display.
+3. The teacher reviews, edits, and approves the version students receive.
+4. Students work through the approved activity with server-side validation.
+5. The teacher sees the learning path, the evidence, and a proposed next step.
 
-## Repo layout
+Generation and teacher review work today. Approval, publication, and the
+student side are the next slices; the [Status](#status) section separates what
+ships from what is planned.
 
-| Path | What |
-| --- | --- |
-| [`ARCHITECTURE.md`](ARCHITECTURE.md) | Stack, folder ownership, runtime flows, invariants, change recipes, and the enforcement map |
-| [`ROADMAP.md`](ROADMAP.md) | Product direction, delivery order, and validation gates |
-| [`docs/README.md`](docs/README.md) | Documentation index and document ownership |
-| [`docs/hackathon/meta-global-2026/focused-scope.md`](docs/hackathon/meta-global-2026/focused-scope.md) | Current event execution scope: one teacher-controlled loop, 30 + 6 hours |
-| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Local setup, issue reports, commit messages, and verification |
-| [`CODING_STANDARDS.md`](CODING_STANDARDS.md) | Code quality rules and links to engineering patterns |
-| [`docs/archive/`](docs/archive/README.md) | Archived historical records: hackathon-2026 import plans and file map, engineering method notes, triage logs |
-| `docs/product-strategy.md` | North-star outcome, issue-driven loop, and seven-layer audit |
-| `docs/observed-behaviour.md` | Evidence boundary, job stories, and research plan |
-| `docs/walking-skeleton.md` | The thinnest end-to-end slice (the acceptance contract) |
-| `docs/foundation-runbook.md` | Operator/developer setup, redeploy, and handoff checks for issue #2 |
-| `docs/release-fly-supabase.md` | Fly.io + Supabase Postgres release procedure and launch gates |
-| `docs/architecture-harness.md` | Guardrails for state ownership, layer imports, and contract drift |
-| `docs/agdr/` | Agent Decision Records (architecture decisions) |
-| `docs/security/threat-model.md` | STRIDE threat model |
-| `.impeccable.md` | Design context |
+## Why it matters
 
-## Runtime navigation
+- Saves teacher preparation time
+- Keeps the teacher in the decision loop
+- Produces explainable, standards-aware learning flows
+- Keeps answer keys and private rules on the server
+- Makes classroom AI safer and easier to defend
 
-Start from the delivery module, then follow the domain-named server module:
+## Why it is different
 
-| Behavior | Start here |
-| --- | --- |
-| Architecture rules and allowed change paths | [`ARCHITECTURE.md`](ARCHITECTURE.md) |
-| Seeded teacher/student demo | `src/routes/demo/$role.tsx` → `src/server/demo/` |
-| Teacher lesson generation | `src/routes/demo/$role.tsx` → `src/server/generation/` |
-| Demo role policy and tenant assertion | `src/server/demo/policy.ts` |
-| Public demo read model | `src/server/demo/read-model.ts` |
-| Server-function delivery seam | `src/server/demo/server-function.ts` |
-| Semantic lesson validation | `src/server/generation/semantic-validation.ts` |
-| A2UI catalog contract and validation | `src/shared/a2ui-contract.ts` |
-| A2UI preview delivery seam | `src/server/a2ui/preview.server.ts` |
-| A2UI lesson compiler and SSE delivery | `src/server/a2ui/compiler.ts` → `src/server/a2ui/stream.ts` |
-| Semantic A2UI preview renderer | `src/components/a2ui/lesson-preview.tsx` |
-| Persistence choice and interface | `src/server/persistence.ts` |
-| Seeded/PostgreSQL persistence adapters | `src/server/persistence/` |
-| Browser-safe demo contract | `src/shared/demo-contract.ts` |
-| Browser-safe generation contract | `src/shared/generation-contract.ts` |
-| Canonical synthetic curriculum fixture | `src/server/seed-data.ts` |
-| PostgreSQL seed implementation | `src/server/persistence/seed-postgres.ts` |
-| Operator seed entry point | `scripts/database-seed.ts` |
+These are the design commitments. The status table below shows which ones the
+current build enforces end to end.
 
-The route should stay a delivery module. Domain rules, tenant checks, persistence choice, and public projection belong behind the named server seams. The shared seam contains only data the browser is allowed to receive.
+- **Teacher-gated.** Every variant is a content option, not a teaching stage.
+  Nothing reaches a student without a teacher-approved, immutable version.
+- **Server-authoritative.** Answer keys, mastery logic, and permissions stay
+  server-side; the client never submits a score.
+- **Explainable.** A curated prerequisite path and a forward story explain what
+  comes before and after, and why.
+- **Structured, not conversational.** The model returns a validated lesson
+  draft that compiles into an allowlisted **A2UI v0.9.1** catalog.
+- **Safety-first.** A deterministic gate hard-blocks unsafe drafts before
+  preview and before publication.
 
-## Target loop (not yet implemented)
+## Built with
 
-The diagram is the target contract, not current behavior: one deterministic, seeded path from a teacher request to a student’s explainable next activity. The current checkout implements the generation and teacher-preview portion only. The hard safety gate, approval/publication, grading, and adaptation remain follow-on slices. See [`docs/product-strategy.md`](docs/product-strategy.md) for the intended order and evidence gaps.
+- [TanStack Start](https://tanstack.com/start) with React 19 and TypeScript
+- PostgreSQL with [Drizzle ORM](https://orm.drizzle.team)
+- Tailwind CSS and Base UI (shadcn/ui conventions)
+- A2UI v0.9.1 over SSE, with the `matching-v1` and `fractions-v2` catalogs
+- Zod contracts and Vitest
+- Node.js 26 and pnpm 10.17.1
+
+## Product flow
+
+The loop below is the target contract. The green block is available now; the
+amber block is the work in flight.
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Teacher
-    participant TeacherUI as Teacher browser
+    participant UI as Edu-Canvas UI
     participant Server as Edu-Canvas server
-    participant Model as Generation model (server-side)
+    participant Model as Generation model
     participant Catalog as Validator + A2UI catalog
-    participant Store as Seeded repo / PostgreSQL
+    participant Store as PostgreSQL / seeded store
     actor Student
-    participant StudentUI as Student browser
-    participant Adapt as Grader + adaptation
 
-    Teacher->>TeacherUI: Enter prompt, grade, standard, language
-    TeacherUI->>Server: Submit generation request (HTTPS)
-    Server->>Model: Request constrained lesson draft
-    Model-->>Server: Return structured draft
-    Server->>Catalog: Validate structure and bounded curriculum quality
-    alt Validation hard-blocks draft
-        Catalog-->>Server: hard_block with actionable errors
-        Server-->>TeacherUI: Keep draft out of preview and Share
-    else Validation passes or warns
-        Server->>Catalog: Build reverse prerequisite path and forward story
-        Server->>Catalog: Compile validated draft into A2UI
-        Catalog-->>TeacherUI: Stream allowlisted A2UI variants and visible warnings (SSE)
-        Teacher->>TeacherUI: Review variants, path, story, and warnings
-        Teacher->>TeacherUI: Edit and approve the four content variants
-        TeacherUI->>Server: Publish approved pack (HTTPS)
-        Server->>Catalog: Re-run hard safety gate before Share
-        alt Share hard-blocked
-            Catalog-->>Server: hard_block with actionable errors
-            Server-->>TeacherUI: Keep pack unpublished and explain the block
-        else Safe to publish
-            Server->>Store: Persist immutable activity/version
-            Store-->>Server: Return published pack
-            Server-->>TeacherUI: Confirm pack is ready
-        end
-
-        Student->>StudentUI: Open assigned activity
-        StudentUI->>Server: Request public activity (HTTPS)
-        Server->>Store: Load approved activity/version
-        Store-->>Server: Return public activity data
-        Server-->>StudentUI: Render allowlisted A2UI activity (SSE)
-        Student->>StudentUI: Select matching targets and submit
-        StudentUI->>Server: Send selection events only (HTTPS)
-        Server->>Adapt: Grade using private answer key
-        Adapt->>Store: Store immutable attempt and version references
-        Adapt->>Store: Read prerequisite graph
-        Adapt-->>Server: Score, reveal, and deterministic next activity
-        Server-->>StudentUI: Show score, connection reveal, next activity
-        Server-->>TeacherUI: Show mastery state and adaptation reason
+    rect rgb(226, 242, 233)
+        Note over Teacher,Catalog: Available today
+        Teacher->>UI: Enter objective, grade, standard, language
+        UI->>Server: Submit lesson request
+        Server->>Model: Request structured draft
+        Model-->>Server: Return structured draft
+        Server->>Catalog: Validate structure, safety, and curriculum quality
+        Catalog-->>Server: Pass, warn, or hard-block
+        Server-->>UI: Stream allowlisted A2UI variants (SSE)
+        Teacher->>UI: Review variants, learning path, and warnings
     end
 
-    Note over Server,Adapt: Answer key, mastery, and permissions stay server-side.
-    Note over StudentUI,Server: Client never sends a score; no student images or identifying data go to the model.
+    rect rgb(255, 244, 224)
+        Note over UI,Student: Target — not built yet
+        Teacher->>UI: Approve and publish the pack
+        UI->>Server: Publish request
+        Server->>Store: Persist immutable activity version
+        Student->>UI: Open assigned lesson
+        UI->>Server: Request public activity
+        Server-->>UI: Render approved learning content
+        Student->>Server: Submit answers
+        Server-->>Student: Grade, reveal, and recommend the next activity
+    end
 ```
+
+## Demo
+
+A short screen capture is the strongest proof of value. Record only the working
+teacher path:
+
+- a teacher prompt and the generated variants
+- the validation warnings and the blocked-draft state
+- the A2UI preview, learning path, and forward story
+
+Do not present the approval, student, or grading screens as live behavior until
+those slices land. The [demo script](docs/hackathon/meta-global-2026/demo-script.md)
+keeps the full shot list and the claim boundaries.
 
 ## Quick start
 
-The default clean checkout is deterministic and synthetic-data-only; PostgreSQL is optional for local boot.
+Requires Node.js 26 or newer and pnpm 10.17.1.
 
 ```bash
 pnpm install
 pnpm dev
 ```
 
-Open `http://localhost:3000`, or run the full acceptance pipeline:
+Open `http://localhost:3000`. A clean checkout needs no environment file: it
+uses deterministic synthetic fixtures and a fixture provider.
+
+Run the full verification pipeline:
 
 ```bash
 pnpm check
 pnpm build
-pnpm start
-pnpm smoke
+pnpm start   # in one terminal
+pnpm smoke   # in another
 ```
 
-For the PostgreSQL-backed path, start the local dependency and apply the forward-only migration/seed:
+### PostgreSQL-backed local setup
 
 ```bash
 docker compose up -d postgres
@@ -173,14 +161,83 @@ pnpm db:setup
 pnpm dev
 ```
 
-See [`docs/foundation-runbook.md`](docs/foundation-runbook.md) for configuration, readiness, and safe redeploy details.
+To generate with a real model, set `DEMO_MODE=false` and provide
+`OPENAI_API_KEY`; PostgreSQL is then required. See the
+[foundation runbook](docs/foundation-runbook.md) for configuration, readiness,
+and redeploy details.
+
+## Status
+
+🟡 **The generation, validation, and teacher-preview path works. The full
+teacher-to-student loop does not.**
+
+| Working now | Next |
+| --- | --- |
+| Teacher accounts, sign-in, sessions, and membership state | Approval and immutable publication ([#5](https://github.com/abodacs/edu-canvas/issues/5)) |
+| Structured generation of four variants with retry-safe persistence | Learner attempts and server-authoritative grading ([#6](https://github.com/abodacs/edu-canvas/issues/6)) |
+| Curriculum, learning-quality, and hard safety validation before preview | Connection reveal and deterministic next activity ([#7](https://github.com/abodacs/edu-canvas/issues/7)) |
+| Allowlisted A2UI preview over SSE, including fractions and native MathML | Teacher evidence, override, and pause ([#8](https://github.com/abodacs/edu-canvas/issues/8), [#107](https://github.com/abodacs/edu-canvas/issues/107)) |
+| Prerequisite learning path and forward story in the preview | Input moderation and the personal-data boundary ([#132](https://github.com/abodacs/edu-canvas/issues/132)) |
+| PDF, TXT, and MD source upload with explicit gap states | Teacher-facing moderation recovery ([#119](https://github.com/abodacs/edu-canvas/issues/119)) |
+| PostgreSQL and seeded persistence, health checks, security headers | — |
+
+The [Meta AI Developer Hackathon 2026](docs/hackathon/meta-global-2026/README.md)
+(October 26 – November 4) is the first external validation milestone, not the
+product goal. The architecture document records the implemented flows and the
+gaps in detail: [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 ## Safety boundaries (non-negotiable, even under deadline pressure)
 
-- Answer key, mastery, and permissions are **server-only** — never present in any client bundle or A2UI message.
+- Answer key, mastery, and permissions are **server-only** — never present in
+  any client bundle or A2UI message.
 - **No student images or identifying data** are sent to the model.
-- Real student data is blocked until a **data-processing agreement (DPA), EU residency, security review, and consent** are in place; milestone deployments use **synthetic data only**.
+- Real student data is blocked until a **data-processing agreement (DPA), EU
+  residency, security review, and consent** are in place; milestone deployments
+  use **synthetic data only**.
+
+## Repository layout
+
+| Path | What |
+| --- | --- |
+| [`ARCHITECTURE.md`](ARCHITECTURE.md) | Runtime architecture, invariants, and engineering boundaries |
+| [`ROADMAP.md`](ROADMAP.md) | Product direction and delivery roadmap |
+| [`docs/README.md`](docs/README.md) | Documentation index and document ownership |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Local setup, issue reports, and contribution checks |
+| [`CODING_STANDARDS.md`](CODING_STANDARDS.md) | Engineering quality rules |
+| [`docs/hackathon/meta-global-2026/focused-scope.md`](docs/hackathon/meta-global-2026/focused-scope.md) | Current event scope and execution plan |
+| [`docs/security/threat-model.md`](docs/security/threat-model.md) | STRIDE threat model against implemented paths |
+| [`docs/agdr/`](docs/agdr/) | Architecture decision records |
+
+## Where the code lives
+
+| Behavior | Start here |
+| --- | --- |
+| Teacher workspace | `src/routes/workspace.tsx` → `src/components/studio/teacher-studio.tsx` |
+| Generation service and provider seam | `src/server/generation/service.ts` → `provider.ts` |
+| Curriculum and learning-quality validation | `src/server/generation/curriculum-validator.ts`, `learning-quality-validator.ts` |
+| Hard safety gate | `src/server/safety/artifact-gate.ts` → `artifact-enforcement.ts` |
+| A2UI compiler and SSE delivery | `src/server/a2ui/compiler.ts` → `stream.ts` |
+| Preview delivery seam | `src/server/a2ui/preview.server.ts` |
+| Allowlisted catalog contract | `src/shared/a2ui-contract.ts` |
+| Identity, sessions, and membership | `src/server/identity/` |
+| Persistence adapters and migrations | `src/server/persistence/`, `drizzle/` |
+| Source grounding and uploads | `src/server/grounding/` |
+| Health checks and operator scripts | `src/server/health.server.ts`, `scripts/` |
+
+Routes stay delivery modules. Domain rules, tenant checks, and public projections
+belong behind the named server seams; `src/shared/` holds only data the browser
+is allowed to receive.
 
 ## Governance
 
-Governed under [ApexYard](https://github.com/me2resh/apexyard). Per-project governance docs (handover assessment, C4 diagrams) live in the ops portfolio. The README was originally generated by apexyard `/handover` and is maintained with the project.
+This project is governed under [ApexYard](https://github.com/me2resh/apexyard),
+with additional engineering and operational documentation stored in the repo.
+
+## Additional documentation
+
+- [`ARCHITECTURE.md`](ARCHITECTURE.md)
+- [`ROADMAP.md`](ROADMAP.md)
+- [`docs/README.md`](docs/README.md)
+- [`docs/foundation-runbook.md`](docs/foundation-runbook.md)
+- [`docs/security/threat-model.md`](docs/security/threat-model.md)
+- [`docs/hackathon/meta-global-2026/demo-script.md`](docs/hackathon/meta-global-2026/demo-script.md)
