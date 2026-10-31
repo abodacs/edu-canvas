@@ -11,6 +11,11 @@ export interface NormalizedGenerationRequest {
   standardId: string;
   language: LessonLanguage;
   difficulty: LessonDifficulty;
+  /**
+  The reviewed, complete source snapshot this request is grounded in (#114).
+  Absent for prompt-only requests; the focused event composer never sends it.
+  */
+  sourceSnapshotId?: string;
 }
 
 export interface ProviderProvenance {
@@ -221,6 +226,7 @@ export const createGenerationRequestHash = (
     input.standardId,
     input.language,
     input.difficulty,
+    input.sourceSnapshotId ?? null,
   ]);
   let hash = 2_166_136_261;
   for (const character of canonical) {

@@ -36,6 +36,11 @@ export const lessonGenerationInputSchema = z
     difficulty: z.enum(difficultyValues).optional(),
     idempotencyKey: z.string().trim().min(8).max(128).optional(),
     retryOfRequestId: z.string().trim().min(1).max(80).optional(),
+    sourceSnapshotId: z
+      .string()
+      .trim()
+      .regex(/^[A-Za-z0-9_-]{1,80}$/u)
+      .optional(),
   })
   .strict();
 
@@ -55,6 +60,7 @@ export const generationRequestErrorCodeValues = [
   "RETRY_METADATA_MISMATCH",
   "DRAFT_SUPERSEDED",
   "CANCELLATION_FORBIDDEN",
+  "GENERATION_SOURCE_NOT_READY",
 ] as const;
 
 export type GenerationRequestErrorCode =
@@ -69,6 +75,7 @@ export const generationRequestErrorStatusByCode = {
   RETRY_METADATA_MISMATCH: 409,
   DRAFT_SUPERSEDED: 409,
   CANCELLATION_FORBIDDEN: 409,
+  GENERATION_SOURCE_NOT_READY: 422,
 } as const satisfies Record<GenerationRequestErrorCode, number>;
 
 export type LessonGenerationInput = z.infer<typeof lessonGenerationInputSchema>;
