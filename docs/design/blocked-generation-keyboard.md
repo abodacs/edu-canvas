@@ -2,7 +2,7 @@
 
 Design specification for issue [#119](https://github.com/abodacs/edu-canvas/issues/119), ticket 02. Implementation belongs to [#115](https://github.com/abodacs/edu-canvas/issues/115) and [#10](https://github.com/abodacs/edu-canvas/issues/10). This document specifies behavior, not observed behavior: no blocked panel exists at revision `7847d46`. Category code names stay provisional until [#132](https://github.com/abodacs/edu-canvas/issues/132) lands. The [UI implementation gate](../product/teacher-ui.md#implementation-gate) still applies.
 
-The contract covers both block moments. An input block stops the prompt before any provider call and has no draft. An output block withholds the generated draft before persistence and preview. Both use the same `blocked-by-moderation` panel and the same keyboard path. The panel's title, safe reason, preserved objective, request reference, and action are specified by [ticket 01](blocked-generation-recovery.md); this document owns focus, announcement, tab order, return, draft preservation, and the checks.
+The contract covers both block moments. An input block stops the prompt before any provider call and has no draft. An output block withholds the generated draft before persistence and preview. Both use the same `blocked-by-moderation` panel and the same keyboard path. The panel's title, reason, objective, reference, and action belong to [ticket 01](blocked-generation-recovery.md). This document owns focus, announcement, tab order, return, draft preservation, and the checks.
 
 The [focused UI plan](../hackathon/meta-global-2026/focused-ui-plan.md#define-recovery-beside-each-action) requires recovery beside each action and a keyboard-complete teacher path. The [focused scope](../hackathon/meta-global-2026/focused-scope.md#success-criteria) requires keyboard alone to complete teacher actions. The existing composer, result shell, and focus ring are in [teacher-studio.tsx](../../src/components/studio/teacher-studio.tsx) and [styles.css](../../src/styles.css).
 
@@ -27,7 +27,7 @@ Focus target: the panel heading.
     here.
   </p>
   <p id="blocked-generation-reference">
-    Request <bdi dir="ltr">req_01J00000000000000000000000</bdi>
+    Request <bdi dir="ltr">0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b</bdi>
   </p>
   <button id="revise-request" type="button">Revise request</button>
 </section>
@@ -36,13 +36,19 @@ Focus target: the panel heading.
 The reason and reference copy above are illustrative. Ticket 01 and #132 own the final strings; the identifiers, roles, and focus behavior are binding.
 
 - Move focus in a layout effect after the panel is in the DOM. Do not use `autoFocus`; it fires again on remounts and can steal focus later.
-- Focus the heading because it names the state, carries heading semantics, and activates nothing. Focusing `Revise request` would skip the reason and the preserved objective; focusing the section container gives no precise reading position and may read the whole region.
+- Focus the heading because it names the state, carries heading semantics, and activates nothing. Focusing `Revise request` would skip the reason and the preserved objective. Focusing the section container gives no precise reading position. It may also read the whole region.
 - Allow the browser to scroll the focused heading into view. Do not pass `preventScroll: true`.
 - Show a visible focus ring on the heading, using the same `:focus-visible` treatment as other controls.
 - Defer focus during an active IME composition and move it on `compositionend`. Never cancel or commit a composition to focus the panel.
 - On an output block, focus still goes to the blocked heading, never into the existing draft.
 - Only a new `blocked-by-moderation` request may move focus. Re-delivery of the same `requestId`, polling, diagnostics expansion, locale changes, and every other result state must not move focus.
 - The panel is not a dialog: no `role="dialog"`, no `aria-modal`, no focus trap. The teacher can Tab or Shift+Tab out of the panel at any time. Escape is not required and does not close it.
+
+### Error path: `MODERATION_REVISION_REQUIRED`
+
+A same prompt under a new operation key is not a moderation state. The service returns an error response (`service.ts:889-899`). The route currently maps it to `GENERATION_FAILED` (`delivery.server.ts:47-58`), so the code does not reach the client today.
+
+#115 must render the same panel for this error. The panel uses the same heading focus, the same live-region text, and the same `Revise request` action. The preserved objective is the submitted prompt. The request reference may be absent; the service creates no record.
 
 ## 2. Announcement
 
@@ -83,9 +89,9 @@ Panel DOM order:
 - No positive `tabindex`. The heading is `-1`; every other control uses native tab order.
 - From the heading, Tab moves to `#revise-request`. From `#revise-request`, Tab moves to the next control after the panel, or leaves the panel when it is last. From the heading, Shift+Tab moves to the control before the panel in DOM order. No focus trap.
 - DOM order and visual order agree at 320 pixels and on desktop. Do not use CSS `order`, absolute positioning, or markup reordering that separates them.
-- Every control has a visible focus indicator. The global `:focus-visible` rule is `outline: 3px solid var(--ring); outline-offset: 3px`. Do not override it with `outline: 0` or `outline: none` without an equally visible replacement. The indicator must reach 3:1 contrast against the adjacent background.
+- Every panel control has a visible focus indicator. The global `:focus-visible` rule is `outline: 3px solid var(--ring); outline-offset: 3px`. Do not override it with `outline: 0` or `outline: none` without an equally visible replacement. The indicator must reach 3:1 contrast against the adjacent background.
 - Hover-only affordances are forbidden. The action is reachable and operable without a pointer.
-- The request reference has `id="blocked-generation-reference"` so the bidi check can find it. Plain text is not focusable.
+- The request reference has `id="blocked-generation-reference"` so K8 can find it. Plain text is not focusable.
 - No keyboard shortcuts and no `accessKey`. Tab, Shift+Tab, Enter, and Space are the complete set.
 
 ## 4. Return to field
@@ -117,13 +123,13 @@ if (field) {
 - In RTL, the logical end is `value.length` even though it is the left visual edge. Do not compute it from bounding boxes or text direction.
 - The field stays editable after return: `readOnly === false`, `disabled === false`, and the existing label `What should students practice?` stays associated.
 
-The current `.prompt-composer textarea` rule sets `outline: 0`, which has higher specificity than the global `:focus-visible` rule. #115 must add a visible focus ring to the returned field; the caret alone is not a focus indicator.
+The `.prompt-composer textarea` rule sets `outline: 0` (`styles.css:2027`). The `:focus` rule shows focus through `border-block-end-color` and `box-shadow` (`styles.css:2036-2039`). #115 must preserve or strengthen that indicator. A visible outline, border, or shadow at 3:1 contrast is sufficient. The caret alone is not a focus indicator.
 
 ## 5. Existing draft
 
 Scope: a later regeneration is blocked while a prior accepted draft is visible. The block withholds the new output; it must not touch the prior draft.
 
-Preserved element: `section[aria-label="Generated lesson variants"]` (the current `.variant-stack`) and the containing draft region, including `section.a2ui-preview` from [lesson-preview.tsx](../../src/components/a2ui/lesson-preview.tsx), keyed by the prior accepted request ID.
+Preserved element: `section[aria-label="Generated lesson variants"]` (the current `.variant-stack`) and its draft region. The draft region includes `section.a2ui-preview` from [lesson-preview.tsx](../../src/components/a2ui/lesson-preview.tsx). Keep the prior accepted request ID as the key.
 
 - Mount the blocked panel as a sibling of the draft region. Never replace the draft region with the panel.
 - Keep the same DOM node. Do not remount the draft and do not key it by the blocked request ID.
@@ -136,7 +142,7 @@ Preserved element: `section[aria-label="Generated lesson variants"]` (the curren
 
 ## 6. Screen-reader copy
 
-The live region text is the visible reason, verbatim. The panel exposes the visible title as the heading name, the section name through `aria-labelledby`, the exact button name `Revise request`, and the request reference as visible text.
+The live region text is the visible reason, verbatim. The panel exposes the visible title as the heading name. It exposes the section name through `aria-labelledby`. The button name is exactly `Revise request`. The request reference is visible text.
 
 Allowed copy:
 
@@ -153,7 +159,9 @@ Forbidden copy, in the panel and the live region:
 - Private answer data: `targetItems`, `distractorItems`, `hints`, `feedback`, answer keys, mastery, or saved responses.
 - The blocked objective text inside the live region. The panel may show the preserved objective, but the announcement must not read it again.
 - Invented moderation reasons such as "policy X" or "the model refused". Name only the #132 category.
-- The phrases `try again`, `retry`, or `resubmit` in moderation copy. The only action is `Revise request`.
+- The banned words and provider-content rules in [ticket 01 section 8](blocked-generation-recovery.md#8-copy-rules).
+
+The banned-phrase rule applies to the panel and the live region only. K8 scopes it to three elements.
 
 Rules:
 
@@ -162,18 +170,12 @@ Rules:
 - Do not put an `aria-label` on the reason that differs from its visible text. Screen-reader copy and visible copy are the same string.
 - If the visible reason changes, the live text changes in the same commit. If they cannot match, the implementation is incomplete.
 
-## 7. RTL and Arabic
+## 7. Language and direction (deferred)
 
-- Direction source: the blocked request's submitted language. `ar` sets `dir="rtl"` and `lang="ar"` on `#blocked-generation`; `en` sets `dir="ltr"` and `lang="en"`. Do not derive direction from `draft?.variants[0]`; a blocked result has no draft, and the current fallback would incorrectly render a blocked Arabic request as LTR.
-- The public blocked result carries no draft language. #115 must retain the submitted language on the client, or the projection must carry it, so the panel can use the blocked request's language rather than the current field's language.
-- Set `lang` and `dir` on `#blocked-generation-announcement` before writing Arabic text. One non-empty text mutation is still the limit.
-- Keep DOM order. Tab moves from heading to `#revise-request` in both directions. Do not use positive `tabindex`, CSS `order`, or arrow-key action. In RTL, Shift+Tab from the heading exits toward the visual right, which is the previous DOM control; that is correct.
-- The caret uses logical positions: `selectionStart === selectionEnd === value.length`. For RTL text this is the left visual edge; do not reverse it.
-- The focus ring appears on all sides and is not clipped by `overflow: hidden` or a transformed ancestor.
-- Wrap the request reference in `<bdi dir="ltr">` so UUID digits and hyphens do not reorder inside an Arabic sentence. Its accessible text equals the ID.
-- Render the preserved objective snapshot with `dir="auto"` or `<bdi>` when its script differs from the panel language. Never let the blocked phrase reorder the reason.
-- Arabic copy comes from the same locale copy map as the title, reason, and action label. Do not ship a half-translated sentence or an English reason in an Arabic panel. Missing Arabic copy is a release blocker for the Arabic panel, not a reason to mix languages.
-- The [root document](../../src/routes/__root.tsx) is `lang="en" dir="ltr"`. The panel must set its own language and direction rather than relying on the document defaults.
+Arabic rollout is deferred by [focused scope](../hackathon/meta-global-2026/focused-scope.md) line 52 and [design question C3](design-doc-questions.md). English is the only shipped language for this panel.
+
+- Use the submitted language for `lang` and `dir` on the panel and the live region. Do not derive direction from `draft?.variants[0]`; a blocked result has no draft.
+- Wrap the request reference in `<bdi dir="ltr">` so digits and hyphens do not reorder.
 
 ## 8. Checks implementation must satisfy
 
@@ -185,39 +187,39 @@ Harness:
 - Launch with `reducedMotion: "reduce"` so GSAP animations do not move focus or scroll targets during assertions.
 - Register `page.route("**/api/lessons/generate", ...)` before navigation. Fulfill schema-valid `publicGenerationResult` payloads:
   - Input-block fixture: `state: "blocked-by-moderation"`, `draft: null`, no prior draft.
-  - Output-block fixture: first fulfill a `ready-for-review` result with four variants and wait for `section[aria-label="Generated lesson variants"]`; then fulfill a blocked result for a new request ID.
-  - Arabic fixture: submit an Arabic objective, then fulfill a blocked result; the retained submitted language drives the panel.
+  - Output-block fixture: fulfill a `ready-for-review` result with four variants. Wait for `section[aria-label="Generated lesson variants"]`. Then fulfill a blocked result for a new request ID.
 - Put unique canary strings in fields that must not leak: `diagnostics[].message`, `provenance.model`, and the prior draft's `hints`, `feedback`, and `targetItems`. Assert the panel and live region never contain them.
 - Use only `page.keyboard.press` and `page.keyboard.type` for the keyboard-only check. Do not use `page.click`, `page.tap`, or `page.locator().click()`.
 - Reach the Prepare workspace through the existing demo entry with a synthetic teacher session. Record the application commit and the blocked payloads.
 
+The failure-class fixtures and their checks are in the [scenario inventory](blocked-generation-scenarios.md).
+
 Checks:
 
-1. **K1 — Live region is ready before the block.** On first load, before any generation result, `#blocked-generation-announcement` exists, has empty text, has `role="status"`, `aria-live="polite"`, and `aria-atomic="true"`, and uses the computed `sr-only` pattern: `position: absolute`, `width: 1px`, `height: 1px`, and `overflow: hidden`. Pass when every assertion holds.
+Check IDs are stable. K22–K25 were removed when Arabic was deferred. The last check keeps the ID K26.
+
+1. **K1 — Live region is ready before the block.** On first load, before any result, `#blocked-generation-announcement` exists with empty text. It has `role="status"`, `aria-live="polite"`, and `aria-atomic="true"`. Its computed style is the `sr-only` pattern: `position: absolute`, `width: 1px`, `height: 1px`, and `overflow: hidden`. Pass when every assertion holds.
 2. **K2 — Entry focus.** After the blocked result renders, `document.activeElement` is `#blocked-generation-heading`; the element is an `H2` with `tabindex="-1"`; its text equals the visible title. Pass when all three hold.
-3. **K3 — Focus moves once per blocked request.** Focus the heading, Tab to `#revise-request`, then re-deliver the identical blocked payload for the same `requestId` and wait one second. Focus remains on `#revise-request`. Repeat with focus in `#lesson-prompt`; focus stays there. Then deliver a second blocked result with a new `requestId`; focus moves to `#blocked-generation-heading`. Pass when re-delivery never moves focus and a new blocked request does.
+3. **K3 — Focus moves once per blocked request.** Focus the heading and Tab to `#revise-request`. Re-deliver the identical blocked payload for the same `requestId`. Wait one second. Focus remains on `#revise-request`. Repeat with focus in `#lesson-prompt`; focus stays there. Then deliver a second blocked result with a new `requestId`; focus moves to `#blocked-generation-heading`. Pass when re-delivery never moves focus and a new blocked request does.
 4. **K4 — Typing does not steal focus.** With the panel visible, focus `#lesson-prompt`, type one character, and wait one second. `document.activeElement` remains `#lesson-prompt`. Pass when unchanged.
 5. **K5 — Exactly one announcement.** Install a MutationObserver over every `[aria-live]`, `[role="status"]`, and `output` element before fulfilling the block. After the panel is visible and one second passes, exactly one non-empty text mutation occurred, and it occurred in `#blocked-generation-announcement`. Pass when the count is one and the target matches.
 6. **K6 — Announcement matches the visible reason.** Normalize whitespace on `#blocked-generation-announcement.textContent` and `#blocked-generation-reason.textContent`. Pass when both are non-empty and equal.
 7. **K7 — No repeat announcement.** After K6, Tab to `#revise-request`, Shift+Tab back, focus `#lesson-prompt`, re-deliver the same blocked result, and wait one second. The non-empty mutation count from K5 remains one. Pass when unchanged.
-8. **K8 — No leaked or unsafe copy.** In the text of `#blocked-generation` plus `#blocked-generation-announcement`, assert absence of every canary, `MODERATION_BLOCKED`, `sk-`, `OPENAI`, `<script`, and the case-insensitive phrases `try again`, `retry`, and `resubmit`. Pass when every absence holds. Scope the assertion to the panel and live region; the prior draft may legitimately show its own canaries.
+8. **K8 — No leaked or unsafe copy.** In `#blocked-generation-reason`, `#blocked-generation-announcement`, and `#blocked-generation-reference`, assert absence of every canary. Also assert absence of `MODERATION_BLOCKED`, `sk-`, `OPENAI`, `<script`, and the case-insensitive phrases `try again`, `retry`, and `resubmit`. Exclude the preserved objective; it is byte-for-byte teacher text and may contain "retry". Pass when every absence holds.
 9. **K9 — Tab reaches the action.** With focus on the heading, press Tab once. Active focus is `#revise-request`. No element inside `#blocked-generation` has a `tabindex` greater than zero. Pass when both hold.
 10. **K10 — Enter and Space activate.** Focus `#revise-request`. Press Enter: active focus is `#lesson-prompt`. Reset the fixture, focus `#revise-request`, press Space: active focus is `#lesson-prompt`. The action is a native `BUTTON` with `type="button"`. Pass when both keys and both element facts hold.
-11. **K11 — No modal trap.** While the panel is visible, no element in the document has `role="dialog"` or `aria-modal="true"`. Shift+Tab from the heading moves focus outside `#blocked-generation`; Tab from `#revise-request` moves focus outside; Shift+Tab from `#revise-request` also moves outside, because the heading is not a tab stop. Pass when all four hold.
+11. **K11 — No modal trap.** While the panel is visible, no element in the document has `role="dialog"` or `aria-modal="true"`. Shift+Tab from the heading moves focus outside `#blocked-generation`. Tab from `#revise-request` moves focus outside. Shift+Tab from `#revise-request` also moves outside, because the heading is not a tab stop. Pass when all four hold.
 12. **K12 — Return focus.** Activate `Revise request` with Enter. `document.activeElement` is `textarea#lesson-prompt`. Pass when exact.
 13. **K13 — Caret at end.** After K12, `selectionStart === selectionEnd === value.length`. Pass when exact.
 14. **K14 — Text intact.** After K12, the textarea value equals the exact pre-submit string, including leading and trailing whitespace and newlines. Pass when the strings are equal with no trim or normalization.
-15. **K15 — Newer text wins.** While the request is in flight, replace the field value with a different string; after the block, activate `Revise request`; the field keeps the newer string, not the blocked snapshot, with the caret at the end. The field is editable, and typing appends. Pass when all four hold.
-16. **K16 — Field focus is visible.** After K12, the textarea's computed `outline-style` is not `none` and its `outline-width` is at least 2 CSS pixels, with at least 3:1 contrast against the adjacent background. Pass when the measured values meet both thresholds.
+15. **K15 — Newer text wins.** While the request is in flight, replace the field value with a different string. After the block, activate `Revise request`. The field keeps the newer string, not the blocked snapshot, with the caret at the end. The field is editable, and typing appends. Pass when all four hold.
+16. **K16 — Field focus is visible.** After K12, measure the textarea's focus indicator. Accept an `outline-style` other than `none` with `outline-width` at least 2 CSS pixels. Also accept a changed `border-block-end-color` or `box-shadow`. The present indicator reaches at least 3:1 contrast against the adjacent background. Pass when both thresholds hold.
 17. **K17 — Input block.** With the input-block fixture, the count of `section[aria-label="Generated lesson variants"]` is zero, and K10 through K16 pass. Pass when all hold.
-18. **K18 — Prior draft preserved.** With the output-block fixture, capture the draft region element handle, its text, the selected variant, and the preview scroll position before the block. After the block, the same handle is connected, its text is unchanged, the same variant remains `aria-selected="true"`, and the scroll position differs by at most one CSS pixel. Pass when all four hold.
+18. **K18 — Prior draft preserved.** With the output-block fixture, capture the draft region element handle and its text. Also capture the selected variant and the preview scroll position before the block. After the block, the same handle is connected and its text is unchanged. The same variant remains `aria-selected="true"`. The scroll position differs by at most one CSS pixel. Pass when all four hold.
 19. **K19 — Draft does not take entry focus.** On output-block appearance, active focus is `#blocked-generation-heading`, and no element inside the draft region or `section.a2ui-preview` has focus. Pass when both hold.
 20. **K20 — Editing does not discard the draft.** After K18, activate `Revise request`, type one character, and wait one second. The draft element remains connected with the same text and selection, and the preview remains visible. Pass when all hold.
-21. **K21 — Keyboard-only end-to-end.** From a fresh page, using only keyboard events: reach `#lesson-prompt`, replace its value with a blocked objective, Tab to the create button, press Enter, wait for the panel, assert heading focus, Tab to `Revise request`, press Enter, assert field focus, caret at end, and text intact. Pass when every assertion holds and no pointer event was dispatched.
-22. **K22 — RTL and Arabic attributes.** With the Arabic fixture, `#blocked-generation` has `dir="rtl"` and `lang="ar"`; `#blocked-generation-announcement` has `dir="rtl"` and `lang="ar"`; the visible reason matches `/[\u0600-\u06FF]/` and differs from the English reason fixture. Pass when all hold.
-23. **K23 — RTL keyboard path.** With the Arabic fixture, the heading is focused; Tab lands on `#revise-request`; Enter returns focus to `#lesson-prompt` with `selectionStart === value.length` and the value unchanged. Repeat with Space. Pass when all hold.
-24. **K24 — Reference bidi isolation.** `#blocked-generation-reference` is a `<bdi dir="ltr">` or has `dir="ltr"`; its text contains the request ID exactly; its computed direction is `ltr` inside the RTL panel. Pass when all three hold.
-25. **K25 — Arabic announcement once.** With the Arabic fixture, the non-empty live-region mutation count is one, and the text equals the visible Arabic reason after whitespace normalization. Pass when both hold.
-26. **K26 — Action focus is visible.** With `#revise-request` focused by Tab, its computed `outline-style` is not `none`, its `outline-width` is at least 2 CSS pixels, and the indicator reaches at least 3:1 contrast against the adjacent background. Pass when the measured values meet all three thresholds.
+21. **K21 — Keyboard-only end-to-end.** From a fresh page, use only keyboard events. Reach `#lesson-prompt` and replace its value with a blocked objective. Tab to the create button and press Enter. Wait for the panel and assert heading focus. Tab to `Revise request` and press Enter. Assert field focus, caret at end, and text intact. Pass when every assertion holds and no pointer event was dispatched.
+22. **K26 — Action focus is visible.** With `#revise-request` focused by Tab, measure its focus indicator. Accept an `outline-style` other than `none` with `outline-width` at least 2 CSS pixels. Also accept a changed `border-color` or `box-shadow`. The present indicator reaches at least 3:1 contrast against the adjacent background. Pass when both thresholds hold.
+23. **K27 — Revision-required error maps to the panel.** Fulfill the generate route with an error response that carries `MODERATION_REVISION_REQUIRED`. The same panel appears with heading focus, one announcement equal to the visible reason, and `Revise request` as the only action. Pass when all four hold.
 
 A passing DOM check does not prove screen-reader speech. Record actual assistive-technology behavior separately under #10 or #9; do not claim it from these checks.

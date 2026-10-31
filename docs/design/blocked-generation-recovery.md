@@ -10,27 +10,29 @@
 | Category-code owner | [#132](https://github.com/abodacs/edu-canvas/issues/132); code names are provisional |
 | Evidence | Source read at `7847d46`; one-off probe of the real `createDefaultContentSafety` on 14 objectives |
 
+The #119 build order defines three tickets. Ticket 01 is this recovery specification. Ticket 02 is the [keyboard contract](blocked-generation-keyboard.md). Ticket 03 is the [scenario inventory](blocked-generation-scenarios.md).
+
 The [teacher UI implementation gate](../product/teacher-ui.md#implementation-gate) blocks UI implementation without explicit approval. This document is design material. It does not authorize a build.
 
 ## 1. Purpose and scope
 
 A Grade 4 teacher submits a benign mathematics objective. Safety review blocks it. The teacher must keep the objective, keep any saved draft, understand the block at category level, and submit a revised request. One false positive costs one revision, not the work.
 
-In scope: both block moments, panel anatomy, copy per category code, variants with and without a draft, the post-revision contract, the five failure classes, copy rules, and benign-math evidence.
+In scope: both block moments, panel anatomy, copy per category code, and the variants. Also: the post-revision contract, the five failure classes, copy rules, and benign-math evidence.
 
-Out of scope: detection rules (#132), UI implementation (#115), keyboard focus and announcements ([ticket 02](blocked-generation-keyboard.md) of this series), provider moderation, and any change under `src/`.
+Out of scope: detection rules (#132), UI implementation (#115), keyboard focus and announcements (ticket 02), provider moderation, and any change under `src/`.
 
 Evidence limit: no UI exists for this state today. No statement here records runtime UI behavior.
 
 ## 2. Block moments
 
-Moderation blocks at two moments. Both persist state `blocked-by-moderation` ([service.ts](../../src/server/generation/service.ts):51) and one `MODERATION_BLOCKED` diagnostic.
+Moderation blocks at two moments, at three check sites. The input moment has one check site. The output moment has two: the first response and the correction. Every site persists state `blocked-by-moderation` ([service.ts](../../src/server/generation/service.ts):51) and one `MODERATION_BLOCKED` diagnostic.
 
 | Moment | Check | Position | Draft | Persisted record |
 | --- | --- | --- | --- | --- |
-| Input block | `checkPrompt` (`service.ts:722`) | Before the first provider call | Does not exist | `blocked-by-moderation`, no draft |
-| Output block | `checkGeneratedContent` (`service.ts:758`) | After the first provider response, before validation and persistence | Withheld | `blocked-by-moderation`, no draft |
-| Correction block | `checkGeneratedContent` (`service.ts:826`) | After the one correction call | Withheld | `blocked-by-moderation`, no draft |
+| Input | `checkPrompt` (`service.ts:722`) | Before the first provider call | Does not exist | `blocked-by-moderation`, no draft |
+| Output | `checkGeneratedContent` (`service.ts:758`) | After the first provider response, before validation and persistence | Withheld | `blocked-by-moderation`, no draft |
+| Output (correction site) | `checkGeneratedContent` (`service.ts:826`) | After the one correction call | Withheld | `blocked-by-moderation`, no draft |
 
 Verified facts:
 
@@ -39,7 +41,7 @@ Verified facts:
 - A moderation block is not an error response. It is a persisted attempt result with `retry.available: false` ([projection.ts](../../src/server/generation/projection.ts):47-52).
 - An output block never triggers a correction call (`service.ts:758-769`; test `:816-839`).
 
-The panel treats both moments the same. The variant differs only in whether an earlier draft exists (section 5).
+The correction check is the second output site, not a third moment. The panel treats both moments the same. The variant differs only in whether an earlier draft exists (section 5).
 
 ## 3. Panel anatomy
 
@@ -47,20 +49,20 @@ The panel replaces the result area for `blocked-by-moderation`. Elements appear 
 
 | # | Element | Required content | Rule |
 | --- | --- | --- | --- |
-| 1 | Title | "Let’s reshape that request." | Reuse the #10 title ([teacher-studio.tsx](../../src/components/studio/teacher-studio.tsx):122); do not invent a second title |
+| 1 | Title | "Let’s reshape that request." | Reuse the #10 title ([teacher-studio.tsx](../../src/components/studio/teacher-studio.tsx):123); do not invent a second title |
 | 2 | Category explanation | The sentence for the block's code (section 4) | Names the category, never a provider reason |
 | 3 | Preserved objective | The exact prompt text of the blocked request | Byte-for-byte; no paraphrase, no truncation, no highlight of suspect words |
 | 4 | Earlier-draft note | "Your earlier draft is unchanged." | Only when an earlier draft exists |
-| 5 | Request reference | "Request " followed by the `requestId` | The public id is already in the contract ([generation-contract.ts](../../src/shared/generation-contract.ts):117-118) |
-| 6 | Diagnostic reference | "Category: " followed by the code, plus the diagnostic code | Code names are provisional until #132 |
+| 5 | Request reference | "Request " followed by the `requestId` | The public id is already in the contract ([generation-contract.ts](../../src/shared/generation-contract.ts):116-118) |
+| 6 | Category reference | "Category: " followed by the category label and the code | Show the label and the code only; never the diagnostic code. Code names are provisional until #132 |
 | 7 | Action | One button: "Revise request" | Returns to the objective field with the text intact |
-| 8 | Retry control | None | `retry.available` is false; do not render "Try that again" (`teacher-studio.tsx:639-645`) |
+| 8 | Retry control | None | `retry.available` is false; do not render "Try that again" (`teacher-studio.tsx:642`) |
 
 Rules:
 
 - Keep the objective text unchanged. The teacher edits it; the panel never rewrites it.
 - One action only. No provider switch, no fixture substitution, no send-for-review, no "start over".
-- Do not use the raw server diagnostic as the explanation. The input diagnostic says "…before trying again" (`service.ts:726`), and moderation copy must not (section 8). Map the state to the section 4 copy; keep the diagnostic code as reference.
+- Do not use the raw server diagnostic as the explanation. The input diagnostic says "…before trying again" (`service.ts:726`), and moderation copy must not (section 8). Map the state to the section 4 copy. The panel never renders the diagnostic code.
 - The explanation is not a verdict on the mathematics. An objective can be valid Grade 4 mathematics and still blocked.
 - Focus return and live-region announcements belong to the keyboard contract (ticket 02). Today's fallback announcement reads "Generation state: blocked by moderation" (`teacher-studio.tsx:149-163`); it is technical and must not ship.
 
@@ -73,7 +75,7 @@ The codes are provisional. [#132](https://github.com/abodacs/edu-canvas/issues/1
 | `personal-data` | Information about a real person | "This request seems to include information about a real person, such as a name, email address, or student identifier. Lesson requests use made-up examples. Describe the fraction goal instead." | "Revise request" |
 | `harmful-content` | Content that could harm students | "This request seems to ask for content that could harm students. Describe the Grade 4 fraction goal and a safe classroom example instead." | "Revise request" |
 
-Shared elements: title "Let’s reshape that request."; action "Revise request"; reference line "Request <id>. Category: <code>."
+Shared elements: title "Let’s reshape that request."; action "Revise request"; reference line "Request <id>. Category: <label> (<code>)."
 
 Rules:
 
@@ -88,7 +90,7 @@ Rules:
 ### Variant A: no draft, input block on a first request
 
 - The composer keeps its text. The panel shows the same text as the preserved objective.
-- The blocked request appears once in the request list with its state, request reference, and `MODERATION_BLOCKED`.
+- The blocked request appears once in the request list with its state, request reference, and diagnostic note.
 - "Revise request" returns to the objective field. Prompt, grade, standard, language, and difficulty stay as entered; ticket 02 owns focus and selection.
 - The blocked request cannot open a preview.
 
@@ -101,6 +103,10 @@ Rules:
 - "Revise request" returns to the objective field with the blocked prompt. The earlier draft stays untouched.
 - The blocked attempt made one provider call and no correction call (`service.ts:758-769`; test `:816-839`).
 
+Today the client stores the draft inside the transient result. `updateRequestKey()` calls `setResult(null)` (`teacher-studio.tsx:735-737`). The prompt field calls it on every edit (`:863`). A submit replaces the result (`:790`), and the error paths clear it (`:794`, `:799`). A draft inside the transient result is cleared at submit or on edit.
+
+#115 must keep the prior draft outside the transient result. The [keyboard contract](blocked-generation-keyboard.md) states the same requirement in section 5.
+
 Empty and loading are not moderation states. An empty list is the normal create flow. Loading is `generating` with an honest wait message. #115 owns both.
 
 ## 6. Post-revision contract
@@ -111,11 +117,13 @@ A revised request is a new generation request, not a retry.
 | --- | --- | --- |
 | Changed request | The prompt differs from the blocked prompt | The same prompt under a new key is refused with `MODERATION_REVISION_REQUIRED` (`service.ts:889-899`; test `:746-785`) |
 | New operation key | A new idempotency key; an implicit key includes the prompt (`service.ts:140-152`) | A revised prompt without a link succeeds as a new request (test `:788-810`) |
-| Link to the blocked request | `retryOfRequestId` equals the blocked `requestId` ([generation-contract.ts](../../src/shared/generation-contract.ts):38) | Rejected today: `DRAFT_NOT_RETRYABLE` |
+| Link to the blocked request | `retryOfRequestId` equals the blocked `requestId` ([generation-contract.ts](../../src/shared/generation-contract.ts):38) | Rejected today: `DRAFT_NOT_RETRYABLE`; see the blocking gap below |
 | Prior record preserved | The blocked record keeps its state, diagnostics, and null draft | `finishAttempt` writes a new record; the blocked record is never mutated (`service.ts:444-468`) |
 | No unchanged retry | No retry affordance and no automatic resubmission | `retry.available: false` (`projection.ts:47-52`); the service refuses the same request hash |
 
-### Verified gap: the link field
+### Blocking gap: the link field
+
+This gap blocks #119 acceptance criterion 3. Follow-up [#148](https://github.com/abodacs/edu-canvas/issues/148) owns the change.
 
 `retryOfRequestId` accepts only retryable states. `isRetryableState` allows `failed-retryable` and `blocked-by-validation`, not `blocked-by-moderation` (`service.ts:280-281`). The retry path also requires identical metadata, including the prompt (`:291-313`, `:911-923`).
 
@@ -126,22 +134,22 @@ revised prompt + retryOfRequestId(blocked): DRAFT_NOT_RETRYABLE — "This draft 
 revised prompt without retryOfRequestId: ready-for-review, id draft_probe_2
 ```
 
-Consequence: #119 requires `retryOfRequestId` to link back. Today the server rejects that field for a moderation-blocked referent. #115 cannot satisfy the link requirement alone. One of these must happen before wiring:
+Consequence: #119 requires `retryOfRequestId` to link back. Today the server rejects that field for a moderation-blocked referent. #115 cannot satisfy the link requirement alone. Both options stay open:
 
-- allow a revision relation from `blocked-by-moderation` with a changed prompt, or
-- add an explicit revision field that does not reuse the retry rule.
+- Option A: allow a revision relation from `blocked-by-moderation` with a changed prompt.
+- Option B: add an explicit `revisesRequestId` field that does not reuse the retry rule.
 
-This document does not choose between them. It records that the gap exists, needs a service change, and must not be faked in the client. Until then, the panel shows the request reference and does not send a link the server rejects.
+The default is option B, an explicit `revisesRequestId` field ([#148](https://github.com/abodacs/edu-canvas/issues/148)). Until a service change lands, the panel shows the request reference. The client must not fake the link.
 
-Also: a same-hash request is refused even with a new key and before any retry check (`service.ts:889-899`). The error code is `MODERATION_REVISION_REQUIRED`, not a moderation state. #115 must map this error to the same panel, not to a generic error.
+Also: a same-hash request is refused even with a new key and before any retry check (`service.ts:889-899`). The error code is `MODERATION_REVISION_REQUIRED`, not a moderation state. #115 must map this error to the same panel, not to a generic error. Today the route maps every generation error to `GENERATION_FAILED` ([delivery.server.ts](../../src/server/generation/delivery.server.ts):47-58). #115 needs the code in the response.
 
 ## 7. Five failure classes
 
-Only moderation gets revise-request copy. Only retryable failures get the retry control.
+Only moderation gets revise-request copy. Only retryable failures get the retry control. The [scenario inventory](blocked-generation-scenarios.md) gives one fixture and binary checks for each class.
 
 | Failure class | State at `7847d46` | Teacher-visible reason | Action | Retry |
 | --- | --- | --- | --- | --- |
-| Moderation | `blocked-by-moderation` | Category copy (section 4); diagnostic `MODERATION_BLOCKED` | "Revise request" | No |
+| Moderation | `blocked-by-moderation` | Category copy (section 4) | "Revise request" | No |
 | Timeout | `failed-retryable` | `GENERATION_DEADLINE_EXCEEDED` ("The generation deadline expired before the draft finished. Try this draft again.") or `PROVIDER_TIMEOUT` ("The lesson provider timed out. Try again.") | "Try that again" with a new operation key | Yes |
 | Quota | `failed-retryable` | No quota-specific code exists. Provider `rate-limit` maps to `PROVIDER_RATE_LIMIT` with the provider `safeMessage` | "Try that again" with a new operation key | Yes |
 | Validation block | `blocked-by-validation` | Validator diagnostics (gate and curriculum) | Review the diagnostics, then "Try that again" | Yes |
@@ -179,7 +187,7 @@ Strings that violate these rules today: `service.ts:726` and `:897` ("before try
 
 ## 9. Benign-math evidence
 
-All objectives are Grade 4 equivalent-fractions requests (`4.NF.A.1`) and benign classroom requests. Four contain a name, an identifier, or an email address to test the #132 personal-data boundary.
+All objectives are Grade 4 equivalent-fractions requests (`4.NF.A.1`) and benign classroom requests. Four contain a name, an identifier, or an email address to test the #132 personal-data boundary. Those four are benign requests that planned personal-data rules would block. They are not current false positives.
 
 Probe, run from the repository root at `7847d46` with Node 26.8.1 and tsx 4.23.1:
 
@@ -214,7 +222,7 @@ The command imports the real `createDefaultContentSafety` (`service.ts:198-211`)
 
 Output: `allowed=14/14`; every row returned `{"allowed": true}`.
 
-| # | Objective | Current verdict | Expected verdict | #132 personal-data rules likely block |
+| # | Objective | Current verdict | Expected verdict | #132 personal-data rules would block |
 | --- | --- | --- | --- | --- |
 | 1 | Grade 4 equivalent fractions lesson for 4.NF.A.1: show that 1/2 equals 2/4 and 4/8 with fraction strips. | Allowed | Allowed | No |
 | 2 | Help my class see why 3/4 and 6/8 name the same amount using a number line from 0 to 1. | Allowed | Allowed | No |
@@ -233,8 +241,8 @@ Output: `allowed=14/14`; every row returned `{"allowed": true}`.
 
 Conclusions:
 
-- All 14 objectives pass today. No benign-math false positive exists against the current four patterns (`service.ts:114-119`).
-- The risk is future coverage. Four of 14 realistic phrasings would likely hit #132's personal-data rules. Those blocks are intended, so the recovery path in this document carries the cost.
+- All 14 objectives pass today. No benign-math false positive was observed in these 14 cases against the current four patterns (`service.ts:114-119`).
+- The risk is future coverage. Four of 14 realistic phrasings are benign requests that planned personal-data rules would block. Those blocks are intended, so the recovery path in this document carries the cost.
 - This evidence supports #132's default (block plus revised input) over silent redaction. A redacted name changes the teacher's request and hides the personal-data lesson. Block plus category-level revision keeps the teacher in control.
 - No provider moderation was exercised. All four patterns are deterministic; no network call occurs.
 
@@ -249,7 +257,8 @@ Limitations:
 | Item | Owner | Default until answered |
 | --- | --- | --- |
 | Category code names and the `ContentSafetyResult` shape | #132 | Use `personal-data` and `harmful-content`; treat the names as provisional |
-| `retryOfRequestId` link from a blocked request | Service change, unassigned | Show the request reference; do not send the link |
+| Category code carrier to the client | #132 with #115 | Use the generic sentence until the public result carries the category code |
+| Revision link from a blocked request | [#148](https://github.com/abodacs/edu-canvas/issues/148) | Explicit `revisesRequestId` (option B); until then show the request reference |
 | Panel rendering, diagnostic mapping, live-region copy | #115 | Follow sections 3, 4, and 8 |
 | Keyboard focus return and announcements | Ticket 02 | "Revise request" returns focus to the objective field |
 | Provider moderation contract | #132 open decision | No provider code or reason in copy |
