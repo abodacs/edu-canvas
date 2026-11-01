@@ -4760,40 +4760,40 @@ h2 {
 
 /* #6 learner matching surface. */
 .learn-card {
-  margin: 2rem auto;
   max-width: 48rem;
   padding: 1.5rem;
+  margin: 2rem auto;
 }
 
 .learn-board {
   display: grid;
+  margin-top: 1.5rem;
   gap: 1.5rem;
   grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-  margin-top: 1.5rem;
 }
 
 .learn-column-heading {
-  font-size: 1rem;
   margin: 0 0 0.75rem;
+  font-size: 1rem;
 }
 
 .learn-list {
   display: grid;
+  padding: 0;
+  margin: 0;
   gap: 0.5rem;
   list-style: none;
-  margin: 0;
-  padding: 0;
 }
 
 .learn-item {
-  background: var(--surface, #ffffff);
-  border: 1px solid var(--border, #cfd4dc);
-  border-radius: 0.5rem;
-  cursor: pointer;
+  width: 100%;
   min-height: 2.75rem;
   padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border, #cfd4dc);
+  border-radius: 0.5rem;
+  background: var(--surface, #fff);
+  cursor: pointer;
   text-align: start;
-  width: 100%;
 }
 
 .learn-item[aria-pressed="true"] {
@@ -4816,13 +4816,13 @@ h2 {
 }
 
 .learn-submit {
-  background: var(--accent, #1f5fbf);
-  border: 0;
-  border-radius: 0.5rem;
-  color: #ffffff;
-  cursor: pointer;
   min-height: 2.75rem;
   padding: 0.5rem 1.25rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: var(--accent, #1f5fbf);
+  color: #fff;
+  cursor: pointer;
 }
 
 .learn-submit:disabled {
