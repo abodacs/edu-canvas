@@ -53,6 +53,11 @@ export interface PublishOutcome {
   review: ReviewPack;
   publicationId: string;
   assignmentId: string;
+  /**
+  #6: the canonical assignment the learner page opens, when the bridge ran.
+  */
+  learnerAssignmentId: string | null;
+  learnerVariantId: string | null;
 }
 
 export interface PublicationService {
@@ -638,6 +643,8 @@ export const createPublicationService = (
         review: await projectReview(actor, version),
         publicationId,
         assignmentId,
+        learnerAssignmentId: null,
+        learnerVariantId: null,
       };
     }
 
@@ -733,8 +740,9 @@ export const createPublicationService = (
     // #6: the learner runtime reads the canonical model, so the publish also
     // writes that chain. Without a reviewed source there is nothing to cite,
     // and the pack stays publish-only.
+    let learnerAssignmentId: string | null = null;
     if (records && decoded.provenance.sourceSnapshotId) {
-      await bridgePublishedPack(records, actor, {
+      const bridged = await bridgePublishedPack(records, actor, {
         packVersionId: version.id,
         requestId: version.requestId,
         artifactHash: version.artifactHash,
@@ -747,11 +755,14 @@ export const createPublicationService = (
         ruleVersions: decoded.ruleVersions,
         provenance: decoded.provenance,
       });
+      learnerAssignmentId = bridged.assignmentId;
     }
     return {
       review: await projectReview(actor, version),
       publicationId,
       assignmentId,
+      learnerAssignmentId,
+      learnerVariantId: decoded.publicContent.variants[0]?.id ?? null,
     };
   };
 

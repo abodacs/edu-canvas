@@ -228,6 +228,10 @@ export const publicationPublishResultSchema = z
     publicationId: z.string(),
     assignmentId: z.string(),
     review: reviewPackSchema,
+    // #6: the canonical learner assignment, absent when the pack has no
+    // reviewed source to cite.
+    learnerAssignmentId: z.string().nullable(),
+    learnerVariantId: z.string().nullable(),
   })
   .strict();
 

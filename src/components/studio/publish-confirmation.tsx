@@ -11,6 +11,8 @@ export interface PublishedSummary {
   readonly publicationId: string;
   readonly assignmentId: string;
   readonly learnerName: string;
+  readonly learnerAssignmentId: string | null;
+  readonly learnerVariantId: string | null;
 }
 
 export const PublishConfirmation = ({
@@ -61,6 +63,18 @@ export const PublishConfirmation = ({
             <dt>Revision</dt>
             <dd>{review.version.revision}</dd>
           </div>
+          {published.learnerAssignmentId && published.learnerVariantId ? (
+            <div>
+              <dt>Learner link</dt>
+              <dd>
+                <a
+                  href={`/learn?assignment=${published.learnerAssignmentId}&variant=${published.learnerVariantId}`}
+                >
+                  Open the learner activity
+                </a>
+              </dd>
+            </div>
+          ) : null}
         </dl>
         <Button type="button" onClick={onClose}>
           Back to the studio <ArrowRight aria-hidden="true" />
