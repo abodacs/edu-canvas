@@ -1800,14 +1800,17 @@ describe("protected domain policy matrix", () => {
 
     // The body schemas are the boundary now, so an unknown key is a refusal
     // rather than something an inner parse silently strips.
-    const { response } = await publishPack(dependencies, teacher, {
+    const body: Record<string, unknown> = {
       requestId: draft.requestId,
       versionId: approved.version.id,
       expectedArtifactHash: approved.version.artifactHash,
       learnerId: "learner_lina",
       operationKey: "policy-pt-58-publish",
       score: 100,
-    } as Parameters<typeof publishPack>[2]);
+    };
+    const response = await handlePublishRequest(
+      mutationRequest(dependencies, "/api/publications", teacher, body)
+    );
 
     expect({
       status: response.status,
