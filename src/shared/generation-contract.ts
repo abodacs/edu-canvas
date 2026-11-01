@@ -37,6 +37,10 @@ export const lessonGenerationInputSchema = z
     difficulty: z.enum(difficultyValues).optional(),
     idempotencyKey: z.string().trim().min(8).max(128).optional(),
     retryOfRequestId: z.string().trim().min(1).max(80).optional(),
+    /**
+    #148: the `blocked-by-moderation` request this one revises. A revision is a new request with changed input, not a retry of the blocked record.
+    */
+    revisesRequestId: z.string().trim().min(1).max(80).optional(),
     sourceSnapshotId: z
       .string()
       .trim()

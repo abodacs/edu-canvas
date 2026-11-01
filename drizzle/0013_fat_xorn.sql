@@ -1,0 +1,1 @@
+ALTER TABLE "lesson_draft_requests" ADD COLUMN "revises_request_id" text;

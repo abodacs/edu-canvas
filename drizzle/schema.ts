@@ -347,6 +347,10 @@ export const lessonDraftRequests = pgTable(
     // history, and a composite ON DELETE SET NULL cannot keep tenant_id
     // NOT NULL.
     sourceSnapshotId: text("source_snapshot_id"),
+    // #148: the moderation-blocked request this row revises. Soft reference,
+    // like sourceSnapshotId: the link is readable lineage, not an FK contract,
+    // and a referent that is missing or foreign is refused in the service.
+    revisesRequestId: text("revises_request_id"),
     createdAt: timestamp("created_at", {
       withTimezone: true,
       mode: "string",

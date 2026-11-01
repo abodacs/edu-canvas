@@ -20,6 +20,12 @@ This is not a **learner attempt** — that one is a student's response.
 
 **Implementing names:** `lesson_generation_attempts`
 
+### Revision
+
+A new **generation request** that changes the input of a moderation-blocked request and names it. A revision is not a retry: a retry reuses the same input, while a revision must change the prompt and always creates a new request. The blocked request keeps its state, diagnostics, and missing draft.
+
+The link is stored as `revises_request_id` on the new request row. It is lineage, not part of the request hash.
+
 ### Variant
 
 One of the content options a draft offers: a **standard variant**, a **scaffold variant**, or a **challenge variant**. Variants are parallel renderings of the same objective, not four teaching stages and not four difficulty levels of the same text.

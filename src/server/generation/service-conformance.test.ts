@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { syntheticSeed } from "@/server/seed-data";
-import { parseTenantId } from "@/server/identity/identifiers";
+import { parseActorId, parseTenantId } from "@/server/identity/identifiers";
 import { syntheticTeacherActor } from "@/server/identity/test-actors";
 
 import { createSeededPersistence } from "../persistence/seeded";
@@ -163,6 +163,34 @@ const expectStoredRecord = async (
   await expect(
     persistence.readGeneration(record.tenantId, record.requestId)
   ).resolves.toStrictEqual(expected);
+};
+
+/**
+#148: one service whose safety rules block any prompt that contains "unsafe".
+The fixture makes the blocked path and the revised path reachable in one test.
+*/
+const createModerationService = () => {
+  const provider = createDeterministicLessonDraftProvider();
+  const persistence = createSeededPersistence();
+  let requestNumber = 0;
+  const service = createGenerationService({
+    persistence,
+    provider,
+    safety: {
+      checkPrompt: (prompt) => {
+        return prompt.includes("unsafe")
+          ? blockedSafetyResult("personal-data")
+          : allowedSafetyResult();
+      },
+      checkGeneratedContent: () => allowedSafetyResult(),
+      checkSourceText: () => allowedSafetyResult(),
+    },
+    requestIdFactory: () => {
+      requestNumber += 1;
+      return `draft_req_conformance_revision_${requestNumber}`;
+    },
+  });
+  return { persistence, provider, service };
 };
 
 describe("generation service conformance: idempotency and ownership", () => {
@@ -877,6 +905,177 @@ describe("generation service conformance: retries and moderation", () => {
         })
       )
     ).rejects.toMatchObject({ code: "MODERATION_REVISION_REQUIRED" });
+  });
+
+  // #148: a revision is a new request, not a retry. The link names the blocked
+  // predecessor and never enters the request hash.
+  it("creates a new request for a changed prompt linked to a moderation block", async () => {
+    const { provider, service } = createModerationService();
+
+    const blocked = await service.generate(
+      teacherCommand({ prompt: "unsafe prompt content" })
+    );
+    const revised = await service.generate(
+      teacherCommand({
+        prompt: "a revised safe prompt",
+        idempotencyKey: "conformance-revision-key",
+        revisesRequestId: blocked.record.requestId,
+      })
+    );
+
+    expect(blocked.record.state).toBe("blocked-by-moderation");
+    expect({
+      state: revised.record.state,
+      isNewRequest: revised.record.requestId !== blocked.record.requestId,
+      link: revised.record.input.revisesRequestId,
+      attempt: revised.record.attempt,
+      providerCalls: provider.calls,
+    }).toStrictEqual({
+      state: "ready-for-review",
+      isNewRequest: true,
+      link: blocked.record.requestId,
+      attempt: 1,
+      providerCalls: 1,
+    });
+  });
+
+  it("keeps the blocked record unchanged when a revision is accepted", async () => {
+    const { persistence, service } = createModerationService();
+    const blocked = await service.generate(
+      teacherCommand({ prompt: "unsafe prompt content" })
+    );
+    const storedBefore = await persistence.readGeneration(
+      blocked.record.tenantId,
+      blocked.record.requestId
+    );
+
+    await service.generate(
+      teacherCommand({
+        prompt: "a revised safe prompt",
+        idempotencyKey: "conformance-revision-unchanged-key",
+        revisesRequestId: blocked.record.requestId,
+      })
+    );
+
+    const storedAfter = await persistence.readGeneration(
+      blocked.record.tenantId,
+      blocked.record.requestId
+    );
+
+    expect(storedAfter).toStrictEqual(storedBefore);
+    expect(storedAfter).toMatchObject({
+      state: "blocked-by-moderation",
+      draft: null,
+    });
+    expect(storedAfter?.diagnostics).toContainEqual(
+      expect.objectContaining({ code: "MODERATION_BLOCKED" })
+    );
+  });
+
+  it("refuses a same-prompt revision even when it names the blocked request", async () => {
+    const { provider, service } = createModerationService();
+    const blocked = await service.generate(
+      teacherCommand({ prompt: "unsafe prompt content" })
+    );
+
+    await expect(
+      service.generate(
+        teacherCommand({
+          prompt: "unsafe prompt content",
+          idempotencyKey: "conformance-revision-same-prompt-key",
+          revisesRequestId: blocked.record.requestId,
+        })
+      )
+    ).rejects.toMatchObject({ code: "MODERATION_REVISION_REQUIRED" });
+    expect(provider.calls).toBe(0);
+  });
+
+  it("refuses a referent that is the wrong state, tenant, or teacher", async () => {
+    const { provider, service } = createModerationService();
+    const completed = await service.generate(teacherCommand());
+    const blocked = await service.generate(
+      teacherCommand({
+        prompt: "unsafe prompt content",
+        idempotencyKey: "conformance-revision-referent-key",
+      })
+    );
+    const callsBefore = provider.calls;
+
+    await expect(
+      service.generate(
+        teacherCommand({
+          prompt: "another revised safe prompt",
+          idempotencyKey: "conformance-revision-wrong-state-key",
+          revisesRequestId: completed.record.requestId,
+        })
+      )
+    ).rejects.toMatchObject({ code: "DRAFT_NOT_RETRYABLE" });
+
+    await expect(
+      service.generate({
+        actor: syntheticTeacherActor({
+          tenantId: parseTenantId("tenant_school_south"),
+          actorId: parseActorId("actor_teacher_other_tenant"),
+        }),
+        input: baseInput({
+          prompt: "another revised safe prompt",
+          idempotencyKey: "conformance-revision-wrong-tenant-key",
+          revisesRequestId: blocked.record.requestId,
+        }),
+      })
+    ).rejects.toMatchObject({ code: "DRAFT_NOT_FOUND" });
+
+    await expect(
+      service.generate({
+        actor: syntheticTeacherActor({
+          actorId: parseActorId("actor_teacher_other"),
+        }),
+        input: baseInput({
+          prompt: "another revised safe prompt",
+          idempotencyKey: "conformance-revision-wrong-teacher-key",
+          revisesRequestId: blocked.record.requestId,
+        }),
+      })
+    ).rejects.toMatchObject({ code: "DRAFT_NOT_FOUND" });
+
+    expect(provider.calls).toBe(callsBefore);
+  });
+
+  it("refuses a revision that reuses the blocked operation key", async () => {
+    const { provider, service } = createModerationService();
+    const blocked = await service.generate(
+      teacherCommand({ prompt: "unsafe prompt content" })
+    );
+
+    await expect(
+      service.generate(
+        teacherCommand({
+          prompt: "a revised safe prompt",
+          idempotencyKey: "conformance-request-1",
+          revisesRequestId: blocked.record.requestId,
+        })
+      )
+    ).rejects.toMatchObject({ code: "IDEMPOTENCY_CONFLICT" });
+    expect(provider.calls).toBe(0);
+  });
+
+  it("refuses a request that carries both a retry and a revision link", async () => {
+    const { provider, service } = createModerationService();
+    const blocked = await service.generate(
+      teacherCommand({ prompt: "unsafe prompt content" })
+    );
+
+    await expect(
+      service.generate(
+        teacherCommand({
+          prompt: "a revised safe prompt",
+          idempotencyKey: "conformance-revision-both-links-key",
+          retryOfRequestId: blocked.record.requestId,
+          revisesRequestId: blocked.record.requestId,
+        })
+      )
+    ).rejects.toMatchObject({ code: "GENERATION_INPUT_INVALID" });
+    expect(provider.calls).toBe(0);
   });
 });
 
