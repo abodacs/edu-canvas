@@ -128,7 +128,12 @@ export const handleStartRunRequest = async (
     const records = createRecordPersistence(config);
     const run = await records.startRun(resolved.actor, parsed.data);
     const lesson = await records.readLesson(resolved.actor, { runId: run.id });
-    return noStoreJson({ runId: run.id, ...lesson });
+    return noStoreJson({
+      runId: run.id,
+      runRevision: lesson.runRevision,
+      lesson: lesson.lesson,
+      evidence: lesson.evidence,
+    });
   } catch (error) {
     return learnerErrorJson(error);
   }

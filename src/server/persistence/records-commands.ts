@@ -92,6 +92,7 @@ export interface AuthoringProjection {
 export interface LessonReadResult {
   readonly lesson: StudentLessonProjection;
   readonly evidence: StudentEvidenceProjection;
+  readonly runRevision: number;
 }
 
 /**
@@ -1590,6 +1591,7 @@ export const createRecordCommands = <TTransaction>(
           attempts,
           assistanceEvents: assistance,
         }),
+        runRevision: run.revision,
       };
     });
   };

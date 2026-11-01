@@ -187,9 +187,10 @@ describe(bridgePublishedPack, () => {
     const lesson = await fixture.records.readLesson(fixture.student, {
       runId: run.id,
     });
-    const items = lesson.lesson.sections[0]?.items ?? [];
+    const rendered = JSON.stringify(lesson.lesson.sections);
 
-    expect(items.map((item) => item.role)).toContain("source");
-    expect(items.map((item) => item.role)).toContain("target");
+    expect(rendered).toContain('"role":"source"');
+    expect(rendered).toContain('"role":"target"');
+    expect(rendered).toContain("2/4");
   });
 });
