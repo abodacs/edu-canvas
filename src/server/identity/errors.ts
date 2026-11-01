@@ -36,7 +36,7 @@ const safeMessageByCode: Record<IdentityErrorCode, string> = {
     "Sign-in is temporarily unavailable. Try again in a moment.",
   ACCESS_NOT_PROVISIONED:
     "Contact your school administrator to finish setting up this account.",
-  MEMBERSHIP_REQUIRED: "Choose a school to continue.",
+  MEMBERSHIP_REQUIRED: "Choose a class to continue.",
   RATE_LIMITED: "Too many attempts. Wait a moment and try again.",
   INVALID_INPUT: "Check the details you entered and try again.",
   CONFLICT: "That change conflicts with an existing record.",

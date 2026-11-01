@@ -149,8 +149,8 @@ vi.mock(
 const password = "synthetic-pass-1";
 const northTenantId = "tenant_school_north";
 const southTenantId = "tenant_school_south";
-const northTenantName = "Northside Elementary";
-const southTenantName = "Southside Middle";
+const northTenantName = "Grade 4A · Equivalent Fractions";
+const southTenantName = "Grade 5B · Ratio Reasoning";
 const teacherEmail = "bilal.north@example.test";
 const dualMembershipEmail = "amira.north@example.test";
 const learnerEmail = "lina.north@example.test";
@@ -311,7 +311,7 @@ const selectTenantMembership = async (
 };
 
 /**
-A single-membership account (teacher or learner) signs in straight to a session. The fixture teachers also hold the curriculum classroom membership, so a teacher session completes the designed selection with the school tenancy these rows assert.
+A single-membership account (teacher or learner) signs in straight to a session. The fixture teachers also hold the curriculum classroom membership, so a teacher session completes the designed selection with the class tenancy these rows assert.
 */
 const signInDirect = async (
   dependencies: AuthDependencies,
@@ -1800,14 +1800,17 @@ describe("protected domain policy matrix", () => {
 
     // The body schemas are the boundary now, so an unknown key is a refusal
     // rather than something an inner parse silently strips.
-    const { response } = await publishPack(dependencies, teacher, {
+    const body: Record<string, unknown> = {
       requestId: draft.requestId,
       versionId: approved.version.id,
       expectedArtifactHash: approved.version.artifactHash,
       learnerId: "learner_lina",
       operationKey: "policy-pt-58-publish",
       score: 100,
-    } as Parameters<typeof publishPack>[2]);
+    };
+    const response = await handlePublishRequest(
+      mutationRequest(dependencies, "/api/publications", teacher, body)
+    );
 
     expect({
       status: response.status,

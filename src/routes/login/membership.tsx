@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, School } from "lucide-react";
+import { ArrowRight, Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import {
@@ -9,6 +9,7 @@ import {
 } from "@/components/auth/auth-client";
 import { AuthBrand } from "@/components/auth/auth-brand";
 import { AuthStatus } from "@/components/auth/auth-status";
+import { membershipCopy } from "@/components/auth/membership-copy";
 import { MembershipRadio } from "@/components/auth/membership-radio";
 import { useAuthNotice } from "@/components/auth/use-auth-notice";
 import { Button } from "@/components/ui/button";
@@ -39,35 +40,16 @@ const describeMembershipFailure = (
       return "expired";
     }
     case "RATE_LIMITED": {
-      return {
-        tone: "error",
-        title: "Too many attempts",
-        message:
-          "Wait a few minutes before choosing a school again. If you are still blocked, contact your school administrator.",
-      };
+      return { tone: "error", ...membershipCopy.errors.rateLimited };
     }
     case "AUTH_UNAVAILABLE": {
-      return {
-        tone: "error",
-        title: "We could not confirm that choice",
-        message: "The service is briefly unavailable. Try again in a moment.",
-      };
+      return { tone: "error", ...membershipCopy.errors.unavailable };
     }
     case "CSRF_REJECTED": {
-      return {
-        tone: "error",
-        title: "This page needs to be reloaded",
-        message:
-          "For your safety we stopped that request. Reload the page and sign in again.",
-      };
+      return { tone: "error", ...membershipCopy.errors.csrfRejected };
     }
     default: {
-      return {
-        tone: "error",
-        title: "That school is not available for this sign-in",
-        message:
-          "Choose one of the schools listed for your account, or sign in again.",
-      };
+      return { tone: "error", ...membershipCopy.errors.classUnavailable };
     }
   }
 };
@@ -133,12 +115,9 @@ const MembershipPage = (): ReactElement => {
           <AuthBrand />
           <section className="auth-card">
             <h1 id="membership-heading" className="auth-heading">
-              This sign-in expired
+              {membershipCopy.expiredHeading}
             </h1>
-            <p className="auth-lede">
-              Choosing a school has a five-minute window. Nothing was changed,
-              so you can start again.
-            </p>
+            <p className="auth-lede">{membershipCopy.expiredLede}</p>
             <div className="auth-actions">
               <Button
                 type="button"
@@ -147,7 +126,7 @@ const MembershipPage = (): ReactElement => {
                   void navigate({ to: "/login" });
                 }}
               >
-                Sign in again
+                {membershipCopy.signInAgain}
                 <ArrowRight aria-hidden="true" />
               </Button>
             </div>
@@ -185,15 +164,12 @@ const MembershipPage = (): ReactElement => {
         <section className="auth-card">
           <header className="auth-card__header">
             <p className="eyebrow auth-eyebrow">
-              <School aria-hidden="true" /> One more step
+              <Users aria-hidden="true" /> {membershipCopy.eyebrow}
             </p>
             <h1 id="membership-heading" className="auth-heading">
-              Choose your school
+              {membershipCopy.heading}
             </h1>
-            <p className="auth-lede">
-              Your account belongs to more than one school. Pick the one you
-              want to work in; you can sign in again to switch.
-            </p>
+            <p className="auth-lede">{membershipCopy.lede}</p>
           </header>
 
           <form
@@ -206,7 +182,7 @@ const MembershipPage = (): ReactElement => {
             <AuthStatus notice={notice} noticeRef={statusReference} />
 
             <fieldset className="membership-fieldset">
-              <legend className="field__label">School and role</legend>
+              <legend className="field__label">{membershipCopy.legend}</legend>
               <div className="membership-options">
                 {handoff.memberships.map((membership) => {
                   return (
@@ -215,7 +191,7 @@ const MembershipPage = (): ReactElement => {
                       name="membership"
                       value={membership.membershipId}
                       checked={selected === membership.membershipId}
-                      school={membership.tenantName}
+                      classLabel={membership.tenantName}
                       role={roleLabel(membership.role)}
                       disabled={isPending}
                       onSelect={setSelected}
@@ -248,11 +224,7 @@ const MembershipPage = (): ReactElement => {
           </form>
 
           <p className="auth-note">
-            <span>
-              Cancelling forgets this pending choice. Nothing is shared with the
-              schools you do not open, and the pending link expires on its own
-              after five minutes.
-            </span>
+            <span>{membershipCopy.note}</span>
           </p>
 
           <p className="auth-links">
@@ -270,6 +242,6 @@ const MembershipPage = (): ReactElement => {
 };
 
 export const Route = createFileRoute("/login/membership")({
-  head: () => ({ meta: [{ title: "Choose your school | Edu-Canvas" }] }),
+  head: () => ({ meta: [{ title: membershipCopy.pageTitle }] }),
   component: MembershipPage,
 });

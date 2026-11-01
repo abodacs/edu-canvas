@@ -71,7 +71,7 @@ const selectCurriculumMembership = async (
 ): Promise<Response> => {
   const classroom =
     memberships?.find(
-      (membership) => membership.tenantName === "Edu-Canvas Synthetic Classroom"
+      (membership) => membership.tenantName === "Grade 4S · Synthetic Fractions"
     ) ??
     memberships?.find((membership) =>
       membership.membershipId.includes("_demo")

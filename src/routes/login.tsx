@@ -150,7 +150,7 @@ const LoginPage = (): ReactElement => {
 
     setIsPending(true);
     announce(null);
-    // A previous tab session may have left another account's school list here.
+    // A previous tab session may have left another account's class list here.
     clearPendingMembershipHandoff();
     const result = await submitSignIn({ email: trimmedEmail, password }, csrf);
 
@@ -162,9 +162,9 @@ const LoginPage = (): ReactElement => {
     }
 
     // Sign-in succeeded, so the submit is no longer pending whether the session
-    // is active or the caller must choose a school. This route stays mounted
+    // is active or the caller must choose a class. This route stays mounted
     // while `/login/membership` renders, so a stale flag would leave the form
-    // disabled after the teacher cancels the school choice.
+    // disabled after the teacher cancels the class choice.
     setIsPending(false);
 
     if (result.data.status === "active") {

@@ -55,7 +55,7 @@ describe("local logout independence", () => {
             membershipId:
               signIn.memberships.find(
                 (option) =>
-                  option.tenantName === "Edu-Canvas Synthetic Classroom"
+                  option.tenantName === "Grade 4S · Synthetic Fractions"
               )?.membershipId ?? "",
             sourceAddress: "203.0.113.111",
           })

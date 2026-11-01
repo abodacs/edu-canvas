@@ -296,10 +296,10 @@ const selectMembership = async (input: {
   );
 };
 
-const curriculumTenantName = "Edu-Canvas Synthetic Classroom";
+const curriculumTenantName = "Grade 4S · Synthetic Fractions";
 
 /**
-Signs the fixture teacher in and, since he also holds the curriculum classroom membership, completes the designed selection exactly like a production client. Defaults to the curriculum classroom; pass a school tenancy for rows that pin it.
+Signs the fixture teacher in and, since he also holds the curriculum classroom membership, completes the designed selection exactly like a production client. Defaults to the curriculum classroom; pass a class tenancy for rows that pin it.
 */
 const signInAndSelect = async (
   dependencies: AuthDependencies,
@@ -506,14 +506,14 @@ describe("AT-01 to AT-04: credential verification", () => {
     const dependencies = await configuredDependencies();
     const response = await signInAndSelect(
       dependencies,
-      "Northside Elementary"
+      "Grade 4A · Equivalent Fractions"
     );
     const body = await readJson<SessionProjectionBody>(response);
 
     expect(response.status).toBe(200);
     expect(body).toMatchObject({
       status: "active",
-      actor: { role: "teacher", tenantName: "Northside Elementary" },
+      actor: { role: "teacher", tenantName: "Grade 4A · Equivalent Fractions" },
     });
     expect(cookieValue(response, localCookieNames.session)).toBeDefined();
     expect(JSON.stringify(body)).not.toMatch(
@@ -602,9 +602,9 @@ describe("AT-05 to AT-08: membership selection", () => {
         .map((membership) => membership.tenantName)
         .toSorted((left, right) => left.localeCompare(right))
     ).toStrictEqual([
-      "Edu-Canvas Synthetic Classroom",
-      "Northside Elementary",
-      "Southside Middle",
+      "Grade 4A · Equivalent Fractions",
+      "Grade 4S · Synthetic Fractions",
+      "Grade 5B · Ratio Reasoning",
     ]);
     expect(cookieValue(response, localCookieNames.session)).toBeUndefined();
     expect(domain.status).toBe(401);
@@ -619,7 +619,8 @@ describe("AT-05 to AT-08: membership selection", () => {
       localCookieNames.pending
     );
     const north = body.memberships.find(
-      (membership) => membership.tenantName === "Northside Elementary"
+      (membership) =>
+        membership.tenantName === "Grade 4A · Equivalent Fractions"
     );
     const membershipId = north?.membershipId ?? "";
     const selected = await selectMembership({
@@ -640,7 +641,7 @@ describe("AT-05 to AT-08: membership selection", () => {
       actor: {
         role: "teacher",
         tenantId: "tenant_school_north",
-        tenantName: "Northside Elementary",
+        tenantName: "Grade 4A · Equivalent Fractions",
       },
     });
     expect(cookieHeaderFor(selected, localCookieNames.session)).not.toBe(
@@ -672,7 +673,7 @@ describe("AT-05 to AT-08: membership selection", () => {
     });
     expect(cookiePairs(foreign)).toStrictEqual([]);
     expect(JSON.stringify(body)).not.toMatch(
-      /Northside|Southside|membership_/u
+      /Grade 4A|Grade 5B|Grade 4S|membership_/u
     );
     expect(own.status).toBe(200);
   });
@@ -1249,7 +1250,7 @@ describe("AT-24 to AT-25: session credential and provider-subject integrity", ()
       membershipId: parseMembershipId("membership_mismatched_north"),
       actorId: parseActorId("actor_teacher_mismatched"),
       tenantId: parseTenantId("tenant_school_north"),
-      tenantName: "Northside Elementary",
+      tenantName: "Grade 4A · Equivalent Fractions",
       role: "teacher",
       principal: "deployment-provisioner",
       requestId: "at-24-grant",
@@ -1463,7 +1464,7 @@ describe("AT-30 to AT-35: trusted provisioning", () => {
   );
 
   // AT-34 is skipped: the provisioning seam validates identifier formats but not
-  // tenant relations. `assignClass` accepted a Southside class into a Northside
+  // tenant relations. `assignClass` accepted a grade 5B class into a grade 4A
   // membership roster (the roster became ["class_north_4a", "class_south_9z"])
   // instead of rejecting it, and `grantMembership` accepted a learner id from
   // another tenant, so the required 403 with zero writes cannot be produced.

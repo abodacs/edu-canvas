@@ -6,7 +6,7 @@ interface MembershipRadioProperties {
   readonly name: string;
   readonly value: string;
   readonly checked: boolean;
-  readonly school: string;
+  readonly classLabel: string;
   readonly role: string;
   readonly disabled?: boolean;
   readonly onSelect: (value: string) => void;
@@ -15,12 +15,12 @@ interface MembershipRadioProperties {
 
 // One option in a native radio group. Native radios supply a single tab stop,
 // roving arrow-key movement, and a label that is part of the hit target — and
-// they never expose an internal identifier, only the school and role.
+// they never expose an internal identifier, only the class and role.
 export const MembershipRadio = ({
   name,
   value,
   checked,
-  school,
+  classLabel,
   role,
   disabled = false,
   onSelect,
@@ -37,14 +37,14 @@ export const MembershipRadio = ({
         value={value}
         checked={checked}
         disabled={disabled}
-        aria-label={`${school}, ${role}`}
+        aria-label={`${classLabel}, ${role}`}
         onChange={() => {
           onSelect(value);
         }}
         onKeyDown={onActivateKey}
       />
       <span className="membership-option__copy">
-        <span className="membership-option__school">{school}</span>
+        <span className="membership-option__class">{classLabel}</span>
         <span className="membership-option__role">{role}</span>
       </span>
     </label>

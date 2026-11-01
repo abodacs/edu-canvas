@@ -13,11 +13,12 @@ import type { DeterministicAccount } from "./provider/deterministic";
 
 /**
  * Synthetic identity fixture for explicit local development and tests. Two
- * schools plus the curriculum-owning synthetic classroom, two teachers in one
- * school, two classes, and three learners, per the spec's fixture requirement
- * (the classroom membership the focused generation gate signs in through was
- * added for issue #115; the demo-tenant learner was added for issue #5 so a
- * published pack has a real assignment referent). It is invoked only by the development
+ * classes plus the curriculum-owning synthetic class, two teachers in one
+ * class, two class assignments, and three learners, per the spec's fixture
+ * requirement (the classroom membership the focused generation gate signs in
+ * through was added for issue #115; the demo-tenant learner was added for
+ * issue #5 so a published pack has a real assignment referent). It is invoked
+ * only by the development
  * composition and by tests; it can never supply authority to a deployed
  * request because the deterministic provider is unreachable outside
  * development (config forces the hosted provider elsewhere).
@@ -64,12 +65,17 @@ export const syntheticPasswordForTests = syntheticPassword;
 const principal = "synthetic-fixture";
 
 const fixture = {
+  // One tenant row carries one class until #99 lands a real class object, so
+  // the fixture names read as classes, not schools.
   tenants: {
-    north: { id: "tenant_school_north", name: "Northside Elementary" },
-    south: { id: "tenant_school_south", name: "Southside Middle" },
+    north: {
+      id: "tenant_school_north",
+      name: "Grade 4A · Equivalent Fractions",
+    },
+    south: { id: "tenant_school_south", name: "Grade 5B · Ratio Reasoning" },
     demo: {
       id: "tenant_demo_eu_synthetic",
-      name: "Edu-Canvas Synthetic Classroom",
+      name: "Grade 4S · Synthetic Fractions",
     },
   },
   actors: [
