@@ -32,7 +32,7 @@ import {
 import type { ConfiguredIdentity } from "./composition.server";
 import type { ServerConfig } from "../config";
 import type { IdentityService, SignInOutcome } from "./service";
-import type { SessionResolution, TeacherActor } from "./types";
+import type { LearnerActor, SessionResolution, TeacherActor } from "./types";
 import type { SessionProjection } from "@/shared/identity-contract";
 
 const sessionMaxAgeSeconds = 8 * 60 * 60;
@@ -151,6 +151,15 @@ export type TeacherResolution =
   | {
       readonly ok: true;
       readonly actor: TeacherActor;
+      readonly sessionId: string;
+      readonly dependencies: AuthDependencies;
+    }
+  | { readonly ok: false; readonly error: IdentityError };
+
+export type LearnerResolution =
+  | {
+      readonly ok: true;
+      readonly actor: LearnerActor;
       readonly sessionId: string;
       readonly dependencies: AuthDependencies;
     }
@@ -661,6 +670,49 @@ export const resolveTeacherActor = async (
   return resolveTeacherSession(request, dependencies);
 };
 
+// Resolve the caller's session as a verified student over an injected composition.
+export const resolveLearnerSession = async (
+  request: Request,
+  dependencies: AuthDependencies
+): Promise<LearnerResolution> => {
+  const resolution = await resolveRequestSession(request, dependencies);
+  if (resolution.status === "unavailable") {
+    return { ok: false, error: new IdentityError("AUTH_UNAVAILABLE") };
+  }
+  if (resolution.status === "unauthenticated") {
+    return { ok: false, error: new IdentityError("UNAUTHENTICATED") };
+  }
+  if (resolution.actor.role !== "student") {
+    return { ok: false, error: new IdentityError("FORBIDDEN") };
+  }
+
+  return {
+    ok: true,
+    actor: resolution.actor,
+    sessionId: resolution.session.sessionId,
+    dependencies,
+  };
+};
+
+// Fail closed on configuration, compose, then resolve the caller as a verified student.
+export const resolveLearnerActor = async (
+  request: Request,
+  config: ServerConfig = readServerConfig()
+): Promise<LearnerResolution> => {
+  if (config.issues.length > 0) {
+    return { ok: false, error: new IdentityError("AUTH_UNAVAILABLE") };
+  }
+
+  let dependencies: AuthDependencies;
+  try {
+    dependencies = await resolveAuthDependencies(config);
+  } catch {
+    return { ok: false, error: new IdentityError("AUTH_UNAVAILABLE") };
+  }
+
+  return resolveLearnerSession(request, dependencies);
+};
+
 export const identityErrorJson = (error: IdentityError): Response =>
   errorResponse(error);
 
@@ -691,8 +743,28 @@ export const resolveProtectedTeacher = async (
 };
 
 /**
-Resolve the composition or return a fail-closed 503 response.
+Full protected-mutation learner resolution: the same origin and forgery guard as a teacher, then a student actor. #6 learner delivery calls this before any record work.
 */
+export const resolveProtectedLearner = async (
+  request: Request,
+  config: ServerConfig = readServerConfig()
+): Promise<
+  { ok: true; actor: LearnerActor } | { ok: false; response: Response }
+> => {
+  const resolved = await resolveLearnerActor(request, config);
+  if (!resolved.ok) {
+    return { ok: false, response: identityErrorJson(resolved.error) };
+  }
+
+  const guard = guardProtectedMutation(
+    request,
+    resolved.dependencies,
+    resolved.sessionId
+  );
+  return guard
+    ? { ok: false, response: identityErrorJson(guard) }
+    : { ok: true, actor: resolved.actor };
+};
 export const resolveAuthOrError = async (): Promise<
   | { readonly ok: true; readonly dependencies: AuthDependencies }
   | { readonly ok: false; readonly response: Response }
