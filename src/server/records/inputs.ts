@@ -154,6 +154,11 @@ export const readLessonInputSchema = z.strictObject({
   runId: recordIdSchema,
 });
 
+export const readAttemptContextInputSchema = z.strictObject({
+  runId: recordIdSchema,
+  itemId: recordIdSchema,
+});
+
 export const referentTableValues = [
   "standards",
   "actors",

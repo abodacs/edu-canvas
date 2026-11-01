@@ -24,6 +24,7 @@ import {
   createValidationResultHash,
 } from "../records/hashes";
 import {
+  readAttemptContextInputSchema,
   readAuthoringInputSchema,
   readEvidenceInputSchema,
   readLessonInputSchema,
@@ -63,6 +64,7 @@ import type {
   TeacherDecision,
 } from "../records/delivery";
 import type { LessonVersion, Publication } from "../records/authoring";
+import type { PrivateAnswerRelationship } from "../records/private-answers";
 import type { Actor, Capability } from "../identity/types";
 import type { RecordBackend, RecordTableName, StoredRow } from "./records-port";
 import type { z } from "zod";
@@ -91,6 +93,17 @@ export interface LessonReadResult {
   readonly evidence: StudentEvidenceProjection;
 }
 
+/**
+ * #6: the server-only facts a grader needs for one item. The answer
+ * relationships never leave the server, and the run revision pins the write.
+ */
+export interface AttemptContext {
+  readonly runId: string;
+  readonly runRevision: number;
+  readonly itemId: string;
+  readonly relationships: readonly PrivateAnswerRelationship[];
+}
+
 export interface RecordPersistence {
   readonly kind: "seeded-demo" | "postgres";
   check: () => Promise<boolean>;
@@ -117,6 +130,10 @@ export interface RecordPersistence {
     input: unknown
   ) => Promise<TeacherEvidenceProjection>;
   readLesson: (actor: Actor, input: unknown) => Promise<LessonReadResult>;
+  readAttemptContext: (
+    actor: Actor,
+    input: unknown
+  ) => Promise<AttemptContext>;
 }
 
 const writeCapability: Record<WriteAction, Capability> = {
@@ -1524,6 +1541,45 @@ export const createRecordCommands = <TTransaction>(
     });
   };
 
+  const readAttemptContext = (
+    actor: Actor,
+    raw: unknown
+  ): Promise<AttemptContext> => {
+    const parsed = parseOrThrow(readAttemptContextInputSchema, raw);
+    return read(actor, "submit_attempt", async (transaction) => {
+      const { run } = await requireRunForLearner(
+        transaction,
+        actor,
+        parsed.runId
+      );
+      const publication = await requirePublication(
+        transaction,
+        actor.tenantId,
+        run.publicationId
+      );
+      const version = await loadVersion(
+        transaction,
+        publication.lessonVersionId,
+        actor.tenantId
+      );
+      if (!collectItemIds(version).has(parsed.itemId)) {
+        throw recordError("INVALID_INPUT");
+      }
+      const relationships = version.privateAnswerRelationships.filter(
+        (relationship) => relationship.itemId === parsed.itemId
+      );
+      if (relationships.length === 0) {
+        throw recordError("INVALID_INPUT");
+      }
+      return {
+        runId: run.id,
+        runRevision: run.revision,
+        itemId: parsed.itemId,
+        relationships,
+      };
+    });
+  };
+
   return {
     kind: backend.kind,
     check: backend.check,
@@ -1538,5 +1594,6 @@ export const createRecordCommands = <TTransaction>(
     readAuthoring,
     readEvidence,
     readLesson,
+    readAttemptContext,
   };
 };
