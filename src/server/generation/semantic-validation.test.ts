@@ -87,8 +87,44 @@ describe("bounded semantic lesson validation", () => {
 
   it("accepts a normalized equivalent-fractions draft and its versioned context", async () => {
     const input = validInput();
+    // The fixture's standard variants are genuinely different now (#168); the
+    // duplicate-structure warning needs an actual duplicate, and the duplicate
+    // keeps unique identifiers across the draft.
+    const draft = createEquivalentFractionsDraft(input);
+    const [firstVariant] = draft.variants;
+    draft.variants[1] = {
+      ...firstVariant,
+      id: "variant-2",
+      sourceItems: firstVariant.sourceItems.map((item) => {
+        return {
+          ...item,
+          id: `dup-${item.id}`,
+        };
+      }),
+      targetItems: firstVariant.targetItems.map((item) => {
+        return {
+          ...item,
+          id: `dup-${item.id}`,
+        };
+      }),
+      distractorItems: firstVariant.distractorItems.map((item) => {
+        return {
+          ...item,
+          id: `dup-${item.id}`,
+        };
+      }),
+      relationships: firstVariant.relationships.map((relationship) => {
+        return {
+          ...relationship,
+          id: `dup-${relationship.id}`,
+          sourceId: `dup-${relationship.sourceId}`,
+          targetId: `dup-${relationship.targetId}`,
+        };
+      }),
+    };
+
     const result = await validateSemanticLesson({
-      draft: createEquivalentFractionsDraft(input),
+      draft,
       context: createSyntheticCurriculumContext(input),
     });
 

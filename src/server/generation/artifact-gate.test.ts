@@ -187,9 +187,42 @@ describe("artifact gate contract", () => {
   });
 
   it("keeps a warning artifact renderable and actionable", async () => {
-    const { draft, learningPath, context } = buildArtifact(
-      createEquivalentFractionsDraft(validInput())
-    );
+    // The fixture's standard variants are genuinely different now (#168), so
+    // the warning scenario constructs its own duplicate structure on purpose,
+    // with unique identifiers across the draft.
+    const duplicateDraft = createEquivalentFractionsDraft(validInput());
+    const [firstVariant] = duplicateDraft.variants;
+    duplicateDraft.variants[1] = {
+      ...firstVariant,
+      id: "variant-duplicate",
+      sourceItems: firstVariant.sourceItems.map((item) => {
+        return {
+          ...item,
+          id: `dup-${item.id}`,
+        };
+      }),
+      targetItems: firstVariant.targetItems.map((item) => {
+        return {
+          ...item,
+          id: `dup-${item.id}`,
+        };
+      }),
+      distractorItems: firstVariant.distractorItems.map((item) => {
+        return {
+          ...item,
+          id: `dup-${item.id}`,
+        };
+      }),
+      relationships: firstVariant.relationships.map((relationship) => {
+        return {
+          ...relationship,
+          id: `dup-${relationship.id}`,
+          sourceId: `dup-${relationship.sourceId}`,
+          targetId: `dup-${relationship.targetId}`,
+        };
+      }),
+    };
+    const { draft, learningPath, context } = buildArtifact(duplicateDraft);
     const report = await validateSemanticLesson({ draft, context });
 
     const result = gateArtifact({

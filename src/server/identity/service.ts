@@ -501,8 +501,17 @@ export const createIdentityService = (
       const pendingCredential = createOpaqueCredential();
       const pendingExpiry = new Date(now() + pendingWindowMs);
       const expiresAt = pendingExpiry.toISOString();
-      const memberships: readonly PendingMembershipOption[] =
-        activeMemberships.map((membership) => {
+      // The hand-off list sorts deterministically (#168 P1-5): school name
+      // first, membership id as the tiebreak, so two consecutive sign-ins
+      // present the same order regardless of store insertion order.
+      const memberships: readonly PendingMembershipOption[] = activeMemberships
+        .toSorted((left, right) => {
+          return (
+            left.tenantName.localeCompare(right.tenantName) ||
+            left.membershipId.localeCompare(right.membershipId)
+          );
+        })
+        .map((membership) => {
           return {
             membershipId: membership.membershipId,
             tenantName: membership.tenantName,

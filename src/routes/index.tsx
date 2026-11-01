@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
+import { useAuthSession } from "@/components/auth/use-auth-session";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utilities";
 
@@ -21,10 +22,32 @@ const REVEAL_SOURCE = "1/2";
 const REVEAL_MATCHES = ["2/4", "3/6", "4/8"];
 const REVEAL_DISTRACTOR = "2/3";
 
+/**
+The sign-out hand-off lands on `?signedOut=1` (#168 P2-5), so the exit is
+confirmed by the page itself and refreshes or shares never carry the banner.
+*/
+const handOffSearch = (
+  search: Record<string, unknown>
+): { signedOut?: boolean } =>
+  search.signedOut === "1" ? { signedOut: true } : {};
+
+const primaryButtonClass = "cta-primary";
+
 const TeacherHome = () => {
+  // #168 P1-4: once the tab's session resolves as active, the header and the
+  // hero hand the teacher their workspace instead of advertising a sign-in.
+  const session = useAuthSession();
+  const hasActiveSession = session.phase === "active" && session.projection;
+  const isSignedOutArrival = Route.useSearch().signedOut === true;
+
   return (
     <main className="app-shell" aria-labelledby="page-title">
       <div className="page-frame">
+        {isSignedOutArrival ? (
+          <output className="sign-out-banner">
+            You are signed out. Sign in again to return to your drafts.
+          </output>
+        ) : null}
         <header className="site-header">
           <Link className="brand-lockup" to="/" aria-label="Edu-Canvas home">
             <span className="brand-mark" aria-hidden="true">
@@ -35,21 +58,38 @@ const TeacherHome = () => {
               <span className="brand-subtitle">lessons that land</span>
             </span>
           </Link>
-          <div className="hero-actions site-header__actions">
-            <Link
-              className={cn(buttonVariants({ size: "sm" }), "min-h-9")}
-              to="/login"
-            >
-              <LogIn aria-hidden="true" />
-              Sign in
-            </Link>
-            <Link
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-              to="/sign-up"
-            >
-              Create account
-            </Link>
-          </div>
+          {hasActiveSession ? (
+            <div className="hero-actions site-header__actions">
+              <span className="site-header__identity">
+                Signed in as {session.projection?.actor.displayName}
+              </span>
+              <Link
+                className={cn(buttonVariants({ size: "sm" }), "min-h-9")}
+                to="/workspace"
+              >
+                <ArrowRight aria-hidden="true" />
+                Open workspace
+              </Link>
+            </div>
+          ) : (
+            <div className="hero-actions site-header__actions">
+              <Link
+                className={cn(buttonVariants({ size: "sm" }), "min-h-9")}
+                to="/login"
+              >
+                <LogIn aria-hidden="true" />
+                Sign in
+              </Link>
+              <Link
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "sm" })
+                )}
+                to="/sign-up"
+              >
+                Create account
+              </Link>
+            </div>
+          )}
         </header>
 
         <section className="page-grid page-grid--hero">
@@ -63,30 +103,42 @@ const TeacherHome = () => {
               variants on one screen. Publish in about three minutes.
             </p>
             <div className="hero-actions">
-              <Link
-                className={cn(buttonVariants({ size: "lg" }), "cta-primary")}
-                to="/login"
-              >
-                Sign in
-                <ArrowRight aria-hidden="true" />
-              </Link>
-              <Link
-                className={cn(
-                  buttonVariants({ variant: "outline", size: "lg" }),
-                  "min-h-12"
-                )}
-                to="/sign-up"
-              >
-                <UserPlus aria-hidden="true" />
-                Create a teacher account
-              </Link>
+              {hasActiveSession ? (
+                <Link
+                  className={cn(
+                    buttonVariants({ size: "lg" }),
+                    primaryButtonClass
+                  )}
+                  to="/workspace"
+                >
+                  Open your workspace
+                  <ArrowRight aria-hidden="true" />
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    className={cn(
+                      buttonVariants({ size: "lg" }),
+                      primaryButtonClass
+                    )}
+                    to="/login"
+                  >
+                    Sign in
+                    <ArrowRight aria-hidden="true" />
+                  </Link>
+                  <Link
+                    className={cn(
+                      buttonVariants({ variant: "outline", size: "lg" }),
+                      "min-h-12"
+                    )}
+                    to="/sign-up"
+                  >
+                    <UserPlus aria-hidden="true" />
+                    Create a teacher account
+                  </Link>
+                </>
+              )}
             </div>
-            <p className="hero-signin-note">
-              Already signed in?{" "}
-              <Link className="text-link" to="/workspace">
-                Open your workspace
-              </Link>
-            </p>
           </div>
 
           <RevealPreview />
@@ -143,7 +195,7 @@ const TeacherHome = () => {
               One prompt. Four variants you approve. A student gets the idea.
             </p>
             <Link
-              className={cn(buttonVariants({ size: "lg" }), "cta-primary")}
+              className={cn(buttonVariants({ size: "lg" }), primaryButtonClass)}
               to="/sign-up"
             >
               Create a teacher account
@@ -159,14 +211,6 @@ const TeacherHome = () => {
             </span>
             <span className="brand-name">Edu-Canvas</span>
           </Link>
-          <nav className="footer-links" aria-label="Status checks">
-            <a className="text-link" href="/api/readiness">
-              Readiness
-            </a>
-            <a className="text-link" href="/api/health">
-              Liveness
-            </a>
-          </nav>
           <p className="footer-note">
             Synthetic fixture data only. Built with Codex and GPT-5.6.
           </p>
@@ -230,4 +274,7 @@ const RevealPreview = () => {
   );
 };
 
-export const Route = createFileRoute("/")({ component: TeacherHome });
+export const Route = createFileRoute("/")({
+  component: TeacherHome,
+  validateSearch: handOffSearch,
+});

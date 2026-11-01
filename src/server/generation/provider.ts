@@ -20,7 +20,6 @@ const variantKindTitles: Record<
   scaffold: { en: "Guided", ar: "كسور مكافئة مع إرشاد" },
   challenge: { en: "Review", ar: "مراجعة الكسور المكافئة" },
 };
-
 export const RATE_LIMIT_KIND = "rate-limit";
 
 export const promptTemplateVersion = "lesson-prompt-v1";
@@ -218,14 +217,140 @@ const createVariant = (
 export const createEquivalentFractionsDraft = (
   request: NormalizedGenerationRequest
 ): ProviderLessonDraft => {
+  const [practice, explore, scaffold, review] = [
+    createVariant(request, "standard", 1),
+    createVariant(request, "standard", 2),
+    createVariant(request, "scaffold", 3),
+    createVariant(request, "challenge", 4),
+  ];
+
+  // The studio asks a teacher to choose between the two standard cards, so the
+  // fixture must give them different interaction structures, titles, and copy —
+  // otherwise the draft notes correctly flag them as duplicates (#168 P1-3).
+  // Item-count caps from the structural validator steer the shapes: a 3-item
+  // set carries no decoys (floor(3/4) = 0) and an 8-item set may carry two.
+  explore.title = localizedText(
+    request.language,
+    "Explore equivalent fractions",
+    "استكشاف الكسور المكافئة"
+  );
+  explore.instructions = localizedText(
+    request.language,
+    "Match the eight pairs, and watch for decoys whose numerators match but wholes differ.",
+    "طابق الأزواج الثمانية، وانتبه للأفخاخ التي الأعداد الأبْعَدها طابقية لكن الكلَّ مختلفة."
+  );
+  const exploreSources = ["1/6", "1/8"];
+  const exploreTargets = ["2/12", "2/16"];
+  explore.sourceItems = [
+    ...explore.sourceItems,
+    ...exploreSources.map((label, itemIndex) => {
+      return {
+        id: `source-2-${7 + itemIndex}`,
+        label,
+      };
+    }),
+  ];
+  explore.targetItems = [
+    ...explore.targetItems,
+    ...exploreTargets.map((label, itemIndex) => {
+      return {
+        id: `target-2-${7 + itemIndex}`,
+        label,
+      };
+    }),
+  ];
+  explore.distractorItems = [
+    { id: "distractor-2", label: "2/3" },
+    { id: "distractor-2-near", label: "3/8" },
+  ];
+  explore.relationships = explore.sourceItems.map((source, itemIndex) => {
+    return {
+      id: `relationship-2-${itemIndex + 1}`,
+      sourceId: source.id,
+      targetId: explore.targetItems[itemIndex].id,
+    };
+  });
+
+  // The guided card carries the gentlest load: three pairs, no decoys, and an
+  // extra support move, so its structure visibly differs from practice.
+  scaffold.title = localizedText(
+    request.language,
+    "Step up to equivalents",
+    "الخطوة إلى الكسور المكافئة"
+  );
+  scaffold.instructions = localizedText(
+    request.language,
+    "Three pairs at a time, with a hint before your first match.",
+    "ثلاثة أزواج في كل مرة، مع إرشاد قبل أول مطابقة."
+  );
+  scaffold.sourceItems = scaffold.sourceItems.slice(0, 3);
+  scaffold.targetItems = scaffold.targetItems.slice(0, 3);
+  scaffold.relationships = scaffold.relationships.slice(0, 3);
+  scaffold.distractorItems = [];
+  scaffold.hints = [
+    scaffold.hints[0],
+    localizedText(
+      request.language,
+      "Take one pair at a time: find the whole with the same number of equal parts first.",
+      "زوج واحد فقط في كل مرة: حدد الكل الذي يحمل العدد نفسه من الأجزاء المتساوية أولاً."
+    ),
+  ];
+
+  // The review card adds the reasoning demand: two decoys and a check-the-whole
+  // instruction, while the equivalent pairs stay canonical.
+  review.title = localizedText(
+    request.language,
+    "Reason with equivalents",
+    "استدلّ على الكسور المكافئة"
+  );
+  review.instructions = localizedText(
+    request.language,
+    "Match the eight pairs, then decide which decoy is close but not equal once you check the whole.",
+    "طابق الأزواج الثمانية، ثم قرر أي فخٍّ قريب من الصواب لكنه ليس متساويًا بعد فحص الكل."
+  );
+  const reviewSources = ["1/6", "1/8"];
+  const reviewTargets = ["2/12", "2/16"];
+  review.sourceItems = [
+    ...review.sourceItems,
+    ...reviewSources.map((label, itemIndex) => {
+      return {
+        id: `source-4-${7 + itemIndex}`,
+        label,
+      };
+    }),
+  ];
+  review.targetItems = [
+    ...review.targetItems,
+    ...reviewTargets.map((label, itemIndex) => {
+      return {
+        id: `target-4-${7 + itemIndex}`,
+        label,
+      };
+    }),
+  ];
+  review.distractorItems = [
+    { id: "distractor-4", label: "2/3" },
+    { id: "distractor-4-near", label: "3/8" },
+  ];
+  review.relationships = review.sourceItems.map((source, itemIndex) => {
+    return {
+      id: `relationship-4-${itemIndex + 1}`,
+      sourceId: source.id,
+      targetId: review.targetItems[itemIndex].id,
+    };
+  });
+  review.hints = [
+    review.hints[0],
+    localizedText(
+      request.language,
+      "Before you match, say which whole each fraction belongs to.",
+      "قبل أن تطابق، قل إلى أي كلٍّ ينتمي كل كسر."
+    ),
+  ];
+
   return {
     learningPath: createLearningPath(request),
-    variants: [
-      createVariant(request, "standard", 1),
-      createVariant(request, "standard", 2),
-      createVariant(request, "scaffold", 3),
-      createVariant(request, "challenge", 4),
-    ],
+    variants: [practice, explore, scaffold, review],
   };
 };
 

@@ -15,7 +15,6 @@ import {
   GenerationRequestError,
   GENERATION_INPUT_INVALID_MESSAGE,
 } from "./generation-request-error";
-
 import { toPublicGenerationResult } from "./projection";
 
 import { LessonProviderError, RATE_LIMIT_KIND } from "./provider";
@@ -28,6 +27,7 @@ import {
   defaultGenerationDeadlines,
   generationDuplicateWaitMs,
   isGenerationClaimExpired,
+  StandardNotConfiguredError,
 } from "./types";
 import { validateProviderDraft } from "./validation";
 import type { SourceGate } from "../grounding/types";
@@ -39,6 +39,7 @@ import type { Actor } from "@/server/identity/types";
 import type { ArtifactGateSnapshot } from "@/server/safety/artifact-gate";
 import type { DraftAcceptanceOptions } from "./draft-acceptance";
 import type {
+  GenerationClaim,
   GenerationCommand,
   GenerationDeadlines,
   GenerationDiagnostic,
@@ -68,6 +69,13 @@ const FAILED_RETRYABLE_STATE = "failed-retryable";
 
 const CANCELLED_DIAGNOSTIC_CODE = "GENERATION_CANCELLED";
 const DRAFT_NOT_FOUND_MESSAGE = "The requested draft was not found.";
+
+/**
+Teacher-ready copy for a classroom whose standards table has no row for the
+requested objective; the studio surfaces it verbatim (#168 P0-2).
+*/
+const CURRICULUM_STANDARD_NOT_CONFIGURED_MESSAGE =
+  "This classroom has no curriculum target for that standard yet. Ask an admin to add it to your school, or try a different objective.";
 
 const DEADLINE_DIAGNOSTIC_CODE = "GENERATION_DEADLINE_EXCEEDED";
 
@@ -730,7 +738,19 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       record.tenantId,
       options
     );
-    const claim = await options.persistence.claimGeneration(record);
+
+    let claim: GenerationClaim;
+    try {
+      claim = await options.persistence.claimGeneration(record);
+    } catch (claimError) {
+      if (claimError instanceof StandardNotConfiguredError) {
+        throw new GenerationRequestError(
+          CURRICULUM_STANDARD_NOT_CONFIGURED_MESSAGE,
+          { code: "CURRICULUM_STANDARD_NOT_CONFIGURED" }
+        );
+      }
+      throw claimError;
+    }
     if (!claim.claimed) {
       const resolved = await resolveDuplicate(
         record.teacherId,

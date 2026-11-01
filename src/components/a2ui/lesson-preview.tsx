@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { cn } from "@/lib/utilities";
 import {
@@ -38,6 +38,9 @@ interface LessonPreviewProperties {
   readonly catalogVersion?: string;
   // #5: render a persisted review revision instead of the generation record.
   readonly previewVersionId?: string;
+  // When the teacher picks a variant card in the studio, the preview jumps to
+  // that variant's surface. Null keeps the preview on its own selection.
+  readonly focusVariantId?: string | null;
 }
 
 const describeSelection = (selection: SelectionState | undefined): string => {
@@ -213,17 +216,18 @@ const usePreviewStream = (
 interface PreviewHeaderProperties {
   readonly status: PreviewStatus;
   readonly statusMessage: string;
+  readonly requestId: string;
 }
 
 const PreviewHeader = ({
   status,
   statusMessage,
+  requestId,
   catalogVersion,
 }: PreviewHeaderProperties & { readonly catalogVersion: string }) => {
   return (
     <div className="a2ui-preview__header">
       <div>
-        <p className="eyebrow">Safe A2UI preview · catalog {catalogVersion}</p>
         <h3 id="a2ui-preview-heading">
           Explore the lesson, one learning move at a time.
         </h3>
@@ -231,6 +235,19 @@ const PreviewHeader = ({
           These controls are a semantic teacher preview. Nothing here publishes,
           grades, or reveals the answer key.
         </p>
+        <details className="a2ui-preview__details">
+          <summary>Preview details</summary>
+          <dl>
+            <div>
+              <dt>Draft request</dt>
+              <dd>{requestId}</dd>
+            </div>
+            <div>
+              <dt>Preview catalog</dt>
+              <dd>{catalogVersion}</dd>
+            </div>
+          </dl>
+        </details>
       </div>
       <output
         className={`a2ui-preview__status a2ui-preview__status--${status}`}
@@ -386,6 +403,7 @@ export const LessonPreview = ({
   requestId,
   catalogVersion,
   previewVersionId,
+  focusVariantId,
 }: LessonPreviewProperties) => {
   const [retryToken, setRetryToken] = useState(0);
   const pinnedCatalogVersion = catalogVersion ?? A2UI_CATALOG_VERSION;
@@ -401,7 +419,11 @@ export const LessonPreview = ({
   const [selections, setSelections] = useState<Record<string, SelectionState>>(
     {}
   );
-
+  // The studio's variant chooser hands over the picked variant id; the surface
+  // activates through the render-phase adjustment below once its content is
+  // loaded, and the layout effect moves pointer and keyboard focus.
+  const previewReference = useRef<HTMLElement>(null);
+  const [appliedVariantId, setAppliedVariantId] = useState<string | null>(null);
   const surfaces = useMemo<SurfaceEntry[]>(() => {
     const entries: SurfaceEntry[] = [];
     for (const [surfaceId, surface] of Object.entries(renderState.surfaces)) {
@@ -440,6 +462,31 @@ export const LessonPreview = ({
     surfaces.some((surface) => surface.surfaceId === requestedSurfaceId)
       ? requestedSurfaceId
       : fallbackSurfaceId;
+
+  // Render-phase adjustment, the React-sanctioned way to sync state to a
+  // changed prop: activate the chosen variant's surface once it is loaded.
+  if (focusVariantId && focusVariantId !== appliedVariantId) {
+    const targetSurfaceId = surfaces.find(
+      (surface) => surface.tabId === focusVariantId
+    )?.surfaceId;
+    if (targetSurfaceId) {
+      setAppliedVariantId(focusVariantId);
+      setRequestedSurfaceId(targetSurfaceId);
+    }
+  }
+
+  // DOM side effects only — the state above is already committed by then.
+  useLayoutEffect(() => {
+    if (!appliedVariantId || appliedVariantId !== focusVariantId) {
+      return;
+    }
+    const node = previewReference.current;
+    if (!node) {
+      return;
+    }
+    node.scrollIntoView({ behavior: "smooth", block: "start" });
+    node.focus({ preventScroll: true });
+  }, [appliedVariantId, focusVariantId]);
 
   const handleAction = (surfaceId: string, action: string, itemId?: string) => {
     setSelections((current) => {
@@ -485,10 +532,16 @@ export const LessonPreview = ({
     : undefined;
 
   return (
-    <section className="a2ui-preview" aria-labelledby="a2ui-preview-heading">
+    <section
+      className="a2ui-preview"
+      aria-labelledby="a2ui-preview-heading"
+      ref={previewReference}
+      tabIndex={-1}
+    >
       <PreviewHeader
         status={status}
         statusMessage={statusMessage}
+        requestId={requestId}
         catalogVersion={pinnedCatalogVersion}
       />
 
