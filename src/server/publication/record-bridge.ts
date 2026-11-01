@@ -211,7 +211,21 @@ export const bridgePublishedPack = async (
       provider: source.provenance.provider,
       modelVersion: source.provenance.model,
       promptVersion: source.provenance.promptTemplateVersion,
-      authoredEdits: [],
+      // A teacher edit is recorded against the variant it changed; the record
+      // model names the section that variant became. Dropping the list left a
+      // reviewed lesson indistinguishable from an untouched draft.
+      authoredEdits: source.provenance.authoredEdits
+        .slice(0, recordLimits.editMax)
+        .map((edit) => {
+          return {
+            sectionId: bounded(
+              `section-${edit.variantId}`,
+              recordLimits.idLength
+            ),
+            actorId: bounded(edit.actorId, recordLimits.idLength),
+            editedAt: edit.editedAt,
+          };
+        }),
     },
     changedSectionIds: sections.map((section) => section.id),
     ruleVersions,

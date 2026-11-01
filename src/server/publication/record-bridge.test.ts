@@ -116,8 +116,16 @@ const source: PackBridgeSource = {
     validatorVersion: "lesson-validator-v2",
     catalogVersion: "matching-v1",
     sourceSnapshotId: fixtureSnapshotId,
-    editedAt: null,
-    authoredEdits: [],
+    editedAt: "2026-11-01T00:00:00.000Z",
+    authoredEdits: [
+      {
+        variantId: "variant-a",
+        field: "sourceItem",
+        index: 0,
+        actorId: "actor_teacher_policy",
+        editedAt: "2026-11-01T00:00:00.000Z",
+      },
+    ],
   },
 };
 
@@ -184,6 +192,45 @@ describe(bridgePublishedPack, () => {
       initialRevision: 1,
     });
     expect(revised.versionId).not.toBe(first.versionId);
+  });
+
+  it("carries the pack's cross-links and names every loss", async () => {
+    const fixture = createRecordFixture();
+    const bridged = await bridgePublishedPack(
+      fixture.records,
+      fixture.teacher,
+      source
+    );
+    const authoring = await fixture.records.readAuthoring(fixture.teacher, {
+      kind: "version",
+      versionId: bridged.versionId,
+    });
+    const [version] = authoring.versions;
+    if (!version) {
+      throw new Error("Expected the bridged version.");
+    }
+
+    // What crosses the seam.
+    expect({
+      variantsMatch: version.variantReferences.map(
+        (reference) => reference.variantId
+      ),
+      kindsMatch: version.variantReferences.map((reference) => reference.kind),
+      sections: version.sections.length,
+      edits: version.provenance.authoredEdits.map((edit) => edit.sectionId),
+    }).toStrictEqual({
+      variantsMatch: variants.map((variant) => variant.id),
+      kindsMatch: variants.map((variant) => variant.kind),
+      sections: 4,
+      edits: ["section-variant-a"],
+    });
+
+    // What does not cross, pinned so the loss is a decision rather than an
+    // accident: a section carries no hints, feedback, or accessibility
+    // metadata, because the record model has nowhere to put them.
+    expect(
+      Object.keys(version.sections[0] ?? {}).toSorted((left, right) => left.localeCompare(right))
+    ).toStrictEqual(["body", "id", "itemIds", "items", "kind", "title"]);
   });
 
   it("lets a student score an attempt on the bridged publication", async () => {
