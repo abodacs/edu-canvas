@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>5 · Sign up, sign in, choose school (sketch)</title>
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      .wrap {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--s-5);
+        align-items: start;
+      }
+      .form {
+        display: grid;
+        gap: 18px;
+        padding: 28px;
+      }
+      .form h2 {
+        font: 500 var(--fs-title)/1.2 var(--serif);
+        letter-spacing: -0.015em;
+      }
+      .form .btn {
+        inline-size: 100%;
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: var(--fs-meta);
+      }
+      .label {
+        font-size: var(--fs-meta);
+        font-weight: 600;
+        color: var(--ink-2);
+      }
+      .schools {
+        display: grid;
+        gap: 8px;
+      }
+      .schools label {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 12px;
+        align-items: center;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-field);
+        cursor: pointer;
+      }
+      .schools label:has(input:checked) {
+        border-color: color-mix(in oklch, var(--clay) 50%, var(--line));
+        background: var(--clay-soft);
+      }
+      .schools input {
+        accent-color: var(--clay);
+      }
+      .schools small {
+        display: block;
+        color: var(--ink-2);
+        font-size: var(--fs-meta);
+      }
+      @media (width <= 1000px) {
+        .wrap {
+          grid-template-columns: 1fr;
+          max-inline-size: 440px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="bar">
+      <a class="mark" href="index.html"
+        ><i aria-hidden="true"
+          ><svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+            stroke-linecap="round"
+          >
+            <path d="M4 12h16M12 4v16" /></svg></i
+        >Edu-Canvas</a
+      >
+    </header>
+    <main id="main" class="page wide">
+      <h1>Forms: three steps into the workspace</h1>
+      <p class="lede">
+        Sign up with errors showing, sign in, then the school picker. Each one
+        is a single card on the warm ground.
+      </p>
+      <div class="wrap">
+        <form class="card lift form" aria-labelledby="su" novalidate>
+          <h2 id="su">Create your teacher account</h2>
+          <div class="field">
+            <label for="n">Full name</label
+            ><input id="n" value="Ana Rivera" autocomplete="name" />
+          </div>
+          <div class="field" data-invalid>
+            <label for="e">School email</label
+            ><input
+              id="e"
+              value="ana.rivera@"
+              aria-invalid="true"
+              aria-describedby="e-err"
+              autocomplete="email"
+            />
+            <span class="err" id="e-err"
+              ><svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 8v5M12 16.5v.01" /></svg
+              >Enter a full email address, like name@school.org</span
+            >
+          </div>
+          <div class="field" data-invalid>
+            <label for="p">Password</label
+            ><input
+              id="p"
+              type="password"
+              value="short"
+              aria-invalid="true"
+              aria-describedby="p-err"
+              autocomplete="new-password"
+            />
+            <span class="err" id="p-err"
+              ><svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 8v5M12 16.5v.01" /></svg
+              >Use at least 12 characters</span
+            >
+          </div>
+          <button class="btn">Create account</button>
+          <p class="small muted">
+            Already have an account? <a class="link" href="#">Sign in</a>
+          </p>
+        </form>
+
+        <form class="card lift form" aria-labelledby="si">
+          <h2 id="si">Welcome back</h2>
+          <p class="notice info small">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 11v5M12 7.5v.01" /></svg
+            >Check your inbox to confirm your email.
+            <button
+              class="link"
+              style="
+                border: 0;
+                background: none;
+                padding: 0;
+                white-space: nowrap;
+                margin-inline-start: auto;
+              "
+              disabled
+            >
+              Resend in 24 s
+            </button>
+          </p>
+          <div class="field">
+            <label for="e2">Email</label
+            ><input
+              id="e2"
+              value="ana.rivera@lincoln.example"
+              autocomplete="email"
+            />
+          </div>
+          <div class="field">
+            <div class="row">
+              <label for="p2">Password</label
+              ><a class="link" href="#">Forgot password?</a>
+            </div>
+            <input
+              id="p2"
+              type="password"
+              value="••••••••••••"
+              autocomplete="current-password"
+            />
+          </div>
+          <button class="btn">Sign in</button>
+          <p class="small muted">
+            New here? <a class="link" href="#">Create an account</a>
+          </p>
+        </form>
+
+        <form class="card lift form" aria-labelledby="ms">
+          <h2 id="ms">Which school are you working in?</h2>
+          <fieldset class="schools" style="border: 0; padding: 0">
+            <legend class="label" style="margin-block-end: 8px">
+              Your memberships
+            </legend>
+            <label
+              ><input type="radio" name="s" checked /><span
+                >Lincoln Elementary<small>Teacher · Grade 4</small></span
+              ></label
+            >
+            <label
+              ><input type="radio" name="s" /><span
+                >Riverside Summer Program<small
+                  >Teacher · Grades 3–5</small
+                ></span
+              ></label
+            >
+          </fieldset>
+          <button class="btn">Open workspace</button>
+          <p class="small muted">
+            This choice expires in 5 minutes. Sign in again if it does.
+          </p>
+        </form>
+      </div>
+      <p class="synthetic">
+        Sketch. Names, schools and error copy are illustrative.
+      </p>
+    </main>
+  </body>
+</html>

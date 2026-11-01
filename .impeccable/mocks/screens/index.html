@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Edu-Canvas redesign sketches</title>
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      ol {
+        list-style: none;
+        padding: 0;
+        display: grid;
+        gap: 10px;
+        margin-block-start: 28px;
+        counter-reset: s;
+      }
+      li a {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 4px 16px;
+        padding: 16px 20px;
+        text-decoration: none;
+      }
+      li a:hover {
+        background: var(--ground);
+      }
+      li b {
+        font-weight: 600;
+      }
+      li span {
+        grid-column: 1;
+        color: var(--ink-2);
+        font-size: var(--fs-secondary);
+      }
+      li em {
+        grid-row: 1 / span 2;
+        grid-column: 2;
+        align-self: center;
+        font-style: normal;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="bar">
+      <span class="mark"
+        ><i aria-hidden="true"
+          ><svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+            stroke-linecap="round"
+          >
+            <path d="M4 12h16M12 4v16" /></svg></i
+        >Edu-Canvas</span
+      >
+    </header>
+    <main id="main" class="page">
+      <h1>Redesign sketches</h1>
+      <p class="lede">
+        The key screens in the new light look: warm off-white, a serif for
+        headings, one clay accent, and the Frametell-style composer card. These
+        are sketches for review, not app code.
+      </p>
+      <ol>
+        <li class="card">
+          <a href="0-landing.html"
+            ><b>Landing</b
+            ><span
+              >Route /. Tagline hero, illustrative sample lesson, the loop,
+              sign-in CTAs, signed-out banner.</span
+            ><em class="pill idle">Public</em></a
+          >
+        </li>
+        <li class="card">
+          <a href="1-studio.html"
+            ><b>Studio: write and generate</b
+            ><span
+              >Main flow, step 1. Composer card, standard match, four variant
+              cards in every state.</span
+            ><em class="pill idle">Main flow</em></a
+          >
+        </li>
+        <li class="card">
+          <a href="2-review.html"
+            ><b>Review a variant</b
+            ><span
+              >Main flow, step 2. Document preview, edited section, grounding,
+              learning path, approval.</span
+            ><em class="pill idle">Main flow</em></a
+          >
+        </li>
+        <li class="card">
+          <a href="3-publish.html"
+            ><b>Publish and assign</b
+            ><span
+              >Main flow, step 3. Pre-publish checklist, learner choice, the
+              share link.</span
+            ><em class="pill idle">Main flow</em></a
+          >
+        </li>
+        <li class="card">
+          <a href="7-learn.html"
+            ><b>Student matching board</b
+            ><span
+              >Main flow, step 4. Large tap targets, pairs, Done, and the
+              result.</span
+            ><em class="pill idle">Main flow</em></a
+          >
+        </li>
+        <li class="card">
+          <a href="4-dashboard.html"
+            ><b>Lessons dashboard</b
+            ><span
+              >What needs review, what's live, and each learner's result with
+              its reason.</span
+            ><em class="pill idle">Dashboard</em></a
+          >
+        </li>
+        <li class="card">
+          <a href="5-sign-in.html"
+            ><b>Sign up, sign in, choose school</b
+            ><span>Field errors, resend cooldown, membership picker.</span
+            ><em class="pill idle">Form</em></a
+          >
+        </li>
+        <li class="card">
+          <a href="6-errors.html"
+            ><b>Empty and error states</b
+            ><span
+              >First visit, nothing published, moderation block, grounding down,
+              unreadable PDF, 503, idle sign-out.</span
+            ><em class="pill idle">States</em></a
+          >
+        </li>
+        <li class="card">
+          <a href="8-state-matrix.html"
+            ><b>Every route state</b
+            ><span
+              >The rest of the route inventory: login failures, sign-up limits,
+              membership expiry, workspace, /learn, preview
+              401/403/404/503.</span
+            ><em class="pill idle">States</em></a
+          >
+        </li>
+      </ol>
+
+      <h2 class="h2" style="margin-block: 56px 16px">
+        Flows, screen by screen
+      </h2>
+      <table class="card table" style="overflow: hidden">
+        <thead>
+          <tr>
+            <th scope="col">Flow</th>
+            <th scope="col">Steps and where they live</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Auth</b></td>
+            <td>
+              Sign up, sign in, membership pick (<a
+                class="link"
+                href="5-sign-in.html"
+                >5</a
+              >), then workspace (<a class="link" href="1-studio.html">1</a>).
+              Failures and expiry:
+              <a class="link" href="8-state-matrix.html">8</a>.
+            </td>
+          </tr>
+          <tr>
+            <td><b>Draft</b></td>
+            <td>
+              Prompt plus optional source, generate, four variants (<a
+                class="link"
+                href="1-studio.html"
+                >1</a
+              >), then preview tabs and open review (<a
+                class="link"
+                href="2-review.html"
+                >2</a
+              >).
+            </td>
+          </tr>
+          <tr>
+            <td><b>Review</b></td>
+            <td>
+              Edit one section as a new version, approve each variant and the
+              learning path, acknowledge warnings (<a
+                class="link"
+                href="2-review.html"
+                >2</a
+              >), then publish and assign one learner (<a
+                class="link"
+                href="3-publish.html"
+                >3</a
+              >).
+            </td>
+          </tr>
+          <tr>
+            <td><b>Learner</b></td>
+            <td>
+              Link with assignment and variant, open the run, pair, Done, score
+              (<a class="link" href="7-learn.html">7</a>). Loading, saving and
+              error: <a class="link" href="8-state-matrix.html">8</a>.
+            </td>
+          </tr>
+          <tr>
+            <td><b>Recovery</b></td>
+            <td>
+              Retry the same input and cancel generation (<a
+                class="link"
+                href="1-studio.html"
+                >1</a
+              >), moderation block (<a class="link" href="6-errors.html">6</a>),
+              review error dismiss (<a class="link" href="8-state-matrix.html"
+                >8</a
+              >).
+            </td>
+          </tr>
+          <tr>
+            <td><b>Session</b></td>
+            <td>
+              Idle warning with continue or sign out (<a
+                class="link"
+                href="6-errors.html"
+                >6</a
+              >), expired banner (<a class="link" href="8-state-matrix.html"
+                >8</a
+              >), signed-out banner (<a class="link" href="0-landing.html">0</a
+              >).
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+  </body>
+</html>

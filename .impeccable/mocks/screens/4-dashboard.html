@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>4 · Lessons dashboard (sketch)</title>
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      .top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+      }
+      .summary {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--s-4);
+        margin-block-end: var(--s-6);
+      }
+      .sum {
+        padding: 18px 20px;
+      }
+      .sum b {
+        display: block;
+        font: 500 var(--fs-stat)/1.1 var(--serif);
+        font-variant-numeric: tabular-nums;
+      }
+      .sum span {
+        font-size: var(--fs-secondary);
+        color: var(--ink-2);
+      }
+      .sum .next {
+        display: block;
+        margin-block-start: 10px;
+      }
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 16px;
+        border-block-end: 1px solid var(--line);
+      }
+      .search {
+        margin-inline-start: auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 12px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--ground);
+        color: var(--ink-3);
+        font-size: var(--fs-meta);
+        min-inline-size: 220px;
+      }
+      .table-title {
+        padding: var(--s-5) var(--s-5) var(--s-2);
+      }
+      .lesson b {
+        display: block;
+        font-weight: 600;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .lesson span {
+        font-size: var(--fs-meta);
+        color: var(--ink-2);
+      }
+      .score {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .bar-track {
+        inline-size: 90px;
+        block-size: 6px;
+        border-radius: 999px;
+        background: var(--sunk-2);
+        overflow: hidden;
+      }
+      .bar-track i {
+        display: block;
+        block-size: 100%;
+        background: var(--ok);
+        border-radius: inherit;
+      }
+      .reason {
+        max-inline-size: 34ch;
+        font-size: var(--fs-meta);
+        color: var(--ink-2);
+      }
+      @media (width <= 720px) {
+        .summary {
+          grid-template-columns: 1fr;
+        }
+        .search {
+          margin: 0;
+          inline-size: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="bar">
+      <a class="mark" href="index.html"
+        ><i aria-hidden="true"
+          ><svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+            stroke-linecap="round"
+          >
+            <path d="M4 12h16M12 4v16" /></svg></i
+        >Edu-Canvas</a
+      >
+      <nav aria-label="Workspace">
+        <a href="1-studio.html">Studio</a><a href="2-review.html">Review</a
+        ><a href="4-dashboard.html" aria-current="page">Lessons</a>
+      </nav>
+      <span class="who"
+        ><span class="name">Ms. Rivera · Lincoln Elementary</span
+        ><span class="avatar" aria-hidden="true">MR</span></span
+      >
+    </header>
+    <main id="main" class="page wide">
+      <div class="top">
+        <div>
+          <h1>Your lessons</h1>
+          <p class="lede">
+            What's waiting for you, what's live, and how each learner did.
+          </p>
+        </div>
+        <a href="1-studio.html" class="btn"
+          >New lesson<svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M12 5v14M5 12h14" /></svg
+        ></a>
+      </div>
+
+      <div class="summary">
+        <section class="card sum">
+          <b>2</b><span>drafts waiting for your review</span
+          ><a class="link next" href="2-review.html">Continue review</a>
+        </section>
+        <section class="card sum">
+          <b>3</b><span>lessons published and assigned</span>
+        </section>
+        <section class="card sum">
+          <b>1</b><span>learner result with a next step to check</span
+          ><a class="link next" href="#r1">See Maple's result</a>
+        </section>
+      </div>
+
+      <section class="card" aria-labelledby="t">
+        <h2 id="t" class="h3 table-title">All lessons</h2>
+        <div class="filters" role="group" aria-label="Filter lessons">
+          <button class="chip" aria-pressed="true">All · 6</button
+          ><button class="chip">Needs review · 2</button
+          ><button class="chip">Published · 3</button
+          ><button class="chip">Blocked · 1</button>
+          <span class="search"
+            ><svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-3.5-3.5" /></svg
+            >Search lessons</span
+          >
+        </div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Lesson</th>
+              <th scope="col">Status</th>
+              <th scope="col">Learner</th>
+              <th scope="col">Result</th>
+              <th scope="col">Next step</th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr id="r1">
+              <td class="lesson">
+                <b>Equivalent fractions</b
+                ><span>4.NF.A.1 · v2 · published 31 Oct</span>
+              </td>
+              <td><span class="pill ok">Published</span></td>
+              <td>Maple</td>
+              <td>
+                <div class="score">
+                  <span class="bar-track"><i style="inline-size: 83%"></i></span
+                  ><span class="num">5/6</span>
+                </div>
+              </td>
+              <td class="reason">
+                Ready for 4.NF.A.2: matched every pair except 3/6, which was
+                fixed on the second try.
+              </td>
+              <td><a class="ghost" href="#">Open</a></td>
+            </tr>
+            <tr>
+              <td class="lesson">
+                <b>Fractions on a number line</b><span>3.NF.A.2 · v1</span>
+              </td>
+              <td><span class="pill warn">Needs review</span></td>
+              <td class="muted none">—</td>
+              <td class="muted none">—</td>
+              <td class="reason">4 variants drafted · 1 warning</td>
+              <td><a class="ghost" href="2-review.html">Review</a></td>
+            </tr>
+            <tr>
+              <td class="lesson">
+                <b>Unit fractions warm-up</b
+                ><span>3.NF.A.1 · v1 · published 28 Oct</span>
+              </td>
+              <td><span class="pill ok">Published</span></td>
+              <td>Cedar</td>
+              <td>
+                <div class="score">
+                  <span class="bar-track"
+                    ><i
+                      style="inline-size: 50%; background: var(--warn)"
+                    ></i></span
+                  ><span class="num">3/6</span>
+                </div>
+              </td>
+              <td class="reason">
+                Revisit 3.NF.A.1: unequal parts were counted as halves twice.
+              </td>
+              <td><a class="ghost" href="#">Open</a></td>
+            </tr>
+            <tr>
+              <td class="lesson">
+                <b>Compare fractions with bars</b><span>4.NF.A.2 · v1</span>
+              </td>
+              <td><span class="pill stop">Blocked</span></td>
+              <td class="muted none">—</td>
+              <td class="muted none">—</td>
+              <td class="reason">
+                Blocked by moderation · edit the objective to continue
+              </td>
+              <td><a class="ghost" href="6-errors.html">Fix</a></td>
+            </tr>
+            <tr>
+              <td class="lesson">
+                <b>Fraction bars check</b
+                ><span>4.NF.A.1 · v1 · published 24 Oct</span>
+              </td>
+              <td><span class="pill ok">Published</span></td>
+              <td>Birch</td>
+              <td class="muted">Not started</td>
+              <td class="reason">Assigned 3 days ago</td>
+              <td><a class="ghost" href="#">Open</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <p class="synthetic">
+        Sketch. Lessons, learners and results are synthetic.
+      </p>
+    </main>
+  </body>
+</html>

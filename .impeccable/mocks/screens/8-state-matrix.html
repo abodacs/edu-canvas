@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>8 · Every route state (sketch)</title>
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      .route {
+        margin-block-start: 48px;
+      }
+      .route header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 12px;
+        margin-block-end: 14px;
+      }
+      .route h2 {
+        font: 500 var(--fs-title)/1.2 var(--serif);
+      }
+      .route code {
+        font: 600 13px var(--sans);
+        color: var(--ink-2);
+      }
+      .tiles {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+      .t {
+        padding: 16px;
+        display: grid;
+        gap: 10px;
+        align-content: start;
+      }
+      .t .name {
+        font-size: var(--fs-micro);
+        font-weight: 600;
+        color: var(--ink-3);
+      }
+      .t h3 {
+        font-size: var(--fs-body);
+        font-weight: 600;
+      }
+      .t p {
+        font-size: var(--fs-secondary);
+        color: var(--ink-2);
+      }
+      .t .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .t .btn {
+        padding: 8px 14px;
+        font-size: var(--fs-secondary);
+      }
+      .t > .ghost {
+        justify-self: start;
+      }
+      .sk {
+        display: grid;
+        gap: 8px;
+      }
+      .sk i {
+        display: block;
+        block-size: 12px;
+        border-radius: 6px;
+      }
+      .spin {
+        inline-size: 16px;
+        block-size: 16px;
+        border-radius: 50%;
+        border: 2px solid var(--clay-soft);
+        border-block-start-color: var(--clay);
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(1turn);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .spin {
+          animation: none;
+        }
+      }
+      .mini-field {
+        block-size: 40px;
+        border: 1px solid var(--line-strong);
+        border-radius: var(--r-field);
+        background: var(--surface);
+        padding-inline: 12px;
+        display: flex;
+        align-items: center;
+        font-size: var(--fs-secondary);
+        color: var(--ink-2);
+      }
+      @media (width <= 960px) {
+        .tiles {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      @media (width <= 600px) {
+        .tiles {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="bar">
+      <a class="mark" href="index.html"
+        ><i aria-hidden="true"
+          ><svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+            stroke-linecap="round"
+          >
+            <path d="M4 12h16M12 4v16" /></svg></i
+        >Edu-Canvas</a
+      >
+    </header>
+    <main id="main" class="page wide">
+      <h1>Every route state</h1>
+      <p class="lede">
+        The states from the route inventory that the full screens don't already
+        show, one tile each, in the same visual language.
+      </p>
+
+      <section class="route" aria-labelledby="r-login">
+        <header>
+          <h2 id="r-login">Sign in</h2>
+          <code>/login</code>
+        </header>
+        <div class="tiles">
+          <div class="card t">
+            <span class="name">submitting</span>
+            <div class="mini-field">ana.rivera@lincoln.example</div>
+            <button class="btn" disabled style="gap: 10px">
+              <span class="spin" aria-hidden="true"></span>Signing in…
+            </button>
+          </div>
+          <div class="card t">
+            <span class="name">failure · wrong password</span>
+            <p class="notice stop small">
+              That email and password don't match. Try again or reset your
+              password.
+            </p>
+          </div>
+          <div class="card t">
+            <span class="name">failure · email not confirmed</span>
+            <p class="notice warn small">
+              Confirm your email first. We sent a link to
+              ana.rivera@lincoln.example.
+            </p>
+          </div>
+          <div class="card t">
+            <span class="name">failure · too many attempts</span>
+            <p class="notice warn small">
+              Too many tries. Wait 60 seconds, then sign in again.
+            </p>
+          </div>
+          <div class="card t">
+            <span class="name">failure · no school membership</span>
+            <p class="notice info small">
+              Your account isn't linked to a school yet. Ask your school admin
+              to add you.
+            </p>
+          </div>
+          <div class="card t">
+            <span class="name">failure · sign-in unavailable</span>
+            <p class="notice info small">
+              Sign-in is down for a moment. Your work is safe; try again in a
+              minute.
+            </p>
+          </div>
+          <div class="card t">
+            <span class="name">failure · session ended elsewhere</span>
+            <p class="notice info small">
+              You signed out on another device. Sign in again to continue.
+            </p>
+          </div>
+          <div class="card t">
+            <span class="name">success</span>
+            <p style="display: flex; gap: 10px; align-items: center">
+              <span class="spin" aria-hidden="true"></span>Opening your
+              workspace…
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="route" aria-labelledby="r-su">
+        <header>
+          <h2 id="r-su">Sign up</h2>
+          <code>/sign-up</code>
+        </header>
+        <div class="tiles">
+          <div class="card t">
+            <span class="name">rate-limited</span>
+            <p class="notice warn small">
+              Too many sign-ups from this network. Try again in 10 minutes.
+            </p>
+          </div>
+          <div class="card t">
+            <span class="name">30 s resend cooldown</span>
+            <h3>Check your inbox</h3>
+            <p>We sent a confirmation link to ana.rivera@lincoln.example.</p>
+            <button class="ghost" disabled>Resend in 24 s</button>
+          </div>
+          <div class="card t">
+            <span class="name">unavailable</span>
+            <p class="notice info small">
+              New accounts are paused right now. Your school can still add you
+              directly.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="route" aria-labelledby="r-ms">
+        <header>
+          <h2 id="r-ms">Choose school</h2>
+          <code>/login/membership</code>
+        </header>
+        <div class="tiles">
+          <div class="card t">
+            <span class="name">submitting</span
+            ><button class="btn" disabled style="gap: 10px">
+              <span class="spin" aria-hidden="true"></span>Opening Lincoln
+              Elementary…
+            </button>
+          </div>
+          <div class="card t">
+            <span class="name">error</span>
+            <p class="notice stop small">
+              We couldn't open that school. Pick it again, or choose another.
+            </p>
+          </div>
+          <div class="card t">
+            <span class="name">5-minute expiry</span>
+            <h3>This step timed out</h3>
+            <p>
+              For your security, pick a school within 5 minutes of signing in.
+            </p>
+            <div class="row">
+              <a class="btn" href="5-sign-in.html">Sign in again</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="route" aria-labelledby="r-ws">
+        <header>
+          <h2 id="r-ws">Workspace</h2>
+          <code>/workspace</code>
+        </header>
+        <div class="tiles">
+          <div class="card t" aria-busy="true">
+            <span class="name">loading</span>
+            <div class="sk">
+              <i class="shimmer" style="inline-size: 60%; block-size: 28px"></i
+              ><i class="shimmer"></i
+              ><i class="shimmer" style="inline-size: 80%"></i
+              ><i
+                class="shimmer"
+                style="block-size: 96px; border-radius: 12px"
+              ></i>
+            </div>
+          </div>
+          <div class="card t">
+            <span class="name">unavailable</span>
+            <h3>The workspace is restarting</h3>
+            <p>Your drafts are safe. We'll reload when it's back.</p>
+            <div class="row"><button class="btn dark">Reload now</button></div>
+          </div>
+          <div class="card t">
+            <span class="name">unauthenticated → /login</span>
+            <p style="display: flex; gap: 10px; align-items: center">
+              <span class="spin" aria-hidden="true"></span>Taking you to sign
+              in…
+            </p>
+          </div>
+          <div class="card t">
+            <span class="name">expired banner</span>
+            <p class="notice stop small">
+              Your session expired. Sign in again; unsaved text in the composer
+              is kept on this device.<a class="link act" href="5-sign-in.html"
+                >Sign in</a
+              >
+            </p>
+          </div>
+          <div class="card t">
+            <span class="name">revalidating</span>
+            <p
+              class="small muted"
+              style="display: flex; gap: 8px; align-items: center"
+            >
+              <span class="spin" aria-hidden="true"></span>Checking your
+              session… you can keep typing.
+            </p>
+          </div>
+          <div class="card t">
+            <span class="name">review error · dismiss</span>
+            <p class="notice stop small">
+              We couldn't load the review for variant B. Your approvals so far
+              are saved.<button
+                class="link act"
+                style="border: 0; background: none; padding: 0"
+              >
+                Dismiss
+              </button>
+            </p>
+            <div class="row"><button class="ghost">Try again</button></div>
+          </div>
+          <div class="card t">
+            <span class="name">learner-account notice</span>
+            <h3>This is a student account</h3>
+            <p>
+              The Studio is for teachers. Open the lesson link your teacher
+              shared instead.
+            </p>
+            <div class="row">
+              <a class="btn dark" href="7-learn.html">Go to my lesson</a
+              ><a class="ghost" href="#">Sign out</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="route" aria-labelledby="r-learn">
+        <header>
+          <h2 id="r-learn">Student board</h2>
+          <code>/learn</code>
+        </header>
+        <div class="tiles">
+          <div class="card t" aria-busy="true">
+            <span class="name">session loading</span>
+            <p
+              style="
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                font-size: var(--fs-body-lg);
+              "
+            >
+              <span class="spin" aria-hidden="true"></span>Getting your lesson
+              ready…
+            </p>
+          </div>
+          <div class="card t">
+            <span class="name">not-student</span>
+            <h3>This link is for students</h3>
+            <p>
+              You're signed in as a teacher. Preview the lesson from Review
+              instead.
+            </p>
+            <div class="row">
+              <a class="btn dark" href="2-review.html">Open Review</a>
+            </div>
+          </div>
+          <div class="card t">
+            <span class="name">missing params</span>
+            <h3>This link is missing a piece</h3>
+            <p>Ask your teacher to send the lesson link again.</p>
+          </div>
+          <div class="card t" aria-busy="true">
+            <span class="name">run loading</span>
+            <div class="sk">
+              <i class="shimmer" style="inline-size: 70%; block-size: 26px"></i
+              ><i
+                class="shimmer"
+                style="block-size: 56px; border-radius: 12px"
+              ></i
+              ><i
+                class="shimmer"
+                style="block-size: 56px; border-radius: 12px"
+              ></i>
+            </div>
+          </div>
+          <div class="card t">
+            <span class="name">saving</span
+            ><button class="btn" disabled style="gap: 10px">
+              <span class="spin" aria-hidden="true"></span>Checking your
+              answers…
+            </button>
+          </div>
+          <div class="card t">
+            <span class="name">error</span>
+            <h3>We couldn't save that</h3>
+            <p>Your pairs are still here. Tap Done to try again.</p>
+            <div class="row"><button class="btn">Try again</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="route" aria-labelledby="r-prev">
+        <header>
+          <h2 id="r-prev">Lesson preview panel</h2>
+          <code
+            >/api/a2ui/preview · /api/publications/versions/:id/preview</code
+          >
+        </header>
+        <div class="tiles">
+          <div class="card t">
+            <span class="name">401</span>
+            <h3>Sign in to see this preview</h3>
+            <div class="row">
+              <a class="btn dark" href="5-sign-in.html">Sign in</a>
+            </div>
+          </div>
+          <div class="card t">
+            <span class="name">403</span>
+            <h3>This lesson belongs to another school</h3>
+            <p>Switch school to open it.</p>
+          </div>
+          <div class="card t">
+            <span class="name">404</span>
+            <h3>This version no longer exists</h3>
+            <p>
+              It may have been replaced. Open the latest version in Lessons.
+            </p>
+          </div>
+          <div class="card t">
+            <span class="name">503</span>
+            <h3>Preview is taking a break</h3>
+            <p>The draft is safe. Try the preview again in a moment.</p>
+            <div class="row"><button class="ghost">Retry preview</button></div>
+          </div>
+        </div>
+      </section>
+      <section class="route" aria-labelledby="r-long">
+        <header>
+          <h2 id="r-long">Long content</h2>
+          <code>stress</code>
+        </header>
+        <div class="tiles">
+          <div class="card t">
+            <span class="name">500-character objective</span>
+            <p
+              style="
+                display: -webkit-box;
+                -webkit-line-clamp: 3;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+              "
+            >
+              Students explain, using area models, number lines and fraction
+              strips drawn on grid paper, why fractions such as 2/4, 3/6 and 4/8
+              all name the same amount as 1/2, and justify the pattern by
+              multiplying numerator and denominator by the same number…
+            </p>
+            <span class="small muted num"
+              >500/500 · the composer stops at the limit</span
+            >
+          </div>
+          <div class="card t">
+            <span class="name">long school and teacher name</span>
+            <p
+              class="small"
+              style="
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+              "
+            >
+              Dr. Mariam Abdel-Rahman Al-Hashimi · Thomas Jefferson Community
+              Elementary and Middle School
+            </p>
+            <span class="small muted"
+              >The header truncates; the full name is in the account menu.</span
+            >
+          </div>
+          <div class="card t">
+            <span class="name">longer translated labels (+35%)</span>
+            <div class="row">
+              <button class="btn">Unterrichtsstunde erstellen</button
+              ><button class="ghost">Abschnitt bearbeiten</button>
+            </div>
+            <span class="small muted"
+              >Buttons size to their text; nothing has a fixed width.</span
+            >
+          </div>
+        </div>
+      </section>
+
+      <p class="synthetic">
+        Sketch. Error copy is proposed wording; the six /login failure notices
+        map to the app's real failure codes when built.
+      </p>
+    </main>
+  </body>
+</html>

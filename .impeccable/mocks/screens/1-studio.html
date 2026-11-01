@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>1 · Studio: write and generate (sketch)</title>
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      .write {
+        padding: 22px 24px 16px;
+      }
+      .write label {
+        display: block;
+        font-weight: 600;
+        font-size: var(--fs-secondary);
+        margin-block-end: 10px;
+      }
+      .write textarea {
+        display: block;
+        inline-size: 100%;
+        min-block-size: 96px;
+        border: 0;
+        resize: vertical;
+        background: transparent;
+        font: 400 var(--fs-lead)/1.45 var(--sans);
+        caret-color: var(--clay);
+      }
+      .write textarea:focus {
+        outline: none;
+      }
+      .attach {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+        margin-block-start: 12px;
+        color: var(--ink-3);
+        font-size: var(--fs-meta);
+      }
+      .opts {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22px 32px;
+        padding: 20px 24px 22px;
+        border-block-start: 1px solid var(--line);
+      }
+      .opt h2 {
+        font-size: var(--fs-meta);
+        font-weight: 600;
+        color: var(--ink-2);
+        margin-block-end: 10px;
+      }
+      .opt.wide {
+        grid-column: 1 / -1;
+      }
+      .board-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px 16px;
+        margin-block: 72px 18px;
+      }
+      @media (width <= 720px) {
+        .opts {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="bar">
+      <a class="mark" href="index.html"
+        ><i aria-hidden="true"
+          ><svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+            stroke-linecap="round"
+          >
+            <path d="M4 12h16M12 4v16" /></svg></i
+        >Edu-Canvas</a
+      >
+      <nav aria-label="Workspace">
+        <a href="1-studio.html" aria-current="page">Studio</a
+        ><a href="2-review.html">Review</a
+        ><a href="4-dashboard.html">Lessons</a>
+      </nav>
+      <span class="who"
+        ><span class="name">Ms. Rivera · Lincoln Elementary</span
+        ><span class="avatar" aria-hidden="true">MR</span></span
+      >
+    </header>
+    <main id="main" class="page">
+      <h1>
+        Turn one objective into a lesson your students <em>understand</em>.
+      </h1>
+      <p class="lede">
+        Describe what students should practice. Edu-Canvas checks it against the
+        standard, drafts four variants, and nothing reaches a student until you
+        approve it.
+      </p>
+
+      <form class="card lift" aria-label="New lesson">
+        <div class="write">
+          <label for="objective">What should students practice?</label>
+          <textarea
+            id="objective"
+            maxlength="500"
+            placeholder="e.g. equivalent fractions for grade 4"
+          >
+Students explain why 2/4 and 1/2 name the same amount using fraction models.</textarea>
+          <div class="attach">
+            <button type="button" class="ghost">
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="m21.4 11.1-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"
+                /></svg
+              >Add a source (optional)
+            </button>
+            <span>Selectable-text PDF, TXT or Markdown</span>
+          </div>
+        </div>
+        <div class="opts">
+          <div class="opt">
+            <h2 id="g">Grade</h2>
+            <div class="chips" role="group" aria-labelledby="g">
+              <button type="button" class="chip">3</button
+              ><button type="button" class="chip" aria-pressed="true">4</button
+              ><button type="button" class="chip">5</button
+              ><button type="button" class="chip">6</button>
+            </div>
+          </div>
+          <div class="opt">
+            <h2 id="l">Language</h2>
+            <div class="chips" role="group" aria-labelledby="l">
+              <button type="button" class="chip" aria-pressed="true">
+                English</button
+              ><button type="button" class="chip" disabled>
+                Arabic · later
+              </button>
+            </div>
+          </div>
+          <div class="opt wide">
+            <h2>Matched standard</h2>
+            <div class="match">
+              <span class="code">4.NF.A.1</span>
+              <div>
+                <p>
+                  Explain why a fraction a/b is equivalent to (n×a)/(n×b) using
+                  visual fraction models.
+                </p>
+                <small
+                  >Learning Commons · retrieved 1 Nov 2026 · high-confidence
+                  match</small
+                >
+                <ul class="checks">
+                  <li>
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="var(--ok)"
+                      stroke-width="2.4"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M20 6 9 17l-5-5" /></svg
+                    >Partition a whole into equal parts
+                  </li>
+                  <li>
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="var(--ok)"
+                      stroke-width="2.4"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M20 6 9 17l-5-5" /></svg
+                    >Compare fractions with one whole
+                  </li>
+                  <li class="gap">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="12" r="9" />
+                      <path d="M12 8v5M12 16.5v.01" /></svg
+                    >Prerequisite 3.NF.A.1 not returned: drafts will show the
+                    gap
+                  </li>
+                </ul>
+              </div>
+              <a class="link" href="#">Change</a>
+            </div>
+          </div>
+        </div>
+        <div class="foot">
+          <span
+            class="small muted"
+            style="display: flex; align-items: center; gap: 8px"
+            ><svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="4" y="11" width="16" height="10" rx="2" />
+              <path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg
+            >Draft stays private until approved</span
+          >
+          <span class="small num" style="color: var(--ink-3)">78/500</span>
+          <button type="submit" class="btn" style="margin-inline-start: auto">
+            Create lesson<svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+              class="flip"
+            >
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </button>
+        </div>
+      </form>
+
+      <section aria-labelledby="board-h">
+        <div class="board-head">
+          <h2 class="h2" id="board-h">Four variants to review</h2>
+          <p class="small muted num">3 of 4 ready · drafted in 41 s</p>
+        </div>
+        <p class="notice warn" role="status" style="margin-block-end: 16px">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 8v5M12 16.5v.01" /></svg
+          >Partial grounding: one prerequisite is missing from the source. Each
+          variant marks where it shows.
+        </p>
+        <div class="board">
+          <article class="card v">
+            <figure>
+              <span class="tag">A · Worked example</span>
+              <svg
+                width="260"
+                height="86"
+                viewBox="0 0 260 86"
+                role="img"
+                aria-label="Two equal bars: one half shaded, and two quarters shaded"
+              >
+                <rect
+                  x="10"
+                  y="8"
+                  width="240"
+                  height="28"
+                  rx="4"
+                  fill="#fff"
+                  stroke="#1F1D1A"
+                  stroke-width="1.5"
+                />
+                <rect
+                  x="10"
+                  y="8"
+                  width="120"
+                  height="28"
+                  rx="4"
+                  fill="#B4532F"
+                />
+                <line
+                  x1="130"
+                  y1="8"
+                  x2="130"
+                  y2="36"
+                  stroke="#1F1D1A"
+                  stroke-width="1.5"
+                />
+                <rect
+                  x="10"
+                  y="50"
+                  width="240"
+                  height="28"
+                  rx="4"
+                  fill="#fff"
+                  stroke="#1F1D1A"
+                  stroke-width="1.5"
+                />
+                <rect
+                  x="10"
+                  y="50"
+                  width="120"
+                  height="28"
+                  rx="4"
+                  fill="#B4532F"
+                />
+                <line
+                  x1="70"
+                  y1="50"
+                  x2="70"
+                  y2="78"
+                  stroke="#1F1D1A"
+                  stroke-width="1.5"
+                />
+                <line
+                  x1="130"
+                  y1="50"
+                  x2="130"
+                  y2="78"
+                  stroke="#1F1D1A"
+                  stroke-width="1.5"
+                />
+                <line
+                  x1="190"
+                  y1="50"
+                  x2="190"
+                  y2="78"
+                  stroke="#1F1D1A"
+                  stroke-width="1.5"
+                />
+              </svg>
+            </figure>
+            <div class="body">
+              <h3>Same bar, cut two ways</h3>
+              <p>
+                Walks through 1/2 and 2/4 on equal-length bars, then names the
+                pattern.
+              </p>
+              <div class="meta">
+                <span class="pill ok">Ready for review</span
+                ><a href="2-review.html" class="ghost act">Open review</a>
+              </div>
+            </div>
+          </article>
+          <article class="card v">
+            <figure>
+              <span class="tag">B · Guided activity</span>
+              <svg
+                width="220"
+                height="90"
+                viewBox="0 0 220 90"
+                role="img"
+                aria-label="An adjustable fraction diagram with a slider"
+              >
+                <rect
+                  x="10"
+                  y="10"
+                  width="200"
+                  height="34"
+                  rx="4"
+                  fill="#fff"
+                  stroke="#1F1D1A"
+                  stroke-width="1.5"
+                />
+                <rect
+                  x="10"
+                  y="10"
+                  width="100"
+                  height="34"
+                  rx="4"
+                  fill="#B4532F"
+                />
+                <line x1="43" y1="10" x2="43" y2="44" stroke="#1F1D1A" />
+                <line x1="77" y1="10" x2="77" y2="44" stroke="#1F1D1A" />
+                <line x1="110" y1="10" x2="110" y2="44" stroke="#1F1D1A" />
+                <line x1="143" y1="10" x2="143" y2="44" stroke="#1F1D1A" />
+                <line x1="177" y1="10" x2="177" y2="44" stroke="#1F1D1A" />
+                <line
+                  x1="10"
+                  y1="70"
+                  x2="210"
+                  y2="70"
+                  stroke="#D6CFC3"
+                  stroke-width="4"
+                  stroke-linecap="round"
+                />
+                <circle
+                  cx="110"
+                  cy="70"
+                  r="9"
+                  fill="#fff"
+                  stroke="#1F1D1A"
+                  stroke-width="1.5"
+                />
+              </svg>
+            </figure>
+            <div class="body">
+              <h3>Slide to make an equal share</h3>
+              <p>
+                Students change the number of parts and keep the shaded amount
+                the same, with two hints.
+              </p>
+              <div class="meta">
+                <span class="pill warn">Ready · 1 warning</span
+                ><a href="2-review.html" class="ghost act">Open review</a>
+              </div>
+            </div>
+          </article>
+          <article class="card v blocked">
+            <figure>
+              <span class="tag">C · Independent check</span>
+              <p>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="m15 9-6 6M9 9l6 6" /></svg
+                >Blocked by validation
+              </p>
+            </figure>
+            <div class="body">
+              <h3>Answer key did not match the diagram</h3>
+              <p>
+                Question 3 marks 3/6 as not equal to 1/2. Retry drafts this
+                variant again with the same objective.
+              </p>
+              <div class="meta">
+                <span class="pill stop">Not shown to students</span
+                ><button type="button" class="ghost act">Retry variant</button>
+              </div>
+            </div>
+          </article>
+          <article class="card v" aria-busy="true">
+            <figure class="shimmer">
+              <span class="tag">D · Matching</span>
+            </figure>
+            <div class="body">
+              <h3>Drafting the matching set…</h3>
+              <p>
+                Pairs of equivalent fractions, checked on the server before
+                preview.
+              </p>
+              <div class="meta">
+                <span class="pill idle">Generating</span
+                ><button type="button" class="ghost act">Cancel</button>
+              </div>
+            </div>
+          </article>
+        </div>
+        <p class="synthetic">
+          Sketch. Variant content, timings and the teacher name are
+          illustrative.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

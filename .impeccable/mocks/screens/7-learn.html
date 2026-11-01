@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>7 · Student matching board (sketch)</title>
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      html {
+        font-size: var(--fs-body-lg);
+      }
+      .page {
+        inline-size: min(100% - 32px, 760px);
+      }
+      .task {
+        font: 500 clamp(1.7rem, 3.4vw, 2.3rem)/1.2 var(--serif);
+        letter-spacing: -0.015em;
+        max-inline-size: 24ch;
+      }
+      .how {
+        margin-block-start: var(--s-3);
+        color: var(--ink-2);
+        font-size: var(--fs-body-lg);
+      }
+      .boardl {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--s-5);
+        margin-block-start: var(--s-6);
+      }
+      .col h2 {
+        font-size: var(--fs-body);
+        font-weight: 600;
+        color: var(--ink-2);
+        margin-block-end: 10px;
+      }
+      .col ul {
+        list-style: none;
+        padding: 0;
+        display: grid;
+        gap: 10px;
+      }
+      .item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        inline-size: 100%;
+        min-block-size: 64px;
+        padding: 12px 16px;
+        border: 1.5px solid var(--line-strong);
+        border-radius: 12px;
+        background: var(--surface);
+        font-size: var(--fs-lead);
+        font-weight: 600;
+        text-align: start;
+        transition:
+          border-color 0.15s var(--ease),
+          background-color 0.15s var(--ease),
+          transform 0.12s var(--ease);
+      }
+      .item:hover {
+        border-color: var(--ink-3);
+      }
+      .item:active {
+        transform: scale(0.98);
+      }
+      .item[aria-pressed="true"] {
+        border-color: var(--clay);
+        background: var(--clay-soft);
+        box-shadow: 0 0 0 2px var(--clay);
+      }
+      .item.paired {
+        border-color: color-mix(in oklch, var(--ok) 50%, var(--line));
+        background: var(--ok-soft);
+        color: var(--ok);
+      }
+      .item .n {
+        margin-inline-start: auto;
+        font-size: var(--fs-meta);
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: var(--surface);
+      }
+      .done {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--s-4);
+        margin-block-start: var(--s-6);
+        padding-block-start: var(--s-5);
+        border-block-start: 1px solid var(--line);
+      }
+      .done .btn {
+        padding: 14px 26px;
+        font-size: var(--fs-body-lg);
+      }
+      .result {
+        padding: var(--s-5);
+        display: grid;
+        gap: var(--s-3);
+      }
+      .result b {
+        font: 500 var(--fs-section)/1.2 var(--serif);
+      }
+      @media (width <= 560px) {
+        .boardl {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="bar">
+      <span class="mark"
+        ><i aria-hidden="true"
+          ><svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+            stroke-linecap="round"
+          >
+            <path d="M4 12h16M12 4v16" /></svg></i
+        >Edu-Canvas</span
+      ><span class="who">Maple</span>
+    </header>
+    <main id="main" class="page">
+      <h1 class="task">
+        Match each fraction to the one that names the same amount.
+      </h1>
+      <p class="how">
+        Tap a fraction on the left, then its partner on the right.
+      </p>
+      <div class="boardl">
+        <section class="col" aria-labelledby="c1">
+          <h2 id="c1">Fractions</h2>
+          <ul>
+            <li>
+              <button
+                class="item paired"
+                aria-pressed="false"
+                aria-label="1/2, paired with 2/4"
+              >
+                1/2 <span class="n">Pair 1</span>
+              </button>
+            </li>
+            <li><button class="item" aria-pressed="true">1/3</button></li>
+            <li><button class="item">3/4</button></li>
+            <li><button class="item">2/5</button></li>
+          </ul>
+        </section>
+        <section class="col" aria-labelledby="c2">
+          <h2 id="c2">Same amount</h2>
+          <ul>
+            <li><button class="item">6/8</button></li>
+            <li>
+              <button class="item paired" aria-label="2/4, paired with 1/2">
+                2/4 <span class="n">Pair 1</span>
+              </button>
+            </li>
+            <li><button class="item">4/10</button></li>
+            <li><button class="item">2/6</button></li>
+          </ul>
+        </section>
+      </div>
+      <div class="done">
+        <button class="btn" disabled>Done</button
+        ><span class="muted">1 of 4 pairs made</span
+        ><span class="muted" role="status" style="margin-inline-start: auto"
+          >Saved</span
+        >
+      </div>
+
+      <p class="synthetic" style="margin-block: var(--s-6) var(--s-2)">
+        State after Done
+      </p>
+      <section class="card result" aria-labelledby="r" aria-live="polite">
+        <b id="r">You matched 3 of 4.</b>
+        <p class="muted">
+          2/5 and 4/10 name the same amount: both are 4 tenths. Next, you'll
+          compare fractions with different bottoms.
+        </p>
+        <div><button class="btn dark">Next activity</button></div>
+      </section>
+      <p class="synthetic">Sketch. Activity content is illustrative.</p>
+    </main>
+  </body>
+</html>

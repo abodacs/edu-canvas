@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>3 · Publish and assign (sketch)</title>
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      .steps {
+        list-style: none;
+        padding: 0;
+        display: grid;
+      }
+      .steps li {
+        display: grid;
+        grid-template-columns: 28px 1fr auto;
+        gap: 12px;
+        align-items: center;
+        padding: 14px 24px;
+        border-block-start: 1px solid var(--line);
+        font-size: var(--fs-secondary);
+      }
+      .steps li:first-child {
+        border: 0;
+      }
+      .tick {
+        inline-size: 22px;
+        block-size: 22px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: var(--ok-soft);
+        color: var(--ok);
+      }
+      .tick.no {
+        background: var(--sunk);
+        color: var(--ink-3);
+      }
+      .learner {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .learner label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-field);
+        background: var(--surface);
+        font-size: var(--fs-secondary);
+        cursor: pointer;
+      }
+      .learner label:has(input:checked) {
+        border-color: color-mix(in oklch, var(--clay) 50%, var(--line));
+        background: var(--clay-soft);
+      }
+      .learner input {
+        accent-color: var(--clay);
+      }
+      .done {
+        display: grid;
+        gap: 14px;
+        padding: 28px 24px;
+      }
+      .linkbox {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-field);
+        background: var(--ground);
+        font-size: var(--fs-secondary);
+        overflow: hidden;
+      }
+      .linkbox code {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font: 500 var(--fs-meta)/1.4 var(--sans);
+        color: var(--ink-2);
+      }
+      @media (width <= 720px) {
+        .learner {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="bar">
+      <a class="mark" href="index.html"
+        ><i aria-hidden="true"
+          ><svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+            stroke-linecap="round"
+          >
+            <path d="M4 12h16M12 4v16" /></svg></i
+        >Edu-Canvas</a
+      >
+      <nav aria-label="Workspace">
+        <a href="1-studio.html">Studio</a
+        ><a href="2-review.html" aria-current="page">Review</a
+        ><a href="4-dashboard.html">Lessons</a>
+      </nav>
+      <span class="who"
+        ><span class="name">Ms. Rivera · Lincoln Elementary</span
+        ><span class="avatar" aria-hidden="true">MR</span></span
+      >
+    </header>
+    <main id="main" class="page">
+      <h1>Publish equivalent fractions</h1>
+      <p class="lede">
+        Publishing freezes this lesson as version 2. Students see only what you
+        approved here.
+      </p>
+
+      <section class="card lift" aria-labelledby="ready-h">
+        <h2
+          id="ready-h"
+          class="title section"
+          style="padding-block-end: var(--s-2)"
+        >
+          Before you publish
+        </h2>
+        <ol class="steps">
+          <li>
+            <span class="tick" aria-hidden="true"
+              ><svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 6 9 17l-5-5" /></svg></span
+            ><span>Variant A · Worked example approved</span
+            ><span class="pill ok">v2</span>
+          </li>
+          <li>
+            <span class="tick" aria-hidden="true"
+              ><svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 6 9 17l-5-5" /></svg></span
+            ><span
+              >Variant B · Guided activity approved, warning acknowledged</span
+            ><span class="pill ok">v1</span>
+          </li>
+          <li>
+            <span class="tick no" aria-hidden="true"
+              ><svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+              >
+                <path d="M6 12h12" /></svg></span
+            ><span
+              >Variant C · Independent check is blocked and won't be
+              published</span
+            ><span class="pill stop">Excluded</span>
+          </li>
+          <li>
+            <span class="tick" aria-hidden="true"
+              ><svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 6 9 17l-5-5" /></svg></span
+            ><span>Variant D · Matching approved</span
+            ><span class="pill ok">v1</span>
+          </li>
+          <li>
+            <span class="tick" aria-hidden="true"
+              ><svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 6 9 17l-5-5" /></svg></span
+            ><span>Learning path checked</span><span></span>
+          </li>
+        </ol>
+        <div class="section" style="border-block-start: 1px solid var(--line)">
+          <h2 id="as" class="title">Assign to one learner</h2>
+          <p class="small muted" style="margin-block: var(--s-1) var(--s-3)">
+            Seeded synthetic accounts only, until consent and data residency are
+            approved.
+          </p>
+          <div class="learner" role="radiogroup" aria-labelledby="as">
+            <label
+              ><input type="radio" name="l" checked />Learner 01 · Maple</label
+            >
+            <label><input type="radio" name="l" />Learner 02 · Cedar</label>
+            <label><input type="radio" name="l" />Learner 03 · Birch</label>
+          </div>
+        </div>
+        <div class="foot">
+          <span class="small muted"
+            >You can unpublish later. Published versions are never edited.</span
+          ><button class="btn" style="margin-inline-start: auto">
+            Publish and assign
+          </button>
+        </div>
+      </section>
+
+      <section
+        class="card done"
+        style="margin-block-start: 24px"
+        aria-labelledby="done-h"
+        aria-live="polite"
+      >
+        <p class="pill ok">Published · version 2</p>
+        <h2 id="done-h" class="h2">Maple can start the lesson</h2>
+        <div class="linkbox">
+          <code
+            >edu-canvas.app/learn?assignment=a-7f3c&amp;variant=matching</code
+          ><button class="ghost">Copy link</button>
+        </div>
+        <p class="small muted">
+          After Maple presses Done, the score and the reason for the next step
+          appear in Lessons.
+        </p>
+      </section>
+      <p class="synthetic">
+        Sketch. Learner names and the link are illustrative.
+      </p>
+    </main>
+  </body>
+</html>
