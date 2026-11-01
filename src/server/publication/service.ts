@@ -1,8 +1,5 @@
 import {
-  publicationApproveInputSchema,
-  publicationPublishInputSchema,
   publicationPublishResultSchema,
-  publicationReviseInputSchema,
   publicationTargetKey,
   reversePathTargetId,
   reviewPackSchema,
@@ -21,7 +18,6 @@ import {
   decodePackVersion,
   deriveVersionArtifact,
   initialRevision,
-  publicContentSchema,
 } from "./contracts";
 import { publicationError } from "./errors";
 import { createCanonicalHash } from "./hashes";
@@ -43,7 +39,10 @@ import type {
 import type { TeacherActor } from "@/server/identity/types";
 import type {
   PublicationAction,
+  PublicationApproveInput,
+  PublicationPublishInput,
   PublicationPublishResult,
+  PublicationReviseInput,
   ReviewPack,
   ReviewVersion,
 } from "@/shared/publication-contract";
@@ -62,9 +61,18 @@ export type PublishOutcome = PublicationPublishResult;
 export interface PublicationService {
   openReview: (actor: TeacherActor, requestId: string) => Promise<ReviewPack>;
   readReview: (actor: TeacherActor, requestId: string) => Promise<ReviewPack>;
-  approve: (actor: TeacherActor, input: unknown) => Promise<ReviewPack>;
-  revise: (actor: TeacherActor, input: unknown) => Promise<ReviewPack>;
-  publish: (actor: TeacherActor, input: unknown) => Promise<PublishOutcome>;
+  approve: (
+    actor: TeacherActor,
+    input: PublicationApproveInput
+  ) => Promise<ReviewPack>;
+  revise: (
+    actor: TeacherActor,
+    input: PublicationReviseInput
+  ) => Promise<ReviewPack>;
+  publish: (
+    actor: TeacherActor,
+    input: PublicationPublishInput
+  ) => Promise<PublishOutcome>;
   compileVersionPreview: (
     actor: TeacherActor,
     versionId: string
@@ -225,7 +233,16 @@ export const createPublicationService = (
     actor: TeacherActor,
     version: PackVersionRecord
   ): Promise<ReviewPack> => {
-    const decoded = decodePackVersion(version);
+    return projectReviewDecoded(actor, version, decodePackVersion(version));
+  };
+
+  // A handler that already decoded the row passes the value down; decoding it
+  // again only re-validates a value this module produced.
+  const projectReviewDecoded = async (
+    actor: TeacherActor,
+    version: PackVersionRecord,
+    decoded: DecodedPackVersion
+  ): Promise<ReviewPack> => {
     const approvals = await packs.listApprovals(actor.tenantId, version.id);
     const packPublication = await packs.readPublicationForVersion(
       actor.tenantId,
@@ -309,6 +326,7 @@ export const createPublicationService = (
     const learnerAssignmentId = receiptIds[2] ?? null;
     const learnerVariantId = receiptIds[3] ?? null;
     return publicationPublishResultSchema.parse({
+      // The replay branch runs before the decode, so it decodes here.
       review: await projectReview(actor, version),
       publicationId,
       assignmentId,
@@ -431,16 +449,8 @@ export const createPublicationService = (
 
   const approve = async (
     actor: TeacherActor,
-    raw: unknown
+    input: PublicationApproveInput
   ): Promise<ReviewPack> => {
-    const parsed = publicationApproveInputSchema.safeParse(raw);
-    if (!parsed.success) {
-      throw publicationError(
-        "PUBLICATION_INPUT_INVALID",
-        "The approval request is not valid."
-      );
-    }
-    const input = parsed.data;
     const version = await loadVersion(actor, input.requestId, input.versionId);
     await assertLatest(actor, version);
 
@@ -497,7 +507,7 @@ export const createPublicationService = (
       inputHash
     );
     if (replay) {
-      return projectReview(actor, version);
+      return projectReviewDecoded(actor, version, decoded);
     }
 
     const existing = await packs.readApproval(
@@ -521,7 +531,7 @@ export const createPublicationService = (
         "pack-approval",
         [existing.id]
       );
-      return projectReview(actor, version);
+      return projectReviewDecoded(actor, version, decoded);
     }
 
     const approvalId = createId();
@@ -564,16 +574,8 @@ export const createPublicationService = (
 
   const revise = async (
     actor: TeacherActor,
-    raw: unknown
+    input: PublicationReviseInput
   ): Promise<ReviewPack> => {
-    const parsed = publicationReviseInputSchema.safeParse(raw);
-    if (!parsed.success) {
-      throw publicationError(
-        "PUBLICATION_INPUT_INVALID",
-        "The revision request is not valid."
-      );
-    }
-    const input = parsed.data;
     const current = await loadVersion(actor, input.requestId, input.versionId);
     await assertLatest(actor, current);
     if (current.artifactHash !== input.expectedArtifactHash) {
@@ -629,16 +631,8 @@ export const createPublicationService = (
 
   const publish = async (
     actor: TeacherActor,
-    raw: unknown
+    input: PublicationPublishInput
   ): Promise<PublishOutcome> => {
-    const parsed = publicationPublishInputSchema.safeParse(raw);
-    if (!parsed.success) {
-      throw publicationError(
-        "PUBLICATION_INPUT_INVALID",
-        "The publish request is not valid."
-      );
-    }
-    const input = parsed.data;
     const version = await loadVersion(actor, input.requestId, input.versionId);
     await assertLatest(actor, version);
     if (version.artifactHash !== input.expectedArtifactHash) {
@@ -781,6 +775,7 @@ export const createPublicationService = (
     // The learner page opens the first bridged section, and the bridge maps
     // variant i onto section i, so the first variant names what the page shows.
     return publicationPublishResultSchema.parse({
+      // The replay branch runs before the decode, so it decodes here.
       review: await projectReview(actor, version),
       publicationId,
       assignmentId,
@@ -802,7 +797,7 @@ export const createPublicationService = (
     }
     const decoded = decodePackVersion(version);
     const artifact = deriveVersionArtifact(version, decoded);
-    const content = publicContentSchema.parse(decoded.publicContent);
+    const { publicContent: content } = decoded;
     return compileLessonPreview(artifact.gate.renderable, {
       requestId: version.id,
       grade: content.input.grade,

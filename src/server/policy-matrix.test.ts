@@ -1781,6 +1781,37 @@ describe("protected domain policy matrix", () => {
     expect(publicationPublishResultSchema.safeParse(body).success).toBeTruthy();
   });
 
+  it("PT-58 the delivery seam refuses a body the contract does not publish", async () => {
+    const dependencies = await authDependencies();
+    const teacher = await signInDirect(dependencies, teacherEmail);
+    const draft = await generateReadyDraft(
+      dependencies,
+      teacher,
+      "policy-pt-58-generate"
+    );
+    const approved = await approveEveryScreen(
+      dependencies,
+      teacher,
+      draft.requestId
+    );
+
+    // The body schemas are the boundary now, so an unknown key is a refusal
+    // rather than something an inner parse silently strips.
+    const { response } = await publishPack(dependencies, teacher, {
+      requestId: draft.requestId,
+      versionId: approved.version.id,
+      expectedArtifactHash: approved.version.artifactHash,
+      learnerId: "learner_lina",
+      operationKey: "policy-pt-58-publish",
+      ...{ score: 100 },
+    } as Parameters<typeof publishPack>[2]);
+
+    expect({
+      status: response.status,
+      code: await errorCode(response),
+    }).toStrictEqual({ status: 422, code: "PUBLICATION_INPUT_INVALID" });
+  });
+
   it("PT-12 a learner cannot publish", async () => {
     const dependencies = await authDependencies();
     const learner = await signInDirect(dependencies, learnerEmail);
