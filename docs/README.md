@@ -34,7 +34,7 @@ Edu-Canvas is a production product; these documents define and verify one trustw
 | [Architecture harness](architecture-harness.md) | Guardrails for state ownership, layer imports, contract drift, and dependency boundaries |
 | [Observed behaviour](observed-behaviour.md) | Evidence boundary, job stories, and the research plan |
 | [Threat model](security/threat-model.md) | STRIDE pass against the implemented paths, with linked residual owners |
-| [Decision records](agdr/) | Architecture decisions AgDR-0001–0009 |
+| [Decision records](agdr/) | Architecture decisions AgDR-0001–0015 |
 | GitHub issues and Projects | Work ownership, dependencies, priority, lifecycle state, and delivery evidence |
 
 ## Change log

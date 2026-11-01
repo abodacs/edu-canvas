@@ -31,7 +31,7 @@ Edu-Canvas is built around one teacher-controlled loop:
 4. Students work through the approved activity with server-side validation.
 5. The teacher sees the learning path, the evidence, and a proposed next step.
 
-Generation and teacher review work today. Approval, publication, and the student side are the next slices; the [Status](#status) section separates what ships from what is planned.
+Generation, review, approval, publication, and server-side learner grading work today. Teacher evidence and the proposed next step are the next slices; the [Status](#status) section separates what ships from what is planned.
 
 ## Why it matters
 
@@ -148,16 +148,18 @@ PostgreSQL and a server-side provider key are required; there is no in-memory ru
 
 ## Status
 
-🟡 **The generation, validation, and teacher-preview path works. The full teacher-to-student loop does not.**
+🟡 **The teacher-to-student loop runs end to end on synthetic data. Adaptation and teacher evidence do not.**
 
 | Working now | Next |
 | --- | --- |
-| Teacher accounts, sign-in, sessions, and membership state | Approval and immutable publication ([#5](https://github.com/abodacs/edu-canvas/issues/5)) |
-| Structured generation of four variants with retry-safe persistence | Learner attempts and server-authoritative grading ([#6](https://github.com/abodacs/edu-canvas/issues/6)) |
-| Curriculum, learning-quality, and hard safety validation before preview | Connection reveal and deterministic next activity ([#7](https://github.com/abodacs/edu-canvas/issues/7)) |
-| Allowlisted A2UI preview over SSE, including fractions and native MathML | Teacher evidence, override, and pause ([#8](https://github.com/abodacs/edu-canvas/issues/8), [#107](https://github.com/abodacs/edu-canvas/issues/107)) |
-| Prerequisite learning path and forward story in the preview | Input moderation and the personal-data boundary ([#132](https://github.com/abodacs/edu-canvas/issues/132)) |
-| PDF, TXT, and MD source upload with explicit gap states | Teacher-facing moderation recovery ([#119](https://github.com/abodacs/edu-canvas/issues/119)) |
+| Teacher accounts, sign-in, sessions, and membership state | Connection reveal and deterministic next activity ([#7](https://github.com/abodacs/edu-canvas/issues/7)) |
+| Structured generation of four variants with retry-safe persistence | Teacher evidence, override, and pause ([#8](https://github.com/abodacs/edu-canvas/issues/8), [#107](https://github.com/abodacs/edu-canvas/issues/107)) |
+| Curriculum, learning-quality, and hard safety validation, including the artifact gate | Teacher-facing moderation recovery ([#119](https://github.com/abodacs/edu-canvas/issues/119)) |
+| Allowlisted A2UI preview over SSE, including fractions and native MathML | Deployment quotas, rollback, and monitoring gates ([#104](https://github.com/abodacs/edu-canvas/issues/104)) |
+| Review versions, per-target approval, and immutable publication ([#5](https://github.com/abodacs/edu-canvas/issues/5)) | — |
+| Learner assignment, the `/learn` board, and server-authoritative grading ([#6](https://github.com/abodacs/edu-canvas/issues/6)) | — |
+| Prerequisite learning path and forward story in the preview | — |
+| PDF, TXT, and MD source upload with explicit gap states | — |
 | PostgreSQL and seeded persistence, health checks, security headers | — |
 
 The [Meta AI Developer Hackathon 2026](docs/hackathon/meta-global-2026/README.md) (October 26 – November 4) is the first external validation milestone, not the product goal. The architecture document records the implemented flows and the gaps in detail: [`ARCHITECTURE.md`](ARCHITECTURE.md).

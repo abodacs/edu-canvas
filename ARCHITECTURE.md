@@ -1,8 +1,8 @@
 # Architecture
 
-Edu-Canvas is a full-stack TanStack Start application. Its implemented teaching path authenticates a teacher, grounds the request in the seeded curriculum or an uploaded source, generates and validates a lesson draft, persists the result, and renders a teacher preview through A2UI. Approval, publication, student submissions, grading, and adaptation remain target contracts.
+Edu-Canvas is a full-stack TanStack Start application. Its implemented loop runs from a teacher prompt to a published lesson and a graded learner attempt: authenticate, ground the request in the seeded curriculum or an uploaded source, generate and validate four variants, preview through A2UI, review and approve a version, publish it, assign it to a learner, and grade a server-authoritative attempt. Adaptation, the connection reveal, and teacher evidence remain target contracts.
 
-This document describes the code inspected on **2026-11-01**, using `67b80a2` as the source baseline. It owns module boundaries, runtime flows, state ownership, and the checks that protect them. [Design contracts](docs/design/design-doc.md) own intended behavior; [AgDRs](docs/agdr/) own decision rationale; [runbooks](docs/foundation-runbook.md) own setup and operation. A disagreement between this document and the implementation is documentation drift, not permission to change behavior.
+This document describes the code inspected on **2026-11-01**, using `07a065a` as the source baseline. It owns module boundaries, runtime flows, state ownership, and the checks that protect them. [Design contracts](docs/design/design-doc.md) own intended behavior; [AgDRs](docs/agdr/) own decision rationale; [runbooks](docs/foundation-runbook.md) own setup and operation. A disagreement between this document and the implementation is documentation drift, not permission to change behavior.
 
 | Reader's question | Start here |
 | --- | --- |
@@ -34,15 +34,24 @@ flowchart LR
         PreviewAPI[Preview API]
         Compiler[A2UI compiler and SSE]
         Persistence[Persistence interface]
+        Publication[Publication and assignment]
+        Learner[Learner run and grading]
     end
     Page -->|HTTPS + session cookie| Auth
     Page -->|HTTPS| Delivery
+    Page -->|HTTPS| Publication
+    Page -->|HTTPS| Learner
     Delivery --> Auth
+    Publication --> Auth
+    Learner --> Auth
     Delivery --> Generation
     Generation -->|Generate or correct| Provider[Model provider]
     Provider -->|Untrusted draft| Generation
     Generation --> Safety
     Safety --> Persistence
+    Publication --> Safety
+    Publication --> Persistence
+    Learner --> Persistence
     Preview -->|GET preview| PreviewAPI
     PreviewAPI --> Auth
     PreviewAPI --> Persistence
@@ -54,7 +63,7 @@ flowchart LR
 
 Generation is request-driven. There is no background job queue. The generation response returns a public result; a separate request retrieves the persisted draft as an SSE preview. SSE transports an already compiled snapshot, not incremental model output.
 
-No student surface ships. There is no learner route, submission endpoint, or grading path; the teacher workspace is the only authenticated page.
+The learner surface is one page. `/learn?assignment=&variant=` opens a run and posts matches to `/api/learner/runs` and `/api/learner/attempts`. Grading is server-authoritative: the private answer relationships stay on the server, and the response carries only score, correctness, and counts. Adaptation, the connection reveal, and teacher evidence remain unimplemented.
 
 ### Runtime and dependencies
 
@@ -68,7 +77,7 @@ No student surface ships. There is no learner route, submission endpoint, or gra
 | Error reporting | Structured server events and optional Sentry delivery | [observability.server.ts](src/server/observability.server.ts) |
 | Delivery | Node container on Fly.io; Supabase Postgres in the release design | [fly.toml](fly.toml), [release runbook](docs/release-fly-supabase.md) |
 
-Dependency versions belong in `package.json` and `pnpm-lock.yaml`. The [Nitro compatibility decision](docs/agdr/AgDR-0003-nitro-beta-compatibility.md) explains the beta runtime constraint.
+Dependency versions belong in `package.json` and `pnpm-lock.yaml`. The [Nitro compatibility decision](docs/agdr/AgDR-0013-nitro-beta-compatibility.md) explains the beta runtime constraint.
 
 ## Module ownership
 
@@ -82,13 +91,16 @@ Dependency versions belong in `package.json` and `pnpm-lock.yaml`. The [Nitro co
 | `src/server/safety/` | Artifact gate verdicts, findings, renderable-artifact brand, recovery policy, and enforcement before preview | [artifact-gate.ts](src/server/safety/artifact-gate.ts), [artifact-enforcement.ts](src/server/safety/artifact-enforcement.ts) |
 | `src/server/grounding/` | Source upload limits, extraction, gap states, source gate, and public projection | [source-service.ts](src/server/grounding/source-service.ts), [delivery.server.ts](src/server/grounding/delivery.server.ts) |
 | `src/server/moderation/` | Deterministic prompt, generated-content, and source-text screening | [content-safety.ts](src/server/moderation/content-safety.ts) |
-| `src/server/persistence.ts` and `src/server/persistence/` | Adapter selection, record storage, atomic claims, conditional writes, database access | [persistence.ts](src/server/persistence.ts), [generation-persistence.ts](src/server/persistence/generation-persistence.ts) |
+| `src/server/records/` | Versioned lesson-package records, learner-run and attempt vocabulary, explicit projections, hashes, private answers | [authoring.ts](src/server/records/authoring.ts), [projections.ts](src/server/records/projections.ts), [vocabulary.ts](src/server/records/vocabulary.ts) |
+| `src/server/publication/` | Review versions, per-target approvals, the publication fact, the learner assignment, and the pack→record bridge | [service.ts](src/server/publication/service.ts), [delivery.server.ts](src/server/publication/delivery.server.ts), [record-bridge.ts](src/server/publication/record-bridge.ts) |
+| `src/server/learner/` | Run start and server-authoritative matching grading | [delivery.server.ts](src/server/learner/delivery.server.ts), [grading.ts](src/server/learner/grading.ts) |
+| `src/server/persistence.ts` and `src/server/persistence/` | Adapter selection, record storage, atomic claims, conditional writes, database access | [persistence.ts](src/server/persistence.ts), [generation-persistence.ts](src/server/persistence/generation-persistence.ts), [records-commands.ts](src/server/persistence/records-commands.ts) |
 | `src/shared/` | Browser-safe input and output schemas, protocol definitions, inferred public types | [generation-contract.ts](src/shared/generation-contract.ts), [a2ui-contract.ts](src/shared/a2ui-contract.ts), [story-plan.ts](src/shared/story-plan.ts) |
 | `src/components/a2ui/` | Stream consumption, local render state, catalog rendering | [lesson-preview.tsx](src/components/a2ui/lesson-preview.tsx), [renderer.ts](src/components/a2ui/renderer.ts) |
 | `src/components/ui/`, `src/lib/` | UI primitives and browser-safe utilities | `button.tsx`, `utilities.ts` |
 | `src/start.ts`, `src/server/security-headers.ts` | Request middleware for CSP nonce and baseline headers, selected by response class | [start.ts](src/start.ts), [security-headers.ts](src/server/security-headers.ts) |
-| `drizzle/` | Authoritative schema source, generated SQL migrations, query types, journal metadata | [schema.ts](drizzle/schema.ts), `0000_baseline.sql`–`0006_far_viper.sql` |
-| `scripts/` | Verification, database bootstrap, smoke checks, benchmarks | [verify-architecture.ts](scripts/verify-architecture.ts) |
+| `drizzle/` | Authoritative schema source, generated SQL migrations, query types, journal metadata | [schema.ts](drizzle/schema.ts), `0000_baseline.sql`–`0012_special_susan_delgado.sql` |
+| `scripts/` | Verification, database bootstrap, smoke checks, benchmarks | [verify-architecture.ts](scripts/verify-architecture.ts), [verify-architecture-map.ts](scripts/verify-architecture-map.ts) |
 
 The server functions compose configuration, provider, persistence, and service. The generation service owns the workflow; provider adapters do not decide whether a draft is acceptable. Persistence owns concurrency rules; routes do not coordinate database transactions.
 
@@ -117,8 +129,8 @@ Contexts are derived from the teaching loop's verbs — draft → validate → p
 | --- | --- | --- | --- |
 | Lesson Drafting | Supporting | Provider port, attempts, idempotency, correction policy, public projection | `src/server/generation/` (service, provider, factory, projection, types) |
 | Validation & Safety | Core | Structural validation, curriculum alignment, learning-quality review, artifact gate (verdicts, findings, renderable-artifact brand, recovery policy), validated learning path, forward story | Validators, `learning-path.ts`, and [story-plan.ts](src/shared/story-plan.ts); gate, enforcement, and recovery policy in `src/server/safety/` |
-| Teacher Review | Core | Preview access checks, A2UI compilation and SSE delivery, approval and replacement (target) | `src/server/a2ui/`, `src/components/a2ui/` |
-| Student Learning | Core (future) | Immutable publication, learner attempts, server-authoritative grading, mastery, adaptation | Not implemented; [#5](https://github.com/abodacs/edu-canvas/issues/5)–[#8](https://github.com/abodacs/edu-canvas/issues/8), [#19](https://github.com/abodacs/edu-canvas/issues/19); [AgDR-0002](docs/agdr/AgDR-0002-server-authoritative-grading.md) |
+| Teacher Review | Core | Preview access checks, A2UI compilation and SSE delivery, review versions, per-target approval, the publication fact and assignment; replacement is a target | `src/server/a2ui/`, `src/components/a2ui/`, `src/server/publication/`, `src/server/records/`; [AgDR-0012](docs/agdr/AgDR-0012-generated-pack-publication-records.md) |
+| Student Learning | Core | Learner assignment, run start, server-authoritative matching grade; mastery, adaptation, and the connection reveal are targets | `src/server/learner/`, `src/server/records/`, `/learn`, `/api/learner/*`; [AgDR-0002](docs/agdr/AgDR-0002-server-authoritative-grading.md) |
 | Curriculum & Standards | Supporting | Seeded standards, versioned prerequisite graph, bounded source uploads, Learning Commons grounding (target) | `src/server/seed-data.ts`, `src/server/grounding/`; [AgDR-0005](docs/agdr/AgDR-0005-grounded-package-version-contracts.md) |
 | Identity & Tenancy | Supporting | Sessions, roles, capabilities, tenant membership, CSRF, rate limits, trusted provisioning | `src/server/identity/`; [#98](https://github.com/abodacs/edu-canvas/issues/98), [#99](https://github.com/abodacs/edu-canvas/issues/99) |
 | A2UI Protocol | Supporting | Catalog governance, message schemas, compiler and renderer conformance | [a2ui-contract.ts](src/shared/a2ui-contract.ts); [AgDR-0001](docs/agdr/AgDR-0001-a2ui-catalog-governance.md) |
@@ -340,6 +352,14 @@ Blocked and failed attempts retain diagnostics with no accepted draft. `ready-fo
 
 [compiler.ts](src/server/a2ui/compiler.ts) projects the private draft into allowlisted components and preview data, including the validated learning path and forward story. [fraction-compiler.ts](src/server/a2ui/fraction-compiler.ts) compiles the `fractions-v2` activity. [stream.ts](src/server/a2ui/stream.ts) validates messages again and emits SSE `a2ui` events followed by completion or error. Browser stream parsing and rendering live in `src/components/a2ui/` and keep render state local.
 
+### Review, approve, and publish a pack
+
+`/api/publications/review` returns a review pack for a `ready-for-review` record the teacher owns. An edit inserts a new `pack_versions` row with a parent link; nothing updates or deletes a version. Approvals are per target and pinned to the artifact and validation-result hashes. Publish re-runs the artifact gate over the stored revision, rejects a stale hash, and writes one publication and one assignment. [record-bridge.ts](src/server/publication/record-bridge.ts) then appends the lesson version, publication, and assignment that the learner runtime reads.
+
+### Open and grade a learner run
+
+`/api/learner/runs` resolves the student session, opens or replays a run keyed by `operationKey`, and returns the assigned variant's sections. `/api/learner/attempts` rejects a stale `expectedRunRevision`, grades the submitted pairs against the private answer relationships, and writes the attempt only after grading succeeds. The response carries score, correctness, and counts; the answer key never leaves the server.
+
 ### Persist and recover attempts
 
 [GenerationPersistence](src/server/generation/types.ts) provides claim, expiry, conditional save, idempotency lookup, and record read operations. The service does not know SQL or Drizzle transaction details.
@@ -384,7 +404,7 @@ The repository has no deterministic scaffold command for these recipes. [Coding 
 | Every response carries baseline security headers | `src/start.ts` middleware selects a policy by path class and stamps the CSP nonce on the SSR bootstrap | Headers are policy controls, not proof against injected content |
 | Real-data mode remains disabled | Configuration rejects `SYNTHETIC_DATA_ONLY=false` | This flag cannot identify personal data embedded in free text |
 
-`pnpm check` runs formatting, ESLint, Stylelint, TypeScript, tsrs, Vitest, the application build, client-boundary verification, architecture verification, and dependency-boundary verification in order. [package.json](package.json) owns the exact command chain.
+`pnpm check` runs formatting, ESLint, Stylelint, TypeScript, tsrs, Vitest, the application build, client-boundary verification, architecture verification, the architecture-map check, and dependency-boundary verification in order. [package.json](package.json) owns the exact command chain.
 
 Additional checks have separate prerequisites:
 
@@ -418,18 +438,18 @@ These differences were checked against the source baseline above. They are not r
 
 | Area | Implemented state | Target or consequence |
 | --- | --- | --- |
-| Teaching loop | Generation and teacher preview | Approval, immutable publication, learner attempts, grading, reveal, and adaptation remain unimplemented. |
+| Teaching loop | Generation, teacher preview, review and approval, publication, assignment, and server-authoritative learner grading | The connection reveal, teacher evidence and override, mastery, and adaptation remain unimplemented ([#7](https://github.com/abodacs/edu-canvas/issues/7), [#8](https://github.com/abodacs/edu-canvas/issues/8), [#107](https://github.com/abodacs/edu-canvas/issues/107)). |
 | Grounding | Seeded curriculum, prerequisite graph, and bounded PDF/TXT/MD uploads with explicit gap states | Learning Commons retrieval, Jev matching, and grounded package contracts remain design work described in [AgDR-0005](docs/agdr/AgDR-0005-grounded-package-version-contracts.md). |
-| Safety | Deterministic content screening, structural validation, bounded semantic review, and the artifact gate before preview | A moderation block carries no category or code, and the prompt is persisted before screening ([#132](https://github.com/abodacs/edu-canvas/issues/132), [#119](https://github.com/abodacs/edu-canvas/issues/119)). |
-| Identity and cost controls | Session-owned identity, current membership checks, CSRF/origin guards, bounded counters, and trusted provisioning; the role-selected demo surface is retired | [#98](https://github.com/abodacs/edu-canvas/issues/98) stays open for the remaining account and roster evidence. Release unit B (publication, attempts, teacher decisions) is unbuilt, and deployment/rollback/monitoring gates remain pending. Least-privilege database roles belong to [#100](https://github.com/abodacs/edu-canvas/issues/100). |
+| Safety | Deterministic content screening with a category and code, structural validation, bounded semantic review, and the artifact gate before preview and publication | Teacher-facing moderation recovery is [#119](https://github.com/abodacs/edu-canvas/issues/119). The prompt is still persisted before screening. |
+| Identity and cost controls | Session-owned identity, current membership checks, CSRF/origin guards, bounded counters, and trusted provisioning; the role-selected demo surface is retired | [#98](https://github.com/abodacs/edu-canvas/issues/98) stays open for the remaining account and roster evidence. Deployment, rollback, and monitoring gates remain pending. Least-privilege database roles belong to [#100](https://github.com/abodacs/edu-canvas/issues/100). |
 | Provider selection | Fixture or OpenAI Responses adapter with `OPENAI_*` settings and a `gpt-5.6` code default | [AgDR-0006](docs/agdr/AgDR-0006-provider-selection-and-deadlines.md) selects a provider through access evidence. The code default is not evidence for an event-allowed provider. |
 | Deadlines | 100 seconds per provider call, 200 seconds for generation plus correction, and a 220-second claim lease; writes require an unexpired lease | AgDR-0006 event decision, 2026-10-27. |
 | Idempotency conflicts | An existing tenant-local key compares the persisted normalized request hash; changed input returns `IDEMPOTENCY_CONFLICT` without a provider call | AgDR-0006 requires the conflict; unchanged input reuses the original result. |
 | Machine count | `fly.toml` sets `min_machines_running = 2` | AgDR-0007 and the release procedure select one Machine for the planned limit model. |
 | Connections | Each database operation creates and closes a client | There is no application-wide connection pool. |
 | Seeded catalog | Fixture activity uses `edu-canvas-matching-v0` | Live preview uses `matching-v1` or `fractions-v2`; the activity fixture is not the preview catalog authority. |
-| Decision identifiers | Three records share `AgDR-0003` | Citations need the full filename to distinguish canonical generation, Nitro compatibility, and observability. |
 | Context boundary debt | Drafting imports seed data directly | Curriculum context port (wave 2) per [AgDR-0008](docs/agdr/AgDR-0008-bounded-contexts-and-screaming-layout.md); tracked as a `verify:boundaries` warn rule. |
+| Record model duplication | Publication writes the approved pack into `pack_*` and again into `lesson_*` through [record-bridge.ts](src/server/publication/record-bridge.ts) | One lesson has two stored representations. Collapsing them is an accepted follow-up; until then the bridge is the only writer of the second copy. |
 
 ## Document maintenance
 
