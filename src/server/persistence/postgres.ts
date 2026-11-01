@@ -39,6 +39,7 @@ interface GenerationRequestRow {
   draft: unknown;
   provenance: unknown;
   source_snapshot_id: string | null;
+  revises_request_id: string | null;
   created_at: string | Date;
   updated_at: string | Date;
 }
@@ -145,6 +146,7 @@ const hydrateStoredGeneration = async (
     draft: row.draft,
     provenance: row.provenance,
     sourceSnapshotId: row.source_snapshot_id,
+    revisesRequestId: row.revises_request_id,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -287,6 +289,7 @@ const createPostgresGenerationBackend = (
           draft,
           provenance,
           source_snapshot_id,
+          revises_request_id,
           created_at,
           updated_at
         )
@@ -305,6 +308,7 @@ const createPostgresGenerationBackend = (
           ${transaction.json(jsonValue(storedGenerationDraft(record)))}::jsonb,
           ${transaction.json(jsonValue(record.provenance ?? null))}::jsonb,
           ${record.input.sourceSnapshotId ?? null},
+          ${record.input.revisesRequestId ?? null},
           ${record.createdAt},
           ${record.updatedAt}
         )

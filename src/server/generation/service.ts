@@ -154,10 +154,13 @@ const createImplicitIdempotencyKey = (
     | "difficulty"
     | "sourceSnapshotId"
   >,
-  retryOfRequestId?: string
+  referents: {
+    retryOfRequestId?: string;
+    revisesRequestId?: string;
+  } = {}
 ): string => {
   return `implicit-${hashForIdempotency(
-    JSON.stringify({ ...input, retryOfRequestId })
+    JSON.stringify({ ...input, ...referents })
   )}`;
 };
 
@@ -187,7 +190,7 @@ export const normalizeGenerationInput = (
       ? syntheticSeed.standard.id
       : input.standardId;
   const difficulty: LessonDifficulty = input.difficulty ?? "on-level";
-  const { retryOfRequestId } = input;
+  const { retryOfRequestId, revisesRequestId } = input;
   const normalized = {
     prompt: input.prompt,
     grade,
@@ -203,9 +206,13 @@ export const normalizeGenerationInput = (
     ...normalized,
     idempotencyKey:
       input.idempotencyKey ??
-      createImplicitIdempotencyKey(normalized, retryOfRequestId),
+      createImplicitIdempotencyKey(normalized, {
+        retryOfRequestId,
+        revisesRequestId,
+      }),
     requestHash: createGenerationRequestHash(normalized),
     ...(retryOfRequestId && { retryOfRequestId }),
+    ...(revisesRequestId && { revisesRequestId }),
   };
 };
 
@@ -716,6 +723,11 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         standardId: input.standardId,
         language: input.language,
         difficulty: input.difficulty,
+        // #148: the link is written with the new request, never with the
+        // blocked one, so the blocked row stays byte-for-byte unchanged.
+        ...(input.revisesRequestId && {
+          revisesRequestId: input.revisesRequestId,
+        }),
       },
       state: "generating",
       attempt: attemptNumber,
@@ -952,6 +964,44 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     return result;
   };
 
+  // #148: a revision is a new request that names the blocked one. It never
+  // reuses the blocked record, and its link stays out of the request hash, so
+  // the moderated-hash guard remains the same-prompt refusal.
+  const assertRevisionReferent = async (
+    actor: GenerationCommand["actor"],
+    input: NormalizedCommandInput
+  ): Promise<void> => {
+    if (!input.revisesRequestId) {
+      return;
+    }
+    if (input.retryOfRequestId) {
+      throw new GenerationRequestError(GENERATION_INPUT_INVALID_MESSAGE, {
+        code: "GENERATION_INPUT_INVALID",
+      });
+    }
+    const revisedRecord = await options.persistence.readGeneration(
+      actor.tenantId,
+      input.revisesRequestId
+    );
+    if (!revisedRecord || revisedRecord.teacherId !== actor.actorId) {
+      throw new GenerationRequestError(DRAFT_NOT_FOUND_MESSAGE, {
+        code: "DRAFT_NOT_FOUND",
+      });
+    }
+    if (revisedRecord.state !== BLOCKED_BY_MODERATION_STATE) {
+      throw new GenerationRequestError(
+        "Only a moderation-blocked request can be revised.",
+        { code: "DRAFT_NOT_RETRYABLE" }
+      );
+    }
+    if (revisedRecord.input.prompt === input.prompt) {
+      throw new GenerationRequestError(
+        "A revision must change the lesson request.",
+        { code: "MODERATION_REVISION_REQUIRED" }
+      );
+    }
+  };
+
   return {
     async generate(
       command: GenerationCommand
@@ -984,6 +1034,8 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
           { code: "MODERATION_REVISION_REQUIRED" }
         );
       }
+
+      await assertRevisionReferent(command.actor, input);
 
       if (input.retryOfRequestId) {
         const retryRecord = await options.persistence.readGeneration(
@@ -1038,6 +1090,9 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
           difficulty: input.difficulty,
           ...(input.sourceSnapshotId && {
             sourceSnapshotId: input.sourceSnapshotId,
+          }),
+          ...(input.revisesRequestId && {
+            revisesRequestId: input.revisesRequestId,
           }),
         },
         state: "requested",

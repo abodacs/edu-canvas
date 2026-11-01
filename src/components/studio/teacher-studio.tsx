@@ -19,15 +19,18 @@ import {
 import { cn } from "@/lib/utilities";
 import { LessonPreview } from "@/components/a2ui/lesson-preview";
 import { Button } from "@/components/ui/button";
+import { ModerationRecoveryPanel } from "@/components/studio/moderation-recovery-panel";
 import { ReviewStudio } from "@/components/studio/review-studio";
 import { SourcePanel } from "@/components/studio/source-panel";
 import { ValidationDiagnostics } from "@/components/studio/validation-diagnostics";
 import { csrfHeaderName } from "@/shared/identity-contract";
 import { publicGenerationResultSchema } from "@/shared/generation-contract";
 import { displayStandardCode } from "@/shared/standard-display";
+import type { GenerationFailure } from "@/lib/generation-failures";
 import type { BoundSource } from "@/components/studio/source-panel";
 import type {
   LessonGenerationInput,
+  ModerationCategory,
   PublicGenerationResult,
   RecoveryAction,
 } from "@/shared/generation-contract";
@@ -120,6 +123,19 @@ const getPromptContext = (prompt: string): PromptContext => {
 
 const READY_FOR_REVIEW_STATE = "ready-for-review";
 const BLOCKED_BY_VALIDATION_STATE = "blocked-by-validation";
+const BLOCKED_BY_MODERATION_STATE = "blocked-by-moderation";
+
+// #119: the same-prompt refusal opens the same panel as a blocked result.
+const REVISION_REQUIRED_CODE = "MODERATION_REVISION_REQUIRED";
+
+const moderationCategoryOf = (
+  result: PublicGenerationResult
+): ModerationCategory | null => {
+  return (
+    result.diagnostics.find((diagnostic) => diagnostic.moderationCategory)
+      ?.moderationCategory ?? null
+  );
+};
 
 const getResultTitle = (state: PublicGenerationResult["state"]) => {
   switch (state) {
@@ -309,9 +325,8 @@ const directionForLanguage = (language: PublicGenerationResult["language"]) =>
   language === "ar" ? "rtl" : "ltr";
 
 type GenerationAttempt =
-  | { readonly kind: "result"; readonly result: PublicGenerationResult }
-  | { readonly kind: "unauthorized" }
-  | { readonly kind: "error"; readonly message: string };
+  | GenerationFailure
+  | { readonly kind: "result"; readonly result: PublicGenerationResult };
 
 const postGenerationRequest = async (
   input: LessonGenerationInput,
@@ -328,7 +343,11 @@ const postGenerationRequest = async (
       body: JSON.stringify(input),
     });
   } catch {
-    return { kind: "error", message: GENERIC_GENERATION_FAILURE_MESSAGE };
+    return {
+      kind: "error",
+      message: GENERIC_GENERATION_FAILURE_MESSAGE,
+      code: null,
+    };
   }
 
   const payload = await readResponseJson(response);
@@ -340,7 +359,11 @@ const postGenerationRequest = async (
   const parsed = publicGenerationResultSchema.safeParse(payload);
   return parsed.success
     ? { kind: "result", result: parsed.data }
-    : { kind: "error", message: GENERIC_GENERATION_FAILURE_MESSAGE };
+    : {
+        kind: "error",
+        message: GENERIC_GENERATION_FAILURE_MESSAGE,
+        code: null,
+      };
 };
 
 const PromptSignals = ({
@@ -844,6 +867,82 @@ interface TeacherLessonComposerProperties {
   readonly standardId: string;
 }
 
+interface TeacherComposerOutcomeProperties {
+  readonly prompt: string;
+  readonly result: PublicGenerationResult | null;
+  readonly priorDraft: PublicGenerationResult | null;
+  readonly hasModerationFailure: boolean;
+  readonly onOpenReview: (requestId: string) => void;
+  readonly onRetry: (
+    event: SyntheticEvent<HTMLFormElement>,
+    requestId: string
+  ) => void;
+  readonly onRecover: (action: RecoveryAction, requestId: string) => void;
+  readonly onRevise: (requestId: string | null) => void;
+}
+
+/**
+The composer's result area. A moderation block replaces the result with the
+recovery panel; an earlier ready draft stays mounted above it, unchanged (#119
+variant B). The panel's focus and live region live in the panel itself.
+*/
+const TeacherComposerOutcome = ({
+  prompt,
+  result,
+  priorDraft,
+  hasModerationFailure,
+  onOpenReview,
+  onRetry,
+  onRecover,
+  onRevise,
+}: TeacherComposerOutcomeProperties) => {
+  const isModerationBlocked =
+    result !== null && result.state === BLOCKED_BY_MODERATION_STATE;
+  const hasModerationPanel = isModerationBlocked || hasModerationFailure;
+  const blockedRequestId = isModerationBlocked ? result.requestId : null;
+  const blockedCategory = isModerationBlocked
+    ? moderationCategoryOf(result)
+    : null;
+  const visibleResult = isModerationBlocked ? priorDraft : result;
+
+  return (
+    <>
+      {visibleResult ? (
+        <GenerationResult
+          key={visibleResult.requestId}
+          result={visibleResult}
+          onOpenReview={onOpenReview}
+          onRetry={(event) => onRetry(event, visibleResult.requestId)}
+          onRecover={(action) => onRecover(action, visibleResult.requestId)}
+        />
+      ) : null}
+
+      {hasModerationPanel ? (
+        <ModerationRecoveryPanel
+          objective={prompt}
+          requestId={blockedRequestId}
+          category={blockedCategory}
+          hasEarlierDraft={priorDraft !== null}
+          onRevise={() => onRevise(blockedRequestId)}
+        />
+      ) : null}
+
+      {visibleResult || hasModerationPanel ? null : (
+        <div className="teacher-action-band">
+          <div>
+            <p className="studio-kicker">Ready when you are</p>
+            <p>One sentence is enough to start a useful conversation.</p>
+          </div>
+          <span>
+            <Check aria-hidden="true" />
+            Nothing publishes automatically
+          </span>
+        </div>
+      )}
+    </>
+  );
+};
+
 const TeacherLessonComposer = ({
   csrf,
   generation,
@@ -858,19 +957,32 @@ const TeacherLessonComposer = ({
   // session changed (sign-out, expiry, renewal) is discarded instead of shown.
   const generationReference = useRef(generation);
   const [result, setResult] = useState<PublicGenerationResult | null>(null);
+  // #119 variant B: a ready draft survives a later moderation block, so the
+  // teacher keeps the approved work while revising the blocked request.
+  const [priorDraft, setPriorDraft] = useState<PublicGenerationResult | null>(
+    null
+  );
   const [isGenerating, setIsGenerating] = useState(false);
-  const [requestError, setRequestError] = useState<string | null>(null);
+  const [failure, setFailure] = useState<GenerationFailure | null>(null);
+  const requestError = failure?.kind === "error" ? failure.message : null;
+  const hasModerationFailure =
+    failure?.kind === "error" && failure.code === REVISION_REQUIRED_CODE;
   // #168 P0-2: on failure the inline status next to Create lesson receives
-  // focus, so the cause lands in view and in the screen reader's mouth.
+  // focus, so the cause lands in view and in the screen reader's mouth. The
+  // moderation panel owns focus for its own path.
   const statusReference = useRef<HTMLOutputElement>(null);
   useEffect(() => {
-    if (requestError) {
+    if (requestError && !hasModerationFailure) {
       statusReference.current?.focus();
     }
-  }, [requestError]);
+  }, [hasModerationFailure, requestError]);
   // The reviewed source snapshot the next draft is grounded in (#114). Null
   // keeps the prompt-only path the focused event composer relies on.
   const [boundSource, setBoundSource] = useState<BoundSource | null>(null);
+  // #119/#148: "Revise request" arms the link. The next submission carries it
+  // with a fresh operation key, so the revised prompt is a new request that
+  // names the blocked one. A ref keeps the composer from re-rendering on arm.
+  const revisionTargetReference = useRef<string | null>(null);
   const context = getPromptContext(prompt);
 
   useEffect(() => {
@@ -880,7 +992,7 @@ const TeacherLessonComposer = ({
   const updateRequestKey = () => {
     requestKeyReference.current = "";
     setResult(null);
-    setRequestError(null);
+    setFailure(null);
   };
 
   const submitGeneration = async (
@@ -893,9 +1005,15 @@ const TeacherLessonComposer = ({
     }
     submittingReference.current = true;
     setIsGenerating(true);
-    setRequestError(null);
+    setFailure(null);
 
     const startedGeneration = generationReference.current;
+    const revisesRequestId =
+      retryOfRequestId === undefined
+        ? (revisionTargetReference.current ?? undefined)
+        : undefined;
+    // The armed link belongs to this submission only.
+    revisionTargetReference.current = null;
 
     // Browser crypto has no UUIDv7, and this key needs uniqueness only.
     const idempotencyKey = retryOfRequestId
@@ -913,6 +1031,7 @@ const TeacherLessonComposer = ({
       difficulty: context.difficulty,
       idempotencyKey,
       ...(retryOfRequestId && { retryOfRequestId }),
+      ...(revisesRequestId && { revisesRequestId }),
       ...(boundSource && { sourceSnapshotId: boundSource.id }),
     };
 
@@ -933,6 +1052,9 @@ const TeacherLessonComposer = ({
 
     switch (attempt.kind) {
       case "result": {
+        if (attempt.result.state === READY_FOR_REVIEW_STATE) {
+          setPriorDraft(attempt.result);
+        }
         setResult(attempt.result);
         break;
       }
@@ -943,7 +1065,7 @@ const TeacherLessonComposer = ({
       }
       default: {
         setResult(null);
-        setRequestError(attempt.message);
+        setFailure(attempt);
       }
     }
   };
@@ -1043,7 +1165,7 @@ const TeacherLessonComposer = ({
               path…
             </p>
           ) : null}
-          {requestError ? (
+          {requestError && !hasModerationFailure ? (
             <p className="generation-error">
               {requestError}
               <span className="generation-error__hint">
@@ -1074,34 +1196,29 @@ const TeacherLessonComposer = ({
         standardId={standardId}
       />
 
-      {result ? (
-        <GenerationResult
-          key={result.requestId}
-          result={result}
-          onOpenReview={onOpenReview}
-          onRetry={(event) => {
-            submitGeneration(event, result.requestId);
-          }}
-          onRecover={(action) => {
-            if (recoveryEffect(action) === "focus-objective") {
-              focusLessonPrompt();
-              return;
-            }
-            void submitGeneration(undefined, result.requestId);
-          }}
-        />
-      ) : (
-        <div className="teacher-action-band">
-          <div>
-            <p className="studio-kicker">Ready when you are</p>
-            <p>One sentence is enough to start a useful conversation.</p>
-          </div>
-          <span>
-            <Check aria-hidden="true" />
-            Nothing publishes automatically
-          </span>
-        </div>
-      )}
+      <TeacherComposerOutcome
+        prompt={prompt}
+        result={result}
+        priorDraft={priorDraft}
+        hasModerationFailure={hasModerationFailure}
+        onOpenReview={onOpenReview}
+        onRetry={(event, requestId) => {
+          void submitGeneration(event, requestId);
+        }}
+        onRecover={(action, requestId) => {
+          if (recoveryEffect(action) === "focus-objective") {
+            focusLessonPrompt();
+            return;
+          }
+          void submitGeneration(undefined, requestId);
+        }}
+        onRevise={(requestId) => {
+          if (requestId) {
+            revisionTargetReference.current = requestId;
+          }
+          focusLessonPrompt();
+        }}
+      />
     </section>
   );
 };

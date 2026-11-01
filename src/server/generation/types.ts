@@ -24,6 +24,12 @@ export interface NormalizedGenerationRequest {
   Absent for prompt-only requests; the focused event composer never sends it.
   */
   sourceSnapshotId?: string;
+  /**
+  #148: the `blocked-by-moderation` request this request revises. It is readable
+  lineage only. `createGenerationRequestHash` and `hasSameRequestMetadata` skip
+  it on purpose, so a revision never inherits the blocked request's hash.
+  */
+  revisesRequestId?: string;
 }
 
 export interface ProviderProvenance {
