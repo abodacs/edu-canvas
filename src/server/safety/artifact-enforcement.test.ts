@@ -25,17 +25,27 @@ import type {
   LessonGenerationRecord,
   ProviderLessonDraft,
   ProviderProvenance,
+  NormalizedGenerationRequest,
 } from "../generation/types";
 import type { SemanticValidationReport } from "../generation/semantic-validation-contract";
+import type { LessonGenerationInput } from "@/shared/generation-contract";
 
 import type { RenderableArtifact } from "./artifact-gate";
 
-const validInput = {
+const validInput: LessonGenerationInput = {
   prompt: "equivalent fractions for grade 4",
   grade: 4,
   standardId: syntheticSeed.standard.id,
   language: "en" as const,
   difficulty: "on-level" as const,
+};
+
+// The draft generator and the acceptance review take a normalized request; the
+// generation command takes the raw input. They are different types now.
+const normalizedInput: NormalizedGenerationRequest = {
+  ...validInput,
+  grade: 4,
+  difficulty: "on-level",
 };
 
 const teacherActor = syntheticTeacherActor({
@@ -93,7 +103,7 @@ const blockedReport: SemanticValidationReport = {
 };
 
 const acceptanceDraft = (): ProviderLessonDraft =>
-  createEquivalentFractionsDraft(validInput);
+  createEquivalentFractionsDraft(normalizedInput);
 
 const review = (
   draft: ProviderLessonDraft,
@@ -110,7 +120,7 @@ const review = (
   return reviewDraftForAcceptance(
     {
       draft,
-      input: validInput,
+      input: normalizedInput,
       tenantId: syntheticSeed.tenant.id,
       requestId: "draft_req_artifact_enforcement",
       provenance: fixtureProvenance,

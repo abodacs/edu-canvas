@@ -1,7 +1,5 @@
 import { setTimeout as delay } from "node:timers/promises";
 
-import { lessonGenerationInputSchema } from "@/shared/generation-contract";
-
 import { createId } from "@/server/ids";
 import { syntheticSeed } from "@/server/seed-data";
 
@@ -30,6 +28,10 @@ import {
   StandardNotConfiguredError,
 } from "./types";
 import { validateProviderDraft } from "./validation";
+import type {
+  LessonGenerationInput,
+  LessonDifficulty,
+} from "@/shared/generation-contract";
 import type { SourceGate } from "../grounding/types";
 import type {
   ContentSafety,
@@ -58,7 +60,6 @@ import type {
   ProviderGenerationContext,
   ProviderResponse,
 } from "./provider";
-import type { LessonDifficulty } from "@/shared/generation-contract";
 
 const BLOCKED_BY_MODERATION_STATE = "blocked-by-moderation";
 
@@ -160,27 +161,21 @@ const createImplicitIdempotencyKey = (
   )}`;
 };
 
+// The delivery seam parses the body with `lessonGenerationInputSchema`; this
+// function owns only what the schema cannot say: which grades and standards
+// this product supports, and the derived idempotency key.
 export const normalizeGenerationInput = (
-  input: unknown
+  input: LessonGenerationInput
 ): NormalizedCommandInput => {
-  const parsed = lessonGenerationInputSchema.safeParse(input);
-  if (!parsed.success) {
-    throw new GenerationRequestError(GENERATION_INPUT_INVALID_MESSAGE, {
-      code: "GENERATION_INPUT_INVALID",
-    });
-  }
-
   const grade =
-    typeof parsed.data.grade === "number"
-      ? parsed.data.grade
-      : Number(parsed.data.grade);
+    typeof input.grade === "number" ? input.grade : Number(input.grade);
   if (!Number.isSafeInteger(grade) || grade < 3 || grade > 6) {
     throw new GenerationRequestError(GENERATION_INPUT_INVALID_MESSAGE, {
       code: "GENERATION_INPUT_INVALID",
     });
   }
 
-  if (!supportedStandardIds.has(parsed.data.standardId)) {
+  if (!supportedStandardIds.has(input.standardId)) {
     throw new GenerationRequestError(
       "This learning objective is not supported. Use Grade 4 equivalent fractions (4.NF.A.1).",
       { code: "GENERATION_INPUT_INVALID" }
@@ -188,26 +183,26 @@ export const normalizeGenerationInput = (
   }
 
   const standardId =
-    parsed.data.standardId === syntheticSeed.standard.code
+    input.standardId === syntheticSeed.standard.code
       ? syntheticSeed.standard.id
-      : parsed.data.standardId;
-  const difficulty: LessonDifficulty = parsed.data.difficulty ?? "on-level";
-  const { retryOfRequestId } = parsed.data;
+      : input.standardId;
+  const difficulty: LessonDifficulty = input.difficulty ?? "on-level";
+  const { retryOfRequestId } = input;
   const normalized = {
-    prompt: parsed.data.prompt,
+    prompt: input.prompt,
     grade,
     standardId,
-    language: parsed.data.language,
+    language: input.language,
     difficulty,
-    ...(parsed.data.sourceSnapshotId && {
-      sourceSnapshotId: parsed.data.sourceSnapshotId,
+    ...(input.sourceSnapshotId && {
+      sourceSnapshotId: input.sourceSnapshotId,
     }),
   };
 
   return {
     ...normalized,
     idempotencyKey:
-      parsed.data.idempotencyKey ??
+      input.idempotencyKey ??
       createImplicitIdempotencyKey(normalized, retryOfRequestId),
     requestHash: createGenerationRequestHash(normalized),
     ...(retryOfRequestId && { retryOfRequestId }),

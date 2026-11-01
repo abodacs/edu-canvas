@@ -15,6 +15,7 @@ import {
   applyA2UIMessage,
   createA2UIRenderState,
 } from "@/components/a2ui/renderer";
+import type { LessonGenerationInput } from "@/shared/generation-contract";
 
 const teacherActor = syntheticTeacherActor({
   tenantId: parseTenantId(syntheticSeed.tenant.id),
@@ -24,7 +25,7 @@ describe("compiled lesson preview", () => {
   it.each(["en", "ar"] as const)(
     "renders the compiled %s lesson with its path, controls and selected source",
     async (language) => {
-      const input = {
+      const input: LessonGenerationInput = {
         prompt: "equivalent fractions for grade 4",
         grade: 4,
         standardId: "standard_ccss_4_nf_a_01",
@@ -40,6 +41,7 @@ describe("compiled lesson preview", () => {
       }
       const preview = compileRawLessonPreview({
         ...input,
+        grade: 4,
         requestId: result.record.requestId,
         draft: result.record.draft,
         learningPath: result.record.draft.learningPath,

@@ -9,6 +9,7 @@ import type {
   RecoveryAction,
   SemanticValidationVerdict,
   variantKindValues,
+  LessonGenerationInput,
 } from "@/shared/generation-contract";
 import type { FractionLessonDraft } from "@/shared/fractions-contract";
 
@@ -322,7 +323,11 @@ export interface GenerationCommand {
   Only a verified teacher actor may generate drafts; learners cannot compile.
   */
   actor: TeacherActor;
-  input: unknown;
+  /**
+  The delivery seam parses the request body with `lessonGenerationInputSchema`,
+  so a command carries a value that already crossed that boundary.
+  */
+  input: LessonGenerationInput;
 }
 
 export interface GenerationServiceResult {

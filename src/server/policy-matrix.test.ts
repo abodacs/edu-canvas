@@ -48,7 +48,10 @@ import type { LearnerActor } from "@/server/identity/types";
 import type { LessonDraftProvider } from "@/server/generation/provider";
 import type { LessonGenerationRecord } from "@/server/generation/types";
 import type { FoundationPersistence } from "@/server/persistence/types";
-import type { PublicGenerationResult } from "@/shared/generation-contract";
+import type {
+  LessonGenerationInput,
+  PublicGenerationResult,
+} from "@/shared/generation-contract";
 import type { SessionProjection } from "@/shared/identity-contract";
 import type { ReviewPack } from "@/shared/publication-contract";
 
@@ -391,7 +394,7 @@ const previewRequest = (
 const generationInput = (
   idempotencyKey: string,
   overrides: Record<string, unknown> = {}
-): Record<string, unknown> => {
+): LessonGenerationInput => {
   return {
     prompt: "equivalent fractions for grade 4",
     grade: 4,
@@ -1803,7 +1806,7 @@ describe("protected domain policy matrix", () => {
       expectedArtifactHash: approved.version.artifactHash,
       learnerId: "learner_lina",
       operationKey: "policy-pt-58-publish",
-      ...{ score: 100 },
+      score: 100,
     } as Parameters<typeof publishPack>[2]);
 
     expect({

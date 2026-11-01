@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { lessonGenerationInputSchema } from "@/shared/generation-contract";
+
 import { syntheticSeed } from "@/server/seed-data";
 import { parseTenantId } from "@/server/identity/identifiers";
 import {
@@ -19,6 +21,7 @@ import {
   validateSemanticLesson,
 } from "./semantic-validation";
 import { createGenerationRequestHash } from "./types";
+import type { LessonGenerationInput } from "@/shared/generation-contract";
 import type { LessonGenerationRecord } from "./types";
 import type { LessonDraftProvider } from "./provider";
 import type { TeacherActor } from "@/server/identity/types";
@@ -31,7 +34,7 @@ const validRequestHash = createGenerationRequestHash({
   difficulty: "on-level",
 });
 
-const validInput = {
+const validInput: LessonGenerationInput = {
   prompt: "equivalent fractions for grade 4",
   grade: 4,
   standardId: syntheticSeed.standard.id,
@@ -44,7 +47,7 @@ const ownerTeacherActor = syntheticTeacherActor({
   tenantId: parseTenantId(syntheticSeed.tenant.id),
 });
 
-const teacherCommand = (input: Record<string, unknown> = validInput) => {
+const teacherCommand = (input: LessonGenerationInput = validInput) => {
   return {
     actor: ownerTeacherActor,
     input,
@@ -68,10 +71,10 @@ const generatingRecord = (
     teacherId: ownerTeacherActor.actorId,
     input: {
       prompt: validInput.prompt,
-      grade: validInput.grade,
+      grade: Number(validInput.grade),
       standardId: syntheticSeed.standard.id,
       language: validInput.language,
-      difficulty: validInput.difficulty,
+      difficulty: validInput.difficulty ?? "on-level",
     },
     state: "generating",
     attempt: 1,
@@ -567,10 +570,10 @@ describe("lesson generation service", () => {
       teacherId: ownerTeacherActor.actorId,
       input: {
         prompt: validInput.prompt,
-        grade: validInput.grade,
+        grade: Number(validInput.grade),
         standardId: syntheticSeed.standard.id,
         language: validInput.language,
-        difficulty: validInput.difficulty,
+        difficulty: validInput.difficulty ?? "on-level",
       },
       state: "generating",
       attempt: 1,
@@ -631,10 +634,10 @@ describe("lesson generation service", () => {
       teacherId: ownerTeacherActor.actorId,
       input: {
         prompt: validInput.prompt,
-        grade: validInput.grade,
+        grade: Number(validInput.grade),
         standardId: syntheticSeed.standard.id,
         language: validInput.language,
-        difficulty: validInput.difficulty,
+        difficulty: validInput.difficulty ?? "on-level",
       },
       state: "generating",
       attempt: 1,
@@ -1018,9 +1021,20 @@ describe("lesson generation service", () => {
       code: "FORBIDDEN",
     });
 
-    expect(() => normalizeGenerationInput({ ...validInput, grade: 9 })).toThrow(
-      "Generation input is invalid."
-    );
+    // The schema is the boundary: an out-of-range grade and an unknown key are
+    // refused there, before normalization sees the value.
+    expect(
+      lessonGenerationInputSchema.safeParse({ ...validInput, grade: 9 }).success
+    ).toBeFalsy();
+    expect(
+      lessonGenerationInputSchema.safeParse({
+        ...validInput,
+        provider: "client-selected",
+      }).success
+    ).toBeFalsy();
+
+    // Normalization owns what the schema cannot say: which standard this
+    // product supports.
     expect(() => {
       return normalizeGenerationInput({
         ...validInput,
@@ -1029,9 +1043,6 @@ describe("lesson generation service", () => {
     }).toThrow(
       "This learning objective is not supported. Use Grade 4 equivalent fractions (4.NF.A.1)."
     );
-    expect(() =>
-      normalizeGenerationInput({ ...validInput, provider: "client-selected" })
-    ).toThrow("Generation input is invalid.");
   });
 
   it("blocks unsafe teacher prompts before calling the provider", async () => {
