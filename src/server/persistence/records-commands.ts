@@ -47,6 +47,10 @@ import type {
   AssignInput,
   ChooseInput,
   PublishInput,
+  ReadAttemptContextInput,
+  ReadAuthoringInput,
+  ReadEvidenceInput,
+  ReadLessonInput,
   RecordAttemptInput,
   RecordHintInput,
   StartRunInput,
@@ -108,33 +112,51 @@ export interface AttemptContext {
   readonly relationships: readonly PrivateAnswerRelationship[];
 }
 
+/**
+The record model's command surface. Each method takes the input type its own
+schema declares, so a caller builds a valid input or fails to compile. The
+implementation parses again at the storage seam, because the value can still
+arrive from a request body.
+*/
 export interface RecordPersistence {
   readonly kind: "seeded-demo" | "postgres";
   check: () => Promise<boolean>;
   storeGrounding: (
     actor: Actor,
-    input: unknown
+    input: StoreGroundingInput
   ) => Promise<RecordMutationResult>;
   appendVersion: (
     actor: Actor,
-    input: unknown
+    input: AppendVersionInput
   ) => Promise<RecordMutationResult>;
-  publish: (actor: Actor, input: unknown) => Promise<RecordMutationResult>;
-  assign: (actor: Actor, input: unknown) => Promise<RecordMutationResult>;
-  startRun: (actor: Actor, input: unknown) => Promise<RecordMutationResult>;
-  recordHint: (actor: Actor, input: unknown) => Promise<RecordMutationResult>;
+  publish: (actor: Actor, input: PublishInput) => Promise<RecordMutationResult>;
+  assign: (actor: Actor, input: AssignInput) => Promise<RecordMutationResult>;
+  startRun: (
+    actor: Actor,
+    input: StartRunInput
+  ) => Promise<RecordMutationResult>;
+  recordHint: (
+    actor: Actor,
+    input: RecordHintInput
+  ) => Promise<RecordMutationResult>;
   recordAttempt: (
     actor: Actor,
-    input: unknown
+    input: RecordAttemptInput
   ) => Promise<RecordMutationResult>;
-  choose: (actor: Actor, input: unknown) => Promise<RecordMutationResult>;
-  readAuthoring: (actor: Actor, input: unknown) => Promise<AuthoringProjection>;
+  choose: (actor: Actor, input: ChooseInput) => Promise<RecordMutationResult>;
+  readAuthoring: (
+    actor: Actor,
+    input: ReadAuthoringInput
+  ) => Promise<AuthoringProjection>;
   readEvidence: (
     actor: Actor,
-    input: unknown
+    input: ReadEvidenceInput
   ) => Promise<TeacherEvidenceProjection>;
-  readLesson: (actor: Actor, input: unknown) => Promise<LessonReadResult>;
-  readAttemptContext: (actor: Actor, input: unknown) => Promise<AttemptContext>;
+  readLesson: (actor: Actor, input: ReadLessonInput) => Promise<LessonReadResult>;
+  readAttemptContext: (
+    actor: Actor,
+    input: ReadAttemptContextInput
+  ) => Promise<AttemptContext>;
 }
 
 const writeCapability: Record<WriteAction, Capability> = {

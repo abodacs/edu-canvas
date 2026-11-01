@@ -20,6 +20,7 @@ import { hashVersion } from "../records/vocabulary";
 import { createPostgresRecordBackend } from "./records-postgres";
 import { createRecordCommands } from "./records-commands";
 import type { Actor } from "../identity/types";
+import type { AppendVersionInput } from "../records/inputs";
 
 const databaseUrl = process.env.DATABASE_URL;
 const isEnabled = process.env.RUN_DATABASE_TESTS === "true";
@@ -241,7 +242,10 @@ const deleteFixture = async (fixture: Fixture): Promise<void> => {
   }
 };
 
-const appendInput = (fixture: Fixture, curatedReferenceId: string) => {
+const appendInput = (
+  fixture: Fixture,
+  curatedReferenceId: string
+): AppendVersionInput => {
   return {
     operationKey: `append-version-key-${curatedReferenceId}`,
     package: {

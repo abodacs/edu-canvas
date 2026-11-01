@@ -173,14 +173,22 @@ export const readEvidenceInputSchema = z.strictObject({
   runId: recordIdSchema,
 });
 
+export type ReadEvidenceInput = z.infer<typeof readEvidenceInputSchema>;
+
 export const readLessonInputSchema = z.strictObject({
   runId: recordIdSchema,
 });
+
+export type ReadLessonInput = z.infer<typeof readLessonInputSchema>;
 
 export const readAttemptContextInputSchema = z.strictObject({
   runId: recordIdSchema,
   itemId: recordIdSchema,
 });
+
+export type ReadAttemptContextInput = z.infer<
+  typeof readAttemptContextInputSchema
+>;
 
 export const referentTableValues = [
   "standards",

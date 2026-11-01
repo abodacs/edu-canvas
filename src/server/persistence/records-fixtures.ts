@@ -14,6 +14,15 @@ import {
 import { hashVersion } from "../records/vocabulary";
 import { createRecordCommands } from "./records-commands";
 import { createSeededRecordBackend } from "./records-seeded";
+import type {
+  AppendVersionInput,
+  AssignInput,
+  ChooseInput,
+  PublishInput,
+  RecordAttemptInput,
+  RecordHintInput,
+  StartRunInput,
+} from "../records/inputs";
 import type { RecordPersistence } from "./records-commands";
 import type { SeededRecordBackend } from "./records-seeded";
 import type { Actor } from "../identity/types";
@@ -553,7 +562,7 @@ export const appendVersionInput = (
   operationKey: string,
   curatedReferenceId: string,
   packageSuffix: string
-) => {
+): AppendVersionInput => {
   return {
     operationKey,
     package: {
@@ -579,7 +588,10 @@ export const appendVersionInput = (
   };
 };
 
-export const publishInput = (operationKey: string, versionId: string) => {
+export const publishInput = (
+  operationKey: string,
+  versionId: string
+): PublishInput => {
   return {
     operationKey,
     versionId,
@@ -587,7 +599,10 @@ export const publishInput = (operationKey: string, versionId: string) => {
   };
 };
 
-export const assignInput = (operationKey: string, publicationId: string) => {
+export const assignInput = (
+  operationKey: string,
+  publicationId: string
+): AssignInput => {
   return {
     operationKey,
     publicationId,
@@ -596,7 +611,10 @@ export const assignInput = (operationKey: string, publicationId: string) => {
   };
 };
 
-export const startRunInput = (operationKey: string, assignmentId: string) => {
+export const startRunInput = (
+  operationKey: string,
+  assignmentId: string
+): StartRunInput => {
   return {
     operationKey,
     assignmentId,
@@ -604,7 +622,10 @@ export const startRunInput = (operationKey: string, assignmentId: string) => {
   };
 };
 
-export const recordHintInput = (operationKey: string, runId: string) => {
+export const recordHintInput = (
+  operationKey: string,
+  runId: string
+): RecordHintInput => {
   return {
     operationKey,
     runId,
@@ -617,7 +638,7 @@ export const recordAttemptInput = (
   operationKey: string,
   runId: string,
   assistanceEventId: string
-) => {
+): RecordAttemptInput => {
   return {
     operationKey,
     runId,
@@ -638,7 +659,7 @@ export const chooseInput = (
   runId: string,
   expectedRunRevision: number,
   evidenceHash: string
-) => {
+): ChooseInput => {
   return {
     operationKey,
     runId,

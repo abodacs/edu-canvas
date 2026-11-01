@@ -129,9 +129,11 @@ const buildValidationResult = (source: PackBridgeSource) => {
     ),
     checkedAt: source.approvedAt,
     findings: source.validationResult.findings.map((finding) => {
+      const severity: "error" | "warning" =
+        finding.verdict === "hard_block" ? "error" : "warning";
       return {
         code: bounded(finding.code, recordLimits.idLength),
-        severity: finding.verdict === "hard_block" ? "error" : "warning",
+        severity,
         field: bounded(finding.field, recordLimits.idLength),
       };
     }),
