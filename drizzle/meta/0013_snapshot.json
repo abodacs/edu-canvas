@@ -74,12 +74,8 @@
           "name": "activities_tenant_id_fkey",
           "tableFrom": "activities",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -87,14 +83,8 @@
           "name": "activities_tenant_id_standard_id_fkey",
           "tableFrom": "activities",
           "tableTo": "standards",
-          "columnsFrom": [
-            "tenant_id",
-            "standard_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "standard_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -104,18 +94,12 @@
         "activities_tenant_id_id_key": {
           "name": "activities_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         },
         "activities_tenant_id_slug_key": {
           "name": "activities_tenant_id_slug_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "slug"
-          ]
+          "columns": ["tenant_id", "slug"]
         }
       },
       "policies": {
@@ -123,9 +107,7 @@
           "name": "activities_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -219,12 +201,8 @@
           "name": "activity_versions_tenant_id_fkey",
           "tableFrom": "activity_versions",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -232,14 +210,8 @@
           "name": "activity_versions_tenant_id_activity_id_fkey",
           "tableFrom": "activity_versions",
           "tableTo": "activities",
-          "columnsFrom": [
-            "tenant_id",
-            "activity_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "activity_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -249,18 +221,12 @@
         "activity_versions_tenant_id_id_key": {
           "name": "activity_versions_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         },
         "activity_versions_activity_id_version_number_key": {
           "name": "activity_versions_activity_id_version_number_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "activity_id",
-            "version_number"
-          ]
+          "columns": ["activity_id", "version_number"]
         }
       },
       "policies": {
@@ -268,9 +234,7 @@
           "name": "activity_versions_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -404,12 +368,8 @@
           "name": "assignments_tenant_id_fkey",
           "tableFrom": "assignments",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -417,14 +377,8 @@
           "name": "assignments_tenant_id_publication_id_fkey",
           "tableFrom": "assignments",
           "tableTo": "publications",
-          "columnsFrom": [
-            "tenant_id",
-            "publication_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "publication_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -432,14 +386,8 @@
           "name": "assignments_tenant_id_learner_id_fkey",
           "tableFrom": "assignments",
           "tableTo": "identities",
-          "columnsFrom": [
-            "tenant_id",
-            "learner_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "learner_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -447,12 +395,8 @@
           "name": "assignments_assigning_actor_id_fkey",
           "tableFrom": "assignments",
           "tableTo": "actors",
-          "columnsFrom": [
-            "assigning_actor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["assigning_actor_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -462,10 +406,7 @@
         "assignments_tenant_id_id_key": {
           "name": "assignments_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         }
       },
       "policies": {
@@ -473,9 +414,7 @@
           "name": "assignments_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -563,12 +502,8 @@
           "name": "assistance_events_tenant_id_fkey",
           "tableFrom": "assistance_events",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -576,14 +511,8 @@
           "name": "assistance_events_tenant_id_run_id_fkey",
           "tableFrom": "assistance_events",
           "tableTo": "learner_runs",
-          "columnsFrom": [
-            "tenant_id",
-            "run_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "run_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -593,20 +522,12 @@
         "assistance_events_tenant_id_id_key": {
           "name": "assistance_events_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         },
         "assistance_events_run_item_ordinal_key": {
           "name": "assistance_events_run_item_ordinal_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "run_id",
-            "item_id",
-            "ordinal"
-          ]
+          "columns": ["tenant_id", "run_id", "item_id", "ordinal"]
         }
       },
       "policies": {
@@ -614,9 +535,7 @@
           "name": "assistance_events_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -713,12 +632,8 @@
           "name": "attempts_tenant_id_fkey",
           "tableFrom": "attempts",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -726,14 +641,8 @@
           "name": "attempts_tenant_id_activity_version_id_fkey",
           "tableFrom": "attempts",
           "tableTo": "activity_versions",
-          "columnsFrom": [
-            "tenant_id",
-            "activity_version_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "activity_version_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -741,14 +650,8 @@
           "name": "attempts_tenant_id_student_id_fkey",
           "tableFrom": "attempts",
           "tableTo": "identities",
-          "columnsFrom": [
-            "tenant_id",
-            "student_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "student_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -760,9 +663,7 @@
           "name": "attempts_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -827,12 +728,8 @@
           "name": "class_assignments_tenant_id_fkey",
           "tableFrom": "class_assignments",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -840,14 +737,8 @@
           "name": "class_assignments_tenant_id_membership_id_fkey",
           "tableFrom": "class_assignments",
           "tableTo": "memberships",
-          "columnsFrom": [
-            "tenant_id",
-            "membership_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "membership_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -855,10 +746,7 @@
       "compositePrimaryKeys": {
         "class_assignments_pkey": {
           "name": "class_assignments_pkey",
-          "columns": [
-            "membership_id",
-            "class_id"
-          ]
+          "columns": ["membership_id", "class_id"]
         }
       },
       "uniqueConstraints": {},
@@ -867,9 +755,7 @@
           "name": "class_assignments_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -989,12 +875,8 @@
           "name": "curated_references_tenant_id_fkey",
           "tableFrom": "curated_references",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1002,12 +884,8 @@
           "name": "curated_references_teacher_actor_id_fkey",
           "tableFrom": "curated_references",
           "tableTo": "actors",
-          "columnsFrom": [
-            "teacher_actor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["teacher_actor_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1015,14 +893,8 @@
           "name": "curated_references_tenant_id_standard_id_fkey",
           "tableFrom": "curated_references",
           "tableTo": "standards",
-          "columnsFrom": [
-            "tenant_id",
-            "standard_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "standard_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1032,10 +904,7 @@
         "curated_references_tenant_id_id_key": {
           "name": "curated_references_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         }
       },
       "policies": {
@@ -1043,9 +912,7 @@
           "name": "curated_references_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -1132,12 +999,8 @@
           "name": "identities_tenant_id_fkey",
           "tableFrom": "identities",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1147,17 +1010,12 @@
         "identities_tenant_id_id_key": {
           "name": "identities_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         },
         "identities_demo_handle_key": {
           "name": "identities_demo_handle_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "demo_handle"
-          ]
+          "columns": ["demo_handle"]
         }
       },
       "policies": {
@@ -1165,9 +1023,7 @@
           "name": "identities_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -1298,12 +1154,8 @@
           "name": "identity_sessions_actor_id_fkey",
           "tableFrom": "identity_sessions",
           "tableTo": "actors",
-          "columnsFrom": [
-            "actor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["actor_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1311,12 +1163,8 @@
           "name": "identity_sessions_tenant_id_fkey",
           "tableFrom": "identity_sessions",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1324,14 +1172,8 @@
           "name": "identity_sessions_tenant_id_membership_id_fkey",
           "tableFrom": "identity_sessions",
           "tableTo": "memberships",
-          "columnsFrom": [
-            "tenant_id",
-            "membership_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "membership_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1341,18 +1183,12 @@
         "identity_sessions_verifier_hash_key": {
           "name": "identity_sessions_verifier_hash_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "verifier_hash"
-          ]
+          "columns": ["verifier_hash"]
         },
         "identity_sessions_tenant_id_membership_id_session_id_key": {
           "name": "identity_sessions_tenant_id_membership_id_session_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "membership_id",
-            "session_id"
-          ]
+          "columns": ["tenant_id", "membership_id", "session_id"]
         }
       },
       "policies": {
@@ -1360,9 +1196,7 @@
           "name": "identity_sessions_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -1499,12 +1333,8 @@
           "name": "learner_attempts_tenant_id_fkey",
           "tableFrom": "learner_attempts",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1512,14 +1342,8 @@
           "name": "learner_attempts_tenant_id_run_id_fkey",
           "tableFrom": "learner_attempts",
           "tableTo": "learner_runs",
-          "columnsFrom": [
-            "tenant_id",
-            "run_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "run_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1527,14 +1351,8 @@
           "name": "learner_attempts_tenant_id_publication_id_fkey",
           "tableFrom": "learner_attempts",
           "tableTo": "publications",
-          "columnsFrom": [
-            "tenant_id",
-            "publication_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "publication_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1542,14 +1360,8 @@
           "name": "learner_attempts_tenant_id_lesson_version_id_fkey",
           "tableFrom": "learner_attempts",
           "tableTo": "lesson_versions",
-          "columnsFrom": [
-            "tenant_id",
-            "lesson_version_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "lesson_version_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1557,14 +1369,8 @@
           "name": "learner_attempts_tenant_id_prior_attempt_id_fkey",
           "tableFrom": "learner_attempts",
           "tableTo": "learner_attempts",
-          "columnsFrom": [
-            "tenant_id",
-            "prior_attempt_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "prior_attempt_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1574,20 +1380,12 @@
         "learner_attempts_tenant_id_id_key": {
           "name": "learner_attempts_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         },
         "learner_attempts_run_item_ordinal_key": {
           "name": "learner_attempts_run_item_ordinal_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "run_id",
-            "item_id",
-            "ordinal"
-          ]
+          "columns": ["tenant_id", "run_id", "item_id", "ordinal"]
         }
       },
       "policies": {
@@ -1595,9 +1393,7 @@
           "name": "learner_attempts_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -1735,12 +1531,8 @@
           "name": "learner_runs_tenant_id_fkey",
           "tableFrom": "learner_runs",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1748,14 +1540,8 @@
           "name": "learner_runs_tenant_id_assignment_id_fkey",
           "tableFrom": "learner_runs",
           "tableTo": "assignments",
-          "columnsFrom": [
-            "tenant_id",
-            "assignment_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "assignment_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1763,14 +1549,8 @@
           "name": "learner_runs_tenant_id_learner_id_fkey",
           "tableFrom": "learner_runs",
           "tableTo": "identities",
-          "columnsFrom": [
-            "tenant_id",
-            "learner_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "learner_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1778,14 +1558,8 @@
           "name": "learner_runs_tenant_id_publication_id_fkey",
           "tableFrom": "learner_runs",
           "tableTo": "publications",
-          "columnsFrom": [
-            "tenant_id",
-            "publication_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "publication_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1795,18 +1569,12 @@
         "learner_runs_tenant_id_id_key": {
           "name": "learner_runs_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         },
         "learner_runs_tenant_id_assignment_id_key": {
           "name": "learner_runs_tenant_id_assignment_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "assignment_id"
-          ]
+          "columns": ["tenant_id", "assignment_id"]
         }
       },
       "policies": {
@@ -1814,9 +1582,7 @@
           "name": "learner_runs_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -1976,12 +1742,8 @@
           "name": "lesson_draft_requests_teacher_id_fkey",
           "tableFrom": "lesson_draft_requests",
           "tableTo": "actors",
-          "columnsFrom": [
-            "teacher_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["teacher_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1989,14 +1751,8 @@
           "name": "lesson_draft_requests_tenant_id_standard_id_fkey",
           "tableFrom": "lesson_draft_requests",
           "tableTo": "standards",
-          "columnsFrom": [
-            "tenant_id",
-            "standard_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "standard_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2006,19 +1762,12 @@
         "lesson_draft_requests_tenant_id_id_key": {
           "name": "lesson_draft_requests_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         },
         "lesson_draft_requests_tenant_id_id_teacher_id_key": {
           "name": "lesson_draft_requests_tenant_id_id_teacher_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id",
-            "teacher_id"
-          ]
+          "columns": ["tenant_id", "id", "teacher_id"]
         }
       },
       "policies": {
@@ -2026,9 +1775,7 @@
           "name": "lesson_draft_requests_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -2184,16 +1931,8 @@
           "name": "lesson_generation_attempts_tenant_id_request_id_teacher_id_fkey",
           "tableFrom": "lesson_generation_attempts",
           "tableTo": "lesson_draft_requests",
-          "columnsFrom": [
-            "tenant_id",
-            "request_id",
-            "teacher_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id",
-            "teacher_id"
-          ],
+          "columnsFrom": ["tenant_id", "request_id", "teacher_id"],
+          "columnsTo": ["tenant_id", "id", "teacher_id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2201,21 +1940,14 @@
       "compositePrimaryKeys": {
         "lesson_generation_attempts_pkey": {
           "name": "lesson_generation_attempts_pkey",
-          "columns": [
-            "request_id",
-            "attempt_number"
-          ]
+          "columns": ["request_id", "attempt_number"]
         }
       },
       "uniqueConstraints": {
         "lesson_generation_attempts_idempotency_scope_key": {
           "name": "lesson_generation_attempts_idempotency_scope_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "teacher_id",
-            "idempotency_key"
-          ]
+          "columns": ["tenant_id", "teacher_id", "idempotency_key"]
         }
       },
       "policies": {
@@ -2223,9 +1955,7 @@
           "name": "lesson_generation_attempts_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -2320,12 +2050,8 @@
           "name": "lesson_packages_tenant_id_fkey",
           "tableFrom": "lesson_packages",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2333,12 +2059,8 @@
           "name": "lesson_packages_teacher_actor_id_fkey",
           "tableFrom": "lesson_packages",
           "tableTo": "actors",
-          "columnsFrom": [
-            "teacher_actor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["teacher_actor_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2346,14 +2068,8 @@
           "name": "lesson_packages_tenant_id_standard_id_fkey",
           "tableFrom": "lesson_packages",
           "tableTo": "standards",
-          "columnsFrom": [
-            "tenant_id",
-            "standard_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "standard_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2363,10 +2079,7 @@
         "lesson_packages_tenant_id_id_key": {
           "name": "lesson_packages_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         }
       },
       "policies": {
@@ -2374,9 +2087,7 @@
           "name": "lesson_packages_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -2567,14 +2278,8 @@
           "name": "lesson_versions_tenant_id_package_id_fkey",
           "tableFrom": "lesson_versions",
           "tableTo": "lesson_packages",
-          "columnsFrom": [
-            "tenant_id",
-            "package_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "package_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2582,14 +2287,8 @@
           "name": "lesson_versions_tenant_id_parent_version_id_fkey",
           "tableFrom": "lesson_versions",
           "tableTo": "lesson_versions",
-          "columnsFrom": [
-            "tenant_id",
-            "parent_version_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "parent_version_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2597,14 +2296,8 @@
           "name": "lesson_versions_tenant_id_predecessor_version_id_fkey",
           "tableFrom": "lesson_versions",
           "tableTo": "lesson_versions",
-          "columnsFrom": [
-            "tenant_id",
-            "predecessor_version_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "predecessor_version_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2612,14 +2305,8 @@
           "name": "lesson_versions_tenant_id_curated_reference_id_fkey",
           "tableFrom": "lesson_versions",
           "tableTo": "curated_references",
-          "columnsFrom": [
-            "tenant_id",
-            "curated_reference_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "curated_reference_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2627,14 +2314,8 @@
           "name": "lesson_versions_tenant_id_source_snapshot_id_fkey",
           "tableFrom": "lesson_versions",
           "tableTo": "source_snapshots",
-          "columnsFrom": [
-            "tenant_id",
-            "source_snapshot_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "source_snapshot_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2642,14 +2323,8 @@
           "name": "lesson_versions_tenant_id_generation_request_id_fkey",
           "tableFrom": "lesson_versions",
           "tableTo": "lesson_draft_requests",
-          "columnsFrom": [
-            "tenant_id",
-            "generation_request_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "generation_request_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2659,19 +2334,12 @@
         "lesson_versions_tenant_id_id_key": {
           "name": "lesson_versions_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         },
         "lesson_versions_package_id_revision_key": {
           "name": "lesson_versions_package_id_revision_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "package_id",
-            "revision"
-          ]
+          "columns": ["tenant_id", "package_id", "revision"]
         }
       },
       "policies": {
@@ -2679,9 +2347,7 @@
           "name": "lesson_versions_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -2804,12 +2470,8 @@
           "name": "memberships_actor_id_fkey",
           "tableFrom": "memberships",
           "tableTo": "actors",
-          "columnsFrom": [
-            "actor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["actor_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2817,12 +2479,8 @@
           "name": "memberships_tenant_id_fkey",
           "tableFrom": "memberships",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2830,14 +2488,8 @@
           "name": "memberships_tenant_id_learner_id_fkey",
           "tableFrom": "memberships",
           "tableTo": "identities",
-          "columnsFrom": [
-            "tenant_id",
-            "learner_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "learner_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2847,19 +2499,12 @@
         "memberships_actor_id_tenant_id_role_key": {
           "name": "memberships_actor_id_tenant_id_role_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "actor_id",
-            "tenant_id",
-            "role"
-          ]
+          "columns": ["actor_id", "tenant_id", "role"]
         },
         "memberships_tenant_id_id_key": {
           "name": "memberships_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         }
       },
       "policies": {
@@ -2867,9 +2512,7 @@
           "name": "memberships_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -2990,12 +2633,8 @@
           "name": "operation_receipts_tenant_id_fkey",
           "tableFrom": "operation_receipts",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3003,12 +2642,8 @@
           "name": "operation_receipts_actor_id_fkey",
           "tableFrom": "operation_receipts",
           "tableTo": "actors",
-          "columnsFrom": [
-            "actor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["actor_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3016,14 +2651,8 @@
           "name": "operation_receipts_tenant_id_membership_id_fkey",
           "tableFrom": "operation_receipts",
           "tableTo": "memberships",
-          "columnsFrom": [
-            "tenant_id",
-            "membership_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "membership_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3033,20 +2662,12 @@
         "operation_receipts_tenant_id_id_key": {
           "name": "operation_receipts_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         },
         "operation_receipts_actor_action_key_key": {
           "name": "operation_receipts_actor_action_key_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "actor_id",
-            "action",
-            "operation_key"
-          ]
+          "columns": ["tenant_id", "actor_id", "action", "operation_key"]
         }
       },
       "policies": {
@@ -3054,9 +2675,7 @@
           "name": "operation_receipts_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -3177,12 +2796,8 @@
           "name": "pack_approvals_tenant_id_fkey",
           "tableFrom": "pack_approvals",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3190,12 +2805,8 @@
           "name": "pack_approvals_approving_actor_id_fkey",
           "tableFrom": "pack_approvals",
           "tableTo": "actors",
-          "columnsFrom": [
-            "approving_actor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["approving_actor_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3203,14 +2814,8 @@
           "name": "pack_approvals_tenant_id_version_id_fkey",
           "tableFrom": "pack_approvals",
           "tableTo": "pack_versions",
-          "columnsFrom": [
-            "tenant_id",
-            "version_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "version_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3220,20 +2825,12 @@
         "pack_approvals_tenant_id_id_key": {
           "name": "pack_approvals_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         },
         "pack_approvals_tenant_version_target_key": {
           "name": "pack_approvals_tenant_version_target_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "version_id",
-            "target_kind",
-            "target_id"
-          ]
+          "columns": ["tenant_id", "version_id", "target_kind", "target_id"]
         }
       },
       "policies": {
@@ -3241,9 +2838,7 @@
           "name": "pack_approvals_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -3345,12 +2940,8 @@
           "name": "pack_assignments_tenant_id_fkey",
           "tableFrom": "pack_assignments",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3358,12 +2949,8 @@
           "name": "pack_assignments_assigning_actor_id_fkey",
           "tableFrom": "pack_assignments",
           "tableTo": "actors",
-          "columnsFrom": [
-            "assigning_actor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["assigning_actor_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3371,14 +2958,8 @@
           "name": "pack_assignments_tenant_id_publication_id_fkey",
           "tableFrom": "pack_assignments",
           "tableTo": "pack_publications",
-          "columnsFrom": [
-            "tenant_id",
-            "publication_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "publication_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3386,14 +2967,8 @@
           "name": "pack_assignments_tenant_id_learner_id_fkey",
           "tableFrom": "pack_assignments",
           "tableTo": "identities",
-          "columnsFrom": [
-            "tenant_id",
-            "learner_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "learner_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3403,27 +2978,17 @@
         "pack_assignments_tenant_id_id_key": {
           "name": "pack_assignments_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         },
         "pack_assignments_tenant_publication_learner_key": {
           "name": "pack_assignments_tenant_publication_learner_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "publication_id",
-            "learner_id"
-          ]
+          "columns": ["tenant_id", "publication_id", "learner_id"]
         },
         "pack_assignments_tenant_publication_key": {
           "name": "pack_assignments_tenant_publication_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "publication_id"
-          ]
+          "columns": ["tenant_id", "publication_id"]
         }
       },
       "policies": {
@@ -3431,9 +2996,7 @@
           "name": "pack_assignments_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -3546,12 +3109,8 @@
           "name": "pack_publications_tenant_id_fkey",
           "tableFrom": "pack_publications",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3559,12 +3118,8 @@
           "name": "pack_publications_approving_actor_id_fkey",
           "tableFrom": "pack_publications",
           "tableTo": "actors",
-          "columnsFrom": [
-            "approving_actor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["approving_actor_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3572,14 +3127,8 @@
           "name": "pack_publications_tenant_id_version_id_fkey",
           "tableFrom": "pack_publications",
           "tableTo": "pack_versions",
-          "columnsFrom": [
-            "tenant_id",
-            "version_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "version_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3589,18 +3138,12 @@
         "pack_publications_tenant_id_id_key": {
           "name": "pack_publications_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         },
         "pack_publications_tenant_version_key": {
           "name": "pack_publications_tenant_version_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "version_id"
-          ]
+          "columns": ["tenant_id", "version_id"]
         }
       },
       "policies": {
@@ -3608,9 +3151,7 @@
           "name": "pack_publications_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -3718,12 +3259,8 @@
           "name": "pack_receipts_tenant_id_fkey",
           "tableFrom": "pack_receipts",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3731,12 +3268,8 @@
           "name": "pack_receipts_actor_id_fkey",
           "tableFrom": "pack_receipts",
           "tableTo": "actors",
-          "columnsFrom": [
-            "actor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["actor_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3744,14 +3277,8 @@
           "name": "pack_receipts_tenant_id_membership_id_fkey",
           "tableFrom": "pack_receipts",
           "tableTo": "memberships",
-          "columnsFrom": [
-            "tenant_id",
-            "membership_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "membership_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3761,20 +3288,12 @@
         "pack_receipts_tenant_id_id_key": {
           "name": "pack_receipts_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         },
         "pack_receipts_tenant_actor_action_key_key": {
           "name": "pack_receipts_tenant_actor_action_key_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "actor_id",
-            "action",
-            "operation_key"
-          ]
+          "columns": ["tenant_id", "actor_id", "action", "operation_key"]
         }
       },
       "policies": {
@@ -3782,9 +3301,7 @@
           "name": "pack_receipts_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -3974,12 +3491,8 @@
           "name": "pack_versions_tenant_id_fkey",
           "tableFrom": "pack_versions",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3987,12 +3500,8 @@
           "name": "pack_versions_teacher_actor_id_fkey",
           "tableFrom": "pack_versions",
           "tableTo": "actors",
-          "columnsFrom": [
-            "teacher_actor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["teacher_actor_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -4000,14 +3509,8 @@
           "name": "pack_versions_tenant_id_request_id_fkey",
           "tableFrom": "pack_versions",
           "tableTo": "lesson_draft_requests",
-          "columnsFrom": [
-            "tenant_id",
-            "request_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "request_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -4015,14 +3518,8 @@
           "name": "pack_versions_tenant_id_parent_version_id_fkey",
           "tableFrom": "pack_versions",
           "tableTo": "pack_versions",
-          "columnsFrom": [
-            "tenant_id",
-            "parent_version_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "parent_version_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -4032,19 +3529,12 @@
         "pack_versions_tenant_id_id_key": {
           "name": "pack_versions_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         },
         "pack_versions_tenant_id_request_id_revision_key": {
           "name": "pack_versions_tenant_id_request_id_revision_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "request_id",
-            "revision"
-          ]
+          "columns": ["tenant_id", "request_id", "revision"]
         }
       },
       "policies": {
@@ -4052,9 +3542,7 @@
           "name": "pack_versions_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -4165,12 +3653,8 @@
           "name": "pending_authentications_actor_id_fkey",
           "tableFrom": "pending_authentications",
           "tableTo": "actors",
-          "columnsFrom": [
-            "actor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["actor_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -4180,9 +3664,7 @@
         "pending_authentications_verifier_hash_key": {
           "name": "pending_authentications_verifier_hash_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "verifier_hash"
-          ]
+          "columns": ["verifier_hash"]
         }
       },
       "policies": {},
@@ -4241,12 +3723,8 @@
           "name": "prerequisite_edges_tenant_id_fkey",
           "tableFrom": "prerequisite_edges",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -4254,14 +3732,8 @@
           "name": "prerequisite_edges_tenant_id_prerequisite_id_fkey",
           "tableFrom": "prerequisite_edges",
           "tableTo": "prerequisite_nodes",
-          "columnsFrom": [
-            "tenant_id",
-            "prerequisite_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "prerequisite_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -4269,14 +3741,8 @@
           "name": "prerequisite_edges_tenant_id_successor_id_fkey",
           "tableFrom": "prerequisite_edges",
           "tableTo": "prerequisite_nodes",
-          "columnsFrom": [
-            "tenant_id",
-            "successor_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "successor_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -4284,11 +3750,7 @@
       "compositePrimaryKeys": {
         "prerequisite_edges_pkey": {
           "name": "prerequisite_edges_pkey",
-          "columns": [
-            "tenant_id",
-            "prerequisite_id",
-            "successor_id"
-          ]
+          "columns": ["tenant_id", "prerequisite_id", "successor_id"]
         }
       },
       "uniqueConstraints": {},
@@ -4297,9 +3759,7 @@
           "name": "graph_edges_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -4375,12 +3835,8 @@
           "name": "prerequisite_nodes_tenant_id_fkey",
           "tableFrom": "prerequisite_nodes",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -4388,14 +3844,8 @@
           "name": "prerequisite_nodes_tenant_id_standard_id_fkey",
           "tableFrom": "prerequisite_nodes",
           "tableTo": "standards",
-          "columnsFrom": [
-            "tenant_id",
-            "standard_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "standard_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -4405,10 +3855,7 @@
         "prerequisite_nodes_tenant_id_id_key": {
           "name": "prerequisite_nodes_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         }
       },
       "policies": {
@@ -4416,9 +3863,7 @@
           "name": "graph_nodes_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -4483,12 +3928,8 @@
           "name": "provider_bindings_actor_id_fkey",
           "tableFrom": "provider_bindings",
           "tableTo": "actors",
-          "columnsFrom": [
-            "actor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["actor_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -4496,20 +3937,14 @@
       "compositePrimaryKeys": {
         "provider_bindings_pkey": {
           "name": "provider_bindings_pkey",
-          "columns": [
-            "provider_issuer",
-            "provider_subject"
-          ]
+          "columns": ["provider_issuer", "provider_subject"]
         }
       },
       "uniqueConstraints": {
         "provider_bindings_actor_id_provider_issuer_key": {
           "name": "provider_bindings_actor_id_provider_issuer_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "actor_id",
-            "provider_issuer"
-          ]
+          "columns": ["actor_id", "provider_issuer"]
         }
       },
       "policies": {},
@@ -4673,12 +4108,8 @@
           "name": "publications_tenant_id_fkey",
           "tableFrom": "publications",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -4686,14 +4117,8 @@
           "name": "publications_tenant_id_lesson_version_id_fkey",
           "tableFrom": "publications",
           "tableTo": "lesson_versions",
-          "columnsFrom": [
-            "tenant_id",
-            "lesson_version_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "lesson_version_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -4701,12 +4126,8 @@
           "name": "publications_approving_actor_id_fkey",
           "tableFrom": "publications",
           "tableTo": "actors",
-          "columnsFrom": [
-            "approving_actor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["approving_actor_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -4716,18 +4137,12 @@
         "publications_tenant_id_id_key": {
           "name": "publications_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         },
         "publications_tenant_id_lesson_version_id_key": {
           "name": "publications_tenant_id_lesson_version_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "lesson_version_id"
-          ]
+          "columns": ["tenant_id", "lesson_version_id"]
         }
       },
       "policies": {
@@ -4735,9 +4150,7 @@
           "name": "publications_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -4945,12 +4358,8 @@
           "name": "source_snapshots_tenant_id_fkey",
           "tableFrom": "source_snapshots",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -4958,12 +4367,8 @@
           "name": "source_snapshots_teacher_id_fkey",
           "tableFrom": "source_snapshots",
           "tableTo": "actors",
-          "columnsFrom": [
-            "teacher_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["teacher_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -4971,14 +4376,8 @@
           "name": "source_snapshots_tenant_id_standard_id_fkey",
           "tableFrom": "source_snapshots",
           "tableTo": "standards",
-          "columnsFrom": [
-            "tenant_id",
-            "standard_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "standard_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -4986,14 +4385,8 @@
           "name": "source_snapshots_tenant_id_replaces_snapshot_id_fkey",
           "tableFrom": "source_snapshots",
           "tableTo": "source_snapshots",
-          "columnsFrom": [
-            "tenant_id",
-            "replaces_snapshot_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "replaces_snapshot_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -5003,10 +4396,7 @@
         "source_snapshots_tenant_id_id_key": {
           "name": "source_snapshots_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         }
       },
       "policies": {
@@ -5014,9 +4404,7 @@
           "name": "source_snapshots_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -5122,12 +4510,8 @@
           "name": "standards_tenant_id_fkey",
           "tableFrom": "standards",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -5137,18 +4521,12 @@
         "standards_tenant_id_id_key": {
           "name": "standards_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         },
         "standards_tenant_id_code_key": {
           "name": "standards_tenant_id_code_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "code"
-          ]
+          "columns": ["tenant_id", "code"]
         }
       },
       "policies": {
@@ -5156,9 +4534,7 @@
           "name": "standards_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -5254,12 +4630,8 @@
           "name": "teacher_decisions_tenant_id_fkey",
           "tableFrom": "teacher_decisions",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -5267,14 +4639,8 @@
           "name": "teacher_decisions_tenant_id_run_id_fkey",
           "tableFrom": "teacher_decisions",
           "tableTo": "learner_runs",
-          "columnsFrom": [
-            "tenant_id",
-            "run_id"
-          ],
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsFrom": ["tenant_id", "run_id"],
+          "columnsTo": ["tenant_id", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -5282,12 +4648,8 @@
           "name": "teacher_decisions_teacher_actor_id_fkey",
           "tableFrom": "teacher_decisions",
           "tableTo": "actors",
-          "columnsFrom": [
-            "teacher_actor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["teacher_actor_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -5297,10 +4659,7 @@
         "teacher_decisions_tenant_id_id_key": {
           "name": "teacher_decisions_tenant_id_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         }
       },
       "policies": {
@@ -5308,9 +4667,7 @@
           "name": "teacher_decisions_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(tenant_id = current_setting('app.tenant_id'::text, true))"
         }
       },
@@ -5374,9 +4731,7 @@
         "tenants_slug_key": {
           "name": "tenants_slug_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       },
       "policies": {
@@ -5384,9 +4739,7 @@
           "name": "tenants_are_tenant_scoped",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "(id = current_setting('app.tenant_id'::text, true))"
         }
       },
