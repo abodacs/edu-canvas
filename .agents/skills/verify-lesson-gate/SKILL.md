@@ -60,14 +60,6 @@ Never weaken a property or probe to make the check pass. Findings stay findings.
 | All four property blocks | `validateProviderDraft` in src/server/generation/validation.ts; `buildValidatedLearningPath` in src/server/generation/learning-path.ts | 3a6f7e57e728ff8447a826184554cc5b08f84991 (verification introduced right after this commit; move this forward only after re-running a pass on the new commit and confirming the re-checks still describe the code) |
 | Fifth block: story projection (#19) | `buildStoryPlan` in src/shared/story-plan.ts, over paths built by `buildValidatedLearningPath` | branch `impl/19-forward-story`, 2026-10-31 — pass recorded before the merge commit exists; move the hash here at merge |
 
-The fifth block adds no gate rule. Its oracle reads the accepted path, never the
-story: every beat's label, narrative, transition, and screen purpose must be a
-substring of the approved path copy (step labels, screen purposes, rationale,
-next-screen rationale), or equal a beat's own `roleLabel`. Role labels are the
-only declared chrome, because "Prerequisite" and "Connection reveal" are surface
-words rather than facts. The block also rejects two story-side breaks with named
-codes (`STORY_PATH_TOO_SHORT`, `STORY_SOURCE_COPY_EMPTY`). Put an invented fact
-into a beat and this block fails; the clause the hinge carries stays a verbatim
-slice of `rationale`, so recasing approved copy fails it too.
+The fifth block adds no gate rule. Its oracle reads the accepted path, never the story: every beat's label, narrative, transition, and screen purpose must be a substring of the approved path copy (step labels, screen purposes, rationale, next-screen rationale), or equal a beat's own `roleLabel`. Role labels are the only declared chrome, because "Prerequisite" and "Connection reveal" are surface words rather than facts. The block also rejects two story-side breaks with named codes (`STORY_PATH_TOO_SHORT`, `STORY_SOURCE_COPY_EMPTY`). Put an invented fact into a beat and this block fails; the clause the hinge carries stays a verbatim slice of `rationale`, so recasing approved copy fails it too.
 
 Move the sync commit forward only after confirming that the verification still describes the code at that commit. If you have edited the gate without rereading this skill, treat the next distinctive failure as suspect and verify against the re-check rules first. To bring a stale skill back in line after edits it missed, follow `/maintain-formal-verification-skill`.
