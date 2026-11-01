@@ -4,8 +4,8 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { createEquivalentFractionsDraft } from "../generation/provider";
 import { buildValidatedLearningPath } from "../generation/learning-path";
-import { createDemoCurriculumContext } from "../generation/semantic-validation";
-import { getDemoSeedCounts } from "../seed-data";
+import { createSyntheticCurriculumContext } from "../generation/semantic-validation";
+import { getSyntheticSeedCounts } from "../seed-data";
 import { createGenerationRequestHash } from "../generation/types";
 import { createDrizzlePersistence } from "./drizzle";
 import { createPostgresPersistence } from "./postgres";
@@ -303,8 +303,8 @@ describe.skipIf(!isRunDatabaseTests)("PostgreSQL persistence parity", () => {
     it("reads the same seeded foundation counts", async () => {
       const persistence = adapter.create();
 
-      await expect(persistence.readDemoCounts()).resolves.toStrictEqual(
-        getDemoSeedCounts()
+      await expect(persistence.readSeedCounts()).resolves.toStrictEqual(
+        getSyntheticSeedCounts()
       );
     });
 
@@ -448,7 +448,7 @@ describe.skipIf(!isRunDatabaseTests)("PostgreSQL persistence parity", () => {
       const generatedDraft = createEquivalentFractionsDraft(retry.input);
       const learningPath = buildValidatedLearningPath({
         proposal: requireLearningPath(generatedDraft),
-        context: createDemoCurriculumContext(retry.input),
+        context: createSyntheticCurriculumContext(retry.input),
         draftId: retry.requestId,
         provenance,
         validatorVersion: "semantic-validation-runner-v1",

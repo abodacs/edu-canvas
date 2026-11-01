@@ -1,5 +1,7 @@
 # AgDR-0007 — Single-instance demo access and deployment
 
+> **Superseded in part 2026-10-31 ([#162](https://github.com/abodacs/edu-canvas/issues/162)).** The demo-mode runtime and invitation-session parts are retired. Server-owned opaque sessions ([#98](https://github.com/abodacs/edu-canvas/issues/98), [AgDR-0009](AgDR-0009-application-owned-opaque-sessions.md)) replace invitation sessions. The single-Machine and quota decisions remain open under [#104](https://github.com/abodacs/edu-canvas/issues/104).
+
 > In the context of publishing a reviewer-accessible validation deployment on the existing Fly.io + Supabase foundation, facing the risk that the older two-instance runbook silently invalidates process-local limits and that an open endpoint invites unbounded cost and access, I decided to deploy one continuously running Fly.io instance with database-backed quotas, process-local burst limits, and protected invitation sessions, to achieve a controlled, honest validation deployment, accepting reduced availability versus a multi-instance setup and that this configuration is explicitly a milestone stage; production requirements live in the release runbook.
 
 Recorded 2026-10-25 for the hackathon-2026 reconciliation ([#89](https://github.com/abodacs/edu-canvas/issues/89)). Normative contracts live in the [implementation document](../design/design-doc-implementation.md#apply-access-limits-and-safe-release-changes); the runbook now follows this decision.

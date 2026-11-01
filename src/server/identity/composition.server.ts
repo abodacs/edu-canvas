@@ -7,6 +7,7 @@ import { createIdentityService } from "./service";
 import { ensureSyntheticIdentityFixture } from "./synthetic-fixture";
 
 import type { ServerConfig } from "../config";
+import type { IdentityPersistence } from "./persistence-port";
 import type { IdentityService } from "./service";
 
 const sharedRateLimiter = createRateLimiter();
@@ -17,21 +18,23 @@ export interface ConfiguredIdentity {
   readonly publicOrigin: string;
 }
 
-/**
- * The composition root is memoized per configuration identity. The deterministic provider keeps provider sessions in memory, so a fresh instance per request would forget them; the hosted adapter is stateless but memoizing it keeps one client.
- */
 const configuredCache = new Map<string, Promise<ConfiguredIdentity>>();
 
 const cacheKey = (config: ServerConfig): string => {
-  return [
-    config.auth.provider,
-    config.appEnv,
-    config.mode,
-    config.databaseUrl ?? "",
-  ].join(":");
+  return [config.auth.provider, config.appEnv, config.databaseUrl ?? ""].join(
+    ":"
+  );
 };
 
-const build = async (config: ServerConfig): Promise<ConfiguredIdentity> => {
+/**
+Compose one identity instance over an explicit persistence port. Runtime
+composition goes through `createConfiguredIdentity`; tests call this with the
+in-memory identity store.
+*/
+export const buildConfiguredIdentity = async (
+  config: ServerConfig,
+  persistence: IdentityPersistence
+): Promise<ConfiguredIdentity> => {
   if (config.issues.length > 0) {
     throw new Error("Authentication configuration is invalid.");
   }
@@ -41,7 +44,6 @@ const build = async (config: ServerConfig): Promise<ConfiguredIdentity> => {
     throw new Error("Authentication secrets and public origin are required.");
   }
 
-  const persistence = createIdentityPersistence(config);
   if (auth.provider === "deterministic") {
     await ensureSyntheticIdentityFixture(persistence);
   }
@@ -66,6 +68,9 @@ const build = async (config: ServerConfig): Promise<ConfiguredIdentity> => {
   };
 };
 
+/**
+The composition root is memoized per configuration identity. The deterministic provider keeps provider sessions in memory, so a fresh instance per request would forget them; the hosted adapter is stateless but memoizing it keeps one client.
+*/
 export const createConfiguredIdentity = (
   config: ServerConfig = readServerConfig()
 ): Promise<ConfiguredIdentity> => {
@@ -74,7 +79,10 @@ export const createConfiguredIdentity = (
   if (existing) {
     return existing;
   }
-  const created = build(config);
+  const created = buildConfiguredIdentity(
+    config,
+    createIdentityPersistence(config)
+  );
   configuredCache.set(key, created);
   return created;
 };

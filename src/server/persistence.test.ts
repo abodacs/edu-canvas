@@ -16,7 +16,6 @@ describe("foundation persistence boundary", () => {
     });
     const config = readServerConfig({
       APP_ENV: "production",
-      DEMO_MODE: "false",
       DATABASE_URL: "not-a-url",
       OPENAI_API_KEY: "test-server-key",
       AUTH_PUBLIC_ORIGIN: "https://app.example.com",
@@ -50,9 +49,7 @@ describe("foundation persistence boundary", () => {
     });
     const config: ServerConfig = {
       appEnv: "production",
-      demoMode: false,
       syntheticDataOnly: true,
-      mode: "postgres",
       persistenceAdapter: "postgres",
       openAiModel: "gpt-5.6",
       openAiBaseUrl: "https://api.openai.com/v1",

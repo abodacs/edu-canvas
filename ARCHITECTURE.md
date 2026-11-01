@@ -39,7 +39,7 @@ flowchart LR
     Page -->|HTTPS| Delivery
     Delivery --> Auth
     Delivery --> Generation
-    Generation -->|Generate or correct| Provider[Fixture or model provider]
+    Generation -->|Generate or correct| Provider[Model provider]
     Provider -->|Untrusted draft| Generation
     Generation --> Safety
     Safety --> Persistence
@@ -49,7 +49,6 @@ flowchart LR
     PreviewAPI --> Safety
     PreviewAPI --> Compiler
     Compiler -->|Validated A2UI messages| Preview
-    Persistence --> Seeded[Process-local seeded store]
     Persistence --> Database[(PostgreSQL)]
 ```
 
@@ -211,8 +210,8 @@ Wave rules: one context per PR, `pnpm check` (including `verify:boundaries`) gre
 | 0 (this change) | Context map, rules, backlog enumeration | — (breaks 2 type cycles) | All waves |
 | 1. Platform spine | Persistence, config, observability, health, UI primitives | — | Every later wave moves against a stable platform |
 | 2. Curriculum & Standards | Seed data behind a versioned context port | `drafting-imports-seed-curriculum-directly` | [#30](https://github.com/abodacs/edu-canvas/issues/30) standards packs; AgDR-0005 grounding adapter |
-| 3. Drafting + Validation | Split `generation/`; identity port | `drafting-reaches-session-policy-directly` | [#105](https://github.com/abodacs/edu-canvas/issues/105) AgDR-0006 conformance, [#106](https://github.com/abodacs/edu-canvas/issues/106) eval set, [#98](https://github.com/abodacs/edu-canvas/issues/98) auth prerequisite |
-| 4. Teacher Review | A2UI tri-fold (contract, server, ui); preview identity port | `preview-reaches-session-policy-directly` | [#29](https://github.com/abodacs/edu-canvas/issues/29) catalog generalization, [#110](https://github.com/abodacs/edu-canvas/issues/110) catalog unify, [#5](https://github.com/abodacs/edu-canvas/issues/5) approval |
+| 3. Drafting + Validation | Split `generation/`; session-owned actor boundary | — | [#105](https://github.com/abodacs/edu-canvas/issues/105) AgDR-0006 conformance, [#106](https://github.com/abodacs/edu-canvas/issues/106) eval set, [#98](https://github.com/abodacs/edu-canvas/issues/98) auth prerequisite |
+| 4. Teacher Review | A2UI tri-fold (contract, server, ui); authenticated preview | — | [#29](https://github.com/abodacs/edu-canvas/issues/29) catalog generalization, [#110](https://github.com/abodacs/edu-canvas/issues/110) catalog unify, [#5](https://github.com/abodacs/edu-canvas/issues/5) approval |
 | 5. Student Learning | Greenfield in the target layout | — | [#5](https://github.com/abodacs/edu-canvas/issues/5)–[#8](https://github.com/abodacs/edu-canvas/issues/8), [#19](https://github.com/abodacs/edu-canvas/issues/19), [#107](https://github.com/abodacs/edu-canvas/issues/107) |
 
 Flipping a warn rule to error is part of its wave's PR. A new warn may not be introduced outside a planned wave.
@@ -268,7 +267,7 @@ Catalog actions such as `submitAttempt` describe allowed messages. Their presenc
 
 [config.ts](src/server/config.ts) parses application and database-bootstrap settings. Invalid settings produce typed `ConfigIssue` records. Generation, preview, readiness, and persistence reject invalid configuration.
 
-`DEMO_MODE` selects fixture generation and defaults to true outside production. `DATABASE_URL` independently selects PostgreSQL persistence; without it, storage is seeded and process-local. Live generation requires both a database URL and `OPENAI_API_KEY`. `PERSISTENCE_ADAPTER` selects raw SQL or Drizzle against the same database. `SYNTHETIC_DATA_ONLY=false` is rejected. Development falls back to a deterministic local identity provider; preview and production require the `AUTH_*` and Supabase settings and fail closed without them.
+`DATABASE_URL` is required: PostgreSQL is the only runtime persistence. `OPENAI_API_KEY` is required for server-side generation. `PERSISTENCE_ADAPTER` selects raw SQL or Drizzle against the same database. `SYNTHETIC_DATA_ONLY=false` is rejected. The deterministic provider and in-memory stores are test doubles and are unreachable from runtime composition.
 
 [observability.server.ts](src/server/observability.server.ts) emits structured errors, restricts context values, redacts sensitive patterns, and optionally sends scrubbed events to Sentry. Sentry uses `sendDefaultPii: false`. This is a server-only interface, not a browser SDK.
 
@@ -321,7 +320,7 @@ sequenceDiagram
 5. Build a forward learning path and story against the versioned seeded curriculum. Missing or incompatible context blocks acceptance.
 6. Persist the final state with the expected attempt, update timestamp, and an unexpired lease. If ownership has changed, return the current record instead of overwriting it.
 
-The factory currently selects a deterministic fixture provider or an OpenAI Responses adapter. The live adapter uses a 100-second timeout per call. The service enforces a 200-second total budget across generation and one correction.
+The configured factory always builds the OpenAI Responses adapter; the deterministic provider is a test double. The live adapter uses a 100-second timeout per call. The service enforces a 200-second total budget across generation and one correction.
 
 | State | Meaning | Explicit retry |
 | --- | --- | --- |
@@ -358,7 +357,7 @@ These are extension paths through existing owners. New domain behavior belongs i
 | Change | Implementation path | Constraints and verification |
 | --- | --- | --- |
 | Add a model provider | Implement `LessonDraftProvider` in `generation/provider.ts` or a sibling adapter. Select it in `factory.ts`; add settings in `config.ts` and `.env.example`. | Return unknown draft data and provenance. Map failures to `LessonProviderError`. Keep correction policy in the service. Extend provider, config, and service tests. Add new secret markers to the client scan. |
-| Add persisted state | Extend the domain type and persistence port. Implement storage in seeded, raw SQL, and Drizzle adapters. Change `drizzle/schema.ts`, run `pnpm db:generate`, and use `generate --custom` only for forced RLS, triggers, or functions. | Preserve tenant scoping, atomic claims, conditional writes, and adapter parity. Run database contract tests against a migrated database. |
+| Add persisted state | Extend the domain type and persistence port. Implement storage in the raw SQL and Drizzle adapters; keep the in-memory store as a test double. Change `drizzle/schema.ts`, run `pnpm db:generate`, and use `generate --custom` only for forced RLS, triggers, or functions. | Preserve tenant scoping, atomic claims, conditional writes, and adapter parity. Run database contract tests against a migrated database. |
 | Add a server operation | Add a domain-owned `.server` delivery module and a thin `src/routes/api/...` handler; start from `/api/lessons/generate`. Parse inputs and project outputs at the boundary. | Keep domain rules and database access behind the delivery interface. Verify architecture imports and public schemas. |
 | Add a page | Add a file route using `routes/workspace.tsx` as the authenticated example. Load data through named server interfaces and keep interaction state local. | Regenerate routes with `pnpm generate-routes`. Do not hand-edit `routeTree.gen.ts`. Check the built client boundary. |
 | Change A2UI | Start with `shared/a2ui-contract.ts`, then update compiler, stream expectations, renderer, and their tests together. | Version catalog changes under the [catalog-governance decision](docs/agdr/AgDR-0001-a2ui-catalog-governance.md). Preserve rejection of unknown messages and private data. |
@@ -430,7 +429,7 @@ These differences were checked against the source baseline above. They are not r
 | Connections | Each database operation creates and closes a client | There is no application-wide connection pool. |
 | Seeded catalog | Fixture activity uses `edu-canvas-matching-v0` | Live preview uses `matching-v1` or `fractions-v2`; the activity fixture is not the preview catalog authority. |
 | Decision identifiers | Three records share `AgDR-0003` | Citations need the full filename to distinguish canonical generation, Nitro compatibility, and observability. |
-| Context boundary debt | Drafting and preview import the identity delivery seam and seed data directly | Identity port (wave 3–4) and curriculum context port (wave 2) per [AgDR-0008](docs/agdr/AgDR-0008-bounded-contexts-and-screaming-layout.md); tracked as `verify:boundaries` warn rules. |
+| Context boundary debt | Drafting imports seed data directly | Curriculum context port (wave 2) per [AgDR-0008](docs/agdr/AgDR-0008-bounded-contexts-and-screaming-layout.md); tracked as a `verify:boundaries` warn rule. |
 
 ## Document maintenance
 

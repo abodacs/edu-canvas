@@ -2,7 +2,7 @@ import { setTimeout as delay } from "node:timers/promises";
 
 import { describe, expect, it } from "vitest";
 
-import { demoSeed } from "@/server/seed-data";
+import { syntheticSeed } from "@/server/seed-data";
 
 import {
   artifactGatePolicyVersion,
@@ -15,7 +15,7 @@ import {
 import { buildValidatedLearningPath } from "./learning-path";
 import { createEquivalentFractionsDraft } from "./provider";
 import {
-  createDemoCurriculumContext,
+  createSyntheticCurriculumContext,
   semanticValidationRunnerVersion,
   validateSemanticLesson,
 } from "./semantic-validation";
@@ -36,7 +36,7 @@ const validInput = () => {
   return {
     prompt: "equivalent fractions for grade 4",
     grade: 4,
-    standardId: demoSeed.standard.id,
+    standardId: syntheticSeed.standard.id,
     language: "en" as const,
     difficulty: "on-level" as const,
   };
@@ -53,7 +53,7 @@ const buildArtifact = (draft: ProviderLessonDraft) => {
   if (!draft.learningPath) {
     throw new Error("The gate fixture draft must carry a learning path.");
   }
-  const context = createDemoCurriculumContext(validInput());
+  const context = createSyntheticCurriculumContext(validInput());
   const learningPath: ValidatedLearningPath = buildValidatedLearningPath({
     proposal: draft.learningPath,
     context,

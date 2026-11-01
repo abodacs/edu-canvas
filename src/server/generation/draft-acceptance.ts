@@ -10,7 +10,7 @@ import {
   toNormalizedReasoningPath,
 } from "./learning-path";
 import {
-  createDemoCurriculumContext,
+  createSyntheticCurriculumContext,
   semanticValidationRunnerVersion,
   validateSemanticLesson,
 } from "./semantic-validation";
@@ -230,7 +230,7 @@ export const resolveCurriculumContext = (
 ): VersionedCurriculumContext | undefined => {
   return options.curriculumContext
     ? options.curriculumContext(input)
-    : createDemoCurriculumContext(input, tenantId);
+    : createSyntheticCurriculumContext(input, tenantId);
 };
 
 export const reviewDraftForAcceptance = async (

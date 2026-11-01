@@ -13,10 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       APP_ENV: preview
-      DEMO_MODE: "false"
       SYNTHETIC_DATA_ONLY: "true"
       DATABASE_URL: postgresql://edu_canvas:edu_canvas_dev@127.0.0.1:5432/edu_canvas
-      # Test-only value: smoke covers deterministic generation and never calls OpenAI.
+      # Test-only value: smoke exercises public HTTP routes and never calls OpenAI.
       OPENAI_API_KEY: ci-test-key
       # Test-only authentication configuration. Preview must use the hosted
       # provider and fails closed without these values, so CI supplies
@@ -95,7 +94,6 @@ jobs:
             --publish 3010:3000 \
             --add-host host.docker.internal:host-gateway \
             --env APP_ENV=preview \
-            --env DEMO_MODE=false \
             --env SYNTHETIC_DATA_ONLY=true \
             --env OPENAI_API_KEY=ci-test-key \
             --env DATABASE_URL=postgresql://edu_canvas:edu_canvas_dev@host.docker.internal:5432/edu_canvas \

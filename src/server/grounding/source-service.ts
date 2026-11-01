@@ -1,5 +1,5 @@
 import { createId } from "@/server/ids";
-import { demoSeed } from "@/server/seed-data";
+import { syntheticSeed } from "@/server/seed-data";
 import {
   SOURCE_MAX_EXTRACTED_CHARS,
   SOURCE_UNUSED_TTL_HOURS,
@@ -65,7 +65,7 @@ const addHours = (iso: string, hours: number): string => {
   return date.toISOString();
 };
 
-const effectiveStandardId = (): string => demoSeed.standard.id;
+const effectiveStandardId = (): string => syntheticSeed.standard.id;
 
 export const createSourceService = (
   options: SourceServiceOptions

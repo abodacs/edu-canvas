@@ -10,7 +10,6 @@ describe("server configuration", () => {
   it("keeps synthetic database bootstrap independent of provider credentials", () => {
     const config = readDatabaseBootstrapConfig({
       APP_ENV: "preview",
-      DEMO_MODE: "false",
       DATABASE_URL: "postgresql://demo:secret@db.invalid:5432/app",
     });
 
@@ -32,19 +31,22 @@ describe("server configuration", () => {
     );
   });
 
-  it("defaults to a ready synthetic repository for a clean checkout", () => {
+  it("requires database and provider configuration in every environment", () => {
     const config = readServerConfig({});
 
     expect(config).toMatchObject({
       appEnv: "development",
-      demoMode: true,
       syntheticDataOnly: true,
-      mode: "seeded-demo",
       persistenceAdapter: "postgres",
-      issues: [],
     });
+    expect(config.issues.map((issue) => issue.code)).toStrictEqual([
+      "OPENAI_API_KEY_REQUIRED",
+      "DATABASE_REQUIRED",
+    ]);
     expect(config.sentryDsn).toBeUndefined();
+    // A summary must not claim a persistence backend the config never selected.
     expect(safeConfigSummary(config)).toMatchObject({
+      persistence: "unconfigured",
       observability: { sentry: "structured-log-only" },
     });
   });
@@ -86,16 +88,16 @@ describe("server configuration", () => {
     );
   });
 
-  it("requires persistence when demo mode is disabled", () => {
+  it("requires persistence in every environment", () => {
     const config = readServerConfig({
       APP_ENV: "production",
-      DEMO_MODE: "false",
+      OPENAI_API_KEY: "test-server-key",
     });
 
     expect(config.issues).toContainEqual({
       code: "DATABASE_REQUIRED",
       field: "DATABASE_URL",
-      message: "Set DATABASE_URL when DEMO_MODE is false.",
+      message: "Set DATABASE_URL for PostgreSQL persistence.",
     });
   });
 
@@ -131,10 +133,9 @@ describe("server configuration", () => {
     });
   });
 
-  it("requires a server provider credential outside seeded demo mode", () => {
+  it("requires a server provider credential in every environment", () => {
     const config = readServerConfig({
       APP_ENV: "production",
-      DEMO_MODE: "false",
       DATABASE_URL: "postgresql://demo:secret@db.invalid:5432/app",
     });
 
@@ -174,7 +175,11 @@ describe("server configuration", () => {
   });
 
   it("accepts a bounded provider timeout override", () => {
-    const config = readServerConfig({ OPENAI_TIMEOUT_MS: "45000" });
+    const config = readServerConfig({
+      DATABASE_URL: "postgresql://demo:secret@db.invalid:5432/app",
+      OPENAI_API_KEY: "test-server-key",
+      OPENAI_TIMEOUT_MS: "45000",
+    });
 
     expect(config.openAiTimeoutMs).toBe(45_000);
     expect(config.issues).toHaveLength(0);
@@ -203,6 +208,7 @@ describe("server configuration", () => {
   it("allows the Drizzle adapter to be selected server-side", () => {
     const config = readServerConfig({
       DATABASE_URL: "postgresql://demo:secret@db.invalid:5432/app",
+      OPENAI_API_KEY: "test-server-key",
       PERSISTENCE_ADAPTER: "drizzle",
     });
 

@@ -115,7 +115,11 @@ Do not present the approval, student, or grading screens as live behavior until 
 Requires Node.js 26 or newer and pnpm 10.17.1.
 
 ```bash
+docker compose up -d postgres
 pnpm install
+export DATABASE_URL=postgresql://edu_canvas:edu_canvas_dev@127.0.0.1:5432/edu_canvas
+export OPENAI_API_KEY=<server-side-key>
+pnpm db:setup
 pnpm dev
 ```
 
@@ -135,11 +139,12 @@ pnpm smoke   # in another
 ```bash
 docker compose up -d postgres
 set -a; source .env.example; set +a
+export OPENAI_API_KEY=<server-side-key>
 pnpm db:setup
 pnpm dev
 ```
 
-To generate with a real model, set `DEMO_MODE=false` and provide `OPENAI_API_KEY`; PostgreSQL is then required. See the [foundation runbook](docs/foundation-runbook.md) for configuration, readiness, and redeploy details.
+PostgreSQL and a server-side provider key are required; there is no in-memory runtime fallback. See the [foundation runbook](docs/foundation-runbook.md) for configuration, readiness, and redeploy details.
 
 ## Status
 

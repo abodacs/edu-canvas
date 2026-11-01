@@ -29,6 +29,7 @@ import {
   projectMembershipRequired,
 } from "./projection";
 
+import type { ConfiguredIdentity } from "./composition.server";
 import type { ServerConfig } from "../config";
 import type { IdentityService, SignInOutcome } from "./service";
 import type { SessionResolution, TeacherActor } from "./types";
@@ -155,10 +156,10 @@ export type TeacherResolution =
     }
   | { readonly ok: false; readonly error: IdentityError };
 
-export const resolveAuthDependencies = async (
-  config: ServerConfig = readServerConfig()
-): Promise<AuthDependencies> => {
-  const configured = await createConfiguredIdentity(config);
+export const authDependenciesFrom = (
+  config: ServerConfig,
+  configured: ConfiguredIdentity
+): AuthDependencies => {
   return {
     identity: configured.service,
     sessionSecret: configured.sessionSecret,
@@ -166,6 +167,11 @@ export const resolveAuthDependencies = async (
     config,
   };
 };
+
+export const resolveAuthDependencies = async (
+  config: ServerConfig = readServerConfig()
+): Promise<AuthDependencies> =>
+  authDependenciesFrom(config, await createConfiguredIdentity(config));
 
 const guardMutationOrigin = (
   request: Request,
@@ -612,22 +618,11 @@ export const guardProtectedMutation = (
   return originError ?? guardSessionChallenge(request, dependencies, sessionId);
 };
 
-// Resolve the caller as a verified teacher, or name the reason. Transport stays with the caller.
-export const resolveTeacherActor = async (
+// Resolve the caller's session as a verified teacher over an injected composition.
+export const resolveTeacherSession = async (
   request: Request,
-  config: ServerConfig = readServerConfig()
+  dependencies: AuthDependencies
 ): Promise<TeacherResolution> => {
-  if (config.issues.length > 0) {
-    return { ok: false, error: new IdentityError("AUTH_UNAVAILABLE") };
-  }
-
-  let dependencies: AuthDependencies;
-  try {
-    dependencies = await resolveAuthDependencies(config);
-  } catch {
-    return { ok: false, error: new IdentityError("AUTH_UNAVAILABLE") };
-  }
-
   const resolution = await resolveRequestSession(request, dependencies);
   if (resolution.status === "unavailable") {
     return { ok: false, error: new IdentityError("AUTH_UNAVAILABLE") };
@@ -645,6 +640,25 @@ export const resolveTeacherActor = async (
     sessionId: resolution.session.sessionId,
     dependencies,
   };
+};
+
+// Fail closed on configuration, compose, then resolve the caller as a verified teacher.
+export const resolveTeacherActor = async (
+  request: Request,
+  config: ServerConfig = readServerConfig()
+): Promise<TeacherResolution> => {
+  if (config.issues.length > 0) {
+    return { ok: false, error: new IdentityError("AUTH_UNAVAILABLE") };
+  }
+
+  let dependencies: AuthDependencies;
+  try {
+    dependencies = await resolveAuthDependencies(config);
+  } catch {
+    return { ok: false, error: new IdentityError("AUTH_UNAVAILABLE") };
+  }
+
+  return resolveTeacherSession(request, dependencies);
 };
 
 export const identityErrorJson = (error: IdentityError): Response =>

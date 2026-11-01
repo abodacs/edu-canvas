@@ -13,7 +13,7 @@ import {
   syntheticTeacherActor,
 } from "@/server/identity/test-actors";
 import { createSeededPersistence } from "@/server/persistence/seeded";
-import { demoSeed } from "@/server/seed-data";
+import { syntheticSeed } from "@/server/seed-data";
 import { deriveStoredArtifactGate } from "@/server/safety/artifact-enforcement";
 import {
   gateArtifact,
@@ -118,14 +118,14 @@ vi.mock(
 );
 
 const owningTeacher = syntheticTeacherActor({
-  tenantId: parseTenantId(demoSeed.tenant.id),
+  tenantId: parseTenantId(syntheticSeed.tenant.id),
 });
 
 const otherTeacher = syntheticTeacherActor({
   actorId: parseActorId("actor_teacher_bilal"),
   displayName: "Bilal Nasser",
   membershipId: parseMembershipId("membership_bilal_north"),
-  tenantId: parseTenantId(demoSeed.tenant.id),
+  tenantId: parseTenantId(syntheticSeed.tenant.id),
 });
 
 const sessionRecordFor = (
@@ -176,7 +176,7 @@ const prepareOwnedDraft = async (): Promise<FoundationPersistence> => {
     input: {
       prompt: "equivalent fractions for grade 4",
       grade: 4,
-      standardId: demoSeed.standard.id,
+      standardId: syntheticSeed.standard.id,
       language: "en",
       difficulty: "on-level",
       idempotencyKey: "preview-route-test",
@@ -311,7 +311,7 @@ describe("teacher lesson preview delivery seam", () => {
 describe("fractions-v2 preview negotiation", () => {
   const fractionDraft = {
     requestId: draftRequestId,
-    standardId: demoSeed.standard.id,
+    standardId: syntheticSeed.standard.id,
     grade: 4,
     language: "en",
     direction: "ltr",
@@ -344,7 +344,7 @@ describe("fractions-v2 preview negotiation", () => {
     input: {
       prompt: "equivalent fractions",
       grade: 4,
-      standardId: demoSeed.standard.id,
+      standardId: syntheticSeed.standard.id,
       language: "en",
       difficulty: "on-level",
       idempotencyKey: "fraction-preview-test",

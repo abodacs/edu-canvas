@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { demoSeed } from "@/server/seed-data";
+import { syntheticSeed } from "@/server/seed-data";
 import { parseTenantId } from "@/server/identity/identifiers";
 import { syntheticTeacherActor } from "@/server/identity/test-actors";
 import { SOURCE_MAX_EXTRACTED_CHARS } from "@/shared/source-contract";
@@ -13,7 +13,7 @@ import { SourceRequestError } from "./types";
 import type { PublicSourceSnapshot } from "@/shared/source-contract";
 
 const teacherActor = syntheticTeacherActor({
-  tenantId: parseTenantId(demoSeed.tenant.id),
+  tenantId: parseTenantId(syntheticSeed.tenant.id),
 });
 
 const createService = (
@@ -94,7 +94,7 @@ describe(createSourceService, () => {
 
   it("blocks a source that carries personal data and keeps no text", async () => {
     const service = createService();
-    const rosterName = demoSeed.identities.find(
+    const rosterName = syntheticSeed.identities.find(
       (identity) => identity.role === "student"
     )?.displayName;
     const bytes = encodeSource(
@@ -226,7 +226,7 @@ describe(createSourceService, () => {
       id: "snapshot_stale",
       tenantId: teacherActor.tenantId,
       teacherId: teacherActor.actorId,
-      standardId: demoSeed.standard.id,
+      standardId: syntheticSeed.standard.id,
       mode: "upload",
       fileName: "stale.txt",
       fileFormat: "txt",

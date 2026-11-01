@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
 import { createDefaultContentSafety } from "@/server/moderation/content-safety";
-import { demoSeed } from "@/server/seed-data";
+import { syntheticSeed } from "@/server/seed-data";
 
 /**
 #132 bake-off harness. It scores detectors on the same labeled corpus:
@@ -117,7 +117,7 @@ const v0MarkupPatterns: readonly RegExp[] = [
 
 const v0PersonalPatterns: readonly RegExp[] = [
   /\b[\w.!#$%&'*+/=?^`{|}~-]+@[\w-]+(?:\.[\w-]+)+\b/u,
-  ...demoSeed.identities
+  ...syntheticSeed.identities
     .flatMap((identity) => {
       return identity.role === "student"
         ? [identity.displayName, identity.demoHandle]

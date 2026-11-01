@@ -2,11 +2,11 @@ import { setTimeout as delay } from "node:timers/promises";
 
 import { describe, expect, it } from "vitest";
 
-import { demoSeed } from "@/server/seed-data";
+import { syntheticSeed } from "@/server/seed-data";
 
 import { createEquivalentFractionsDraft } from "./provider";
 import {
-  createDemoCurriculumContext,
+  createSyntheticCurriculumContext,
   validateSemanticLesson,
 } from "./semantic-validation";
 
@@ -24,7 +24,7 @@ const validInput = () => {
   return {
     prompt: "equivalent fractions for grade 4",
     grade: 4,
-    standardId: demoSeed.standard.id,
+    standardId: syntheticSeed.standard.id,
     language: "en" as const,
     difficulty: "on-level" as const,
   };
@@ -60,7 +60,7 @@ describe("bounded semantic lesson validation", () => {
     const input = validInput();
     const result = await validateSemanticLesson({
       draft: differentiatedDraft(),
-      context: createDemoCurriculumContext(input),
+      context: createSyntheticCurriculumContext(input),
     });
 
     expect(result.status).toBe("complete");
@@ -89,7 +89,7 @@ describe("bounded semantic lesson validation", () => {
     const input = validInput();
     const result = await validateSemanticLesson({
       draft: createEquivalentFractionsDraft(input),
-      context: createDemoCurriculumContext(input),
+      context: createSyntheticCurriculumContext(input),
     });
 
     expect(result.status).toBe("complete");
@@ -131,7 +131,7 @@ describe("bounded semantic lesson validation", () => {
 
     const result = await validateSemanticLesson({
       draft,
-      context: createDemoCurriculumContext(input),
+      context: createSyntheticCurriculumContext(input),
     });
 
     expect(result.verdict).toBe("hard_block");
@@ -155,7 +155,7 @@ describe("bounded semantic lesson validation", () => {
     const input = validInput();
     const result = await validateSemanticLesson({
       draft: createEquivalentFractionsDraft(input),
-      context: createDemoCurriculumContext(input),
+      context: createSyntheticCurriculumContext(input),
       path: {
         direction: "forward",
         nodeIds: ["graph_node_equivalent_fractions", "graph_node_equal_parts"],
@@ -177,7 +177,7 @@ describe("bounded semantic lesson validation", () => {
 
   it("accepts the approved forward and reverse forms of the seeded path", async () => {
     const input = validInput();
-    const context = createDemoCurriculumContext(input);
+    const context = createSyntheticCurriculumContext(input);
     const forward = await validateSemanticLesson({
       draft: createEquivalentFractionsDraft(input),
       context,
@@ -216,7 +216,7 @@ describe("bounded semantic lesson validation", () => {
     const input = validInput();
     const result = await validateSemanticLesson({
       draft: createEquivalentFractionsDraft(input),
-      context: createDemoCurriculumContext(input),
+      context: createSyntheticCurriculumContext(input),
       path: {
         direction: "forward",
         nodeIds: ["graph_node_equal_parts", "graph_node_equivalent_fractions"],
@@ -242,7 +242,7 @@ describe("bounded semantic lesson validation", () => {
 
   it("blocks unknown path nodes and cycles in the pinned graph", async () => {
     const input = validInput();
-    const context = createDemoCurriculumContext(input);
+    const context = createSyntheticCurriculumContext(input);
     const result = await validateSemanticLesson({
       draft: createEquivalentFractionsDraft(input),
       context: {
@@ -286,7 +286,7 @@ describe("bounded semantic lesson validation", () => {
 
     const result = await validateSemanticLesson({
       draft,
-      context: createDemoCurriculumContext(input),
+      context: createSyntheticCurriculumContext(input),
     });
 
     expect(result.verdict).toBe("hard_block");
@@ -317,7 +317,7 @@ describe("bounded semantic lesson validation", () => {
 
     const result = await validateSemanticLesson({
       draft,
-      context: createDemoCurriculumContext(input),
+      context: createSyntheticCurriculumContext(input),
     });
 
     expect(result.verdict).toBe("hard_block");
@@ -348,7 +348,7 @@ describe("bounded semantic lesson validation", () => {
     const result = await validateSemanticLesson(
       {
         draft,
-        context: createDemoCurriculumContext(input),
+        context: createSyntheticCurriculumContext(input),
       },
       {
         recommendationAgents: [
@@ -395,7 +395,7 @@ describe("bounded semantic lesson validation", () => {
     const result = await validateSemanticLesson(
       {
         draft,
-        context: createDemoCurriculumContext(input),
+        context: createSyntheticCurriculumContext(input),
       },
       {
         recommendationAgents: [
@@ -449,7 +449,7 @@ describe("bounded semantic lesson validation", () => {
     const result = await validateSemanticLesson(
       {
         draft: createEquivalentFractionsDraft(input),
-        context: createDemoCurriculumContext(input),
+        context: createSyntheticCurriculumContext(input),
       },
       {
         timeoutMs: 5,

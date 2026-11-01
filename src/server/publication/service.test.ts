@@ -13,7 +13,7 @@ import {
   createSeededPackStore,
 } from "@/server/persistence/pack-seeded";
 import { createSeededPersistence } from "@/server/persistence/seeded";
-import { demoSeed } from "@/server/seed-data";
+import { syntheticSeed } from "@/server/seed-data";
 import { createPublicationService } from "./service";
 import { PublicationError } from "./errors";
 
@@ -28,14 +28,14 @@ const requestId = "draft_req_publication_owner";
 const fixedNow = "2026-10-31T12:00:00.000Z";
 
 const teacherActor = syntheticTeacherActor({
-  tenantId: parseTenantId(demoSeed.tenant.id),
+  tenantId: parseTenantId(syntheticSeed.tenant.id),
   membershipId: parseMembershipId("membership_amira_demo"),
 });
 
 const otherTeacher = syntheticTeacherActor({
   actorId: parseActorId("actor_teacher_bilal"),
   displayName: "Bilal Nasser",
-  tenantId: parseTenantId(demoSeed.tenant.id),
+  tenantId: parseTenantId(syntheticSeed.tenant.id),
   membershipId: parseMembershipId("membership_bilal_demo"),
 });
 
@@ -47,13 +47,13 @@ const northTeacher = syntheticTeacherActor({
 const demoLearner: SeededPackLearner = {
   id: "learner_omar",
   displayName: "Omar Nabil",
-  tenantId: demoSeed.tenant.id,
+  tenantId: syntheticSeed.tenant.id,
 };
 
 const secondLearner: SeededPackLearner = {
   id: "learner_lina",
   displayName: "Lina Farouk",
-  tenantId: demoSeed.tenant.id,
+  tenantId: syntheticSeed.tenant.id,
 };
 
 interface Fixture {
@@ -74,7 +74,7 @@ const createFixture = async (): Promise<Fixture> => {
     input: {
       prompt: "equivalent fractions for grade 4",
       grade: 4,
-      standardId: demoSeed.standard.id,
+      standardId: syntheticSeed.standard.id,
       language: "en",
       difficulty: "on-level",
       idempotencyKey: "publication-service-test",

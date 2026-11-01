@@ -1,6 +1,6 @@
 import { readDatabaseBootstrapConfig } from "@/server/config";
 import { seedFoundationDatabase } from "@/server/persistence/seed-postgres";
-import { demoSeed } from "@/server/seed-data";
+import { syntheticSeed } from "@/server/seed-data";
 
 const getDatabaseUrl = (): string => {
   const config = readDatabaseBootstrapConfig(process.env);
@@ -23,4 +23,4 @@ const getDatabaseUrl = (): string => {
 };
 
 await seedFoundationDatabase(getDatabaseUrl());
-console.log(`Seeded ${demoSeed.tenant.slug} idempotently.`);
+console.log(`Seeded ${syntheticSeed.tenant.slug} idempotently.`);

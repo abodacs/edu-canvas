@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { parseTenantId } from "@/server/identity/identifiers";
 import { syntheticTeacherActor } from "@/server/identity/test-actors";
 import { createServerObservability } from "@/server/observability.server";
-import { demoSeed } from "@/server/seed-data";
+import { syntheticSeed } from "@/server/seed-data";
 
 import { createDeterministicLessonDraftProvider } from "../generation/provider";
 import { createGenerationService } from "../generation/service";
@@ -19,7 +19,7 @@ const CANARY = "CANARY132TOKEN9F3C";
 const CANARY_EMAIL = "canary132@example.test";
 
 const teacherActor = syntheticTeacherActor({
-  tenantId: parseTenantId(demoSeed.tenant.id),
+  tenantId: parseTenantId(syntheticSeed.tenant.id),
 });
 
 const buildService = () => {
@@ -40,7 +40,7 @@ const generateBlocked = async () => {
     input: {
       prompt: `Grade 4 equivalent fractions for ${CANARY}. My student Amara needs practice. Contact ${CANARY_EMAIL}.`,
       grade: 4,
-      standardId: demoSeed.standard.id,
+      standardId: syntheticSeed.standard.id,
       language: "en",
       difficulty: "on-level",
       idempotencyKey: "canary-132-key",

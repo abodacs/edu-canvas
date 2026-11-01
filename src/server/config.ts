@@ -1,15 +1,15 @@
 import { z } from "zod";
 
+import type { PersistenceKind } from "./persistence/kinds";
+
 const environmentValues = ["development", "preview", "production"] as const;
 
 export type ServerEnvironment = (typeof environmentValues)[number];
-export type PersistenceMode = "seeded-demo" | "postgres";
 export type PostgresPersistenceAdapter = "postgres" | "drizzle";
 export type AuthProviderKind = "deterministic" | "supabase";
 
 interface ConfigIssueCodes {
   INVALID_APP_ENV: true;
-  INVALID_DEMO_MODE: true;
   INVALID_SYNTHETIC_DATA_ONLY: true;
   INVALID_DATABASE_URL: true;
   INVALID_PERSISTENCE_ADAPTER: true;
@@ -48,9 +48,7 @@ export interface AuthConfig {
 
 export interface ServerConfig {
   appEnv: ServerEnvironment;
-  demoMode: boolean;
   syntheticDataOnly: true;
-  mode: PersistenceMode;
   persistenceAdapter: PostgresPersistenceAdapter;
   databaseUrl?: string;
   sentryDsn?: string;
@@ -204,26 +202,6 @@ const readAppEnvironment = (
   return "development";
 };
 
-const isDemoModeEnabled = (
-  environment: Record<string, string | undefined>,
-  appEnvironment: ServerEnvironment,
-  issues: ConfigIssue[]
-): boolean => {
-  const result = parseBoolean(
-    environment.DEMO_MODE,
-    appEnvironment !== "production"
-  );
-  if (result.invalid) {
-    pushIssue(
-      issues,
-      "INVALID_DEMO_MODE",
-      "DEMO_MODE",
-      "DEMO_MODE must be true or false."
-    );
-  }
-  return result.value;
-};
-
 const readPersistenceAdapter = (
   environment: Record<string, string | undefined>,
   issues: ConfigIssue[]
@@ -295,7 +273,6 @@ const readOpenAiTimeoutMs = (
 
 const readOpenAiSettings = (
   environment: Record<string, string | undefined>,
-  isDemoMode: boolean,
   issues: ConfigIssue[]
 ) => {
   const apiKey = environment.OPENAI_API_KEY?.trim() || undefined;
@@ -314,7 +291,7 @@ const readOpenAiSettings = (
       "OPENAI_BASE_URL must use HTTPS, or HTTP for a local loopback test server."
     );
   }
-  if (!isDemoMode && !apiKey) {
+  if (!apiKey) {
     pushIssue(
       issues,
       "OPENAI_API_KEY_REQUIRED",
@@ -528,27 +505,24 @@ export const readServerConfig = (
   const databaseConfig = readDatabaseBootstrapConfig(environment);
   const issues: ConfigIssue[] = [...databaseConfig.issues];
   const appEnvironment = readAppEnvironment(environment, issues);
-  const isDemoMode = isDemoModeEnabled(environment, appEnvironment, issues);
   const persistenceAdapter = readPersistenceAdapter(environment, issues);
   const sentryDsn = readSentryDsn(environment, issues);
-  const openAi = readOpenAiSettings(environment, isDemoMode, issues);
+  const openAi = readOpenAiSettings(environment, issues);
   const auth = readAuthConfig(environment, appEnvironment, issues);
   const { syntheticDataOnly, databaseUrl } = databaseConfig;
 
-  if (!isDemoMode && !databaseUrl) {
+  if (!databaseUrl) {
     pushIssue(
       issues,
       "DATABASE_REQUIRED",
       "DATABASE_URL",
-      "Set DATABASE_URL when DEMO_MODE is false."
+      "Set DATABASE_URL for PostgreSQL persistence."
     );
   }
 
   return {
     appEnv: appEnvironment,
-    demoMode: isDemoMode,
     syntheticDataOnly,
-    mode: databaseUrl ? "postgres" : "seeded-demo",
     persistenceAdapter,
     ...(databaseUrl && { databaseUrl }),
     ...(sentryDsn && { sentryDsn }),
@@ -564,9 +538,10 @@ export const readServerConfig = (
 export const safeConfigSummary = (config: ServerConfig) => {
   return {
     appEnv: config.appEnv,
-    demoMode: config.demoMode,
     syntheticDataOnly: config.syntheticDataOnly,
-    persistence: config.mode,
+    persistence: config.databaseUrl
+      ? ("postgres" satisfies PersistenceKind)
+      : "unconfigured",
     provider: { timeoutMs: config.openAiTimeoutMs },
     auth: {
       provider: config.auth.provider,

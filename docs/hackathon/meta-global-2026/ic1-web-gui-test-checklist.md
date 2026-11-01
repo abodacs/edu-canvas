@@ -15,7 +15,7 @@ Use one Grade 4 equivalent-fractions request (`4.NF.A.1`), English, one focused 
 | Gate | Status on 2026-10-26 | Effect |
 | --- | --- | --- |
 | #117 evidence record | **Missing.** No evidence file or issue comment found. #117 is open. | #115 says to read it first. Record the absence as the first unavailable check. |
-| Event-allowed model | **Unproven.** Current `.env` has `DEMO_MODE=true`, `OPENAI_MODEL=glm-5.2`, and `OPENAI_BASE_URL=https://api.z.ai/api/paas/v4/`. The factory selects the deterministic fixture in demo mode. GLM is not a Meta model. | Cannot prove live generation or event eligibility. |
+| Event-allowed model | **Unproven.** The runtime requires `OPENAI_API_KEY`; the deterministic provider is test-only. The earlier `glm-5.2` endpoint was not a Meta model. | Cannot prove live generation or event eligibility. |
 | Provider contract | **Unverified.** The adapter posts to `/responses` with a strict JSON schema and a 15-second abort. AgDR-0006 says 10 seconds per call and 25 seconds total. | The allowed model must support this endpoint and schema, or the adapter needs a code change. |
 | #105 guarantees | **Open, no evidence record.** | Do not claim deadline, idempotency, cancellation, or ownership guarantees from #115. |
 | Curated reference | **Partial.** Seed has `activity_version_demo_equivalent_fractions_v1`, graph `equivalent-fractions-v1`, and standard `standard_ccss_4_nf_a_01`. The generation request has no reference field, and the prompt sends only the standard ID. | Record the reference manually. Do not claim the model was grounded on it. |
@@ -31,8 +31,8 @@ Record each result in the evidence record. Stop at the first failure.
 3. **Eligibility.** Link the official rules page and version/date. Record the permitted model, registration/eligibility, and existing-code reuse decision. Credential presence is not access evidence.
 4. **Direct model probe.** Call the exact endpoint and model once, outside the GUI. Record HTTP status, latency, response shape, and whether it accepts `/responses` with strict JSON schema. Do not paste the key or raw private payload.
 5. **Database.** Confirm PostgreSQL is healthy, migrated, and seeded.
-6. **Environment.** Set `DEMO_MODE=false`, `SYNTHETIC_DATA_ONLY=true`, `DATABASE_URL`, `OPENAI_API_KEY`, `OPENAI_MODEL`, and `OPENAI_BASE_URL`. Keep the key server-only.
-7. **Config check.** `pnpm verify:config` must show `demoMode: false`, `persistence: postgres`, and `issues: []`.
+6. **Environment.** Set `SYNTHETIC_DATA_ONLY=true`, `DATABASE_URL`, `OPENAI_API_KEY`, `OPENAI_MODEL`, and `OPENAI_BASE_URL`. Keep the key server-only.
+7. **Config check.** Read `/api/readiness`; it must show `persistence: postgres` and `issues: []`.
 8. **Baseline state.** Record accepted request IDs and counts before the run.
 9. **Reference record.** Record reference ID, version, source, and provenance date. Use `activity_version_demo_equivalent_fractions_v1` / `equivalent-fractions-v1` / CCSS `4.NF.A.1` only if that is the selected reference.
 
@@ -67,7 +67,7 @@ order by created_at;
 
 ## Gate 2 — supported path through the GUI
 
-Open `http://localhost:3000/demo/teacher`.
+Sign in at `http://localhost:3000/login` with the synthetic teacher, then open `http://localhost:3000/workspace`.
 
 Exact input:
 

@@ -161,6 +161,12 @@ const LoginPage = (): ReactElement => {
       return;
     }
 
+    // Sign-in succeeded, so the submit is no longer pending whether the session
+    // is active or the caller must choose a school. This route stays mounted
+    // while `/login/membership` renders, so a stale flag would leave the form
+    // disabled after the teacher cancels the school choice.
+    setIsPending(false);
+
     if (result.data.status === "active") {
       await navigate({ to: "/workspace" });
       return;

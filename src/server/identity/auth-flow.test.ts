@@ -1,21 +1,29 @@
 import { describe, expect, it } from "vitest";
 
 import { readServerConfig } from "../config";
+import { createSeededIdentityPersistence } from "../persistence/identity-seeded";
+import { testServerEnvironment } from "../test-environment";
 import {
   handleAuthContext,
   handleMembership,
   handleSignIn,
   handleSignUp,
-  resolveAuthDependencies,
+  authDependenciesFrom,
 } from "./api.server";
+import { buildConfiguredIdentity } from "./composition.server";
 
 import type { AuthDependencies } from "./api.server";
 
-const testEnvironment = { APP_ENV: "development", DEMO_MODE: "true" };
 const password = "synthetic-pass-1";
 
+const testConfig = readServerConfig({ ...testServerEnvironment });
+const testDependencies = authDependenciesFrom(
+  testConfig,
+  await buildConfiguredIdentity(testConfig, createSeededIdentityPersistence())
+);
+
 const sessionDependencies = (): Promise<AuthDependencies> =>
-  resolveAuthDependencies(readServerConfig({ ...testEnvironment }));
+  Promise.resolve(testDependencies);
 
 const cookiePairs = (response: Response): string[] => {
   return response.headers

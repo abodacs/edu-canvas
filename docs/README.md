@@ -15,7 +15,6 @@ Edu-Canvas is a production product; these documents define and verify one trustw
 | [Sprint guide](hackathon/meta-global-2026/README.md) | Full event plan: eligibility assumptions, schedule, risks, and experiments (validation milestone) |
 | [Focused event scope](hackathon/meta-global-2026/focused-scope.md) | Current event execution decision: one teacher-controlled loop, one builder, 30 + 6 hours, checkpoints, fallback ladder |
 | [Validation tracker](hackathon/meta-global-2026/validation-tracker.md) | V1–V16 evidence gates, dated observations, and evidence links |
-| [Demo script](hackathon/meta-global-2026/demo-script.md) | Recording sequence and bounded claims for the event artifact |
 | [Teacher UI decisions](product/teacher-ui.md) | Explicit UI requirements and the existing implementation gate |
 | [Delivery priorities](product/delivery-priorities.md) | Proposed sequencing, skill recommendations, and writing guidance |
 | [Design overview](design/design-doc.md) | Technical contracts, defaults, and design decisions ("One Useful Loop") |

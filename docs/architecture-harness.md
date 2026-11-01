@@ -8,7 +8,7 @@
 - **Layer ownership:** shared modules cannot import server, route, UI, Node, or PostgreSQL code; UI modules cannot import runtime behavior; server modules cannot import delivery or UI modules.
 - **Named delivery seams:** route modules may import only `.server` modules or `/server-function` modules from the server tree.
 - **Private entry points:** every HTTP route under `src/routes/api` is classified. `auth`, `health`, and `readiness` may serve anonymous callers; every other route must reach a server delivery module that resolves the caller's session (`scripts/verify-identity-surface.ts`). A new private route that forgets authentication fails the check.
-- **Contract ownership:** public projections are parsed by their shared schema at the server seam (`sessionProjectionSchema` for the authenticated session, `demoSnapshotSchema` historically).
+- **Contract ownership:** public projections are parsed by their shared schema at the server seam (`sessionProjectionSchema` for the authenticated session).
 
 ## Dependency boundaries (verify:boundaries)
 
@@ -17,6 +17,7 @@ The two scanners split the work: `verify:architecture` owns the layer and state 
 - **No dependency cycles** (excluding the generated `routeTree.gen.ts`, whose edge to `router.tsx` the router plugin owns).
 - **Context decoupling:** `src/server/generation` and `src/server/a2ui` may not import each other’s logic; the persistence record (and its types) is their meeting point.
 - **Database-client ownership:** only `src/server/persistence` imports `postgres`.
+- **Test-double containment:** runtime modules may not import the in-memory persistence doubles (`persistence/seeded.ts`, `source-seeded.ts`, `identity-seeded.ts`, `pack-seeded.ts`, `records-seeded.ts`). Only `.test.ts(x)` modules and the doubles' own modules may; the rule is an error (`runtime-imports-in-memory-store`).
 - **Layer rules mirrored** from `verify:architecture`, so a bypass via a resolved path cannot slip past one scanner.
 
 ## Identity boundary (#98)

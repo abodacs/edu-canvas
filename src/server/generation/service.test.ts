@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { demoSeed } from "@/server/seed-data";
+import { syntheticSeed } from "@/server/seed-data";
 import { parseTenantId } from "@/server/identity/identifiers";
 import {
   syntheticLearnerActor,
@@ -15,7 +15,7 @@ import {
 } from "./provider";
 import { createGenerationService, normalizeGenerationInput } from "./service";
 import {
-  createDemoCurriculumContext,
+  createSyntheticCurriculumContext,
   validateSemanticLesson,
 } from "./semantic-validation";
 import { createGenerationRequestHash } from "./types";
@@ -26,7 +26,7 @@ import type { TeacherActor } from "@/server/identity/types";
 const validRequestHash = createGenerationRequestHash({
   prompt: "equivalent fractions for grade 4",
   grade: 4,
-  standardId: demoSeed.standard.id,
+  standardId: syntheticSeed.standard.id,
   language: "en",
   difficulty: "on-level",
 });
@@ -34,14 +34,14 @@ const validRequestHash = createGenerationRequestHash({
 const validInput = {
   prompt: "equivalent fractions for grade 4",
   grade: 4,
-  standardId: demoSeed.standard.id,
+  standardId: syntheticSeed.standard.id,
   language: "en" as const,
   difficulty: "on-level" as const,
   idempotencyKey: "request-equivalent-fractions-1",
 };
 
 const ownerTeacherActor = syntheticTeacherActor({
-  tenantId: parseTenantId(demoSeed.tenant.id),
+  tenantId: parseTenantId(syntheticSeed.tenant.id),
 });
 
 const teacherCommand = (input: Record<string, unknown> = validInput) => {
@@ -64,12 +64,12 @@ const generatingRecord = (
   };
   return {
     requestId,
-    tenantId: demoSeed.tenant.id,
+    tenantId: syntheticSeed.tenant.id,
     teacherId: ownerTeacherActor.actorId,
     input: {
       prompt: validInput.prompt,
       grade: validInput.grade,
-      standardId: demoSeed.standard.id,
+      standardId: syntheticSeed.standard.id,
       language: validInput.language,
       difficulty: validInput.difficulty,
     },
@@ -271,7 +271,7 @@ describe("lesson generation service", () => {
       provider: createDeterministicLessonDraftProvider(),
       curriculumContext: (input) => {
         return {
-          ...createDemoCurriculumContext(input),
+          ...createSyntheticCurriculumContext(input),
           tenantId: "tenant_other_school",
         };
       },
@@ -303,7 +303,7 @@ describe("lesson generation service", () => {
       provider: createDeterministicLessonDraftProvider(),
       curriculumContext: (input) => {
         return {
-          ...createDemoCurriculumContext(input),
+          ...createSyntheticCurriculumContext(input),
           graphVersion: "equivalent-fractions-v0",
         };
       },
@@ -516,12 +516,12 @@ describe("lesson generation service", () => {
     };
     const staleRecord: LessonGenerationRecord = {
       requestId: "draft_req_stale_claim",
-      tenantId: demoSeed.tenant.id,
+      tenantId: syntheticSeed.tenant.id,
       teacherId: ownerTeacherActor.actorId,
       input: {
         prompt: validInput.prompt,
         grade: validInput.grade,
-        standardId: demoSeed.standard.id,
+        standardId: syntheticSeed.standard.id,
         language: validInput.language,
         difficulty: validInput.difficulty,
       },
@@ -580,12 +580,12 @@ describe("lesson generation service", () => {
     };
     const staleRecord: LessonGenerationRecord = {
       requestId: "draft_req_cas_loser",
-      tenantId: demoSeed.tenant.id,
+      tenantId: syntheticSeed.tenant.id,
       teacherId: ownerTeacherActor.actorId,
       input: {
         prompt: validInput.prompt,
         grade: validInput.grade,
-        standardId: demoSeed.standard.id,
+        standardId: syntheticSeed.standard.id,
         language: validInput.language,
         difficulty: validInput.difficulty,
       },

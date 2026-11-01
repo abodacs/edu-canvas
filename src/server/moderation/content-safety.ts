@@ -1,4 +1,4 @@
-import { demoSeed } from "../seed-data";
+import { syntheticSeed } from "../seed-data";
 import type { moderationCategoryValues } from "@/shared/generation-contract";
 
 /**
@@ -218,7 +218,7 @@ const reviewedFirstNames: readonly string[] = [
 
 const escapeRegExp = (value: string): string => RegExp.escape(value);
 
-const rosterNamePatterns: readonly RegExp[] = demoSeed.identities
+const rosterNamePatterns: readonly RegExp[] = syntheticSeed.identities
   .flatMap((identity) => {
     return identity.role === "student"
       ? [identity.displayName, identity.demoHandle]

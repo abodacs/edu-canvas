@@ -89,7 +89,7 @@ export interface SourceReviewCommand {
 
 /**
 Persistence port for source snapshots. Only `src/server/persistence` touches
-PostgreSQL; the seeded mode keeps an in-memory store so the demo path stays
+PostgreSQL; the in-memory test double keeps tests
 whole.
 */
 export interface SourcePersistence {

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { readServerConfig } from "../config";
+import { createSeededIdentityPersistence } from "../persistence/identity-seeded";
+import { testServerEnvironment } from "../test-environment";
 import {
   handleAuthContext,
   handleContinue,
@@ -8,21 +10,24 @@ import {
   handleMembership,
   handleSession,
   handleSignIn,
-  resolveAuthDependencies,
+  authDependenciesFrom,
   resolveTeacherActor,
+  resolveTeacherSession,
 } from "./api.server";
+import { buildConfiguredIdentity } from "./composition.server";
 
 import type { AuthDependencies } from "./api.server";
 
 const password = "synthetic-pass-1";
 
-/**
- * Hermetic environment: never read the ambient DATABASE_URL, so these tests always exercise the deterministic provider and the in-memory identity store.
- */
-const testEnvironment = { APP_ENV: "development", DEMO_MODE: "true" };
+const testConfig = readServerConfig({ ...testServerEnvironment });
+const testDependencies = authDependenciesFrom(
+  testConfig,
+  await buildConfiguredIdentity(testConfig, createSeededIdentityPersistence())
+);
 
 const dependencies = (): Promise<AuthDependencies> =>
-  resolveAuthDependencies(readServerConfig({ ...testEnvironment }));
+  Promise.resolve(testDependencies);
 
 const cookiesFrom = (response: Response): string[] =>
   response.headers.getSetCookie();
@@ -426,9 +431,9 @@ describe("teacher delivery seam", () => {
     const sessionDependencies = await dependencies();
     const { sessionCookie } = await signIn(sessionDependencies);
 
-    const resolved = await resolveTeacherActor(
+    const resolved = await resolveTeacherSession(
       teacherRequest(sessionDependencies, sessionCookie),
-      sessionDependencies.config
+      sessionDependencies
     );
 
     expect(resolved).toMatchObject({
@@ -445,9 +450,9 @@ describe("teacher delivery seam", () => {
       "lina.north@example.test"
     );
 
-    const resolved = await resolveTeacherActor(
+    const resolved = await resolveTeacherSession(
       teacherRequest(sessionDependencies, sessionCookie),
-      sessionDependencies.config
+      sessionDependencies
     );
 
     expect(resolved).toMatchObject({ ok: false, error: { code: "FORBIDDEN" } });
@@ -456,9 +461,9 @@ describe("teacher delivery seam", () => {
   it("refuses a request with no session", async () => {
     const sessionDependencies = await dependencies();
 
-    const resolved = await resolveTeacherActor(
+    const resolved = await resolveTeacherSession(
       teacherRequest(sessionDependencies, undefined),
-      sessionDependencies.config
+      sessionDependencies
     );
 
     expect(resolved).toMatchObject({

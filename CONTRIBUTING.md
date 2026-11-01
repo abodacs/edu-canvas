@@ -7,13 +7,17 @@ Use this guide to report a problem, propose a bounded change, or prepare a contr
 Use Node.js 26 or newer and the pnpm version pinned in [package.json](package.json), currently 10.17.1.
 
 ```bash
+docker compose up -d postgres
 pnpm install --frozen-lockfile
+export DATABASE_URL=postgresql://edu_canvas:edu_canvas_dev@127.0.0.1:5432/edu_canvas
+export OPENAI_API_KEY=<server-side-key>
+pnpm db:setup
 pnpm dev
 ```
 
-Open `http://localhost:3000`. Without an environment file, the app uses deterministic synthetic fixtures and needs no database or provider credentials. The fixture provider drives the same generation, validation, safety, and preview seams as a live model.
+Open `http://localhost:3000`. Every environment requires PostgreSQL and a server-side provider key; there is no in-memory runtime fallback. The curriculum is synthetic, but generation calls the configured model provider.
 
-To generate with a real model, set `DEMO_MODE=false` and provide `OPENAI_API_KEY`; PostgreSQL is then required. See the [foundation runbook](docs/foundation-runbook.md) for environment overrides, Git worktrees, and PostgreSQL setup.
+See the [foundation runbook](docs/foundation-runbook.md) for environment overrides, Git worktrees, and PostgreSQL setup.
 
 Keep private answer keys, mastery, permissions, and credentials on the server. Use synthetic examples in contributions. Preserve the [architecture boundaries](docs/architecture-harness.md) and [safety boundaries](README.md#safety-boundaries-non-negotiable-even-under-deadline-pressure).
 

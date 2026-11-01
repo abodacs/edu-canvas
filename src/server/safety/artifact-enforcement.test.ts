@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { parseTenantId } from "@/server/identity/identifiers";
 import { syntheticTeacherActor } from "@/server/identity/test-actors";
 import { createSeededPersistence } from "@/server/persistence/seeded";
-import { demoSeed } from "@/server/seed-data";
+import { syntheticSeed } from "@/server/seed-data";
 
 import {
   createDeterministicLessonDraftProvider,
@@ -33,13 +33,13 @@ import type { RenderableArtifact } from "./artifact-gate";
 const validInput = {
   prompt: "equivalent fractions for grade 4",
   grade: 4,
-  standardId: demoSeed.standard.id,
+  standardId: syntheticSeed.standard.id,
   language: "en" as const,
   difficulty: "on-level" as const,
 };
 
 const teacherActor = syntheticTeacherActor({
-  tenantId: parseTenantId(demoSeed.tenant.id),
+  tenantId: parseTenantId(syntheticSeed.tenant.id),
 });
 
 const fixtureProvenance: ProviderProvenance = {
@@ -111,11 +111,11 @@ const review = (
     {
       draft,
       input: validInput,
-      tenantId: demoSeed.tenant.id,
+      tenantId: syntheticSeed.tenant.id,
       requestId: "draft_req_artifact_enforcement",
       provenance: fixtureProvenance,
       structuralDiagnostics: options.structuralDiagnostics ?? [],
-      graphVersion: demoSeed.activityVersion.graphVersion,
+      graphVersion: syntheticSeed.activityVersion.graphVersion,
     },
     {
       semanticValidation: () =>

@@ -2,7 +2,7 @@ import { and, asc, desc, eq, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { serverObservability } from "../observability.server";
-import { demoSeed } from "../seed-data";
+import { syntheticSeed } from "../seed-data";
 import {
   activities,
   activityVersions,
@@ -539,24 +539,24 @@ export const createDrizzlePersistence = (
       }
     },
 
-    async readDemoCounts(): Promise<SeedCounts> {
+    async readSeedCounts(): Promise<SeedCounts> {
       try {
         return await withDatabase(databaseUrl, (database) => {
           return database.transaction(async (transaction) => {
             await transaction.execute(
-              sql`select set_config('app.tenant_id', ${demoSeed.tenant.id}, true)`
+              sql`select set_config('app.tenant_id', ${syntheticSeed.tenant.id}, true)`
             );
 
             const rows = await transaction.execute<DemoCountRow>(sql`
               select
-                (select count(*)::int from tenants where id = ${demoSeed.tenant.id}) as tenants,
-                (select count(*)::int from identities where tenant_id = ${demoSeed.tenant.id}) as identities,
-                (select count(*)::int from standards where tenant_id = ${demoSeed.tenant.id}) as standards,
-                (select count(*)::int from prerequisite_nodes where tenant_id = ${demoSeed.tenant.id}) as "graphNodes",
-                (select count(*)::int from prerequisite_edges where tenant_id = ${demoSeed.tenant.id}) as "graphEdges",
-                (select count(*)::int from activities where tenant_id = ${demoSeed.tenant.id}) as activities,
-                (select count(*)::int from activity_versions where tenant_id = ${demoSeed.tenant.id}) as "activityVersions",
-                (select count(*)::int from attempts where tenant_id = ${demoSeed.tenant.id}) as attempts
+                (select count(*)::int from tenants where id = ${syntheticSeed.tenant.id}) as tenants,
+                (select count(*)::int from identities where tenant_id = ${syntheticSeed.tenant.id}) as identities,
+                (select count(*)::int from standards where tenant_id = ${syntheticSeed.tenant.id}) as standards,
+                (select count(*)::int from prerequisite_nodes where tenant_id = ${syntheticSeed.tenant.id}) as "graphNodes",
+                (select count(*)::int from prerequisite_edges where tenant_id = ${syntheticSeed.tenant.id}) as "graphEdges",
+                (select count(*)::int from activities where tenant_id = ${syntheticSeed.tenant.id}) as activities,
+                (select count(*)::int from activity_versions where tenant_id = ${syntheticSeed.tenant.id}) as "activityVersions",
+                (select count(*)::int from attempts where tenant_id = ${syntheticSeed.tenant.id}) as attempts
             `);
             const [row] = rows;
 
@@ -574,7 +574,7 @@ export const createDrizzlePersistence = (
         });
       } catch (error) {
         observability.captureError(error, {
-          operation: "persistence.read-demo-counts",
+          operation: "persistence.read-seed-counts",
           dependency: "postgres",
           reason: "persistence_read_failed",
           code: "PERSISTENCE_UNAVAILABLE",

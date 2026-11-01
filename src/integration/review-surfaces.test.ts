@@ -18,7 +18,7 @@ import {
 } from "@/server/persistence/pack-seeded";
 import { createSeededPersistence } from "@/server/persistence/seeded";
 import { createPublicationService } from "@/server/publication/service";
-import { demoSeed } from "@/server/seed-data";
+import { syntheticSeed } from "@/server/seed-data";
 
 import type { ReviewPack } from "@/shared/publication-contract";
 
@@ -27,7 +27,7 @@ const requestId = "draft_req_review_render";
 const noop = vi.fn<() => void>();
 
 const teacher = syntheticTeacherActor({
-  tenantId: parseTenantId(demoSeed.tenant.id),
+  tenantId: parseTenantId(syntheticSeed.tenant.id),
   membershipId: parseMembershipId("membership_amira_demo"),
 });
 
@@ -42,7 +42,7 @@ const openReview = async (): Promise<ReviewPack> => {
     input: {
       prompt: "equivalent fractions for grade 4",
       grade: 4,
-      standardId: demoSeed.standard.id,
+      standardId: syntheticSeed.standard.id,
       language: "en",
       difficulty: "on-level",
       idempotencyKey: "review-surface-test",
@@ -53,7 +53,7 @@ const openReview = async (): Promise<ReviewPack> => {
     {
       id: "learner_omar",
       displayName: "Omar Nabil",
-      tenantId: demoSeed.tenant.id,
+      tenantId: syntheticSeed.tenant.id,
     },
   ]);
   const service = createPublicationService({
