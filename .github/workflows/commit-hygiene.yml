@@ -1,0 +1,34 @@
+# Commit hygiene — the human contributor is the author of record (see CONTRIBUTING.md).
+#
+# Coding agents add `Co-authored-by: <assistant>` trailers by default. The rule
+# against them lived only in one harness's private memory, so a different harness
+# repeated the mistake: `origin/main` carried two CommandCodeBot credits before
+# this check existed. Check every pull request here, where every harness sees it.
+
+name: Commit hygiene
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  check-author:
+    name: Verify no assistant co-author trailers
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the pull request head
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 26
+
+      - name: Check the pull request's commits
+        run: node scripts/verify-commits.mjs "origin/${{ github.base_ref }}..HEAD"
