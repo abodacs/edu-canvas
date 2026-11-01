@@ -1,7 +1,6 @@
 import { readServerConfig, safeConfigSummary } from "./config";
 import { serverObservability } from "./observability.server";
 import { createFoundationPersistence } from "./persistence";
-import { postgresPersistenceKind } from "./persistence/kinds";
 import type { ServerObservability } from "./observability.server";
 
 export interface ReadinessOptions {
@@ -61,30 +60,4 @@ export const getReadinessPayload = async (
     config: safeConfigSummary(config),
     persistence,
   };
-};
-export const getReadinessWithSeedSummary = async (
-  environment: Record<string, string | undefined> = process.env,
-  options: ReadinessOptions = {}
-) => {
-  const readiness = await getReadinessPayload(environment, options);
-  if (readiness.status !== "ready") {
-    return readiness;
-  }
-
-  const config = readServerConfig(environment);
-  const observability = options.observability ?? serverObservability;
-  try {
-    const counts = await createFoundationPersistence(config, {
-      observability,
-    }).readSeedCounts();
-    return { ...readiness, seededCounts: counts };
-  } catch (error) {
-    observability.captureError(error, {
-      operation: "health.readiness.seed-summary",
-      dependency: postgresPersistenceKind,
-      reason: "persistence_read_failed",
-      code: "PERSISTENCE_UNAVAILABLE",
-    });
-    throw error;
-  }
 };

@@ -21,7 +21,6 @@ import {
   createPrivateAnswerDigest,
   createValidationResultHash,
 } from "./hashes";
-import { decodeLegacyActivity, decodeLegacyAttempt } from "./legacy";
 import { projectStudentLesson, projectTeacherVersion } from "./projections";
 import { hashVersion, recordLimits } from "./vocabulary";
 
@@ -384,41 +383,6 @@ describe("record contracts", () => {
       })
     );
     expect(contentHash).toHaveLength(64);
-  });
-
-  it("decodes a legacy activity with explicit labels and no inferred approval", () => {
-    const activity = decodeLegacyActivity({
-      id: "activity_version_demo",
-      tenantId,
-      activityId: "activity_demo",
-      versionNumber: 1,
-      catalogVersion: "matching-v1",
-      graphVersion: "equivalent-fractions-v1",
-      publicContent: { variants: [] },
-      answerKey: { item_1: "target_1" },
-      immutableAt: createdAt,
-    });
-
-    expect(activity.schemaVersion).toBe("legacy-activity-v1");
-    expect(activity.approval).toBeNull();
-    expect(activity.source).toBeNull();
-    expect(activity.privateAnswerPresent).toBeTruthy();
-  });
-
-  it("decodes a legacy attempt with no publication or run", () => {
-    const attempt = decodeLegacyAttempt({
-      id: "attempt_demo",
-      tenantId,
-      activityVersionId: "activity_version_demo",
-      studentId: "student_demo",
-      score: 100,
-      submittedAt: createdAt,
-      createdAt,
-    });
-
-    expect(attempt.schemaVersion).toBe("legacy-attempt-v1");
-    expect(attempt.publication).toBeNull();
-    expect(attempt.run).toBeNull();
   });
 
   it("teacher and student projections omit every private field", () => {

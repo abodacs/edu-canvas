@@ -28,15 +28,7 @@ export const recordSchemaVersionValues = [
 ] as const;
 export type RecordSchemaVersion = (typeof recordSchemaVersionValues)[number];
 
-export const legacySchemaVersionValues = [
-  "legacy-activity-v1",
-  "legacy-generation-v1",
-  "legacy-attempt-v1",
-] as const;
-export type LegacySchemaVersion = (typeof legacySchemaVersionValues)[number];
-
 export const schemaVersionSchema = z.enum(recordSchemaVersionValues);
-export const legacySchemaVersionSchema = z.enum(legacySchemaVersionValues);
 
 export const revisionKindValues = [
   "initial",
