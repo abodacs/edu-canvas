@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { learnerAttemptInputSchema } from "./delivery.server";
+import {
+  learnerAttemptInputSchema,
+  learnerRunInputSchema,
+} from "./delivery.server";
 
 const body = {
   operationKey: "submit-attempt-key-1",
@@ -13,7 +16,8 @@ const body = {
   assistanceEventIds: [],
 };
 
-const parseAttempt = (value: unknown) => learnerAttemptInputSchema.safeParse(value);
+const parseAttempt = (value: unknown) =>
+  learnerAttemptInputSchema.safeParse(value);
 
 describe(parseAttempt, () => {
   it("accepts a submission that carries selections only", () => {
@@ -36,8 +40,24 @@ describe(parseAttempt, () => {
   });
 
   it("rejects an empty selection", () => {
-    expect(
-      parseAttempt({ ...body, pairs: [] }).success
-    ).toBeFalsy();
+    expect(parseAttempt({ ...body, pairs: [] }).success).toBeFalsy();
+  });
+});
+
+const parseRun = (value: unknown) => learnerRunInputSchema.safeParse(value);
+
+describe(parseRun, () => {
+  const run = {
+    operationKey: "start-run-key-1",
+    assignmentId: "assignment_1",
+    assignedVariantId: "variant-a",
+  };
+
+  it("accepts an assignment and a variant", () => {
+    expect(parseRun(run).success).toBeTruthy();
+  });
+
+  it("rejects a body that carries anything else", () => {
+    expect(parseRun({ ...run, learnerId: "learner_1" }).success).toBeFalsy();
   });
 });

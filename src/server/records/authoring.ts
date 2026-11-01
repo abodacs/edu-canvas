@@ -54,12 +54,24 @@ export const curatedReferenceSchema = z.strictObject({
 
 export type CuratedReference = z.infer<typeof curatedReferenceSchema>;
 
+/**
+ * #6: an item carries the label and role the learner surface needs. Optional so rows written before this field still parse.
+ */
+export const sectionItemSchema = z.strictObject({
+  id: recordIdSchema,
+  label: boundedTextSchema(recordLimits.attributionText),
+  role: z.enum(["source", "target", "distractor"]),
+});
+
+export type SectionItem = z.infer<typeof sectionItemSchema>;
+
 export const sectionSchema = z.strictObject({
   id: recordIdSchema,
   kind: z.enum(sectionKindValues),
   title: boundedTextSchema(recordLimits.titleText),
   body: boundedTextSchema(recordLimits.bodyText),
   itemIds: z.array(recordIdSchema).max(recordLimits.itemMax),
+  items: z.array(sectionItemSchema).max(recordLimits.itemMax).optional(),
 });
 
 export type LessonSection = z.infer<typeof sectionSchema>;

@@ -183,5 +183,13 @@ describe(bridgePublishedPack, () => {
       requiredMatches: 1,
       gradingRuleVersion: "matching-grader-v1",
     });
+
+    const lesson = await fixture.records.readLesson(fixture.student, {
+      runId: run.id,
+    });
+    const items = lesson.lesson.sections[0]?.items ?? [];
+
+    expect(items.map((item) => item.role)).toContain("source");
+    expect(items.map((item) => item.role)).toContain("target");
   });
 });

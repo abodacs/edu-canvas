@@ -35,6 +35,12 @@ export const learnerAttemptInputSchema = z.strictObject({
   assistanceEventIds: z.array(idSchema).max(50),
 });
 
+export const learnerRunInputSchema = z.strictObject({
+  operationKey: z.string().trim().min(8).max(120),
+  assignmentId: idSchema,
+  assignedVariantId: idSchema,
+});
+
 const statusByCode = {
   UNAUTHENTICATED: 401,
   FORBIDDEN: 403,
@@ -96,6 +102,33 @@ export const handleSubmitAttemptRequest = async (
     const service = createLearnerService(createRecordPersistence(config));
     const result = await service.submitAttempt(resolved.actor, parsed.data);
     return noStoreJson(result);
+  } catch (error) {
+    return learnerErrorJson(error);
+  }
+};
+
+/**
+POST /api/learner/runs — open or replay the learner's run and return the surface.
+*/
+export const handleStartRunRequest = async (
+  request: Request
+): Promise<Response> => {
+  const resolved = await resolveProtectedLearner(request);
+  if (!resolved.ok) {
+    return resolved.response;
+  }
+
+  const parsed = learnerRunInputSchema.safeParse(await readJsonBody(request));
+  if (!parsed.success) {
+    return invalidInput();
+  }
+
+  try {
+    const config = readServerConfig();
+    const records = createRecordPersistence(config);
+    const run = await records.startRun(resolved.actor, parsed.data);
+    const lesson = await records.readLesson(resolved.actor, { runId: run.id });
+    return noStoreJson({ runId: run.id, ...lesson });
   } catch (error) {
     return learnerErrorJson(error);
   }

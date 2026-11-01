@@ -58,12 +58,37 @@ const buildSections = (content: StoredPublicContent) => {
     if (!kind) {
       throw new Error("The approved pack does not have four variants.");
     }
+    const items = [
+      ...variant.sourceItems.map((item) => {
+        return {
+          id: item.id,
+          label: bounded(item.label, recordLimits.attributionText),
+          role: "source" as const,
+        };
+      }),
+      ...variant.targetItems.map((item) => {
+        return {
+          id: item.id,
+          label: bounded(item.label, recordLimits.attributionText),
+          role: "target" as const,
+        };
+      }),
+      ...variant.distractorItems.map((item) => {
+        return {
+          id: item.id,
+          label: bounded(item.label, recordLimits.attributionText),
+          role: "distractor" as const,
+        };
+      }),
+    ];
+
     return {
       id: `section-${variant.id}`,
       kind,
       title: bounded(variant.title, recordLimits.titleText),
       body: bounded(variant.instructions, recordLimits.bodyText),
       itemIds: variant.sourceItems.map((item) => item.id),
+      items,
     };
   });
 };
