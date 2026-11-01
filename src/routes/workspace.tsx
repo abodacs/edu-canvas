@@ -160,9 +160,12 @@ const WorkspacePage = (): ReactElement => {
 
   const handleSignOut = async (): Promise<void> => {
     const isSignedOut = await session.signOut();
-    if (isSignedOut) {
-      await navigate({ to: "/", replace: true });
+    if (!isSignedOut) {
+      return;
     }
+    // #168 P2-5: the landing page confirms the exit through its search
+    // parameter, so refreshes and shares never carry the banner.
+    await navigate({ to: "/", replace: true, search: { signedOut: true } });
   };
 
   const handleDismissWarning = (): void => {
