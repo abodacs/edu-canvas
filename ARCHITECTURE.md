@@ -449,7 +449,8 @@ These differences were checked against the source baseline above. They are not r
 | Connections | Each database operation creates and closes a client | There is no application-wide connection pool. |
 | Seeded catalog | Fixture activity uses `edu-canvas-matching-v0` | Live preview uses `matching-v1` or `fractions-v2`; the activity fixture is not the preview catalog authority. |
 | Context boundary debt | Drafting imports seed data directly | Curriculum context port (wave 2) per [AgDR-0008](docs/agdr/AgDR-0008-bounded-contexts-and-screaming-layout.md); tracked as a `verify:boundaries` warn rule. |
-| Record model duplication | Publication writes the approved pack into `pack_*` and again into `lesson_*` through [record-bridge.ts](src/server/publication/record-bridge.ts) | One lesson has two stored representations. Collapsing them is an accepted follow-up; until then the bridge is the only writer of the second copy. |
+| Record model duplication | Publication writes the approved pack into `pack_*` and again into `lesson_*` through [record-bridge.ts](src/server/publication/record-bridge.ts) | One lesson has two stored representations. Collapsing them is an accepted follow-up; until then the bridge is the only writer of the second copy. Lineage is not duplicated: a revised pack appends to the same lesson package. |
+| Unbridged publish path | `service.test.ts` composes the publication service without a record port, so no test drives publish through the bridge; the bridge has its own tests and the publish response has a contract test | The two fixture tenants differ, so an end-to-end publish that bridges needs a shared fixture. Until then the receipt layout that carries the canonical identifiers is covered only by its own unit test. |
 
 ## Document maintenance
 
