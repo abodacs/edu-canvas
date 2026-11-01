@@ -46,7 +46,9 @@ The replay record for a pack write: operation key, input hash, and result identi
 
 ### Bridge
 
-The translation that writes an approved pack into the canonical lesson records: one lesson version, one publication, and one learner assignment. The bridge is the only writer of that second copy. It is lossy in one place only: a section body is the variant's instructions, so the pack's own text does not survive verbatim. Lineage is not lossy — every revision of one review appends to the same lesson package.
+The translation that writes an approved pack into the canonical lesson records: one lesson version, one publication, and one learner assignment. The bridge is the only writer of that second copy, and every revision of one review appends to the same lesson package, so the record chain has its own history.
+
+The translation is lossy, and the losses are specific. Hints, feedback, language metadata, and accessibility metadata never cross. A section body is the variant's instructions, truncated. The section kind is chosen by array position, because the pack carries no pedagogical stage. Validation findings keep only code, severity, and field. Provenance arrives with an empty `authoredEdits`, so a reviewer's edits are not visible in the record. A reader of the record cannot recover what the pack held, and no test asserts any of these losses.
 
 ### Bridged lesson
 
