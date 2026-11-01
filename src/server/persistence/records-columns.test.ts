@@ -1,44 +1,82 @@
-import { getTableColumns, getTableName, is } from "drizzle-orm";
-import { PgTable } from "drizzle-orm/pg-core";
+import { getTableColumns, getTableName } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
-import * as schema from "../../../drizzle/schema";
+import {
+  actors,
+  assistanceEvents,
+  assignments,
+  curatedReferences,
+  identities,
+  identitySessions,
+  learnerAttempts,
+  learnerRuns,
+  lessonDraftRequests,
+  lessonPackages,
+  lessonVersions,
+  memberships,
+  operationReceipts,
+  prerequisiteNodes,
+  publications,
+  sourceSnapshots,
+  standards,
+  teacherDecisions,
+  tenants,
+} from "../../../drizzle/schema";
 import { recordTableColumns } from "./records-port";
+import type { PgTable } from "drizzle-orm/pg-core";
 
-/**
-The record layer names its columns twice: once in `drizzle/schema.ts`, which owns
-the migration journal, and once in the seeded backend's allowlist. Nothing in
-the runtime reads the schema, so a rename there would surface only as failing SQL
-in production. This binds the two.
-*/
-const tablesByName = new Map<string, PgTable>();
-for (const exported of Object.values(schema)) {
-  if (is(exported, PgTable)) {
-    tablesByName.set(getTableName(exported), exported);
-  }
-}
+// The record layer names its columns twice: once in drizzle/schema.ts, which owns the migration journal, and once in the seeded backend's allowlist.
+// Nothing at runtime reads the schema, so a renamed column would surface only
+// as failing SQL in production. This binds the two.
+const boundTables: readonly (readonly [string, PgTable])[] = [
+  ["actors", actors],
+  ["assignments", assignments],
+  ["assistance_events", assistanceEvents],
+  ["curated_references", curatedReferences],
+  ["identities", identities],
+  ["identity_sessions", identitySessions],
+  ["learner_attempts", learnerAttempts],
+  ["learner_runs", learnerRuns],
+  ["lesson_draft_requests", lessonDraftRequests],
+  ["lesson_packages", lessonPackages],
+  ["lesson_versions", lessonVersions],
+  ["memberships", memberships],
+  ["operation_receipts", operationReceipts],
+  ["prerequisite_nodes", prerequisiteNodes],
+  ["publications", publications],
+  ["source_snapshots", sourceSnapshots],
+  ["standards", standards],
+  ["teacher_decisions", teacherDecisions],
+  ["tenants", tenants],
+];
+
+const tableByName = new Map(boundTables);
+
+// getTableColumns keys by TypeScript property; every query names the column.
+const storedColumnNames = (table: PgTable): Set<string> => {
+  return new Set(
+    Object.values(getTableColumns(table)).map((column) => column.name)
+  );
+};
 
 describe("record column allowlist", () => {
-  it("names only tables the schema declares", () => {
-    const missing = Object.keys(recordTableColumns).filter((table) => {
-      return !tablesByName.has(table);
-    });
+  it("binds every allowlisted table", () => {
+    const unbound = Object.keys(recordTableColumns).filter(
+      (table) => !tableByName.has(table)
+    );
 
-    expect(missing).toStrictEqual([]);
+    expect(unbound).toStrictEqual([]);
   });
 
   it("names only columns the schema declares", () => {
     const drift: string[] = [];
-    for (const [table, columns] of Object.entries(recordTableColumns)) {
-      const declared = tablesByName.get(table);
+    const entries = Object.entries(recordTableColumns);
+    for (const [table, columns] of entries) {
+      const declared = tableByName.get(table);
       if (!declared) {
         continue;
       }
-      // `getTableColumns` keys by the TypeScript property; the allowlist and
-      // every query name the stored column.
-      const schemaColumns = new Set(
-        Object.values(getTableColumns(declared)).map((column) => column.name)
-      );
+      const schemaColumns = storedColumnNames(declared);
       for (const column of columns) {
         if (!schemaColumns.has(column)) {
           drift.push(`${table}.${column}`);
@@ -47,5 +85,13 @@ describe("record column allowlist", () => {
     }
 
     expect(drift).toStrictEqual([]);
+  });
+
+  it("matches the schema's own table names", () => {
+    const renames = boundTables
+      .filter(([stored, table]) => getTableName(table) !== stored)
+      .map(([stored, table]) => `${stored} is ${getTableName(table)}`);
+
+    expect(renames).toStrictEqual([]);
   });
 });

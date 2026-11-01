@@ -113,10 +113,7 @@ export interface AttemptContext {
 }
 
 /**
-The record model's command surface. Each method takes the input type its own
-schema declares, so a caller builds a valid input or fails to compile. The
-implementation parses again at the storage seam, because the value can still
-arrive from a request body.
+The record model's command surface. Each method takes the input type its own schema declares, so a caller builds a valid input or fails to compile. The implementation parses again at the storage seam, because the value can still arrive from a request body.
 */
 export interface RecordPersistence {
   readonly kind: "seeded-demo" | "postgres";
@@ -152,7 +149,10 @@ export interface RecordPersistence {
     actor: Actor,
     input: ReadEvidenceInput
   ) => Promise<TeacherEvidenceProjection>;
-  readLesson: (actor: Actor, input: ReadLessonInput) => Promise<LessonReadResult>;
+  readLesson: (
+    actor: Actor,
+    input: ReadLessonInput
+  ) => Promise<LessonReadResult>;
   readAttemptContext: (
     actor: Actor,
     input: ReadAttemptContextInput
@@ -410,10 +410,7 @@ interface AppendLineage {
 }
 
 /**
-A stated revision must match the head; a current-head append adopts it. Either
-way the row records an ordinal, a kind, and a parent that are true of the chain
-at the moment of the write, and the caller that owns no stale-read expectation
-does not have to guess them.
+A stated revision must match the head; a current-head append adopts it. Either way the row records an ordinal, a kind, and a parent that are true of the chain at the moment of the write, and the caller that owns no stale-read expectation does not have to guess them.
 */
 const resolveAppendLineage = (
   input: AppendVersionInput,
@@ -436,7 +433,8 @@ const resolveAppendLineage = (
   };
 };
 
-const collectItemIds = (version: LessonVersion): Set<string> => {  const items = new Set<string>();
+const collectItemIds = (version: LessonVersion): Set<string> => {
+  const items = new Set<string>();
   for (const section of version.sections) {
     for (const itemId of section.itemIds) {
       items.add(itemId);
@@ -791,7 +789,8 @@ export const createRecordCommands = <TTransaction>(
         headRevision,
         headVersionId: headRow ? String(headRow.id) : null,
       };
-    }    if (
+    }
+    if (
       input.expectedHeadRevision !== 0 &&
       input.expectedHeadRevision !== appendCurrentHead
     ) {

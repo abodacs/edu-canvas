@@ -56,40 +56,45 @@ export const storeGroundingInputSchema = z.strictObject({
 
 export type StoreGroundingInput = z.infer<typeof storeGroundingInputSchema>;
 
-export const appendVersionInputSchema = z.strictObject({
-  operationKey: operationKeySchema,
-  package: z.strictObject({
-    id: recordIdSchema,
-    title: z.string().trim().min(1).max(recordLimits.titleText),
-    standardId: recordIdSchema,
-  }),
-  expectedHeadRevision: appendHeadRevisionSchema,
-  revisionKind: z.enum(revisionKindValues).optional(),
-  parentVersionId: recordIdSchema.nullable().optional(),
-  predecessorVersionId: recordIdSchema.nullable(),
-  curatedReferenceId: recordIdSchema.nullable(),
-  sourceSnapshotId: recordIdSchema.nullable().optional(),
-  generationRequestId: recordIdSchema.nullable(),
-  conceptIds: z.array(recordIdSchema).max(recordLimits.listMax),
-  variantReferences: variantReferencesSchema,
-  objectiveHash: hashSchema,
-  sections: sectionsSchema,
-  provenance: provenanceSchema,
-  changedSectionIds: z.array(recordIdSchema).max(recordLimits.sectionCount),
-  ruleVersions: ruleVersionsSchema,
-  validationResult: validationResultSchema,
-  privateAnswerRelationships: privateAnswerRelationshipsSchema,
-}).refine(
-  (input) =>
-    input.expectedHeadRevision === appendCurrentHead
-      ? input.revisionKind === undefined && input.parentVersionId === undefined
-      : input.revisionKind !== undefined && input.parentVersionId !== undefined,
-  {
-    message:
-      "A current-head append derives its lineage; a stated revision carries it.",
-    path: ["expectedHeadRevision"],
-  }
-);
+export const appendVersionInputSchema = z
+  .strictObject({
+    operationKey: operationKeySchema,
+    package: z.strictObject({
+      id: recordIdSchema,
+      title: z.string().trim().min(1).max(recordLimits.titleText),
+      standardId: recordIdSchema,
+    }),
+    expectedHeadRevision: appendHeadRevisionSchema,
+    revisionKind: z.enum(revisionKindValues).optional(),
+    parentVersionId: recordIdSchema.nullable().optional(),
+    predecessorVersionId: recordIdSchema.nullable(),
+    curatedReferenceId: recordIdSchema.nullable(),
+    sourceSnapshotId: recordIdSchema.nullable().optional(),
+    generationRequestId: recordIdSchema.nullable(),
+    conceptIds: z.array(recordIdSchema).max(recordLimits.listMax),
+    variantReferences: variantReferencesSchema,
+    objectiveHash: hashSchema,
+    sections: sectionsSchema,
+    provenance: provenanceSchema,
+    changedSectionIds: z.array(recordIdSchema).max(recordLimits.sectionCount),
+    ruleVersions: ruleVersionsSchema,
+    validationResult: validationResultSchema,
+    privateAnswerRelationships: privateAnswerRelationshipsSchema,
+  })
+  .refine(
+    (input) => {
+      return input.expectedHeadRevision === appendCurrentHead
+        ? input.revisionKind === undefined &&
+            input.parentVersionId === undefined
+        : input.revisionKind !== undefined &&
+            input.parentVersionId !== undefined;
+    },
+    {
+      message:
+        "A current-head append derives its lineage; a stated revision carries it.",
+      path: ["expectedHeadRevision"],
+    }
+  );
 
 export type AppendVersionInput = z.infer<typeof appendVersionInputSchema>;
 

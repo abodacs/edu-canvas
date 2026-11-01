@@ -11,7 +11,10 @@ import {
 import { compileLessonPreview } from "@/server/a2ui/compiler";
 import { createId } from "@/server/ids";
 import { PackUniqueViolationError } from "@/server/persistence/pack-port";
-import { decideReceipt, withoutOperationKey } from "@/server/persistence/receipt";
+import {
+  decideReceipt,
+  withoutOperationKey,
+} from "@/server/persistence/receipt";
 import {
   buildEditedVersion,
   buildInitialVersion,
@@ -52,11 +55,8 @@ export interface PublicationServiceOptions {
   now?: () => string;
 }
 
-/**
-The publish result the wire contract publishes. Deriving the type from that
-schema keeps one declaration: the delivery seam parses with it, the client
-parses with it, and a field added here reaches both.
-*/
+// The result the wire contract publishes, derived from that one declaration so
+// the delivery seam, the client parse, and this type cannot drift apart.
 export type PublishOutcome = PublicationPublishResult;
 
 export interface PublicationService {
@@ -288,6 +288,32 @@ export const createPublicationService = (
           }
         : null,
       availableLearners: learners,
+    });
+  };
+
+  // A retried publish returns what the first one wrote, including the canonical
+  // learner assignment, so a second click lands on the same lesson.
+  const replayPublish = async (
+    actor: TeacherActor,
+    version: PackVersionRecord,
+    resultIds: readonly string[]
+  ): Promise<PublishOutcome> => {
+    const [publicationId, assignmentId] = resultIds;
+    if (!publicationId || !assignmentId) {
+      throw publicationError(
+        "PUBLICATION_UNAVAILABLE",
+        "The publish receipt is incomplete."
+      );
+    }
+    const receiptIds: readonly (string | undefined)[] = resultIds;
+    const learnerAssignmentId = receiptIds[2] ?? null;
+    const learnerVariantId = receiptIds[3] ?? null;
+    return publicationPublishResultSchema.parse({
+      review: await projectReview(actor, version),
+      publicationId,
+      assignmentId,
+      learnerAssignmentId,
+      learnerVariantId,
     });
   };
 
@@ -627,22 +653,7 @@ export const createPublicationService = (
       inputHash
     );
     if (replay) {
-      const replayIds: readonly (string | undefined)[] = replay.resultIds;
-      const [publicationId, assignmentId, learnerAssignmentId, learnerVariantId] =
-        replayIds;
-      if (!publicationId || !assignmentId) {
-        throw publicationError(
-          "PUBLICATION_UNAVAILABLE",
-          "The publish receipt is incomplete."
-        );
-      }
-      return publicationPublishResultSchema.parse({
-        review: await projectReview(actor, version),
-        publicationId,
-        assignmentId,
-        learnerAssignmentId: learnerAssignmentId ?? null,
-        learnerVariantId: learnerVariantId ?? null,
-      });
+      return replayPublish(actor, version, replay.resultIds);
     }
 
     const decoded = decodePackVersion(version);

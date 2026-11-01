@@ -26,7 +26,10 @@ describe(decideReceipt, () => {
 
   it("replays the stored identifiers for the same input", () => {
     expect(
-      decideReceipt({ inputHash: hash, resultIds: ["version-1", "run-1"] }, hash)
+      decideReceipt(
+        { inputHash: hash, resultIds: ["version-1", "run-1"] },
+        hash
+      )
     ).toStrictEqual({
       outcome: "replay",
       resultIds: ["version-1", "run-1"],
