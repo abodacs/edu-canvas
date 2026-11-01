@@ -1,6 +1,7 @@
 import {
   publicationApproveInputSchema,
   publicationPublishInputSchema,
+  publicationPublishResultSchema,
   publicationReviseInputSchema,
   publicationTargetKey,
   reversePathTargetId,
@@ -38,6 +39,7 @@ import type {
 import type { TeacherActor } from "@/server/identity/types";
 import type {
   PublicationAction,
+  PublicationPublishResult,
   ReviewPack,
   ReviewVersion,
 } from "@/shared/publication-contract";
@@ -49,16 +51,12 @@ export interface PublicationServiceOptions {
   now?: () => string;
 }
 
-export interface PublishOutcome {
-  review: ReviewPack;
-  publicationId: string;
-  assignmentId: string;
-  /**
-  #6: the canonical assignment the learner page opens, when the bridge ran.
-  */
-  learnerAssignmentId: string | null;
-  learnerVariantId: string | null;
-}
+/**
+The publish result the wire contract publishes. Deriving the type from that
+schema keeps one declaration: the delivery seam parses with it, the client
+parses with it, and a field added here reaches both.
+*/
+export type PublishOutcome = PublicationPublishResult;
 
 export interface PublicationService {
   openReview: (actor: TeacherActor, requestId: string) => Promise<ReviewPack>;
@@ -642,13 +640,13 @@ export const createPublicationService = (
           "The publish receipt is incomplete."
         );
       }
-      return {
+      return publicationPublishResultSchema.parse({
         review: await projectReview(actor, version),
         publicationId,
         assignmentId,
         learnerAssignmentId: null,
         learnerVariantId: null,
-      };
+      });
     }
 
     const decoded = decodePackVersion(version);
@@ -760,13 +758,15 @@ export const createPublicationService = (
       });
       learnerAssignmentId = bridged.assignmentId;
     }
-    return {
+    // The learner page opens the first bridged section, and the bridge maps
+    // variant i onto section i, so the first variant names what the page shows.
+    return publicationPublishResultSchema.parse({
       review: await projectReview(actor, version),
       publicationId,
       assignmentId,
       learnerAssignmentId,
       learnerVariantId: decoded.publicContent.variants[0]?.id ?? null,
-    };
+    });
   };
 
   const compileVersionPreview = async (

@@ -185,18 +185,14 @@ export const handlePublishRequest = async (
   }
 
   try {
+    // The service returns the published result already parsed by
+    // `publicationPublishResultSchema`; re-typing it here dropped two fields
+    // and every successful publish failed the client parse.
     const outcome = await createService().publish(
       resolved.actor,
       await readJsonBody(request)
     );
-    return noStoreJson(
-      {
-        publicationId: outcome.publicationId,
-        assignmentId: outcome.assignmentId,
-        review: outcome.review,
-      },
-      201
-    );
+    return noStoreJson(outcome, 201);
   } catch (error) {
     return mapPublicationError(error);
   }

@@ -50,6 +50,7 @@ import type { FoundationPersistence } from "@/server/persistence/types";
 import type { PublicGenerationResult } from "@/shared/generation-contract";
 import type { SessionProjection } from "@/shared/identity-contract";
 import type { ReviewPack } from "@/shared/publication-contract";
+import { publicationPublishResultSchema } from "@/shared/publication-contract";
 
 /**
  * Domain policy matrix PT-01..PT-57 (§12.1) plus the §12.3 concurrency barriers.
@@ -549,6 +550,8 @@ const publishPack = async (
       assignmentId?: string;
       code?: string;
       review?: ReviewPack;
+      learnerAssignmentId?: string | null;
+      learnerVariantId?: string | null;
     },
   };
 };
@@ -1772,6 +1775,10 @@ describe("protected domain policy matrix", () => {
       assignedTo: "learner_lina",
       storedVersion: approved.version.id,
     });
+
+    // The response must satisfy the published contract, not a local copy of it.
+    // A dropped field here is a 502 in the browser after a successful publish.
+    expect(publicationPublishResultSchema.safeParse(body).success).toBe(true);
   });
 
   it("PT-12 a learner cannot publish", async () => {
