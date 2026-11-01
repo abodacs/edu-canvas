@@ -152,6 +152,9 @@ const learnerActions: ReadonlySet<WriteAction> = new Set([
   "record-attempt",
 ]);
 
+// #6: the default retry allowance for one matching item.
+const attemptLimitPerItem = 3;
+
 const nowIso = (): string => {
   const now = new Date();
   return now.toISOString();
@@ -1306,6 +1309,11 @@ export const createRecordCommands = <TTransaction>(
           run_id: run.id,
           item_id: input.itemId,
         });
+        // #6: a completed submission consumes one of three attempts. A replay
+        // never reaches this check because the receipt resolves first.
+        if (existing.length >= attemptLimitPerItem) {
+          throw recordError("ATTEMPT_LIMIT_REACHED");
+        }
         const ordinal = existing.length + 1;
 
         const attempt = learnerAttemptSchema.parse({

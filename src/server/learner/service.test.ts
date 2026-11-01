@@ -103,6 +103,40 @@ describe(createLearnerService, () => {
     expect(read.evidence.attempts).toHaveLength(0);
   });
 
+  it("refuses a fourth attempt on one item but replays a duplicate", async () => {
+    const { fixture, loop, service } = await setup("service-limit");
+    for (let index = 0; index < 3; index += 1) {
+      // eslint-disable-next-line no-await-in-loop -- each attempt advances the run revision the next one needs.
+      await service.submitAttempt(
+        fixture.student,
+        inputFor(loop.runId, {
+          expectedRunRevision: index,
+          operationKey: `submit-attempt-key-${index}`,
+        })
+      );
+    }
+
+    await expect(
+      service.submitAttempt(
+        fixture.student,
+        inputFor(loop.runId, {
+          expectedRunRevision: 3,
+          operationKey: "submit-attempt-key-over",
+        })
+      )
+    ).rejects.toMatchObject({ code: "ATTEMPT_LIMIT_REACHED" });
+
+    const replay = await service.submitAttempt(
+      fixture.student,
+      inputFor(loop.runId, {
+        expectedRunRevision: 0,
+        operationKey: "submit-attempt-key-0",
+      })
+    );
+
+    expect(replay.attemptId.length).toBeGreaterThan(0);
+  });
+
   it("refuses a learner from another tenant", async () => {
     const { fixture, loop, service } = await setup("service-foreign");
 
