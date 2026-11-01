@@ -332,7 +332,54 @@ describe("lesson generation service", () => {
   it("keeps semantic quality warnings visible with validator provenance", async () => {
     const service = createGenerationService({
       persistence: createSeededPersistence(),
-      provider: createDeterministicLessonDraftProvider(),
+      // The fixture's standard variants are genuinely different now (#168),
+      // so the warning scenario serves an actual duplicate structure on
+      // purpose instead of relying on the old identical fixture. The duplicate
+      // needs its own ids across the draft or the structural validator
+      // hard-blocks on reused identifiers.
+      provider: {
+        provenance: {
+          provider: "deterministic-fixture",
+          model: "equivalent-fractions-fixture-v1",
+          promptTemplateVersion: "lesson-prompt-v1",
+          validatorVersion: "lesson-validator-v2",
+        },
+        generate(request) {
+          const draft = createEquivalentFractionsDraft(request);
+          const [firstVariant] = draft.variants;
+          draft.variants[1] = {
+            ...firstVariant,
+            id: "variant-duplicate",
+            sourceItems: firstVariant.sourceItems.map((item) => {
+              return {
+                ...item,
+                id: `dup-${item.id}`,
+              };
+            }),
+            targetItems: firstVariant.targetItems.map((item) => {
+              return {
+                ...item,
+                id: `dup-${item.id}`,
+              };
+            }),
+            distractorItems: firstVariant.distractorItems.map((item) => {
+              return {
+                ...item,
+                id: `dup-${item.id}`,
+              };
+            }),
+            relationships: firstVariant.relationships.map((relationship) => {
+              return {
+                ...relationship,
+                id: `dup-${relationship.id}`,
+                sourceId: `dup-${relationship.sourceId}`,
+                targetId: `dup-${relationship.targetId}`,
+              };
+            }),
+          };
+          return Promise.resolve({ draft });
+        },
+      },
       requestIdFactory: () => "draft_req_semantic_warning",
     });
 

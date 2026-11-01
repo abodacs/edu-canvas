@@ -282,6 +282,20 @@ export const generationClaimExpiredDiagnostic = (): GenerationDiagnostic => {
   };
 };
 
+/**
+The claim insert requires a curriculum standard row for the classroom's
+tenant. A tenant that has no such row makes the claim impossible, and the
+database says so with the `lesson_draft_requests_tenant_id_standard_id_fkey`
+foreign key (23503). Persistence detects that signature and raises this typed
+signal instead of a raw driver error (#168 P0-2).
+*/
+export class StandardNotConfiguredError extends Error {
+  constructor() {
+    super("The classroom has no curriculum standard row for this request.");
+    this.name = "StandardNotConfiguredError";
+  }
+}
+
 export interface GenerationPersistence {
   saveGeneration: (
     record: LessonGenerationRecord,
