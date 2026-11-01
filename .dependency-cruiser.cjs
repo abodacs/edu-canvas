@@ -111,11 +111,13 @@ module.exports = {
         path: "^src/",
         pathNot: [
           "\\.test\\.tsx?$",
-          "^src/server/persistence/(seeded|source-seeded|identity-seeded|pack-seeded)\\.ts$",
+          // Test-support fixture builders live outside `.test.ts` by design.
+          "^src/server/persistence/records-fixtures\\.ts$",
+          "^src/server/persistence/(seeded|source-seeded|identity-seeded|pack-seeded|records-seeded)\\.ts$",
         ],
       },
       to: {
-        path: "^src/server/persistence/(seeded|source-seeded|identity-seeded|pack-seeded)\\.ts$",
+        path: "^src/server/persistence/(seeded|source-seeded|identity-seeded|pack-seeded|records-seeded)\\.ts$",
       },
     },
     {
