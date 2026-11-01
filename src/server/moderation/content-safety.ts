@@ -1,5 +1,5 @@
 import { syntheticSeed } from "../seed-data";
-import type { moderationCategoryValues } from "@/shared/generation-contract";
+import type { ModerationCategory } from "@/shared/generation-contract";
 
 /**
 The deterministic safety seam every provider-boundary check goes through
@@ -13,8 +13,6 @@ one.
 */
 
 export const MODERATION_BLOCKED_CODE = "MODERATION_BLOCKED";
-
-export type ModerationCategory = (typeof moderationCategoryValues)[number];
 
 export type ReportedModerationCategory = ModerationCategory | "none";
 

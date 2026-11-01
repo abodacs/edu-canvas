@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { variantKindValues } from "@/shared/generation-contract";
+
 import {
   boundedTextSchema,
   hashSchema,
@@ -13,7 +15,6 @@ import {
   recordLimits,
   revisionKindValues,
   sectionKindValues,
-  variantKindValues,
   validationSeverityValues,
 } from "./vocabulary";
 
@@ -138,7 +139,7 @@ export const validationResultSchema = z.strictObject({
   findings: z.array(validationFindingSchema).max(recordLimits.findingMax),
 });
 
-export type ValidationResult = z.infer<typeof validationResultSchema>;
+export type AuthoringValidationResult = z.infer<typeof validationResultSchema>;
 
 export const ruleVersionsSchema = z.strictObject({
   hashVersion: z.literal(hashVersion),
@@ -148,7 +149,7 @@ export const ruleVersionsSchema = z.strictObject({
   projectionVersion: boundedTextSchema(recordLimits.idLength),
 });
 
-export type RuleVersions = z.infer<typeof ruleVersionsSchema>;
+export type AuthoringRuleVersions = z.infer<typeof ruleVersionsSchema>;
 
 const isLineageValid = (version: {
   revision: number;

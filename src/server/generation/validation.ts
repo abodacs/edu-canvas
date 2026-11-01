@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { variantKindValues } from "./types";
+import { variantKindValues } from "@/shared/generation-contract";
 import type { LessonLanguage } from "@/shared/generation-contract";
 
 import type {

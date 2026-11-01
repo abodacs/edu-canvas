@@ -41,9 +41,6 @@ export const sectionKindValues = [
 ] as const;
 export type SectionKind = (typeof sectionKindValues)[number];
 
-export const variantKindValues = ["standard", "scaffold", "challenge"] as const;
-export type VariantKind = (typeof variantKindValues)[number];
-
 export const runStageValues = [
   "assigned",
   "active",
