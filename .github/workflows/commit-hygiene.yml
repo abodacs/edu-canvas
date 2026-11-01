@@ -31,4 +31,8 @@ jobs:
           node-version: 26
 
       - name: Check the pull request's commits
-        run: node scripts/verify-commits.mjs "origin/${{ github.base_ref }}..HEAD"
+        env:
+          # Passed through env, never interpolated into the script: a fork can
+          # name its branch anything.
+          BASE_REF: ${{ github.base_ref }}
+        run: node scripts/verify-commits.mjs "origin/${BASE_REF}..HEAD"
