@@ -1,5 +1,18 @@
 import { z } from "zod";
 
+export {
+  correctnessValues,
+  firstResponseStatusValues,
+  runStageValues,
+  sectionKindValues,
+} from "@/shared/learner-contract";
+export type {
+  Correctness,
+  FirstResponseStatus,
+  RunStage,
+  SectionKind,
+} from "@/shared/learner-contract";
+
 export const hashVersion = "sha256-canonical-json-v1" as const;
 
 export const recordSchemaVersionValues = [
@@ -33,35 +46,11 @@ export const revisionKindValues = [
 ] as const;
 export type RevisionKind = (typeof revisionKindValues)[number];
 
-export const sectionKindValues = [
-  "worked-example",
-  "guided-practice",
-  "independent-check",
-  "follow-up",
-] as const;
-export type SectionKind = (typeof sectionKindValues)[number];
-
-export const runStageValues = [
-  "assigned",
-  "active",
-  "awaiting-decision",
-  "paused",
-  "advanced",
-  "completed",
-] as const;
-export type RunStage = (typeof runStageValues)[number];
-
-export const firstResponseStatusValues = ["pending", "submitted"] as const;
-export type FirstResponseStatus = (typeof firstResponseStatusValues)[number];
-
 export const assistanceKindValues = ["hint", "other"] as const;
 export type AssistanceKind = (typeof assistanceKindValues)[number];
 
 export const assistanceStateValues = ["none", "hinted"] as const;
 export type AssistanceState = (typeof assistanceStateValues)[number];
-
-export const correctnessValues = ["correct", "partial", "incorrect"] as const;
-export type Correctness = (typeof correctnessValues)[number];
 
 export const teacherDecisionActionValues = [
   "accept",
