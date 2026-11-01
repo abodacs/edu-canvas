@@ -233,16 +233,19 @@ export const createPublicationService = (
   ): Promise<ReviewPack> => {
     const decoded = decodePackVersion(version);
     const approvals = await packs.listApprovals(actor.tenantId, version.id);
-    const publication = await packs.readPublicationForVersion(
+    const packPublication = await packs.readPublicationForVersion(
       actor.tenantId,
       version.id
     );
-    const assignment = publication
-      ? await packs.readAssignmentForPublication(actor.tenantId, publication.id)
+    const assignment = packPublication
+      ? await packs.readAssignmentForPublication(
+          actor.tenantId,
+          packPublication.id
+        )
       : undefined;
     const learners = await packs.listLearners(actor.tenantId);
     const blockers = publishBlockersFor(version, decoded, approvals);
-    if (publication) {
+    if (packPublication) {
       blockers.push("ALREADY_PUBLISHED");
     }
     const learnerName = assignment
@@ -276,11 +279,11 @@ export const createPublicationService = (
       },
       canPublish: blockers.length === 0,
       publishBlockers: blockers,
-      publication: publication
+      publication: packPublication
         ? {
-            id: publication.id,
-            approvedAt: publication.approvedAt,
-            artifactHash: publication.artifactHash,
+            id: packPublication.id,
+            approvedAt: packPublication.approvedAt,
+            artifactHash: packPublication.artifactHash,
           }
         : null,
       assignment: assignment

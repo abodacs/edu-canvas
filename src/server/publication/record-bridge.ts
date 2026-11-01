@@ -209,7 +209,7 @@ export const bridgePublishedPack = async (
     privateAnswerRelationships: relationships,
   });
 
-  const publication = await records.publish(actor, {
+  const recordPublication = await records.publish(actor, {
     operationKey: `bridge-publish-${source.packVersionId}`,
     versionId: version.id,
     contentHash,
@@ -221,13 +221,13 @@ export const bridgePublishedPack = async (
 
   const assignment = await records.assign(actor, {
     operationKey: `bridge-assign-${source.packVersionId}`,
-    publicationId: publication.id,
+    publicationId: recordPublication.id,
     learnerId: source.learnerId,
   });
 
   return {
     versionId: version.id,
-    publicationId: publication.id,
+    publicationId: recordPublication.id,
     assignmentId: assignment.id,
   };
 };
