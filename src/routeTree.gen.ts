@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LearnRouteImport } from './routes/learn'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as WorkspaceRouteImport } from './routes/workspace'
@@ -24,6 +25,8 @@ import { Route as ApiAuthMembershipRouteImport } from './routes/api/auth/members
 import { Route as ApiAuthSessionRouteImport } from './routes/api/auth/session'
 import { Route as ApiAuthSignInRouteImport } from './routes/api/auth/sign-in'
 import { Route as ApiAuthSignUpRouteImport } from './routes/api/auth/sign-up'
+import { Route as ApiLearnerAttemptsRouteImport } from './routes/api/learner/attempts'
+import { Route as ApiLearnerRunsRouteImport } from './routes/api/learner/runs'
 import { Route as ApiLessonsGenerateRouteImport } from './routes/api/lessons/generate'
 import { Route as ApiPublicationsIndexRouteImport } from './routes/api/publications/index'
 import { Route as ApiPublicationsApprovalsRouteImport } from './routes/api/publications/approvals'
@@ -39,6 +42,11 @@ import { Route as ApiPublicationsVersionsVersionIdPreviewRouteImport } from './r
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LearnRoute = LearnRouteImport.update({
+  id: '/learn',
+  path: '/learn',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -111,6 +119,16 @@ const ApiAuthSignUpRoute = ApiAuthSignUpRouteImport.update({
   path: '/api/auth/sign-up',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLearnerAttemptsRoute = ApiLearnerAttemptsRouteImport.update({
+  id: '/api/learner/attempts',
+  path: '/api/learner/attempts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLearnerRunsRoute = ApiLearnerRunsRouteImport.update({
+  id: '/api/learner/runs',
+  path: '/api/learner/runs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiLessonsGenerateRoute = ApiLessonsGenerateRouteImport.update({
   id: '/api/lessons/generate',
   path: '/api/lessons/generate',
@@ -175,6 +193,7 @@ const ApiPublicationsVersionsVersionIdPreviewRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/learn': typeof LearnRoute
   '/login': typeof LoginRouteWithChildren
   '/sign-up': typeof SignUpRoute
   '/workspace': typeof WorkspaceRoute
@@ -189,6 +208,8 @@ export interface FileRoutesByFullPath {
   '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/auth/sign-in': typeof ApiAuthSignInRoute
   '/api/auth/sign-up': typeof ApiAuthSignUpRoute
+  '/api/learner/attempts': typeof ApiLearnerAttemptsRoute
+  '/api/learner/runs': typeof ApiLearnerRunsRoute
   '/api/lessons/generate': typeof ApiLessonsGenerateRoute
   '/api/publications/approvals': typeof ApiPublicationsApprovalsRoute
   '/api/publications/review': typeof ApiPublicationsReviewRoute
@@ -203,6 +224,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/learn': typeof LearnRoute
   '/login': typeof LoginRouteWithChildren
   '/sign-up': typeof SignUpRoute
   '/workspace': typeof WorkspaceRoute
@@ -217,6 +239,8 @@ export interface FileRoutesByTo {
   '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/auth/sign-in': typeof ApiAuthSignInRoute
   '/api/auth/sign-up': typeof ApiAuthSignUpRoute
+  '/api/learner/attempts': typeof ApiLearnerAttemptsRoute
+  '/api/learner/runs': typeof ApiLearnerRunsRoute
   '/api/lessons/generate': typeof ApiLessonsGenerateRoute
   '/api/publications/approvals': typeof ApiPublicationsApprovalsRoute
   '/api/publications/review': typeof ApiPublicationsReviewRoute
@@ -232,6 +256,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/learn': typeof LearnRoute
   '/login': typeof LoginRouteWithChildren
   '/sign-up': typeof SignUpRoute
   '/workspace': typeof WorkspaceRoute
@@ -246,6 +271,8 @@ export interface FileRoutesById {
   '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/auth/sign-in': typeof ApiAuthSignInRoute
   '/api/auth/sign-up': typeof ApiAuthSignUpRoute
+  '/api/learner/attempts': typeof ApiLearnerAttemptsRoute
+  '/api/learner/runs': typeof ApiLearnerRunsRoute
   '/api/lessons/generate': typeof ApiLessonsGenerateRoute
   '/api/publications/approvals': typeof ApiPublicationsApprovalsRoute
   '/api/publications/review': typeof ApiPublicationsReviewRoute
@@ -262,6 +289,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/learn'
     | '/login'
     | '/sign-up'
     | '/workspace'
@@ -276,6 +304,8 @@ export interface FileRouteTypes {
     | '/api/auth/session'
     | '/api/auth/sign-in'
     | '/api/auth/sign-up'
+    | '/api/learner/attempts'
+    | '/api/learner/runs'
     | '/api/lessons/generate'
     | '/api/publications/approvals'
     | '/api/publications/review'
@@ -290,6 +320,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/learn'
     | '/login'
     | '/sign-up'
     | '/workspace'
@@ -304,6 +335,8 @@ export interface FileRouteTypes {
     | '/api/auth/session'
     | '/api/auth/sign-in'
     | '/api/auth/sign-up'
+    | '/api/learner/attempts'
+    | '/api/learner/runs'
     | '/api/lessons/generate'
     | '/api/publications/approvals'
     | '/api/publications/review'
@@ -318,6 +351,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/learn'
     | '/login'
     | '/sign-up'
     | '/workspace'
@@ -332,6 +366,8 @@ export interface FileRouteTypes {
     | '/api/auth/session'
     | '/api/auth/sign-in'
     | '/api/auth/sign-up'
+    | '/api/learner/attempts'
+    | '/api/learner/runs'
     | '/api/lessons/generate'
     | '/api/publications/approvals'
     | '/api/publications/review'
@@ -347,6 +383,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LearnRoute: typeof LearnRoute
   LoginRoute: typeof LoginRouteWithChildren
   SignUpRoute: typeof SignUpRoute
   WorkspaceRoute: typeof WorkspaceRoute
@@ -360,6 +397,8 @@ export interface RootRouteChildren {
   ApiAuthSessionRoute: typeof ApiAuthSessionRoute
   ApiAuthSignInRoute: typeof ApiAuthSignInRoute
   ApiAuthSignUpRoute: typeof ApiAuthSignUpRoute
+  ApiLearnerAttemptsRoute: typeof ApiLearnerAttemptsRoute
+  ApiLearnerRunsRoute: typeof ApiLearnerRunsRoute
   ApiLessonsGenerateRoute: typeof ApiLessonsGenerateRoute
   ApiPublicationsApprovalsRoute: typeof ApiPublicationsApprovalsRoute
   ApiPublicationsReviewRoute: typeof ApiPublicationsReviewRoute
@@ -380,6 +419,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/learn': {
+      id: '/learn'
+      path: '/learn'
+      fullPath: '/learn'
+      preLoaderRoute: typeof LearnRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -480,6 +526,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSignUpRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/learner/attempts': {
+      id: '/api/learner/attempts'
+      path: '/api/learner/attempts'
+      fullPath: '/api/learner/attempts'
+      preLoaderRoute: typeof ApiLearnerAttemptsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/learner/runs': {
+      id: '/api/learner/runs'
+      path: '/api/learner/runs'
+      fullPath: '/api/learner/runs'
+      preLoaderRoute: typeof ApiLearnerRunsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/lessons/generate': {
       id: '/api/lessons/generate'
       path: '/api/lessons/generate'
@@ -572,6 +632,7 @@ const LoginRouteWithChildren = LoginRoute._addFileChildren(LoginRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LearnRoute: LearnRoute,
   LoginRoute: LoginRouteWithChildren,
   SignUpRoute: SignUpRoute,
   WorkspaceRoute: WorkspaceRoute,
@@ -585,6 +646,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthSessionRoute: ApiAuthSessionRoute,
   ApiAuthSignInRoute: ApiAuthSignInRoute,
   ApiAuthSignUpRoute: ApiAuthSignUpRoute,
+  ApiLearnerAttemptsRoute: ApiLearnerAttemptsRoute,
+  ApiLearnerRunsRoute: ApiLearnerRunsRoute,
   ApiLessonsGenerateRoute: ApiLessonsGenerateRoute,
   ApiPublicationsApprovalsRoute: ApiPublicationsApprovalsRoute,
   ApiPublicationsReviewRoute: ApiPublicationsReviewRoute,
@@ -601,13 +664,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

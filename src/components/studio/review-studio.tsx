@@ -295,6 +295,8 @@ export const ReviewStudio = ({
       published: {
         publicationId: result.value.publicationId,
         assignmentId: result.value.assignmentId,
+        learnerAssignmentId: result.value.learnerAssignmentId,
+        learnerVariantId: result.value.learnerVariantId,
         learnerName:
           state.review.availableLearners.find(
             (learner) => learner.id === learnerId

@@ -4,6 +4,7 @@ export const recordErrorCodeValues = [
   "INVALID_INPUT",
   "NOT_FOUND",
   "STALE_VERSION",
+  "ATTEMPT_LIMIT_REACHED",
   "IDEMPOTENCY_CONFLICT",
   "PERSISTENCE_UNAVAILABLE",
 ] as const;
@@ -15,6 +16,8 @@ const safeMessageByCode: Record<RecordErrorCode, string> = {
   INVALID_INPUT: "Check the details you entered and try again.",
   NOT_FOUND: "That record does not exist.",
   STALE_VERSION: "Refresh and try again; this record changed.",
+  ATTEMPT_LIMIT_REACHED: "This item has no attempts left. Ask your teacher.",
+
   IDEMPOTENCY_CONFLICT: "That operation key was already used for other input.",
   PERSISTENCE_UNAVAILABLE: "Records are temporarily unavailable.",
 };

@@ -13,6 +13,7 @@ import { IdentityError } from "@/server/identity/errors";
 import {
   createFoundationPersistence,
   createPackPersistence,
+  createRecordPersistence,
 } from "@/server/persistence";
 import { PublicationError } from "./errors";
 import { createPublicationService } from "./service";
@@ -29,6 +30,7 @@ const createService = (): PublicationService => {
   return createPublicationService({
     generation: createFoundationPersistence(config),
     packs: createPackPersistence(config),
+    records: createRecordPersistence(config),
   });
 };
 

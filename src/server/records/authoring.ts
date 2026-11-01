@@ -54,12 +54,24 @@ export const curatedReferenceSchema = z.strictObject({
 
 export type CuratedReference = z.infer<typeof curatedReferenceSchema>;
 
+/**
+ * #6: an item carries the label and role the learner surface needs. Optional so rows written before this field still parse.
+ */
+export const sectionItemSchema = z.strictObject({
+  id: recordIdSchema,
+  label: boundedTextSchema(recordLimits.attributionText),
+  role: z.enum(["source", "target", "distractor"]),
+});
+
+export type SectionItem = z.infer<typeof sectionItemSchema>;
+
 export const sectionSchema = z.strictObject({
   id: recordIdSchema,
   kind: z.enum(sectionKindValues),
   title: boundedTextSchema(recordLimits.titleText),
   body: boundedTextSchema(recordLimits.bodyText),
   itemIds: z.array(recordIdSchema).max(recordLimits.itemMax),
+  items: z.array(sectionItemSchema).max(recordLimits.itemMax).optional(),
 });
 
 export type LessonSection = z.infer<typeof sectionSchema>;
@@ -171,6 +183,19 @@ const isLineageValid = (version: {
   }
 };
 
+/**
+ * A version is grounded in exactly one reviewed source: a curated reference for the authoring lane, or a source snapshot for the generated-pack lane. Both are nullable so either lane can write the same row shape.
+ */
+export const hasExactlyOneReference = (version: {
+  readonly curatedReferenceId: string | null;
+  readonly sourceSnapshotId?: string | null;
+}): boolean => {
+  const hasCurated = version.curatedReferenceId !== null;
+  const hasSnapshot =
+    version.sourceSnapshotId !== null && version.sourceSnapshotId !== undefined;
+  return hasCurated !== hasSnapshot;
+};
+
 export const lessonVersionSchema = z
   .strictObject({
     id: recordIdSchema,
@@ -180,7 +205,8 @@ export const lessonVersionSchema = z
     schemaVersion: z.literal("lesson-package-curated-v1"),
     parentVersionId: recordIdSchema.nullable(),
     predecessorVersionId: recordIdSchema.nullable(),
-    curatedReferenceId: recordIdSchema,
+    curatedReferenceId: recordIdSchema.nullable(),
+    sourceSnapshotId: recordIdSchema.nullable(),
     generationRequestId: recordIdSchema.nullable(),
     conceptIds: z.array(recordIdSchema).max(recordLimits.listMax),
     variantReferences: variantReferencesSchema,
@@ -201,6 +227,11 @@ export const lessonVersionSchema = z
   .refine(isLineageValid, {
     message: "Revision lineage does not match the revision kind.",
     path: ["revisionKind"],
+  })
+  .refine(hasExactlyOneReference, {
+    message:
+      "A version needs exactly one of a curated reference or a snapshot.",
+    path: ["curatedReferenceId"],
   });
 
 export type LessonVersion = z.infer<typeof lessonVersionSchema>;

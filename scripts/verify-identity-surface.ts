@@ -31,6 +31,7 @@ const sessionResolutionMarkers = [
   "resolveRequestSession",
   "resolveTeacherActor",
   "resolveProtectedTeacher",
+  "resolveProtectedLearner",
 ];
 
 const listRouteFiles = async (directory: string): Promise<string[]> => {

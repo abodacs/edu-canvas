@@ -1,0 +1,4 @@
+ALTER TABLE "lesson_versions" ALTER COLUMN "curated_reference_id" DROP NOT NULL;--> statement-breakpoint
+ALTER TABLE "lesson_versions" ADD COLUMN "source_snapshot_id" text;--> statement-breakpoint
+ALTER TABLE "lesson_versions" ADD CONSTRAINT "lesson_versions_tenant_id_source_snapshot_id_fkey" FOREIGN KEY ("tenant_id","source_snapshot_id") REFERENCES "public"."source_snapshots"("tenant_id","id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "lesson_versions" ADD CONSTRAINT "lesson_versions_reference_check" CHECK (((curated_reference_id IS NOT NULL) <> (source_snapshot_id IS NOT NULL)));

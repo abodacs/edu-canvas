@@ -32,6 +32,8 @@ export const fixtureLearnerId = parseLearnerId("learner_policy");
 export const fixtureClassId = parseClassId("class_policy");
 export const fixtureStandardId = "standard_policy";
 export const fixtureConceptId = "concept_policy";
+export const fixtureSnapshotId = "snapshot_policy";
+export const fixtureRequestId = "request_policy";
 export const fixtureCreatedAt = "2026-10-28T00:00:00.000Z";
 export const fixtureExpiresAt = "2099-01-01T00:00:00.000Z";
 const equivalentFractionsTitle = "Equivalent fractions";
@@ -278,6 +280,41 @@ export const createRecordFixture = (): RecordFixture => {
         id: fixtureConceptId,
         tenant_id: fixtureTenantId,
         standard_id: fixtureStandardId,
+      },
+    ],
+    source_snapshots: [
+      {
+        id: fixtureSnapshotId,
+        tenant_id: fixtureTenantId,
+        teacher_id: fixtureTeacherActorId,
+        standard_id: fixtureStandardId,
+        mode: "upload",
+        file_name: "equivalent-fractions.pdf",
+        file_format: "pdf",
+        file_size_bytes: 1024,
+        page_count: 1,
+        content_hash: null,
+        extracted_text: "Equivalent fractions name the same amount.",
+        state: "complete",
+        gaps: [],
+        failure_reason: null,
+        unverified_alignment: false,
+        alignment_acknowledged_at: fixtureCreatedAt,
+        synthetic_material_confirmed: true,
+        required_skills_confirmed_at: fixtureCreatedAt,
+        reviewed_at: fixtureCreatedAt,
+        used_at: null,
+        expires_at: fixtureExpiresAt,
+        replaces_snapshot_id: null,
+        created_at: fixtureCreatedAt,
+        updated_at: fixtureCreatedAt,
+      },
+    ],
+    lesson_draft_requests: [
+      {
+        id: fixtureRequestId,
+        tenant_id: fixtureTenantId,
+        teacher_id: fixtureTeacherActorId,
       },
     ],
   });

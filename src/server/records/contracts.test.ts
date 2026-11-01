@@ -128,6 +128,7 @@ const lessonVersion = {
   parentVersionId: null,
   predecessorVersionId: null,
   curatedReferenceId: "curated_1",
+  sourceSnapshotId: null,
   generationRequestId: null,
   conceptIds: ["concept_1"],
   variantReferences,
@@ -152,6 +153,34 @@ const lessonVersion = {
   ruleVersions,
   createdAt,
 };
+
+describe("lesson version references", () => {
+  it("accepts a version grounded in a source snapshot instead of a curation", () => {
+    const parsed = lessonVersionSchema.parse({
+      ...lessonVersion,
+      curatedReferenceId: null,
+      sourceSnapshotId: "snapshot_1",
+    });
+
+    expect(parsed.sourceSnapshotId).toBe("snapshot_1");
+  });
+
+  it("rejects a version with both references and with neither", () => {
+    expect(() => {
+      return lessonVersionSchema.parse({
+        ...lessonVersion,
+        sourceSnapshotId: "snapshot_1",
+      });
+    }).toThrow(/exactly one/u);
+
+    expect(() => {
+      return lessonVersionSchema.parse({
+        ...lessonVersion,
+        curatedReferenceId: null,
+      });
+    }).toThrow(/exactly one/u);
+  });
+});
 
 describe("record contracts", () => {
   it("parses a curated reference and a lesson version", () => {

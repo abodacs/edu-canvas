@@ -55,7 +55,8 @@ export const appendVersionInputSchema = z.strictObject({
   revisionKind: z.enum(revisionKindValues),
   parentVersionId: recordIdSchema.nullable(),
   predecessorVersionId: recordIdSchema.nullable(),
-  curatedReferenceId: recordIdSchema,
+  curatedReferenceId: recordIdSchema.nullable(),
+  sourceSnapshotId: recordIdSchema.nullable().optional(),
   generationRequestId: recordIdSchema.nullable(),
   conceptIds: z.array(recordIdSchema).max(recordLimits.listMax),
   variantReferences: variantReferencesSchema,
@@ -154,12 +155,18 @@ export const readLessonInputSchema = z.strictObject({
   runId: recordIdSchema,
 });
 
+export const readAttemptContextInputSchema = z.strictObject({
+  runId: recordIdSchema,
+  itemId: recordIdSchema,
+});
+
 export const referentTableValues = [
   "standards",
   "actors",
   "lesson_packages",
   "lesson_versions",
   "curated_references",
+  "source_snapshots",
   "lesson_draft_requests",
   "prerequisite_nodes",
   "publications",
@@ -215,7 +222,8 @@ export const writeInputReferents: Record<
     { path: "package.standardId", table: "standards" },
     { path: "parentVersionId", table: "lesson_versions", optional: true },
     { path: "predecessorVersionId", table: "lesson_versions", optional: true },
-    { path: "curatedReferenceId", table: "curated_references" },
+    { path: "curatedReferenceId", table: "curated_references", optional: true },
+    { path: "sourceSnapshotId", table: "source_snapshots", optional: true },
     {
       path: "generationRequestId",
       table: "lesson_draft_requests",

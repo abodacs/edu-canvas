@@ -2,6 +2,7 @@ import { capabilitiesForRole } from "../identity/types";
 import { createId } from "../ids";
 import {
   curatedReferenceSchema,
+  hasExactlyOneReference,
   lessonVersionSchema,
   publicationSchema,
 } from "../records/authoring";
@@ -24,6 +25,7 @@ import {
   createValidationResultHash,
 } from "../records/hashes";
 import {
+  readAttemptContextInputSchema,
   readAuthoringInputSchema,
   readEvidenceInputSchema,
   readLessonInputSchema,
@@ -63,6 +65,7 @@ import type {
   TeacherDecision,
 } from "../records/delivery";
 import type { LessonVersion, Publication } from "../records/authoring";
+import type { PrivateAnswerRelationship } from "../records/private-answers";
 import type { Actor, Capability } from "../identity/types";
 import type { RecordBackend, RecordTableName, StoredRow } from "./records-port";
 import type { z } from "zod";
@@ -89,6 +92,18 @@ export interface AuthoringProjection {
 export interface LessonReadResult {
   readonly lesson: StudentLessonProjection;
   readonly evidence: StudentEvidenceProjection;
+  readonly runRevision: number;
+}
+
+/**
+ * #6: the server-only facts a grader needs for one item. The answer
+ * relationships never leave the server, and the run revision pins the write.
+ */
+export interface AttemptContext {
+  readonly runId: string;
+  readonly runRevision: number;
+  readonly itemId: string;
+  readonly relationships: readonly PrivateAnswerRelationship[];
 }
 
 export interface RecordPersistence {
@@ -117,6 +132,7 @@ export interface RecordPersistence {
     input: unknown
   ) => Promise<TeacherEvidenceProjection>;
   readLesson: (actor: Actor, input: unknown) => Promise<LessonReadResult>;
+  readAttemptContext: (actor: Actor, input: unknown) => Promise<AttemptContext>;
 }
 
 const writeCapability: Record<WriteAction, Capability> = {
@@ -135,6 +151,9 @@ const learnerActions: ReadonlySet<WriteAction> = new Set([
   "record-hint",
   "record-attempt",
 ]);
+
+// #6: the default retry allowance for one matching item.
+const attemptLimitPerItem = 3;
 
 const nowIso = (): string => {
   const now = new Date();
@@ -234,7 +253,8 @@ const mapVersion = (row: StoredRow): LessonVersion => {
       schemaVersion: row.schema_version,
       parentVersionId: row.parent_version_id ?? null,
       predecessorVersionId: row.predecessor_version_id ?? null,
-      curatedReferenceId: row.curated_reference_id,
+      curatedReferenceId: row.curated_reference_id ?? null,
+      sourceSnapshotId: row.source_snapshot_id ?? null,
       generationRequestId: row.generation_request_id ?? null,
       conceptIds: row.concept_ids,
       variantReferences: row.variant_references,
@@ -718,20 +738,72 @@ export const createRecordCommands = <TTransaction>(
     });
   };
 
+  const assertCuratedReference = async (
+    transaction: TTransaction,
+    actor: Actor,
+    curatedReferenceId: string,
+    standardId: string
+  ): Promise<void> => {
+    const curatedRow = await requireRow(transaction, "curated_references", {
+      tenant_id: actor.tenantId,
+      id: curatedReferenceId,
+    });
+    if (curatedRow.teacher_actor_id !== actor.actorId) {
+      throw recordError("FORBIDDEN");
+    }
+    if (curatedRow.standard_id !== standardId) {
+      throw recordError("FORBIDDEN");
+    }
+  };
+
+  const assertSourceSnapshot = async (
+    transaction: TTransaction,
+    actor: Actor,
+    sourceSnapshotId: string,
+    standardId: string
+  ): Promise<void> => {
+    const snapshot = await requireRow(transaction, "source_snapshots", {
+      tenant_id: actor.tenantId,
+      id: sourceSnapshotId,
+    });
+    if (snapshot.teacher_id !== actor.actorId) {
+      throw recordError("FORBIDDEN");
+    }
+    if (snapshot.standard_id !== standardId) {
+      throw recordError("FORBIDDEN");
+    }
+    const hasReviewedSource =
+      snapshot.state === "complete" && snapshot.reviewed_at !== null;
+    if (!hasReviewedSource) {
+      throw recordError("FORBIDDEN");
+    }
+  };
+
   const assertVersionReferences = async (
     transaction: TTransaction,
     actor: Actor,
     input: AppendVersionInput
   ): Promise<void> => {
-    const curatedRow = await requireRow(transaction, "curated_references", {
-      tenant_id: actor.tenantId,
-      id: input.curatedReferenceId,
-    });
-    if (
-      curatedRow.teacher_actor_id !== actor.actorId ||
-      curatedRow.standard_id !== input.package.standardId
-    ) {
-      throw recordError("FORBIDDEN");
+    if (!hasExactlyOneReference(input)) {
+      throw recordError("INVALID_INPUT");
+    }
+
+    if (input.curatedReferenceId) {
+      await assertCuratedReference(
+        transaction,
+        actor,
+        input.curatedReferenceId,
+        input.package.standardId
+      );
+    }
+
+    if (input.sourceSnapshotId) {
+      await assertSourceSnapshot(
+        transaction,
+        actor,
+        input.sourceSnapshotId,
+        input.package.standardId
+      );
     }
 
     if (input.generationRequestId) {
@@ -818,6 +890,7 @@ export const createRecordCommands = <TTransaction>(
           parentVersionId: input.parentVersionId,
           predecessorVersionId: input.predecessorVersionId,
           curatedReferenceId: input.curatedReferenceId,
+          sourceSnapshotId: input.sourceSnapshotId ?? null,
           generationRequestId: input.generationRequestId,
           conceptIds: input.conceptIds,
           variantReferences: input.variantReferences,
@@ -845,6 +918,7 @@ export const createRecordCommands = <TTransaction>(
           parent_version_id: version.parentVersionId,
           predecessor_version_id: version.predecessorVersionId,
           curated_reference_id: version.curatedReferenceId,
+          source_snapshot_id: version.sourceSnapshotId,
           generation_request_id: version.generationRequestId,
           concept_ids: version.conceptIds,
           variant_references: version.variantReferences,
@@ -1235,6 +1309,11 @@ export const createRecordCommands = <TTransaction>(
           run_id: run.id,
           item_id: input.itemId,
         });
+        // #6: a completed submission consumes one of three attempts. A replay
+        // never reaches this check because the receipt resolves first.
+        if (existing.length >= attemptLimitPerItem) {
+          throw recordError("ATTEMPT_LIMIT_REACHED");
+        }
         const ordinal = existing.length + 1;
 
         const attempt = learnerAttemptSchema.parse({
@@ -1520,6 +1599,46 @@ export const createRecordCommands = <TTransaction>(
           attempts,
           assistanceEvents: assistance,
         }),
+        runRevision: run.revision,
+      };
+    });
+  };
+
+  const readAttemptContext = (
+    actor: Actor,
+    raw: unknown
+  ): Promise<AttemptContext> => {
+    const parsed = parseOrThrow(readAttemptContextInputSchema, raw);
+    return read(actor, "submit_attempt", async (transaction) => {
+      const { run } = await requireRunForLearner(
+        transaction,
+        actor,
+        parsed.runId
+      );
+      const publication = await requirePublication(
+        transaction,
+        actor.tenantId,
+        run.publicationId
+      );
+      const version = await loadVersion(
+        transaction,
+        publication.lessonVersionId,
+        actor.tenantId
+      );
+      if (!collectItemIds(version).has(parsed.itemId)) {
+        throw recordError("INVALID_INPUT");
+      }
+      const relationships = version.privateAnswerRelationships.filter(
+        (relationship) => relationship.itemId === parsed.itemId
+      );
+      if (relationships.length === 0) {
+        throw recordError("INVALID_INPUT");
+      }
+      return {
+        runId: run.id,
+        runRevision: run.revision,
+        itemId: parsed.itemId,
+        relationships,
       };
     });
   };
@@ -1538,5 +1657,6 @@ export const createRecordCommands = <TTransaction>(
     readAuthoring,
     readEvidence,
     readLesson,
+    readAttemptContext,
   };
 };
