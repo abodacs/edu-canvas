@@ -4,6 +4,7 @@ import {
   createPrivateAnswerDigest,
   createValidationResultHash,
 } from "@/server/records/hashes";
+import { appendCurrentHead } from "@/server/records/inputs";
 import { hashVersion, recordLimits } from "@/server/records/vocabulary";
 import type { RecordPersistence } from "@/server/persistence/records-commands";
 import type { Actor } from "@/server/identity/types";
@@ -87,7 +88,9 @@ const buildSections = (content: StoredPublicContent) => {
       kind,
       title: bounded(variant.title, recordLimits.titleText),
       body: bounded(variant.instructions, recordLimits.bodyText),
-      itemIds: variant.sourceItems.map((item) => item.id),
+      // Every item the section renders, not only the source column: a reader
+      // that resolves an item against this list must find the targets too.
+      itemIds: items.map((item) => item.id),
       items,
     };
   });
@@ -179,16 +182,21 @@ export const bridgePublishedPack = async (
   const packageHash = createPackageHash({ contentHash, privateAnswerDigest });
   const validationResultHash = createValidationResultHash(validationResult);
 
+  // One review is one lesson: the package is named after the generation
+  // request, which survives every revision, so a revised pack appends to the
+  // same chain instead of starting a second package. The append resolves the
+  // head itself; asking for it here would change the input on a retry and turn
+  // a replay into an idempotency conflict.
+  const packageId = `pkg-${bounded(source.requestId, recordLimits.idLength)}`;
+
   const version = await records.appendVersion(actor, {
     operationKey: `bridge-append-${source.packVersionId}`,
     package: {
-      id: `pkg-${source.packVersionId}`,
+      id: packageId,
       title: bounded(source.publicContent.input.prompt, recordLimits.titleText),
       standardId: source.publicContent.input.standardId,
     },
-    expectedHeadRevision: 0,
-    revisionKind: "initial",
-    parentVersionId: null,
+    expectedHeadRevision: appendCurrentHead,
     predecessorVersionId: null,
     curatedReferenceId: null,
     sourceSnapshotId: source.sourceSnapshotId,

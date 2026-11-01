@@ -151,6 +151,41 @@ describe(bridgePublishedPack, () => {
     expect(replay).toStrictEqual(first);
   });
 
+  it("appends a revised pack to the same lesson chain", async () => {
+    const fixture = createRecordFixture();
+    const first = await bridgePublishedPack(
+      fixture.records,
+      fixture.teacher,
+      source
+    );
+    const revised = await bridgePublishedPack(
+      fixture.records,
+      fixture.teacher,
+      { ...source, packVersionId: "packversion02" }
+    );
+
+    const authoring = await fixture.records.readAuthoring(fixture.teacher, {
+      kind: "package",
+      packageId: `pkg-${fixtureRequestId}`,
+    });
+    const [head, initial] = authoring.versions;
+
+    expect({
+      onePackage: authoring.versions.length,
+      headRevision: head?.revision,
+      headKind: head?.revisionKind,
+      headParent: head?.parentVersionId === first.versionId,
+      initialRevision: initial?.revision,
+    }).toStrictEqual({
+      onePackage: 2,
+      headRevision: 2,
+      headKind: "section-revision",
+      headParent: true,
+      initialRevision: 1,
+    });
+    expect(revised.versionId).not.toBe(first.versionId);
+  });
+
   it("lets a student score an attempt on the bridged publication", async () => {
     const fixture = createRecordFixture();
     const bridged = await bridgePublishedPack(

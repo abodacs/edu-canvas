@@ -25,6 +25,7 @@ import {
   createValidationResultHash,
 } from "../records/hashes";
 import {
+  appendCurrentHead,
   readAttemptContextInputSchema,
   readAuthoringInputSchema,
   readEvidenceInputSchema,
@@ -375,8 +376,45 @@ const mapDecision = (row: StoredRow): TeacherDecision => {
   });
 };
 
-const collectItemIds = (version: LessonVersion): Set<string> => {
-  const items = new Set<string>();
+interface AppendHead {
+  readonly headRevision: number;
+  readonly headVersionId: string | null;
+}
+
+interface AppendLineage {
+  readonly expectedHeadRevision: number;
+  readonly revisionKind: NonNullable<AppendVersionInput["revisionKind"]>;
+  readonly parentVersionId: string | null;
+}
+
+/**
+A stated revision must match the head; a current-head append adopts it. Either
+way the row records an ordinal, a kind, and a parent that are true of the chain
+at the moment of the write, and the caller that owns no stale-read expectation
+does not have to guess them.
+*/
+const resolveAppendLineage = (
+  input: AppendVersionInput,
+  head: AppendHead
+): AppendLineage => {
+  if (input.expectedHeadRevision === appendCurrentHead) {
+    return {
+      expectedHeadRevision: head.headRevision,
+      revisionKind: head.headRevision === 0 ? "initial" : "section-revision",
+      parentVersionId: head.headVersionId,
+    };
+  }
+  if (input.expectedHeadRevision !== head.headRevision) {
+    throw recordError("STALE_VERSION");
+  }
+  return {
+    expectedHeadRevision: head.headRevision,
+    revisionKind: input.revisionKind ?? "initial",
+    parentVersionId: input.parentVersionId ?? null,
+  };
+};
+
+const collectItemIds = (version: LessonVersion): Set<string> => {  const items = new Set<string>();
   for (const section of version.sections) {
     for (const itemId of section.itemIds) {
       items.add(itemId);
@@ -704,7 +742,7 @@ export const createRecordCommands = <TTransaction>(
     transaction: TTransaction,
     actor: Actor,
     input: AppendVersionInput
-  ): Promise<void> => {
+  ): Promise<AppendHead> => {
     await requireRow(transaction, "standards", {
       tenant_id: actor.tenantId,
       id: input.package.standardId,
@@ -721,9 +759,20 @@ export const createRecordCommands = <TTransaction>(
       ) {
         throw recordError("FORBIDDEN");
       }
-      return;
-    }
-    if (input.expectedHeadRevision !== 0) {
+      const headRevision = Number(packageRow.head_revision);
+      const headRow = await findOne(transaction, "lesson_versions", {
+        tenant_id: actor.tenantId,
+        package_id: input.package.id,
+        revision: headRevision,
+      });
+      return {
+        headRevision,
+        headVersionId: headRow ? String(headRow.id) : null,
+      };
+    }    if (
+      input.expectedHeadRevision !== 0 &&
+      input.expectedHeadRevision !== appendCurrentHead
+    ) {
       throw recordError("STALE_VERSION");
     }
     await backend.insert(transaction, "lesson_packages", {
@@ -736,6 +785,7 @@ export const createRecordCommands = <TTransaction>(
       created_at: clock(),
       updated_at: clock(),
     });
+    return { headRevision: 0, headVersionId: null };
   };
 
   const assertCuratedReference = async (
@@ -865,10 +915,11 @@ export const createRecordCommands = <TTransaction>(
       "append-version",
       raw,
       async (transaction, input) => {
-        await assertAppendPackage(transaction, actor, input);
+        const head = await assertAppendPackage(transaction, actor, input);
         await assertVersionReferences(transaction, actor, input);
 
-        const revision = input.expectedHeadRevision + 1;
+        const lineage = resolveAppendLineage(input, head);
+        const revision = lineage.expectedHeadRevision + 1;
         const contentHash = createContentHash({
           conceptIds: input.conceptIds,
           sections: input.sections,
@@ -887,7 +938,7 @@ export const createRecordCommands = <TTransaction>(
           packageId: input.package.id,
           revision,
           schemaVersion: "lesson-package-curated-v1",
-          parentVersionId: input.parentVersionId,
+          parentVersionId: lineage.parentVersionId,
           predecessorVersionId: input.predecessorVersionId,
           curatedReferenceId: input.curatedReferenceId,
           sourceSnapshotId: input.sourceSnapshotId ?? null,
@@ -897,7 +948,7 @@ export const createRecordCommands = <TTransaction>(
           objectiveHash: input.objectiveHash,
           sections: input.sections,
           provenance: input.provenance,
-          revisionKind: input.revisionKind,
+          revisionKind: lineage.revisionKind,
           changedSectionIds: input.changedSectionIds,
           contentHash,
           packageHash: createPackageHash({ contentHash, privateAnswerDigest }),
@@ -943,7 +994,7 @@ export const createRecordCommands = <TTransaction>(
           {
             tenant_id: actor.tenantId,
             id: version.packageId,
-            head_revision: input.expectedHeadRevision,
+            head_revision: lineage.expectedHeadRevision,
           },
           { head_revision: revision, updated_at: clock() }
         );

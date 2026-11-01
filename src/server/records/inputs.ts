@@ -31,6 +31,18 @@ const progressRevisionSchema = z
   .min(0)
   .max(recordLimits.revisionMax);
 
+/**
+`"current"` means "whatever the package's head is now". A writer that has no
+stale-read expectation uses it, so the same intent produces the same input on a
+retry — which is what makes the operation receipt replay instead of conflicting.
+*/
+export const appendHeadRevisionSchema = z.union([
+  progressRevisionSchema,
+  z.literal("current"),
+]);
+
+export const appendCurrentHead = "current" as const;
+
 export const storeGroundingInputSchema = z.strictObject({
   operationKey: operationKeySchema,
   standardId: recordIdSchema,
@@ -51,9 +63,9 @@ export const appendVersionInputSchema = z.strictObject({
     title: z.string().trim().min(1).max(recordLimits.titleText),
     standardId: recordIdSchema,
   }),
-  expectedHeadRevision: progressRevisionSchema,
-  revisionKind: z.enum(revisionKindValues),
-  parentVersionId: recordIdSchema.nullable(),
+  expectedHeadRevision: appendHeadRevisionSchema,
+  revisionKind: z.enum(revisionKindValues).optional(),
+  parentVersionId: recordIdSchema.nullable().optional(),
   predecessorVersionId: recordIdSchema.nullable(),
   curatedReferenceId: recordIdSchema.nullable(),
   sourceSnapshotId: recordIdSchema.nullable().optional(),
@@ -67,7 +79,17 @@ export const appendVersionInputSchema = z.strictObject({
   ruleVersions: ruleVersionsSchema,
   validationResult: validationResultSchema,
   privateAnswerRelationships: privateAnswerRelationshipsSchema,
-});
+}).refine(
+  (input) =>
+    input.expectedHeadRevision === appendCurrentHead
+      ? input.revisionKind === undefined && input.parentVersionId === undefined
+      : input.revisionKind !== undefined && input.parentVersionId !== undefined,
+  {
+    message:
+      "A current-head append derives its lineage; a stated revision carries it.",
+    path: ["expectedHeadRevision"],
+  }
+);
 
 export type AppendVersionInput = z.infer<typeof appendVersionInputSchema>;
 
