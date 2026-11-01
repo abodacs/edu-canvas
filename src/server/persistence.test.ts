@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import { createServerObservability } from "./observability.server";
 import { readServerConfig } from "./config";
-import { createFoundationPersistence } from "./persistence";
+import {
+  createFoundationPersistence,
+  createIdentityPersistence,
+  createPackPersistence,
+  createRecordPersistence,
+} from "./persistence";
 import type { ServerConfig } from "./config";
 
 describe("foundation persistence boundary", () => {
@@ -50,7 +55,6 @@ describe("foundation persistence boundary", () => {
     const config: ServerConfig = {
       appEnv: "production",
       syntheticDataOnly: true,
-      persistenceAdapter: "postgres",
       openAiModel: "gpt-5.6",
       openAiBaseUrl: "https://api.openai.com/v1",
       openAiTimeoutMs: 100_000,
@@ -75,5 +79,34 @@ describe("foundation persistence boundary", () => {
         code: "DATABASE_REQUIRED",
       },
     });
+  });
+
+  it("applies the same database guard to every port", () => {
+    const config: ServerConfig = {
+      appEnv: "production",
+      syntheticDataOnly: true,
+      openAiModel: "gpt-5.6",
+      openAiBaseUrl: "https://api.openai.com/v1",
+      openAiTimeoutMs: 100_000,
+      auth: {
+        provider: "supabase",
+        publicOrigin: "https://app.example.com",
+        sessionSecret: "a-session-secret-that-is-long-enough",
+        credentialKey: Uint8Array.from({ length: 32 }, () => 1).toBase64(),
+        credentialKeyVersion: "1",
+      },
+      issues: [],
+    };
+    const ports = [
+      ["identity", createIdentityPersistence],
+      ["pack", createPackPersistence],
+      ["record", createRecordPersistence],
+    ] as const;
+
+    for (const [port, create] of ports) {
+      expect(() => create(config)).toThrow(
+        `PostgreSQL ${port} persistence requires DATABASE_URL.`
+      );
+    }
   });
 });

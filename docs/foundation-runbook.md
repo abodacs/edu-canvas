@@ -53,7 +53,6 @@ Copy `.env.example` to `.env` only when you need local overrides. Unprefixed val
 | `APP_ENV` | `development` | `development`, `preview`, or `production` |
 | `SYNTHETIC_DATA_ONLY` | `true` | Real-student mode is blocked by the foundation |
 | `DATABASE_URL` | required | `postgres://` or `postgresql://` persistence URL |
-| `PERSISTENCE_ADAPTER` | `postgres` | Server-only PostgreSQL implementation: `postgres` or `drizzle` |
 | `SENTRY_DSN` | unset | Optional server-only Sentry delivery for scrubbed errors |
 | `OPENAI_API_KEY` | required | Server-only provider credential; startup fails without it ([AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md)) |
 | `OPENAI_MODEL` | `gpt-5.6` | Structured-output model code default. The value must change with the provider selection ([AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md)); it is not an asserted working model |
@@ -81,7 +80,7 @@ A database created by the pre-Drizzle runner has the tables but no ledger. The f
 
 `pnpm db:seed` is a thin operator entry point over `src/server/persistence/seed-postgres.ts`. The seed adapter uses stable IDs and `ON CONFLICT` upserts inside one transaction. It can be run repeatedly without duplicating the synthetic tenant, seeded identities, equivalent-fractions standard, prerequisite graph, activity version, or attempt fixture.
 
-Drizzle is both the persistence adapter and the migration owner. Set `PERSISTENCE_ADAPTER=drizzle` to exercise the adapter; omit the variable, or set it to `postgres`, to use the raw SQL adapter. Never run `drizzle-kit push` or `drizzle-kit pull`; push bypasses the journal, and pull overwrites the authored schema without the forced-RLS and trigger layer.
+Drizzle kit owns the schema and the migration journal; runtime queries use one PostgreSQL adapter. Never run `drizzle-kit push` or `drizzle-kit pull`; push bypasses the journal, and pull overwrites the authored schema without the forced-RLS and trigger layer.
 
 Migration and seed processes take the same non-blocking PostgreSQL advisory lock and use bounded statement, lock, and idle-in-transaction timeouts. If another bootstrap process is running, the command fails quickly so a deploy cannot wait indefinitely behind a hidden database lock.
 
@@ -100,7 +99,7 @@ For a request to `/workspace`, use the file names as the trace:
 7. `src/server/generation/validation.ts` validates the canonical lesson contract and separates warnings from blocking errors.
 8. `src/server/generation/semantic-validation.ts` runs deterministic curriculum and learning-quality validators against the normalized draft and the pinned graph context. It checks answer relationships, graph/path direction, grade, language/RTL, accessibility, explanation quality, and meaningful variant differentiation.
 9. `src/server/generation/projection.ts` strips private relationships before returning the browser-safe draft. Semantic warnings are visible in the public diagnostics; semantic blocks and incomplete retryable validation return no draft.
-10. `src/server/persistence/postgres.ts` or `src/server/persistence/drizzle.ts` stores the request, attempts, diagnostics, and provenance.
+10. `src/server/persistence/postgres.ts` stores the request, attempts, diagnostics, and provenance.
 
 The deterministic test provider accepts `equivalent fractions for grade 4` and returns exactly two standard variants, one scaffold, and one challenge variant. It deliberately produces a teacher-visible quality warning when variants share the same interaction structure; this is not a rewrite of the canonical draft. A retry with the same idempotency key returns the existing attempt. The PostgreSQL adapter uses the database uniqueness constraint and transaction, so concurrent duplicate submissions cannot invoke the provider twice within the configured deployment. `Try this draft again` creates a new attempt on the same request history. Duplicate readers wait for a bounded window; an abandoned `generating` claim transitions to `failed-retryable` through a tenant- and timestamp-scoped compare-and-swap, and final writes use the same ownership guard so an expired worker cannot overwrite a later retry.
 

@@ -7,7 +7,6 @@ import { buildValidatedLearningPath } from "../generation/learning-path";
 import { createSyntheticCurriculumContext } from "../generation/semantic-validation";
 import { getSyntheticSeedCounts } from "../seed-data";
 import { createGenerationRequestHash } from "../generation/types";
-import { createDrizzlePersistence } from "./drizzle";
 import { createPostgresPersistence } from "./postgres";
 import {
   isRunDatabaseTests,
@@ -42,10 +41,6 @@ const adapters = [
   {
     name: "postgres",
     create: () => createPostgresPersistence(requireDatabaseUrl()),
-  },
-  {
-    name: "drizzle",
-    create: () => createDrizzlePersistence(requireDatabaseUrl()),
   },
 ] as const;
 

@@ -37,7 +37,6 @@ describe("server configuration", () => {
     expect(config).toMatchObject({
       appEnv: "development",
       syntheticDataOnly: true,
-      persistenceAdapter: "postgres",
     });
     expect(config.issues.map((issue) => issue.code)).toStrictEqual([
       "OPENAI_API_KEY_REQUIRED",
@@ -194,39 +193,6 @@ describe("server configuration", () => {
       field: "OPENAI_TIMEOUT_MS",
       message:
         "OPENAI_TIMEOUT_MS must be an integer from 1000 to 120000 milliseconds.",
-    });
-  });
-
-  it("keeps the legacy PostgreSQL adapter as the default", () => {
-    expect(
-      readServerConfig({
-        DATABASE_URL: "postgresql://demo:secret@db.invalid:5432/app",
-      }).persistenceAdapter
-    ).toBe("postgres");
-  });
-
-  it("allows the Drizzle adapter to be selected server-side", () => {
-    const config = readServerConfig({
-      DATABASE_URL: "postgresql://demo:secret@db.invalid:5432/app",
-      OPENAI_API_KEY: "test-server-key",
-      PERSISTENCE_ADAPTER: "drizzle",
-    });
-
-    expect(config).toMatchObject({
-      persistenceAdapter: "drizzle",
-      issues: [],
-    });
-    expect(JSON.stringify(safeConfigSummary(config))).not.toContain("drizzle");
-  });
-
-  it("fails safe for an unknown persistence adapter", () => {
-    const config = readServerConfig({ PERSISTENCE_ADAPTER: "unknown" });
-
-    expect(config.persistenceAdapter).toBe("postgres");
-    expect(config.issues).toContainEqual({
-      code: "INVALID_PERSISTENCE_ADAPTER",
-      field: "PERSISTENCE_ADAPTER",
-      message: "PERSISTENCE_ADAPTER must be postgres or drizzle.",
     });
   });
 

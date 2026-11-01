@@ -73,7 +73,7 @@ The learner surface is one page. `/learn?assignment=&variant=` opens a run and p
 | Application | TanStack Start and Router, React 19, Vite 8, Nitro 3 beta | [package.json](package.json), [vite.config.ts](vite.config.ts) |
 | Contracts | TypeScript 6 and Zod 4 | [tsconfig.json](tsconfig.json), `src/shared/` |
 | UI | Tailwind 4, Base UI, shadcn/ui, semantic DOM | `src/components/`, `src/styles.css` |
-| Storage | PostgreSQL 17; raw SQL or Drizzle query adapter | `src/server/persistence/`, [docker-compose.yml](docker-compose.yml) |
+| Storage | PostgreSQL 17 through one SQL adapter; Drizzle owns the schema and journal | `src/server/persistence/`, [docker-compose.yml](docker-compose.yml) |
 | Error reporting | Structured server events and optional Sentry delivery | [observability.server.ts](src/server/observability.server.ts) |
 | Delivery | Node container on Fly.io; Supabase Postgres in the release design | [fly.toml](fly.toml), [release runbook](docs/release-fly-supabase.md) |
 
@@ -279,7 +279,7 @@ Catalog actions such as `submitAttempt` describe allowed messages. Their presenc
 
 [config.ts](src/server/config.ts) parses application and database-bootstrap settings. Invalid settings produce typed `ConfigIssue` records. Generation, preview, readiness, and persistence reject invalid configuration.
 
-`DATABASE_URL` is required: PostgreSQL is the only runtime persistence. `OPENAI_API_KEY` is required for server-side generation. `PERSISTENCE_ADAPTER` selects raw SQL or Drizzle against the same database. `SYNTHETIC_DATA_ONLY=false` is rejected. The deterministic provider and in-memory stores are test doubles and are unreachable from runtime composition.
+`DATABASE_URL` is required: PostgreSQL is the only runtime persistence. `OPENAI_API_KEY` is required for server-side generation. `SYNTHETIC_DATA_ONLY=false` is rejected. The deterministic provider and in-memory stores are test doubles and are unreachable from runtime composition.
 
 [observability.server.ts](src/server/observability.server.ts) emits structured errors, restricts context values, redacts sensitive patterns, and optionally sends scrubbed events to Sentry. Sentry uses `sendDefaultPii: false`. This is a server-only interface, not a browser SDK.
 
@@ -362,7 +362,7 @@ Blocked and failed attempts retain diagnostics with no accepted draft. `ready-fo
 
 ### Persist and recover attempts
 
-[GenerationPersistence](src/server/generation/types.ts) provides claim, expiry, conditional save, idempotency lookup, and record read operations. The service does not know SQL or Drizzle transaction details.
+[GenerationPersistence](src/server/generation/types.ts) provides claim, expiry, conditional save, idempotency lookup, and record read operations. The service does not know SQL transaction details.
 
 A claim has a 220-second lease. Duplicate callers poll for up to five seconds. Expiry is resolved by request handling; there is no background reaper. Conditional writes compare attempt number, update timestamp, and an unexpired lease, so an expired worker cannot overwrite a replacement attempt.
 
@@ -377,7 +377,7 @@ These are extension paths through existing owners. New domain behavior belongs i
 | Change | Implementation path | Constraints and verification |
 | --- | --- | --- |
 | Add a model provider | Implement `LessonDraftProvider` in `generation/provider.ts` or a sibling adapter. Select it in `factory.ts`; add settings in `config.ts` and `.env.example`. | Return unknown draft data and provenance. Map failures to `LessonProviderError`. Keep correction policy in the service. Extend provider, config, and service tests. Add new secret markers to the client scan. |
-| Add persisted state | Extend the domain type and persistence port. Implement storage in the raw SQL and Drizzle adapters; keep the in-memory store as a test double. Change `drizzle/schema.ts`, run `pnpm db:generate`, and use `generate --custom` only for forced RLS, triggers, or functions. | Preserve tenant scoping, atomic claims, conditional writes, and adapter parity. Run database contract tests against a migrated database. |
+| Add persisted state | Extend the domain type and persistence port. Implement storage in the PostgreSQL adapter; keep the in-memory store as a test double. Change `drizzle/schema.ts`, run `pnpm db:generate`, and use `generate --custom` only for forced RLS, triggers, or functions. | Preserve tenant scoping, atomic claims, and conditional writes. Run database contract tests against a migrated database. |
 | Add a server operation | Add a domain-owned `.server` delivery module and a thin `src/routes/api/...` handler; start from `/api/lessons/generate`. Parse inputs and project outputs at the boundary. | Keep domain rules and database access behind the delivery interface. Verify architecture imports and public schemas. |
 | Add a page | Add a file route using `routes/workspace.tsx` as the authenticated example. Load data through named server interfaces and keep interaction state local. | Regenerate routes with `pnpm generate-routes`. Do not hand-edit `routeTree.gen.ts`. Check the built client boundary. |
 | Change A2UI | Start with `shared/a2ui-contract.ts`, then update compiler, stream expectations, renderer, and their tests together. | Version catalog changes under the [catalog-governance decision](docs/agdr/AgDR-0001-a2ui-catalog-governance.md). Preserve rejection of unknown messages and private data. |
@@ -410,13 +410,13 @@ Additional checks have separate prerequisites:
 
 | Command | Scope and prerequisite |
 | --- | --- |
-| `pnpm test:database` | Runs adapter parity tests when `DATABASE_URL` is supplied. Sets `RUN_DATABASE_TESTS=true`; the suite skips without a database URL. |
+| `pnpm test:database` | Runs the PostgreSQL contract tests when `DATABASE_URL` is supplied. Sets `RUN_DATABASE_TESTS=true`; the suite skips without a database URL. |
 | `pnpm test:coverage` | Enforces coverage floors from `vitest.config.ts`; separate from `pnpm check`. |
 | `pnpm verify:config` | Reports safe configuration and fails on configuration issues. |
 | `pnpm smoke` | Checks a running server: pages, health, readiness, header policy, and a rejected unauthenticated preview. |
 | `pnpm verify:client-boundary` | Requires an existing build. Run `pnpm build` first when validating a code change. |
 
-[Foundation CI](.github/workflows/foundation.yml) adds PostgreSQL setup, Drizzle-history and schema-drift checks, repeated migration and seed runs, coverage, adapter parity, Docker build, and container and native-server smoke checks.
+[Foundation CI](.github/workflows/foundation.yml) adds PostgreSQL setup, Drizzle-history and schema-drift checks, repeated migration and seed runs, coverage, database contract tests, Docker build, and container and native-server smoke checks.
 
 Verification coverage is bounded. The architecture scanner reads TypeScript under `src/`; it does not inspect SQL, operator scripts, or CSS. Its import extraction uses regular expressions. Vitest selects `src/**/*.test.ts`, so `.test.tsx` files are outside that configuration. Passing these checks does not establish browser interaction coverage or production readiness. [Architecture harness](docs/architecture-harness.md) records guardrail intent.
 
