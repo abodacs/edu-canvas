@@ -1,10 +1,12 @@
 import { isJsonObject } from "@/lib/http";
 import { generationRequestErrorCodeValues } from "@/shared/generation-contract";
 
+import type { GenerationRequestErrorCode } from "@/shared/generation-contract";
+
 /**
 Teacher-visible failure resolution for the generation delivery seam, kept out of the studio component so the mapping stays pure and testable.
 
-Identity-boundary codes keep their canned copy; generation seam codes carry a curated server message that is surfaced verbatim.
+Identity-boundary codes keep their canned copy; generation seam codes carry a curated server message that is surfaced verbatim, and the seam code itself so the studio can choose the right panel.
 */
 
 const ERROR_COPY = {
@@ -22,11 +24,15 @@ errors, unparsable payloads, unknown codes). One source of truth for the studio.
 export const GENERIC_GENERATION_FAILURE_MESSAGE = ERROR_COPY.generic;
 
 /**
-A resolved generation failure: the studio must re-authenticate, or show one teacher-ready message.
+A resolved generation failure: the studio must re-authenticate, or show one teacher-ready message. A seam code identifies the refusal so the studio can open the matching panel; `null` means the payload carried no recognized code.
 */
 export type GenerationFailure =
   | { readonly kind: "unauthorized" }
-  | { readonly kind: "error"; readonly message: string };
+  | {
+      readonly kind: "error";
+      readonly message: string;
+      readonly code: GenerationRequestErrorCode | null;
+    };
 
 interface FailurePayload {
   readonly code: string | null;
@@ -65,6 +71,12 @@ const curatedMessageOf = (
   message: unknown
 ): string | null => (isCuratedSeamMessage(code, message) ? message : null);
 
+const seamCodeOf = (code: string | null): GenerationRequestErrorCode | null => {
+  return (
+    generationRequestErrorCodeValues.find((value) => value === code) ?? null
+  );
+};
+
 const FORBIDDEN_ERROR_CODES: ReadonlySet<string> = new Set([
   "FORBIDDEN",
   "CSRF_REJECTED",
@@ -85,16 +97,16 @@ export const resolveFailure = (
   }
 
   if (status === 429 || code === "RATE_LIMITED") {
-    return { kind: "error", message: ERROR_COPY.rateLimited };
+    return { kind: "error", message: ERROR_COPY.rateLimited, code: null };
   }
 
   if (status === 503 || code === "AUTH_UNAVAILABLE") {
-    return { kind: "error", message: ERROR_COPY.unavailable };
+    return { kind: "error", message: ERROR_COPY.unavailable, code: null };
   }
 
   const curated = curatedMessageOf(code, message);
   if (curated !== null) {
-    return { kind: "error", message: curated };
+    return { kind: "error", message: curated, code: seamCodeOf(code) };
   }
 
   return {
@@ -102,5 +114,6 @@ export const resolveFailure = (
     message: isForbiddenFailure(status, code)
       ? ERROR_COPY.forbidden
       : ERROR_COPY.generic,
+    code: seamCodeOf(code),
   };
 };
