@@ -11,13 +11,6 @@
     "ignoreFiles": [],
     "ignoreValues": [
       {
-        "rule": "overused-font",
-        "value": "inter",
-        "files": [".impeccable/mocks/decision/canon.html"],
-        "createdAt": "2026-11-01T18:55:07.889Z",
-        "reason": "Agent: canon card is deliberately the category-standard SaaS look; Inter is part of that standard"
-      },
-      {
         "rule": "cream-palette",
         "value": "*",
         "files": [".impeccable/mocks/screens/*"],
