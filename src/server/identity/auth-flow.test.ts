@@ -130,7 +130,7 @@ describe("membership selection over HTTP", () => {
       memberships: { membershipId: string; tenantName: string }[];
     };
     const south = body.memberships.find(
-      (membership) => membership.tenantName === "Southside Middle"
+      (membership) => membership.tenantName === "Grade 5B · Ratio Reasoning"
     );
 
     const selected = await selectMembership({
@@ -142,7 +142,7 @@ describe("membership selection over HTTP", () => {
     expect(selected.status).toBe(200);
     await expect(selected.json()).resolves.toMatchObject({
       status: "active",
-      actor: { tenantName: "Southside Middle" },
+      actor: { tenantName: "Grade 5B · Ratio Reasoning" },
     });
     expect(cookieValue(selected, "edu_canvas_session")).toBeDefined();
     // The rotated session cookie and the cleared pending cookie are separate

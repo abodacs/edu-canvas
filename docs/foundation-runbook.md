@@ -80,6 +80,8 @@ A database created by the pre-Drizzle runner has the tables but no ledger. The f
 
 `pnpm db:seed` is a thin operator entry point over `src/server/persistence/seed-postgres.ts`. The seed adapter uses stable IDs and `ON CONFLICT` upserts inside one transaction. It can be run repeatedly without duplicating the synthetic tenant, seeded identities, equivalent-fractions standard, prerequisite graph, activity version, or attempt fixture.
 
+Tenant names are class names, because one tenant row carries one class until #99. `db:seed` renames the demo tenant in place. The dev identity fixture does not: `grantMembership` inserts a tenant only when it is missing (`src/server/persistence/identity-postgres.ts`). A database that already holds `tenant_school_north` or `tenant_school_south` keeps its old name after a reseed. Reset the local database with `docker compose down -v && docker compose up -d postgres && pnpm db:setup`, or rename those two rows by hand.
+
 Drizzle kit owns the schema and the migration journal; runtime queries use one PostgreSQL adapter. Never run `drizzle-kit push` or `drizzle-kit pull`; push bypasses the journal, and pull overwrites the authored schema without the forced-RLS and trigger layer.
 
 Migration and seed processes take the same non-blocking PostgreSQL advisory lock and use bounded statement, lock, and idle-in-transaction timeouts. If another bootstrap process is running, the command fails quickly so a deploy cannot wait indefinitely behind a hidden database lock.

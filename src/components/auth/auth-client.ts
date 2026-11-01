@@ -207,7 +207,7 @@ export const submitSignUp = async (
 };
 
 /**
-POST /api/auth/membership — consume the pending credential for one school.
+POST /api/auth/membership — consume the pending credential for one class.
 */
 export const submitMembership = async (
   membershipId: string,
@@ -271,7 +271,7 @@ export const endSession = async (
   return result.ok ? { ok: true, data: null } : result;
 };
 
-// Hand the chosen-school list to /login/membership through tab memory only.
+// Hand the chosen-class list to /login/membership through tab memory only.
 export const readPendingMembershipHandoff = ():
   PendingMembershipHandoff | undefined =>
   pendingMembershipHandoff.current ?? undefined;

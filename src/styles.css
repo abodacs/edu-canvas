@@ -3280,7 +3280,7 @@ h2 {
 }
 
 /* Authentication surfaces: a calm, single-column focus for sign-in, sign-up,
-   and school selection. They reuse the studio palette tokens and logical
+   and class selection. They reuse the studio palette tokens and logical
    properties, so the existing Arabic / RTL surfaces keep working. */
 .auth-shell {
   display: grid;
@@ -3621,7 +3621,7 @@ h2 {
   gap: 0.1rem;
 }
 
-.membership-option__school {
+.membership-option__class {
   color: var(--teacher-ink);
   font-size: 0.92rem;
   font-weight: 750;

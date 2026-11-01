@@ -22,10 +22,10 @@ import type { PendingMembershipOption } from "./types";
 
 const issuer = syntheticProviderIssuer;
 const fixturePassword = syntheticPasswordForTests;
-const curriculumTenantName = "Edu-Canvas Synthetic Classroom";
+const curriculumTenantName = "Grade 4S · Synthetic Fractions";
 
 /**
-The curriculum classroom membership is the designed default for harnesses that need an active session; the fixture teachers hold it next to their school tenancies.
+The curriculum classroom membership is the designed default for harnesses that need an active session; the fixture teachers hold it next to their class tenancies.
 */
 const curriculumMembershipOption = (
   memberships: readonly PendingMembershipOption[]
@@ -115,7 +115,7 @@ const activeSession = async () => {
 };
 
 describe("sign-in and session establishment", () => {
-  it("establishes a teacher session for the selected school membership", async () => {
+  it("establishes a teacher session for the selected class membership", async () => {
     const { service } = await createHarness();
     const signIn = await service.signIn({
       email: "bilal.north@example.test",
@@ -126,7 +126,8 @@ describe("sign-in and session establishment", () => {
       throw new Error("expected a pending membership state");
     }
     const north = signIn.memberships.find(
-      (membership) => membership.tenantName === "Northside Elementary"
+      (membership) =>
+        membership.tenantName === "Grade 4A · Equivalent Fractions"
     );
     const outcome = await service.selectMembership({
       pendingCredential: signIn.pendingCredential,
@@ -143,7 +144,7 @@ describe("sign-in and session establishment", () => {
     expect(outcome.actor).toMatchObject({
       role: "teacher",
       tenantId: "tenant_school_north",
-      tenantName: "Northside Elementary",
+      tenantName: "Grade 4A · Equivalent Fractions",
       rosterClassIds: ["class_north_4a"],
     });
     expect(outcome.credential).not.toContain(outcome.session.verifierHash);
@@ -259,9 +260,9 @@ describe("membership selection", () => {
         .map((m) => m.tenantName)
         .toSorted((a, b) => a.localeCompare(b))
     ).toStrictEqual([
-      "Edu-Canvas Synthetic Classroom",
-      "Northside Elementary",
-      "Southside Middle",
+      "Grade 4A · Equivalent Fractions",
+      "Grade 4S · Synthetic Fractions",
+      "Grade 5B · Ratio Reasoning",
     ]);
   });
 
@@ -277,7 +278,7 @@ describe("membership selection", () => {
     }
 
     const south = signIn.memberships.find(
-      (membership) => membership.tenantName === "Southside Middle"
+      (membership) => membership.tenantName === "Grade 5B · Ratio Reasoning"
     );
     const selected = await service.selectMembership({
       pendingCredential: signIn.pendingCredential,
