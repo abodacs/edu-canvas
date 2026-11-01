@@ -4,7 +4,7 @@ Vocabulary for `src/server/identity/`. Meaning only. Product words live in the r
 
 ### Actor
 
-A person the server has verified, represented as a teacher actor or a learner actor. An actor is independent of any school membership: the same actor can belong to several schools. A browser never supplies an actor; the server constructs one from a verified provider identity plus current membership.
+A person the server has verified, represented as a teacher actor or a learner actor. An actor is independent of any class membership: the same actor can belong to several classes. A browser never supplies an actor; the server constructs one from a verified provider identity plus current membership.
 
 **Implementing names:** `actors`
 
@@ -32,7 +32,7 @@ The trusted operation of creating actors, bindings, memberships, and class assig
 
 ### Tenant
 
-A school. Access inside a tenant requires an active membership, and a class relationship where the resource belongs to a class.
+The storage row behind one class, until #99 lands a real class object. One tenant holds one class for now, and its `name` is the class name a teacher picks. Access inside a tenant requires an active membership, and a class relationship where the resource belongs to a class.
 
 **Implementing names:** `tenants`
 
@@ -62,7 +62,7 @@ A revocable application credential the browser holds after a successful sign-in.
 
 ### Pending authentication
 
-The short-lived state after a verified sign-in that has not yet chosen a membership, because the actor belongs to more than one school. It cannot authorize any domain operation.
+The short-lived state after a verified sign-in that has not yet chosen a membership, because the actor belongs to more than one class. It cannot authorize any domain operation.
 
 **Implementing names:** `pending_authentications`
 

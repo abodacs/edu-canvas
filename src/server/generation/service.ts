@@ -76,7 +76,7 @@ Teacher-ready copy for a classroom whose standards table has no row for the
 requested objective; the studio surfaces it verbatim (#168 P0-2).
 */
 const CURRICULUM_STANDARD_NOT_CONFIGURED_MESSAGE =
-  "This classroom has no curriculum target for that standard yet. Ask an admin to add it to your school, or try a different objective.";
+  "This classroom has no curriculum target for that standard yet. Ask an admin to add it to your class, or try a different objective.";
 
 const DEADLINE_DIAGNOSTIC_CODE = "GENERATION_DEADLINE_EXCEEDED";
 

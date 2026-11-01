@@ -18,7 +18,7 @@ export const syntheticSeed = {
   tenant: {
     id: "tenant_demo_eu_synthetic",
     slug: "eu-synthetic-demo",
-    name: "Edu-Canvas Synthetic Classroom",
+    name: "Grade 4S · Synthetic Fractions",
     syntheticDataOnly: true,
   },
   identities: [

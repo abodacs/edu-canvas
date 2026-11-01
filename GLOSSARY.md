@@ -126,7 +126,7 @@ Three confidence labels. **Observed** means a concrete interaction or result is 
 
 A named group of students taught together by one teacher. Every as-is story touches a class: its period, its materials, its list, its misconceptions.
 
-**Not implemented.** The schema has `class_assignments` — a teacher-to-class link — and no record for the class itself. The class exists as an identifier with no name and no member list.
+**Not implemented as its own record.** Until #99, one class is the tenant row: `tenants.name` is the class name, and one teacher holds one class. [Tenant](src/server/identity/GLOSSARY.md) owns that storage meaning. `class_assignments` is a teacher-to-class link that no runtime reader uses yet, so it stays debt until the real class object exists.
 
 ### Learner
 
