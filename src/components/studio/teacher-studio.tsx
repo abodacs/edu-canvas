@@ -24,6 +24,7 @@ import { SourcePanel } from "@/components/studio/source-panel";
 import { ValidationDiagnostics } from "@/components/studio/validation-diagnostics";
 import { csrfHeaderName } from "@/shared/identity-contract";
 import { publicGenerationResultSchema } from "@/shared/generation-contract";
+import { displayStandardCode } from "@/shared/standard-display";
 import type { BoundSource } from "@/components/studio/source-panel";
 import type {
   LessonGenerationInput,
@@ -116,9 +117,6 @@ const getPromptContext = (prompt: string): PromptContext => {
 
 const READY_FOR_REVIEW_STATE = "ready-for-review";
 const BLOCKED_BY_VALIDATION_STATE = "blocked-by-validation";
-
-const getDisplayStandardId = (standardId: string) =>
-  standardId === DEFAULT_STANDARD_ID ? "4.NF.A.1" : standardId;
 
 const getResultTitle = (state: PublicGenerationResult["state"]) => {
   switch (state) {
@@ -222,6 +220,52 @@ const getDiagnosticLabel = (
     : DIAGNOSTIC_SEVERITY_LABELS[diagnostic.severity];
 };
 
+const getVariantNoteName = (variant: {
+  readonly kind: keyof typeof variantLabels;
+  readonly title: string;
+}): string => `${variant.title} (${variantLabels[variant.kind]})`;
+
+interface GroupedDiagnostic {
+  readonly key: string;
+  readonly label: string;
+  readonly variantNames: string[];
+  readonly message: string;
+}
+
+/**
+ * Identical findings across variants collapse into one note that names the
+ * variants it describes, so a draft with structurally repeated variants never
+ * prints the same sentence twice (#168 P1-1).
+ */
+const groupDiagnostics = (
+  diagnostics: PublicGenerationResult["diagnostics"],
+  variantNameById: ReadonlyMap<string, string>
+): GroupedDiagnostic[] => {
+  const byKey = new Map<string, GroupedDiagnostic>();
+  const groups: GroupedDiagnostic[] = [];
+  for (const diagnostic of diagnostics) {
+    const key = `${diagnostic.code}:${diagnostic.message}`;
+    const variantName = diagnostic.variantId
+      ? variantNameById.get(diagnostic.variantId)
+      : undefined;
+    let group = byKey.get(key);
+    if (!group) {
+      group = {
+        key,
+        label: getDiagnosticLabel(diagnostic),
+        variantNames: [],
+        message: diagnostic.message,
+      };
+      byKey.set(key, group);
+      groups.push(group);
+    }
+    if (variantName && !group.variantNames.includes(variantName)) {
+      group.variantNames.push(variantName);
+    }
+  }
+  return groups;
+};
+
 /**
  * The edit recovery action returns the teacher to the objective field. The field keeps its current text and the caret moves to the logical end, so an edit never replaces what the teacher already wrote.
  */
@@ -313,7 +357,7 @@ const PromptSignals = ({
       </span>
       <span className="prompt-signal">
         <span className="prompt-signal__mark" aria-hidden="true" />
-        {getDisplayStandardId(standardId)}
+        {displayStandardCode(standardId)}
       </span>
       <span className="prompt-signal">
         <Globe2 aria-hidden="true" />
@@ -371,7 +415,7 @@ const TeacherGuidance = ({
               <BookOpen aria-hidden="true" />
               <span>Learning target</span>
             </div>
-            <strong>{getDisplayStandardId(standardId)}</strong>
+            <strong>{displayStandardCode(standardId)}</strong>
             <p>Equivalent fractions, made visible.</p>
           </article>
 
@@ -480,6 +524,19 @@ const GenerationResult = ({
   const hasVisibleValidationPanel =
     isBlockedByValidation && hasValidationFindings;
 
+  // #168 P0-1: the variant cards are the chooser. Selection is in-page state
+  // for now; the decision endpoint belongs to the teacher-decisions seam (#8).
+  const [chosenVariantId, setChosenVariantId] = useState<string | null>(null);
+  const [previewVariantId, setPreviewVariantId] = useState<string | null>(null);
+  const variants = result.draft?.variants ?? [];
+  const variantNameById = new Map(
+    variants.map((variant) => [variant.id, getVariantNoteName(variant)])
+  );
+  const diagnosticGroups = groupDiagnostics(
+    result.diagnostics,
+    variantNameById
+  );
+
   return (
     <div
       className="generation-result teacher-result"
@@ -520,13 +577,16 @@ const GenerationResult = ({
           className="diagnostic-list teacher-diagnostics"
           aria-label="Draft notes"
         >
-          {result.diagnostics.map((item) => {
+          {diagnosticGroups.map((group) => {
             return (
-              <li
-                key={`${item.code}-${item.variantId ?? "draft"}-${item.message}`}
-              >
-                <strong>{getDiagnosticLabel(item)}</strong>
-                <span>{item.message}</span>
+              <li key={group.key}>
+                <strong>
+                  {group.label}
+                  {group.variantNames.length > 0
+                    ? ` · ${group.variantNames.join(", ")}`
+                    : ""}
+                </strong>
+                <span>{group.message}</span>
               </li>
             );
           })}
@@ -557,7 +617,7 @@ const GenerationResult = ({
                 <span>Keep this in sight</span>
                 <ShieldCheck aria-hidden="true" />
               </div>
-              <strong>{getDisplayStandardId(result.draft.standardId)}</strong>
+              <strong>{displayStandardCode(result.draft.standardId)}</strong>
               <p>Equivalent fractions for Grade {result.draft.grade}.</p>
               <dl>
                 <div>
@@ -579,38 +639,129 @@ const GenerationResult = ({
               className="variant-stack"
               aria-label="Generated lesson variants"
             >
-              {result.draft.variants.map((variant) => {
-                return (
-                  <article className="variant-card" key={variant.id}>
-                    <div className="variant-card__heading">
-                      <span
-                        className={`variant-kind variant-kind--${variant.kind}`}
+              <fieldset className="variant-picker">
+                <legend className="sr-only">
+                  Choose the version to open in the preview
+                </legend>
+                <div className="variant-picker__cards">
+                  {variants.map((variant) => {
+                    const isChosen = chosenVariantId === variant.id;
+                    return (
+                      <label
+                        className={cn(
+                          "variant-card",
+                          isChosen && "variant-card--chosen"
+                        )}
+                        key={variant.id}
                       >
-                        {variantLabels[variant.kind]}
-                      </span>
-                      <span>{variant.sourceItems.length} matching pieces</span>
-                    </div>
-                    <h3>{variant.title}</h3>
-                    <p>{variant.instructions}</p>
-                    <div className="variant-card__items">
-                      <div>
-                        <span>
-                          {variant.accessibilityMetadata.sourceGroupLabel}
+                        <input
+                          type="radio"
+                          name="chosen-variant"
+                          className="variant-card__radio"
+                          value={variant.id}
+                          aria-label={`${variantLabels[variant.kind]}, ${variant.title}`}
+                          checked={isChosen}
+                          onChange={() => {
+                            setChosenVariantId(variant.id);
+                          }}
+                          onKeyDown={(event) => {
+                            // Keyboard selection is set explicitly: the
+                            // hidden radio's change event alone does not
+                            // reach React state reliably (the membership
+                            // screen ships the same explicit pattern).
+                            if (event.key === " " || event.key === "Enter") {
+                              event.preventDefault();
+                              setChosenVariantId(variant.id);
+                              return;
+                            }
+                            if (!event.key.startsWith("Arrow")) {
+                              return;
+                            }
+                            event.preventDefault();
+                            const radios = [
+                              ...document.querySelectorAll<HTMLInputElement>(
+                                'input[name="chosen-variant"]'
+                              ),
+                            ];
+                            const step =
+                              event.key.endsWith("Right") ||
+                              event.key === "ArrowDown"
+                                ? 1
+                                : -1;
+                            const next =
+                              radios[
+                                (radios.indexOf(event.currentTarget) +
+                                  step +
+                                  radios.length) %
+                                  radios.length
+                              ];
+                            next?.focus();
+                            if (next?.value) {
+                              setChosenVariantId(next.value);
+                            }
+                          }}
+                        />
+                        <span
+                          className={
+                            isChosen
+                              ? "variant-card__pick variant-card__pick--on"
+                              : "variant-card__pick"
+                          }
+                          aria-hidden="true"
+                        >
+                          <Check aria-hidden="true" />
                         </span>
-                        <strong>{variant.sourceItems.length} choices</strong>
-                      </div>
-                      <div>
-                        <span>
-                          {variant.accessibilityMetadata.targetGroupLabel}
+                        <span className="variant-card__heading">
+                          <span
+                            className={`variant-kind variant-kind--${variant.kind}`}
+                          >
+                            {variantLabels[variant.kind]}
+                          </span>
+                          <span>
+                            {variant.sourceItems.length} matching pieces
+                          </span>
                         </span>
-                        <strong>
-                          {variant.targetItems.length} connections
-                        </strong>
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
+                        <h3>{variant.title}</h3>
+                        <p>{variant.instructions}</p>
+                        <div className="variant-card__items">
+                          <div>
+                            <span>
+                              {variant.accessibilityMetadata.sourceGroupLabel}
+                            </span>
+                            <strong>
+                              {variant.sourceItems.length} choices
+                            </strong>
+                          </div>
+                          <div>
+                            <span>
+                              {variant.accessibilityMetadata.targetGroupLabel}
+                            </span>
+                            <strong>
+                              {variant.targetItems.length} connections
+                            </strong>
+                          </div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </fieldset>
+              {chosenVariantId ? (
+                <div className="variant-picker__action">
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setPreviewVariantId(chosenVariantId);
+                    }}
+                  >
+                    Open the preview for this version
+                    <ArrowRight aria-hidden="true" />
+                  </Button>
+                  <span>
+                    You choose what students see next; nothing is shared yet.
+                  </span>
+                </div>
+              ) : null}
             </section>
           </div>
 
@@ -620,6 +771,7 @@ const GenerationResult = ({
                 key={result.requestId}
                 requestId={result.requestId}
                 catalogVersion={result.provenance?.catalogVersion}
+                focusVariantId={previewVariantId}
               />
               <div className="teacher-result__cta">
                 <Button
@@ -684,6 +836,14 @@ const TeacherLessonComposer = ({
   const [result, setResult] = useState<PublicGenerationResult | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [requestError, setRequestError] = useState<string | null>(null);
+  // #168 P0-2: on failure the inline status next to Create lesson receives
+  // focus, so the cause lands in view and in the screen reader's mouth.
+  const statusReference = useRef<HTMLOutputElement>(null);
+  useEffect(() => {
+    if (requestError) {
+      statusReference.current?.focus();
+    }
+  }, [requestError]);
   // The reviewed source snapshot the next draft is grounded in (#114). Null
   // keeps the prompt-only path the focused event composer relies on.
   const [boundSource, setBoundSource] = useState<BoundSource | null>(null);
@@ -815,7 +975,7 @@ const TeacherLessonComposer = ({
           aria-labelledby="lesson-prompt-label"
           required
           maxLength={500}
-          rows={3}
+          rows={1}
           value={prompt}
           placeholder="e.g. equivalent fractions for grade 4"
           onChange={(event) => {
@@ -844,6 +1004,30 @@ const TeacherLessonComposer = ({
             {isGenerating ? null : <ArrowRight aria-hidden="true" />}
           </Button>
         </div>
+        {/* #168 P0-2: progress and failure feedback sit with the submit
+            button, in the form, where a teacher looks for it — the guidance
+            rail never stands between them. */}
+        <output
+          className="generation-status teacher-generation-status"
+          aria-live="polite"
+          tabIndex={-1}
+          ref={statusReference}
+        >
+          {isGenerating ? (
+            <p className="status-pulse">
+              <span aria-hidden="true" /> Reading the idea, finding the cleanest
+              path…
+            </p>
+          ) : null}
+          {requestError ? (
+            <p className="generation-error">
+              {requestError}
+              <span className="generation-error__hint">
+                Fix the objective or the source, then press Create lesson again.
+              </span>
+            </p>
+          ) : null}
+        </output>
       </form>
 
       <SourcePanel
@@ -866,23 +1050,9 @@ const TeacherLessonComposer = ({
         standardId={standardId}
       />
 
-      <output
-        className="generation-status teacher-generation-status"
-        aria-live="polite"
-      >
-        {isGenerating ? (
-          <p className="status-pulse">
-            <span aria-hidden="true" /> Reading the idea, finding the cleanest
-            path…
-          </p>
-        ) : null}
-        {requestError ? (
-          <p className="generation-error">{requestError}</p>
-        ) : null}
-      </output>
-
       {result ? (
         <GenerationResult
+          key={result.requestId}
           result={result}
           onOpenReview={onOpenReview}
           onRetry={(event) => {

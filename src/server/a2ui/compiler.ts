@@ -6,6 +6,7 @@ import {
   variantPurposeLabels as purposeLabels,
 } from "@/shared/a2ui-contract";
 import { buildStoryPlan, StoryPlanBuildError } from "@/shared/story-plan";
+import { displayStandardCode } from "@/shared/standard-display";
 import { isRenderableArtifact } from "@/server/safety/artifact-gate";
 import type { LessonLanguage } from "@/shared/generation-contract";
 import type { StoryPlan } from "@/shared/story-plan";
@@ -280,7 +281,7 @@ const previewMessagesForVariant = (
     text("purpose", purpose, "subheading"),
     text(
       "metadata",
-      `Grade ${input.grade} · ${input.standardId} · ${variant.languageMetadata.language.toUpperCase()} · ${scaffoldLabels[variant.kind]}`,
+      `Grade ${input.grade} · ${displayStandardCode(input.standardId)} · ${variant.languageMetadata.language.toUpperCase()} · ${scaffoldLabels[variant.kind]}`,
       "label"
     ),
     text("instructions", variant.accessibilityMetadata.instructions, "body"),

@@ -97,24 +97,27 @@ const renderLearningPath = (
         </div>
       </div>
 
-      <dl className="a2ui-learning-path__pins">
-        <div>
-          <dt>{copy.draft}</dt>
-          <dd>{learningPath.versionPins.draftId}</dd>
-        </div>
-        <div>
-          <dt>{copy.graph}</dt>
-          <dd>{learningPath.versionPins.graphVersion}</dd>
-        </div>
-        <div>
-          <dt>{copy.model}</dt>
-          <dd>{learningPath.versionPins.modelVersion}</dd>
-        </div>
-        <div>
-          <dt>{copy.catalog}</dt>
-          <dd>{learningPath.versionPins.catalogVersion}</dd>
-        </div>
-      </dl>
+      <details className="a2ui-learning-path__pins-details">
+        <summary>Record details</summary>
+        <dl className="a2ui-learning-path__pins">
+          <div>
+            <dt>{copy.draft}</dt>
+            <dd>{learningPath.versionPins.draftId}</dd>
+          </div>
+          <div>
+            <dt>{copy.graph}</dt>
+            <dd>{learningPath.versionPins.graphVersion}</dd>
+          </div>
+          <div>
+            <dt>{copy.model}</dt>
+            <dd>{learningPath.versionPins.modelVersion}</dd>
+          </div>
+          <div>
+            <dt>{copy.catalog}</dt>
+            <dd>{learningPath.versionPins.catalogVersion}</dd>
+          </div>
+        </dl>
+      </details>
     </section>
   );
 };
