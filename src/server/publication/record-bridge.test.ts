@@ -229,7 +229,9 @@ describe(bridgePublishedPack, () => {
     // accident: a section carries no hints, feedback, or accessibility
     // metadata, because the record model has nowhere to put them.
     expect(
-      Object.keys(version.sections[0] ?? {}).toSorted((left, right) => left.localeCompare(right))
+      Object.keys(version.sections[0] ?? {}).toSorted((left, right) =>
+        left.localeCompare(right)
+      )
     ).toStrictEqual(["body", "id", "itemIds", "items", "kind", "title"]);
   });
 

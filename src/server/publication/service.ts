@@ -229,13 +229,6 @@ export const createPublicationService = (
     }
   };
 
-  const projectReview = async (
-    actor: TeacherActor,
-    version: PackVersionRecord
-  ): Promise<ReviewPack> => {
-    return projectReviewDecoded(actor, version, decodePackVersion(version));
-  };
-
   // A handler that already decoded the row passes the value down; decoding it
   // again only re-validates a value this module produced.
   const projectReviewDecoded = async (
@@ -307,6 +300,12 @@ export const createPublicationService = (
       availableLearners: learners,
     });
   };
+
+  const projectReview = (
+    actor: TeacherActor,
+    version: PackVersionRecord
+  ): Promise<ReviewPack> =>
+    projectReviewDecoded(actor, version, decodePackVersion(version));
 
   // A retried publish returns what the first one wrote, including the canonical
   // learner assignment, so a second click lands on the same lesson.
