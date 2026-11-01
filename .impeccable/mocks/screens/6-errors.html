@@ -37,26 +37,24 @@
         color: var(--ink-3);
       }
       .ico {
-        inline-size: 40px;
-        block-size: 40px;
-        border-radius: 12px;
-        display: grid;
-        place-items: center;
+        display: inline-flex;
+        vertical-align: -3px;
+        margin-inline-end: var(--s-1);
+      }
+      .ico svg {
+        inline-size: 16px;
+        block-size: 16px;
       }
       .ico.stop {
-        background: var(--stop-soft);
         color: var(--stop);
       }
       .ico.warn {
-        background: var(--warn-soft);
         color: var(--warn);
       }
       .ico.idle {
-        background: var(--sunk);
         color: var(--ink-2);
       }
       .ico.clay {
-        background: var(--clay-soft);
         color: var(--clay-deep);
       }
       .span2 {
@@ -149,21 +147,24 @@
         </p>
 
         <section class="card state" aria-labelledby="e1">
-          <span class="label">Empty · first visit to Studio</span>
-          <span class="ico clay" aria-hidden="true"
-            ><svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M12 20h9" />
-              <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg
-          ></span>
+          <span class="label"
+            ><span class="ico clay" aria-hidden="true"
+              ><svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 20h9" />
+                <path
+                  d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"
+                /></svg></span
+            >Empty · first visit to Studio</span
+          >
           <h2 id="e1">One sentence is enough to start.</h2>
           <p>
             Write what students should practice, for example “compare 1/2 and
@@ -176,50 +177,52 @@
         </section>
 
         <section class="card state" aria-labelledby="e2">
-          <span class="label">Empty · Lessons, nothing published</span>
-          <span class="ico idle" aria-hidden="true"
-            ><svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path
-                d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"
-              />
-              <path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5" /></svg
-          ></span>
+          <span class="label"
+            ><span class="ico idle" aria-hidden="true"
+              ><svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"
+                />
+                <path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5" /></svg></span
+            >Empty · Lessons, nothing published</span
+          >
           <h2 id="e2">No lessons published yet</h2>
           <p>
             Approved lessons and each learner's result will show here. You have
             1 draft waiting for review.
           </p>
           <div class="acts">
-            <a class="btn dark" href="2-review.html">Continue review</a
+            <a class="btn secondary" href="2-review.html">Continue review</a
             ><a class="ghost" href="1-studio.html">New lesson</a>
           </div>
         </section>
 
         <section class="card state" aria-labelledby="e3">
-          <span class="label">Error · blocked by moderation</span>
-          <span class="ico stop" aria-hidden="true"
-            ><svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-              <path d="m15 9-6 6M9 9l6 6" /></svg
-          ></span>
+          <span class="label"
+            ><span class="ico stop" aria-hidden="true"
+              ><svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="m15 9-6 6M9 9l6 6" /></svg></span
+            >Error · blocked by moderation</span
+          >
           <h2 id="e3">This objective can't be drafted for students</h2>
           <p>
             The safety check stopped it before any preview. Nothing was saved or
@@ -236,24 +239,23 @@
 
         <section class="card state" aria-labelledby="e4">
           <span class="label"
+            ><span class="ico warn" aria-hidden="true"
+              ><svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"
+                />
+                <path d="M12 9v4M12 17v.01" /></svg></span
             >Error · grounding unavailable, after one retry</span
           >
-          <span class="ico warn" aria-hidden="true"
-            ><svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path
-                d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"
-              />
-              <path d="M12 9v4M12 17v.01" /></svg
-          ></span>
           <h2 id="e4">Learning Commons didn't respond</h2>
           <p>
             We tried twice. Edu-Canvas won't draft from memory alone, so upload
@@ -267,23 +269,24 @@
         </section>
 
         <section class="card state" aria-labelledby="e5">
-          <span class="label">Error · PDF text incomplete</span>
-          <span class="ico warn" aria-hidden="true"
-            ><svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path
-                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-              />
-              <path d="M14 2v6h6M12 12v4M12 19v.01" /></svg
-          ></span>
+          <span class="label"
+            ><span class="ico warn" aria-hidden="true"
+              ><svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                />
+                <path d="M14 2v6h6M12 12v4M12 19v.01" /></svg></span
+            >Error · PDF text incomplete</span
+          >
           <h2 id="e5">
             Pages 3–4 of “Fractions unit.pdf” have no readable text
           </h2>
@@ -298,28 +301,29 @@
         </section>
 
         <section class="card state" aria-labelledby="e6">
-          <span class="label">Error · service unavailable (503)</span>
-          <span class="ico idle" aria-hidden="true"
-            ><svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M21 12a9 9 0 1 1-3-6.7L21 8" />
-              <path d="M21 3v5h-5" /></svg
-          ></span>
+          <span class="label"
+            ><span class="ico idle" aria-hidden="true"
+              ><svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M21 12a9 9 0 1 1-3-6.7L21 8" />
+                <path d="M21 3v5h-5" /></svg></span
+            >Error · service unavailable (503)</span
+          >
           <h2 id="e6">The workspace is restarting</h2>
           <p>
             Your drafts are safe. This usually takes under a minute; we'll
             reload when it's back.
           </p>
           <div class="acts">
-            <button class="btn dark">Reload now</button
+            <button class="btn secondary">Reload now</button
             ><span class="small muted" style="align-self: center"
               >Checking again in 15 s</span
             >

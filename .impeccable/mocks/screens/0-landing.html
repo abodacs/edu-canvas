@@ -73,15 +73,17 @@
       .mini {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 10px;
+        column-gap: var(--s-5);
       }
       .mini div {
-        padding: 12px;
-        border: 1px solid var(--line);
-        border-radius: var(--r-field);
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--s-2);
+        padding-block: var(--s-3);
+        border-block-start: 1px solid var(--line);
         font-size: var(--fs-meta);
-        display: grid;
-        gap: 6px;
       }
       .loop {
         inline-size: min(100% - 48px, 1200px);
@@ -200,8 +202,8 @@
           </h1>
           <p class="lede">
             For Grades 3–6 teachers. Write one sentence, get four lesson
-            variants checked against the standard and a safety gate, and approve
-            the one your students see.
+            variants checked against the standard and a safety gate, and assign
+            one to each learner.
           </p>
           <div class="cta">
             <a class="btn" href="5-sign-in.html">Start with one objective</a

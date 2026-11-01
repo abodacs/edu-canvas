@@ -86,6 +86,21 @@
           animation: none;
         }
       }
+      .legend {
+        list-style: none;
+        padding: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--s-2) var(--s-5);
+        margin-block-start: var(--s-4);
+        font-size: var(--fs-secondary);
+        color: var(--ink-2);
+      }
+      .legend li {
+        display: flex;
+        align-items: center;
+        gap: var(--s-2);
+      }
       .mini-field {
         block-size: 40px;
         border: 1px solid var(--line-strong);
@@ -133,6 +148,13 @@
         The states from the route inventory that the full screens don't already
         show, one tile each, in the same visual language.
       </p>
+      <ul class="legend" aria-label="What notice colours mean">
+        <li><span class="pill stop">Red</span> Something you can fix now</li>
+        <li>
+          <span class="pill warn">Amber</span> Wait, or check something first
+        </li>
+        <li><span class="pill idle">Grey</span> Nothing to do on your side</li>
+      </ul>
 
       <section class="route" aria-labelledby="r-login">
         <header>
@@ -279,7 +301,9 @@
             <span class="name">unavailable</span>
             <h3>The workspace is restarting</h3>
             <p>Your drafts are safe. We'll reload when it's back.</p>
-            <div class="row"><button class="btn dark">Reload now</button></div>
+            <div class="row">
+              <button class="btn secondary">Reload now</button>
+            </div>
           </div>
           <div class="card t">
             <span class="name">unauthenticated → /login</span>
@@ -328,7 +352,7 @@
               shared instead.
             </p>
             <div class="row">
-              <a class="btn dark" href="7-learn.html">Go to my lesson</a
+              <a class="btn secondary" href="7-learn.html">Go to my lesson</a
               ><a class="ghost" href="#">Sign out</a>
             </div>
           </div>
@@ -363,7 +387,7 @@
               instead.
             </p>
             <div class="row">
-              <a class="btn dark" href="2-review.html">Open Review</a>
+              <a class="btn secondary" href="2-review.html">Open Review</a>
             </div>
           </div>
           <div class="card t">
@@ -413,7 +437,7 @@
             <span class="name">401</span>
             <h3>Sign in to see this preview</h3>
             <div class="row">
-              <a class="btn dark" href="5-sign-in.html">Sign in</a>
+              <a class="btn secondary" href="5-sign-in.html">Sign in</a>
             </div>
           </div>
           <div class="card t">

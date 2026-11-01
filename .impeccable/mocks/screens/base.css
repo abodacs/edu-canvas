@@ -32,6 +32,7 @@
   --ink-3: #6f695f;
   --line: #e6e1d8;
   --line-strong: #d6cfc3;
+  --line-control: #938c80;
   --clay: #b4532f;
   --clay-ink: #ffffff;
   --clay-soft: #f6e6de;
@@ -319,12 +320,13 @@ h1 em {
   color: var(--ink-3);
   cursor: not-allowed;
 }
-.btn.dark {
-  background: var(--ink);
-  color: var(--ground);
+.btn.secondary {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--line-control);
 }
-.btn.dark:hover {
-  background: #000;
+.btn.secondary:hover {
+  background: var(--sunk);
 }
 .ghost {
   display: inline-flex;
@@ -333,7 +335,7 @@ h1 em {
   gap: var(--s-2);
   min-block-size: 36px;
   padding: var(--s-1) var(--s-3);
-  border: 1px solid var(--line-strong);
+  border: 1px solid var(--line-control);
   border-radius: 999px;
   background: var(--surface);
   color: var(--ink);
@@ -375,7 +377,7 @@ h1 em {
   min-block-size: 36px;
   min-inline-size: 36px;
   padding: var(--s-1) var(--s-3);
-  border: 1px solid var(--line-strong);
+  border: 1px solid var(--line-control);
   border-radius: 999px;
   background: var(--surface);
   font-size: var(--fs-secondary);
@@ -520,10 +522,8 @@ h1 em {
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: start;
   gap: var(--s-3) var(--s-4);
-  padding: var(--s-4);
-  border: 1px solid var(--line);
-  border-radius: var(--r-field);
-  background: var(--sunk);
+  padding-block: var(--s-4) 0;
+  border-block-start: 1px solid var(--line);
 }
 .match small {
   display: block;
@@ -709,13 +709,17 @@ h1 em {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .shimmer {
+  .shimmer,
+  .spin {
     animation: none;
   }
-  *,
-  *::before,
-  *::after {
-    transition-duration: 0.01ms !important;
+  .btn:active,
+  .item:active {
+    transform: none;
+  }
+  .btn,
+  .item {
+    transition-property: background-color, border-color, color;
   }
 }
 /* Windows high contrast: keep selection and focus visible without our colours */
@@ -732,11 +736,18 @@ h1 em {
 }
 @media (width <= 720px) {
   .bar {
-    gap: var(--s-4);
-    padding-inline: var(--s-4);
+    flex-wrap: wrap;
+    gap: var(--s-2) var(--s-4);
+    block-size: auto;
+    padding: var(--s-2) var(--s-4) 0;
   }
   .bar nav {
-    display: none;
+    order: 3;
+    inline-size: calc(100% + 2 * var(--s-4));
+    margin-inline: calc(-1 * var(--s-4));
+    padding: 0 var(--s-4) var(--s-2);
+    overflow-x: auto;
+    scrollbar-width: none;
   }
   .who .name {
     display: none;
@@ -776,4 +787,42 @@ h1 em {
   .table td.none {
     display: none;
   }
+}
+
+/* Illustrations: colours come from tokens, never literals. */
+.fig .on {
+  fill: var(--clay);
+}
+.fig .off {
+  fill: var(--surface);
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+.fig .cut {
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+.fig .track {
+  stroke: var(--line-strong);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.fig .knob {
+  fill: var(--surface);
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+/* Status words that sit beside a visible label but must reach screen readers too. */
+.status-word {
+  font-size: var(--fs-micro);
+  font-weight: 600;
+}
+.status-word.ok {
+  color: var(--ok);
+}
+.status-word.warn {
+  color: var(--warn);
+}
+.status-word.stop {
+  color: var(--stop);
 }

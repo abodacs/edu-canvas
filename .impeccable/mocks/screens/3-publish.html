@@ -6,6 +6,16 @@
     <title>3 · Publish and assign (sketch)</title>
     <link rel="stylesheet" href="base.css" />
     <style>
+      .crumbs {
+        display: flex;
+        gap: var(--s-2);
+        font-size: var(--fs-meta);
+        color: var(--ink-2);
+        margin-block-end: var(--s-3);
+      }
+      .crumbs a {
+        text-decoration: none;
+      }
       .steps {
         list-style: none;
         padding: 0;
@@ -13,15 +23,12 @@
       }
       .steps li {
         display: grid;
-        grid-template-columns: 28px 1fr auto;
-        gap: 12px;
+        grid-template-columns: 28px minmax(0, 1fr) auto;
+        gap: var(--s-3);
         align-items: center;
-        padding: 14px 24px;
+        padding: var(--s-3) var(--s-5);
         border-block-start: 1px solid var(--line);
         font-size: var(--fs-secondary);
-      }
-      .steps li:first-child {
-        border: 0;
       }
       .tick {
         inline-size: 22px;
@@ -34,59 +41,55 @@
       }
       .tick.no {
         background: var(--sunk);
-        color: var(--ink-3);
+        color: var(--ink-2);
       }
-      .learner {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 10px;
+      .assign th:first-child,
+      .assign td:first-child {
+        padding-inline-start: var(--s-5);
       }
-      .learner label {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 12px 14px;
-        border: 1px solid var(--line);
+      .assign select {
+        inline-size: 100%;
+        max-inline-size: 22rem;
+        min-block-size: 44px;
+        padding-inline: var(--s-3);
+        border: 1px solid var(--line-control);
         border-radius: var(--r-field);
         background: var(--surface);
-        font-size: var(--fs-secondary);
-        cursor: pointer;
+        font-size: var(--fs-body);
       }
-      .learner label:has(input:checked) {
-        border-color: color-mix(in oklch, var(--clay) 50%, var(--line));
-        background: var(--clay-soft);
-      }
-      .learner input {
-        accent-color: var(--clay);
+      .summary {
+        padding: var(--s-4) var(--s-5);
+        border-block-start: 1px solid var(--line);
       }
       .done {
         display: grid;
-        gap: 14px;
-        padding: 28px 24px;
+        gap: var(--s-3);
+        padding: var(--s-5);
       }
-      .linkbox {
+      .links {
+        list-style: none;
+        padding: 0;
+        display: grid;
+        gap: var(--s-2);
+      }
+      .links li {
         display: flex;
-        gap: 8px;
+        flex-wrap: wrap;
+        gap: var(--s-2) var(--s-3);
         align-items: center;
-        padding: 10px 12px;
-        border: 1px solid var(--line);
+        padding: var(--s-2) var(--s-3);
         border-radius: var(--r-field);
         background: var(--ground);
         font-size: var(--fs-secondary);
-        overflow: hidden;
       }
-      .linkbox code {
+      .links code {
         flex: 1;
+        min-inline-size: 12rem;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        font: 500 var(--fs-meta)/1.4 var(--sans);
+        font: 500 var(--fs-meta) / 1.4 var(--sans);
         color: var(--ink-2);
-      }
-      @media (width <= 720px) {
-        .learner {
-          grid-template-columns: 1fr;
-        }
       }
     </style>
   </head>
@@ -108,8 +111,7 @@
         >Edu-Canvas</a
       >
       <nav aria-label="Workspace">
-        <a href="1-studio.html">Studio</a
-        ><a href="2-review.html" aria-current="page">Review</a
+        <a href="1-studio.html">Studio</a><a href="2-review.html">Review</a
         ><a href="4-dashboard.html">Lessons</a>
       </nav>
       <span class="who"
@@ -118,19 +120,23 @@
       >
     </header>
     <main id="main" class="page">
+      <nav class="crumbs" aria-label="Steps">
+        <a href="2-review.html">Review</a><span aria-hidden="true">›</span
+        ><span aria-current="step">Publish and assign</span>
+      </nav>
       <h1>Publish equivalent fractions</h1>
       <p class="lede">
-        Publishing freezes this lesson as version 2. Students see only what you
-        approved here.
+        Each learner sees one variant: the one you assign below. Publishing
+        freezes the approved versions so they can't change under a student.
       </p>
 
-      <section class="card lift" aria-labelledby="ready-h">
+      <form class="card lift" aria-labelledby="ready-h">
         <h2
           id="ready-h"
           class="title section"
           style="padding-block-end: var(--s-2)"
         >
-          Before you publish
+          Approved variants
         </h2>
         <ol class="steps">
           <li>
@@ -146,8 +152,8 @@
                 stroke-linejoin="round"
               >
                 <path d="M20 6 9 17l-5-5" /></svg></span
-            ><span>Variant A · Worked example approved</span
-            ><span class="pill ok">v2</span>
+            ><span>A · Worked example</span
+            ><span class="pill ok">Approved · v2</span>
           </li>
           <li>
             <span class="tick" aria-hidden="true"
@@ -162,9 +168,8 @@
                 stroke-linejoin="round"
               >
                 <path d="M20 6 9 17l-5-5" /></svg></span
-            ><span
-              >Variant B · Guided activity approved, warning acknowledged</span
-            ><span class="pill ok">v1</span>
+            ><span>B · Guided activity · warning acknowledged</span
+            ><span class="pill ok">Approved · v1</span>
           </li>
           <li>
             <span class="tick no" aria-hidden="true"
@@ -179,9 +184,8 @@
               >
                 <path d="M6 12h12" /></svg></span
             ><span
-              >Variant C · Independent check is blocked and won't be
-              published</span
-            ><span class="pill stop">Excluded</span>
+              >C · Independent check is blocked, so no learner can get it</span
+            ><span class="pill stop">Not available</span>
           </li>
           <li>
             <span class="tick" aria-hidden="true"
@@ -196,69 +200,115 @@
                 stroke-linejoin="round"
               >
                 <path d="M20 6 9 17l-5-5" /></svg></span
-            ><span>Variant D · Matching approved</span
-            ><span class="pill ok">v1</span>
-          </li>
-          <li>
-            <span class="tick" aria-hidden="true"
-              ><svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="3"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M20 6 9 17l-5-5" /></svg></span
-            ><span>Learning path checked</span><span></span>
+            ><span>D · Matching</span><span class="pill ok">Approved · v1</span>
           </li>
         </ol>
-        <div class="section" style="border-block-start: 1px solid var(--line)">
-          <h2 id="as" class="title">Assign to one learner</h2>
-          <p class="small muted" style="margin-block: var(--s-1) var(--s-3)">
-            Seeded synthetic accounts only, until consent and data residency are
-            approved.
-          </p>
-          <div class="learner" role="radiogroup" aria-labelledby="as">
-            <label
-              ><input type="radio" name="l" checked />Learner 01 · Maple</label
-            >
-            <label><input type="radio" name="l" />Learner 02 · Cedar</label>
-            <label><input type="radio" name="l" />Learner 03 · Birch</label>
-          </div>
-        </div>
+
+        <h2
+          id="as"
+          class="title section"
+          style="
+            border-block-start: 1px solid var(--line);
+            padding-block-end: var(--s-1);
+          "
+        >
+          Assign one variant to each learner
+        </h2>
+        <p
+          class="small muted"
+          style="padding-inline: var(--s-5); margin-block-end: var(--s-3)"
+        >
+          Seeded synthetic accounts only, until consent and data residency are
+          approved.
+        </p>
+        <table class="assign table" aria-labelledby="as">
+          <thead>
+            <tr>
+              <th scope="col">Learner</th>
+              <th scope="col">Variant they will see</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Maple</td>
+              <td>
+                <label class="sr-only" for="v-maple">Variant for Maple</label
+                ><select id="v-maple">
+                  <option>D · Matching (v1)</option>
+                  <option>A · Worked example (v2)</option>
+                  <option>B · Guided activity (v1)</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Cedar</td>
+              <td>
+                <label class="sr-only" for="v-cedar">Variant for Cedar</label
+                ><select id="v-cedar">
+                  <option>D · Matching (v1)</option>
+                  <option>A · Worked example (v2)</option>
+                  <option>B · Guided activity (v1)</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Birch</td>
+              <td>
+                <label class="sr-only" for="v-birch">Variant for Birch</label
+                ><select id="v-birch">
+                  <option>Not assigned</option>
+                  <option>D · Matching (v1)</option>
+                  <option>A · Worked example (v2)</option>
+                  <option>B · Guided activity (v1)</option>
+                </select>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="summary" id="pub-sum">
+          <b>You're about to publish:</b> D · Matching v1 to Maple and Cedar.
+          Birch gets nothing yet. A and B stay approved, ready to assign later.
+        </p>
         <div class="foot">
           <span class="small muted"
             >You can unpublish later. Published versions are never edited.</span
-          ><button class="btn" style="margin-inline-start: auto">
-            Publish and assign
+          >
+          <button
+            class="btn"
+            style="margin-inline-start: auto"
+            aria-describedby="pub-sum"
+          >
+            Publish to 2 learners
           </button>
         </div>
-      </section>
+      </form>
 
-      <section
-        class="card done"
-        style="margin-block-start: 24px"
-        aria-labelledby="done-h"
-        aria-live="polite"
-      >
-        <p class="pill ok">Published · version 2</p>
-        <h2 id="done-h" class="h2">Maple can start the lesson</h2>
-        <div class="linkbox">
-          <code
-            >edu-canvas.app/learn?assignment=a-7f3c&amp;variant=matching</code
-          ><button class="ghost">Copy link</button>
-        </div>
+      <p class="synthetic" style="margin-block: var(--s-7) var(--s-2)">
+        State after publishing
+      </p>
+      <section class="card done" aria-labelledby="done-h" aria-live="polite">
+        <p class="pill ok">Published · D · Matching v1</p>
+        <h2 id="done-h" class="h2">Maple and Cedar can start</h2>
+        <ul class="links">
+          <li>
+            <b>Maple</b
+            ><code
+              >edu-canvas.app/learn?assignment=a-7f3c&amp;variant=matching</code
+            ><button class="ghost">Copy link</button>
+          </li>
+          <li>
+            <b>Cedar</b
+            ><code
+              >edu-canvas.app/learn?assignment=a-91d2&amp;variant=matching</code
+            ><button class="ghost">Copy link</button>
+          </li>
+        </ul>
         <p class="small muted">
-          After Maple presses Done, the score and the reason for the next step
-          appear in Lessons.
+          After a learner presses Done, their score and the reason for the next
+          step appear in Lessons.
         </p>
       </section>
-      <p class="synthetic">
-        Sketch. Learner names and the link are illustrative.
-      </p>
+      <p class="synthetic">Sketch. Learner names and links are illustrative.</p>
     </main>
   </body>
 </html>

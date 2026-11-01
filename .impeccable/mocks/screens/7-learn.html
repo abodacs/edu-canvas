@@ -13,7 +13,7 @@
         inline-size: min(100% - 32px, 760px);
       }
       .task {
-        font: 500 clamp(1.7rem, 3.4vw, 2.3rem)/1.2 var(--serif);
+        font: 500 clamp(1.7rem, 1.3rem + 1.6vw, 2.3rem) / 1.2 var(--serif);
         letter-spacing: -0.015em;
         max-inline-size: 24ch;
       }
@@ -21,6 +21,7 @@
         margin-block-start: var(--s-3);
         color: var(--ink-2);
         font-size: var(--fs-body-lg);
+        max-inline-size: 52ch;
       }
       .boardl {
         display: grid;
@@ -32,22 +33,22 @@
         font-size: var(--fs-body);
         font-weight: 600;
         color: var(--ink-2);
-        margin-block-end: 10px;
+        margin-block-end: var(--s-3);
       }
       .col ul {
         list-style: none;
         padding: 0;
         display: grid;
-        gap: 10px;
+        gap: var(--s-3);
       }
       .item {
         display: flex;
         align-items: center;
-        gap: 14px;
+        gap: var(--s-3);
         inline-size: 100%;
         min-block-size: 64px;
-        padding: 12px 16px;
-        border: 1.5px solid var(--line-strong);
+        padding: var(--s-3) var(--s-4);
+        border: 1.5px solid var(--line-control);
         border-radius: 12px;
         background: var(--surface);
         font-size: var(--fs-lead);
@@ -64,23 +65,25 @@
       .item:active {
         transform: scale(0.98);
       }
+      /* Chosen, waiting for a partner. */
       .item[aria-pressed="true"] {
         border-color: var(--clay);
         background: var(--clay-soft);
         box-shadow: 0 0 0 2px var(--clay);
       }
+      /* Paired: neutral and numbered. Not green: nothing is graded until Done. */
       .item.paired {
-        border-color: color-mix(in oklch, var(--ok) 50%, var(--line));
-        background: var(--ok-soft);
-        color: var(--ok);
+        border-color: var(--ink);
+        background: var(--sunk);
       }
       .item .n {
         margin-inline-start: auto;
         font-size: var(--fs-meta);
         font-weight: 700;
-        padding: 2px 8px;
+        padding: 2px var(--s-2);
         border-radius: 999px;
-        background: var(--surface);
+        background: var(--ink);
+        color: var(--ground);
       }
       .done {
         display: flex;
@@ -92,7 +95,7 @@
         border-block-start: 1px solid var(--line);
       }
       .done .btn {
-        padding: 14px 26px;
+        padding-inline: var(--s-6);
         font-size: var(--fs-body-lg);
       }
       .result {
@@ -101,7 +104,18 @@
         gap: var(--s-3);
       }
       .result b {
-        font: 500 var(--fs-section)/1.2 var(--serif);
+        font: 500 var(--fs-title) / 1.3 var(--serif);
+      }
+      .miss {
+        display: grid;
+        gap: var(--s-3);
+        padding: var(--s-4);
+        border-radius: var(--r-field);
+        background: var(--sunk);
+      }
+      .miss svg {
+        max-inline-size: 100%;
+        block-size: auto;
       }
       @media (width <= 560px) {
         .boardl {
@@ -133,7 +147,8 @@
         Match each fraction to the one that names the same amount.
       </h1>
       <p class="how">
-        Tap a fraction on the left, then its partner on the right.
+        Tap a fraction, then tap the one that matches it. Tap a pair again to
+        undo it.
       </p>
       <div class="boardl">
         <section class="col" aria-labelledby="c1">
@@ -142,49 +157,81 @@
             <li>
               <button
                 class="item paired"
-                aria-pressed="false"
-                aria-label="1/2, paired with 2/4"
+                aria-label="1/2, in pair 1 with 2/4. Tap to undo the pair."
               >
-                1/2 <span class="n">Pair 1</span>
+                1/2 <span class="n" aria-hidden="true">Pair 1</span>
               </button>
             </li>
             <li><button class="item" aria-pressed="true">1/3</button></li>
-            <li><button class="item">3/4</button></li>
-            <li><button class="item">2/5</button></li>
+            <li><button class="item" aria-pressed="false">3/4</button></li>
+            <li><button class="item" aria-pressed="false">2/5</button></li>
           </ul>
         </section>
         <section class="col" aria-labelledby="c2">
           <h2 id="c2">Same amount</h2>
           <ul>
-            <li><button class="item">6/8</button></li>
+            <li><button class="item" aria-pressed="false">6/8</button></li>
             <li>
-              <button class="item paired" aria-label="2/4, paired with 1/2">
-                2/4 <span class="n">Pair 1</span>
+              <button
+                class="item paired"
+                aria-label="2/4, in pair 1 with 1/2. Tap to undo the pair."
+              >
+                2/4 <span class="n" aria-hidden="true">Pair 1</span>
               </button>
             </li>
-            <li><button class="item">4/10</button></li>
-            <li><button class="item">2/6</button></li>
+            <li><button class="item" aria-pressed="false">4/10</button></li>
+            <li><button class="item" aria-pressed="false">2/6</button></li>
           </ul>
         </section>
       </div>
       <div class="done">
-        <button class="btn" disabled>Done</button
-        ><span class="muted">1 of 4 pairs made</span
+        <button class="btn" disabled aria-describedby="left">Done</button
+        ><span class="muted" id="left">Make 3 more pairs to finish</span
         ><span class="muted" role="status" style="margin-inline-start: auto"
           >Saved</span
         >
       </div>
 
-      <p class="synthetic" style="margin-block: var(--s-6) var(--s-2)">
+      <p class="synthetic" style="margin-block: var(--s-7) var(--s-2)">
         State after Done
       </p>
       <section class="card result" aria-labelledby="r" aria-live="polite">
-        <b id="r">You matched 3 of 4.</b>
+        <b id="r">You matched 3 of 4. Here's the one to look at again.</b>
+        <div class="miss">
+          <svg
+            class="fig"
+            width="420"
+            height="92"
+            viewBox="0 0 420 92"
+            role="img"
+            aria-label="Two bars of the same length: 2 of 5 parts shaded, and 4 of 10 parts shaded. The shaded parts end at the same place."
+          >
+            <rect class="off" x="10" y="8" width="400" height="30" rx="4" />
+            <rect class="on" x="10" y="8" width="160" height="30" rx="4" />
+            <line class="cut" x1="90" y1="8" x2="90" y2="38" />
+            <line class="cut" x1="170" y1="8" x2="170" y2="38" />
+            <line class="cut" x1="250" y1="8" x2="250" y2="38" />
+            <line class="cut" x1="330" y1="8" x2="330" y2="38" />
+            <rect class="off" x="10" y="54" width="400" height="30" rx="4" />
+            <rect class="on" x="10" y="54" width="160" height="30" rx="4" />
+            <line class="cut" x1="50" y1="54" x2="50" y2="84" />
+            <line class="cut" x1="90" y1="54" x2="90" y2="84" />
+            <line class="cut" x1="130" y1="54" x2="130" y2="84" />
+            <line class="cut" x1="170" y1="54" x2="170" y2="84" />
+            <line class="cut" x1="210" y1="54" x2="210" y2="84" />
+            <line class="cut" x1="250" y1="54" x2="250" y2="84" />
+            <line class="cut" x1="290" y1="54" x2="290" y2="84" />
+            <line class="cut" x1="330" y1="54" x2="330" y2="84" />
+            <line class="cut" x1="370" y1="54" x2="370" y2="84" />
+          </svg>
+          <p>
+            2/5 and 4/10 are the same amount. Cut each fifth in half and you get
+            tenths: 2 fifths become 4 tenths.
+          </p>
+        </div>
         <p class="muted">
-          2/5 and 4/10 name the same amount: both are 4 tenths. Next, you'll
-          compare fractions with different bottoms.
+          Your teacher will see this and choose what comes next.
         </p>
-        <div><button class="btn dark">Next activity</button></div>
       </section>
       <p class="synthetic">Sketch. Activity content is illustrative.</p>
     </main>

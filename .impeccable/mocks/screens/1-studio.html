@@ -53,13 +53,26 @@
       .opt.wide {
         grid-column: 1 / -1;
       }
+      .studio-h {
+        font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.375rem);
+      }
+      .count {
+        text-align: end;
+        color: var(--ink-3);
+        margin-block-start: var(--s-1);
+      }
+      .board-why {
+        color: var(--ink-2);
+        margin-block-end: var(--s-4);
+        max-inline-size: 62ch;
+      }
       .board-head {
         display: flex;
         flex-wrap: wrap;
         align-items: baseline;
         justify-content: space-between;
         gap: 8px 16px;
-        margin-block: 72px 18px;
+        margin-block: var(--s-7) var(--s-2);
       }
       @media (width <= 720px) {
         .opts {
@@ -96,13 +109,10 @@
       >
     </header>
     <main id="main" class="page">
-      <h1>
-        Turn one objective into a lesson your students <em>understand</em>.
-      </h1>
+      <h1 class="studio-h">New lesson</h1>
       <p class="lede">
-        Describe what students should practice. Edu-Canvas checks it against the
-        standard, drafts four variants, and nothing reaches a student until you
-        approve it.
+        One learning objective in, four ways to teach it out. Nothing reaches a
+        student until you approve it.
       </p>
 
       <form class="card lift" aria-label="New lesson">
@@ -111,9 +121,11 @@
           <textarea
             id="objective"
             maxlength="500"
+            aria-describedby="count"
             placeholder="e.g. equivalent fractions for grade 4"
           >
 Students explain why 2/4 and 1/2 name the same amount using fraction models.</textarea>
+          <p class="count small num" id="count">78 of 500 characters</p>
           <div class="attach">
             <button type="button" class="ghost">
               <svg
@@ -147,13 +159,7 @@ Students explain why 2/4 and 1/2 name the same amount using fraction models.</te
           </div>
           <div class="opt">
             <h2 id="l">Language</h2>
-            <div class="chips" role="group" aria-labelledby="l">
-              <button type="button" class="chip" aria-pressed="true">
-                English</button
-              ><button type="button" class="chip" disabled>
-                Arabic · later
-              </button>
-            </div>
+            <p id="l-val">English</p>
           </div>
           <div class="opt wide">
             <h2>Matched standard</h2>
@@ -165,8 +171,9 @@ Students explain why 2/4 and 1/2 name the same amount using fraction models.</te
                   visual fraction models.
                 </p>
                 <small
-                  >Learning Commons · retrieved 1 Nov 2026 · high-confidence
-                  match</small
+                  >Matched in Learning Commons, the public standards library
+                  Edu-Canvas drafts from · retrieved 1 Nov 2026 ·
+                  high-confidence match</small
                 >
                 <ul class="checks">
                   <li>
@@ -240,7 +247,6 @@ Students explain why 2/4 and 1/2 name the same amount using fraction models.</te
               <path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg
             >Draft stays private until approved</span
           >
-          <span class="small num" style="color: var(--ink-3)">78/500</span>
           <button type="submit" class="btn" style="margin-inline-start: auto">
             Create lesson<svg
               width="16"
@@ -265,6 +271,10 @@ Students explain why 2/4 and 1/2 name the same amount using fraction models.</te
           <h2 class="h2" id="board-h">Four variants to review</h2>
           <p class="small muted num">3 of 4 ready · drafted in 41 s</p>
         </div>
+        <p class="board-why">
+          Four ways into the same objective. Approve the ones you'd use; when
+          you publish, each learner gets one.
+        </p>
         <p class="notice warn" role="status" style="margin-block-end: 16px">
           <svg
             width="16"
@@ -286,80 +296,28 @@ Students explain why 2/4 and 1/2 name the same amount using fraction models.</te
             <figure>
               <span class="tag">A · Worked example</span>
               <svg
+                class="fig"
                 width="260"
                 height="86"
                 viewBox="0 0 260 86"
                 role="img"
                 aria-label="Two equal bars: one half shaded, and two quarters shaded"
               >
+                <rect class="off" x="10" y="8" width="240" height="28" rx="4" />
+                <rect class="on" x="10" y="8" width="120" height="28" rx="4" />
+                <line class="cut" x1="130" y1="8" x2="130" y2="36" />
                 <rect
-                  x="10"
-                  y="8"
-                  width="240"
-                  height="28"
-                  rx="4"
-                  fill="#fff"
-                  stroke="#1F1D1A"
-                  stroke-width="1.5"
-                />
-                <rect
-                  x="10"
-                  y="8"
-                  width="120"
-                  height="28"
-                  rx="4"
-                  fill="#B4532F"
-                />
-                <line
-                  x1="130"
-                  y1="8"
-                  x2="130"
-                  y2="36"
-                  stroke="#1F1D1A"
-                  stroke-width="1.5"
-                />
-                <rect
+                  class="off"
                   x="10"
                   y="50"
                   width="240"
                   height="28"
                   rx="4"
-                  fill="#fff"
-                  stroke="#1F1D1A"
-                  stroke-width="1.5"
                 />
-                <rect
-                  x="10"
-                  y="50"
-                  width="120"
-                  height="28"
-                  rx="4"
-                  fill="#B4532F"
-                />
-                <line
-                  x1="70"
-                  y1="50"
-                  x2="70"
-                  y2="78"
-                  stroke="#1F1D1A"
-                  stroke-width="1.5"
-                />
-                <line
-                  x1="130"
-                  y1="50"
-                  x2="130"
-                  y2="78"
-                  stroke="#1F1D1A"
-                  stroke-width="1.5"
-                />
-                <line
-                  x1="190"
-                  y1="50"
-                  x2="190"
-                  y2="78"
-                  stroke="#1F1D1A"
-                  stroke-width="1.5"
-                />
+                <rect class="on" x="10" y="50" width="120" height="28" rx="4" />
+                <line class="cut" x1="70" y1="50" x2="70" y2="78" />
+                <line class="cut" x1="130" y1="50" x2="130" y2="78" />
+                <line class="cut" x1="190" y1="50" x2="190" y2="78" />
               </svg>
             </figure>
             <div class="body">
@@ -378,6 +336,7 @@ Students explain why 2/4 and 1/2 name the same amount using fraction models.</te
             <figure>
               <span class="tag">B · Guided activity</span>
               <svg
+                class="fig"
                 width="220"
                 height="90"
                 viewBox="0 0 220 90"
@@ -385,45 +344,21 @@ Students explain why 2/4 and 1/2 name the same amount using fraction models.</te
                 aria-label="An adjustable fraction diagram with a slider"
               >
                 <rect
+                  class="off"
                   x="10"
                   y="10"
                   width="200"
                   height="34"
                   rx="4"
-                  fill="#fff"
-                  stroke="#1F1D1A"
-                  stroke-width="1.5"
                 />
-                <rect
-                  x="10"
-                  y="10"
-                  width="100"
-                  height="34"
-                  rx="4"
-                  fill="#B4532F"
-                />
-                <line x1="43" y1="10" x2="43" y2="44" stroke="#1F1D1A" />
-                <line x1="77" y1="10" x2="77" y2="44" stroke="#1F1D1A" />
-                <line x1="110" y1="10" x2="110" y2="44" stroke="#1F1D1A" />
-                <line x1="143" y1="10" x2="143" y2="44" stroke="#1F1D1A" />
-                <line x1="177" y1="10" x2="177" y2="44" stroke="#1F1D1A" />
-                <line
-                  x1="10"
-                  y1="70"
-                  x2="210"
-                  y2="70"
-                  stroke="#D6CFC3"
-                  stroke-width="4"
-                  stroke-linecap="round"
-                />
-                <circle
-                  cx="110"
-                  cy="70"
-                  r="9"
-                  fill="#fff"
-                  stroke="#1F1D1A"
-                  stroke-width="1.5"
-                />
+                <rect class="on" x="10" y="10" width="100" height="34" rx="4" />
+                <line class="cut" x1="43" y1="10" x2="43" y2="44" />
+                <line class="cut" x1="77" y1="10" x2="77" y2="44" />
+                <line class="cut" x1="110" y1="10" x2="110" y2="44" />
+                <line class="cut" x1="143" y1="10" x2="143" y2="44" />
+                <line class="cut" x1="177" y1="10" x2="177" y2="44" />
+                <line class="track" x1="10" y1="70" x2="210" y2="70" />
+                <circle class="knob" cx="110" cy="70" r="9" />
               </svg>
             </figure>
             <div class="body">

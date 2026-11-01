@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>4 · Lessons dashboard (sketch)</title>
+    <title>4 · Lessons (sketch)</title>
     <link rel="stylesheet" href="base.css" />
     <style>
       .top {
@@ -11,83 +11,64 @@
         flex-wrap: wrap;
         align-items: flex-end;
         justify-content: space-between;
-        gap: 16px;
-      }
-      .summary {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: var(--s-4);
-        margin-block-end: var(--s-6);
       }
-      .sum {
-        padding: 18px 20px;
+      .needs {
+        list-style: none;
+        padding: 0;
+        display: grid;
       }
-      .sum b {
+      .needs li {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: var(--s-1) var(--s-4);
+        align-items: center;
+        padding-block: var(--s-4);
+        border-block-start: 1px solid var(--line);
+      }
+      .needs b {
         display: block;
-        font: 500 var(--fs-stat)/1.1 var(--serif);
-        font-variant-numeric: tabular-nums;
+        font-weight: 600;
       }
-      .sum span {
-        font-size: var(--fs-secondary);
+      .needs span {
         color: var(--ink-2);
+        font-size: var(--fs-secondary);
       }
-      .sum .next {
-        display: block;
-        margin-block-start: 10px;
+      .section-h {
+        margin-block: var(--s-7) var(--s-3);
       }
       .filters {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        gap: 8px;
-        padding: 14px 16px;
+        gap: var(--s-2);
+        padding: var(--s-4);
         border-block-end: 1px solid var(--line);
       }
       .search {
         margin-inline-start: auto;
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 7px 12px;
-        border: 1px solid var(--line);
+        gap: var(--s-2);
+        min-block-size: 36px;
+        padding: 0 var(--s-3);
+        border: 1px solid var(--line-control);
         border-radius: 999px;
-        background: var(--ground);
+        background: var(--surface);
         color: var(--ink-3);
         font-size: var(--fs-meta);
         min-inline-size: 220px;
       }
-      .table-title {
-        padding: var(--s-5) var(--s-5) var(--s-2);
-      }
       .lesson b {
-        display: block;
-        font-weight: 600;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
+        font-weight: 600;
       }
       .lesson span {
         font-size: var(--fs-meta);
         color: var(--ink-2);
-      }
-      .score {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      .bar-track {
-        inline-size: 90px;
-        block-size: 6px;
-        border-radius: 999px;
-        background: var(--sunk-2);
-        overflow: hidden;
-      }
-      .bar-track i {
-        display: block;
-        block-size: 100%;
-        background: var(--ok);
-        border-radius: inherit;
       }
       .reason {
         max-inline-size: 34ch;
@@ -95,12 +76,15 @@
         color: var(--ink-2);
       }
       @media (width <= 720px) {
-        .summary {
-          grid-template-columns: 1fr;
-        }
         .search {
           margin: 0;
           inline-size: 100%;
+        }
+        .needs li {
+          grid-template-columns: 1fr;
+        }
+        .needs li > a {
+          justify-self: start;
         }
       }
     </style>
@@ -136,7 +120,7 @@
         <div>
           <h1>Your lessons</h1>
           <p class="lede">
-            What's waiting for you, what's live, and how each learner did.
+            Start with what needs you. Everything else is below.
           </p>
         </div>
         <a href="1-studio.html" class="btn"
@@ -154,25 +138,46 @@
         ></a>
       </div>
 
-      <div class="summary">
-        <section class="card sum">
-          <b>2</b><span>drafts waiting for your review</span
-          ><a class="link next" href="2-review.html">Continue review</a>
-        </section>
-        <section class="card sum">
-          <b>3</b><span>lessons published and assigned</span>
-        </section>
-        <section class="card sum">
-          <b>1</b><span>learner result with a next step to check</span
-          ><a class="link next" href="#r1">See Maple's result</a>
-        </section>
-      </div>
+      <section aria-labelledby="needs-h">
+        <h2 id="needs-h" class="h3" style="margin-block-end: var(--s-1)">
+          Needs you · 3
+        </h2>
+        <ul class="needs">
+          <li>
+            <div>
+              <b>Review 4 drafts</b
+              ><span>Fractions on a number line · 3.NF.A.2 · 1 warning</span>
+            </div>
+            <a class="btn" href="2-review.html">Review drafts</a>
+          </li>
+          <li>
+            <div>
+              <b>Check Cedar's result</b
+              ><span
+                >Unit fractions warm-up · 2 of 4 pairs · suggested next step:
+                revisit 3.NF.A.1</span
+              >
+            </div>
+            <a class="ghost" href="#">See result</a>
+          </li>
+          <li>
+            <div>
+              <b>Rewrite a blocked objective</b
+              ><span
+                >Compare fractions with bars · stopped by the safety check,
+                nothing was shared</span
+              >
+            </div>
+            <a class="ghost" href="6-errors.html">Edit objective</a>
+          </li>
+        </ul>
+      </section>
 
+      <h2 class="h2 section-h" id="t">All lessons</h2>
       <section class="card" aria-labelledby="t">
-        <h2 id="t" class="h3 table-title">All lessons</h2>
         <div class="filters" role="group" aria-label="Filter lessons">
-          <button class="chip" aria-pressed="true">All · 6</button
-          ><button class="chip">Needs review · 2</button
+          <button class="chip" aria-pressed="true">All · 5</button
+          ><button class="chip">Needs review · 1</button
           ><button class="chip">Published · 3</button
           ><button class="chip">Blocked · 1</button>
           <span class="search"
@@ -196,38 +201,31 @@
             <tr>
               <th scope="col">Lesson</th>
               <th scope="col">Status</th>
-              <th scope="col">Learner</th>
+              <th scope="col">Learner · variant</th>
               <th scope="col">Result</th>
               <th scope="col">Next step</th>
               <th scope="col"><span class="sr-only">Actions</span></th>
             </tr>
           </thead>
           <tbody>
-            <tr id="r1">
+            <tr>
               <td class="lesson">
                 <b>Equivalent fractions</b
-                ><span>4.NF.A.1 · v2 · published 31 Oct</span>
+                ><span>4.NF.A.1 · published 31 Oct</span>
               </td>
               <td><span class="pill ok">Published</span></td>
-              <td>Maple</td>
-              <td>
-                <div class="score">
-                  <span class="bar-track"><i style="inline-size: 83%"></i></span
-                  ><span class="num">5/6</span>
-                </div>
-              </td>
-              <td class="reason">
-                Ready for 4.NF.A.2: matched every pair except 3/6, which was
-                fixed on the second try.
-              </td>
+              <td>Maple · D Matching v1</td>
+              <td class="num">3 of 4 pairs</td>
+              <td class="reason">Ready for 4.NF.A.2. Missed 2/5 = 4/10.</td>
               <td><a class="ghost" href="#">Open</a></td>
             </tr>
             <tr>
               <td class="lesson">
-                <b>Fractions on a number line</b><span>3.NF.A.2 · v1</span>
+                <b>Fractions on a number line</b
+                ><span>3.NF.A.2 · drafted today</span>
               </td>
               <td><span class="pill warn">Needs review</span></td>
-              <td class="muted none">—</td>
+              <td class="muted none">Not assigned</td>
               <td class="muted none">—</td>
               <td class="reason">4 variants drafted · 1 warning</td>
               <td><a class="ghost" href="2-review.html">Review</a></td>
@@ -235,43 +233,35 @@
             <tr>
               <td class="lesson">
                 <b>Unit fractions warm-up</b
-                ><span>3.NF.A.1 · v1 · published 28 Oct</span>
+                ><span>3.NF.A.1 · published 28 Oct</span>
               </td>
               <td><span class="pill ok">Published</span></td>
-              <td>Cedar</td>
-              <td>
-                <div class="score">
-                  <span class="bar-track"
-                    ><i
-                      style="inline-size: 50%; background: var(--warn)"
-                    ></i></span
-                  ><span class="num">3/6</span>
-                </div>
-              </td>
+              <td>Cedar · D Matching v1</td>
+              <td class="num">2 of 4 pairs</td>
               <td class="reason">
-                Revisit 3.NF.A.1: unequal parts were counted as halves twice.
+                Revisit 3.NF.A.1: unequal parts were counted as halves.
               </td>
               <td><a class="ghost" href="#">Open</a></td>
             </tr>
             <tr>
               <td class="lesson">
-                <b>Compare fractions with bars</b><span>4.NF.A.2 · v1</span>
+                <b>Compare fractions with bars</b><span>4.NF.A.2</span>
               </td>
               <td><span class="pill stop">Blocked</span></td>
-              <td class="muted none">—</td>
+              <td class="muted none">Not assigned</td>
               <td class="muted none">—</td>
               <td class="reason">
-                Blocked by moderation · edit the objective to continue
+                Stopped by the safety check. Edit the objective to continue.
               </td>
-              <td><a class="ghost" href="6-errors.html">Fix</a></td>
+              <td><a class="ghost" href="6-errors.html">Edit</a></td>
             </tr>
             <tr>
               <td class="lesson">
                 <b>Fraction bars check</b
-                ><span>4.NF.A.1 · v1 · published 24 Oct</span>
+                ><span>4.NF.A.1 · published 24 Oct</span>
               </td>
               <td><span class="pill ok">Published</span></td>
-              <td>Birch</td>
+              <td>Birch · D Matching v1</td>
               <td class="muted">Not started</td>
               <td class="reason">Assigned 3 days ago</td>
               <td><a class="ghost" href="#">Open</a></td>
