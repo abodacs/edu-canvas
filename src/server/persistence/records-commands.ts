@@ -39,6 +39,7 @@ import {
   projectTeacherEvidence,
   projectTeacherVersion,
 } from "../records/projections";
+import { decideReceipt, withoutOperationKey } from "./receipt";
 import { RecordUniqueViolationError } from "./records-port";
 import type {
   AppendVersionInput,
@@ -166,15 +167,6 @@ const toIso = (value: unknown): string => {
   }
   const parsed = new Date(String(value));
   return Number.isNaN(parsed.getTime()) ? String(value) : parsed.toISOString();
-};
-
-const stripOperationKey = <T extends { operationKey: string }>(
-  input: T
-): Omit<T, "operationKey"> => {
-  const payload = Object.fromEntries(
-    Object.entries(input).filter(([key]) => key !== "operationKey")
-  );
-  return payload as Omit<T, "operationKey">;
 };
 
 const parseOrThrow = <T>(schema: z.ZodType<T>, value: unknown): T => {
@@ -490,7 +482,7 @@ export const createRecordCommands = <TTransaction>(
       throw recordError("INVALID_INPUT", { cause: parsed.error });
     }
     const input = parsed.data as unknown as TInput;
-    const inputHash = createInputHash(stripOperationKey(input));
+    const inputHash = createInputHash(withoutOperationKey(input));
 
     try {
       return await backend.withTransaction(async (transaction) => {
@@ -504,14 +496,22 @@ export const createRecordCommands = <TTransaction>(
           action,
           operation_key: input.operationKey,
         });
-        if (receipt) {
-          if (receipt.input_hash !== inputHash) {
-            throw recordError("IDEMPOTENCY_CONFLICT", {
-              cause: { action, operationKey: input.operationKey },
-            });
-          }
-          const ids = receipt.result_ids as readonly string[];
-          const [first] = ids;
+        const decision = decideReceipt(
+          receipt
+            ? {
+                inputHash: String(receipt.input_hash),
+                resultIds: receipt.result_ids as readonly string[],
+              }
+            : undefined,
+          inputHash
+        );
+        if (decision.outcome === "conflict") {
+          throw recordError("IDEMPOTENCY_CONFLICT", {
+            cause: { action, operationKey: input.operationKey },
+          });
+        }
+        if (decision.outcome === "replay") {
+          const [first] = decision.resultIds;
           if (typeof first !== "string") {
             throw recordError("PERSISTENCE_UNAVAILABLE");
           }

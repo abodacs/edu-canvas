@@ -11,6 +11,7 @@ import {
 import { compileLessonPreview } from "@/server/a2ui/compiler";
 import { createId } from "@/server/ids";
 import { PackUniqueViolationError } from "@/server/persistence/pack-port";
+import { decideReceipt, withoutOperationKey } from "@/server/persistence/receipt";
 import {
   buildEditedVersion,
   buildInitialVersion,
@@ -82,16 +83,11 @@ const staleMessage =
 const approveTargetAction = "approve-target";
 const reviseVersionAction = "revise-version";
 const publishAction = "publish";
+const receiptsPackPublication = "pack-publication";
 
 const nowIso = (): string => {
   const now = new Date();
   return now.toISOString();
-};
-
-const withoutOperationKey = (input: Record<string, unknown>) => {
-  return Object.fromEntries(
-    Object.entries(input).filter(([key]) => key !== "operationKey")
-  );
 };
 
 const inputHashOf = (input: Record<string, unknown>): string =>
@@ -364,16 +360,14 @@ export const createPublicationService = (
       action,
       operationKey
     );
-    if (!receipt) {
-      return null;
-    }
-    if (receipt.inputHash !== inputHash) {
+    const decision = decideReceipt(receipt ?? undefined, inputHash);
+    if (decision.outcome === "conflict") {
       throw publicationError(
         "IDEMPOTENCY_CONFLICT",
         "This operation key was already used for a different request."
       );
     }
-    return receipt;
+    return decision.outcome === "replay" ? (receipt ?? null) : null;
   };
 
   const writeReceipt = async (
@@ -633,7 +627,9 @@ export const createPublicationService = (
       inputHash
     );
     if (replay) {
-      const [publicationId, assignmentId] = replay.resultIds;
+      const replayIds: readonly (string | undefined)[] = replay.resultIds;
+      const [publicationId, assignmentId, learnerAssignmentId, learnerVariantId] =
+        replayIds;
       if (!publicationId || !assignmentId) {
         throw publicationError(
           "PUBLICATION_UNAVAILABLE",
@@ -644,8 +640,8 @@ export const createPublicationService = (
         review: await projectReview(actor, version),
         publicationId,
         assignmentId,
-        learnerAssignmentId: null,
-        learnerVariantId: null,
+        learnerAssignmentId: learnerAssignmentId ?? null,
+        learnerVariantId: learnerVariantId ?? null,
       });
     }
 
@@ -729,19 +725,11 @@ export const createPublicationService = (
       assignmentId = concurrent.id;
     }
 
-    await writeReceipt(
-      actor,
-      publishAction,
-      input.operationKey,
-      inputHash,
-      "pack-publication",
-      [publicationId, assignmentId]
-    );
-
     // #6: the learner runtime reads the canonical model, so the publish also
     // writes that chain. Without a reviewed source there is nothing to cite,
     // and the pack stays publish-only.
     let learnerAssignmentId: string | null = null;
+    const learnerVariantId = decoded.publicContent.variants[0]?.id ?? null;
     if (records && decoded.provenance.sourceSnapshotId) {
       const bridged = await bridgePublishedPack(records, actor, {
         packVersionId: version.id,
@@ -758,6 +746,27 @@ export const createPublicationService = (
       });
       learnerAssignmentId = bridged.assignmentId;
     }
+
+    // The receipt records what this operation did, so it is written last: a
+    // crash before it replays the whole publish (each write recovers through
+    // its own unique key), and a replay can return the canonical assignment
+    // instead of reporting the learner link as absent.
+    const receiptIds = [
+      publicationId,
+      assignmentId,
+      ...(learnerAssignmentId && learnerVariantId
+        ? [learnerAssignmentId, learnerVariantId]
+        : []),
+    ];
+    await writeReceipt(
+      actor,
+      publishAction,
+      input.operationKey,
+      inputHash,
+      receiptsPackPublication,
+      receiptIds
+    );
+
     // The learner page opens the first bridged section, and the bridge maps
     // variant i onto section i, so the first variant names what the page shows.
     return publicationPublishResultSchema.parse({
@@ -765,7 +774,7 @@ export const createPublicationService = (
       publicationId,
       assignmentId,
       learnerAssignmentId,
-      learnerVariantId: decoded.publicContent.variants[0]?.id ?? null,
+      learnerVariantId,
     });
   };
 
