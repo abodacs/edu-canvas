@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>4 · Lessons (sketch)</title>
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      .top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: var(--s-4);
+      }
+      .needs {
+        list-style: none;
+        padding: 0;
+        display: grid;
+      }
+      .needs li {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: var(--s-1) var(--s-4);
+        align-items: center;
+        padding-block: var(--s-4);
+        border-block-start: 1px solid var(--line);
+      }
+      .needs b {
+        display: block;
+        font-weight: 600;
+      }
+      .needs span {
+        color: var(--ink-2);
+        font-size: var(--fs-secondary);
+      }
+      .section-h {
+        margin-block: var(--s-7) var(--s-3);
+      }
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--s-2);
+        padding: var(--s-4);
+        border-block-end: 1px solid var(--line);
+      }
+      .search {
+        margin-inline-start: auto;
+        display: flex;
+        align-items: center;
+        gap: var(--s-2);
+        min-block-size: 36px;
+        padding: 0 var(--s-3);
+        border: 1px solid var(--line-control);
+        border-radius: 999px;
+        background: var(--surface);
+        color: var(--ink-3);
+        font-size: var(--fs-meta);
+        min-inline-size: 220px;
+      }
+      .lesson b {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        font-weight: 600;
+      }
+      .lesson span,
+      .class span {
+        font-size: var(--fs-meta);
+        color: var(--ink-2);
+      }
+      .class b {
+        display: block;
+        font-weight: 500;
+      }
+      .reason {
+        max-inline-size: 36ch;
+        font-size: var(--fs-meta);
+        color: var(--ink-2);
+      }
+      @media (width <= 720px) {
+        .search {
+          margin: 0;
+          inline-size: 100%;
+        }
+        .needs li {
+          grid-template-columns: 1fr;
+        }
+        .needs li > a {
+          justify-self: start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="bar">
+      <a class="mark" href="index.html"
+        ><i aria-hidden="true"
+          ><svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+            stroke-linecap="round"
+          >
+            <path d="M4 12h16M12 4v16" /></svg></i
+        >Edu-Canvas</a
+      >
+      <nav aria-label="Workspace">
+        <a href="1-studio.html">Studio</a><a href="2-review.html">Review</a
+        ><a href="4-dashboard.html" aria-current="page">Lessons</a>
+      </nav>
+      <span class="who"
+        ><span class="name">Ms. Rivera · Lincoln Elementary</span
+        ><span class="avatar" aria-hidden="true">MR</span></span
+      >
+    </header>
+    <main id="main" class="page wide">
+      <div class="top">
+        <div>
+          <h1>Your lessons</h1>
+          <p class="lede">
+            Start with what needs you. Everything else is below.
+          </p>
+        </div>
+        <a href="1-studio.html" class="btn"
+          >New lesson<svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M12 5v14M5 12h14" /></svg
+        ></a>
+      </div>
+
+      <section aria-labelledby="needs-h">
+        <h2 id="needs-h" class="h3" style="margin-block-end: var(--s-1)">
+          Needs you · 3
+        </h2>
+        <ul class="needs">
+          <li>
+            <div>
+              <b>Review 4 drafts</b
+              ><span>Fractions on a number line · 3.NF.A.2 · 1 warning</span>
+            </div>
+            <a class="btn secondary" href="2-review.html">Review drafts</a>
+          </li>
+          <li>
+            <div>
+              <b>Check 3 learners who need another go</b
+              ><span
+                >Equivalent fractions · Class 4B · all missed 2/5 = 4/10</span
+              >
+            </div>
+            <a class="btn secondary" href="#">See results</a>
+          </li>
+          <li>
+            <div>
+              <b>Rewrite a blocked objective</b
+              ><span
+                >Compare fractions with bars · stopped by the safety check,
+                nothing was shared</span
+              >
+            </div>
+            <a class="btn secondary" href="6-errors.html">Edit objective</a>
+          </li>
+        </ul>
+      </section>
+
+      <h2 class="h2 section-h" id="t">All lessons</h2>
+      <section class="card" aria-labelledby="t">
+        <div class="filters" role="group" aria-label="Filter lessons">
+          <button class="chip" aria-pressed="true">All · 4</button
+          ><button class="chip">Published · 3</button
+          ><button class="chip">Drafts · 1</button>
+          <span class="search"
+            ><svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-3.5-3.5" /></svg
+            >Search lessons</span
+          >
+        </div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Lesson</th>
+              <th scope="col">Status</th>
+              <th scope="col">Assigned to</th>
+              <th scope="col">Results so far</th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="lesson">
+                <b>Equivalent fractions</b
+                ><span>4.NF.A.1 · published 31 Oct</span>
+              </td>
+              <td><span class="pill ok">Published</span></td>
+              <td class="class">
+                <b>Class 4B · 24 learners</b><span>A 6 · B 4 · D 14</span>
+              </td>
+              <td class="reason">
+                19 finished · 16 ready for 4.NF.A.2 · 3 need another go
+              </td>
+              <td><a class="ghost" href="#">Open</a></td>
+            </tr>
+            <tr>
+              <td class="lesson">
+                <b>Unit fractions warm-up</b
+                ><span>3.NF.A.1 · published 28 Oct</span>
+              </td>
+              <td><span class="pill ok">Published</span></td>
+              <td class="class">
+                <b>Class 4B · 26 learners</b><span>D 26</span>
+              </td>
+              <td class="reason">All 26 finished · 21 ready to move on</td>
+              <td><a class="ghost" href="#">Open</a></td>
+            </tr>
+            <tr>
+              <td class="lesson">
+                <b>Fraction bars check</b
+                ><span>4.NF.A.1 · published 24 Oct</span>
+              </td>
+              <td><span class="pill ok">Published</span></td>
+              <td class="class">
+                <b>Small group · 5 learners</b><span>A 5</span>
+              </td>
+              <td class="reason">Not started · assigned 3 days ago</td>
+              <td><a class="ghost" href="#">Open</a></td>
+            </tr>
+            <tr>
+              <td class="lesson">
+                <b>Fractions on a number line</b
+                ><span>3.NF.A.2 · drafted today</span>
+              </td>
+              <td><span class="pill warn">Draft</span></td>
+              <td class="muted none">Not assigned</td>
+              <td class="muted none">—</td>
+              <td><a class="ghost" href="2-review.html">Review</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <p class="synthetic">
+        Sketch. Lessons, classes and results are synthetic. The blocked
+        objective lives in “Needs you” only.
+      </p>
+    </main>
+  </body>
+</html>

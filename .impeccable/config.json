@@ -1,0 +1,29 @@
+{
+  "hook": {
+    "enabled": true,
+    "limits": {
+      "maxFindings": 5,
+      "maxChars": 8000
+    }
+  },
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [".impeccable/mocks/screens/*"],
+        "createdAt": "2026-11-01T19:07:36.374Z",
+        "reason": "User confirmed: chose 'Light, warm off-white' theme for the Studio redesign"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [".impeccable/mocks/screens/*.html"],
+        "createdAt": "2026-11-01T19:11:04.485Z",
+        "reason": "Agent: detector reads h1 as 15px because heading sizes live in the external base.css (h1 clamp 2.2-3.1rem serif); rendered screenshots show a clear scale"
+      }
+    ]
+  }
+}

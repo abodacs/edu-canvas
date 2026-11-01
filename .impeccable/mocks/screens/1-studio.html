@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>1 · Studio: write and generate (sketch)</title>
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      .studio-h {
+        font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.375rem);
+      }
+      /* Drafts exist: the composer collapses to one summary line. */
+      .summary {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: var(--s-3) var(--s-5);
+        align-items: center;
+        padding: var(--s-4) var(--s-5);
+      }
+      .summary .obj {
+        font-size: var(--fs-lead);
+        line-height: 1.4;
+      }
+      .summary .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--s-2) var(--s-3);
+        align-items: center;
+        margin-block-start: var(--s-2);
+        font-size: var(--fs-meta);
+        color: var(--ink-2);
+      }
+      .summary .acts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--s-2);
+        justify-content: flex-end;
+      }
+      .board-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--s-2) var(--s-4);
+        margin-block: var(--s-7) var(--s-2);
+      }
+      .board-why {
+        color: var(--ink-2);
+        margin-block-end: var(--s-4);
+        max-inline-size: 66ch;
+      }
+      .gets {
+        font-size: var(--fs-meta);
+        color: var(--ink);
+        font-weight: 500;
+      }
+      /* The expanded composer, shown before the first draft. */
+      .write {
+        padding: var(--s-5) var(--s-5) var(--s-4);
+      }
+      .write label {
+        display: block;
+        font-weight: 600;
+        font-size: var(--fs-secondary);
+        margin-block-end: var(--s-2);
+      }
+      .write textarea {
+        display: block;
+        inline-size: 100%;
+        min-block-size: 96px;
+        border: 0;
+        resize: vertical;
+        background: transparent;
+        font: 400 var(--fs-lead) / 1.45 var(--sans);
+        caret-color: var(--clay);
+      }
+      .write textarea:focus {
+        outline: none;
+      }
+      .count {
+        text-align: end;
+        color: var(--ink-3);
+        margin-block-start: var(--s-1);
+      }
+      .attach {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--s-3);
+        margin-block-start: var(--s-3);
+        color: var(--ink-3);
+        font-size: var(--fs-meta);
+      }
+      .opts {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--s-5) var(--s-6);
+        padding: var(--s-5);
+        border-block-start: 1px solid var(--line);
+      }
+      .opt h2,
+      .opt legend {
+        font-size: var(--fs-meta);
+        font-weight: 600;
+        color: var(--ink-2);
+        margin-block-end: var(--s-2);
+        padding: 0;
+      }
+      .opt fieldset {
+        border: 0;
+        padding: 0;
+        margin: 0;
+      }
+      .opt.wide {
+        grid-column: 1 / -1;
+      }
+      .hint {
+        margin-block-start: var(--s-2);
+        font-size: var(--fs-meta);
+        color: var(--ink-3);
+      }
+      @media (width <= 720px) {
+        .opts {
+          grid-template-columns: 1fr;
+        }
+        .summary {
+          grid-template-columns: 1fr;
+        }
+        .summary .acts {
+          justify-content: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="bar">
+      <a class="mark" href="index.html"
+        ><i aria-hidden="true"
+          ><svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+            stroke-linecap="round"
+          >
+            <path d="M4 12h16M12 4v16" /></svg></i
+        >Edu-Canvas</a
+      >
+      <nav aria-label="Workspace">
+        <a href="1-studio.html" aria-current="page">Studio</a
+        ><a href="2-review.html">Review</a
+        ><a href="4-dashboard.html">Lessons</a>
+      </nav>
+      <span class="who"
+        ><span class="name">Ms. Rivera · Lincoln Elementary</span
+        ><span class="avatar" aria-hidden="true">MR</span></span
+      >
+    </header>
+    <main id="main" class="page">
+      <h1 class="studio-h">Equivalent fractions</h1>
+      <p class="lede">
+        One learning objective in, four ways to teach it out. Nothing reaches a
+        student until you approve it.
+      </p>
+
+      <section class="card summary" aria-label="Lesson objective">
+        <div>
+          <p class="obj">
+            Students explain why 2/4 and 1/2 name the same amount using fraction
+            models.
+          </p>
+          <p class="meta">
+            <span class="code">4.NF.A.1</span
+            ><span>Grade 4 · English · clear match to the standard</span>
+          </p>
+        </div>
+        <div class="acts">
+          <button type="button" class="ghost">Edit objective</button>
+          <button type="button" class="btn secondary">
+            Draft again<span class="sr-only">
+              (replaces unapproved variants)</span
+            >
+          </button>
+        </div>
+      </section>
+      <p class="hint">
+        “Draft again” replaces the variants you haven't approved. Approved ones
+        stay.
+      </p>
+
+      <section aria-labelledby="board-h">
+        <div class="board-head">
+          <h2 class="h2" id="board-h">Four variants to review</h2>
+          <p class="small muted num">3 of 4 ready · drafted in 41 s</p>
+        </div>
+        <p class="board-why">
+          Four ways into the same objective. Approve only the ones you'd use;
+          when you publish, each learner gets one.
+        </p>
+        <p
+          class="notice warn"
+          role="status"
+          style="margin-block-end: var(--s-4)"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 8v5M12 16.5v.01" /></svg
+          >One earlier skill, unit fractions (3.NF.A.1), isn't in the source.
+          Each variant marks where that shows.
+        </p>
+        <div class="board">
+          <article class="card v">
+            <figure>
+              <span class="tag">A · Worked example</span>
+              <svg
+                class="fig"
+                width="260"
+                height="86"
+                viewBox="0 0 260 86"
+                role="img"
+                aria-label="Two equal bars: one half shaded, and two quarters shaded"
+              >
+                <rect class="off" x="10" y="8" width="240" height="28" rx="4" />
+                <rect class="on" x="10" y="8" width="120" height="28" rx="4" />
+                <line class="cut" x1="130" y1="8" x2="130" y2="36" />
+                <rect
+                  class="off"
+                  x="10"
+                  y="50"
+                  width="240"
+                  height="28"
+                  rx="4"
+                />
+                <rect class="on" x="10" y="50" width="120" height="28" rx="4" />
+                <line class="cut" x1="70" y1="50" x2="70" y2="78" />
+                <line class="cut" x1="130" y1="50" x2="130" y2="78" />
+                <line class="cut" x1="190" y1="50" x2="190" y2="78" />
+              </svg>
+            </figure>
+            <div class="body">
+              <h3>Same bar, cut two ways</h3>
+              <p>
+                Walks through 1/2 and 2/4 on equal-length bars, then names the
+                pattern.
+              </p>
+              <p class="gets">
+                Students get: worked example, then matching (4 pairs)
+              </p>
+              <div class="meta">
+                <span class="pill ok">Ready to review</span
+                ><a href="2-review.html" class="ghost act">Open review</a>
+              </div>
+            </div>
+          </article>
+          <article class="card v">
+            <figure>
+              <span class="tag">B · Guided activity</span>
+              <svg
+                class="fig"
+                width="220"
+                height="90"
+                viewBox="0 0 220 90"
+                role="img"
+                aria-label="An adjustable fraction diagram with a slider"
+              >
+                <rect
+                  class="off"
+                  x="10"
+                  y="10"
+                  width="200"
+                  height="34"
+                  rx="4"
+                />
+                <rect class="on" x="10" y="10" width="100" height="34" rx="4" />
+                <line class="cut" x1="43" y1="10" x2="43" y2="44" />
+                <line class="cut" x1="77" y1="10" x2="77" y2="44" />
+                <line class="cut" x1="110" y1="10" x2="110" y2="44" />
+                <line class="cut" x1="143" y1="10" x2="143" y2="44" />
+                <line class="cut" x1="177" y1="10" x2="177" y2="44" />
+                <line class="track" x1="10" y1="70" x2="210" y2="70" />
+                <circle class="knob" cx="110" cy="70" r="9" />
+              </svg>
+            </figure>
+            <div class="body">
+              <h3>Slide to make an equal share</h3>
+              <p>
+                Students change the number of parts and keep the shaded amount
+                the same, with two hints.
+              </p>
+              <p class="gets">
+                Students get: guided slider with hints, then matching (4 pairs)
+              </p>
+              <div class="meta">
+                <span class="pill warn">Ready · 1 warning</span
+                ><a href="2-review.html" class="ghost act">Open review</a>
+              </div>
+            </div>
+          </article>
+          <article class="card v blocked">
+            <figure>
+              <span class="tag">C · Independent check</span>
+              <p>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="m15 9-6 6M9 9l6 6" /></svg
+                >Blocked by validation
+              </p>
+            </figure>
+            <div class="body">
+              <h3>Answer key didn't match the diagram</h3>
+              <p>
+                Question 3 marked 3/6 as not equal to 1/2. Retry drafts this
+                variant again with the same objective.
+              </p>
+              <p class="gets">
+                Students get: nothing. Blocked variants can't be assigned.
+              </p>
+              <div class="meta">
+                <span class="pill stop">Not shown to students</span
+                ><button type="button" class="ghost act">Retry variant</button>
+              </div>
+            </div>
+          </article>
+          <article class="card v" aria-busy="true">
+            <figure class="shimmer">
+              <span class="tag">D · Matching</span>
+            </figure>
+            <div class="body">
+              <h3>Drafting the matching set…</h3>
+              <p>
+                Pairs of equivalent fractions, checked on the server before you
+                see them.
+              </p>
+              <p class="gets">Students get: matching (4 pairs)</p>
+              <div class="meta">
+                <span class="pill idle">Drafting</span
+                ><button type="button" class="ghost act">Cancel</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <p class="synthetic" style="margin-block: var(--s-8) var(--s-2)">
+        State before the first draft: the composer is open
+      </p>
+      <form class="card lift" aria-label="New lesson">
+        <div class="write">
+          <label for="objective">What should students practice?</label>
+          <textarea
+            id="objective"
+            maxlength="500"
+            aria-describedby="count"
+            placeholder="e.g. equivalent fractions for grade 4"
+          >
+Students explain why 2/4 and 1/2 name the same amount using fraction models.</textarea>
+          <p class="count small num" id="count">78 of 500 characters</p>
+          <div class="attach">
+            <button type="button" class="ghost">
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="m21.4 11.1-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"
+                /></svg
+              >Add a source (optional)
+            </button>
+            <span>Selectable-text PDF, TXT or Markdown</span>
+          </div>
+        </div>
+        <div class="opts">
+          <fieldset class="opt">
+            <legend>Grade</legend>
+            <div class="chips">
+              <label class="chip chip-radio"
+                ><input
+                  type="radio"
+                  name="grade"
+                  value="3"
+                  disabled
+                  aria-describedby="g-note"
+                />3</label
+              >
+              <label class="chip chip-radio"
+                ><input type="radio" name="grade" value="4" checked />4</label
+              >
+              <label class="chip chip-radio"
+                ><input
+                  type="radio"
+                  name="grade"
+                  value="5"
+                  disabled
+                  aria-describedby="g-note"
+                />5</label
+              >
+              <label class="chip chip-radio"
+                ><input
+                  type="radio"
+                  name="grade"
+                  value="6"
+                  disabled
+                  aria-describedby="g-note"
+                />6</label
+              >
+            </div>
+            <p class="hint" id="g-note">
+              Grades 3, 5 and 6 aren't available yet.
+            </p>
+          </fieldset>
+          <div class="opt">
+            <h2 id="l">Language</h2>
+            <p aria-labelledby="l">English</p>
+          </div>
+          <div class="opt wide">
+            <h2>Matched standard</h2>
+            <div class="match">
+              <span class="code">4.NF.A.1</span>
+              <div>
+                <p>
+                  Explain why a fraction a/b is equivalent to (n×a)/(n×b) using
+                  visual fraction models.
+                </p>
+                <small
+                  >Clear match in Learning Commons, the public standards library
+                  Edu-Canvas drafts from · checked 1 Nov 2026</small
+                >
+                <ul class="checks">
+                  <li>
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.4"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                      style="color: var(--ok)"
+                    >
+                      <path d="M20 6 9 17l-5-5" /></svg
+                    >Partition a whole into equal parts
+                  </li>
+                  <li>
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.4"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                      style="color: var(--ok)"
+                    >
+                      <path d="M20 6 9 17l-5-5" /></svg
+                    >Compare fractions with one whole
+                  </li>
+                  <li class="gap">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="12" r="9" />
+                      <path d="M12 8v5M12 16.5v.01" /></svg
+                    >Earlier skill 3.NF.A.1 isn't in the source: drafts will
+                    show the gap
+                  </li>
+                </ul>
+              </div>
+              <a class="link" href="#">Change</a>
+            </div>
+          </div>
+        </div>
+        <div class="foot">
+          <span
+            class="small muted"
+            style="display: flex; align-items: center; gap: var(--s-2)"
+            ><svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="4" y="11" width="16" height="10" rx="2" />
+              <path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg
+            >Drafts stay private until you approve them</span
+          >
+          <button type="submit" class="btn" style="margin-inline-start: auto">
+            Create lesson<svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+              class="flip"
+            >
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </button>
+        </div>
+      </form>
+      <p class="synthetic">
+        Sketch. Variant content, timings and the teacher name are illustrative.
+      </p>
+    </main>
+  </body>
+</html>

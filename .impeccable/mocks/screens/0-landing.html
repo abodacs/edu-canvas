@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>0 · Landing (sketch)</title>
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      .signed-out {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 10px 16px;
+        background: var(--ok-soft);
+        color: var(--ok);
+        font-size: var(--fs-secondary);
+        font-weight: 500;
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+        gap: 56px;
+        align-items: center;
+        inline-size: min(100% - 48px, 1200px);
+        margin-inline: auto;
+        padding-block: 72px 56px;
+      }
+      .hero h1 {
+        font-size: clamp(2.6rem, 5vw, 4.4rem);
+        line-height: 1.04;
+      }
+      .cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-block-start: 28px;
+      }
+      .cta .btn {
+        padding: 14px 22px;
+        font-size: var(--fs-body);
+      }
+      .cta .ghost {
+        padding: 13px 20px;
+        font-size: var(--fs-body);
+      }
+      .trust {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-block-start: 16px;
+        color: var(--ink-2);
+        font-size: var(--fs-secondary);
+      }
+      .reveal {
+        padding: 22px;
+        display: grid;
+        gap: 14px;
+      }
+      .reveal .objective {
+        padding: 12px 14px;
+        border-radius: var(--r-field);
+        background: var(--sunk);
+        font-size: var(--fs-body);
+      }
+      .reveal .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        font-size: var(--fs-secondary);
+      }
+      .mini {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: var(--s-5);
+      }
+      .mini div {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--s-2);
+        padding-block: var(--s-3);
+        border-block-start: 1px solid var(--line);
+        font-size: var(--fs-meta);
+      }
+      .loop {
+        inline-size: min(100% - 48px, 1200px);
+        margin-inline: auto;
+        padding-block: 56px 96px;
+        border-block-start: 1px solid var(--line);
+      }
+      .loop ol {
+        list-style: none;
+        padding: 0;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-block-start: 28px;
+        counter-reset: s;
+      }
+      .loop li {
+        position: relative;
+        padding: 20px;
+        display: grid;
+        gap: 8px;
+        align-content: start;
+      }
+      .loop li::after {
+        content: "";
+        position: absolute;
+        inset-block-start: 50%;
+        inset-inline-end: -13px;
+        inline-size: 10px;
+        block-size: 10px;
+        border-block-start: 2px solid var(--line-strong);
+        border-inline-end: 2px solid var(--line-strong);
+        transform: translateY(-50%) rotate(45deg);
+      }
+      .loop li:last-child::after {
+        display: none;
+      }
+      .close {
+        inline-size: min(100% - 48px, 1200px);
+        margin-inline: auto;
+        padding-block: var(--s-8);
+        border-block-start: 1px solid var(--line);
+        display: grid;
+        justify-items: start;
+        gap: var(--s-2);
+      }
+      .site-foot {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: var(--s-2) var(--s-5);
+        padding: var(--s-5) var(--s-6);
+        border-block-start: 1px solid var(--line);
+        color: var(--ink-2);
+        font-size: var(--fs-meta);
+      }
+      .loop h3 {
+        font: 500 var(--fs-title)/1.25 var(--serif);
+      }
+      .loop p {
+        color: var(--ink-2);
+        font-size: var(--fs-secondary);
+      }
+      .who-does {
+        font-size: var(--fs-micro);
+        font-weight: 600;
+        color: var(--clay-deep);
+      }
+      @media (width <= 900px) {
+        .hero {
+          grid-template-columns: 1fr;
+        }
+        .loop ol {
+          grid-template-columns: 1fr 1fr;
+        }
+        .loop li::after {
+          display: none;
+        }
+      }
+      @media (width <= 560px) {
+        .loop ol {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <p class="signed-out" role="status">
+      <svg
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M20 6 9 17l-5-5" /></svg
+      >You're signed out. Your drafts are saved for next time.
+    </p>
+    <header class="bar">
+      <span class="mark"
+        ><i aria-hidden="true"
+          ><svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+            stroke-linecap="round"
+          >
+            <path d="M4 12h16M12 4v16" /></svg></i
+        >Edu-Canvas</span
+      >
+      <span class="who"
+        ><a class="ghost" href="5-sign-in.html">Sign in</a
+        ><a
+          class="btn"
+          href="5-sign-in.html"
+          style="padding: 8px 14px; font-size: var(--fs-secondary)"
+          >Create account</a
+        ></span
+      >
+    </header>
+    <main id="main">
+      <section class="hero">
+        <div>
+          <h1>
+            Turn one learning objective into a lesson your students
+            <em>understand</em>.
+          </h1>
+          <p class="lede">
+            For Grades 3–6 teachers. Write one sentence, get four lesson
+            variants checked against the standard and a safety gate, and assign
+            one to each learner.
+          </p>
+          <div class="cta">
+            <a class="btn" href="5-sign-in.html">Start with one objective</a
+            ><a class="ghost" href="#loop">See how it works</a>
+          </div>
+          <p class="trust">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg
+            >Nothing reaches a student without your approval. Answers are graded
+            on the server.
+          </p>
+        </div>
+        <aside
+          class="card lift reveal"
+          aria-label="Sample lesson (illustrative)"
+        >
+          <div class="row">
+            <b>Sample lesson</b><span class="pill idle">Illustration</span>
+          </div>
+          <p class="objective">
+            “Students explain why 2/4 and 1/2 name the same amount using
+            fraction models.”
+          </p>
+          <div class="row">
+            <span class="code">4.NF.A.1</span
+            ><span class="small muted">Grounded in Learning Commons</span>
+          </div>
+          <div class="mini">
+            <div><b>Worked example</b><span class="pill ok">Ready</span></div>
+            <div>
+              <b>Guided activity</b><span class="pill warn">1 warning</span>
+            </div>
+            <div>
+              <b>Independent check</b><span class="pill stop">Blocked</span>
+            </div>
+            <div><b>Matching</b><span class="pill ok">Ready</span></div>
+          </div>
+        </aside>
+      </section>
+      <section class="loop" id="loop" aria-labelledby="lh">
+        <h2 class="h2" id="lh">
+          One loop, and the teacher decides at each turn
+        </h2>
+        <ol>
+          <li class="card">
+            <span class="who-does">Teacher</span>
+            <h3>Write the objective</h3>
+            <p>Plain words, a grade, and an optional source file.</p>
+          </li>
+          <li class="card">
+            <span class="who-does">Edu-Canvas</span>
+            <h3>Draft and check</h3>
+            <p>
+              Four variants, checked for structure, curriculum fit and safety
+              before you see them.
+            </p>
+          </li>
+          <li class="card">
+            <span class="who-does">Teacher</span>
+            <h3>Review and approve</h3>
+            <p>Edit one section at a time. Approved versions never change.</p>
+          </li>
+          <li class="card">
+            <span class="who-does">Student</span>
+            <h3>Practice, then the next step</h3>
+            <p>
+              One focused activity, graded on the server, with a reason for what
+              comes next.
+            </p>
+          </li>
+        </ol>
+      </section>
+      <section class="close" aria-labelledby="close-h">
+        <h2 class="h2" id="close-h">Bring tomorrow's objective.</h2>
+        <p class="lede">
+          One sentence is enough. You'll have four variants to review in about a
+          minute, and nothing reaches a student until you say so.
+        </p>
+        <div class="cta">
+          <a class="btn" href="5-sign-in.html">Start with one objective</a>
+          <a class="btn secondary" href="5-sign-in.html">Sign in</a>
+        </div>
+      </section>
+    </main>
+    <footer class="site-foot">
+      <span>Edu-Canvas · Grades 3–6 · Grade 4 equivalent fractions today</span>
+      <span>Standards from Learning Commons (CC BY 4.0)</span>
+    </footer>
+  </body>
+</html>

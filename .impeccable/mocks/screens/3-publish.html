@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>3 · Publish and assign (sketch)</title>
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      .crumbs {
+        margin-block-end: var(--s-3);
+      }
+      .variants {
+        list-style: none;
+        padding: 0;
+        display: grid;
+      }
+      .variants li {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        gap: var(--s-2) var(--s-4);
+        align-items: center;
+        padding: var(--s-3) var(--s-5);
+        border-block-start: 1px solid var(--line);
+        font-size: var(--fs-secondary);
+      }
+      .variants b {
+        display: block;
+        font-size: var(--fs-body);
+      }
+      .variants .count {
+        font-variant-numeric: tabular-nums;
+        color: var(--ink-2);
+        white-space: nowrap;
+      }
+      .bulk {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--s-2) var(--s-3);
+        padding: var(--s-3) var(--s-5);
+        border-block: 1px solid var(--line);
+        background: var(--ground);
+        font-size: var(--fs-secondary);
+      }
+      .bulk b {
+        font-weight: 600;
+      }
+      .bulk {
+        display: grid;
+        gap: var(--s-2);
+      }
+      .bulk-row {
+        display: grid;
+        grid-template-columns: 7rem minmax(0, 16rem) auto;
+        justify-content: start;
+        align-items: center;
+        gap: var(--s-3);
+      }
+      @media (width <= 720px) {
+        .bulk-row {
+          grid-template-columns: minmax(0, 1fr) auto;
+        }
+        .bulk-row label {
+          grid-column: 1 / -1;
+        }
+        .assign tbody tr {
+          grid-template-columns: auto minmax(0, 1fr);
+          align-items: center;
+          column-gap: var(--s-3);
+        }
+        .assign tbody td:last-child {
+          grid-column: 1 / -1;
+        }
+      }
+      select {
+        min-block-size: 44px;
+        padding-inline: var(--s-3);
+        border: 1px solid var(--line-control);
+        border-radius: var(--r-field);
+        background: var(--surface);
+        font-size: var(--fs-body);
+        max-inline-size: 100%;
+      }
+      .assign td:first-child,
+      .assign th:first-child {
+        inline-size: 48px;
+        padding-inline-start: var(--s-5);
+      }
+      .assign input[type="checkbox"] {
+        inline-size: 20px;
+        block-size: 20px;
+        accent-color: var(--clay);
+      }
+      .assign select {
+        inline-size: 100%;
+        max-inline-size: 20rem;
+      }
+      .more {
+        padding: var(--s-3) var(--s-5);
+        border-block-start: 1px solid var(--line);
+      }
+      .summary {
+        padding: var(--s-4) var(--s-5);
+        border-block-start: 1px solid var(--line);
+      }
+      .done {
+        display: grid;
+        gap: var(--s-3);
+        padding: var(--s-5);
+      }
+      .groups {
+        list-style: none;
+        padding: 0;
+        display: grid;
+        gap: var(--s-2);
+      }
+      .groups li {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--s-1) var(--s-3);
+        align-items: baseline;
+        padding: var(--s-3);
+        border-radius: var(--r-field);
+        background: var(--ground);
+        font-size: var(--fs-secondary);
+      }
+      .groups span {
+        color: var(--ink-2);
+        min-inline-size: 0;
+      }
+      .done .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--s-3);
+        align-items: center;
+      }
+      @media (width <= 720px) {
+        .variants li {
+          grid-template-columns: minmax(0, 1fr) auto;
+        }
+        .variants li .ghost {
+          grid-column: 1 / -1;
+          justify-self: start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="bar">
+      <a class="mark" href="index.html"
+        ><i aria-hidden="true"
+          ><svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+            stroke-linecap="round"
+          >
+            <path d="M4 12h16M12 4v16" /></svg></i
+        >Edu-Canvas</a
+      >
+      <nav aria-label="Workspace">
+        <a href="1-studio.html">Studio</a><a href="2-review.html">Review</a
+        ><a href="4-dashboard.html">Lessons</a>
+      </nav>
+      <span class="who"
+        ><span class="name">Ms. Rivera · Lincoln Elementary</span
+        ><span class="avatar" aria-hidden="true">MR</span></span
+      >
+    </header>
+    <main id="main" class="page">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="2-review.html">Review</a><span aria-hidden="true">/</span
+        ><span aria-current="page">Publish and assign</span>
+      </nav>
+      <h1>Publish equivalent fractions</h1>
+      <p class="lede">
+        Each learner sees one variant: the one you assign. Publishing freezes
+        the approved versions so they can't change under a student.
+      </p>
+
+      <form class="card lift" aria-labelledby="v-h">
+        <h2
+          id="v-h"
+          class="title section"
+          style="padding-block-end: var(--s-2)"
+        >
+          Approved variants
+        </h2>
+        <ul class="variants">
+          <li>
+            <span
+              ><b>A · Worked example, version 2</b>Worked example, then matching
+              (4 pairs)</span
+            ><span class="count">6 learners</span
+            ><a class="ghost" href="7-learn.html">Preview as student</a>
+          </li>
+          <li>
+            <span
+              ><b>B · Guided activity, version 1</b>Guided slider with hints,
+              then matching (4 pairs)</span
+            ><span class="count">4 learners</span
+            ><a class="ghost" href="7-learn.html">Preview as student</a>
+          </li>
+          <li>
+            <span><b>D · Matching, version 1</b>Matching (4 pairs)</span
+            ><span class="count">14 learners</span
+            ><a class="ghost" href="7-learn.html">Preview as student</a>
+          </li>
+          <li>
+            <span
+              ><b>C · Independent check</b>Blocked, so no learner can get
+              it</span
+            ><span class="pill stop">Not available</span><span></span>
+          </li>
+        </ul>
+
+        <h2
+          id="as"
+          class="title section"
+          style="
+            border-block-start: 1px solid var(--line);
+            padding-block-end: var(--s-1);
+          "
+        >
+          Assign to Class 4B · 26 learners
+        </h2>
+        <p
+          class="small muted"
+          style="padding-inline: var(--s-5); margin-block-end: var(--s-3)"
+        >
+          Seeded synthetic accounts only, until consent and data residency are
+          approved.
+        </p>
+        <div
+          class="bulk"
+          role="group"
+          aria-label="Assign several learners at once"
+        >
+          <div class="bulk-row">
+            <label for="all"><b>Everyone</b></label>
+            <select id="all">
+              <option>Choose a variant…</option>
+              <option>A · Worked example</option>
+              <option>B · Guided activity</option>
+              <option>D · Matching</option>
+            </select>
+            <button type="button" class="ghost">Assign to all 26</button>
+          </div>
+          <div class="bulk-row">
+            <label for="sel"><b>3 selected</b></label>
+            <select id="sel">
+              <option>B · Guided activity</option>
+              <option>A · Worked example</option>
+              <option>D · Matching</option>
+            </select>
+            <button type="button" class="ghost">Assign to selected</button>
+          </div>
+        </div>
+        <table class="assign table" aria-labelledby="as">
+          <thead>
+            <tr>
+              <th scope="col">
+                <span class="sr-only">Select</span
+                ><input type="checkbox" aria-label="Select all learners" />
+              </th>
+              <th scope="col">Learner</th>
+              <th scope="col">Variant they will see</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="checkbox" aria-label="Select Maple" /></td>
+              <td>Maple</td>
+              <td>
+                <label class="sr-only" for="v1">Variant for Maple</label
+                ><select id="v1">
+                  <option>D · Matching</option>
+                  <option>A · Worked example</option>
+                  <option>B · Guided activity</option>
+                  <option>Not assigned</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type="checkbox" checked aria-label="Select Cedar" />
+              </td>
+              <td>Cedar</td>
+              <td>
+                <label class="sr-only" for="v2">Variant for Cedar</label
+                ><select id="v2">
+                  <option>A · Worked example</option>
+                  <option>B · Guided activity</option>
+                  <option>D · Matching</option>
+                  <option>Not assigned</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type="checkbox" checked aria-label="Select Birch" />
+              </td>
+              <td>Birch</td>
+              <td>
+                <label class="sr-only" for="v3">Variant for Birch</label
+                ><select id="v3">
+                  <option>Not assigned</option>
+                  <option>A · Worked example</option>
+                  <option>B · Guided activity</option>
+                  <option>D · Matching</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type="checkbox" checked aria-label="Select Willow" />
+              </td>
+              <td>Willow</td>
+              <td>
+                <label class="sr-only" for="v4">Variant for Willow</label
+                ><select id="v4">
+                  <option>Not assigned</option>
+                  <option>A · Worked example</option>
+                  <option>B · Guided activity</option>
+                  <option>D · Matching</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td><input type="checkbox" aria-label="Select Aspen" /></td>
+              <td>Aspen</td>
+              <td>
+                <label class="sr-only" for="v5">Variant for Aspen</label
+                ><select id="v5">
+                  <option>D · Matching</option>
+                  <option>A · Worked example</option>
+                  <option>B · Guided activity</option>
+                  <option>Not assigned</option>
+                </select>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="more">
+          <button type="button" class="ghost">Show all 26 learners</button>
+        </p>
+        <p class="summary" id="pub-sum">
+          <b>You're about to publish to 24 learners:</b> A to 6, B to 4, D to
+          14. Two learners have no variant yet.
+        </p>
+        <div class="foot">
+          <span class="small muted"
+            >You can unpublish later. Published versions are never edited.</span
+          >
+          <button
+            class="btn"
+            style="margin-inline-start: auto"
+            aria-describedby="pub-sum"
+          >
+            Publish to 24 learners
+          </button>
+        </div>
+      </form>
+
+      <p class="synthetic" style="margin-block: var(--s-7) var(--s-2)">
+        State after publishing
+      </p>
+      <section class="card done" aria-labelledby="done-h" aria-live="polite">
+        <p class="pill ok">Published to 24 learners</p>
+        <h2 id="done-h" class="h2">The class can start</h2>
+        <ul class="groups">
+          <li>
+            <b>A · Worked example</b
+            ><span>Cedar, Fern, Hazel, Juniper, Olive, Rowan</span>
+          </li>
+          <li><b>B · Guided activity</b><span>Ash, Elm, Ivy, Laurel</span></li>
+          <li><b>D · Matching</b><span>Maple, Aspen and 12 more</span></li>
+          <li><b>Not assigned</b><span>Birch, Willow</span></li>
+        </ul>
+        <div class="row">
+          <button class="btn secondary">Copy all 24 links</button>
+          <a class="link" href="#">Download as a list</a>
+        </div>
+        <p class="small muted">
+          Each link opens only that learner's variant. Scores and the reason for
+          each next step appear in Lessons.
+        </p>
+      </section>
+      <p class="synthetic">Sketch. Learner names and counts are synthetic.</p>
+    </main>
+  </body>
+</html>
