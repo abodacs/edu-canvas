@@ -105,7 +105,7 @@ module.exports = {
     {
       name: "runtime-imports-in-memory-store",
       comment:
-        "In-memory persistence is a test double. Runtime modules must compose PostgreSQL.",
+        "In-memory persistence is a test double. Runtime modules must compose PostgreSQL. The pattern matches the naming convention: `persistence/seeded.ts` or any `persistence/*-seeded.ts`.",
       severity: "error",
       from: {
         path: "^src/",
@@ -113,11 +113,11 @@ module.exports = {
           "\\.test\\.tsx?$",
           // Test-support fixture builders live outside `.test.ts` by design.
           "^src/server/persistence/records-fixtures\\.ts$",
-          "^src/server/persistence/(seeded|source-seeded|identity-seeded|pack-seeded|records-seeded)\\.ts$",
+          "^src/server/persistence/(seeded|[a-z-]+-seeded)\\.ts$",
         ],
       },
       to: {
-        path: "^src/server/persistence/(seeded|source-seeded|identity-seeded|pack-seeded|records-seeded)\\.ts$",
+        path: "^src/server/persistence/(seeded|[a-z-]+-seeded)\\.ts$",
       },
     },
     {
