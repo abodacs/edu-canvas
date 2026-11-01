@@ -2,7 +2,7 @@
 
 > In the context of the focused event needing restart-safe approval, assignment, learner evidence, and teacher choice ([#112](https://github.com/abodacs/edu-canvas/issues/112)) while the demo activity tables are fixtures with no production writer, I decided to give the production loop its own immutable record model, its own persistence port, and a versioned public-lesson projection, to achieve one owner per record and migrations that never bend to demo constraints, accepting a second attempt table and a projection function whose changes are version-pinned.
 
-Recorded 2026-10-28 against `impl/98-authentication` with `main` merged. Parent contracts: [AgDR-0005](AgDR-0005-grounded-package-version-contracts.md), [AgDR-0009 (identifiers)](AgDR-0009-primary-key-identifier-strategy.md), [AgDR-0010](AgDR-0010-drizzle-migration-ownership.md).
+Recorded 2026-10-28 against `impl/98-authentication` with `main` merged. Parent contracts: [AgDR-0005](AgDR-0005-grounded-package-version-contracts.md), [AgDR-0015 (identifiers)](AgDR-0015-primary-key-identifier-strategy.md), [AgDR-0010](AgDR-0010-drizzle-migration-ownership.md).
 
 ## Decision
 

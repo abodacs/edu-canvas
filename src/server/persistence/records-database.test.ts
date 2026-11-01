@@ -17,10 +17,10 @@ import {
   createValidationResultHash,
 } from "../records/hashes";
 import { hashVersion } from "../records/vocabulary";
-import { createDrizzleRecordBackend } from "./records-drizzle";
 import { createPostgresRecordBackend } from "./records-postgres";
 import { createRecordCommands } from "./records-commands";
 import type { Actor } from "../identity/types";
+import type { AppendVersionInput } from "../records/inputs";
 
 const databaseUrl = process.env.DATABASE_URL;
 const isEnabled = process.env.RUN_DATABASE_TESTS === "true";
@@ -242,7 +242,10 @@ const deleteFixture = async (fixture: Fixture): Promise<void> => {
   }
 };
 
-const appendInput = (fixture: Fixture, curatedReferenceId: string) => {
+const appendInput = (
+  fixture: Fixture,
+  curatedReferenceId: string
+): AppendVersionInput => {
   return {
     operationKey: `append-version-key-${curatedReferenceId}`,
     package: {
@@ -401,14 +404,6 @@ describe.skipIf(!isRun)("record database parity", () => {
         );
       },
     ],
-    [
-      "drizzle",
-      () => {
-        return createRecordCommands(
-          createDrizzleRecordBackend({ databaseUrl: requireUrl() })
-        );
-      },
-    ],
   ] as const)(
     "runs the focused loop on the %s adapter",
     async (_name, create) => {
@@ -417,25 +412,6 @@ describe.skipIf(!isRun)("record database parity", () => {
       expect(result.publicationId).toBeTruthy();
     }
   );
-
-  it("reads another adapter's committed records", async () => {
-    const { runId } = await expectFocusedLoop(
-      () => {
-        return createRecordCommands(
-          createDrizzleRecordBackend({ databaseUrl: requireUrl() })
-        );
-      },
-      fixture,
-      "cross"
-    );
-    const raw = createRecordCommands(
-      createPostgresRecordBackend({ databaseUrl: requireUrl() })
-    );
-    const evidence = await raw.readEvidence(fixture.teacher, { runId });
-
-    expect(evidence.runId).toBe(runId);
-    expect(evidence.decisions).toHaveLength(1);
-  });
 
   it("rejects a direct change to an immutable record", async () => {
     const { publicationId } = await expectFocusedLoop(

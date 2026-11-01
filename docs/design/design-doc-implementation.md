@@ -27,7 +27,7 @@ The present `ProviderLessonDraft` has no `concepts` field. Add concept identifie
 
 ## Define records before wiring providers
 
-Generate new record identifiers as bare UUIDv7 values through `createId()` ([AgDR-0009](../agdr/AgDR-0009-primary-key-identifier-strategy.md)). Use UTC timestamps in ISO 8601 format. Scope every record lookup by tenant and the authenticated actor's permitted resources.
+Generate new record identifiers as bare UUIDv7 values through `createId()` ([AgDR-0015](../agdr/AgDR-0015-primary-key-identifier-strategy.md)). Use UTC timestamps in ISO 8601 format. Scope every record lookup by tenant and the authenticated actor's permitted resources.
 
 All new JSON schemas reject unknown properties. Keep private schemas in server modules. Public schemas contain only fields needed by their audience.
 

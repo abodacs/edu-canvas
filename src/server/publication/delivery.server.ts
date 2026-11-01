@@ -1,6 +1,11 @@
 import { z } from "zod";
 
-import { publicationOpenInputSchema } from "@/shared/publication-contract";
+import {
+  publicationApproveInputSchema,
+  publicationOpenInputSchema,
+  publicationPublishInputSchema,
+  publicationReviseInputSchema,
+} from "@/shared/publication-contract";
 import { createPreviewSSEStream } from "@/server/a2ui/stream";
 import { readServerConfig } from "@/server/config";
 import { readJsonBody, noStoreJson } from "@/server/http.server";
@@ -140,11 +145,15 @@ export const handleApproveRequest = async (
     return resolved.response;
   }
 
+  const parsed = publicationApproveInputSchema.safeParse(
+    await readJsonBody(request)
+  );
+  if (!parsed.success) {
+    return invalidInput();
+  }
+
   try {
-    const review = await createService().approve(
-      resolved.actor,
-      await readJsonBody(request)
-    );
+    const review = await createService().approve(resolved.actor, parsed.data);
     return noStoreJson(review);
   } catch (error) {
     return mapPublicationError(error);
@@ -162,11 +171,15 @@ export const handleReviseRequest = async (
     return resolved.response;
   }
 
+  const parsed = publicationReviseInputSchema.safeParse(
+    await readJsonBody(request)
+  );
+  if (!parsed.success) {
+    return invalidInput();
+  }
+
   try {
-    const review = await createService().revise(
-      resolved.actor,
-      await readJsonBody(request)
-    );
+    const review = await createService().revise(resolved.actor, parsed.data);
     return noStoreJson(review);
   } catch (error) {
     return mapPublicationError(error);
@@ -184,19 +197,19 @@ export const handlePublishRequest = async (
     return resolved.response;
   }
 
+  const parsed = publicationPublishInputSchema.safeParse(
+    await readJsonBody(request)
+  );
+  if (!parsed.success) {
+    return invalidInput();
+  }
+
   try {
-    const outcome = await createService().publish(
-      resolved.actor,
-      await readJsonBody(request)
-    );
-    return noStoreJson(
-      {
-        publicationId: outcome.publicationId,
-        assignmentId: outcome.assignmentId,
-        review: outcome.review,
-      },
-      201
-    );
+    // The service returns the published result already parsed by
+    // `publicationPublishResultSchema`; re-typing it here dropped two fields
+    // and every successful publish failed the client parse.
+    const outcome = await createService().publish(resolved.actor, parsed.data);
+    return noStoreJson(outcome, 201);
   } catch (error) {
     return mapPublicationError(error);
   }

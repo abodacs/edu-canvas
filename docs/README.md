@@ -25,6 +25,7 @@ Edu-Canvas is a production product; these documents define and verify one trustw
 | [Blocked generation keyboard](design/blocked-generation-keyboard.md) | Focus, announcement, tab order, return-to-field, draft preservation |
 | [Blocked generation scenarios](design/blocked-generation-scenarios.md) | Failure-class fixture inventory and binary checks for #115 |
 | [Contributing](../CONTRIBUTING.md) | Local setup, actionable issues, useful commits, and contribution checks |
+| [Domain study](domain/README.md) | As-is stories, boundary verdicts, the homonym register, and the language map |
 | [Code standards](../CODING_STANDARDS.md) | Coding and review rules, Ultracite commands, and documentation formatting |
 | [Coding patterns](engineering/coding-patterns.md) | Seven engineering patterns adapted to Edu-Canvas domain rules and boundaries |
 | [Research index](research/README.md) | Registry of locally retained reference materials; raw research notes stay untracked |
@@ -34,7 +35,7 @@ Edu-Canvas is a production product; these documents define and verify one trustw
 | [Architecture harness](architecture-harness.md) | Guardrails for state ownership, layer imports, contract drift, and dependency boundaries |
 | [Observed behaviour](observed-behaviour.md) | Evidence boundary, job stories, and the research plan |
 | [Threat model](security/threat-model.md) | STRIDE pass against the implemented paths, with linked residual owners |
-| [Decision records](agdr/) | Architecture decisions AgDR-0001–0009 |
+| [Decision records](agdr/) | Architecture decisions AgDR-0001–0015 |
 | GitHub issues and Projects | Work ownership, dependencies, priority, lifecycle state, and delivery evidence |
 
 ## Change log

@@ -18,6 +18,7 @@ import { hashVersion } from "../records/vocabulary";
 import { createSeededRecordBackend } from "./records-seeded";
 import { createRecordCommands } from "./records-commands";
 import type { Actor } from "../identity/types";
+import type { AppendVersionInput } from "../records/inputs";
 
 const tenantId = parseTenantId("tenant_records_test");
 const otherTenantId = parseTenantId("tenant_records_other");
@@ -247,7 +248,9 @@ const buildFixture = () => {
   return { backend, records: createRecordCommands(backend) };
 };
 
-const appendInput = (overrides: Record<string, unknown> = {}) => {
+const appendInput = (
+  overrides: Partial<AppendVersionInput> = {}
+): AppendVersionInput => {
   return {
     operationKey: "append-version-key-1",
     package: {

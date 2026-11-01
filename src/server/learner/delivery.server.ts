@@ -9,6 +9,10 @@ import {
 import { IdentityError } from "@/server/identity/errors";
 import { createRecordPersistence } from "@/server/persistence";
 import { isRecordStoreError } from "@/server/records/errors";
+import {
+  learnerAttemptResponseSchema,
+  learnerRunResponseSchema,
+} from "@/shared/learner-contract";
 import { createLearnerService } from "./service";
 
 /**
@@ -102,7 +106,7 @@ export const handleSubmitAttemptRequest = async (
     const config = readServerConfig();
     const service = createLearnerService(createRecordPersistence(config));
     const result = await service.submitAttempt(resolved.actor, parsed.data);
-    return noStoreJson(result);
+    return noStoreJson(learnerAttemptResponseSchema.parse(result));
   } catch (error) {
     return learnerErrorJson(error);
   }
@@ -129,12 +133,14 @@ export const handleStartRunRequest = async (
     const records = createRecordPersistence(config);
     const run = await records.startRun(resolved.actor, parsed.data);
     const lesson = await records.readLesson(resolved.actor, { runId: run.id });
-    return noStoreJson({
-      runId: run.id,
-      runRevision: lesson.runRevision,
-      lesson: lesson.lesson,
-      evidence: lesson.evidence,
-    });
+    return noStoreJson(
+      learnerRunResponseSchema.parse({
+        runId: run.id,
+        runRevision: lesson.runRevision,
+        lesson: lesson.lesson,
+        evidence: lesson.evidence,
+      })
+    );
   } catch (error) {
     return learnerErrorJson(error);
   }

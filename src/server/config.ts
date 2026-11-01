@@ -5,14 +5,12 @@ import type { PersistenceKind } from "./persistence/kinds";
 const environmentValues = ["development", "preview", "production"] as const;
 
 export type ServerEnvironment = (typeof environmentValues)[number];
-export type PostgresPersistenceAdapter = "postgres" | "drizzle";
 export type AuthProviderKind = "deterministic" | "supabase";
 
 interface ConfigIssueCodes {
   INVALID_APP_ENV: true;
   INVALID_SYNTHETIC_DATA_ONLY: true;
   INVALID_DATABASE_URL: true;
-  INVALID_PERSISTENCE_ADAPTER: true;
   INVALID_SENTRY_DSN: true;
   DATABASE_REQUIRED: true;
   OPENAI_API_KEY_REQUIRED: true;
@@ -49,7 +47,6 @@ export interface AuthConfig {
 export interface ServerConfig {
   appEnv: ServerEnvironment;
   syntheticDataOnly: true;
-  persistenceAdapter: PostgresPersistenceAdapter;
   databaseUrl?: string;
   sentryDsn?: string;
   openAiApiKey?: string;
@@ -80,8 +77,6 @@ const databaseUrlSchema = z.string().refine((value) => {
   const url = parseUrl(value);
   return url !== null && postgresProtocols.has(url.protocol);
 }, "DATABASE_URL must be a postgres:// or postgresql:// URL.");
-
-const persistenceAdapterSchema = z.enum(["postgres", "drizzle"]);
 
 export const isValidSentryDsn = (value: string): boolean => {
   const url = parseUrl(value);
@@ -200,24 +195,6 @@ const readAppEnvironment = (
     "APP_ENV must be development, preview, or production."
   );
   return "development";
-};
-
-const readPersistenceAdapter = (
-  environment: Record<string, string | undefined>,
-  issues: ConfigIssue[]
-): PostgresPersistenceAdapter => {
-  const requested = environment.PERSISTENCE_ADAPTER?.trim() || "postgres";
-  const result = persistenceAdapterSchema.safeParse(requested);
-  if (result.success) {
-    return result.data;
-  }
-  pushIssue(
-    issues,
-    "INVALID_PERSISTENCE_ADAPTER",
-    "PERSISTENCE_ADAPTER",
-    "PERSISTENCE_ADAPTER must be postgres or drizzle."
-  );
-  return "postgres";
 };
 
 const readSentryDsn = (
@@ -505,7 +482,6 @@ export const readServerConfig = (
   const databaseConfig = readDatabaseBootstrapConfig(environment);
   const issues: ConfigIssue[] = [...databaseConfig.issues];
   const appEnvironment = readAppEnvironment(environment, issues);
-  const persistenceAdapter = readPersistenceAdapter(environment, issues);
   const sentryDsn = readSentryDsn(environment, issues);
   const openAi = readOpenAiSettings(environment, issues);
   const auth = readAuthConfig(environment, appEnvironment, issues);
@@ -523,7 +499,6 @@ export const readServerConfig = (
   return {
     appEnv: appEnvironment,
     syntheticDataOnly,
-    persistenceAdapter,
     ...(databaseUrl && { databaseUrl }),
     ...(sentryDsn && { sentryDsn }),
     ...(openAi.apiKey && { openAiApiKey: openAi.apiKey }),

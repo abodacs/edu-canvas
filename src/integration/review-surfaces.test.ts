@@ -140,4 +140,50 @@ describe("review surfaces", () => {
     expect(markup).toContain("Publish and assign");
     expect(markup).toContain("Omar Nabil");
   });
+
+  it("names the published outcome the system actually produced", async () => {
+    const review = await openReview();
+    const render = (
+      published: Parameters<typeof PublishConfirmation>[0]["published"]
+    ) => {
+      return renderToStaticMarkup(
+        createElement(PublishConfirmation, {
+          review,
+          busy: false,
+          published,
+          onBack: noop,
+          onPublish: noop,
+          onClose: noop,
+        })
+      );
+    };
+    const ids = { publicationId: "publication_1", assignmentId: "pack_1" };
+
+    const assigned = render({
+      ...ids,
+      learnerName: "Omar Nabil",
+      learnerAssignmentId: "assignment_1",
+      learnerVariantId: "variant_1",
+    });
+    const packOnly = render({
+      ...ids,
+      learnerName: "Omar Nabil",
+      learnerAssignmentId: null,
+      learnerVariantId: null,
+    });
+
+    expect({
+      assignedSaysAssigned: assigned.includes("published and assigned"),
+      assignedHasLink: assigned.includes("/learn?assignment=assignment_1"),
+      packOnlySaysAssigned: packOnly.includes("published and assigned"),
+      packOnlySaysWhy: packOnly.includes("cites no source material"),
+      packOnlyHasLink: packOnly.includes("/learn?assignment="),
+    }).toStrictEqual({
+      assignedSaysAssigned: true,
+      assignedHasLink: true,
+      packOnlySaysAssigned: false,
+      packOnlySaysWhy: true,
+      packOnlyHasLink: false,
+    });
+  });
 });

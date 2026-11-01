@@ -1,7 +1,19 @@
 import { z } from "zod";
 
+import {
+  learnerNextActivitySchema,
+  learnerSectionSchema,
+} from "@/shared/learner-contract";
+
 import { createEvidenceHash } from "./hashes";
 import { isoTimestampSchema, recordIdSchema, scoreSchema } from "./envelope";
+import {
+  provenanceSchema,
+  ruleVersionsSchema,
+  sectionSchema,
+  validationResultSchema,
+  variantReferenceSchema,
+} from "./authoring";
 import {
   assistanceKindValues,
   assistanceStateValues,
@@ -35,11 +47,13 @@ export const teacherVersionProjectionSchema = z.strictObject({
   predecessorVersionId: recordIdSchema.nullable(),
   revisionKind: z.string().min(1),
   conceptIds: z.array(recordIdSchema).max(recordLimits.listMax),
-  variantReferences: z.array(z.unknown()).max(recordLimits.variantMax),
-  sections: z.array(z.unknown()).length(recordLimits.sectionCount),
-  provenance: z.unknown(),
-  validationResult: z.unknown(),
-  ruleVersions: z.unknown(),
+  variantReferences: z
+    .array(variantReferenceSchema)
+    .max(recordLimits.variantMax),
+  sections: z.array(sectionSchema).length(recordLimits.sectionCount),
+  provenance: provenanceSchema,
+  validationResult: validationResultSchema,
+  ruleVersions: ruleVersionsSchema,
   createdAt: isoTimestampSchema,
 });
 
@@ -73,10 +87,10 @@ export const studentLessonProjectionSchema = z.strictObject({
   publicationId: recordIdSchema,
   lessonVersionId: recordIdSchema,
   assignedVariantId: recordIdSchema,
-  sections: z.array(z.unknown()).length(recordLimits.sectionCount),
+  sections: z.array(learnerSectionSchema).length(recordLimits.sectionCount),
   stage: z.enum(runStageValues),
   firstResponseStatus: z.enum(firstResponseStatusValues),
-  nextActivity: z.unknown(),
+  nextActivity: learnerNextActivitySchema,
 });
 
 export type StudentLessonProjection = z.infer<

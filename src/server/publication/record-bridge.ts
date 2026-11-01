@@ -4,6 +4,7 @@ import {
   createPrivateAnswerDigest,
   createValidationResultHash,
 } from "@/server/records/hashes";
+import { appendCurrentHead } from "@/server/records/inputs";
 import { hashVersion, recordLimits } from "@/server/records/vocabulary";
 import type { RecordPersistence } from "@/server/persistence/records-commands";
 import type { Actor } from "@/server/identity/types";
@@ -87,7 +88,9 @@ const buildSections = (content: StoredPublicContent) => {
       kind,
       title: bounded(variant.title, recordLimits.titleText),
       body: bounded(variant.instructions, recordLimits.bodyText),
-      itemIds: variant.sourceItems.map((item) => item.id),
+      // Every item the section renders, not only the source column: a reader
+      // that resolves an item against this list must find the targets too.
+      itemIds: items.map((item) => item.id),
       items,
     };
   });
@@ -126,9 +129,11 @@ const buildValidationResult = (source: PackBridgeSource) => {
     ),
     checkedAt: source.approvedAt,
     findings: source.validationResult.findings.map((finding) => {
+      const severity: "error" | "warning" =
+        finding.verdict === "hard_block" ? "error" : "warning";
       return {
         code: bounded(finding.code, recordLimits.idLength),
-        severity: finding.verdict === "hard_block" ? "error" : "warning",
+        severity,
         field: bounded(finding.field, recordLimits.idLength),
       };
     }),
@@ -179,16 +184,21 @@ export const bridgePublishedPack = async (
   const packageHash = createPackageHash({ contentHash, privateAnswerDigest });
   const validationResultHash = createValidationResultHash(validationResult);
 
+  // One review is one lesson: the package is named after the generation
+  // request, which survives every revision, so a revised pack appends to the
+  // same chain instead of starting a second package. The append resolves the
+  // head itself; asking for it here would change the input on a retry and turn
+  // a replay into an idempotency conflict.
+  const packageId = `pkg-${bounded(source.requestId, recordLimits.idLength)}`;
+
   const version = await records.appendVersion(actor, {
     operationKey: `bridge-append-${source.packVersionId}`,
     package: {
-      id: `pkg-${source.packVersionId}`,
+      id: packageId,
       title: bounded(source.publicContent.input.prompt, recordLimits.titleText),
       standardId: source.publicContent.input.standardId,
     },
-    expectedHeadRevision: 0,
-    revisionKind: "initial",
-    parentVersionId: null,
+    expectedHeadRevision: appendCurrentHead,
     predecessorVersionId: null,
     curatedReferenceId: null,
     sourceSnapshotId: source.sourceSnapshotId,
@@ -201,7 +211,21 @@ export const bridgePublishedPack = async (
       provider: source.provenance.provider,
       modelVersion: source.provenance.model,
       promptVersion: source.provenance.promptTemplateVersion,
-      authoredEdits: [],
+      // A teacher edit is recorded against the variant it changed; the record
+      // model names the section that variant became. Dropping the list left a
+      // reviewed lesson indistinguishable from an untouched draft.
+      authoredEdits: source.provenance.authoredEdits
+        .slice(0, recordLimits.editMax)
+        .map((edit) => {
+          return {
+            sectionId: bounded(
+              `section-${edit.variantId}`,
+              recordLimits.idLength
+            ),
+            actorId: bounded(edit.actorId, recordLimits.idLength),
+            editedAt: edit.editedAt,
+          };
+        }),
     },
     changedSectionIds: sections.map((section) => section.id),
     ruleVersions,
@@ -209,7 +233,7 @@ export const bridgePublishedPack = async (
     privateAnswerRelationships: relationships,
   });
 
-  const publication = await records.publish(actor, {
+  const recordPublication = await records.publish(actor, {
     operationKey: `bridge-publish-${source.packVersionId}`,
     versionId: version.id,
     contentHash,
@@ -221,13 +245,13 @@ export const bridgePublishedPack = async (
 
   const assignment = await records.assign(actor, {
     operationKey: `bridge-assign-${source.packVersionId}`,
-    publicationId: publication.id,
+    publicationId: recordPublication.id,
     learnerId: source.learnerId,
   });
 
   return {
     versionId: version.id,
-    publicationId: publication.id,
+    publicationId: recordPublication.id,
     assignmentId: assignment.id,
   };
 };

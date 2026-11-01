@@ -30,12 +30,15 @@ import type {
   ProviderResponse,
 } from "./provider";
 import type { GenerationServiceResult, LessonGenerationRecord } from "./types";
+import type { LessonGenerationInput } from "@/shared/generation-contract";
 
 const teacherActor = syntheticTeacherActor({
   tenantId: parseTenantId(syntheticSeed.tenant.id),
 });
 
-const baseInput = (overrides: Record<string, unknown> = {}) => {
+const baseInput = (
+  overrides: Partial<LessonGenerationInput> = {}
+): LessonGenerationInput => {
   return {
     prompt: "equivalent fractions for grade 4",
     grade: 4,
@@ -57,7 +60,7 @@ const recordInput = (): NormalizedGenerationRequest => {
   };
 };
 
-const teacherCommand = (overrides: Record<string, unknown> = {}) => {
+const teacherCommand = (overrides: Partial<LessonGenerationInput> = {}) => {
   return {
     actor: teacherActor,
     input: baseInput(overrides),

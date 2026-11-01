@@ -1,117 +1,149 @@
-# Glossary
+# Glossary — product language
 
-The project's domain language. Terms here are canonical: when code, issues, or docs disagree with this file, one of them is wrong. This file records meaning only — no implementation detail.
+The words a teacher uses. This file records meaning only, and it owns the vocabulary that belongs to the product rather than to one code context. Context vocabulary lives beside its code; see [GLOSSARY-MAP.md](GLOSSARY-MAP.md).
 
-## Identity and access
+Terms here were rebuilt from the desk study in [#94](https://github.com/abodacs/edu-canvas/issues/94) and from [the as-is stories](docs/domain/01-as-is-stories.md). The stories are reconstructed, not observed. Where the code has no record for a term, the entry says so.
 
-### Actor
+## Teaching
 
-A person the server has verified, represented as a teacher actor or a learner actor. An actor is independent of any school membership: the same actor can belong to several schools. A browser never supplies an actor; the server constructs one from a verified provider identity plus current membership.
+### Lesson
 
-### Provider
+A planned period of teaching and student work, with a beginning, an end, and one learning objective. A lesson is what the teacher prepares, approves, and teaches; it is not the same as its written draft, its stored version, or its rendering.
 
-The external service that verifies an email and password and issues a session for it. The application owns the contract with the provider and treats the provider as replaceable.
+No single record holds a lesson. It exists as a draft, then a version, then a publication; see those entries.
 
-### Provider binding
+### Learning
 
-The link between a provider's own identifier for a person and an application actor. A binding is made by trusted provisioning, never as a side effect of signing in, and never from an email address, display name, or other untrusted claim.
+A change in what a student knows or can do. A lesson aims at learning; attendance, completion, or a score alone do not show it.
 
-### Provisioning
+### Learning objective
 
-The trusted operation of creating actors, bindings, memberships, and class assignments, or revoking them. Provisioning is performed by an operator or service principal. It is not a public web action, and teachers and students cannot perform it.
+The intended result of one lesson, written from a curriculum standard. A standard states what students should know by the end of a grade band; an objective states what this lesson will achieve today. The objective is narrower than the standard and is not a summary of the activities.
 
-### Membership
+### Curriculum
 
-An actor's role — teacher or student — inside one tenant. An actor may hold several memberships; a session selects exactly one. A membership without an active status grants nothing.
+What students study and how that content develops over time.
 
-### Tenant
+### Curriculum standard
 
-A school. Access inside a tenant requires an active membership, and a class relationship where the resource belongs to a class.
+A statement of what students are expected to know or do, published by a curriculum authority. A standard is not a lesson plan. One standard can support many lessons, and one lesson may address only part of a standard.
 
-### Class assignment
+**Implementing names:** `standards`
 
-The relationship between a teacher's membership and a class in the same tenant. It is what lets a teacher reach that class's learners and evidence, and it ends when the assignment ends.
+### Prerequisite
 
-### Learner binding
+Knowledge or a skill a student needs before a later task. A prerequisite is a relationship between concepts, not a previous lesson and not a record of what a student has done.
 
-The link from a student membership to that tenant's learner record. The caller never chooses the learner identity; the server derives it from the binding.
+**Implementing names:** `prerequisite_nodes`, `prerequisite_edges`
 
-### Session
+### Equivalent fractions
 
-A revocable application credential the browser holds after a successful sign-in. A session selects one membership and carries its own expiry and revocation state. A session is not a provider session and does not become valid because the provider still recognises it.
+Different fraction names for the same number: `1/2`, `2/4`, and `3/6` name the same quantity. The seed lesson teaches this relationship.
 
-### Pending authentication
+### Misconception
 
-The short-lived state after a verified sign-in that has not yet chosen a membership, because the actor belongs to more than one school. It cannot authorize any domain operation.
+A wrong idea that produces a wrong answer, as distinct from a slip. A misconception is what a teacher names when two wrong answers come from the same reasoning.
 
-### Session generation
+### Differentiation
 
-A non-secret label on a session, used to tell one sign-in apart from another for caching and to discard results that arrive after the session changed. It is not a secret and grants nothing.
+Changes to teaching or practice for students with different current requirements. Different colours, or four versions of the same task, do not by themselves differentiate anything.
 
-### Capability
+### Mastery
 
-Something an actor is allowed to do — read the environment, generate, preview, publish, read an assignment, submit an attempt, record a teacher decision, cancel a generation, or log out. Capabilities follow from the active membership's role, never from the browser.
+A judgement that a student can use a skill without support, now. Mastery is not a score and is not permanent. No record in the code models it.
 
-### Roster scope
+### Adaptation
 
-The set of classes a teacher is currently assigned to inside the active tenant. A teacher reaches their own drafts and their assigned classes, and no other teacher's drafts.
+A change to the next activity based on what a student did. Adaptation is the product's intended action after evidence; the stories show a teacher choosing, not a system proposing.
 
-### Revocation
+## Work in the classroom
 
-Ending access before it would otherwise expire: signing out, revoking a membership, or disabling an actor. Revocation committed first blocks a later write that was authorized earlier.
+### Worked example
 
-## Verification vocabulary
+A solution shown with the reasoning for each step, before students work alone.
 
-### Full identity
+### Guided practice
 
-One combination of component, version, surface, state, and runtime a browser test must exercise: routes, change handlers, validation branches, persisted effects, keyboard, phone, right-to-left, two tabs, page restoration, and actor switching.
+A task a student attempts with teacher guidance or a hint available.
 
-### Baseline case
+### Independent check
 
-One named, always-run test in the authentication and domain-policy matrices. Baseline cases are a floor; every concrete route, loader, or reference adds executed cases.
+A task attempted without a hint before the first response. It is what produces independent learning evidence.
 
-### Referent
+### Independent learning evidence
 
-The record a protected operation names — a draft, roster, publication, activity version, learner, or attempt. A referent must both belong to the authorized scope and match the intended relationship.
+Work produced without an answer or a hint during the task. It does not mean home use without a teacher, and it is not the same as research evidence.
 
-## Records, versions, and evidence
+### Feedback
 
-### Lesson package
+Information about a response that helps a student choose the next action. A score is not feedback.
 
-The teacher-owned identity a version chain belongs to. It carries the owner, the target standard, the title, and the head revision used for concurrency. It carries no lesson content.
+### Distractor
 
-### Lesson version
+An incorrect option chosen to reveal a specific error. A distractor is not a random wrong answer.
 
-An immutable revision of a package: ordered sections, variant references, provenance, private answer relationships, content and package hashes, validation evidence, and rule versions. A section revision keeps the package; a fresh draft starts a new package.
+### Representation
 
-### Publication
+A diagram or notation that shows a mathematical idea, such as a partitioned rectangle or a number line.
 
-The immutable fact that a teacher approved one exact lesson version. It pins the content hash, package hash, private-answer digest, validation-result hash, and rule versions. It never mutates the version.
+### Answer key
 
-### Published lesson projection
+The teacher's record of correct responses for one task. It is private to the teacher and never reaches the student during the attempt.
 
-The learner-facing view derived from a lesson version by a versioned projection function. It is not a stored copy, and its hash must match the publication.
+### Assessment
 
-### Learner attempt
+The collection and interpretation of evidence about learning. Formative assessment uses that evidence to change the next teaching action; a score is one record inside assessment, not a replacement for it.
 
-An immutable response record in `learner_attempts`, keyed to the learner run, item, and publication. It is not the demo `attempts` table, which remains fixture data.
+### Reteaching
 
-### Assistance event
+Teaching the same objective again by a different route, after evidence shows it was not learned.
 
-An append-only record that a learner used a hint or other assistance on a specific run and item, before any feedback release that claims it was saved.
+### Remediation
 
-### Learner run
+Work on a prerequisite that the lesson assumed, for a student who does not have it.
 
-The mutable progress record for one assignment: stage, first-response status, revision, and next activity. Its publication, learner, and variant never change.
+## Evidence and claims
 
-### Teacher decision
+### Research evidence
 
-The immutable choice — accept, pause, or override — bound to the current evidence hash and the assigning teacher.
+A record that makes a claim checkable: a trial, a survey, an observation with a date and a method. It is not the same as learning evidence collected from a class.
 
-### Operation receipt
+### Claim
 
-The record that makes a write replay-safe: tenant, actor, membership, authorization revision, action, operation key, input hash, and result ids.
+A statement that needs evidence.
 
-### Curated reference
+### Hypothesis
 
-Human-supplied evidence for the focused path. It is explicitly not a source snapshot and carries no retrieval time or native match confidence.
+A possible explanation that needs a test. A hypothesis stated clearly is not a weakness in a plan.
+
+### Observed, inferred, assumed
+
+Three confidence labels. **Observed** means a concrete interaction or result is recorded. **Inferred** means a requirement or workflow strongly suggests it. **Assumed** means it still needs evidence. Every statement about teachers or students carries one of the three.
+
+## Class
+
+### Class
+
+A named group of students taught together by one teacher. Every as-is story touches a class: its period, its materials, its list, its misconceptions.
+
+**Not implemented.** The schema has `class_assignments` — a teacher-to-class link — and no record for the class itself. The class exists as an identifier with no name and no member list.
+
+### Learner
+
+A student in one tenant, as the product sees them. A learner is not the same as an actor: an actor signs in, a learner receives work.
+
+## Legacy names
+
+These names refer to the retired fixture model. They are kept because the tables still exist.
+
+### Legacy activity
+
+A seeded activity record from the pre-record model, with its content frozen in an activity version. It is fixture data, not the lesson the teacher edits, and it does not imply the learner flow uses it.
+
+**Implementing names:** `activities`, `activity_versions`
+
+### Legacy attempt
+
+A seeded attempt row from the pre-record model. It is fixture data, not a learner attempt and not a generation attempt.
+
+**Implementing names:** `attempts`

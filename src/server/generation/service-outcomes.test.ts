@@ -15,12 +15,13 @@ import {
 } from "./provider";
 import { createGenerationService } from "./service";
 import { createSyntheticCurriculumContext } from "./semantic-validation";
+import type { LessonGenerationInput } from "@/shared/generation-contract";
 
 const teacherActor = syntheticTeacherActor({
   tenantId: parseTenantId(syntheticSeed.tenant.id),
 });
 
-const input = {
+const input: LessonGenerationInput = {
   prompt: "equivalent fractions for grade 4",
   grade: 4,
   standardId: syntheticSeed.standard.id,

@@ -14,7 +14,7 @@ export const semanticValidationVerdictValues = [
   "hard_block",
 ] as const;
 export const recoveryActionValues = ["edit", "replace", "retry"] as const;
-const variantKindValues = ["standard", "scaffold", "challenge"] as const;
+export const variantKindValues = ["standard", "scaffold", "challenge"] as const;
 export const generationStateValues = [
   "requested",
   "generating",

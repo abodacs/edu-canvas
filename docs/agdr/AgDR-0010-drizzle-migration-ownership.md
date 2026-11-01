@@ -33,7 +33,7 @@ The security model needs SQL the snapshot cannot express. `drizzle-kit` 0.31.10 
 4. A preflight guard reads `meta/_journal.json` and the ledger before applying anything. It rejects a non-increasing journal timestamp, and it rejects an unapplied entry whose timestamp is not newer than the newest applied row. This turns Drizzle's silent skip into a failed release. It also restores the old runner's "applied migrations are immutable" property, because an edited file no longer matches its ledger hash.
 5. `drizzle-kit push` and `drizzle-kit pull` are forbidden. Push bypasses the journal. Pull overwrites the authored schema and loses the forced-RLS and trigger layer.
 6. `app_migrations` is retired. No code read it, and no deployed database existed at the switch.
-7. Primary keys are unchanged: application-generated UUIDv7 `text` with no database default ([AgDR-0009](AgDR-0009-primary-key-identifier-strategy.md)).
+7. Primary keys are unchanged: application-generated UUIDv7 `text` with no database default ([AgDR-0015](AgDR-0015-primary-key-identifier-strategy.md)).
 
 CI runs `pnpm db:generate` and fails on any resulting `drizzle/` diff, so a schema edit without a migration, or an edited migration, cannot merge.
 
@@ -52,4 +52,4 @@ CI runs `pnpm db:generate` and fails on any resulting `drizzle/` diff, so a sche
 - [Drizzle schema and migration notes](../../drizzle/README.md)
 - [Foundation runbook](../foundation-runbook.md)
 - [Threat model](../security/threat-model.md)
-- [AgDR-0009 — UUIDv7 primary keys](AgDR-0009-primary-key-identifier-strategy.md)
+- [AgDR-0015 — UUIDv7 primary keys](AgDR-0015-primary-key-identifier-strategy.md)

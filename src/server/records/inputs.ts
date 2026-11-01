@@ -31,6 +31,18 @@ const progressRevisionSchema = z
   .min(0)
   .max(recordLimits.revisionMax);
 
+/**
+`"current"` means "whatever the package's head is now". A writer that has no
+stale-read expectation uses it, so the same intent produces the same input on a
+retry — which is what makes the operation receipt replay instead of conflicting.
+*/
+export const appendHeadRevisionSchema = z.union([
+  progressRevisionSchema,
+  z.literal("current"),
+]);
+
+export const appendCurrentHead = "current" as const;
+
 export const storeGroundingInputSchema = z.strictObject({
   operationKey: operationKeySchema,
   standardId: recordIdSchema,
@@ -44,30 +56,45 @@ export const storeGroundingInputSchema = z.strictObject({
 
 export type StoreGroundingInput = z.infer<typeof storeGroundingInputSchema>;
 
-export const appendVersionInputSchema = z.strictObject({
-  operationKey: operationKeySchema,
-  package: z.strictObject({
-    id: recordIdSchema,
-    title: z.string().trim().min(1).max(recordLimits.titleText),
-    standardId: recordIdSchema,
-  }),
-  expectedHeadRevision: progressRevisionSchema,
-  revisionKind: z.enum(revisionKindValues),
-  parentVersionId: recordIdSchema.nullable(),
-  predecessorVersionId: recordIdSchema.nullable(),
-  curatedReferenceId: recordIdSchema.nullable(),
-  sourceSnapshotId: recordIdSchema.nullable().optional(),
-  generationRequestId: recordIdSchema.nullable(),
-  conceptIds: z.array(recordIdSchema).max(recordLimits.listMax),
-  variantReferences: variantReferencesSchema,
-  objectiveHash: hashSchema,
-  sections: sectionsSchema,
-  provenance: provenanceSchema,
-  changedSectionIds: z.array(recordIdSchema).max(recordLimits.sectionCount),
-  ruleVersions: ruleVersionsSchema,
-  validationResult: validationResultSchema,
-  privateAnswerRelationships: privateAnswerRelationshipsSchema,
-});
+export const appendVersionInputSchema = z
+  .strictObject({
+    operationKey: operationKeySchema,
+    package: z.strictObject({
+      id: recordIdSchema,
+      title: z.string().trim().min(1).max(recordLimits.titleText),
+      standardId: recordIdSchema,
+    }),
+    expectedHeadRevision: appendHeadRevisionSchema,
+    revisionKind: z.enum(revisionKindValues).optional(),
+    parentVersionId: recordIdSchema.nullable().optional(),
+    predecessorVersionId: recordIdSchema.nullable(),
+    curatedReferenceId: recordIdSchema.nullable(),
+    sourceSnapshotId: recordIdSchema.nullable().optional(),
+    generationRequestId: recordIdSchema.nullable(),
+    conceptIds: z.array(recordIdSchema).max(recordLimits.listMax),
+    variantReferences: variantReferencesSchema,
+    objectiveHash: hashSchema,
+    sections: sectionsSchema,
+    provenance: provenanceSchema,
+    changedSectionIds: z.array(recordIdSchema).max(recordLimits.sectionCount),
+    ruleVersions: ruleVersionsSchema,
+    validationResult: validationResultSchema,
+    privateAnswerRelationships: privateAnswerRelationshipsSchema,
+  })
+  .refine(
+    (input) => {
+      return input.expectedHeadRevision === appendCurrentHead
+        ? input.revisionKind === undefined &&
+            input.parentVersionId === undefined
+        : input.revisionKind !== undefined &&
+            input.parentVersionId !== undefined;
+    },
+    {
+      message:
+        "A current-head append derives its lineage; a stated revision carries it.",
+      path: ["expectedHeadRevision"],
+    }
+  );
 
 export type AppendVersionInput = z.infer<typeof appendVersionInputSchema>;
 
@@ -151,14 +178,22 @@ export const readEvidenceInputSchema = z.strictObject({
   runId: recordIdSchema,
 });
 
+export type ReadEvidenceInput = z.infer<typeof readEvidenceInputSchema>;
+
 export const readLessonInputSchema = z.strictObject({
   runId: recordIdSchema,
 });
+
+export type ReadLessonInput = z.infer<typeof readLessonInputSchema>;
 
 export const readAttemptContextInputSchema = z.strictObject({
   runId: recordIdSchema,
   itemId: recordIdSchema,
 });
+
+export type ReadAttemptContextInput = z.infer<
+  typeof readAttemptContextInputSchema
+>;
 
 export const referentTableValues = [
   "standards",

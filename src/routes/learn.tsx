@@ -4,32 +4,14 @@ import { useEffect, useState } from "react";
 
 import { useAuthSession } from "@/components/auth/use-auth-session";
 import { csrfHeaderName } from "@/shared/identity-contract";
-
-interface LearnerItem {
-  readonly id: string;
-  readonly label: string;
-  readonly role: "source" | "target" | "distractor";
-}
-
-interface LearnerSection {
-  readonly id: string;
-  readonly title: string;
-  readonly body: string;
-  readonly items?: readonly LearnerItem[];
-}
-
-interface RunResponse {
-  readonly runId: string;
-  readonly runRevision: number;
-  readonly lesson: { readonly sections: readonly LearnerSection[] };
-}
-
-interface AttemptResponse {
-  readonly score: number;
-  readonly correctness: string;
-  readonly correctMatches: number;
-  readonly requiredMatches: number;
-}
+import {
+  learnerAttemptResponseSchema,
+  learnerRunResponseSchema,
+} from "@/shared/learner-contract";
+import type {
+  LearnerAttemptResponse,
+  LearnerRunResponse,
+} from "@/shared/learner-contract";
 
 type Phase = "loading" | "ready" | "saving" | "done" | "error";
 
@@ -63,10 +45,10 @@ const LearnBoard = ({
   readonly csrf: string;
 }) => {
   const [phase, setPhase] = useState<Phase>("loading");
-  const [run, setRun] = useState<RunResponse | null>(null);
+  const [run, setRun] = useState<LearnerRunResponse | null>(null);
   const [activeSource, setActiveSource] = useState<string | null>(null);
   const [pairs, setPairs] = useState<Record<string, string>>({});
-  const [result, setResult] = useState<AttemptResponse | null>(null);
+  const [result, setResult] = useState<LearnerAttemptResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -86,7 +68,7 @@ const LearnBoard = ({
           setPhase("error");
           return;
         }
-        setRun((await response.json()) as RunResponse);
+        setRun(learnerRunResponseSchema.parse(await response.json()));
         setPhase("ready");
       } catch {
         if (isCurrent) {
@@ -132,7 +114,7 @@ const LearnBoard = ({
         setPhase("error");
         return;
       }
-      setResult((await response.json()) as AttemptResponse);
+      setResult(learnerAttemptResponseSchema.parse(await response.json()));
       setPhase("done");
     } catch {
       setError(messageFor(0));

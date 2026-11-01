@@ -1,12 +1,15 @@
 import type { TeacherActor } from "@/server/identity/types";
 import type { ArtifactGateSnapshot } from "@/server/safety/artifact-gate-contract";
 import type {
+  generationStateValues,
   LessonDifficulty,
   LessonLanguage,
   ModerationCategory,
   PublicGenerationResult,
   RecoveryAction,
   SemanticValidationVerdict,
+  variantKindValues,
+  LessonGenerationInput,
 } from "@/shared/generation-contract";
 import type { FractionLessonDraft } from "@/shared/fractions-contract";
 
@@ -30,8 +33,6 @@ export interface ProviderProvenance {
   validatorVersion: string;
   catalogVersion?: string;
 }
-
-export const variantKindValues = ["standard", "scaffold", "challenge"] as const;
 
 export type VariantKind = (typeof variantKindValues)[number];
 
@@ -161,14 +162,7 @@ export interface ValidationFailure {
 
 export type ValidationResult = ValidationSuccess | ValidationFailure;
 
-export type GenerationState =
-  | "requested"
-  | "generating"
-  | "ready-for-review"
-  | "blocked-by-validation"
-  | "blocked-by-moderation"
-  | "failed-retryable"
-  | "failed-terminal";
+export type GenerationState = (typeof generationStateValues)[number];
 
 export interface GenerationAttemptRecord {
   attemptNumber: number;
@@ -329,7 +323,11 @@ export interface GenerationCommand {
   Only a verified teacher actor may generate drafts; learners cannot compile.
   */
   actor: TeacherActor;
-  input: unknown;
+  /**
+  The delivery seam parses the request body with `lessonGenerationInputSchema`,
+  so a command carries a value that already crossed that boundary.
+  */
+  input: LessonGenerationInput;
 }
 
 export interface GenerationServiceResult {

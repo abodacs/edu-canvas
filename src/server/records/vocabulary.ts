@@ -1,5 +1,18 @@
 import { z } from "zod";
 
+export {
+  correctnessValues,
+  firstResponseStatusValues,
+  runStageValues,
+  sectionKindValues,
+} from "@/shared/learner-contract";
+export type {
+  Correctness,
+  FirstResponseStatus,
+  RunStage,
+  SectionKind,
+} from "@/shared/learner-contract";
+
 export const hashVersion = "sha256-canonical-json-v1" as const;
 
 export const recordSchemaVersionValues = [
@@ -15,15 +28,7 @@ export const recordSchemaVersionValues = [
 ] as const;
 export type RecordSchemaVersion = (typeof recordSchemaVersionValues)[number];
 
-export const legacySchemaVersionValues = [
-  "legacy-activity-v1",
-  "legacy-generation-v1",
-  "legacy-attempt-v1",
-] as const;
-export type LegacySchemaVersion = (typeof legacySchemaVersionValues)[number];
-
 export const schemaVersionSchema = z.enum(recordSchemaVersionValues);
-export const legacySchemaVersionSchema = z.enum(legacySchemaVersionValues);
 
 export const revisionKindValues = [
   "initial",
@@ -33,38 +38,11 @@ export const revisionKindValues = [
 ] as const;
 export type RevisionKind = (typeof revisionKindValues)[number];
 
-export const sectionKindValues = [
-  "worked-example",
-  "guided-practice",
-  "independent-check",
-  "follow-up",
-] as const;
-export type SectionKind = (typeof sectionKindValues)[number];
-
-export const variantKindValues = ["standard", "scaffold", "challenge"] as const;
-export type VariantKind = (typeof variantKindValues)[number];
-
-export const runStageValues = [
-  "assigned",
-  "active",
-  "awaiting-decision",
-  "paused",
-  "advanced",
-  "completed",
-] as const;
-export type RunStage = (typeof runStageValues)[number];
-
-export const firstResponseStatusValues = ["pending", "submitted"] as const;
-export type FirstResponseStatus = (typeof firstResponseStatusValues)[number];
-
 export const assistanceKindValues = ["hint", "other"] as const;
 export type AssistanceKind = (typeof assistanceKindValues)[number];
 
 export const assistanceStateValues = ["none", "hinted"] as const;
 export type AssistanceState = (typeof assistanceStateValues)[number];
-
-export const correctnessValues = ["correct", "partial", "incorrect"] as const;
-export type Correctness = (typeof correctnessValues)[number];
 
 export const teacherDecisionActionValues = [
   "accept",

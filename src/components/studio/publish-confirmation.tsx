@@ -40,23 +40,38 @@ export const PublishConfirmation = ({
   }, []);
 
   if (published) {
+    // A publish that cites no reviewed source has no canonical record to assign,
+    // so it produces no learner activity. Saying "published and assigned" here
+    // told the teacher something the system had not done.
+    const hasLearnerActivity =
+      published.learnerAssignmentId !== null &&
+      published.learnerVariantId !== null;
+
     return (
       <section className="review-published" aria-labelledby="published-heading">
         <Check aria-hidden="true" className="review-published__mark" />
         <h2 id="published-heading" ref={heading} tabIndex={-1}>
-          The pack is published and assigned
+          {hasLearnerActivity
+            ? "The pack is published and assigned"
+            : "The pack is published"}
         </h2>
-        <p>
-          {published.learnerName} now has the reviewed pack. The published
-          version cannot change; a later edit starts a new revision.
-        </p>
+        {hasLearnerActivity ? (
+          <p>
+            {published.learnerName} now has the reviewed pack. The published
+            version cannot change; a later edit starts a new revision.
+          </p>
+        ) : (
+          <p>
+            {`The reviewed pack is stored for ${published.learnerName}, but this review cites no source material, so the learner runtime has no activity to open. Generate the next draft from a source, then publish it to create the learner link.`}
+          </p>
+        )}
         <dl>
           <div>
             <dt>Publication</dt>
             <dd>{published.publicationId}</dd>
           </div>
           <div>
-            <dt>Assignment</dt>
+            <dt>Pack assignment</dt>
             <dd>{published.assignmentId}</dd>
           </div>
           <div>

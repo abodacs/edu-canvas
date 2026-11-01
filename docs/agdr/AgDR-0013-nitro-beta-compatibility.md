@@ -1,4 +1,4 @@
-# AgDR-0003 — Keep Nitro 3 beta while Vite 8 is pinned
+# AgDR-0013 — Keep Nitro 3 beta while Vite 8 is pinned
 
 > In the context of deciding whether to replace the pinned Nitro beta without destabilizing the walking skeleton, facing a stable 3.x release whose peer contract targets Vite 7 and whose package is deprecated in favor of an unavailable 3.0.1, I decided to keep Nitro 3.0.260610-beta with the existing Vite 8.1.4 pin, to achieve a reproducible release-shaped build with minimal dependency churn, accepting prerelease risk and the need to reevaluate when stable Nitro supports Vite 8.
 

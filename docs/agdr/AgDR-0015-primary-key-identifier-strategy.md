@@ -1,4 +1,4 @@
-# AgDR-0009 — Time-ordered UUIDv7 primary keys, generated app-side
+# AgDR-0015 — Time-ordered UUIDv7 primary keys, generated app-side
 
 > In the context of every table carrying an application-generated primary key, facing the choice between integer sequences, random UUIDv4, and time-ordered UUIDv7, I decided that all new primary keys are bare UUIDv7 values generated in the server process with Node's built-in `crypto.randomUUIDv7()`, with no prefix and no schema change, to achieve index-local inserts and non-enumerable identifiers without a database round-trip, accepting that IDs are not strictly comparable within one millisecond, that creation time is readable from the ID, and that seeded fixture IDs stay human-readable.
 

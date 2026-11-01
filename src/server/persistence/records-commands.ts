@@ -25,6 +25,7 @@ import {
   createValidationResultHash,
 } from "../records/hashes";
 import {
+  appendCurrentHead,
   readAttemptContextInputSchema,
   readAuthoringInputSchema,
   readEvidenceInputSchema,
@@ -39,12 +40,17 @@ import {
   projectTeacherEvidence,
   projectTeacherVersion,
 } from "../records/projections";
+import { decideReceipt, withoutOperationKey } from "./receipt";
 import { RecordUniqueViolationError } from "./records-port";
 import type {
   AppendVersionInput,
   AssignInput,
   ChooseInput,
   PublishInput,
+  ReadAttemptContextInput,
+  ReadAuthoringInput,
+  ReadEvidenceInput,
+  ReadLessonInput,
   RecordAttemptInput,
   RecordHintInput,
   StartRunInput,
@@ -106,33 +112,53 @@ export interface AttemptContext {
   readonly relationships: readonly PrivateAnswerRelationship[];
 }
 
+/**
+The record model's command surface. Each method takes the input type its own schema declares, so a caller builds a valid input or fails to compile.
+
+The implementation still parses at the store edge. A TypeScript type is erased at runtime, and this module is the last software gate before SQL, so the parse is the guard rather than a duplicate of the caller's check.
+*/
 export interface RecordPersistence {
   readonly kind: "seeded-demo" | "postgres";
   check: () => Promise<boolean>;
   storeGrounding: (
     actor: Actor,
-    input: unknown
+    input: StoreGroundingInput
   ) => Promise<RecordMutationResult>;
   appendVersion: (
     actor: Actor,
-    input: unknown
+    input: AppendVersionInput
   ) => Promise<RecordMutationResult>;
-  publish: (actor: Actor, input: unknown) => Promise<RecordMutationResult>;
-  assign: (actor: Actor, input: unknown) => Promise<RecordMutationResult>;
-  startRun: (actor: Actor, input: unknown) => Promise<RecordMutationResult>;
-  recordHint: (actor: Actor, input: unknown) => Promise<RecordMutationResult>;
+  publish: (actor: Actor, input: PublishInput) => Promise<RecordMutationResult>;
+  assign: (actor: Actor, input: AssignInput) => Promise<RecordMutationResult>;
+  startRun: (
+    actor: Actor,
+    input: StartRunInput
+  ) => Promise<RecordMutationResult>;
+  recordHint: (
+    actor: Actor,
+    input: RecordHintInput
+  ) => Promise<RecordMutationResult>;
   recordAttempt: (
     actor: Actor,
-    input: unknown
+    input: RecordAttemptInput
   ) => Promise<RecordMutationResult>;
-  choose: (actor: Actor, input: unknown) => Promise<RecordMutationResult>;
-  readAuthoring: (actor: Actor, input: unknown) => Promise<AuthoringProjection>;
+  choose: (actor: Actor, input: ChooseInput) => Promise<RecordMutationResult>;
+  readAuthoring: (
+    actor: Actor,
+    input: ReadAuthoringInput
+  ) => Promise<AuthoringProjection>;
   readEvidence: (
     actor: Actor,
-    input: unknown
+    input: ReadEvidenceInput
   ) => Promise<TeacherEvidenceProjection>;
-  readLesson: (actor: Actor, input: unknown) => Promise<LessonReadResult>;
-  readAttemptContext: (actor: Actor, input: unknown) => Promise<AttemptContext>;
+  readLesson: (
+    actor: Actor,
+    input: ReadLessonInput
+  ) => Promise<LessonReadResult>;
+  readAttemptContext: (
+    actor: Actor,
+    input: ReadAttemptContextInput
+  ) => Promise<AttemptContext>;
 }
 
 const writeCapability: Record<WriteAction, Capability> = {
@@ -166,15 +192,6 @@ const toIso = (value: unknown): string => {
   }
   const parsed = new Date(String(value));
   return Number.isNaN(parsed.getTime()) ? String(value) : parsed.toISOString();
-};
-
-const stripOperationKey = <T extends { operationKey: string }>(
-  input: T
-): Omit<T, "operationKey"> => {
-  const payload = Object.fromEntries(
-    Object.entries(input).filter(([key]) => key !== "operationKey")
-  );
-  return payload as Omit<T, "operationKey">;
 };
 
 const parseOrThrow = <T>(schema: z.ZodType<T>, value: unknown): T => {
@@ -383,6 +400,41 @@ const mapDecision = (row: StoredRow): TeacherDecision => {
   });
 };
 
+interface AppendHead {
+  readonly headRevision: number;
+  readonly headVersionId: string | null;
+}
+
+interface AppendLineage {
+  readonly expectedHeadRevision: number;
+  readonly revisionKind: NonNullable<AppendVersionInput["revisionKind"]>;
+  readonly parentVersionId: string | null;
+}
+
+/**
+A stated revision must match the head; a current-head append adopts it. Either way the row records an ordinal, a kind, and a parent that are true of the chain at the moment of the write, and the caller that owns no stale-read expectation does not have to guess them.
+*/
+const resolveAppendLineage = (
+  input: AppendVersionInput,
+  head: AppendHead
+): AppendLineage => {
+  if (input.expectedHeadRevision === appendCurrentHead) {
+    return {
+      expectedHeadRevision: head.headRevision,
+      revisionKind: head.headRevision === 0 ? "initial" : "section-revision",
+      parentVersionId: head.headVersionId,
+    };
+  }
+  if (input.expectedHeadRevision !== head.headRevision) {
+    throw recordError("STALE_VERSION");
+  }
+  return {
+    expectedHeadRevision: head.headRevision,
+    revisionKind: input.revisionKind ?? "initial",
+    parentVersionId: input.parentVersionId ?? null,
+  };
+};
+
 const collectItemIds = (version: LessonVersion): Set<string> => {
   const items = new Set<string>();
   for (const section of version.sections) {
@@ -473,7 +525,7 @@ export const createRecordCommands = <TTransaction>(
   const runWrite = async <TInput extends { operationKey: string }>(
     actor: Actor,
     action: WriteAction,
-    raw: unknown,
+    submitted: object,
     perform: (
       transaction: TTransaction,
       input: TInput
@@ -485,12 +537,12 @@ export const createRecordCommands = <TTransaction>(
     if (!actor) {
       throw recordError("UNAUTHENTICATED");
     }
-    const parsed = writeInputSchemas[action].safeParse(raw);
+    const parsed = writeInputSchemas[action].safeParse(submitted);
     if (!parsed.success) {
       throw recordError("INVALID_INPUT", { cause: parsed.error });
     }
     const input = parsed.data as unknown as TInput;
-    const inputHash = createInputHash(stripOperationKey(input));
+    const inputHash = createInputHash(withoutOperationKey(input));
 
     try {
       return await backend.withTransaction(async (transaction) => {
@@ -504,14 +556,22 @@ export const createRecordCommands = <TTransaction>(
           action,
           operation_key: input.operationKey,
         });
-        if (receipt) {
-          if (receipt.input_hash !== inputHash) {
-            throw recordError("IDEMPOTENCY_CONFLICT", {
-              cause: { action, operationKey: input.operationKey },
-            });
-          }
-          const ids = receipt.result_ids as readonly string[];
-          const [first] = ids;
+        const decision = decideReceipt(
+          receipt
+            ? {
+                inputHash: String(receipt.input_hash),
+                resultIds: receipt.result_ids as readonly string[],
+              }
+            : undefined,
+          inputHash
+        );
+        if (decision.outcome === "conflict") {
+          throw recordError("IDEMPOTENCY_CONFLICT", {
+            cause: { action, operationKey: input.operationKey },
+          });
+        }
+        if (decision.outcome === "replay") {
+          const [first] = decision.resultIds;
           if (typeof first !== "string") {
             throw recordError("PERSISTENCE_UNAVAILABLE");
           }
@@ -644,12 +704,12 @@ export const createRecordCommands = <TTransaction>(
 
   const storeGrounding = (
     actor: Actor,
-    raw: unknown
+    submitted: StoreGroundingInput
   ): Promise<RecordMutationResult> => {
     return runWrite<StoreGroundingInput>(
       actor,
       "store-grounding",
-      raw,
+      submitted,
       async (transaction, input) => {
         await requireRow(transaction, "standards", {
           tenant_id: actor.tenantId,
@@ -704,7 +764,7 @@ export const createRecordCommands = <TTransaction>(
     transaction: TTransaction,
     actor: Actor,
     input: AppendVersionInput
-  ): Promise<void> => {
+  ): Promise<AppendHead> => {
     await requireRow(transaction, "standards", {
       tenant_id: actor.tenantId,
       id: input.package.standardId,
@@ -721,9 +781,21 @@ export const createRecordCommands = <TTransaction>(
       ) {
         throw recordError("FORBIDDEN");
       }
-      return;
+      const headRevision = Number(packageRow.head_revision);
+      const headRow = await findOne(transaction, "lesson_versions", {
+        tenant_id: actor.tenantId,
+        package_id: input.package.id,
+        revision: headRevision,
+      });
+      return {
+        headRevision,
+        headVersionId: headRow ? String(headRow.id) : null,
+      };
     }
-    if (input.expectedHeadRevision !== 0) {
+    if (
+      input.expectedHeadRevision !== 0 &&
+      input.expectedHeadRevision !== appendCurrentHead
+    ) {
       throw recordError("STALE_VERSION");
     }
     await backend.insert(transaction, "lesson_packages", {
@@ -736,6 +808,7 @@ export const createRecordCommands = <TTransaction>(
       created_at: clock(),
       updated_at: clock(),
     });
+    return { headRevision: 0, headVersionId: null };
   };
 
   const assertCuratedReference = async (
@@ -858,17 +931,18 @@ export const createRecordCommands = <TTransaction>(
 
   const appendVersion = (
     actor: Actor,
-    raw: unknown
+    submitted: AppendVersionInput
   ): Promise<RecordMutationResult> => {
     return runWrite<AppendVersionInput>(
       actor,
       "append-version",
-      raw,
+      submitted,
       async (transaction, input) => {
-        await assertAppendPackage(transaction, actor, input);
+        const head = await assertAppendPackage(transaction, actor, input);
         await assertVersionReferences(transaction, actor, input);
 
-        const revision = input.expectedHeadRevision + 1;
+        const lineage = resolveAppendLineage(input, head);
+        const revision = lineage.expectedHeadRevision + 1;
         const contentHash = createContentHash({
           conceptIds: input.conceptIds,
           sections: input.sections,
@@ -887,7 +961,7 @@ export const createRecordCommands = <TTransaction>(
           packageId: input.package.id,
           revision,
           schemaVersion: "lesson-package-curated-v1",
-          parentVersionId: input.parentVersionId,
+          parentVersionId: lineage.parentVersionId,
           predecessorVersionId: input.predecessorVersionId,
           curatedReferenceId: input.curatedReferenceId,
           sourceSnapshotId: input.sourceSnapshotId ?? null,
@@ -897,7 +971,7 @@ export const createRecordCommands = <TTransaction>(
           objectiveHash: input.objectiveHash,
           sections: input.sections,
           provenance: input.provenance,
-          revisionKind: input.revisionKind,
+          revisionKind: lineage.revisionKind,
           changedSectionIds: input.changedSectionIds,
           contentHash,
           packageHash: createPackageHash({ contentHash, privateAnswerDigest }),
@@ -943,7 +1017,7 @@ export const createRecordCommands = <TTransaction>(
           {
             tenant_id: actor.tenantId,
             id: version.packageId,
-            head_revision: input.expectedHeadRevision,
+            head_revision: lineage.expectedHeadRevision,
           },
           { head_revision: revision, updated_at: clock() }
         );
@@ -958,12 +1032,12 @@ export const createRecordCommands = <TTransaction>(
 
   const publish = (
     actor: Actor,
-    raw: unknown
+    submitted: PublishInput
   ): Promise<RecordMutationResult> => {
     return runWrite<PublishInput>(
       actor,
       "publish",
-      raw,
+      submitted,
       async (transaction, input) => {
         const version = await loadVersion(
           transaction,
@@ -1024,12 +1098,12 @@ export const createRecordCommands = <TTransaction>(
 
   const assign = (
     actor: Actor,
-    raw: unknown
+    submitted: AssignInput
   ): Promise<RecordMutationResult> => {
     return runWrite<AssignInput>(
       actor,
       "assign",
-      raw,
+      submitted,
       async (transaction, input) => {
         const publication = await requirePublication(
           transaction,
@@ -1094,12 +1168,12 @@ export const createRecordCommands = <TTransaction>(
 
   const startRun = (
     actor: Actor,
-    raw: unknown
+    submitted: StartRunInput
   ): Promise<RecordMutationResult> => {
     return runWrite<StartRunInput>(
       actor,
       "start-run",
-      raw,
+      submitted,
       async (transaction, input) => {
         if (actor.role !== "student") {
           throw recordError("FORBIDDEN");
@@ -1183,12 +1257,12 @@ export const createRecordCommands = <TTransaction>(
 
   const recordHint = (
     actor: Actor,
-    raw: unknown
+    submitted: RecordHintInput
   ): Promise<RecordMutationResult> => {
     return runWrite<RecordHintInput>(
       actor,
       "record-hint",
-      raw,
+      submitted,
       async (transaction, input) => {
         const { run } = await requireRunForLearner(
           transaction,
@@ -1249,12 +1323,12 @@ export const createRecordCommands = <TTransaction>(
 
   const recordAttempt = (
     actor: Actor,
-    raw: unknown
+    submitted: RecordAttemptInput
   ): Promise<RecordMutationResult> => {
     return runWrite<RecordAttemptInput>(
       actor,
       "record-attempt",
-      raw,
+      submitted,
       async (transaction, input) => {
         const { run } = await requireRunForLearner(
           transaction,
@@ -1366,12 +1440,12 @@ export const createRecordCommands = <TTransaction>(
 
   const choose = (
     actor: Actor,
-    raw: unknown
+    submitted: ChooseInput
   ): Promise<RecordMutationResult> => {
     return runWrite<ChooseInput>(
       actor,
       "choose",
-      raw,
+      submitted,
       async (transaction, input) => {
         const runRow = await requireRow(transaction, "learner_runs", {
           tenant_id: actor.tenantId,
@@ -1470,9 +1544,9 @@ export const createRecordCommands = <TTransaction>(
 
   const readAuthoring = (
     actor: Actor,
-    raw: unknown
+    submitted: ReadAuthoringInput
   ): Promise<AuthoringProjection> => {
-    const parsed = parseOrThrow(readAuthoringInputSchema, raw);
+    const parsed = parseOrThrow(readAuthoringInputSchema, submitted);
     return read(actor, "preview_draft", async (transaction) => {
       if (parsed.kind === "version") {
         const version = await loadVersion(
@@ -1511,9 +1585,9 @@ export const createRecordCommands = <TTransaction>(
 
   const readEvidence = (
     actor: Actor,
-    raw: unknown
+    submitted: ReadEvidenceInput
   ): Promise<TeacherEvidenceProjection> => {
-    const parsed = parseOrThrow(readEvidenceInputSchema, raw);
+    const parsed = parseOrThrow(readEvidenceInputSchema, submitted);
     return read(actor, "teacher_decision", async (transaction) => {
       const runRow = await requireRow(transaction, "learner_runs", {
         tenant_id: actor.tenantId,
@@ -1559,9 +1633,9 @@ export const createRecordCommands = <TTransaction>(
 
   const readLesson = (
     actor: Actor,
-    raw: unknown
+    submitted: ReadLessonInput
   ): Promise<LessonReadResult> => {
-    const parsed = parseOrThrow(readLessonInputSchema, raw);
+    const parsed = parseOrThrow(readLessonInputSchema, submitted);
     return read(actor, "read_assignment", async (transaction) => {
       const { run } = await requireRunForLearner(
         transaction,
@@ -1606,9 +1680,9 @@ export const createRecordCommands = <TTransaction>(
 
   const readAttemptContext = (
     actor: Actor,
-    raw: unknown
+    submitted: ReadAttemptContextInput
   ): Promise<AttemptContext> => {
-    const parsed = parseOrThrow(readAttemptContextInputSchema, raw);
+    const parsed = parseOrThrow(readAttemptContextInputSchema, submitted);
     return read(actor, "submit_attempt", async (transaction) => {
       const { run } = await requireRunForLearner(
         transaction,

@@ -10,7 +10,6 @@ import {
   parseTenantId,
 } from "../src/server/identity/identifiers";
 import { createRecordCommands } from "../src/server/persistence/records-commands";
-import { createDrizzleRecordBackend } from "../src/server/persistence/records-drizzle";
 import { createPostgresRecordBackend } from "../src/server/persistence/records-postgres";
 import {
   createContentHash,
@@ -327,7 +326,7 @@ const readPhase = async (): Promise<void> => {
     throw new Error("--learner-run-id is required for --phase read.");
   }
   const records = createRecordCommands(
-    createDrizzleRecordBackend({ databaseUrl })
+    createPostgresRecordBackend({ databaseUrl })
   );
   const evidence = await records.readEvidence(teacher, {
     runId: learnerRunId,
