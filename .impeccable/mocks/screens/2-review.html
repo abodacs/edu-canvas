@@ -6,51 +6,31 @@
     <title>2 · Review a variant (sketch)</title>
     <link rel="stylesheet" href="base.css" />
     <style>
-      .crumbs {
-        display: flex;
-        gap: var(--s-2);
-        align-items: center;
-        min-inline-size: 0;
-        font-size: var(--fs-meta);
-        color: var(--ink-2);
-      }
-      .crumbs a {
-        text-decoration: none;
-      }
-      .crumbs a:hover {
-        text-decoration: underline;
-      }
-      .crumbs span:last-child {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
       .head {
-        display: grid;
-        gap: var(--s-2);
-        margin-block: var(--s-3) var(--s-5);
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--s-2) var(--s-5);
+        margin-block: var(--s-3) var(--s-4);
       }
       .head h1 {
-        font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.375rem);
+        font-size: clamp(1.5rem, 1.25rem + 1vw, 2rem);
+        max-inline-size: none;
       }
       .head p {
         color: var(--ink-2);
-        max-inline-size: 70ch;
+        font-size: var(--fs-secondary);
       }
-      /* Variant tabs: real tabs, status in words, a fade that says "more this way" when they overflow. */
-      .tabwrap {
-        position: relative;
-        max-inline-size: 100%;
-        inline-size: fit-content;
-      }
+      /* Variant tabs: status in words. On phones they become a 2×2 grid so C and D never hide. */
       .tabs {
         display: flex;
         gap: var(--s-1);
         padding: var(--s-1);
         background: var(--sunk);
         border-radius: 12px;
-        overflow-x: auto;
-        scrollbar-width: none;
+        inline-size: fit-content;
+        max-inline-size: 100%;
       }
       .tabs [role="tab"] {
         display: grid;
@@ -64,7 +44,6 @@
         font-size: var(--fs-secondary);
         font-weight: 500;
         text-align: start;
-        white-space: nowrap;
       }
       .tabs [role="tab"][aria-selected="true"] {
         background: var(--surface);
@@ -72,45 +51,36 @@
         font-weight: 600;
         box-shadow: 0 1px 2px rgb(31 29 26 / 0.08);
       }
-      .tabwrap::after {
-        content: "";
-        position: absolute;
-        inset-block: 0;
-        inset-inline-end: 0;
-        inline-size: 40px;
-        border-start-end-radius: 12px;
-        border-end-end-radius: 12px;
-        background: linear-gradient(to left, var(--sunk) 30%, transparent);
-        pointer-events: none;
-      }
-      [dir="rtl"] .tabwrap::after {
-        background: linear-gradient(to right, var(--sunk) 30%, transparent);
-      }
-      @media (width > 900px) {
-        .tabwrap::after {
-          display: none;
+      @media (width <= 720px) {
+        .tabs {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          inline-size: 100%;
         }
       }
       .layout {
         display: grid;
         grid-template-columns: minmax(0, 1fr) 320px;
         gap: var(--s-5);
-        margin-block-start: var(--s-5);
+        margin-block-start: var(--s-4);
         align-items: start;
       }
       .doc {
-        padding: var(--s-7) var(--s-7) var(--s-6);
+        padding: var(--s-6) var(--s-7) 0;
       }
       .doc .std {
-        font-size: var(--fs-micro);
-        font-weight: 700;
-        letter-spacing: 0.06em;
-        color: var(--clay-deep);
+        font-size: var(--fs-meta);
+        font-weight: 600;
+        color: var(--ink-2);
       }
       .doc h2 {
         font: 500 var(--fs-section) / 1.2 var(--serif);
         letter-spacing: -0.015em;
-        margin-block: var(--s-2) var(--s-4);
+        margin-block: var(--s-1) var(--s-2);
+      }
+      .doc .gets {
+        font-size: var(--fs-secondary);
+        margin-block-end: var(--s-4);
       }
       .sec {
         display: grid;
@@ -145,12 +115,17 @@
         max-inline-size: 62ch;
         color: var(--ink-2);
       }
+      /* The edited section: a change mark in the margin row, not a card in a card. */
       .sec.changed {
-        margin-inline: calc(-1 * var(--s-4));
-        padding-inline: var(--s-4);
-        border-radius: var(--r-field);
-        border: 1px dashed color-mix(in oklch, var(--warn) 45%, var(--line));
-        background: color-mix(in oklch, var(--warn-soft) 45%, var(--surface));
+        border-block-start: 2px dashed var(--warn);
+        background: var(--warn-soft);
+        margin-inline: calc(-1 * var(--s-7));
+        padding-inline: var(--s-7);
+      }
+      .sec.changed .pill {
+        background: var(--surface);
+        box-shadow: inset 0 0 0 1px
+          color-mix(in oklch, var(--warn) 40%, transparent);
       }
       .sec .undo {
         margin-block-start: var(--s-3);
@@ -158,9 +133,6 @@
       }
       .diagram {
         margin-block: var(--s-3);
-        padding: var(--s-4);
-        border-radius: var(--r-field);
-        background: var(--sunk);
         display: grid;
         place-items: center;
       }
@@ -168,37 +140,43 @@
         max-inline-size: 100%;
         block-size: auto;
       }
-      /* One approval moment, at the end of what the teacher just read. */
+      /* Approve bar: sticks to the bottom of the viewport while the document scrolls. */
       .approve {
-        margin-block-start: var(--s-5);
-        padding-block-start: var(--s-5);
-        border-block-start: 2px solid var(--ink);
+        position: sticky;
+        inset-block-end: 0;
+        margin-inline: calc(-1 * var(--s-7));
+        margin-block-start: var(--s-4);
+        padding: var(--s-4) var(--s-7);
+        border-block-start: 1px solid var(--line);
+        background: var(--surface);
+        border-end-start-radius: var(--r-card);
+        border-end-end-radius: var(--r-card);
+        box-shadow: 0 -8px 16px -12px rgb(31 29 26 / 0.18);
         display: grid;
         gap: var(--s-3);
-      }
-      .approve h3 {
-        font: 500 var(--fs-title) / 1.25 var(--serif);
       }
       .approve fieldset {
         border: 0;
         padding: 0;
+        margin: 0;
         display: grid;
         gap: var(--s-2);
       }
       .approve legend {
         font-size: var(--fs-secondary);
-        color: var(--ink-2);
+        font-weight: 600;
         margin-block-end: var(--s-2);
+        padding: 0;
       }
       .ack {
         display: flex;
         gap: var(--s-3);
         align-items: flex-start;
+        font-size: var(--fs-secondary);
       }
       .ack input {
         inline-size: 20px;
         block-size: 20px;
-        margin-block-start: 2px;
         accent-color: var(--clay);
         flex: none;
       }
@@ -207,12 +185,10 @@
         flex-wrap: wrap;
         align-items: center;
         gap: var(--s-3);
-        margin-block-start: var(--s-2);
       }
       .why {
         color: var(--ink-2);
         font-size: var(--fs-secondary);
-        max-inline-size: 48ch;
       }
       .side {
         display: grid;
@@ -263,12 +239,24 @@
         border-style: dashed;
         border-color: var(--warn);
       }
+      .approved {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--s-3);
+        align-items: center;
+        padding: var(--s-4) var(--s-5);
+      }
       @media (width <= 960px) {
         .layout {
           grid-template-columns: 1fr;
         }
         .doc {
-          padding: var(--s-5);
+          padding: var(--s-5) var(--s-5) 0;
+        }
+        .sec.changed,
+        .approve {
+          margin-inline: calc(-1 * var(--s-5));
+          padding-inline: var(--s-5);
         }
       }
     </style>
@@ -301,61 +289,59 @@
       >
     </header>
     <main id="main" class="page wide">
-      <p class="crumbs">
+      <nav class="crumbs" aria-label="Breadcrumb">
         <a href="1-studio.html">Studio</a><span aria-hidden="true">/</span
         ><span>Equivalent fractions · Grade 4</span>
-      </p>
+      </nav>
       <div class="head">
-        <h1>Review before anything is shared</h1>
+        <h1>Review · Equivalent fractions</h1>
         <p>
-          Approve each variant you'd use. When you publish, you assign one
-          approved variant to each learner. Nothing is shared until then.
+          Approve only the variants you'd use. Each learner gets one when you
+          publish.
         </p>
       </div>
 
-      <div class="tabwrap">
-        <div class="tabs" role="tablist" aria-label="Variants, 1 of 4 approved">
-          <button
-            role="tab"
-            id="t-a"
-            aria-selected="true"
-            aria-controls="p-a"
-            tabindex="0"
+      <div class="tabs" role="tablist" aria-label="Variants, 1 of 4 approved">
+        <button
+          role="tab"
+          id="t-a"
+          aria-selected="true"
+          aria-controls="p-a"
+          tabindex="0"
+        >
+          A · Worked example<span class="status-word warn"
+            >Edited · needs approval</span
           >
-            A · Worked example<span class="status-word warn"
-              >Edited · needs approval</span
-            >
-          </button>
-          <button
-            role="tab"
-            id="t-b"
-            aria-selected="false"
-            aria-controls="p-b"
-            tabindex="-1"
+        </button>
+        <button
+          role="tab"
+          id="t-b"
+          aria-selected="false"
+          aria-controls="p-b"
+          tabindex="-1"
+        >
+          B · Guided activity<span class="status-word warn"
+            >Ready · 1 warning</span
           >
-            B · Guided activity<span class="status-word warn"
-              >Ready · 1 warning</span
-            >
-          </button>
-          <button
-            role="tab"
-            id="t-c"
-            aria-selected="false"
-            aria-controls="p-c"
-            tabindex="-1"
-          >
-            C · Independent check<span class="status-word stop">Blocked</span>
-          </button>
-          <button
-            role="tab"
-            id="t-d"
-            aria-selected="false"
-            aria-controls="p-d"
-            tabindex="-1"
-          >
-            D · Matching<span class="status-word ok">Approved · v1</span>
-          </button>
-        </div>
+        </button>
+        <button
+          role="tab"
+          id="t-c"
+          aria-selected="false"
+          aria-controls="p-c"
+          tabindex="-1"
+        >
+          C · Independent check<span class="status-word stop">Blocked</span>
+        </button>
+        <button
+          role="tab"
+          id="t-d"
+          aria-selected="false"
+          aria-controls="p-d"
+          tabindex="-1"
+        >
+          D · Matching<span class="status-word ok">Approved</span>
+        </button>
       </div>
 
       <div class="layout">
@@ -366,10 +352,11 @@
           aria-labelledby="t-a"
           tabindex="0"
         >
-          <p class="std">
-            GRADE 4 · 4.NF.A.1 · VERSION 2, EDITED FROM VERSION 1
-          </p>
+          <p class="std">Grade 4 · 4.NF.A.1 · Version 2 (you edited it)</p>
           <h2>Same bar, cut two ways</h2>
+          <p class="gets">
+            <b>Students get:</b> this worked example, then matching (4 pairs).
+          </p>
           <section class="sec">
             <h3>Warm-up</h3>
             <p>
@@ -383,8 +370,7 @@
             aria-label="Worked example, edited in version 2"
           >
             <h3>
-              Worked example
-              <span class="pill warn">Edited · needs approval</span>
+              Worked example <span class="pill warn">You edited this</span>
             </h3>
             <p>
               Two bars of the same length. The first shows 1/2. The second is
@@ -418,7 +404,9 @@
               </svg>
             </div>
             <button class="ghost edit">Edit section</button>
-            <button class="ghost undo">Discard edit, keep version 1</button>
+            <button class="ghost undo">
+              Discard edit, go back to version 1
+            </button>
           </section>
           <section class="sec">
             <h3>Check for understanding</h3>
@@ -426,30 +414,31 @@
             <button class="ghost edit">Edit section</button>
           </section>
 
-          <section class="approve" aria-labelledby="ap-h">
-            <h3 id="ap-h">Approve variant A</h3>
+          <section class="approve" aria-labelledby="ap-legend">
             <fieldset>
-              <legend>Before approving, confirm you've checked:</legend>
+              <legend id="ap-legend">
+                This variant needs two checks because it has an edit and a gap:
+              </legend>
               <label class="ack"
-                ><input type="checkbox" checked />The edited worked example
-                still fits “Check for understanding”</label
+                ><input type="checkbox" checked />My edit still fits “Check for
+                understanding”</label
               >
               <label class="ack"
-                ><input type="checkbox" checked />The learning path beside this
-                lesson</label
-              >
-              <label class="ack"
-                ><input type="checkbox" />The grounding gap: unit fractions
+                ><input type="checkbox" />I've seen that unit fractions
                 (3.NF.A.1) aren't in the source</label
               >
             </fieldset>
             <div class="row">
-              <button class="btn" disabled aria-describedby="ap-why">
+              <button
+                class="btn"
+                aria-disabled="true"
+                aria-describedby="ap-why"
+              >
                 Approve version 2
               </button>
               <span class="why" id="ap-why"
-                >1 check left. Approved versions can't change; a later edit
-                makes a new version.</span
+                >1 check left. Once approved, this version can't change; a later
+                edit makes version 3.</span
               >
             </div>
           </section>
@@ -457,10 +446,10 @@
 
         <aside class="side" aria-label="Evidence for this variant">
           <section class="card">
-            <h2>Grounding</h2>
+            <h2>Where this comes from</h2>
             <p class="explain">
-              The standard and skills this variant was drafted from, retrieved
-              from Learning Commons, a public library of curriculum standards.
+              The standard and skills this variant was drafted from, from
+              Learning Commons, a public library of curriculum standards.
             </p>
             <div
               style="
@@ -471,7 +460,7 @@
               "
             >
               <span class="code">4.NF.A.1</span
-              ><span class="small muted">Retrieved 1 Nov 2026</span>
+              ><span class="small muted">Checked 1 Nov 2026</span>
             </div>
             <ul class="checks" style="display: grid">
               <li>
@@ -519,14 +508,14 @@
                 >
                   <circle cx="12" cy="12" r="9" />
                   <path d="M12 8v5M12 16.5v.01" /></svg
-                >Not in source: 3.NF.A.1 unit fractions
+                >Not in the source: unit fractions (3.NF.A.1)
               </li>
             </ul>
             <a
               class="link"
               href="#"
               style="display: inline-block; margin-block-start: var(--s-3)"
-              >View source snapshot</a
+              >See the source</a
             >
           </section>
           <section class="card">
@@ -537,7 +526,7 @@
                 <i></i
                 ><span
                   >Unit fractions 1/b<br /><span class="small"
-                    >Before · missing from source</span
+                    >Before · not in the source</span
                   ></span
                 >
               </li>
@@ -562,9 +551,23 @@
           </section>
         </aside>
       </div>
+
+      <p class="synthetic" style="margin-block: var(--s-7) var(--s-2)">
+        State of an approved variant (D), with a way back
+      </p>
+      <section class="card approved" aria-label="Variant D approved">
+        <span class="pill ok">Approved · version 1</span>
+        <span
+          >D · Matching. No learner has it yet, so you can still change your
+          mind.</span
+        >
+        <button class="ghost" style="margin-inline-start: auto">
+          Un-approve
+        </button>
+      </section>
       <p class="synthetic">
-        Sketch. Lesson content is illustrative. The tabs use a roving tabindex:
-        arrow keys move between variants.
+        Sketch. Lesson content is illustrative. A variant with no warning, gap
+        or edit shows no checks, just Approve.
       </p>
     </main>
   </body>

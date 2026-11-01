@@ -121,6 +121,25 @@
       .loop li:last-child::after {
         display: none;
       }
+      .close {
+        inline-size: min(100% - 48px, 1200px);
+        margin-inline: auto;
+        padding-block: var(--s-8);
+        border-block-start: 1px solid var(--line);
+        display: grid;
+        justify-items: start;
+        gap: var(--s-2);
+      }
+      .site-foot {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: var(--s-2) var(--s-5);
+        padding: var(--s-5) var(--s-6);
+        border-block-start: 1px solid var(--line);
+        color: var(--ink-2);
+        font-size: var(--fs-meta);
+      }
       .loop h3 {
         font: 500 var(--fs-title)/1.25 var(--serif);
       }
@@ -286,6 +305,21 @@
           </li>
         </ol>
       </section>
+      <section class="close" aria-labelledby="close-h">
+        <h2 class="h2" id="close-h">Bring tomorrow's objective.</h2>
+        <p class="lede">
+          One sentence is enough. You'll have four variants to review in about a
+          minute, and nothing reaches a student until you say so.
+        </p>
+        <div class="cta">
+          <a class="btn" href="5-sign-in.html">Start with one objective</a>
+          <a class="btn secondary" href="5-sign-in.html">Sign in</a>
+        </div>
+      </section>
     </main>
+    <footer class="site-foot">
+      <span>Edu-Canvas · Grades 3–6 · Grade 4 equivalent fractions today</span>
+      <span>Standards from Learning Commons (CC BY 4.0)</span>
+    </footer>
   </body>
 </html>

@@ -65,19 +65,23 @@
       .item:active {
         transform: scale(0.98);
       }
-      /* Chosen, waiting for a partner. */
-      .item[aria-pressed="true"] {
+      /* Selected, waiting for a partner: aria-current marks "the one you're holding". */
+      .item[aria-current="true"] {
         border-color: var(--clay);
         background: var(--clay-soft);
         box-shadow: 0 0 0 2px var(--clay);
       }
-      /* Paired: neutral and numbered. Not green: nothing is graded until Done. */
+      /* Paired: solid ink, a check and a pair number. Clearly done, not greyed out. Graded only after Done. */
       .item.paired {
+        border-width: 2px;
         border-color: var(--ink);
-        background: var(--sunk);
+        background: var(--surface);
       }
       .item .n {
         margin-inline-start: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: var(--s-1);
         font-size: var(--fs-meta);
         font-weight: 700;
         padding: 2px var(--s-2);
@@ -117,6 +121,12 @@
         max-inline-size: 100%;
         block-size: auto;
       }
+      .result .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--s-3);
+        align-items: center;
+      }
       @media (width <= 560px) {
         .boardl {
           grid-template-columns: 1fr;
@@ -150,6 +160,9 @@
         Tap a fraction, then tap the one that matches it. Tap a pair again to
         undo it.
       </p>
+      <p class="sr-only" role="status" aria-live="polite">
+        1/2 paired with 2/4. 1/3 selected, choose its partner.
+      </p>
       <div class="boardl">
         <section class="col" aria-labelledby="c1">
           <h2 id="c1">Fractions</h2>
@@ -157,39 +170,74 @@
             <li>
               <button
                 class="item paired"
-                aria-label="1/2, in pair 1 with 2/4. Tap to undo the pair."
+                aria-label="1/2, pair 1 with 2/4. Tap to undo."
               >
-                1/2 <span class="n" aria-hidden="true">Pair 1</span>
+                1/2
+                <span class="n" aria-hidden="true"
+                  ><svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M20 6 9 17l-5-5" /></svg
+                  >Pair 1</span
+                >
               </button>
             </li>
-            <li><button class="item" aria-pressed="true">1/3</button></li>
-            <li><button class="item" aria-pressed="false">3/4</button></li>
-            <li><button class="item" aria-pressed="false">2/5</button></li>
+            <li>
+              <button
+                class="item"
+                aria-current="true"
+                aria-label="1/3, selected. Now tap its partner."
+              >
+                1/3
+              </button>
+            </li>
+            <li><button class="item">3/4</button></li>
+            <li><button class="item">2/5</button></li>
           </ul>
         </section>
         <section class="col" aria-labelledby="c2">
           <h2 id="c2">Same amount</h2>
           <ul>
-            <li><button class="item" aria-pressed="false">6/8</button></li>
+            <li><button class="item">6/8</button></li>
             <li>
               <button
                 class="item paired"
-                aria-label="2/4, in pair 1 with 1/2. Tap to undo the pair."
+                aria-label="2/4, pair 1 with 1/2. Tap to undo."
               >
-                2/4 <span class="n" aria-hidden="true">Pair 1</span>
+                2/4
+                <span class="n" aria-hidden="true"
+                  ><svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M20 6 9 17l-5-5" /></svg
+                  >Pair 1</span
+                >
               </button>
             </li>
-            <li><button class="item" aria-pressed="false">4/10</button></li>
-            <li><button class="item" aria-pressed="false">2/6</button></li>
+            <li><button class="item">4/10</button></li>
+            <li><button class="item">2/6</button></li>
           </ul>
         </section>
       </div>
       <div class="done">
-        <button class="btn" disabled aria-describedby="left">Done</button
+        <button class="btn" aria-disabled="true" aria-describedby="left">
+          Done</button
         ><span class="muted" id="left">Make 3 more pairs to finish</span
-        ><span class="muted" role="status" style="margin-inline-start: auto"
-          >Saved</span
-        >
+        ><span class="muted" style="margin-inline-start: auto">Saved</span>
       </div>
 
       <p class="synthetic" style="margin-block: var(--s-7) var(--s-2)">
@@ -229,11 +277,18 @@
             tenths: 2 fifths become 4 tenths.
           </p>
         </div>
-        <p class="muted">
-          Your teacher will see this and choose what comes next.
+        <div class="row">
+          <button class="btn">Try that pair again</button>
+          <a class="link" href="#">I'm finished for now</a>
+        </div>
+        <p class="small muted">
+          Your teacher sees your result and picks your next lesson.
         </p>
       </section>
-      <p class="synthetic">Sketch. Activity content is illustrative.</p>
+      <p class="synthetic">
+        Sketch. Activity content is illustrative. The status line above the
+        board is read aloud when a pair forms or is undone.
+      </p>
     </main>
   </body>
 </html>

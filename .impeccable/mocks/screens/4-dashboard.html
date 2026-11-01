@@ -66,12 +66,17 @@
         overflow: hidden;
         font-weight: 600;
       }
-      .lesson span {
+      .lesson span,
+      .class span {
         font-size: var(--fs-meta);
         color: var(--ink-2);
       }
+      .class b {
+        display: block;
+        font-weight: 500;
+      }
       .reason {
-        max-inline-size: 34ch;
+        max-inline-size: 36ch;
         font-size: var(--fs-meta);
         color: var(--ink-2);
       }
@@ -148,17 +153,16 @@
               <b>Review 4 drafts</b
               ><span>Fractions on a number line · 3.NF.A.2 · 1 warning</span>
             </div>
-            <a class="btn" href="2-review.html">Review drafts</a>
+            <a class="btn secondary" href="2-review.html">Review drafts</a>
           </li>
           <li>
             <div>
-              <b>Check Cedar's result</b
+              <b>Check 3 learners who need another go</b
               ><span
-                >Unit fractions warm-up · 2 of 4 pairs · suggested next step:
-                revisit 3.NF.A.1</span
+                >Equivalent fractions · Class 4B · all missed 2/5 = 4/10</span
               >
             </div>
-            <a class="ghost" href="#">See result</a>
+            <a class="btn secondary" href="#">See results</a>
           </li>
           <li>
             <div>
@@ -168,7 +172,7 @@
                 nothing was shared</span
               >
             </div>
-            <a class="ghost" href="6-errors.html">Edit objective</a>
+            <a class="btn secondary" href="6-errors.html">Edit objective</a>
           </li>
         </ul>
       </section>
@@ -176,10 +180,9 @@
       <h2 class="h2 section-h" id="t">All lessons</h2>
       <section class="card" aria-labelledby="t">
         <div class="filters" role="group" aria-label="Filter lessons">
-          <button class="chip" aria-pressed="true">All · 5</button
-          ><button class="chip">Needs review · 1</button
+          <button class="chip" aria-pressed="true">All · 4</button
           ><button class="chip">Published · 3</button
-          ><button class="chip">Blocked · 1</button>
+          ><button class="chip">Drafts · 1</button>
           <span class="search"
             ><svg
               width="14"
@@ -201,9 +204,8 @@
             <tr>
               <th scope="col">Lesson</th>
               <th scope="col">Status</th>
-              <th scope="col">Learner · variant</th>
-              <th scope="col">Result</th>
-              <th scope="col">Next step</th>
+              <th scope="col">Assigned to</th>
+              <th scope="col">Results so far</th>
               <th scope="col"><span class="sr-only">Actions</span></th>
             </tr>
           </thead>
@@ -214,21 +216,13 @@
                 ><span>4.NF.A.1 · published 31 Oct</span>
               </td>
               <td><span class="pill ok">Published</span></td>
-              <td>Maple · D Matching v1</td>
-              <td class="num">3 of 4 pairs</td>
-              <td class="reason">Ready for 4.NF.A.2. Missed 2/5 = 4/10.</td>
-              <td><a class="ghost" href="#">Open</a></td>
-            </tr>
-            <tr>
-              <td class="lesson">
-                <b>Fractions on a number line</b
-                ><span>3.NF.A.2 · drafted today</span>
+              <td class="class">
+                <b>Class 4B · 24 learners</b><span>A 6 · B 4 · D 14</span>
               </td>
-              <td><span class="pill warn">Needs review</span></td>
-              <td class="muted none">Not assigned</td>
-              <td class="muted none">—</td>
-              <td class="reason">4 variants drafted · 1 warning</td>
-              <td><a class="ghost" href="2-review.html">Review</a></td>
+              <td class="reason">
+                19 finished · 16 ready for 4.NF.A.2 · 3 need another go
+              </td>
+              <td><a class="ghost" href="#">Open</a></td>
             </tr>
             <tr>
               <td class="lesson">
@@ -236,24 +230,11 @@
                 ><span>3.NF.A.1 · published 28 Oct</span>
               </td>
               <td><span class="pill ok">Published</span></td>
-              <td>Cedar · D Matching v1</td>
-              <td class="num">2 of 4 pairs</td>
-              <td class="reason">
-                Revisit 3.NF.A.1: unequal parts were counted as halves.
+              <td class="class">
+                <b>Class 4B · 26 learners</b><span>D 26</span>
               </td>
+              <td class="reason">All 26 finished · 21 ready to move on</td>
               <td><a class="ghost" href="#">Open</a></td>
-            </tr>
-            <tr>
-              <td class="lesson">
-                <b>Compare fractions with bars</b><span>4.NF.A.2</span>
-              </td>
-              <td><span class="pill stop">Blocked</span></td>
-              <td class="muted none">Not assigned</td>
-              <td class="muted none">—</td>
-              <td class="reason">
-                Stopped by the safety check. Edit the objective to continue.
-              </td>
-              <td><a class="ghost" href="6-errors.html">Edit</a></td>
             </tr>
             <tr>
               <td class="lesson">
@@ -261,16 +242,28 @@
                 ><span>4.NF.A.1 · published 24 Oct</span>
               </td>
               <td><span class="pill ok">Published</span></td>
-              <td>Birch · D Matching v1</td>
-              <td class="muted">Not started</td>
-              <td class="reason">Assigned 3 days ago</td>
+              <td class="class">
+                <b>Small group · 5 learners</b><span>A 5</span>
+              </td>
+              <td class="reason">Not started · assigned 3 days ago</td>
               <td><a class="ghost" href="#">Open</a></td>
+            </tr>
+            <tr>
+              <td class="lesson">
+                <b>Fractions on a number line</b
+                ><span>3.NF.A.2 · drafted today</span>
+              </td>
+              <td><span class="pill warn">Draft</span></td>
+              <td class="muted none">Not assigned</td>
+              <td class="muted none">—</td>
+              <td><a class="ghost" href="2-review.html">Review</a></td>
             </tr>
           </tbody>
         </table>
       </section>
       <p class="synthetic">
-        Sketch. Lessons, learners and results are synthetic.
+        Sketch. Lessons, classes and results are synthetic. The blocked
+        objective lives in “Needs you” only.
       </p>
     </main>
   </body>
