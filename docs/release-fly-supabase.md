@@ -79,14 +79,13 @@ Run these commands from the repository root or from the release worktree.
    fly checks list
    ```
 
-4. Keep exactly **one** application Machine in the primary region:
+4. Confirm exactly **one** application Machine runs in the primary region:
 
    ```bash
-   fly scale count 1 --region ams --yes
    fly scale show
    ```
 
-   Replace `ams` if `primary_region` was changed. This app stores data in Supabase and has no Fly volume, so the Machine can be replaced independently. Do not scale out: SSE preview delivery and the process-local burst limits assume a single instance ([Q12](design/design-doc-questions.md)); shared limit state is a prerequisite for more than one Machine and is a production-path item, not a milestone one.
+   [`fly.toml`](../fly.toml) owns the count through `min_machines_running = 1`; do not restate it. If the app already ran more Machines, bring it down once with `fly scale count 1 --region ams --yes`, replacing `ams` when `primary_region` changed. This app stores data in Supabase and has no Fly volume, so the Machine can be replaced independently. Do not scale out: SSE preview delivery and the process-local burst limits assume a single instance ([Q12](design/design-doc-questions.md)); shared limit state is a prerequisite for more than one Machine and is a production-path item, not a milestone one.
 
 5. Verify the public service. Replace the hostname if the Fly app name was changed:
 

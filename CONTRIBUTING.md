@@ -47,6 +47,8 @@ The forms live in [.github/ISSUE_TEMPLATE](.github/ISSUE_TEMPLATE). When changin
 
 Keep each commit focused on one coherent change. Follow the repository's existing `<type>: <effect>` title style. Common types include `feat`, `fix`, `docs`, `refactor`, `test`, and `chore`.
 
+Keep the human contributor as the author of record. Add no co-author trailer for a coding assistant, such as `Co-authored-by: Claude` or `Co-authored-by: CommandCodeBot`. Before pushing, run `node scripts/verify-commits.mjs`; the [commit hygiene workflow](.github/workflows/commit-hygiene.yml) runs the same command on the pull request.
+
 State what changes for a user or contributor in the title. A title such as `fix: keep blocked drafts out of lesson previews` explains the result. Keep implementation details in the body when they explain the approach or a tradeoff.
 
 For a substantive change, explain why it was needed and what shaped the solution. Include useful verification results and limitations. Quote a distinctive error message when it will help someone find the change later. Summarize relevant issue context before adding the issue reference.

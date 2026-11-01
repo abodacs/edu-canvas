@@ -120,4 +120,4 @@ ESLint + Prettier + Stylelint will catch most mechanical issues automatically. F
 
 Most formatting and common issues are automatically fixed by ESLint + Prettier + Stylelint. Run `pnpm exec ultracite fix` before committing to ensure compliance.
 
-For Markdown-only changes, check the changed files explicitly with `pnpm exec prettier --check <files>`. The `format:check` script currently lists selected documentation files.
+`pnpm format:check` covers every tracked file. `.prettierignore` lists the generated exceptions, such as `src/routeTree.gen.ts` and the recorded Learning Commons evidence.
