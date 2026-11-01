@@ -13,19 +13,21 @@ const body = {
   assistanceEventIds: [],
 };
 
-describe(learnerAttemptInputSchema, () => {
+const parseAttempt = (value: unknown) => learnerAttemptInputSchema.safeParse(value);
+
+describe(parseAttempt, () => {
   it("accepts a submission that carries selections only", () => {
-    expect(learnerAttemptInputSchema.safeParse(body).success).toBeTruthy();
+    expect(parseAttempt(body).success).toBeTruthy();
   });
 
   it("rejects a body that carries a score", () => {
-    const parsed = learnerAttemptInputSchema.safeParse({ ...body, score: 100 });
+    const parsed = parseAttempt({ ...body, score: 100 });
 
     expect(parsed.success).toBeFalsy();
   });
 
   it("rejects a pair that carries extra fields", () => {
-    const parsed = learnerAttemptInputSchema.safeParse({
+    const parsed = parseAttempt({
       ...body,
       pairs: [{ correct: true, sourceId: "item_1", targetId: "target_1" }],
     });
@@ -35,7 +37,7 @@ describe(learnerAttemptInputSchema, () => {
 
   it("rejects an empty selection", () => {
     expect(
-      learnerAttemptInputSchema.safeParse({ ...body, pairs: [] }).success
+      parseAttempt({ ...body, pairs: [] }).success
     ).toBeFalsy();
   });
 });

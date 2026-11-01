@@ -20,6 +20,7 @@ import {
 } from "./contracts";
 import { publicationError } from "./errors";
 import { createCanonicalHash } from "./hashes";
+import { bridgePublishedPack } from "./record-bridge";
 import type { DecodedPackVersion } from "./contracts";
 import type {
   PackApprovalRecord,
@@ -29,6 +30,7 @@ import type {
 } from "@/server/persistence/pack-port";
 
 import type { CompiledLessonPreview } from "@/server/a2ui/compiler";
+import type { RecordPersistence } from "@/server/persistence/records-commands";
 import type {
   GenerationPersistence,
   LessonGenerationRecord,
@@ -43,6 +45,7 @@ import type {
 export interface PublicationServiceOptions {
   generation: GenerationPersistence;
   packs: PackPersistence;
+  records?: RecordPersistence;
   now?: () => string;
 }
 
@@ -171,7 +174,7 @@ const publishBlockersFor = (
 export const createPublicationService = (
   options: PublicationServiceOptions
 ): PublicationService => {
-  const { generation, packs } = options;
+  const { generation, packs, records } = options;
   const clock = options.now ?? nowIso;
 
   const loadGeneration = async (
@@ -726,6 +729,25 @@ export const createPublicationService = (
       "pack-publication",
       [publicationId, assignmentId]
     );
+
+    // #6: the learner runtime reads the canonical model, so the publish also
+    // writes that chain. Without a reviewed source there is nothing to cite,
+    // and the pack stays publish-only.
+    if (records && decoded.provenance.sourceSnapshotId) {
+      await bridgePublishedPack(records, actor, {
+        packVersionId: version.id,
+        requestId: version.requestId,
+        artifactHash: version.artifactHash,
+        approvedAt,
+        sourceSnapshotId: decoded.provenance.sourceSnapshotId,
+        learnerId: learner.id,
+        publicContent: decoded.publicContent,
+        privateAnswers: decoded.privateAnswers,
+        validationResult: decoded.validationResult,
+        ruleVersions: decoded.ruleVersions,
+        provenance: decoded.provenance,
+      });
+    }
     return {
       review: await projectReview(actor, version),
       publicationId,
