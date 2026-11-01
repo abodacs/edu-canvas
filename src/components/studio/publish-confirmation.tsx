@@ -41,21 +41,23 @@ export const PublishConfirmation = ({
 
   if (published) {
     // A publish that cites no reviewed source has no canonical record to assign,
-    // so it produces no learner activity. Saying "published and assigned" here
-    // told the teacher something the system had not done.
-    const hasLearnerActivity =
-      published.learnerAssignmentId !== null &&
-      published.learnerVariantId !== null;
+    // so it produces no learner activity. The heading and the link both read one
+    // value, so they cannot disagree about whether there is something to open.
+    const { learnerAssignmentId, learnerVariantId } = published;
+    const learnerLink =
+      learnerAssignmentId && learnerVariantId
+        ? { assignment: learnerAssignmentId, variant: learnerVariantId }
+        : null;
 
     return (
       <section className="review-published" aria-labelledby="published-heading">
         <Check aria-hidden="true" className="review-published__mark" />
         <h2 id="published-heading" ref={heading} tabIndex={-1}>
-          {hasLearnerActivity
+          {learnerLink
             ? "The pack is published and assigned"
             : "The pack is published"}
         </h2>
-        {hasLearnerActivity ? (
+        {learnerLink ? (
           <p>
             {published.learnerName} now has the reviewed pack. The published
             version cannot change; a later edit starts a new revision.
@@ -78,12 +80,12 @@ export const PublishConfirmation = ({
             <dt>Revision</dt>
             <dd>{review.version.revision}</dd>
           </div>
-          {published.learnerAssignmentId && published.learnerVariantId ? (
+          {learnerLink ? (
             <div>
               <dt>Learner link</dt>
               <dd>
                 <a
-                  href={`/learn?assignment=${published.learnerAssignmentId}&variant=${published.learnerVariantId}`}
+                  href={`/learn?assignment=${learnerLink.assignment}&variant=${learnerLink.variant}`}
                 >
                   Open the learner activity
                 </a>
