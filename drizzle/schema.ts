@@ -1403,7 +1403,8 @@ export const lessonVersions = pgTable(
     schemaVersion: text("schema_version").notNull(),
     parentVersionId: text("parent_version_id"),
     predecessorVersionId: text("predecessor_version_id"),
-    curatedReferenceId: text("curated_reference_id").notNull(),
+    curatedReferenceId: text("curated_reference_id"),
+    sourceSnapshotId: text("source_snapshot_id"),
     generationRequestId: text("generation_request_id"),
     conceptIds: jsonb("concept_ids").notNull(),
     variantReferences: jsonb("variant_references").notNull(),
@@ -1450,6 +1451,11 @@ export const lessonVersions = pgTable(
         name: "lesson_versions_tenant_id_curated_reference_id_fkey",
       }),
       foreignKey({
+        columns: [table.tenantId, table.sourceSnapshotId],
+        foreignColumns: [sourceSnapshots.tenantId, sourceSnapshots.id],
+        name: "lesson_versions_tenant_id_source_snapshot_id_fkey",
+      }),
+      foreignKey({
         columns: [table.tenantId, table.generationRequestId],
         foreignColumns: [lessonDraftRequests.tenantId, lessonDraftRequests.id],
         name: "lesson_versions_tenant_id_generation_request_id_fkey",
@@ -1467,6 +1473,10 @@ export const lessonVersions = pgTable(
         using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
       }),
       check("lesson_versions_revision_check", sql`revision > 0`),
+      check(
+        "lesson_versions_reference_check",
+        sql`((curated_reference_id IS NOT NULL) <> (source_snapshot_id IS NOT NULL))`
+      ),
       check(
         "lesson_versions_schema_version_check",
         sql`schema_version = 'lesson-package-curated-v1'`

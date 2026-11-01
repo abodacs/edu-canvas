@@ -171,6 +171,19 @@ const isLineageValid = (version: {
   }
 };
 
+/**
+ * A version is grounded in exactly one reviewed source: a curated reference for the authoring lane, or a source snapshot for the generated-pack lane. Both are nullable so either lane can write the same row shape.
+ */
+export const hasExactlyOneReference = (version: {
+  readonly curatedReferenceId: string | null;
+  readonly sourceSnapshotId?: string | null;
+}): boolean => {
+  const hasCurated = version.curatedReferenceId !== null;
+  const hasSnapshot =
+    version.sourceSnapshotId !== null && version.sourceSnapshotId !== undefined;
+  return hasCurated !== hasSnapshot;
+};
+
 export const lessonVersionSchema = z
   .strictObject({
     id: recordIdSchema,
@@ -180,7 +193,8 @@ export const lessonVersionSchema = z
     schemaVersion: z.literal("lesson-package-curated-v1"),
     parentVersionId: recordIdSchema.nullable(),
     predecessorVersionId: recordIdSchema.nullable(),
-    curatedReferenceId: recordIdSchema,
+    curatedReferenceId: recordIdSchema.nullable(),
+    sourceSnapshotId: recordIdSchema.nullable(),
     generationRequestId: recordIdSchema.nullable(),
     conceptIds: z.array(recordIdSchema).max(recordLimits.listMax),
     variantReferences: variantReferencesSchema,
@@ -201,6 +215,11 @@ export const lessonVersionSchema = z
   .refine(isLineageValid, {
     message: "Revision lineage does not match the revision kind.",
     path: ["revisionKind"],
+  })
+  .refine(hasExactlyOneReference, {
+    message:
+      "A version needs exactly one of a curated reference or a snapshot.",
+    path: ["curatedReferenceId"],
   });
 
 export type LessonVersion = z.infer<typeof lessonVersionSchema>;

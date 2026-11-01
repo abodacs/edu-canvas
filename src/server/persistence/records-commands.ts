@@ -2,6 +2,7 @@ import { capabilitiesForRole } from "../identity/types";
 import { createId } from "../ids";
 import {
   curatedReferenceSchema,
+  hasExactlyOneReference,
   lessonVersionSchema,
   publicationSchema,
 } from "../records/authoring";
@@ -130,10 +131,7 @@ export interface RecordPersistence {
     input: unknown
   ) => Promise<TeacherEvidenceProjection>;
   readLesson: (actor: Actor, input: unknown) => Promise<LessonReadResult>;
-  readAttemptContext: (
-    actor: Actor,
-    input: unknown
-  ) => Promise<AttemptContext>;
+  readAttemptContext: (actor: Actor, input: unknown) => Promise<AttemptContext>;
 }
 
 const writeCapability: Record<WriteAction, Capability> = {
@@ -251,7 +249,8 @@ const mapVersion = (row: StoredRow): LessonVersion => {
       schemaVersion: row.schema_version,
       parentVersionId: row.parent_version_id ?? null,
       predecessorVersionId: row.predecessor_version_id ?? null,
-      curatedReferenceId: row.curated_reference_id,
+      curatedReferenceId: row.curated_reference_id ?? null,
+      sourceSnapshotId: row.source_snapshot_id ?? null,
       generationRequestId: row.generation_request_id ?? null,
       conceptIds: row.concept_ids,
       variantReferences: row.variant_references,
@@ -735,20 +734,72 @@ export const createRecordCommands = <TTransaction>(
     });
   };
 
+  const assertCuratedReference = async (
+    transaction: TTransaction,
+    actor: Actor,
+    curatedReferenceId: string,
+    standardId: string
+  ): Promise<void> => {
+    const curatedRow = await requireRow(transaction, "curated_references", {
+      tenant_id: actor.tenantId,
+      id: curatedReferenceId,
+    });
+    if (curatedRow.teacher_actor_id !== actor.actorId) {
+      throw recordError("FORBIDDEN");
+    }
+    if (curatedRow.standard_id !== standardId) {
+      throw recordError("FORBIDDEN");
+    }
+  };
+
+  const assertSourceSnapshot = async (
+    transaction: TTransaction,
+    actor: Actor,
+    sourceSnapshotId: string,
+    standardId: string
+  ): Promise<void> => {
+    const snapshot = await requireRow(transaction, "source_snapshots", {
+      tenant_id: actor.tenantId,
+      id: sourceSnapshotId,
+    });
+    if (snapshot.teacher_id !== actor.actorId) {
+      throw recordError("FORBIDDEN");
+    }
+    if (snapshot.standard_id !== standardId) {
+      throw recordError("FORBIDDEN");
+    }
+    const hasReviewedSource =
+      snapshot.state === "complete" && snapshot.reviewed_at !== null;
+    if (!hasReviewedSource) {
+      throw recordError("FORBIDDEN");
+    }
+  };
+
   const assertVersionReferences = async (
     transaction: TTransaction,
     actor: Actor,
     input: AppendVersionInput
   ): Promise<void> => {
-    const curatedRow = await requireRow(transaction, "curated_references", {
-      tenant_id: actor.tenantId,
-      id: input.curatedReferenceId,
-    });
-    if (
-      curatedRow.teacher_actor_id !== actor.actorId ||
-      curatedRow.standard_id !== input.package.standardId
-    ) {
-      throw recordError("FORBIDDEN");
+    if (!hasExactlyOneReference(input)) {
+      throw recordError("INVALID_INPUT");
+    }
+
+    if (input.curatedReferenceId) {
+      await assertCuratedReference(
+        transaction,
+        actor,
+        input.curatedReferenceId,
+        input.package.standardId
+      );
+    }
+
+    if (input.sourceSnapshotId) {
+      await assertSourceSnapshot(
+        transaction,
+        actor,
+        input.sourceSnapshotId,
+        input.package.standardId
+      );
     }
 
     if (input.generationRequestId) {
@@ -835,6 +886,7 @@ export const createRecordCommands = <TTransaction>(
           parentVersionId: input.parentVersionId,
           predecessorVersionId: input.predecessorVersionId,
           curatedReferenceId: input.curatedReferenceId,
+          sourceSnapshotId: input.sourceSnapshotId ?? null,
           generationRequestId: input.generationRequestId,
           conceptIds: input.conceptIds,
           variantReferences: input.variantReferences,
@@ -862,6 +914,7 @@ export const createRecordCommands = <TTransaction>(
           parent_version_id: version.parentVersionId,
           predecessor_version_id: version.predecessorVersionId,
           curated_reference_id: version.curatedReferenceId,
+          source_snapshot_id: version.sourceSnapshotId,
           generation_request_id: version.generationRequestId,
           concept_ids: version.conceptIds,
           variant_references: version.variantReferences,
