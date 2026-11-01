@@ -32,7 +32,10 @@ import type {
   RecoveryAction,
 } from "@/shared/generation-contract";
 
-import type { SyntheticEvent } from "react";
+import type {
+  KeyboardEvent as ReactKeyboardEvent,
+  SyntheticEvent,
+} from "react";
 
 interface TeacherStudioProperties {
   readonly csrf: string;
@@ -498,6 +501,149 @@ const TeacherGuidance = ({
   );
 };
 
+type DraftVariant = NonNullable<
+  PublicGenerationResult["draft"]
+>["variants"][number];
+
+const moveChosenVariant = (
+  event: ReactKeyboardEvent<HTMLInputElement>
+): string | null => {
+  const radios = [
+    ...document.querySelectorAll<HTMLInputElement>(
+      'input[name="chosen-variant"]'
+    ),
+  ];
+  const step =
+    event.key.endsWith("Right") || event.key === "ArrowDown" ? 1 : -1;
+  const next =
+    radios[
+      (radios.indexOf(event.currentTarget) + step + radios.length) %
+        radios.length
+    ];
+  next?.focus();
+  return next?.value ?? null;
+};
+
+/**
+ * The four variant cards are the chooser (#168 P0-1): a native radio group
+ * whose keyboard story follows the membership screen's explicit-key pattern,
+ * one primary action, and a note that keeps the publish promise honest.
+ */
+const VariantChooser = ({
+  variants,
+  chosenVariantId,
+  onChoose,
+  onPreview,
+}: {
+  readonly variants: readonly DraftVariant[];
+  readonly chosenVariantId: string | null;
+  readonly onChoose: (variantId: string) => void;
+  readonly onPreview: (variantId: string) => void;
+}) => {
+  return (
+    <section className="variant-stack" aria-label="Generated lesson variants">
+      <fieldset className="variant-picker">
+        <legend className="sr-only">
+          Choose the version to open in the preview
+        </legend>
+        <div className="variant-picker__cards">
+          {variants.map((variant) => {
+            const isChosen = chosenVariantId === variant.id;
+            return (
+              <label
+                className={cn(
+                  "variant-card",
+                  isChosen && "variant-card--chosen"
+                )}
+                key={variant.id}
+              >
+                <input
+                  type="radio"
+                  name="chosen-variant"
+                  className="variant-card__radio"
+                  value={variant.id}
+                  aria-label={`${variantLabels[variant.kind]}, ${variant.title}`}
+                  checked={isChosen}
+                  onChange={() => {
+                    onChoose(variant.id);
+                  }}
+                  onKeyDown={(event) => {
+                    // Keyboard selection is set explicitly: the hidden
+                    // radio's change event alone does not reach React state
+                    // reliably (the membership screen ships the same explicit
+                    // pattern).
+                    if (event.key === " " || event.key === "Enter") {
+                      event.preventDefault();
+                      onChoose(variant.id);
+                      return;
+                    }
+                    if (!event.key.startsWith("Arrow")) {
+                      return;
+                    }
+                    event.preventDefault();
+                    const next = moveChosenVariant(event);
+                    if (next) {
+                      onChoose(next);
+                    }
+                  }}
+                />
+                <span
+                  className={
+                    isChosen
+                      ? "variant-card__pick variant-card__pick--on"
+                      : "variant-card__pick"
+                  }
+                  aria-hidden="true"
+                >
+                  <Check aria-hidden="true" />
+                </span>
+                <span className="variant-card__heading">
+                  <span
+                    className={`variant-kind variant-kind--${variant.kind}`}
+                  >
+                    {variantLabels[variant.kind]}
+                  </span>
+                  <span>{variant.sourceItems.length} matching pieces</span>
+                </span>
+                <h3>{variant.title}</h3>
+                <p>{variant.instructions}</p>
+                <div className="variant-card__items">
+                  <div>
+                    <span>
+                      {variant.accessibilityMetadata.sourceGroupLabel}
+                    </span>
+                    <strong>{variant.sourceItems.length} choices</strong>
+                  </div>
+                  <div>
+                    <span>
+                      {variant.accessibilityMetadata.targetGroupLabel}
+                    </span>
+                    <strong>{variant.targetItems.length} connections</strong>
+                  </div>
+                </div>
+              </label>
+            );
+          })}
+        </div>
+      </fieldset>
+      {chosenVariantId ? (
+        <div className="variant-picker__action">
+          <Button
+            type="button"
+            onClick={() => {
+              onPreview(chosenVariantId);
+            }}
+          >
+            Open the preview for this version
+            <ArrowRight aria-hidden="true" />
+          </Button>
+          <span>You choose what students see next; nothing is shared yet.</span>
+        </div>
+      ) : null}
+    </section>
+  );
+};
+
 interface GenerationResultProperties {
   readonly result: PublicGenerationResult;
   readonly onRetry: (event: SyntheticEvent<HTMLFormElement>) => void;
@@ -635,134 +781,12 @@ const GenerationResult = ({
               </p>
             </aside>
 
-            <section
-              className="variant-stack"
-              aria-label="Generated lesson variants"
-            >
-              <fieldset className="variant-picker">
-                <legend className="sr-only">
-                  Choose the version to open in the preview
-                </legend>
-                <div className="variant-picker__cards">
-                  {variants.map((variant) => {
-                    const isChosen = chosenVariantId === variant.id;
-                    return (
-                      <label
-                        className={cn(
-                          "variant-card",
-                          isChosen && "variant-card--chosen"
-                        )}
-                        key={variant.id}
-                      >
-                        <input
-                          type="radio"
-                          name="chosen-variant"
-                          className="variant-card__radio"
-                          value={variant.id}
-                          aria-label={`${variantLabels[variant.kind]}, ${variant.title}`}
-                          checked={isChosen}
-                          onChange={() => {
-                            setChosenVariantId(variant.id);
-                          }}
-                          onKeyDown={(event) => {
-                            // Keyboard selection is set explicitly: the
-                            // hidden radio's change event alone does not
-                            // reach React state reliably (the membership
-                            // screen ships the same explicit pattern).
-                            if (event.key === " " || event.key === "Enter") {
-                              event.preventDefault();
-                              setChosenVariantId(variant.id);
-                              return;
-                            }
-                            if (!event.key.startsWith("Arrow")) {
-                              return;
-                            }
-                            event.preventDefault();
-                            const radios = [
-                              ...document.querySelectorAll<HTMLInputElement>(
-                                'input[name="chosen-variant"]'
-                              ),
-                            ];
-                            const step =
-                              event.key.endsWith("Right") ||
-                              event.key === "ArrowDown"
-                                ? 1
-                                : -1;
-                            const next =
-                              radios[
-                                (radios.indexOf(event.currentTarget) +
-                                  step +
-                                  radios.length) %
-                                  radios.length
-                              ];
-                            next?.focus();
-                            if (next?.value) {
-                              setChosenVariantId(next.value);
-                            }
-                          }}
-                        />
-                        <span
-                          className={
-                            isChosen
-                              ? "variant-card__pick variant-card__pick--on"
-                              : "variant-card__pick"
-                          }
-                          aria-hidden="true"
-                        >
-                          <Check aria-hidden="true" />
-                        </span>
-                        <span className="variant-card__heading">
-                          <span
-                            className={`variant-kind variant-kind--${variant.kind}`}
-                          >
-                            {variantLabels[variant.kind]}
-                          </span>
-                          <span>
-                            {variant.sourceItems.length} matching pieces
-                          </span>
-                        </span>
-                        <h3>{variant.title}</h3>
-                        <p>{variant.instructions}</p>
-                        <div className="variant-card__items">
-                          <div>
-                            <span>
-                              {variant.accessibilityMetadata.sourceGroupLabel}
-                            </span>
-                            <strong>
-                              {variant.sourceItems.length} choices
-                            </strong>
-                          </div>
-                          <div>
-                            <span>
-                              {variant.accessibilityMetadata.targetGroupLabel}
-                            </span>
-                            <strong>
-                              {variant.targetItems.length} connections
-                            </strong>
-                          </div>
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
-              </fieldset>
-              {chosenVariantId ? (
-                <div className="variant-picker__action">
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      setPreviewVariantId(chosenVariantId);
-                    }}
-                  >
-                    Open the preview for this version
-                    <ArrowRight aria-hidden="true" />
-                  </Button>
-                  <span>
-                    You choose what students see next; nothing is shared yet.
-                  </span>
-                </div>
-              ) : null}
-            </section>
+            <VariantChooser
+              variants={variants}
+              chosenVariantId={chosenVariantId}
+              onChoose={setChosenVariantId}
+              onPreview={setPreviewVariantId}
+            />
           </div>
 
           {result.state === READY_FOR_REVIEW_STATE ? (

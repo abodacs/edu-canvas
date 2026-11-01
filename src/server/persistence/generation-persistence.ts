@@ -97,19 +97,26 @@ const isUniqueViolation = (error: unknown): boolean => {
   );
 };
 
-const STANDARD_FK_SIGNAL = "lesson_draft_requests_tenant_id_standard_id_fkey";
+const STANDARD_FK_DETAIL = "Key (tenant_id, standard_id)=";
 
 /**
  * The classroom cannot claim any draft until its standards table has a row for
  * the requested objective; the typed signal lives in `../generation/types` so
  * both seams share it. Detection is duck-typed like `isUniqueViolation`, so no
- * driver type crosses the backend seam.
+ * driver type crosses the backend seam. The signal matches the PG error
+ * `detail` (`Key (tenant_id, standard_id)=… is not present in table
+ * "standards"`), not the constraint name: generated FK names drift across
+ * migration rewrites (#168 P0-2, #112).
  */
+const isMissingStandardDetail = (detail: string): boolean =>
+  detail.startsWith(STANDARD_FK_DETAIL) && detail.includes("standards");
+
 const isStandardForeignKeyViolation = (error: unknown): boolean => {
   return (
     isRecord(error) &&
     error.code === "23503" &&
-    error.constraint_name === STANDARD_FK_SIGNAL
+    typeof error.detail === "string" &&
+    isMissingStandardDetail(error.detail)
   );
 };
 
