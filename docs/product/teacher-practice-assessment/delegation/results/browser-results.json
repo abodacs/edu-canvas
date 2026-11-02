@@ -1,0 +1,53 @@
+{
+  "generatedAt": "2026-11-02T23:46:21.273Z",
+  "baseUrl": "http://localhost:3111",
+  "cases": [
+    {
+      "id": "dg-5-challenge",
+      "practice": "DG5",
+      "layer": "B-browser",
+      "status": "executed",
+      "score": 2,
+      "expected": "The blocked result exposes exactly the revise action: no retry, no approve, no publish, no withheld-draft preview.",
+      "observed": "Recovery panel rendered (#revise-request present=true); retry-style control present=false; publish control present=false.",
+      "evidence": [
+        "results/s0/s0-06-moderation-block.png",
+        "results/s0/s0-runner-log.txt"
+      ],
+      "flipCondition": null
+    },
+    {
+      "id": "dg-5-normal",
+      "practice": "DG5",
+      "layer": "B-live",
+      "status": "executed",
+      "score": 2,
+      "expected": "Four ready variants render as individually selectable cards; the teacher's choice is recorded and the review surface opens.",
+      "observed": "4 variant cards rendered; titles observed: [\"Standard - Set A\",\"Standard - Set B\",\"Scaffold\",\"Challenge\"]; distinct titles: 4; teacher checked the first card and opened review.",
+      "evidence": [
+        "results/s0/s0-07-generation-outcome.png",
+        "results/s0/s0-08-variant-chosen.png",
+        "results/s0/s0-09-review-gallery.png"
+      ],
+      "flipCondition": null
+    },
+    {
+      "id": "s0-smoke",
+      "practice": "S0",
+      "layer": "B-browser",
+      "status": "executed",
+      "score": 0,
+      "expected": "Full loop completes with evidence: sign-in, moderation block, recovery revise, ready-for-review, approvals, publish, learner attempt, reveal of the approved copy.",
+      "observed": "Teacher segment passed end to end: moderation block revised via the recovery panel; the revise request carried sourceSnapshotId 01a19ea7-5370-7882-8db0-18501fbcda9a (logged request body); generation reached ready-for-review with four variants; reverse path plus 4 screens approved; publish completed (publication 01a19ea8-0eec-7a4e-8692-4c6b22c272d0, pack assignment 01a19ea8-0f07-72a0-97eb-57e725518b59). Learner segment blocked by observed product behavior: the app states the review cites no source material, so the learner runtime has no activity to open (no learner activity opened; page says: Open the link your teacher shared to start this activity.). Root cause evidence: the record row stores source_snapshot_id NULL even though the request body carried it — runAttempt rebuilds record.input without sourceSnapshotId (src/server/generation/service.ts:702-728), so source lineage never persists.",
+      "evidence": [
+        "results/s0/s0-06-moderation-block.png",
+        "results/s0/s0-07-generation-outcome.png",
+        "results/s0/s0-10-all-approved.png",
+        "results/s0/s0-12-published.png",
+        "results/s0/s0-13-learner-side.png",
+        "results/s0/s0-runner-log.txt"
+      ],
+      "flipCondition": "Unblocks when the generation record preserves input.sourceSnapshotId (runAttempt at src/server/generation/service.ts:702-728 currently drops it), so a source-grounded publish creates the learner assignment and /learn can open the activity."
+    }
+  ]
+}
