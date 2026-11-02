@@ -44,10 +44,17 @@ const doesPathExist = (node: JsonSchemaNode, path: string): boolean => {
   if (!head) {
     return false;
   }
-  const child = node.properties?.[head] ?? node.items;
-  return (
-    child !== undefined &&
-    (rest.length === 0 || doesPathExist(child.items ?? child, rest.join(".")))
+  const direct = node.properties?.[head];
+  const fromItems = node.items?.properties?.[head];
+  const fromBranches = (node.anyOf ?? []).flatMap((branch) => {
+    const child = branch.properties?.[head] ?? branch.items?.properties?.[head];
+    return child === undefined ? [] : [child];
+  });
+  const children = [direct, fromItems, ...fromBranches].filter(
+    (child): child is JsonSchemaNode => child !== undefined
+  );
+  return children.some(
+    (child) => rest.length === 0 || doesPathExist(child, rest.join("."))
   );
 };
 

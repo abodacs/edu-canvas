@@ -112,6 +112,33 @@ const privateAnswers = [
   { itemId: "item_2", correctTargetIds: ["target_2"] },
 ];
 
+const approvedCopy = {
+  schemaVersion: "approved-copy-v1" as const,
+  language: "en" as const,
+  path: {
+    rationale:
+      "Both fractions describe the same part because equal parts keep the same value.",
+  },
+  variants: [
+    {
+      variantId: "variant_standard",
+      feedback: {
+        correct: "Yes. Both names describe the same part.",
+        incorrect: "Not yet. Multiply both parts by the same number.",
+      },
+      columns: { sourceLabel: "Fractions", targetLabel: "Equivalents" },
+    },
+    {
+      variantId: "variant_scaffold",
+      feedback: {
+        correct: "Yes. The bar shows the same part.",
+        incorrect: "Look at the bar again, then try one pair.",
+      },
+      columns: { sourceLabel: "Fractions", targetLabel: "Equivalents" },
+    },
+  ],
+};
+
 const validationResult = {
   ok: true,
   validatorVersion: "lesson-validator-v2",
@@ -268,6 +295,7 @@ const appendInput = (
     variantReferences,
     objectiveHash: "a".repeat(64),
     sections,
+    approvedCopy,
     provenance,
     changedSectionIds: [],
     ruleVersions,
@@ -301,6 +329,7 @@ describe("record commands", () => {
       conceptIds: [conceptId],
       sections,
       variantReferences,
+      approvedCopy,
     });
     const privateAnswerDigest = createPrivateAnswerDigest(privateAnswers);
     const packageHash = createPackageHash({
@@ -356,6 +385,7 @@ describe("record commands", () => {
       score: 100,
       correctness: "correct",
       gradingRuleVersion: "matching-grader-v1",
+      nextActivity: null,
     });
 
     const evidence = await records.readEvidence(teacher, {
@@ -373,7 +403,7 @@ describe("record commands", () => {
       evidenceHash: evidence.evidenceHash,
       proposal: { ruleVersion: "decision-rule-v1", summary: "Continue." },
       action: "accept",
-      approvedTargetId: "item_2",
+      approvedTargetId: "variant_standard",
     });
 
     expect(decision.id).toBeTruthy();
@@ -394,6 +424,76 @@ describe("record commands", () => {
 
     expect(refreshed.decisions).toHaveLength(1);
     expect(attemptId).toBeTruthy();
+  });
+
+  it("refuses a submit whose item is outside the assigned variant's section", async () => {
+    const { records } = buildFixture();
+
+    const grounding = await records.storeGrounding(teacher, {
+      operationKey: "store-grounding-key-mismatch",
+      standardId,
+      referenceKey: "equivalent-fractions",
+      referenceVersion: "2026-10",
+      title: "Equivalent fractions",
+      attribution: "Synthetic curriculum fixture",
+      sourceLocator: "fixture://equivalent-fractions",
+      reviewedContent: reviewContent,
+    });
+
+    // The assigned variant's section holds only item_2, so item_1 belongs to
+    // another variant's section. Grading against that section would use
+    // another variant's answer key, so the submit must be refused.
+    const [worked, guided, independent, followUp] = sections;
+    const linkedSections = [
+      { ...worked, variantId: "variant_standard", itemIds: ["item_2"] },
+      { ...guided, variantId: "variant_scaffold" },
+      { ...independent, variantId: "variant_scaffold" },
+      { ...followUp, variantId: "variant_scaffold" },
+    ];
+    const version = await records.appendVersion(
+      teacher,
+      appendInput({
+        operationKey: "append-version-key-mismatch",
+        curatedReferenceId: grounding.id,
+        package: {
+          id: "package_mismatch",
+          title: "Equivalent fractions",
+          standardId,
+        },
+        sections: linkedSections,
+      })
+    );
+    const contentHash = createContentHash({
+      conceptIds: [conceptId],
+      sections: linkedSections,
+      variantReferences,
+      approvedCopy,
+    });
+    const privateAnswerDigest = createPrivateAnswerDigest(privateAnswers);
+    const publication = await records.publish(teacher, {
+      operationKey: "publish-key-mismatch",
+      versionId: version.id,
+      contentHash,
+      packageHash: createPackageHash({ contentHash, privateAnswerDigest }),
+      privateAnswerDigest,
+      validationResultHash: createValidationResultHash(validationResult),
+      ruleVersions,
+    });
+    const assignment = await records.assign(teacher, {
+      operationKey: "assign-key-mismatch",
+      publicationId: publication.id,
+      learnerId,
+      classId,
+    });
+    const run = await records.startRun(student, {
+      operationKey: "start-run-key-mismatch",
+      assignmentId: assignment.id,
+      assignedVariantId: "variant_standard",
+    });
+
+    await expect(
+      records.readAttemptContext(student, { runId: run.id, itemId: "item_1" })
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
   });
 
   it("rejects a changed input under an existing operation key", async () => {
@@ -417,6 +517,7 @@ describe("record commands", () => {
       conceptIds: [conceptId],
       sections,
       variantReferences,
+      approvedCopy,
     });
     const privateAnswerDigest = createPrivateAnswerDigest(privateAnswers);
     const packageHash = createPackageHash({ contentHash, privateAnswerDigest });

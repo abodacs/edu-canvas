@@ -14,6 +14,7 @@ import {
   teacherDecisionSchema,
 } from "./delivery";
 import { operationReceiptSchema } from "./evidence";
+import { isRecordStoreError } from "./errors";
 import {
   createContentHash,
   createCuratedContentHash,
@@ -72,6 +73,25 @@ const variantReferences = [
   { variantId: "variant_challenge", kind: "challenge" as const },
 ];
 
+const approvedCopy = {
+  schemaVersion: "approved-copy-v1" as const,
+  language: "en" as const,
+  path: {
+    rationale:
+      "Both fractions describe the same part because equal parts keep the same value.",
+  },
+  variants: [
+    {
+      variantId: "variant_standard",
+      feedback: {
+        correct: "Yes. Both names describe the same part.",
+        incorrect: "Not yet. Multiply both parts by the same number.",
+      },
+      columns: { sourceLabel: "Fractions", targetLabel: "Equivalents" },
+    },
+  ],
+};
+
 const validationResult = {
   ok: true,
   validatorVersion: "lesson-validator-v2",
@@ -113,6 +133,7 @@ const contentHash = createContentHash({
   conceptIds: ["concept_1"],
   sections,
   variantReferences,
+  approvedCopy,
 });
 const privateAnswerDigest = createPrivateAnswerDigest([
   { itemId: "item_1", correctTargetIds: ["target_1"] },
@@ -133,6 +154,7 @@ const lessonVersion = {
   variantReferences,
   objectiveHash: "a".repeat(64),
   sections,
+  approvedCopy,
   provenance: {
     provider: null,
     modelVersion: null,
@@ -380,9 +402,67 @@ describe("record contracts", () => {
         conceptIds: ["concept_1"],
         sections,
         variantReferences,
+        approvedCopy,
       })
     );
     expect(contentHash).toHaveLength(64);
+  });
+
+  it("resolves the assigned section by variant link and keeps v1 fallback", () => {
+    const run = learnerRunSchema.parse({
+      id: "run_1",
+      tenantId,
+      schemaVersion: "learner-run-v1",
+      assignmentId: "assignment_1",
+      learnerId: "learner_1",
+      publicationId: "publication_1",
+      assignedVariantId: "variant_standard",
+      stage: "assigned",
+      firstResponseStatus: "pending",
+      revision: 0,
+      nextActivity: null,
+      createdAt,
+      updatedAt: createdAt,
+    });
+    const linked = lessonVersionSchema.parse({
+      ...lessonVersion,
+      sections: sections.map((section, index) => {
+        return {
+          ...section,
+          variantId: index === 0 ? "variant_standard" : "variant_scaffold",
+        };
+      }),
+    });
+
+    expect(
+      projectStudentLesson({ version: linked, run }).assignedSectionId
+    ).toBe("section_worked");
+    expect(
+      projectStudentLesson({
+        version: lessonVersionSchema.parse(lessonVersion),
+        run,
+      }).assignedSectionId
+    ).toBe("section_worked");
+
+    const mismatched = lessonVersionSchema.parse({
+      ...lessonVersion,
+      // eslint-disable-next-line unicorn/consistent-arrow-return-style -- prettier keeps the object across lines.
+      sections: sections.map((section) => ({
+        ...section,
+        variantId: "variant_scaffold",
+      })),
+    });
+
+    let rejection: unknown = null;
+    try {
+      projectStudentLesson({ version: mismatched, run });
+    } catch (error) {
+      rejection = error;
+    }
+
+    expect(
+      isRecordStoreError(rejection) && rejection.code === "INVALID_INPUT"
+    ).toBeTruthy();
   });
 
   it("teacher and student projections omit every private field", () => {

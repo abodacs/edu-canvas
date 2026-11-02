@@ -1,13 +1,16 @@
 import { z } from "zod";
 
 import {
+  learnerColumnsSchema,
   learnerNextActivitySchema,
   learnerSectionSchema,
 } from "@/shared/learner-contract";
 
 import { createEvidenceHash } from "./hashes";
 import { isoTimestampSchema, recordIdSchema, scoreSchema } from "./envelope";
+import { recordError } from "./errors";
 import {
+  approvedCopySchema,
   provenanceSchema,
   ruleVersionsSchema,
   sectionSchema,
@@ -29,7 +32,7 @@ import type {
   LearnerRun,
   TeacherDecision,
 } from "./delivery";
-import type { LessonVersion } from "./authoring";
+import type { LessonSection, LessonVersion } from "./authoring";
 
 /**
  * Explicit allowlists. A projection is constructed field by field, never by
@@ -51,6 +54,7 @@ export const teacherVersionProjectionSchema = z.strictObject({
     .array(variantReferenceSchema)
     .max(recordLimits.variantMax),
   sections: z.array(sectionSchema).length(recordLimits.sectionCount),
+  approvedCopy: approvedCopySchema.nullable(),
   provenance: provenanceSchema,
   validationResult: validationResultSchema,
   ruleVersions: ruleVersionsSchema,
@@ -76,6 +80,7 @@ export const projectTeacherVersion = (
     conceptIds: version.conceptIds,
     variantReferences: version.variantReferences,
     sections: version.sections,
+    approvedCopy: version.approvedCopy,
     provenance: version.provenance,
     validationResult: version.validationResult,
     ruleVersions: version.ruleVersions,
@@ -87,6 +92,8 @@ export const studentLessonProjectionSchema = z.strictObject({
   publicationId: recordIdSchema,
   lessonVersionId: recordIdSchema,
   assignedVariantId: recordIdSchema,
+  assignedSectionId: recordIdSchema,
+  columns: learnerColumnsSchema.nullable(),
   sections: z.array(learnerSectionSchema).length(recordLimits.sectionCount),
   stage: z.enum(runStageValues),
   firstResponseStatus: z.enum(firstResponseStatusValues),
@@ -97,15 +104,88 @@ export type StudentLessonProjection = z.infer<
   typeof studentLessonProjectionSchema
 >;
 
+/**
+The learner section is constructed field by field. `variantId` stays on the
+record and never crosses this seam, so a new authoring field cannot leak by
+default.
+*/
+const projectLearnerSection = (section: {
+  readonly id: string;
+  readonly kind: LessonSection["kind"];
+  readonly title: string;
+  readonly body: string;
+  readonly itemIds: readonly string[];
+  readonly items?: LessonSection["items"];
+}) => {
+  return learnerSectionSchema.parse({
+    id: section.id,
+    kind: section.kind,
+    title: section.title,
+    body: section.body,
+    itemIds: [...section.itemIds],
+    ...(section.items !== undefined && {
+      items: section.items.map((item) => {
+        return {
+          id: item.id,
+          label: item.label,
+          role: item.role,
+        };
+      }),
+    }),
+  });
+};
+
+/**
+The one variant→section rule for the whole record layer. A version that links variants must resolve the assigned variant exactly; a v1 row without links falls back to the first section. The learner submit path reuses this instead of re-implementing it, so the read and write paths cannot disagree.
+*/
+export const assignedSection = (
+  version: LessonVersion,
+  assignedVariantId: string
+): LessonVersion["sections"][number] => {
+  const [first] = version.sections;
+  if (!first) {
+    throw recordError("INVALID_INPUT", {
+      cause: new Error("A lesson version has no sections."),
+    });
+  }
+  const match = version.sections.find(
+    (section) => section.variantId === assignedVariantId
+  );
+  if (match) {
+    return match;
+  }
+  // A v1 row has no variant links at all, so the first section is the only
+  // answer it can give. A row that does link variants must resolve exactly.
+  if (version.sections.some((section) => section.variantId !== undefined)) {
+    throw recordError("INVALID_INPUT", {
+      cause: new Error("The assigned variant has no section."),
+    });
+  }
+  return first;
+};
+
+const assignedColumns = (
+  version: LessonVersion,
+  assignedVariantId: string
+): { readonly sourceLabel: string; readonly targetLabel: string } | null => {
+  const variant = version.approvedCopy?.variants.find(
+    (copy) => copy.variantId === assignedVariantId
+  );
+  return variant?.columns ?? null;
+};
+
 export const projectStudentLesson = (input: {
   readonly version: LessonVersion;
   readonly run: LearnerRun;
 }): StudentLessonProjection => {
+  const section = assignedSection(input.version, input.run.assignedVariantId);
   return studentLessonProjectionSchema.parse({
     publicationId: input.run.publicationId,
     lessonVersionId: input.version.id,
     assignedVariantId: input.run.assignedVariantId,
-    sections: input.version.sections,
+    assignedSectionId: section.id,
+    columns: assignedColumns(input.version, input.run.assignedVariantId),
+    sections: input.version.sections.map(projectLearnerSection),
     stage: input.run.stage,
     firstResponseStatus: input.run.firstResponseStatus,
     nextActivity: input.run.nextActivity,

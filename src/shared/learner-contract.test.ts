@@ -21,6 +21,8 @@ const runResponse = {
     publicationId: "publication_fraction_0001",
     lessonVersionId: "version_fraction_0001",
     assignedVariantId: "variant_standard",
+    assignedSectionId: "section-standard",
+    columns: null,
     sections: [section, section, section, section],
     stage: "assigned",
     firstResponseStatus: "pending",
@@ -75,6 +77,14 @@ describe("learner boundary contract", () => {
       correctMatches: 1,
       incorrectMatches: 0,
       missingMatches: 0,
+      reveal: {
+        ruleVersion: "reveal-v1",
+        pairs: [],
+        unresolved: [],
+        feedback: null,
+        connection: null,
+      },
+      nextActivity: null,
     };
 
     expect(

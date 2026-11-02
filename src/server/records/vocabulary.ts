@@ -3,12 +3,16 @@ import { z } from "zod";
 export {
   correctnessValues,
   firstResponseStatusValues,
+  nextActivityAxisValues,
+  nextActivityPurposeValues,
   runStageValues,
   sectionKindValues,
 } from "@/shared/learner-contract";
 export type {
   Correctness,
   FirstResponseStatus,
+  NextActivityAxis,
+  NextActivityPurpose,
   RunStage,
   SectionKind,
 } from "@/shared/learner-contract";

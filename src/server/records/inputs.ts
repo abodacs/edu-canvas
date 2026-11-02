@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import {
+  approvedCopySchema,
   curatedReviewedContentSchema,
   provenanceSchema,
   ruleVersionsSchema,
@@ -17,7 +18,7 @@ import {
 } from "./vocabulary";
 import { hashSchema, recordIdSchema, scoreSchema } from "./envelope";
 import { privateAnswerRelationshipsSchema } from "./private-answers";
-import { selectedPairSchema } from "./delivery";
+import { selectedPairSchema, nextActivityDraftSchema } from "./delivery";
 
 export const operationKeySchema = z
   .string()
@@ -75,6 +76,7 @@ export const appendVersionInputSchema = z
     variantReferences: variantReferencesSchema,
     objectiveHash: hashSchema,
     sections: sectionsSchema,
+    approvedCopy: approvedCopySchema,
     provenance: provenanceSchema,
     changedSectionIds: z.array(recordIdSchema).max(recordLimits.sectionCount),
     ruleVersions: ruleVersionsSchema,
@@ -148,6 +150,7 @@ export const recordAttemptInputSchema = z.strictObject({
   score: scoreSchema,
   correctness: z.enum(correctnessValues),
   gradingRuleVersion: z.string().trim().min(1).max(recordLimits.idLength),
+  nextActivity: nextActivityDraftSchema.nullable(),
 });
 
 export type RecordAttemptInput = z.infer<typeof recordAttemptInputSchema>;
@@ -266,7 +269,12 @@ export const writeInputReferents: Record<
     },
     { path: "conceptIds", table: "prerequisite_nodes" },
     { path: "variantReferences.variantId", table: lessonVersionContent },
+    { path: "sections.variantId", table: lessonVersionContent, optional: true },
     { path: "sections.itemIds", table: lessonVersionContent },
+    {
+      path: "approvedCopy.variants.variantId",
+      table: lessonVersionContent,
+    },
     { path: "changedSectionIds", table: lessonVersionContent },
     {
       path: "provenance.authoredEdits.sectionId",
@@ -303,6 +311,11 @@ export const writeInputReferents: Record<
     { path: "assistanceEventIds", table: "assistance_events" },
     { path: "selectedPairs.sourceId", table: lessonVersionContent },
     { path: "selectedPairs.targetId", table: lessonVersionContent },
+    {
+      path: "nextActivity.activityId",
+      table: lessonVersionContent,
+      optional: true,
+    },
   ],
   choose: [
     { path: "runId", table: "learner_runs" },

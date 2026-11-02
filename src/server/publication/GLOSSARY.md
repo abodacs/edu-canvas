@@ -48,7 +48,7 @@ The replay record for a pack write: operation key, input hash, and result identi
 
 The translation that writes an approved pack into the canonical lesson records: one lesson version, one publication, and one learner assignment. The bridge is the only writer of that second copy, and every revision of one review appends to the same lesson package, so the record chain has its own history.
 
-The translation is lossy, and the losses are specific. Hints, feedback, language metadata, and accessibility metadata never cross. A section body is the variant's instructions, truncated. The section kind is chosen by array position, because the pack carries no pedagogical stage. Validation findings keep only code, severity, and field. Provenance arrives with an empty `authoredEdits`, so a reviewer's edits are not visible in the record. A reader of the record cannot recover what the pack held, and no test asserts any of these losses.
+The translation is deliberate about what crosses. Variant instructions become the section body; source, target, and distractor items become section items; the section kind is chosen by array position, because the pack carries no pedagogical stage. Approved learner copy crosses once per version as **approved copy** on the lesson version: the rationale, each variant's corrective feedback, and its two column labels. Hints never cross, and the bridge test pins that absence. Validation findings keep only code, severity, and field. Provenance carries the teacher's authored edits with the section each one changed. A reader can reach every learner-visible sentence the reveal needs, and `record-bridge.test.ts` asserts that carry set rather than a silent loss.
 
 ### Bridged lesson
 

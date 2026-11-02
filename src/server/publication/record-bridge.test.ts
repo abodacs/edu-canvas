@@ -227,12 +227,51 @@ describe(bridgePublishedPack, () => {
 
     // What does not cross, pinned so the loss is a decision rather than an
     // accident: a section carries no hints, feedback, or accessibility
-    // metadata, because the record model has nowhere to put them.
+    // metadata. #176 moved the two carryable pieces (the approved feedback and
+    // the column labels) into the version-level `approvedCopy` block, so this
+    // key list is the contract a new section field has to argue with.
     expect(
       Object.keys(version.sections[0] ?? {}).toSorted((left, right) =>
         left.localeCompare(right)
       )
-    ).toStrictEqual(["body", "id", "itemIds", "items", "kind", "title"]);
+    ).toStrictEqual([
+      "body",
+      "id",
+      "itemIds",
+      "items",
+      "kind",
+      "title",
+      "variantId",
+    ]);
+
+    expect(version.approvedCopy).toStrictEqual({
+      schemaVersion: "approved-copy-v1",
+      language: "en",
+      path: { rationale: source.publicContent.learningPath.rationale },
+      variants: variants.map((variant) => {
+        return {
+          variantId: variant.id,
+          feedback: variant.feedback,
+          columns: {
+            sourceLabel: variant.accessibilityMetadata.sourceGroupLabel,
+            targetLabel: variant.accessibilityMetadata.targetGroupLabel,
+          },
+        };
+      }),
+    });
+
+    // #176 deferrals, pinned so carrying one later is a decision: hints have
+    // no route yet, RTL metadata is #9, and the two screen-purpose fields
+    // stay teacher-facing.
+    const serializedApprovedCopy = JSON.stringify(version.approvedCopy);
+    for (const deferred of [
+      "hint",
+      "languageMetadata",
+      "screenPurpose",
+      "nextScreenRationale",
+    ]) {
+      expect(serializedApprovedCopy).not.toContain(deferred);
+    }
   });
 
   it("lets a student score an attempt on the bridged publication", async () => {

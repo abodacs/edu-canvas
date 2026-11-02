@@ -1,11 +1,23 @@
+import { createDecisionEvidenceHash } from "@/server/records/hashes";
+import { decideNextActivity } from "./decision";
 import { gradeMatching, matchingGradingRuleVersion } from "./grading";
+import { buildReveal } from "./reveal";
 import type { MatchingGrade, SubmittedPair } from "./grading";
+import type { Reveal } from "./reveal";
 import type { RecordPersistence } from "@/server/persistence/records-commands";
 import type { AssistanceState } from "@/server/records/vocabulary";
+import type {
+  NextActivity,
+  NextActivityDraft,
+} from "@/server/records/delivery";
 import type { Actor } from "@/server/identity/types";
 
 /**
  * #6: the learner runtime. Grading happens here, before the record write, so a client never carries a score and a rejected submission writes nothing. The record layer still owns the attempt, its receipt, and its run revision.
+ *
+ * #7: the same pass builds the reveal and the next-activity decision from
+ * stored evidence. The decision is computed from the first response, so a
+ * retry can add evidence without changing it.
  */
 export interface SubmitAttemptInput {
   readonly operationKey: string;
@@ -21,6 +33,8 @@ export interface SubmitAttemptInput {
 export interface SubmittedAttempt extends MatchingGrade {
   readonly attemptId: string;
   readonly gradingRuleVersion: string;
+  readonly reveal: Reveal;
+  readonly nextActivity: NextActivity;
 }
 
 export interface LearnerService {
@@ -29,6 +43,15 @@ export interface LearnerService {
     input: SubmitAttemptInput
   ) => Promise<SubmittedAttempt>;
 }
+
+const wasAssisted = (input: {
+  readonly assistanceState: AssistanceState;
+  readonly assistanceEventIds: readonly string[];
+}): boolean => {
+  return (
+    input.assistanceState === "hinted" || input.assistanceEventIds.length > 0
+  );
+};
 
 export const createLearnerService = (
   records: RecordPersistence
@@ -45,6 +68,50 @@ export const createLearnerService = (
       pairs: input.pairs,
       relationships: context.relationships,
     });
+
+    const firstResponse =
+      context.attempts.find((attempt) =>
+        context.section.itemIds.includes(attempt.itemId)
+      ) ?? null;
+    const independent = firstResponse
+      ? {
+          correctness: firstResponse.correctness,
+          assisted: wasAssisted(firstResponse),
+        }
+      : {
+          correctness: grade.correctness,
+          assisted: wasAssisted(input),
+        };
+    const evidenceHash = createDecisionEvidenceHash({
+      runId: input.runId,
+      itemId: firstResponse?.itemId ?? input.itemId,
+      correctness: independent.correctness,
+      assisted: independent.assisted,
+      assistanceEventIds:
+        firstResponse?.assistanceEventIds ?? input.assistanceEventIds,
+    });
+    const outcome = decideNextActivity({
+      assignedActivityId: context.run.assignedVariantId,
+      independent,
+      // The run model has one stage. Guided evidence stays null until a
+      // multi-stage run exists, so the rule's guided rows are fixture-only.
+      guided: null,
+      activities: context.activities.map((activity) => {
+        return {
+          activityId: activity.variantId,
+          kind: activity.kind,
+        };
+      }),
+    });
+    const draft: NextActivityDraft = {
+      activityId: outcome.activityId,
+      activityAxis: "variant-kind",
+      purpose: outcome.purpose,
+      reason: outcome.reason,
+      ruleVersion: outcome.ruleVersion,
+      evidenceHash,
+    };
+
     const written = await records.recordAttempt(actor, {
       operationKey: input.operationKey,
       runId: input.runId,
@@ -57,11 +124,33 @@ export const createLearnerService = (
       score: grade.score,
       correctness: grade.correctness,
       gradingRuleVersion: matchingGradingRuleVersion,
+      nextActivity: draft,
     });
+
+    const { approvedCopy } = context;
+    const variantCopy =
+      approvedCopy?.variants.find(
+        (variant) => variant.variantId === context.run.assignedVariantId
+      ) ?? null;
+    const reveal = buildReveal({
+      items: context.section.items ?? [],
+      relationships: context.relationships,
+      pairs: input.pairs,
+      correctness: grade.correctness,
+      feedback: variantCopy?.feedback ?? null,
+      rationale: approvedCopy?.path.rationale ?? null,
+      language: approvedCopy?.language ?? "en",
+    });
+
     return {
       attemptId: written.id,
       gradingRuleVersion: matchingGradingRuleVersion,
       ...grade,
+      reveal,
+      nextActivity: context.run.nextActivity ?? {
+        ...draft,
+        derivedFromAttemptId: written.id,
+      },
     };
   };
 

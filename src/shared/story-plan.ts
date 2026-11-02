@@ -137,64 +137,26 @@ const storyCopy = {
 
 // The connection explanation is one clause of the approved path rationale. The
 // split keeps every word in place and only drops the leading premise, because
-// beat one already states it. The clause is returned verbatim, never recased, so
-// it stays an exact slice of approved copy. When no connective is present the
-// whole rationale is used.
-const connectionConnectives = {
-  en: ["in order to", "so that", "because", "so"],
-  ar: ["حتى", "لكي"],
-} as const satisfies Record<StoryLanguage, readonly string[]>;
+// beat one already states it. The match runs on the raw approved string, so
+// the clause is an exact byte slice of stored copy even when the pack uses
+// double spaces or a line break; it is returned verbatim, never recased. When
+// no connective is present the whole rationale is used.
+const connectionPattern = {
+  en: /\s(?:in order to|so that|because|so)\s/iu,
+  ar: /\s(?:حتى|لكي)\s/u,
+} as const satisfies Record<StoryLanguage, RegExp>;
 
 const collapseWhitespace = (value: string): string =>
   value.trim().replaceAll(/\s+/gu, " ");
-
-interface ConnectiveMatch {
-  readonly start: number;
-  readonly end: number;
-}
-
-const findConnectiveEnd = (
-  value: string,
-  language: StoryLanguage
-): number | undefined => {
-  const haystack = language === "ar" ? value : value.toLowerCase();
-  const connectives = connectionConnectives[language];
-  let best: ConnectiveMatch | undefined;
-
-  for (const connective of connectives) {
-    const needle =
-      language === "ar" ? ` ${connective} ` : ` ${connective.toLowerCase()} `;
-    const start = haystack.indexOf(needle);
-    const found =
-      start === -1 ? undefined : { start, end: start + needle.length };
-    const isEarlier =
-      found !== undefined && (!best || found.start < best.start);
-    const isSameStartButLonger =
-      found !== undefined &&
-      best !== undefined &&
-      found.start === best.start &&
-      found.end > best.end;
-
-    if (found && (isEarlier || isSameStartButLonger)) {
-      best = found;
-    }
-  }
-
-  return best?.end;
-};
 
 export const extractConnectionExplanation = (
   rationale: string,
   language: StoryLanguage
 ): string => {
-  const normalized = collapseWhitespace(rationale);
-  const end = findConnectiveEnd(normalized, language);
-  if (end === undefined) {
-    return normalized;
-  }
-
-  const clause = normalized.slice(end).trim();
-  return clause || normalized;
+  const match = connectionPattern[language].exec(rationale);
+  const clause =
+    match === null ? "" : rationale.slice(match.index + match[0].length).trim();
+  return clause || rationale.trim();
 };
 
 interface BeatDraft {

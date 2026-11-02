@@ -1414,6 +1414,7 @@ export const lessonVersions = pgTable(
     variantReferences: jsonb("variant_references").notNull(),
     objectiveHash: text("objective_hash").notNull(),
     sections: jsonb().notNull(),
+    approvedCopy: jsonb("approved_copy"),
     provenance: jsonb().notNull(),
     revisionKind: text("revision_kind").notNull(),
     changedSectionIds: jsonb("changed_section_ids").notNull(),

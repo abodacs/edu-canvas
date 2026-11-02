@@ -1,6 +1,9 @@
 import { z } from "zod";
 
-import { variantKindValues } from "@/shared/generation-contract";
+import {
+  languageValues,
+  variantKindValues,
+} from "@/shared/generation-contract";
 
 import {
   boundedTextSchema,
@@ -69,6 +72,12 @@ export type SectionItem = z.infer<typeof sectionItemSchema>;
 export const sectionSchema = z.strictObject({
   id: recordIdSchema,
   kind: z.enum(sectionKindValues),
+  /**
+  #176: the variant this section was projected from. Optional so rows written
+  before the link still parse; the bridge always sets it, so a learner's
+  assigned variant resolves to one section without an id convention.
+  */
+  variantId: recordIdSchema.optional(),
   title: boundedTextSchema(recordLimits.titleText),
   body: boundedTextSchema(recordLimits.bodyText),
   itemIds: z.array(recordIdSchema).max(recordLimits.itemMax),
@@ -76,6 +85,39 @@ export const sectionSchema = z.strictObject({
 });
 
 export type LessonSection = z.infer<typeof sectionSchema>;
+
+export const approvedVariantCopySchema = z.strictObject({
+  variantId: recordIdSchema,
+  feedback: z.strictObject({
+    correct: boundedTextSchema(recordLimits.bodyText),
+    incorrect: boundedTextSchema(recordLimits.bodyText),
+  }),
+  columns: z.strictObject({
+    sourceLabel: boundedTextSchema(recordLimits.shortText),
+    targetLabel: boundedTextSchema(recordLimits.shortText),
+  }),
+});
+
+export type ApprovedVariantCopy = z.infer<typeof approvedVariantCopySchema>;
+
+/**
+#176: the approved learner-facing copy the reveal needs, stored once per
+version. Path copy sits at the version level; variant copy is keyed by the
+variant it belongs to. Null only on rows written before this column existed.
+*/
+export const approvedCopySchema = z.strictObject({
+  schemaVersion: z.literal("approved-copy-v1"),
+  language: z.enum(languageValues),
+  path: z.strictObject({
+    rationale: boundedTextSchema(recordLimits.summaryText),
+  }),
+  variants: z
+    .array(approvedVariantCopySchema)
+    .min(1)
+    .max(recordLimits.variantMax),
+});
+
+export type ApprovedCopy = z.infer<typeof approvedCopySchema>;
 
 const areSectionsInOrder = (sections: readonly LessonSection[]): boolean =>
   sections.every((section, index) => section.kind === sectionKindValues[index]);
@@ -213,6 +255,7 @@ export const lessonVersionSchema = z
     variantReferences: variantReferencesSchema,
     objectiveHash: hashSchema,
     sections: sectionsSchema,
+    approvedCopy: approvedCopySchema.nullable(),
     provenance: provenanceSchema,
     revisionKind: z.enum(revisionKindValues),
     changedSectionIds: z.array(recordIdSchema).max(recordLimits.sectionCount),

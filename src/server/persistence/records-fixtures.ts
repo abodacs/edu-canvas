@@ -89,6 +89,7 @@ const sections = [
 
 const variantReferences = [
   { variantId: "variant_standard", kind: "standard" as const },
+  { variantId: "variant_standard_b", kind: "standard" as const },
   { variantId: "variant_scaffold", kind: "scaffold" as const },
 ];
 
@@ -96,6 +97,41 @@ const privateAnswers = [
   { itemId: "item_1", correctTargetIds: ["target_1"] },
   { itemId: "item_2", correctTargetIds: ["target_2"] },
 ];
+
+const fixtureRationale =
+  "Both fractions describe the same part because equal parts keep the same value when both numbers are multiplied by the same factor.";
+
+const approvedCopy = {
+  schemaVersion: "approved-copy-v1" as const,
+  language: "en" as const,
+  path: { rationale: fixtureRationale },
+  variants: [
+    {
+      variantId: "variant_standard",
+      feedback: {
+        correct: "Yes. Both names describe the same part.",
+        incorrect: "Not yet. Multiply both parts by the same number.",
+      },
+      columns: { sourceLabel: "Fractions", targetLabel: "Equivalents" },
+    },
+    {
+      variantId: "variant_standard_b",
+      feedback: {
+        correct: "Yes. Both names describe the same part.",
+        incorrect: "Not yet. Multiply both parts by the same number.",
+      },
+      columns: { sourceLabel: "Fractions", targetLabel: "Equivalents" },
+    },
+    {
+      variantId: "variant_scaffold",
+      feedback: {
+        correct: "Yes. The bar shows the same part.",
+        incorrect: "Look at the bar again, then try one pair.",
+      },
+      columns: { sourceLabel: "Fractions", targetLabel: "Equivalents" },
+    },
+  ],
+};
 
 const validationResult = {
   ok: true,
@@ -123,6 +159,7 @@ const contentHash = createContentHash({
   conceptIds: [fixtureConceptId],
   sections,
   variantReferences,
+  approvedCopy,
 });
 const privateAnswerDigest = createPrivateAnswerDigest(privateAnswers);
 const packageHash = createPackageHash({ contentHash, privateAnswerDigest });
@@ -420,6 +457,7 @@ export const buildLoop = async (
     variantReferences,
     objectiveHash: "a".repeat(64),
     sections,
+    approvedCopy,
     provenance,
     changedSectionIds: [],
     ruleVersions,
@@ -515,6 +553,7 @@ export const buildLoop = async (
     score: 100,
     correctness: "correct",
     gradingRuleVersion: "matching-grader-v1",
+    nextActivity: null,
   });
   const evidence = await fixture.records.readEvidence(fixture.teacher, {
     runId: run.id,
@@ -580,6 +619,7 @@ export const appendVersionInput = (
     variantReferences,
     objectiveHash: "a".repeat(64),
     sections,
+    approvedCopy,
     provenance,
     changedSectionIds: [],
     ruleVersions,
@@ -651,6 +691,7 @@ export const recordAttemptInput = (
     score: 100,
     correctness: "correct",
     gradingRuleVersion: "matching-grader-v1",
+    nextActivity: null,
   };
 };
 
@@ -667,7 +708,7 @@ export const chooseInput = (
     evidenceHash,
     proposal: { ruleVersion: "decision-rule-v1", summary: "Continue." },
     action: "accept",
-    approvedTargetId: "item_2",
+    approvedTargetId: "variant_standard",
   };
 };
 

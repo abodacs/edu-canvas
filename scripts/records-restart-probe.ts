@@ -128,6 +128,33 @@ const privateAnswers = [
   { itemId: "item_2", correctTargetIds: ["target_2"] },
 ];
 
+const approvedCopy = {
+  schemaVersion: "approved-copy-v1" as const,
+  language: "en" as const,
+  path: {
+    rationale:
+      "Both fractions describe the same part because equal parts keep the same value.",
+  },
+  variants: [
+    {
+      variantId: "variant_standard",
+      feedback: {
+        correct: "Yes. Both names describe the same part.",
+        incorrect: "Not yet. Multiply both parts by the same number.",
+      },
+      columns: { sourceLabel: "Fractions", targetLabel: "Equivalents" },
+    },
+    {
+      variantId: "variant_scaffold",
+      feedback: {
+        correct: "Yes. The bar shows the same part.",
+        incorrect: "Look at the bar again, then try one pair.",
+      },
+      columns: { sourceLabel: "Fractions", targetLabel: "Equivalents" },
+    },
+  ],
+};
+
 const validationResult = {
   ok: true,
   validatorVersion: "lesson-validator-v2",
@@ -206,6 +233,7 @@ const contentHash = createContentHash({
   conceptIds: [conceptId],
   sections,
   variantReferences,
+  approvedCopy,
 });
 const privateAnswerDigest = createPrivateAnswerDigest(privateAnswers);
 const packageHash = createPackageHash({ contentHash, privateAnswerDigest });
@@ -248,6 +276,7 @@ const writePhase = async (): Promise<void> => {
     variantReferences,
     objectiveHash: "a".repeat(64),
     sections,
+    approvedCopy,
     provenance: {
       provider: null,
       modelVersion: null,
@@ -297,6 +326,7 @@ const writePhase = async (): Promise<void> => {
     score: 100,
     correctness: "correct",
     gradingRuleVersion: "matching-grader-v1",
+    nextActivity: null,
   });
   const evidence = await records.readEvidence(teacher, { runId: run.id });
   await records.choose(teacher, {
@@ -306,7 +336,7 @@ const writePhase = async (): Promise<void> => {
     evidenceHash: evidence.evidenceHash,
     proposal: { ruleVersion: "decision-rule-v1", summary: "Continue." },
     action: "accept",
-    approvedTargetId: "item_2",
+    approvedTargetId: "variant_standard",
   });
 
   process.stdout.write(

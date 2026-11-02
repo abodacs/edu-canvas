@@ -50,6 +50,89 @@ describe(createLearnerService, () => {
     expect(submitted.attemptId.length).toBeGreaterThan(0);
   });
 
+  it("returns the approved reveal and a deterministic decision", async () => {
+    const { fixture, loop, service } = await setup("service-reveal");
+    const submitted = await service.submitAttempt(
+      fixture.student,
+      inputFor(loop.runId)
+    );
+
+    expect(submitted.reveal).toMatchObject({
+      ruleVersion: "reveal-v1",
+      feedback: "Yes. Both names describe the same part.",
+    });
+    expect(submitted.reveal.connection).toBe(
+      "equal parts keep the same value when both numbers are multiplied by the same factor."
+    );
+    expect(submitted.nextActivity).toMatchObject({
+      activityAxis: "variant-kind",
+      activityId: "variant_standard_b",
+      purpose: "standard",
+      derivedFromAttemptId: submitted.attemptId,
+    });
+    expect(submitted.nextActivity?.ruleVersion).toMatch(
+      /^next-activity-rule-[a-f0-9]{12}$/u
+    );
+    expect(submitted.nextActivity?.evidenceHash).toMatch(/^[a-f0-9]{64}$/u);
+  });
+
+  it("keeps the first decision when a later retry changes the score", async () => {
+    const { fixture, loop, service } = await setup("service-decision-stable");
+    const first = await service.submitAttempt(
+      fixture.student,
+      inputFor(loop.runId)
+    );
+    const retry = await service.submitAttempt(
+      fixture.student,
+      inputFor(loop.runId, {
+        expectedRunRevision: 1,
+        operationKey: "submit-attempt-key-2",
+        pairs: [{ sourceId: "item_1", targetId: "target_2" }],
+      })
+    );
+
+    expect(retry.correctness).toBe("incorrect");
+    expect(retry.nextActivity).toStrictEqual(first.nextActivity);
+  });
+
+  it("reports a distractor-only submission as incorrect without an answer key", async () => {
+    const { fixture, loop, service } = await setup("service-distractor");
+    const submitted = await service.submitAttempt(
+      fixture.student,
+      inputFor(loop.runId, {
+        pairs: [{ sourceId: "item_1", targetId: "target_2" }],
+      })
+    );
+
+    expect(submitted.correctness).toBe("incorrect");
+    expect(submitted.reveal.pairs).toStrictEqual([
+      {
+        sourceId: "item_1",
+        sourceLabel: "item_1",
+        targetId: "target_2",
+        targetLabel: "target_2",
+        correct: false,
+      },
+    ]);
+    expect(submitted.reveal.feedback).toBe(
+      "Not yet. Multiply both parts by the same number."
+    );
+    expect(JSON.stringify(submitted.reveal)).not.toContain("correctTargetIds");
+  });
+
+  it("does not expose approved feedback before a submission", async () => {
+    const { fixture, loop } = await setup("service-before-submit");
+    const lesson = await fixture.records.readLesson(fixture.student, {
+      runId: loop.runId,
+    });
+    const serialized = JSON.stringify(lesson);
+
+    expect(serialized).not.toContain("privateAnswerRelationships");
+    expect(serialized).not.toContain("correctTargetIds");
+    expect(serialized).not.toContain("Yes. Both names describe the same part.");
+    expect(serialized).not.toContain("equal parts keep the same value");
+  });
+
   it("ignores a caller-supplied score", async () => {
     const { fixture, loop, service } = await setup("service-tamper");
     const tampered = inputFor(loop.runId) as SubmitAttemptInput & {
@@ -135,6 +218,39 @@ describe(createLearnerService, () => {
     );
 
     expect(replay.attemptId.length).toBeGreaterThan(0);
+  });
+
+  it("keeps a teacher decision when the learner submits", async () => {
+    const { fixture, loop, service } = await setup("service-teacher-choice");
+    const evidence = await fixture.records.readEvidence(fixture.teacher, {
+      runId: loop.runId,
+    });
+    await fixture.records.choose(fixture.teacher, {
+      operationKey: "choose-teacher-choice",
+      runId: loop.runId,
+      expectedRunRevision: evidence.revision,
+      evidenceHash: evidence.evidenceHash,
+      proposal: {
+        ruleVersion: "teacher-rule-v1",
+        summary: "Try the scaffold.",
+      },
+      action: "override",
+      approvedTargetId: "variant_scaffold",
+    });
+
+    const submitted = await service.submitAttempt(
+      fixture.student,
+      inputFor(loop.runId, { expectedRunRevision: evidence.revision + 1 })
+    );
+
+    expect(submitted.nextActivity?.purpose).toBe("teacher-choice");
+    expect(submitted.nextActivity?.activityId).toBe("variant_scaffold");
+
+    const lesson = await fixture.records.readLesson(fixture.student, {
+      runId: loop.runId,
+    });
+
+    expect(lesson.lesson.nextActivity?.purpose).toBe("teacher-choice");
   });
 
   it("refuses a learner from another tenant", async () => {

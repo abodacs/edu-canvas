@@ -18,6 +18,12 @@ This is not a **pack version**. One word, two stored rows; see [the homonym regi
 
 **Implementing names:** `lesson_versions`, `lessonVersionSchema`
 
+### Approved copy
+
+The learner-facing copy a version carries beside its sections: the path rationale, each variant's corrective feedback, and its two column labels. It is stored once per version and keyed by variant, not copied onto every section. It is not authoring instructions and not the private answer set, so it never replaces a submission check.
+
+**Implementing names:** `approvedCopySchema`, `approvedVariantCopySchema`
+
 ### Section
 
 One ordered block of a lesson version. The four kinds are worked example, guided practice, independent check, and follow-up. A section is content, not a teaching stage and not a screen.
@@ -122,13 +128,13 @@ An append-only record that a learner used a hint or other assistance on a specif
 
 ### Next activity
 
-The activity a run points at after the current one. The stories show a teacher choosing it; the record stores whatever choice was made, and does not itself propose one.
+The deterministic follow-up a run stores after the first response: an approved variant, its purpose, the rule version, and the hash of the evidence it read, or a pause with no activity. The record stores the decision; the checked-in rule proposes it.
 
-**Implementing names:** `nextActivitySchema`
+**Implementing names:** `nextActivitySchema`, `nextActivityDraftSchema`
 
 ### Target concept
 
-The concept a next activity leads to, named by `nextActivity.targetId`. It is a curriculum concept, not a matching target item.
+The concept a learning-path step leads to. It is a curriculum concept, not a matching **target item**, and not an **approval target**.
 
 ### Learning evidence
 
