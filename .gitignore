@@ -19,6 +19,7 @@ teaching/
 .zcode/
 .project-map/
 .scratch/
+.scratch/ux-revamp/
 
 # GUI test evidence
 gui-test-screenshots/

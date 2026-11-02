@@ -1,23 +1,11 @@
 {
   "version": 1,
   "skills": {
-    "fluid-functionalism": {
-      "source": "mickadesign/fluid-functionalism",
-      "sourceType": "github",
-      "skillPath": "skills/fluid-functionalism/SKILL.md",
-      "computedHash": "4c7f29a8ee10105b3c8396e3b317bcd59043a6f03ee576cbe5ee6a72ee3fdde3"
-    },
     "security-audit": {
       "source": "cloudflare/security-audit-skill",
       "sourceType": "github",
       "skillPath": "skills/security-audit/SKILL.md",
       "computedHash": "98b97aad2873b3b9a8e064007c25e7827b493ba27fda8bfbdb41dab586767973"
-    },
-    "stageshow": {
-      "source": "benjitaylor/skills",
-      "sourceType": "github",
-      "skillPath": "stageshow/SKILL.md",
-      "computedHash": "bf9f07985a62882deae7935b5b1162fb5bf66b248930bb14a75dcaf9d67291b7"
     },
     "ultracite": {
       "source": "haydenbleasel/ultracite",
