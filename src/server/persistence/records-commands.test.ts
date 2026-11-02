@@ -426,6 +426,76 @@ describe("record commands", () => {
     expect(attemptId).toBeTruthy();
   });
 
+  it("refuses a submit whose item is outside the assigned variant's section", async () => {
+    const { records } = buildFixture();
+
+    const grounding = await records.storeGrounding(teacher, {
+      operationKey: "store-grounding-key-mismatch",
+      standardId,
+      referenceKey: "equivalent-fractions",
+      referenceVersion: "2026-10",
+      title: "Equivalent fractions",
+      attribution: "Synthetic curriculum fixture",
+      sourceLocator: "fixture://equivalent-fractions",
+      reviewedContent: reviewContent,
+    });
+
+    // The assigned variant's section holds only item_2, so item_1 belongs to
+    // another variant's section. Grading against that section would use
+    // another variant's answer key, so the submit must be refused.
+    const [worked, guided, independent, followUp] = sections;
+    const linkedSections = [
+      { ...worked, variantId: "variant_standard", itemIds: ["item_2"] },
+      { ...guided, variantId: "variant_scaffold" },
+      { ...independent, variantId: "variant_scaffold" },
+      { ...followUp, variantId: "variant_scaffold" },
+    ];
+    const version = await records.appendVersion(
+      teacher,
+      appendInput({
+        operationKey: "append-version-key-mismatch",
+        curatedReferenceId: grounding.id,
+        package: {
+          id: "package_mismatch",
+          title: "Equivalent fractions",
+          standardId,
+        },
+        sections: linkedSections,
+      })
+    );
+    const contentHash = createContentHash({
+      conceptIds: [conceptId],
+      sections: linkedSections,
+      variantReferences,
+      approvedCopy,
+    });
+    const privateAnswerDigest = createPrivateAnswerDigest(privateAnswers);
+    const publication = await records.publish(teacher, {
+      operationKey: "publish-key-mismatch",
+      versionId: version.id,
+      contentHash,
+      packageHash: createPackageHash({ contentHash, privateAnswerDigest }),
+      privateAnswerDigest,
+      validationResultHash: createValidationResultHash(validationResult),
+      ruleVersions,
+    });
+    const assignment = await records.assign(teacher, {
+      operationKey: "assign-key-mismatch",
+      publicationId: publication.id,
+      learnerId,
+      classId,
+    });
+    const run = await records.startRun(student, {
+      operationKey: "start-run-key-mismatch",
+      assignmentId: assignment.id,
+      assignedVariantId: "variant_standard",
+    });
+
+    await expect(
+      records.readAttemptContext(student, { runId: run.id, itemId: "item_1" })
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+  });
+
   it("rejects a changed input under an existing operation key", async () => {
     const { records } = buildFixture();
     const grounding = await records.storeGrounding(teacher, {

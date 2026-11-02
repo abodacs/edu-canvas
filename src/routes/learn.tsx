@@ -4,12 +4,15 @@ import { useEffect, useState } from "react";
 
 import { useAuthSession } from "@/components/auth/use-auth-session";
 import {
+  CheckOutcome,
   NextActivityCard,
+  RepeatEvaluationNotice,
   RevealReport,
 } from "@/components/learn/learn-surfaces";
 import { csrfHeaderName } from "@/shared/identity-contract";
 import {
   learnerAttemptResponseSchema,
+  learnerErrorResponseSchema,
   learnerRunResponseSchema,
 } from "@/shared/learner-contract";
 import type {
@@ -18,6 +21,11 @@ import type {
 } from "@/shared/learner-contract";
 
 type Phase = "loading" | "ready" | "saving" | "done" | "error";
+
+/**
+A fetch rejection carries no HTTP status; the sentinel picks the network failure message.
+*/
+const statusNetworkFailure = 0;
 
 const messageByStatus: Readonly<Record<number, string>> = {
   401: "Sign in as a student to open this assignment.",
@@ -43,8 +51,7 @@ const readErrorCode = async (
   response: Response
 ): Promise<string | undefined> => {
   try {
-    const parsed = (await response.json()) as { code?: unknown };
-    return typeof parsed.code === "string" ? parsed.code : undefined;
+    return learnerErrorResponseSchema.parse(await response.json()).code;
   } catch {
     return undefined;
   }
@@ -77,15 +84,21 @@ const LearnBoard = ({
   const [result, setResult] = useState<LearnerAttemptResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // One start shape for the page load and the retry replay; the idempotent
+  // operation key returns the same run with its current revision.
+  const postStartRun = (): Promise<Response> => {
+    return post("/api/learner/runs", csrf, {
+      operationKey: `start-${assignment}-${variant}`,
+      assignedVariantId: variant,
+      assignmentId: assignment,
+    });
+  };
+
   useEffect(() => {
     let isCurrent = true;
     const start = async (): Promise<void> => {
       try {
-        const response = await post("/api/learner/runs", csrf, {
-          operationKey: `start-${assignment}-${variant}`,
-          assignedVariantId: variant,
-          assignmentId: assignment,
-        });
+        const response = await postStartRun();
         if (!isCurrent) {
           return;
         }
@@ -98,7 +111,7 @@ const LearnBoard = ({
         setPhase("ready");
       } catch {
         if (isCurrent) {
-          setError(messageFor(0));
+          setError(messageFor(statusNetworkFailure));
           setPhase("error");
         }
       }
@@ -107,6 +120,7 @@ const LearnBoard = ({
     return () => {
       isCurrent = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- postStartRun reads the same search params as the effect.
   }, [assignment, variant, csrf]);
 
   if (phase === "error") {
@@ -116,10 +130,9 @@ const LearnBoard = ({
     return <p className="learn-status">Opening your activity…</p>;
   }
 
-  const section =
-    run.lesson.sections.find(
-      (candidate) => candidate.id === run.lesson.assignedSectionId
-    ) ?? run.lesson.sections[0];
+  const section = run.lesson.sections.find(
+    (candidate) => candidate.id === run.lesson.assignedSectionId
+  );
   const items = section?.items ?? [];
   const sources = items.filter((item) => item.role === "source");
   const targets = items.filter((item) => item.role !== "source");
@@ -148,7 +161,7 @@ const LearnBoard = ({
       setResult(learnerAttemptResponseSchema.parse(await response.json()));
       setPhase("done");
     } catch {
-      setError(messageFor(0));
+      setError(messageFor(statusNetworkFailure));
       setPhase("error");
     }
   };
@@ -159,11 +172,7 @@ const LearnBoard = ({
   const retry = async (): Promise<void> => {
     setPhase("saving");
     try {
-      const response = await post("/api/learner/runs", csrf, {
-        operationKey: `start-${assignment}-${variant}`,
-        assignedVariantId: variant,
-        assignmentId: assignment,
-      });
+      const response = await postStartRun();
       if (!response.ok) {
         setError(messageFor(response.status, await readErrorCode(response)));
         setPhase("error");
@@ -175,7 +184,7 @@ const LearnBoard = ({
       setResult(null);
       setPhase("ready");
     } catch {
-      setError(messageFor(0));
+      setError(messageFor(statusNetworkFailure));
       setPhase("error");
     }
   };
@@ -246,12 +255,17 @@ const LearnBoard = ({
         {pairCount} of {sources.length} matched.
       </p>
 
+      {phase === "ready" && run.lesson.firstResponseStatus === "submitted" ? (
+        <RepeatEvaluationNotice />
+      ) : null}
+
       {phase === "done" && result ? (
         <div className="learn-result-panel">
           <output className="learn-result">
             Score {result.score}. {result.correctMatches} of{" "}
             {result.requiredMatches} correct ({result.correctness}).
           </output>
+          <CheckOutcome correctness={result.correctness} />
           <RevealReport reveal={result.reveal} />
           <NextActivityCard activity={result.nextActivity} />
           <button

@@ -4,6 +4,32 @@ import type { LearnerAttemptResponse } from "@/shared/learner-contract";
 #7 learner reveal surfaces. Every string is either approved copy arriving in
 the attempt response or a fixed local template; the component adds none.
 */
+
+const outcomeCopy = {
+  correct: "You matched every pair.",
+  partial: "Some matches are still missing.",
+  incorrect: "Not every match is right yet.",
+} as const satisfies Record<LearnerAttemptResponse["correctness"], string>;
+
+export const CheckOutcome = ({
+  correctness,
+}: {
+  readonly correctness: LearnerAttemptResponse["correctness"];
+}) => {
+  return (
+    <output className="learn-outcome" data-correctness={correctness}>
+      {outcomeCopy[correctness]}
+    </output>
+  );
+};
+
+export const RepeatEvaluationNotice = () => {
+  return (
+    <p className="learn-repeat" role="note">
+      This check repeats from the start. Your first response stays on record.
+    </p>
+  );
+};
 export const RevealReport = ({
   reveal,
 }: {

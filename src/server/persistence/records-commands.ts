@@ -35,6 +35,7 @@ import {
   writeInputSchemas,
 } from "../records/inputs";
 import {
+  assignedSection,
   evidenceAssistanceEvents,
   evidenceAttempts,
   projectStudentEvidence,
@@ -74,7 +75,6 @@ import type {
   TeacherDecision,
 } from "../records/delivery";
 import type {
-  ApprovedVariantCopy,
   LessonSection,
   LessonVersion,
   Publication,
@@ -115,11 +115,8 @@ export interface LessonReadResult {
  */
 export interface AttemptContext {
   readonly run: LearnerRun;
-  readonly runId: string;
-  readonly runRevision: number;
-  readonly itemId: string;
   /**
-  The section that contains the submitted item.
+  The section assigned to the run's variant. The submitted item must belong to it.
   */
   readonly section: LessonSection;
   /**
@@ -127,19 +124,14 @@ export interface AttemptContext {
   */
   readonly relationships: readonly PrivateAnswerRelationship[];
   /**
-  The approved copy for the run's assigned variant, when the row has it.
+  The approved copy of the version, when the row has it. The caller resolves the assigned variant's feedback with the run it already has.
   */
-  readonly approvedCopy: {
-    readonly language: "en" | "ar";
-    readonly rationale: string;
-    readonly variant: ApprovedVariantCopy | null;
-  } | null;
+  readonly approvedCopy: LessonVersion["approvedCopy"];
   readonly activities: readonly {
     readonly variantId: string;
     readonly kind: "standard" | "scaffold" | "challenge";
   }[];
   readonly attempts: readonly LearnerAttempt[];
-  readonly assistanceEvents: readonly AssistanceEvent[];
 }
 
 /**
@@ -360,12 +352,22 @@ const mapAssignment = (row: StoredRow): Assignment => {
 #176/#7 tolerant reader: a v1 run stored `{ targetId }` before the decision
 carried its rule version and evidence hash. That shape cannot be upgraded
 without inventing evidence, so it reads as "no decision yet" and waits for the
-next saved choice.
+next saved choice. Any other unreadable value throws: a corrupt decision row
+must not silently become "the teacher is still choosing".
 */
-const readStoredNextActivity = (value: unknown = null): NextActivity => {
-  const parsed = nextActivitySchema.safeParse(value);
-  return parsed.success ? parsed.data : null;
+const isLegacyDecisionShape = (value: unknown): boolean => {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "targetId" in value &&
+    !("ruleVersion" in value)
+  );
 };
+
+const readStoredNextActivity = (value: unknown): NextActivity =>
+  // A legacy `{ targetId }` row reads as "no decision yet"; anything else
+  // must parse or the row is corrupt.
+  isLegacyDecisionShape(value) ? null : nextActivitySchema.parse(value);
 
 const mapRun = (row: StoredRow): LearnerRun => {
   return hydrate(() => {
@@ -1473,10 +1475,15 @@ export const createRecordCommands = <TTransaction>(
           created_at: attempt.createdAt,
         });
 
-        // #7: the first response decides the next activity. A retry appends
-        // evidence but never rewrites the stored decision or the stage.
+        // #7: the stored decision stands until none exists. The service
+        // computes its draft from the first response, so a retry appends
+        // evidence but never rewrites the stored decision or the stage. A
+        // teacher pause stores no decision on purpose (pause ⇒ NULL), so a
+        // paused stage keeps that choice standing too.
+        const isDecisionMissing =
+          run.nextActivity === null && run.stage !== "paused";
         const nextActivity =
-          ordinal === 1 && input.nextActivity !== null
+          isDecisionMissing && input.nextActivity !== null
             ? nextActivitySchema.parse({
                 ...input.nextActivity,
                 derivedFromAttemptId: attempt.id,
@@ -1484,7 +1491,7 @@ export const createRecordCommands = <TTransaction>(
             : run.nextActivity;
 
         await advanceRun(transaction, run, input.expectedRunRevision, {
-          ...(ordinal === 1 && {
+          ...(isDecisionMissing && {
             stage: nextActivity?.purpose === "pause" ? "paused" : "advanced",
             next_activity: nextActivity,
           }),
@@ -1769,14 +1776,8 @@ export const createRecordCommands = <TTransaction>(
         publication.lessonVersionId,
         actor.tenantId
       );
-      const sectionsWithItem = version.sections.filter((candidate) =>
-        candidate.itemIds.includes(parsed.itemId)
-      );
-      const section =
-        sectionsWithItem.find(
-          (candidate) => candidate.variantId === run.assignedVariantId
-        ) ?? sectionsWithItem[0];
-      if (!section) {
+      const section = assignedSection(version, run.assignedVariantId);
+      if (!section.itemIds.includes(parsed.itemId)) {
         throw recordError("INVALID_INPUT");
       }
       // #7: one response covers the section. The reveal names every required
@@ -1794,30 +1795,12 @@ export const createRecordCommands = <TTransaction>(
         { tenant_id: actor.tenantId, run_id: run.id },
         { column: "ordinal", direction: "asc" }
       );
-      const assistanceRows = await backend.list(
-        transaction,
-        "assistance_events",
-        { tenant_id: actor.tenantId, run_id: run.id },
-        { column: "ordinal", direction: "asc" }
-      );
       const copy = version.approvedCopy;
       return {
         run,
-        runId: run.id,
-        runRevision: run.revision,
-        itemId: parsed.itemId,
         section,
         relationships,
-        approvedCopy: copy
-          ? {
-              language: copy.language,
-              rationale: copy.path.rationale,
-              variant:
-                copy.variants.find(
-                  (variant) => variant.variantId === run.assignedVariantId
-                ) ?? null,
-            }
-          : null,
+        approvedCopy: copy ?? null,
         activities: version.variantReferences.map((variant) => {
           return {
             variantId: variant.variantId,
@@ -1825,7 +1808,6 @@ export const createRecordCommands = <TTransaction>(
           };
         }),
         attempts: attemptsRows.map(mapAttempt),
-        assistanceEvents: assistanceRows.map(mapAssistance),
       };
     });
   };

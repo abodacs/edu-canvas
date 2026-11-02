@@ -220,6 +220,39 @@ describe(createLearnerService, () => {
     expect(replay.attemptId.length).toBeGreaterThan(0);
   });
 
+  it("keeps a teacher decision when the learner submits", async () => {
+    const { fixture, loop, service } = await setup("service-teacher-choice");
+    const evidence = await fixture.records.readEvidence(fixture.teacher, {
+      runId: loop.runId,
+    });
+    await fixture.records.choose(fixture.teacher, {
+      operationKey: "choose-teacher-choice",
+      runId: loop.runId,
+      expectedRunRevision: evidence.revision,
+      evidenceHash: evidence.evidenceHash,
+      proposal: {
+        ruleVersion: "teacher-rule-v1",
+        summary: "Try the scaffold.",
+      },
+      action: "override",
+      approvedTargetId: "variant_scaffold",
+    });
+
+    const submitted = await service.submitAttempt(
+      fixture.student,
+      inputFor(loop.runId, { expectedRunRevision: evidence.revision + 1 })
+    );
+
+    expect(submitted.nextActivity?.purpose).toBe("teacher-choice");
+    expect(submitted.nextActivity?.activityId).toBe("variant_scaffold");
+
+    const lesson = await fixture.records.readLesson(fixture.student, {
+      runId: loop.runId,
+    });
+
+    expect(lesson.lesson.nextActivity?.purpose).toBe("teacher-choice");
+  });
+
   it("refuses a learner from another tenant", async () => {
     const { fixture, loop, service } = await setup("service-foreign");
 

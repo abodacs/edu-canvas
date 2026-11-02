@@ -157,6 +157,15 @@ export const learnerEvidenceSchema = z.strictObject({
 
 export type LearnerEvidence = z.infer<typeof learnerEvidenceSchema>;
 
+/**
+The private API error body. The `/learn` page reads the code to pick its
+recovery message; delivery may add fields, so unknown keys are stripped
+rather than rejected.
+*/
+export const learnerErrorResponseSchema = z.object({
+  code: z.string().optional(),
+});
+
 export const learnerRunResponseSchema = z.strictObject({
   runId: identifierSchema,
   runRevision: z.number().int().min(0).max(1_000_000),

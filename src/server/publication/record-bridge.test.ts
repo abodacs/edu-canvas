@@ -259,7 +259,19 @@ describe(bridgePublishedPack, () => {
         };
       }),
     });
-    expect(JSON.stringify(version.approvedCopy)).not.toContain("hint");
+
+    // #176 deferrals, pinned so carrying one later is a decision: hints have
+    // no route yet, RTL metadata is #9, and the two screen-purpose fields
+    // stay teacher-facing.
+    const serializedApprovedCopy = JSON.stringify(version.approvedCopy);
+    for (const deferred of [
+      "hint",
+      "languageMetadata",
+      "screenPurpose",
+      "nextScreenRationale",
+    ]) {
+      expect(serializedApprovedCopy).not.toContain(deferred);
+    }
   });
 
   it("lets a student score an attempt on the bridged publication", async () => {

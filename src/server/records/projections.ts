@@ -1,12 +1,14 @@
 import { z } from "zod";
 
 import {
+  learnerColumnsSchema,
   learnerNextActivitySchema,
   learnerSectionSchema,
 } from "@/shared/learner-contract";
 
 import { createEvidenceHash } from "./hashes";
 import { isoTimestampSchema, recordIdSchema, scoreSchema } from "./envelope";
+import { recordError } from "./errors";
 import {
   approvedCopySchema,
   provenanceSchema,
@@ -24,14 +26,13 @@ import {
   runStageValues,
   teacherDecisionActionValues,
 } from "./vocabulary";
-import type { sectionKindValues } from "./vocabulary";
 import type {
   AssistanceEvent,
   LearnerAttempt,
   LearnerRun,
   TeacherDecision,
 } from "./delivery";
-import type { LessonVersion } from "./authoring";
+import type { LessonSection, LessonVersion } from "./authoring";
 
 /**
  * Explicit allowlists. A projection is constructed field by field, never by
@@ -92,12 +93,7 @@ export const studentLessonProjectionSchema = z.strictObject({
   lessonVersionId: recordIdSchema,
   assignedVariantId: recordIdSchema,
   assignedSectionId: recordIdSchema,
-  columns: z
-    .strictObject({
-      sourceLabel: z.string().min(1),
-      targetLabel: z.string().min(1),
-    })
-    .nullable(),
+  columns: learnerColumnsSchema.nullable(),
   sections: z.array(learnerSectionSchema).length(recordLimits.sectionCount),
   stage: z.enum(runStageValues),
   firstResponseStatus: z.enum(firstResponseStatusValues),
@@ -115,15 +111,11 @@ default.
 */
 const projectLearnerSection = (section: {
   readonly id: string;
-  readonly kind: (typeof sectionKindValues)[number];
+  readonly kind: LessonSection["kind"];
   readonly title: string;
   readonly body: string;
   readonly itemIds: readonly string[];
-  readonly items?: readonly {
-    readonly id: string;
-    readonly label: string;
-    readonly role: "source" | "target" | "distractor";
-  }[];
+  readonly items?: LessonSection["items"];
 }) => {
   return learnerSectionSchema.parse({
     id: section.id,
@@ -143,13 +135,18 @@ const projectLearnerSection = (section: {
   });
 };
 
-const assignedSection = (
+/**
+The one variant→section rule for the whole record layer. A version that links variants must resolve the assigned variant exactly; a v1 row without links falls back to the first section. The learner submit path reuses this instead of re-implementing it, so the read and write paths cannot disagree.
+*/
+export const assignedSection = (
   version: LessonVersion,
   assignedVariantId: string
 ): LessonVersion["sections"][number] => {
   const [first] = version.sections;
   if (!first) {
-    throw new Error("A lesson version has no sections.");
+    throw recordError("INVALID_INPUT", {
+      cause: new Error("A lesson version has no sections."),
+    });
   }
   const match = version.sections.find(
     (section) => section.variantId === assignedVariantId
@@ -160,7 +157,9 @@ const assignedSection = (
   // A v1 row has no variant links at all, so the first section is the only
   // answer it can give. A row that does link variants must resolve exactly.
   if (version.sections.some((section) => section.variantId !== undefined)) {
-    throw new Error("The assigned variant has no section.");
+    throw recordError("INVALID_INPUT", {
+      cause: new Error("The assigned variant has no section."),
+    });
   }
   return first;
 };

@@ -1,8 +1,15 @@
+import { readFileSync } from "node:fs";
+
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import { NextActivityCard, RevealReport } from "./learn-surfaces";
+import {
+  CheckOutcome,
+  NextActivityCard,
+  RepeatEvaluationNotice,
+  RevealReport,
+} from "./learn-surfaces";
 import type { LearnerAttemptResponse } from "@/shared/learner-contract";
 
 const render = (element: React.ReactElement): string =>
@@ -104,5 +111,57 @@ describe(NextActivityCard, () => {
     const markup = render(createElement(NextActivityCard, { activity: null }));
 
     expect(markup).toContain("Your teacher is choosing the next activity.");
+  });
+});
+
+describe(CheckOutcome, () => {
+  const correctnessStates = ["correct", "partial", "incorrect"] as const;
+
+  it("renders an intentional surface for each correctness state", () => {
+    for (const correctness of correctnessStates) {
+      const markup = render(createElement(CheckOutcome, { correctness }));
+
+      expect(markup).toContain(`data-correctness="${correctness}"`);
+      expect(markup).toContain("<output");
+    }
+  });
+
+  it("keeps every state's fixed template distinct", () => {
+    const markups = correctnessStates.map((correctness) =>
+      render(createElement(CheckOutcome, { correctness }))
+    );
+
+    const distinctMarkups = new Set(markups);
+
+    expect(distinctMarkups.size).toBe(correctnessStates.length);
+    expect(markups[0]).toContain("You matched every pair.");
+    expect(markups[1]).toContain("Some matches are still missing.");
+    expect(markups[2]).toContain("Not every match is right yet.");
+  });
+});
+
+describe(RepeatEvaluationNotice, () => {
+  it("names the repeat state without reclassifying the first response", () => {
+    const markup = render(createElement(RepeatEvaluationNotice));
+
+    expect(markup).toContain("This check repeats from the start.");
+    expect(markup).toContain("Your first response stays on record.");
+  });
+});
+
+describe("learn styles", () => {
+  const stylesUrl = new URL("../../styles.css", import.meta.url);
+  const styles = readFileSync(stylesUrl, "utf-8");
+
+  it("wraps the board columns so they stack at 320px", () => {
+    expect(styles).toContain(
+      "grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));"
+    );
+  });
+
+  it("adds no animation to the learner surfaces", () => {
+    const learnBlock = styles.slice(styles.indexOf(".learn-card {"));
+
+    expect(learnBlock).not.toMatch(/\banimation\b|\btransition\b|@keyframes/u);
   });
 });

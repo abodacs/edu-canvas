@@ -164,25 +164,46 @@ describe("decision rule version", () => {
   });
 
   it("fires every declared row through the function", () => {
-    const fired = new Set<string>();
-    const cases = [
-      evidence({ independent: null }),
-      evidence({
-        independent: { correctness: "incorrect", assisted: false },
-      }),
-      evidence({ guided: { correctness: "correct", assisted: true } }),
-      evidence(),
-      evidence({ guided: null }),
-    ];
+    const rowCases = [
+      {
+        id: "independent-missing",
+        item: evidence({ independent: null }),
+        purpose: "pause",
+      },
+      {
+        id: "independent-not-correct",
+        item: evidence({
+          independent: { correctness: "incorrect", assisted: false },
+        }),
+        purpose: "scaffold",
+      },
+      {
+        id: "guided-assisted",
+        item: evidence({
+          guided: { correctness: "correct", assisted: true },
+        }),
+        purpose: "standard",
+      },
+      {
+        id: "ready-for-challenge",
+        item: evidence(),
+        purpose: "challenge",
+      },
+      {
+        id: "guided-missing",
+        item: evidence({ guided: null }),
+        purpose: "standard",
+      },
+    ] as const;
 
-    for (const item of cases) {
-      fired.add(decideNextActivity(item).purpose);
+    expect(rowCases.map((row) => row.id)).toStrictEqual(
+      decisionRuleRows.map((row) => row.id)
+    );
+
+    for (const row of rowCases) {
+      expect(decideNextActivity(row.item).purpose, `row ${row.id}`).toBe(
+        row.purpose
+      );
     }
-
-    expect(
-      decisionRuleRows
-        .map((row) => row.purpose)
-        .filter((purpose) => fired.has(purpose) || purpose === "pause")
-    ).toHaveLength(decisionRuleRows.length);
   });
 });

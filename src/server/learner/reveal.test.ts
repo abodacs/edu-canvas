@@ -58,6 +58,17 @@ describe(buildReveal, () => {
     );
   });
 
+  it("keeps the connection a byte slice when approved copy carries extra whitespace", () => {
+    const spaced =
+      "Both fractions describe the same part because equal parts  keep the same value when both numbers are multiplied by the same factor.";
+    const reveal = buildReveal(input({ rationale: spaced }));
+
+    expect(reveal.connection).toBe(
+      "equal parts  keep the same value when both numbers are multiplied by the same factor."
+    );
+    expect(spaced).toContain(reveal.connection ?? "");
+  });
+
   it("reports an unmatched required pair and the corrective feedback", () => {
     const reveal = buildReveal(
       input({

@@ -127,14 +127,19 @@ export const createLearnerService = (
       nextActivity: draft,
     });
 
+    const { approvedCopy } = context;
+    const variantCopy =
+      approvedCopy?.variants.find(
+        (variant) => variant.variantId === context.run.assignedVariantId
+      ) ?? null;
     const reveal = buildReveal({
       items: context.section.items ?? [],
       relationships: context.relationships,
       pairs: input.pairs,
       correctness: grade.correctness,
-      feedback: context.approvedCopy?.variant?.feedback ?? null,
-      rationale: context.approvedCopy?.rationale ?? null,
-      language: context.approvedCopy?.language ?? "en",
+      feedback: variantCopy?.feedback ?? null,
+      rationale: approvedCopy?.path.rationale ?? null,
+      language: approvedCopy?.language ?? "en",
     });
 
     return {

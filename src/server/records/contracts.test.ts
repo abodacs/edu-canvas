@@ -14,6 +14,7 @@ import {
   teacherDecisionSchema,
 } from "./delivery";
 import { operationReceiptSchema } from "./evidence";
+import { isRecordStoreError } from "./errors";
 import {
   createContentHash,
   createCuratedContentHash,
@@ -452,9 +453,16 @@ describe("record contracts", () => {
       })),
     });
 
-    expect(() => projectStudentLesson({ version: mismatched, run })).toThrow(
-      /no section/u
-    );
+    let rejection: unknown = null;
+    try {
+      projectStudentLesson({ version: mismatched, run });
+    } catch (error) {
+      rejection = error;
+    }
+
+    expect(
+      isRecordStoreError(rejection) && rejection.code === "INVALID_INPUT"
+    ).toBeTruthy();
   });
 
   it("teacher and student projections omit every private field", () => {

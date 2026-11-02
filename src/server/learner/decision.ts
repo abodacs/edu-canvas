@@ -1,6 +1,8 @@
 import { createHash } from "node:crypto";
 
 import { canonicalJson } from "@/server/records/canonical-json";
+import type { variantKindValues } from "@/shared/generation-contract";
+import type { NextActivityPurpose } from "@/shared/learner-contract";
 import type { Correctness } from "@/server/records/vocabulary";
 
 /**
@@ -8,22 +10,13 @@ import type { Correctness } from "@/server/records/vocabulary";
  *
  * The rule is a checked-in table. The version string embeds a digest of the table, so a changed row without a changed version fails the unit test. The function reads no clock, no client input, and no database.
  */
-export const nextActivityPurposeValues = [
-  "pause",
-  "scaffold",
-  "standard",
-  "challenge",
-] as const;
 
-export type NextActivityPurpose = (typeof nextActivityPurposeValues)[number];
+/**
+The purposes this rule can decide. The canonical vocabulary lives in the shared contract; the teacher's own choice never comes from this function.
+*/
+export type RulePurpose = Exclude<NextActivityPurpose, "teacher-choice">;
 
-export const activityKindValues = [
-  "standard",
-  "scaffold",
-  "challenge",
-] as const;
-
-export type ActivityKind = (typeof activityKindValues)[number];
+export type ActivityKind = (typeof variantKindValues)[number];
 
 export interface ActivityOption {
   readonly activityId: string;
@@ -50,7 +43,7 @@ export interface DecisionEvidence {
 
 export interface DecisionOutcome {
   readonly activityId: string | null;
-  readonly purpose: NextActivityPurpose;
+  readonly purpose: RulePurpose;
   readonly reason: string;
   readonly ruleVersion: string;
 }
@@ -97,7 +90,7 @@ export const decisionRuleRows = [
 ] as const satisfies readonly {
   readonly id: string;
   readonly when: string;
-  readonly purpose: NextActivityPurpose;
+  readonly purpose: RulePurpose;
   readonly preferredKind: ActivityKind | null;
 }[];
 
@@ -154,7 +147,7 @@ const pause = (reason: string): DecisionOutcome => {
 
 const choose = (
   evidence: DecisionEvidence,
-  purpose: Exclude<NextActivityPurpose, "pause">
+  purpose: Exclude<RulePurpose, "pause">
 ): DecisionOutcome => {
   const activityId = pickActivity(evidence, purpose);
   return activityId === null

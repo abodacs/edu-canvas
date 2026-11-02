@@ -4946,13 +4946,25 @@ h2 {
 .learn-unresolved,
 .learn-feedback,
 .learn-connection,
-.learn-next p {
+.learn-next p,
+.learn-repeat {
   margin: 0.5rem 0 0;
   color: var(--muted, #4a5568);
   overflow-wrap: anywhere;
 }
 
 .learn-feedback {
+  color: var(--foreground, #1a202c);
+  font-weight: 600;
+}
+
+.learn-outcome {
+  margin: 0.5rem 0 0;
+  color: var(--muted, #4a5568);
+  overflow-wrap: anywhere;
+}
+
+.learn-outcome[data-correctness="correct"] {
   color: var(--foreground, #1a202c);
   font-weight: 600;
 }
