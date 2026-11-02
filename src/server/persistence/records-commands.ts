@@ -32,6 +32,7 @@ import {
   readAuthoringInputSchema,
   readEvidenceInputSchema,
   readLessonInputSchema,
+  readTeacherProgressInputSchema,
   writeInputSchemas,
 } from "../records/inputs";
 import {
@@ -41,6 +42,7 @@ import {
   projectStudentEvidence,
   projectStudentLesson,
   projectTeacherEvidence,
+  projectTeacherProgress,
   projectTeacherVersion,
 } from "../records/projections";
 import { decideReceipt, withoutOperationKey } from "./receipt";
@@ -54,6 +56,7 @@ import type {
   ReadAuthoringInput,
   ReadEvidenceInput,
   ReadLessonInput,
+  ReadTeacherProgressInput,
   RecordAttemptInput,
   RecordHintInput,
   StartRunInput,
@@ -66,6 +69,7 @@ import type {
   TeacherEvidenceProjection,
   TeacherVersionProjection,
 } from "../records/projections";
+import type { TeacherProgressResponse } from "@/shared/progress-contract";
 import type {
   Assignment,
   AssistanceEvent,
@@ -181,6 +185,10 @@ export interface RecordPersistence {
     actor: Actor,
     input: ReadAttemptContextInput
   ) => Promise<AttemptContext>;
+  readTeacherProgress: (
+    actor: Actor,
+    input: ReadTeacherProgressInput
+  ) => Promise<TeacherProgressResponse>;
 }
 
 const writeCapability: Record<WriteAction, Capability> = {
@@ -1812,6 +1820,93 @@ export const createRecordCommands = <TTransaction>(
     });
   };
 
+  /**
+   * #8: the teacher progress read. One run per assignment this teacher made,
+   * newest activity first, with the stored decision and the approved screen
+   * the run sits on. A run whose approved content is gone still lists with no
+   * screen, so the teacher sees a designed gap instead of a silent drop.
+   */
+  const readTeacherProgress = (
+    actor: Actor,
+    submitted: ReadTeacherProgressInput
+  ): Promise<TeacherProgressResponse> => {
+    const parsed = parseOrThrow(readTeacherProgressInputSchema, submitted);
+    return read(actor, "read_assignment", async (transaction) => {
+      // The learner reads one run through readLesson; the class-wide view is
+      // a teacher surface even though both roles carry the capability.
+      if (actor.role !== "teacher") {
+        throw recordError("FORBIDDEN");
+      }
+      const assignmentRows = await backend.list(transaction, "assignments", {
+        tenant_id: actor.tenantId,
+      });
+      const assignedIds = new Set(
+        assignmentRows
+          .filter((row) => row.assigning_actor_id === actor.actorId)
+          .map((row) => String(row.id))
+      );
+      const runRows = await backend.list(transaction, "learner_runs", {
+        tenant_id: actor.tenantId,
+      });
+      const ownedRuns = runRows
+        .filter((row) => assignedIds.has(String(row.assignment_id)))
+        .map(mapRun)
+        .sort((left, right) => {
+          return (
+            right.updatedAt.localeCompare(left.updatedAt) ||
+            right.id.localeCompare(left.id)
+          );
+        })
+        .slice(0, recordLimits.listMax);
+      const scopedRuns = parsed.runId
+        ? ownedRuns.filter((run) => run.id === parsed.runId)
+        : ownedRuns;
+      if (parsed.runId && scopedRuns.length === 0) {
+        // A foreign or unknown run gets the same deny: the caller learns
+        // nothing about which runs exist beyond their own assignments.
+        throw recordError("FORBIDDEN");
+      }
+
+      const publicationRows = await backend.list(transaction, "publications", {
+        tenant_id: actor.tenantId,
+      });
+      const publicationVersionIds = new Map(
+        publicationRows.map((row) => {
+          return [String(row.id), String(row.lesson_version_id)];
+        })
+      );
+      const versionCache = new Map<string, LessonVersion | null>();
+      const runs = [];
+      for (const run of scopedRuns) {
+        const attemptsRows = await backend.list(
+          transaction,
+          "learner_attempts",
+          { tenant_id: actor.tenantId, run_id: run.id },
+          { column: "ordinal", direction: "asc" }
+        );
+        const versionId = publicationVersionIds.get(run.publicationId);
+        let version: LessonVersion | null = null;
+        if (versionId !== undefined) {
+          if (!versionCache.has(versionId)) {
+            // eslint-disable-next-line no-await-in-loop -- the cache keeps one load per approved version; runs of one lesson share it.
+            const row = await findOne(transaction, "lesson_versions", {
+              tenant_id: actor.tenantId,
+              id: versionId,
+            });
+            versionCache.set(versionId, row ? mapVersion(row) : null);
+          }
+          version = versionCache.get(versionId) ?? null;
+        }
+        runs.push({
+          run,
+          attempts: attemptsRows.map(mapAttempt),
+          version,
+        });
+      }
+      return projectTeacherProgress({ runs });
+    });
+  };
+
   return {
     kind: backend.kind,
     check: backend.check,
@@ -1827,5 +1922,6 @@ export const createRecordCommands = <TTransaction>(
     readEvidence,
     readLesson,
     readAttemptContext,
+    readTeacherProgress,
   };
 };
