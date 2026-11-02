@@ -10,6 +10,31 @@ This document owns the UI interview requirements and provider findings; [product
 
 This gate covers implementation of this UI direction, including integrations, prototypes, dependencies, and application changes. Approval of interview recommendations is not implementation approval. Record the approved scope and skill references here when supplied, then run the required checks before reporting completion.
 
+### Approved scope, 2026-11-02
+
+Abdullah approved the **token-foundation slice only**. A screen change stays on hold until it has its own scoped approval below, because the four categories are not equally covered and only the slice below touches the two that are not.
+
+| # | Scope | Categories the change actually touches | Status |
+| --- | --- | --- | --- |
+| 1 | 43 sketch tokens into `@theme`, `--teacher-*` become aliases, font loading, no visual change | rendering (font loading), interaction (focus, disabled, reduced motion) | **approved** |
+| 2 | Sign-in / sign-up | content, interaction | on hold |
+| 3 | Studio compose + variants | content, pedagogy, interaction | on hold |
+| 4 | Review | content, pedagogy, interaction | on hold |
+| 5 | Publish | content, interaction | on hold |
+| 6 | Student board | content, pedagogy, rendering, interaction | on hold |
+
+Verification skills named for slice 1:
+
+- **content / structure** — [`verify-lesson-gate`](../../.agents/skills/verify-lesson-gate) (`pnpm verify:lesson-gate`)
+- **interaction / a11y** — `impeccable` (critique), `better-ui` (surfaces, icon and motion values), `better-accessibility` (focus, keyboard, reduced motion)
+- **rendering** — `better-colors` for token contrast; **math has no owner**, see below
+- **enforcing checks** — `pnpm verify:design-tokens` (in `pnpm check`), `pnpm verify:design-census` (browser capture; not in `pnpm check`)
+
+Two categories are recorded as uncovered rather than claimed as covered:
+
+- **Pedagogy has no verification skill.** Slice 1 changes no lesson content or interaction, so it does not require one. Slices 3–6 do, and stay on hold until a skill is named.
+- **Rendered math has no owner and nothing to verify.** The LaTeX→MathML path is unreachable: generation emits `matching-v1` only, so no persisted draft carries `catalogVersion: fractions-v2`. Its entire styling is `font-size: 1.3rem; line-height: 1.7`, with no math font, no `mfrac` rule and no overflow guard. Naming a rendering skill without reaching that path would be a check that always passes.
+
 ## Agreed direction
 
 - Help teachers generate related teaching materials and interactive tutorials grounded in their teaching sources.
