@@ -5,6 +5,10 @@ import {
   learnerNextActivitySchema,
   learnerSectionSchema,
 } from "@/shared/learner-contract";
+import {
+  teacherProgressResponseSchema,
+  teacherProgressRunSchema,
+} from "@/shared/progress-contract";
 
 import { createEvidenceHash } from "./hashes";
 import { isoTimestampSchema, recordIdSchema, scoreSchema } from "./envelope";
@@ -26,6 +30,7 @@ import {
   runStageValues,
   teacherDecisionActionValues,
 } from "./vocabulary";
+import type { TeacherProgressResponse } from "@/shared/progress-contract";
 import type {
   AssistanceEvent,
   LearnerAttempt,
@@ -354,5 +359,93 @@ export const projectTeacherEvidence = (input: {
       projectAssistance(event)
     ),
     decisions: input.decisions.map((decision) => projectDecision(decision)),
+  });
+};
+
+/**
+ * #8: the teacher progress row. It composes stored facts — the run, its
+ * attempts, and the stored next-activity decision — into the teacher surface.
+ * Nothing is re-decided here: the reason shown is the reason the rule wrote, and the keystone replay test proves the rule still agrees with the row.
+ *
+ * The screen material is the approved section the run sits on: labels and roles only. Private answer relationships never enter this projection.
+ */
+export const projectTeacherProgressRun = (input: {
+  readonly run: LearnerRun;
+  readonly attempts: readonly LearnerAttempt[];
+  /**
+  Null when the publication or the approved version behind the run is gone.
+  The row still lists, so the teacher sees a designed "content missing" state instead of the run silently disappearing.
+  */
+  readonly version: LessonVersion | null;
+}): TeacherProgressResponse["runs"][number] => {
+  const section = input.version
+    ? assignedSection(input.version, input.run.assignedVariantId)
+    : null;
+  return teacherProgressRunSchema.parse({
+    runId: input.run.id,
+    learnerId: input.run.learnerId,
+    publicationId: input.run.publicationId,
+    stage: input.run.stage,
+    firstResponseStatus: input.run.firstResponseStatus,
+    revision: input.run.revision,
+    updatedAt: input.run.updatedAt,
+    // The progress attempt carries the assistance event ids so the stored
+    // decision can be replayed from the row alone; the shared learner
+    // evidence projection stays narrower.
+    attempts: input.attempts.map((attempt) => {
+      return {
+        attemptId: attempt.id,
+        itemId: attempt.itemId,
+        ordinal: attempt.ordinal,
+        score: attempt.score,
+        correctness: attempt.correctness,
+        assistanceState: attempt.assistanceState,
+        assistanceEventIds: [...attempt.assistanceEventIds],
+        createdAt: attempt.createdAt,
+      };
+    }),
+    nextActivity: input.run.nextActivity,
+    screen:
+      section && input.version
+        ? {
+            lessonVersionId: input.version.id,
+            assignedSectionId: section.id,
+            title: section.title,
+            body: section.body,
+            items:
+              section.items?.map((item) => {
+                return {
+                  id: item.id,
+                  label: item.label,
+                  role: item.role,
+                };
+              }) ?? [],
+            sequence: input.version.sections.map((entry) => {
+              return {
+                id: entry.id,
+                kind: entry.kind,
+                title: entry.title,
+              };
+            }),
+          }
+        : null,
+  });
+};
+
+export const projectTeacherProgress = (input: {
+  readonly runs: readonly {
+    readonly run: LearnerRun;
+    readonly attempts: readonly LearnerAttempt[];
+    readonly version: LessonVersion | null;
+  }[];
+}): TeacherProgressResponse => {
+  return teacherProgressResponseSchema.parse({
+    runs: input.runs.map((entry) => {
+      return projectTeacherProgressRun({
+        run: entry.run,
+        attempts: entry.attempts,
+        version: entry.version,
+      });
+    }),
   });
 };
