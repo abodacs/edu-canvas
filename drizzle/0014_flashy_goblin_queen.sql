@@ -1,0 +1,1 @@
+ALTER TABLE "lesson_versions" ADD COLUMN "approved_copy" jsonb;

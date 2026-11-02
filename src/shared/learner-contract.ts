@@ -25,10 +25,22 @@ export const firstResponseStatusValues = ["pending", "submitted"] as const;
 
 export const correctnessValues = ["correct", "partial", "incorrect"] as const;
 
+export const nextActivityPurposeValues = [
+  "pause",
+  "scaffold",
+  "standard",
+  "challenge",
+  "teacher-choice",
+] as const;
+
+export const nextActivityAxisValues = ["variant-kind"] as const;
+
 export type SectionKind = (typeof sectionKindValues)[number];
 export type RunStage = (typeof runStageValues)[number];
 export type FirstResponseStatus = (typeof firstResponseStatusValues)[number];
 export type Correctness = (typeof correctnessValues)[number];
+export type NextActivityPurpose = (typeof nextActivityPurposeValues)[number];
+export type NextActivityAxis = (typeof nextActivityAxisValues)[number];
 
 const identifierSchema = z
   .string()
@@ -56,14 +68,38 @@ export const learnerSectionSchema = z.strictObject({
 
 export type LearnerSection = z.infer<typeof learnerSectionSchema>;
 
+const hashSchema = z
+  .string()
+  .trim()
+  .regex(/^[a-f0-9]{64}$/u);
+
 export const learnerNextActivitySchema = z
-  .strictObject({ targetId: identifierSchema })
+  .strictObject({
+    activityId: identifierSchema.nullable(),
+    activityAxis: z.enum(nextActivityAxisValues),
+    purpose: z.enum(nextActivityPurposeValues),
+    reason: boundedText(2000),
+    ruleVersion: boundedText(80),
+    evidenceHash: hashSchema,
+    derivedFromAttemptId: identifierSchema.nullable(),
+  })
   .nullable();
+
+export type LearnerNextActivity = z.infer<typeof learnerNextActivitySchema>;
+
+export const learnerColumnsSchema = z.strictObject({
+  sourceLabel: boundedText(200),
+  targetLabel: boundedText(200),
+});
+
+export type LearnerColumns = z.infer<typeof learnerColumnsSchema>;
 
 export const learnerLessonSchema = z.strictObject({
   publicationId: identifierSchema,
   lessonVersionId: identifierSchema,
   assignedVariantId: identifierSchema,
+  assignedSectionId: identifierSchema,
+  columns: learnerColumnsSchema.nullable(),
   sections: z.array(learnerSectionSchema).max(4),
   stage: z.enum(runStageValues),
   firstResponseStatus: z.enum(firstResponseStatusValues),
@@ -71,6 +107,29 @@ export const learnerLessonSchema = z.strictObject({
 });
 
 export type LearnerLesson = z.infer<typeof learnerLessonSchema>;
+
+export const learnerRevealPairSchema = z.strictObject({
+  sourceId: identifierSchema,
+  sourceLabel: boundedText(300),
+  targetId: identifierSchema,
+  targetLabel: boundedText(300),
+  correct: z.boolean(),
+});
+
+export const learnerRevealUnresolvedSchema = z.strictObject({
+  sourceId: identifierSchema,
+  sourceLabel: boundedText(300),
+});
+
+export const learnerRevealSchema = z.strictObject({
+  ruleVersion: boundedText(80),
+  pairs: z.array(learnerRevealPairSchema).max(50),
+  unresolved: z.array(learnerRevealUnresolvedSchema).max(50),
+  feedback: boundedText(4000).nullable(),
+  connection: boundedText(4000).nullable(),
+});
+
+export type LearnerReveal = z.infer<typeof learnerRevealSchema>;
 
 export const learnerAttemptEvidenceSchema = z.strictObject({
   attemptId: identifierSchema,
@@ -116,6 +175,8 @@ export const learnerAttemptResponseSchema = z.strictObject({
   correctMatches: z.number().int().min(0).max(50),
   incorrectMatches: z.number().int().min(0).max(50),
   missingMatches: z.number().int().min(0).max(50),
+  reveal: learnerRevealSchema,
+  nextActivity: learnerNextActivitySchema,
 });
 
 export type LearnerAttemptResponse = z.infer<

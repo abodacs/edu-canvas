@@ -99,6 +99,13 @@
       "when": 1793573493951,
       "tag": "0013_fat_xorn",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1793616733061,
+      "tag": "0014_flashy_goblin_queen",
+      "breakpoints": true
     }
   ]
 }

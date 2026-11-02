@@ -26,7 +26,7 @@ const sectionKinds = [
   "follow-up",
 ] as const;
 
-const projectionVersion = "lesson-package-public-v1";
+const projectionVersion = "lesson-package-public-v2";
 
 export interface PackBridgeSource {
   readonly packVersionId: string;
@@ -86,6 +86,7 @@ const buildSections = (content: StoredPublicContent) => {
     return {
       id: `section-${variant.id}`,
       kind,
+      variantId: bounded(variant.id, recordLimits.idLength),
       title: bounded(variant.title, recordLimits.titleText),
       body: bounded(variant.instructions, recordLimits.bodyText),
       // Every item the section renders, not only the source column: a reader
@@ -94,6 +95,42 @@ const buildSections = (content: StoredPublicContent) => {
       items,
     };
   });
+};
+
+/**
+#176: the copy the reveal needs. Path copy is written once; variant copy is
+keyed by variant. Only fields with a learner consumer cross here.
+*/
+const buildApprovedCopy = (content: StoredPublicContent) => {
+  return {
+    schemaVersion: "approved-copy-v1" as const,
+    language: content.input.language,
+    path: {
+      rationale: bounded(
+        content.learningPath.rationale,
+        recordLimits.summaryText
+      ),
+    },
+    variants: content.variants.map((variant) => {
+      return {
+        variantId: bounded(variant.id, recordLimits.idLength),
+        feedback: {
+          correct: bounded(variant.feedback.correct, recordLimits.bodyText),
+          incorrect: bounded(variant.feedback.incorrect, recordLimits.bodyText),
+        },
+        columns: {
+          sourceLabel: bounded(
+            variant.accessibilityMetadata.sourceGroupLabel,
+            recordLimits.shortText
+          ),
+          targetLabel: bounded(
+            variant.accessibilityMetadata.targetGroupLabel,
+            recordLimits.shortText
+          ),
+        },
+      };
+    }),
+  };
 };
 
 const buildRelationships = (answers: StoredPrivateAnswers) => {
@@ -168,17 +205,19 @@ export const bridgePublishedPack = async (
   const relationships = buildRelationships(source.privateAnswers);
   const variantReferences = source.publicContent.variants.map((variant) => {
     return {
-      variantId: variant.id,
+      variantId: bounded(variant.id, recordLimits.idLength),
       kind: variant.kind,
     };
   });
   const conceptIds = buildConceptIds(source.publicContent);
+  const approvedCopy = buildApprovedCopy(source.publicContent);
   const validationResult = buildValidationResult(source);
   const ruleVersions = buildRuleVersions(source);
   const contentHash = createContentHash({
     conceptIds,
     sections,
     variantReferences,
+    approvedCopy,
   });
   const privateAnswerDigest = createPrivateAnswerDigest(relationships);
   const packageHash = createPackageHash({ contentHash, privateAnswerDigest });
@@ -207,6 +246,7 @@ export const bridgePublishedPack = async (
     variantReferences,
     objectiveHash: source.artifactHash,
     sections,
+    approvedCopy,
     provenance: {
       provider: source.provenance.provider,
       modelVersion: source.provenance.model,

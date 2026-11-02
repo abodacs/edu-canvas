@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 import {
+  boundedTextSchema,
+  hashSchema,
   isoTimestampSchema,
   ordinalSchema,
   recordIdSchema,
@@ -11,6 +13,8 @@ import {
   assistanceStateValues,
   correctnessValues,
   firstResponseStatusValues,
+  nextActivityAxisValues,
+  nextActivityPurposeValues,
   recordLimits,
   runStageValues,
   teacherDecisionActionValues,
@@ -34,9 +38,49 @@ export const assignmentSchema = z.strictObject({
 
 export type Assignment = z.infer<typeof assignmentSchema>;
 
-export const nextActivitySchema = z
-  .strictObject({ targetId: recordIdSchema })
-  .nullable();
+const nextActivityDraftObject = z.strictObject({
+  activityId: recordIdSchema.nullable(),
+  activityAxis: z.enum(nextActivityAxisValues),
+  purpose: z.enum(nextActivityPurposeValues),
+  reason: boundedTextSchema(recordLimits.shortText),
+  ruleVersion: boundedTextSchema(recordLimits.idLength),
+  evidenceHash: hashSchema,
+});
+
+const hasValidActivityTarget = (activity: {
+  readonly purpose: (typeof nextActivityPurposeValues)[number];
+  readonly activityId: string | null;
+}): boolean => {
+  return activity.purpose === "pause"
+    ? activity.activityId === null
+    : activity.activityId !== null;
+};
+
+const targetMessage =
+  "A paused decision carries no activity; every other decision names one.";
+
+/**
+The service supplies this draft; the record layer fills the attempt id.
+*/
+export const nextActivityDraftSchema = nextActivityDraftObject.refine(
+  hasValidActivityTarget,
+  { message: targetMessage, path: ["activityId"] }
+);
+
+export type NextActivityDraft = z.infer<typeof nextActivityDraftSchema>;
+
+/**
+#7: the deterministic next-activity decision stored on the run. `activityId`
+names a variant in the same lesson version, never an item. A paused decision
+carries no activity, so a reader cannot mistake a pause for a choice.
+*/
+export const nextActivitySchema = nextActivityDraftObject
+  .extend({ derivedFromAttemptId: recordIdSchema.nullable() })
+  .nullable()
+  .refine((activity) => activity === null || hasValidActivityTarget(activity), {
+    message: targetMessage,
+    path: ["activityId"],
+  });
 
 export type NextActivity = z.infer<typeof nextActivitySchema>;
 

@@ -11,10 +11,12 @@ import {
   assistanceEventSchema,
   learnerAttemptSchema,
   learnerRunSchema,
+  nextActivitySchema,
   teacherDecisionSchema,
 } from "../records/delivery";
 import { recordError } from "../records/errors";
 import { canonicalJson } from "../records/canonical-json";
+import { recordLimits } from "../records/vocabulary";
 import {
   createContentHash,
   createCuratedContentHash,
@@ -68,9 +70,15 @@ import type {
   AssistanceEvent,
   LearnerAttempt,
   LearnerRun,
+  NextActivity,
   TeacherDecision,
 } from "../records/delivery";
-import type { LessonVersion, Publication } from "../records/authoring";
+import type {
+  ApprovedVariantCopy,
+  LessonSection,
+  LessonVersion,
+  Publication,
+} from "../records/authoring";
 import type { PrivateAnswerRelationship } from "../records/private-answers";
 import type { Actor, Capability } from "../identity/types";
 import type { RecordBackend, RecordTableName, StoredRow } from "./records-port";
@@ -106,10 +114,32 @@ export interface LessonReadResult {
  * relationships never leave the server, and the run revision pins the write.
  */
 export interface AttemptContext {
+  readonly run: LearnerRun;
   readonly runId: string;
   readonly runRevision: number;
   readonly itemId: string;
+  /**
+  The section that contains the submitted item.
+  */
+  readonly section: LessonSection;
+  /**
+  Every required pair in that section, not only the submitted item.
+  */
   readonly relationships: readonly PrivateAnswerRelationship[];
+  /**
+  The approved copy for the run's assigned variant, when the row has it.
+  */
+  readonly approvedCopy: {
+    readonly language: "en" | "ar";
+    readonly rationale: string;
+    readonly variant: ApprovedVariantCopy | null;
+  } | null;
+  readonly activities: readonly {
+    readonly variantId: string;
+    readonly kind: "standard" | "scaffold" | "challenge";
+  }[];
+  readonly attempts: readonly LearnerAttempt[];
+  readonly assistanceEvents: readonly AssistanceEvent[];
 }
 
 /**
@@ -277,6 +307,7 @@ const mapVersion = (row: StoredRow): LessonVersion => {
       variantReferences: row.variant_references,
       objectiveHash: row.objective_hash,
       sections: row.sections,
+      approvedCopy: row.approved_copy ?? null,
       provenance: row.provenance,
       revisionKind: row.revision_kind,
       changedSectionIds: row.changed_section_ids,
@@ -325,6 +356,17 @@ const mapAssignment = (row: StoredRow): Assignment => {
   });
 };
 
+/**
+#176/#7 tolerant reader: a v1 run stored `{ targetId }` before the decision
+carried its rule version and evidence hash. That shape cannot be upgraded
+without inventing evidence, so it reads as "no decision yet" and waits for the
+next saved choice.
+*/
+const readStoredNextActivity = (value: unknown = null): NextActivity => {
+  const parsed = nextActivitySchema.safeParse(value);
+  return parsed.success ? parsed.data : null;
+};
+
 const mapRun = (row: StoredRow): LearnerRun => {
   return hydrate(() => {
     return learnerRunSchema.parse({
@@ -338,7 +380,7 @@ const mapRun = (row: StoredRow): LearnerRun => {
       stage: row.stage,
       firstResponseStatus: row.first_response_status,
       revision: row.revision,
-      nextActivity: row.next_activity ?? null,
+      nextActivity: readStoredNextActivity(row.next_activity),
       createdAt: toIso(row.created_at),
       updatedAt: toIso(row.updated_at),
     });
@@ -685,7 +727,7 @@ export const createRecordCommands = <TTransaction>(
     transaction: TTransaction,
     run: LearnerRun,
     expectedRevision: number,
-    patch: Readonly<Record<string, string | null | { targetId: string }>>
+    patch: Readonly<Record<string, string | NextActivity>>
   ): Promise<void> => {
     const affected = await backend.update(
       transaction,
@@ -947,6 +989,7 @@ export const createRecordCommands = <TTransaction>(
           conceptIds: input.conceptIds,
           sections: input.sections,
           variantReferences: input.variantReferences,
+          approvedCopy: input.approvedCopy,
         });
         const privateAnswerDigest = createPrivateAnswerDigest(
           input.privateAnswerRelationships
@@ -970,6 +1013,7 @@ export const createRecordCommands = <TTransaction>(
           variantReferences: input.variantReferences,
           objectiveHash: input.objectiveHash,
           sections: input.sections,
+          approvedCopy: input.approvedCopy,
           provenance: input.provenance,
           revisionKind: lineage.revisionKind,
           changedSectionIds: input.changedSectionIds,
@@ -998,6 +1042,7 @@ export const createRecordCommands = <TTransaction>(
           variant_references: version.variantReferences,
           objective_hash: version.objectiveHash,
           sections: version.sections,
+          approved_copy: version.approvedCopy,
           provenance: version.provenance,
           revision_kind: version.revisionKind,
           changed_section_ids: version.changedSectionIds,
@@ -1428,8 +1473,21 @@ export const createRecordCommands = <TTransaction>(
           created_at: attempt.createdAt,
         });
 
+        // #7: the first response decides the next activity. A retry appends
+        // evidence but never rewrites the stored decision or the stage.
+        const nextActivity =
+          ordinal === 1 && input.nextActivity !== null
+            ? nextActivitySchema.parse({
+                ...input.nextActivity,
+                derivedFromAttemptId: attempt.id,
+              })
+            : run.nextActivity;
+
         await advanceRun(transaction, run, input.expectedRunRevision, {
-          stage: "active",
+          ...(ordinal === 1 && {
+            stage: nextActivity?.purpose === "pause" ? "paused" : "advanced",
+            next_activity: nextActivity,
+          }),
           first_response_status: "submitted",
         });
 
@@ -1498,7 +1556,9 @@ export const createRecordCommands = <TTransaction>(
         );
         if (
           input.approvedTargetId &&
-          !collectItemIds(version).has(input.approvedTargetId)
+          version.variantReferences.every(
+            (variant) => variant.variantId !== input.approvedTargetId
+          )
         ) {
           throw recordError("INVALID_INPUT");
         }
@@ -1529,12 +1589,22 @@ export const createRecordCommands = <TTransaction>(
           created_at: decision.createdAt,
         });
 
+        const nextActivity: NextActivity =
+          input.action === "pause" || input.approvedTargetId === null
+            ? null
+            : {
+                activityId: input.approvedTargetId,
+                activityAxis: "variant-kind",
+                purpose: "teacher-choice",
+                reason: input.proposal.summary.slice(0, recordLimits.shortText),
+                ruleVersion: input.proposal.ruleVersion,
+                evidenceHash: input.evidenceHash,
+                derivedFromAttemptId: attempts.at(-1)?.id ?? null,
+              };
+
         await advanceRun(transaction, run, input.expectedRunRevision, {
           stage: input.action === "pause" ? "paused" : "advanced",
-          next_activity:
-            input.action === "pause" || !input.approvedTargetId
-              ? null
-              : { targetId: input.approvedTargetId },
+          next_activity: nextActivity,
         });
 
         return { resultKind: "teacher-decision", resultIds: [decision.id] };
@@ -1699,20 +1769,63 @@ export const createRecordCommands = <TTransaction>(
         publication.lessonVersionId,
         actor.tenantId
       );
-      if (!collectItemIds(version).has(parsed.itemId)) {
+      const sectionsWithItem = version.sections.filter((candidate) =>
+        candidate.itemIds.includes(parsed.itemId)
+      );
+      const section =
+        sectionsWithItem.find(
+          (candidate) => candidate.variantId === run.assignedVariantId
+        ) ?? sectionsWithItem[0];
+      if (!section) {
         throw recordError("INVALID_INPUT");
       }
+      // #7: one response covers the section. The reveal names every required
+      // pair, so grading and classification read the same answer set.
+      const sectionItemIds = new Set(section.itemIds);
       const relationships = version.privateAnswerRelationships.filter(
-        (relationship) => relationship.itemId === parsed.itemId
+        (relationship) => sectionItemIds.has(relationship.itemId)
       );
       if (relationships.length === 0) {
         throw recordError("INVALID_INPUT");
       }
+      const attemptsRows = await backend.list(
+        transaction,
+        "learner_attempts",
+        { tenant_id: actor.tenantId, run_id: run.id },
+        { column: "ordinal", direction: "asc" }
+      );
+      const assistanceRows = await backend.list(
+        transaction,
+        "assistance_events",
+        { tenant_id: actor.tenantId, run_id: run.id },
+        { column: "ordinal", direction: "asc" }
+      );
+      const copy = version.approvedCopy;
       return {
+        run,
         runId: run.id,
         runRevision: run.revision,
         itemId: parsed.itemId,
+        section,
         relationships,
+        approvedCopy: copy
+          ? {
+              language: copy.language,
+              rationale: copy.path.rationale,
+              variant:
+                copy.variants.find(
+                  (variant) => variant.variantId === run.assignedVariantId
+                ) ?? null,
+            }
+          : null,
+        activities: version.variantReferences.map((variant) => {
+          return {
+            variantId: variant.variantId,
+            kind: variant.kind,
+          };
+        }),
+        attempts: attemptsRows.map(mapAttempt),
+        assistanceEvents: assistanceRows.map(mapAssistance),
       };
     });
   };

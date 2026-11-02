@@ -1,8 +1,12 @@
-/* eslint-disable react-doctor/no-fetch-in-effect, unicorn/try-complexity -- The board starts only after the session hook resolves, and each handler owns one network call with its own recovery. */
+/* eslint-disable react-doctor/no-fetch-in-effect, unicorn/try-complexity, react-doctor/prefer-useReducer -- The board starts only after the session hook resolves, and each handler owns one network call with its own recovery. The retry reset clears the whole submission at once, so the states change together by design. */
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 import { useAuthSession } from "@/components/auth/use-auth-session";
+import {
+  NextActivityCard,
+  RevealReport,
+} from "@/components/learn/learn-surfaces";
 import { csrfHeaderName } from "@/shared/identity-contract";
 import {
   learnerAttemptResponseSchema,
@@ -21,8 +25,30 @@ const messageByStatus: Readonly<Record<number, string>> = {
   409: "This submission is out of date. Reload the page.",
 };
 
-const messageFor = (status: number): string =>
-  messageByStatus[status] ?? "The activity is unavailable. Try again.";
+const messageByCode: Readonly<Record<string, string>> = {
+  ATTEMPT_LIMIT_REACHED:
+    "You have used all three tries for this activity. Your teacher can help from here.",
+};
+
+const messageFor = (status: number, code?: string): string => {
+  const byCode = code === undefined ? undefined : messageByCode[code];
+  return (
+    byCode ??
+    messageByStatus[status] ??
+    "The activity is unavailable. Try again."
+  );
+};
+
+const readErrorCode = async (
+  response: Response
+): Promise<string | undefined> => {
+  try {
+    const parsed = (await response.json()) as { code?: unknown };
+    return typeof parsed.code === "string" ? parsed.code : undefined;
+  } catch {
+    return undefined;
+  }
+};
 
 const post = (path: string, csrf: string, body: unknown): Promise<Response> => {
   return fetch(path, {
@@ -90,11 +116,16 @@ const LearnBoard = ({
     return <p className="learn-status">Opening your activity…</p>;
   }
 
-  const [section] = run.lesson.sections;
+  const section =
+    run.lesson.sections.find(
+      (candidate) => candidate.id === run.lesson.assignedSectionId
+    ) ?? run.lesson.sections[0];
   const items = section?.items ?? [];
   const sources = items.filter((item) => item.role === "source");
   const targets = items.filter((item) => item.role !== "source");
   const pairCount = Object.keys(pairs).length;
+  const sourceHeading = run.lesson.columns?.sourceLabel ?? "Fractions";
+  const targetHeading = run.lesson.columns?.targetLabel ?? "Equivalents";
 
   const submit = async (): Promise<void> => {
     setPhase("saving");
@@ -110,12 +141,39 @@ const LearnBoard = ({
         runId: run.runId,
       });
       if (!response.ok) {
-        setError(messageFor(response.status));
+        setError(messageFor(response.status, await readErrorCode(response)));
         setPhase("error");
         return;
       }
       setResult(learnerAttemptResponseSchema.parse(await response.json()));
       setPhase("done");
+    } catch {
+      setError(messageFor(0));
+      setPhase("error");
+    }
+  };
+
+  // #7: a retry appends evidence; the stored first response and decision stay.
+  // The replayed start returns the current run revision, so the next submit is
+  // never stale.
+  const retry = async (): Promise<void> => {
+    setPhase("saving");
+    try {
+      const response = await post("/api/learner/runs", csrf, {
+        operationKey: `start-${assignment}-${variant}`,
+        assignedVariantId: variant,
+        assignmentId: assignment,
+      });
+      if (!response.ok) {
+        setError(messageFor(response.status, await readErrorCode(response)));
+        setPhase("error");
+        return;
+      }
+      setRun(learnerRunResponseSchema.parse(await response.json()));
+      setPairs({});
+      setActiveSource(null);
+      setResult(null);
+      setPhase("ready");
     } catch {
       setError(messageFor(0));
       setPhase("error");
@@ -129,7 +187,7 @@ const LearnBoard = ({
 
       <div className="learn-board">
         <div>
-          <h2 className="learn-column-heading">Fractions</h2>
+          <h2 className="learn-column-heading">{sourceHeading}</h2>
           <ul className="learn-list">
             {sources.map((item) => {
               const isActive = activeSource === item.id;
@@ -153,7 +211,7 @@ const LearnBoard = ({
           </ul>
         </div>
         <div>
-          <h2 className="learn-column-heading">Equivalents</h2>
+          <h2 className="learn-column-heading">{targetHeading}</h2>
           <ul className="learn-list">
             {targets.map((item) => {
               return (
@@ -189,10 +247,23 @@ const LearnBoard = ({
       </p>
 
       {phase === "done" && result ? (
-        <output className="learn-result">
-          Score {result.score}. {result.correctMatches} of{" "}
-          {result.requiredMatches} correct ({result.correctness}).
-        </output>
+        <div className="learn-result-panel">
+          <output className="learn-result">
+            Score {result.score}. {result.correctMatches} of{" "}
+            {result.requiredMatches} correct ({result.correctness}).
+          </output>
+          <RevealReport reveal={result.reveal} />
+          <NextActivityCard activity={result.nextActivity} />
+          <button
+            className="learn-retry"
+            type="button"
+            onClick={() => {
+              void retry();
+            }}
+          >
+            Try again
+          </button>
+        </div>
       ) : (
         <button
           className="learn-submit"
@@ -205,6 +276,10 @@ const LearnBoard = ({
           {phase === "saving" ? "Checking…" : "Done"}
         </button>
       )}
+
+      {phase !== "done" && run.lesson.nextActivity ? (
+        <NextActivityCard activity={run.lesson.nextActivity} />
+      ) : null}
     </section>
   );
 };

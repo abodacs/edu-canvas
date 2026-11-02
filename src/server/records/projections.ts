@@ -8,6 +8,7 @@ import {
 import { createEvidenceHash } from "./hashes";
 import { isoTimestampSchema, recordIdSchema, scoreSchema } from "./envelope";
 import {
+  approvedCopySchema,
   provenanceSchema,
   ruleVersionsSchema,
   sectionSchema,
@@ -23,6 +24,7 @@ import {
   runStageValues,
   teacherDecisionActionValues,
 } from "./vocabulary";
+import type { sectionKindValues } from "./vocabulary";
 import type {
   AssistanceEvent,
   LearnerAttempt,
@@ -51,6 +53,7 @@ export const teacherVersionProjectionSchema = z.strictObject({
     .array(variantReferenceSchema)
     .max(recordLimits.variantMax),
   sections: z.array(sectionSchema).length(recordLimits.sectionCount),
+  approvedCopy: approvedCopySchema.nullable(),
   provenance: provenanceSchema,
   validationResult: validationResultSchema,
   ruleVersions: ruleVersionsSchema,
@@ -76,6 +79,7 @@ export const projectTeacherVersion = (
     conceptIds: version.conceptIds,
     variantReferences: version.variantReferences,
     sections: version.sections,
+    approvedCopy: version.approvedCopy,
     provenance: version.provenance,
     validationResult: version.validationResult,
     ruleVersions: version.ruleVersions,
@@ -87,6 +91,13 @@ export const studentLessonProjectionSchema = z.strictObject({
   publicationId: recordIdSchema,
   lessonVersionId: recordIdSchema,
   assignedVariantId: recordIdSchema,
+  assignedSectionId: recordIdSchema,
+  columns: z
+    .strictObject({
+      sourceLabel: z.string().min(1),
+      targetLabel: z.string().min(1),
+    })
+    .nullable(),
   sections: z.array(learnerSectionSchema).length(recordLimits.sectionCount),
   stage: z.enum(runStageValues),
   firstResponseStatus: z.enum(firstResponseStatusValues),
@@ -97,15 +108,85 @@ export type StudentLessonProjection = z.infer<
   typeof studentLessonProjectionSchema
 >;
 
+/**
+The learner section is constructed field by field. `variantId` stays on the
+record and never crosses this seam, so a new authoring field cannot leak by
+default.
+*/
+const projectLearnerSection = (section: {
+  readonly id: string;
+  readonly kind: (typeof sectionKindValues)[number];
+  readonly title: string;
+  readonly body: string;
+  readonly itemIds: readonly string[];
+  readonly items?: readonly {
+    readonly id: string;
+    readonly label: string;
+    readonly role: "source" | "target" | "distractor";
+  }[];
+}) => {
+  return learnerSectionSchema.parse({
+    id: section.id,
+    kind: section.kind,
+    title: section.title,
+    body: section.body,
+    itemIds: [...section.itemIds],
+    ...(section.items !== undefined && {
+      items: section.items.map((item) => {
+        return {
+          id: item.id,
+          label: item.label,
+          role: item.role,
+        };
+      }),
+    }),
+  });
+};
+
+const assignedSection = (
+  version: LessonVersion,
+  assignedVariantId: string
+): LessonVersion["sections"][number] => {
+  const [first] = version.sections;
+  if (!first) {
+    throw new Error("A lesson version has no sections.");
+  }
+  const match = version.sections.find(
+    (section) => section.variantId === assignedVariantId
+  );
+  if (match) {
+    return match;
+  }
+  // A v1 row has no variant links at all, so the first section is the only
+  // answer it can give. A row that does link variants must resolve exactly.
+  if (version.sections.some((section) => section.variantId !== undefined)) {
+    throw new Error("The assigned variant has no section.");
+  }
+  return first;
+};
+
+const assignedColumns = (
+  version: LessonVersion,
+  assignedVariantId: string
+): { readonly sourceLabel: string; readonly targetLabel: string } | null => {
+  const variant = version.approvedCopy?.variants.find(
+    (copy) => copy.variantId === assignedVariantId
+  );
+  return variant?.columns ?? null;
+};
+
 export const projectStudentLesson = (input: {
   readonly version: LessonVersion;
   readonly run: LearnerRun;
 }): StudentLessonProjection => {
+  const section = assignedSection(input.version, input.run.assignedVariantId);
   return studentLessonProjectionSchema.parse({
     publicationId: input.run.publicationId,
     lessonVersionId: input.version.id,
     assignedVariantId: input.run.assignedVariantId,
-    sections: input.version.sections,
+    assignedSectionId: section.id,
+    columns: assignedColumns(input.version, input.run.assignedVariantId),
+    sections: input.version.sections.map(projectLearnerSection),
     stage: input.run.stage,
     firstResponseStatus: input.run.firstResponseStatus,
     nextActivity: input.run.nextActivity,

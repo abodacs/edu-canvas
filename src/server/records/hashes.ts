@@ -32,6 +32,7 @@ export interface VersionContentHashInput {
   readonly conceptIds: readonly string[];
   readonly sections: unknown;
   readonly variantReferences: unknown;
+  readonly approvedCopy: unknown;
 }
 
 export const createContentHash = (input: VersionContentHashInput): string => {
@@ -41,6 +42,7 @@ export const createContentHash = (input: VersionContentHashInput): string => {
     conceptIds: input.conceptIds,
     sections: input.sections,
     variantReferences: input.variantReferences,
+    approvedCopy: input.approvedCopy,
   });
 };
 
@@ -99,5 +101,33 @@ export const createEvidenceHash = (input: EvidenceHashInput): string => {
     learnerId: input.learnerId,
     attempts: input.attempts,
     assistanceEvents: input.assistanceEvents,
+  });
+};
+
+export interface DecisionEvidenceHashInput {
+  readonly runId: string;
+  readonly itemId: string;
+  readonly correctness: string;
+  readonly assisted: boolean;
+  readonly assistanceEventIds: readonly string[];
+}
+
+/**
+#7: the first response only. Retries append evidence but never change this
+hash, so a re-derivation after attempt two returns the same decision.
+*/
+export const createDecisionEvidenceHash = (
+  input: DecisionEvidenceHashInput
+): string => {
+  return sha256({
+    hashVersion,
+    kind: "learner-decision-evidence",
+    runId: input.runId,
+    itemId: input.itemId,
+    correctness: input.correctness,
+    assisted: input.assisted,
+    assistanceEventIds: [...input.assistanceEventIds].toSorted((left, right) =>
+      left.localeCompare(right)
+    ),
   });
 };
