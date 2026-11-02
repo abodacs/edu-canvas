@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "fluid-functionalism": {
+      "source": "mickadesign/fluid-functionalism",
+      "sourceType": "github",
+      "skillPath": "skills/fluid-functionalism/SKILL.md",
+      "computedHash": "4c7f29a8ee10105b3c8396e3b317bcd59043a6f03ee576cbe5ee6a72ee3fdde3"
+    },
     "security-audit": {
       "source": "cloudflare/security-audit-skill",
       "sourceType": "github",
