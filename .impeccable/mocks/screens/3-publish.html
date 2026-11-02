@@ -178,7 +178,7 @@
       </nav>
       <h1>Publish equivalent fractions</h1>
       <p class="lede">
-        Each learner sees one variant: the one you assign. Publishing freezes
+        Your learner sees one variant: the one you assign. Publishing freezes
         the approved versions so they can't change under a student.
       </p>
 
@@ -226,142 +226,40 @@
             padding-block-end: var(--s-1);
           "
         >
-          Assign to Class 4B · 26 learners
+          Assign to one learner
         </h2>
         <p
           class="small muted"
           style="padding-inline: var(--s-5); margin-block-end: var(--s-3)"
         >
-          Seeded synthetic accounts only, until consent and data residency are
-          approved.
+          One publication reaches one learner. Per-class assignment needs a
+          backend capability first (gap G1).
         </p>
-        <div
-          class="bulk"
-          role="group"
-          aria-label="Assign several learners at once"
-        >
+        <div class="bulk" role="group" aria-label="Assign one learner">
           <div class="bulk-row">
-            <label for="all"><b>Everyone</b></label>
-            <select id="all">
-              <option>Choose a variant…</option>
-              <option>A · Worked example</option>
-              <option>B · Guided activity</option>
-              <option>D · Matching</option>
+            <label for="who"><b>Learner</b></label>
+            <select id="who">
+              <option>Omar Nabil</option>
+              <option>Lina Farouk</option>
+              <option>Yusuf Demir</option>
             </select>
-            <button type="button" class="ghost">Assign to all 26</button>
-          </div>
-          <div class="bulk-row">
-            <label for="sel"><b>3 selected</b></label>
-            <select id="sel">
-              <option>B · Guided activity</option>
-              <option>A · Worked example</option>
-              <option>D · Matching</option>
-            </select>
-            <button type="button" class="ghost">Assign to selected</button>
           </div>
         </div>
-        <table class="assign table" aria-labelledby="as">
-          <thead>
-            <tr>
-              <th scope="col">
-                <span class="sr-only">Select</span
-                ><input type="checkbox" aria-label="Select all learners" />
-              </th>
-              <th scope="col">Learner</th>
-              <th scope="col">Variant they will see</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><input type="checkbox" aria-label="Select Maple" /></td>
-              <td>Maple</td>
-              <td>
-                <label class="sr-only" for="v1">Variant for Maple</label
-                ><select id="v1">
-                  <option>D · Matching</option>
-                  <option>A · Worked example</option>
-                  <option>B · Guided activity</option>
-                  <option>Not assigned</option>
-                </select>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <input type="checkbox" checked aria-label="Select Cedar" />
-              </td>
-              <td>Cedar</td>
-              <td>
-                <label class="sr-only" for="v2">Variant for Cedar</label
-                ><select id="v2">
-                  <option>A · Worked example</option>
-                  <option>B · Guided activity</option>
-                  <option>D · Matching</option>
-                  <option>Not assigned</option>
-                </select>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <input type="checkbox" checked aria-label="Select Birch" />
-              </td>
-              <td>Birch</td>
-              <td>
-                <label class="sr-only" for="v3">Variant for Birch</label
-                ><select id="v3">
-                  <option>Not assigned</option>
-                  <option>A · Worked example</option>
-                  <option>B · Guided activity</option>
-                  <option>D · Matching</option>
-                </select>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <input type="checkbox" checked aria-label="Select Willow" />
-              </td>
-              <td>Willow</td>
-              <td>
-                <label class="sr-only" for="v4">Variant for Willow</label
-                ><select id="v4">
-                  <option>Not assigned</option>
-                  <option>A · Worked example</option>
-                  <option>B · Guided activity</option>
-                  <option>D · Matching</option>
-                </select>
-              </td>
-            </tr>
-            <tr>
-              <td><input type="checkbox" aria-label="Select Aspen" /></td>
-              <td>Aspen</td>
-              <td>
-                <label class="sr-only" for="v5">Variant for Aspen</label
-                ><select id="v5">
-                  <option>D · Matching</option>
-                  <option>A · Worked example</option>
-                  <option>B · Guided activity</option>
-                  <option>Not assigned</option>
-                </select>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <p class="more">
-          <button type="button" class="ghost">Show all 26 learners</button>
-        </p>
         <p class="summary" id="pub-sum">
-          <b>You're about to publish to 24 learners:</b> A to 6, B to 4, D to
-          14. Two learners have no variant yet.
+          <b>You're about to publish one reviewed pack to Omar Nabil.</b> It
+          opens as their next activity.
         </p>
         <div class="foot">
           <span class="small muted"
-            >You can unpublish later. Published versions are never edited.</span
+            >Published versions are never edited; a later edit starts a new
+            revision.</span
           >
           <button
             class="btn"
             style="margin-inline-start: auto"
             aria-describedby="pub-sum"
           >
-            Publish to 24 learners
+            Publish and assign
           </button>
         </div>
       </form>
@@ -370,24 +268,19 @@
         State after publishing
       </p>
       <section class="card done" aria-labelledby="done-h" aria-live="polite">
-        <p class="pill ok">Published to 24 learners</p>
-        <h2 id="done-h" class="h2">The class can start</h2>
+        <p class="pill ok">Published and assigned</p>
+        <h2 id="done-h" class="h2">Omar can start</h2>
         <ul class="groups">
-          <li>
-            <b>A · Worked example</b
-            ><span>Cedar, Fern, Hazel, Juniper, Olive, Rowan</span>
-          </li>
-          <li><b>B · Guided activity</b><span>Ash, Elm, Ivy, Laurel</span></li>
-          <li><b>D · Matching</b><span>Maple, Aspen and 12 more</span></li>
-          <li><b>Not assigned</b><span>Birch, Willow</span></li>
+          <li><b>A · Worked example, version 2</b><span>Omar Nabil</span></li>
         </ul>
         <div class="row">
-          <button class="btn secondary">Copy all 24 links</button>
-          <a class="link" href="#">Download as a list</a>
+          <button class="btn secondary">Copy learner link</button>
+          <a class="link" href="#">Open the preview</a>
         </div>
         <p class="small muted">
-          Each link opens only that learner's variant. Scores and the reason for
-          each next step appear in Lessons.
+          The link opens only Omar's variant. Scores and the reason for the next
+          step appear in Lessons once the teacher-decision surface exists (gap
+          G4).
         </p>
       </section>
       <p class="synthetic">Sketch. Learner names and counts are synthetic.</p>
