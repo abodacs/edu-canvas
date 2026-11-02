@@ -22,3 +22,5 @@ docs/research/142-mcp-eval/measurements.md
 docs/product/teacher-practice-assessment/delegation/results/v0.json
 docs/product/teacher-practice-assessment/delegation/results/v0-rollup.md
 docs/product/teacher-practice-assessment/delegation/results/browser-results.json
+# Written by the design census capture and read back by verify-design-census.ts.
+scripts/design-census.json
