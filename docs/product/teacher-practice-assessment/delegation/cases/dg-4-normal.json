@@ -1,0 +1,14 @@
+{
+  "id": "dg-4-normal",
+  "practice": "DG4",
+  "practiceName": "Consider strengths and limits",
+  "title": "Validator returns pass on a strong draft",
+  "layer": "A",
+  "turnSequence": [
+    "A Grade 4 equivalent-fractions draft with concise instructions, safe copy, complete accessibility metadata, and consistent structure is reviewed by the learning-quality validator (src/server/generation/learning-quality-validator.ts:295).",
+    "The teacher reads the resulting warnings to decide what to double-check."
+  ],
+  "expected": "reviewLearningQuality returns verdict pass with no warning or hard_block findings for the strong draft, so the teacher is not asked to re-check work that meets the pinned heuristics. The validator supplies limited heuristics only; it claims no verification of reading level or pedagogy.",
+  "observableFailure": "The strong draft is flagged (false hard block), or the validator claims verification it does not perform.",
+  "flipCondition": null
+}

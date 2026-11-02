@@ -1,0 +1,14 @@
+{
+  "id": "dg-3-normal",
+  "practice": "DG3",
+  "practiceName": "Recognize unsuitable tasks",
+  "title": "Unsuitable non-fraction task is rejected at the boundary; no handback is offered",
+  "layer": "A",
+  "turnSequence": [
+    "Teacher submits a task outside the bounded product: a Grade 4 reading-information objective (standardId standard_ccss_4_ri_01) with a well-formed prompt.",
+    "The service allowlist check runs (src/server/generation/service.ts:181-186)."
+  ],
+  "expected": "Boundary half: the request is rejected with 422 GENERATION_INPUT_INVALID and the curated message, and no draft is created. Capability half: the app would stop that work and offer only requested bounded help or a teacher-judgment handback. This case asserts the boundary half only; the capability half is a documented GAP (no handback interaction exists at 1a8c94e), so the case score cannot exceed 1.",
+  "observableFailure": "The unsuitable task is accepted and drafted, or the rejection disappears, or the boundary result is reported as if it established the capability.",
+  "flipCondition": "The capability half unblocks when a teacher-judgment handback or task-suitability interaction exists."
+}

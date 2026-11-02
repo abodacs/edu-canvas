@@ -1,0 +1,15 @@
+{
+  "id": "dg-5-challenge",
+  "practice": "DG5",
+  "practiceName": "Stay involved",
+  "title": "Blocked draft offers revise-only recovery; no approve or publish path exists",
+  "layer": "B-browser",
+  "turnSequence": [
+    "Teacher submits an objective that trips the moderation seam (personal data in the prompt).",
+    "The result renders blocked-by-moderation with the recovery panel (#185): title, category-level explanation, preserved objective, and one 'Revise request' action.",
+    "Teacher inspects the available actions."
+  ],
+  "expected": "The blocked result exposes exactly the revise action: no retry button, no approve, no publish, no preview of a withheld draft (retry.available is false for a moderation block). The teacher stays in control of a blocked draft; nothing progresses behind their back.",
+  "observableFailure": "The blocked draft can be approved, published, or previewed, or a retry control appears for a moderation block.",
+  "flipCondition": "Requires the dev server and a browser (playwright-core plus the cached Chromium); unblocks when both are available."
+}

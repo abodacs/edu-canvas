@@ -1,0 +1,15 @@
+{
+  "id": "dg-6-challenge",
+  "practice": "DG6",
+  "practiceName": "Choose a suitable tool or approach",
+  "title": "Retry decision rules refuse metadata drift and non-retryable states",
+  "layer": "B-det",
+  "turnSequence": [
+    "A draft settles in failed-retryable against the real persistence (deterministic fixture provider).",
+    "The teacher retries with a changed prompt (metadata drift).",
+    "A separate draft reaches ready-for-review; the teacher retries it anyway."
+  ],
+  "expected": "The metadata-drift retry is refused with 409 RETRY_METADATA_MISMATCH and the ready-for-review retry is refused with 409 DRAFT_NOT_RETRYABLE; neither attempt starts a provider call or mutates the record.",
+  "observableFailure": "A drifted retry silently replaces the original request, or a finished draft can be retried and re-drafted without the teacher's new request.",
+  "flipCondition": "Requires a migrated, seeded PostgreSQL reachable at DATABASE_URL; unblocks when the database is available."
+}
