@@ -9,7 +9,10 @@ import {
 import { IdentityError } from "../identity/errors";
 import { readJsonBody, noStoreJson } from "../http.server";
 import { readServerConfig } from "../config";
-import { createFoundationPersistence } from "../persistence";
+import {
+  createFoundationPersistence,
+  createGenerationLimitStore,
+} from "../persistence";
 import { createConfiguredLessonDraftProvider } from "./factory";
 import { GenerationRequestError } from "./generation-request-error";
 import { createGenerationService } from "./service";
@@ -19,6 +22,7 @@ const createService = (): ReturnType<typeof createGenerationService> => {
   return createGenerationService({
     persistence: createFoundationPersistence(config),
     provider: createConfiguredLessonDraftProvider(config),
+    limits: createGenerationLimitStore(config),
   });
 };
 
@@ -32,9 +36,20 @@ export const mapGenerationError = (error: unknown): Response => {
     return identityErrorJson(error);
   }
   if (error instanceof GenerationRequestError) {
+    const retryAfterSeconds =
+      error.retryAfterMs === undefined
+        ? undefined
+        : Math.max(1, Math.ceil(error.retryAfterMs / 1000));
     return noStoreJson(
-      { code: error.code, message: error.message },
-      error.status
+      {
+        code: error.code,
+        message: error.message,
+        ...(retryAfterSeconds !== undefined && { retryAfterSeconds }),
+      },
+      error.status,
+      retryAfterSeconds === undefined
+        ? {}
+        : { "retry-after": String(retryAfterSeconds) }
     );
   }
   return noStoreJson(

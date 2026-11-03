@@ -4,6 +4,7 @@ import { syntheticSeed } from "@/server/seed-data";
 import { parseActorId, parseTenantId } from "@/server/identity/identifiers";
 import { syntheticTeacherActor } from "@/server/identity/test-actors";
 
+import { createSeededGenerationLimitStore } from "@/server/persistence/limits-seeded";
 import { createSeededPersistence } from "../persistence/seeded";
 import {
   allowedSafetyResult,
@@ -174,6 +175,7 @@ const createModerationService = () => {
   const persistence = createSeededPersistence();
   let requestNumber = 0;
   const service = createGenerationService({
+    limits: createSeededGenerationLimitStore(),
     persistence,
     provider,
     safety: {
@@ -197,6 +199,7 @@ describe("generation service conformance: idempotency and ownership", () => {
   it("reuses one operation and one provider call for identical concurrent requests and replay", async () => {
     const provider = createDeterministicLessonDraftProvider();
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider,
       requestIdFactory: () => "draft_req_conformance_duplicate",
@@ -218,6 +221,7 @@ describe("generation service conformance: idempotency and ownership", () => {
     const provider =
       createDeterministicLessonDraftProvider("invalid-then-valid");
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider,
       requestIdFactory: () => "draft_req_conformance_correction_duplicate",
@@ -248,6 +252,7 @@ describe("generation service conformance: idempotency and ownership", () => {
     const provider = createDeterministicLessonDraftProvider();
     const persistence = createSeededPersistence();
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence,
       provider,
       requestIdFactory: () => "draft_req_conformance_conflict_done",
@@ -275,6 +280,7 @@ describe("generation service conformance: idempotency and ownership", () => {
   it("rejects changed input under the same key while the first request is in flight", async () => {
     const provider = createControlledProvider();
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider,
       requestIdFactory: () => "draft_req_conformance_conflict_inflight",
@@ -439,6 +445,7 @@ describe("generation service conformance: idempotency and ownership", () => {
       "invalid-then-invalid"
     );
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider,
       requestIdFactory: () => "draft_req_conformance_invalid_correction",
@@ -458,6 +465,7 @@ describe("generation service conformance: idempotency and ownership", () => {
     const provider =
       createDeterministicLessonDraftProvider("invalid-then-valid");
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider,
       requestIdFactory: () => "draft_req_conformance_valid_correction",
@@ -563,6 +571,7 @@ describe("generation service conformance: deadlines and cancellation", () => {
     vi.setSystemTime(new Date("2026-10-27T00:00:00.000Z"));
     const provider = createControlledProvider();
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider,
       requestIdFactory: () => "draft_req_conformance_per_call",
@@ -593,6 +602,7 @@ describe("generation service conformance: deadlines and cancellation", () => {
     vi.setSystemTime(new Date("2026-10-27T00:00:00.000Z"));
     const provider = createControlledProvider();
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider,
       requestIdFactory: () => "draft_req_conformance_correction_deadline",
@@ -626,6 +636,7 @@ describe("generation service conformance: deadlines and cancellation", () => {
     vi.setSystemTime(new Date("2026-10-27T00:00:00.000Z"));
     const provider = createControlledProvider();
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider,
       deadlines: { perCallMs: 150_000 },
@@ -662,6 +673,7 @@ describe("generation service conformance: deadlines and cancellation", () => {
       const provider = createControlledProvider(behavior);
       const persistence = createSeededPersistence();
       const service = createGenerationService({
+        limits: createSeededGenerationLimitStore(),
         persistence,
         provider,
         requestIdFactory: () => "draft_req_conformance_cancel",
@@ -704,6 +716,7 @@ describe("generation service conformance: deadlines and cancellation", () => {
   it("does not add a call when cancelling an already completed request", async () => {
     const provider = createDeterministicLessonDraftProvider();
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider,
       requestIdFactory: () => "draft_req_conformance_cancel_done",
@@ -741,6 +754,7 @@ describe("generation service conformance: retries and moderation", () => {
         },
       };
       const service = createGenerationService({
+        limits: createSeededGenerationLimitStore(),
         persistence: createSeededPersistence(),
         provider,
         requestIdFactory: () => "draft_req_conformance_retry",
@@ -782,6 +796,7 @@ describe("generation service conformance: retries and moderation", () => {
     const persistence = createSeededPersistence();
     let requestNumber = 0;
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence,
       provider,
       safety: {
@@ -828,6 +843,7 @@ describe("generation service conformance: retries and moderation", () => {
     const provider = createDeterministicLessonDraftProvider();
     let requestNumber = 0;
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider,
       safety: {
@@ -860,6 +876,7 @@ describe("generation service conformance: retries and moderation", () => {
   it("does not correct or re-call for an unchanged request after output moderation", async () => {
     const provider = createDeterministicLessonDraftProvider();
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider,
       safety: {
@@ -885,6 +902,7 @@ describe("generation service conformance: retries and moderation", () => {
 
   it("refuses a retry of a moderation-blocked request", async () => {
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
       safety: {

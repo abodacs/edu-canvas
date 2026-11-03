@@ -20,6 +20,7 @@ import {
   snapshotArtifactGateResult,
 } from "@/server/safety/artifact-gate";
 
+import { createSeededGenerationLimitStore } from "@/server/persistence/limits-seeded";
 import {
   handleLessonPreviewRequest,
   previewRefusalSchema,
@@ -168,6 +169,7 @@ const previewRequest = (cookie?: string): Request => {
 const prepareOwnedDraft = async (): Promise<FoundationPersistence> => {
   const persistence = createSeededPersistence();
   await createGenerationService({
+    limits: createSeededGenerationLimitStore(),
     persistence,
     provider: createDeterministicLessonDraftProvider(),
     requestIdFactory: () => draftRequestId,

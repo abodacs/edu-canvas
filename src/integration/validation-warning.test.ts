@@ -9,6 +9,7 @@ import { createSeededPersistence } from "@/server/persistence/seeded";
 import { assertShareable } from "@/server/safety/artifact-enforcement";
 import { syntheticSeed } from "@/server/seed-data";
 
+import { createSeededGenerationLimitStore } from "@/server/persistence/limits-seeded";
 import type { SemanticValidationReport } from "@/server/generation/semantic-validation-contract";
 
 const teacherActor = syntheticTeacherActor({
@@ -37,6 +38,7 @@ const warningReport: SemanticValidationReport = {
 
 const generateWarningOnly = () => {
   return createGenerationService({
+    limits: createSeededGenerationLimitStore(),
     persistence: createSeededPersistence(),
     provider: createDeterministicLessonDraftProvider(),
     semanticValidation: () => Promise.resolve(warningReport),

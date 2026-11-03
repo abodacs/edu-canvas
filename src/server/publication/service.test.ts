@@ -14,6 +14,7 @@ import {
 } from "@/server/persistence/pack-seeded";
 import { createSeededPersistence } from "@/server/persistence/seeded";
 import { syntheticSeed } from "@/server/seed-data";
+import { createSeededGenerationLimitStore } from "@/server/persistence/limits-seeded";
 import { createPublicationService } from "./service";
 import { PublicationError } from "./errors";
 
@@ -66,6 +67,7 @@ interface Fixture {
 const createFixture = async (): Promise<Fixture> => {
   const persistence = createSeededPersistence();
   await createGenerationService({
+    limits: createSeededGenerationLimitStore(),
     persistence,
     provider: createDeterministicLessonDraftProvider(),
     requestIdFactory: () => requestId,
