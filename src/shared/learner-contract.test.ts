@@ -23,6 +23,7 @@ const runResponse = {
     assignedVariantId: "variant_standard",
     assignedSectionId: "section-standard",
     columns: null,
+    language: "en",
     sections: [section, section, section, section],
     stage: "assigned",
     firstResponseStatus: "pending",

@@ -1,14 +1,19 @@
-/* eslint-disable react-doctor/no-fetch-in-effect, unicorn/try-complexity, react-doctor/prefer-useReducer -- The board starts only after the session hook resolves, and each handler owns one network call with its own recovery. The retry reset clears the whole submission at once, so the states change together by design. */
+/* eslint-disable react-doctor/no-fetch-in-effect, unicorn/try-complexity -- The board starts only after the session hook resolves, and each handler owns one network call with its own recovery. The retry reset clears the whole submission at once, so the states change together by design. */
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useAuthSession } from "@/components/auth/use-auth-session";
+import { BidiText } from "@/components/learn/bidi-text";
 import {
-  CheckOutcome,
+  BoardActions,
+  MatchingColumns,
+  ResultPanel,
+} from "@/components/learn/learn-board";
+import {
   NextActivityCard,
   RepeatEvaluationNotice,
-  RevealReport,
 } from "@/components/learn/learn-surfaces";
+import { learnerCopyFor, scoreLine } from "@/components/learn/learner-copy";
 import { csrfHeaderName } from "@/shared/identity-contract";
 import {
   learnerAttemptResponseSchema,
@@ -19,6 +24,7 @@ import type {
   LearnerAttemptResponse,
   LearnerRunResponse,
 } from "@/shared/learner-contract";
+import type { LearnerCopy } from "@/components/learn/learner-copy";
 
 type Phase = "loading" | "ready" | "saving" | "done" | "error";
 
@@ -26,25 +32,25 @@ type Phase = "loading" | "ready" | "saving" | "done" | "error";
 A fetch rejection carries no HTTP status; the sentinel picks the network failure message.
 */
 const statusNetworkFailure = 0;
+const statusUnauthorized = 401;
+const statusForbidden = 403;
+const statusConflict = 409;
+const signInMessage = "Sign in as a student to open this assignment.";
 
-const messageByStatus: Readonly<Record<number, string>> = {
-  401: "Sign in as a student to open this assignment.",
-  403: "This assignment does not belong to your account.",
-  409: "This submission is out of date. Reload the page.",
-};
-
-const messageByCode: Readonly<Record<string, string>> = {
-  ATTEMPT_LIMIT_REACHED:
-    "You have used all three tries for this activity. Your teacher can help from here.",
-};
-
-const messageFor = (status: number, code?: string): string => {
-  const byCode = code === undefined ? undefined : messageByCode[code];
-  return (
-    byCode ??
-    messageByStatus[status] ??
-    "The activity is unavailable. Try again."
-  );
+const messageFor = (
+  copy: LearnerCopy,
+  status: number,
+  code?: string
+): string => {
+  if (code === "ATTEMPT_LIMIT_REACHED") {
+    return copy.attemptLimit;
+  }
+  const byStatus: Readonly<Record<number, string>> = {
+    [statusUnauthorized]: signInMessage,
+    [statusForbidden]: copy.forbidden,
+    [statusConflict]: copy.stale,
+  };
+  return byStatus[status] ?? copy.unavailable;
 };
 
 const readErrorCode = async (
@@ -68,21 +74,42 @@ const post = (path: string, csrf: string, body: unknown): Promise<Response> => {
 const toPairList = (pairs: Readonly<Record<string, string>>) =>
   Object.entries(pairs).map(([sourceId, targetId]) => ({ sourceId, targetId }));
 
-const LearnBoard = ({
-  assignment,
-  variant,
-  csrf,
-}: {
+/**
+#9: where focus goes after an action removes or disables the focused control. Pairing disables every target, Done unmounts itself, and Try again or Clear resets the board, so each names its landing place instead of dropping focus to the document body.
+*/
+type FocusTarget = "first-source" | "next-source" | "reveal" | "error";
+
+const focusSelectors: Readonly<Record<"first-source" | "next-source", string>> =
+  {
+    "first-source": "[data-source]",
+    "next-source": "[data-source][data-paired='false']",
+  };
+
+interface LearnerRunState {
+  readonly phase: Phase;
+  readonly run: LearnerRunResponse | null;
+  readonly result: LearnerAttemptResponse | null;
+  readonly error: string | null;
+  readonly announcement: string;
+  readonly copy: LearnerCopy;
+}
+
+/**
+The run's network lifecycle: start, submit, and retry. It owns the phase and the single announcement the page's live region reads.
+*/
+const useLearnerRun = (input: {
   readonly assignment: string;
   readonly variant: string;
   readonly csrf: string;
+  readonly requestFocus: (target: FocusTarget) => void;
 }) => {
+  const { assignment, variant, csrf, requestFocus } = input;
   const [phase, setPhase] = useState<Phase>("loading");
   const [run, setRun] = useState<LearnerRunResponse | null>(null);
-  const [activeSource, setActiveSource] = useState<string | null>(null);
-  const [pairs, setPairs] = useState<Record<string, string>>({});
   const [result, setResult] = useState<LearnerAttemptResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [announcement, setAnnouncement] = useState("");
+  const copy = learnerCopyFor(run?.lesson.language ?? null);
 
   // One start shape for the page load and the retry replay; the idempotent
   // operation key returns the same run with its current revision.
@@ -94,6 +121,13 @@ const LearnBoard = ({
     });
   };
 
+  const fail = (message: string): void => {
+    setError(message);
+    setAnnouncement(message);
+    setPhase("error");
+    requestFocus("error");
+  };
+
   useEffect(() => {
     let isCurrent = true;
     const start = async (): Promise<void> => {
@@ -103,16 +137,14 @@ const LearnBoard = ({
           return;
         }
         if (!response.ok) {
-          setError(messageFor(response.status));
-          setPhase("error");
+          fail(messageFor(copy, response.status));
           return;
         }
         setRun(learnerRunResponseSchema.parse(await response.json()));
         setPhase("ready");
       } catch {
         if (isCurrent) {
-          setError(messageFor(statusNetworkFailure));
-          setPhase("error");
+          fail(messageFor(copy, statusNetworkFailure));
         }
       }
     };
@@ -123,176 +155,269 @@ const LearnBoard = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- postStartRun reads the same search params as the effect.
   }, [assignment, variant, csrf]);
 
-  if (phase === "error") {
-    return <p className="learn-status">{error}</p>;
-  }
-  if (!run) {
-    return <p className="learn-status">Opening your activity…</p>;
-  }
-
-  const section = run.lesson.sections.find(
-    (candidate) => candidate.id === run.lesson.assignedSectionId
-  );
-  const items = section?.items ?? [];
-  const sources = items.filter((item) => item.role === "source");
-  const targets = items.filter((item) => item.role !== "source");
-  const pairCount = Object.keys(pairs).length;
-  const sourceHeading = run.lesson.columns?.sourceLabel ?? "Fractions";
-  const targetHeading = run.lesson.columns?.targetLabel ?? "Equivalents";
-
-  const submit = async (): Promise<void> => {
+  const submit = async (attempt: {
+    readonly run: LearnerRunResponse;
+    readonly itemId: string;
+    readonly pairs: Readonly<Record<string, string>>;
+  }): Promise<void> => {
     setPhase("saving");
+    setAnnouncement(copy.checking);
     try {
       const response = await post("/api/learner/attempts", csrf, {
-        operationKey: `attempt-${run.runId}-${run.runRevision}`,
+        operationKey: `attempt-${attempt.run.runId}-${attempt.run.runRevision}`,
         assistanceEventIds: [],
         assistanceState: "none",
-        expectedRunRevision: run.runRevision,
-        itemId: sources[0]?.id ?? "",
-        pairs: toPairList(pairs),
+        expectedRunRevision: attempt.run.runRevision,
+        itemId: attempt.itemId,
+        pairs: toPairList(attempt.pairs),
         priorAttemptId: null,
-        runId: run.runId,
+        runId: attempt.run.runId,
       });
       if (!response.ok) {
-        setError(messageFor(response.status, await readErrorCode(response)));
-        setPhase("error");
+        fail(messageFor(copy, response.status, await readErrorCode(response)));
         return;
       }
-      setResult(learnerAttemptResponseSchema.parse(await response.json()));
+      const graded = learnerAttemptResponseSchema.parse(await response.json());
+      setResult(graded);
+      setAnnouncement(
+        `${scoreLine(copy, graded)} ${copy.outcome[graded.correctness]}`
+      );
       setPhase("done");
+      requestFocus("reveal");
     } catch {
-      setError(messageFor(statusNetworkFailure));
-      setPhase("error");
+      fail(messageFor(copy, statusNetworkFailure));
     }
   };
 
   // #7: a retry appends evidence; the stored first response and decision stay.
   // The replayed start returns the current run revision, so the next submit is
   // never stale.
-  const retry = async (): Promise<void> => {
+  const retry = async (onReset: () => void): Promise<void> => {
     setPhase("saving");
     try {
       const response = await postStartRun();
       if (!response.ok) {
-        setError(messageFor(response.status, await readErrorCode(response)));
-        setPhase("error");
+        fail(messageFor(copy, response.status, await readErrorCode(response)));
         return;
       }
       setRun(learnerRunResponseSchema.parse(await response.json()));
-      setPairs({});
-      setActiveSource(null);
+      onReset();
       setResult(null);
       setPhase("ready");
+      requestFocus("first-source");
     } catch {
-      setError(messageFor(statusNetworkFailure));
-      setPhase("error");
+      fail(messageFor(copy, statusNetworkFailure));
     }
   };
 
+  const state: LearnerRunState = {
+    phase,
+    run,
+    result,
+    error,
+    announcement,
+    copy,
+  };
+  return { state, submit, retry, announce: setAnnouncement };
+};
+
+/**
+Moves focus once the render that removed or disabled the focused control has committed. The request lives in a ref: it is not shown, only consumed.
+*/
+const useFocusAfterRender = () => {
+  const pending = useRef<FocusTarget | null>(null);
+  const boardReference = useRef<HTMLElement>(null);
+  const revealHeadingReference = useRef<HTMLHeadingElement>(null);
+  const errorReference = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    const target = pending.current;
+    if (target === null) {
+      return;
+    }
+    pending.current = null;
+    if (target === "reveal") {
+      revealHeadingReference.current?.focus();
+      return;
+    }
+    if (target === "error") {
+      errorReference.current?.focus();
+      return;
+    }
+    const board = boardReference.current;
+    const candidate =
+      board?.querySelector<HTMLButtonElement>(focusSelectors[target]) ??
+      board?.querySelector<HTMLButtonElement>(".learn-submit");
+    candidate?.focus();
+  });
+
+  return {
+    requestFocus: (target: FocusTarget) => {
+      pending.current = target;
+    },
+    boardReference,
+    revealHeadingReference,
+    errorReference,
+  };
+};
+
+/**
+The assigned section's items split into the two columns, with headings.
+*/
+const deriveBoard = (run: LearnerRunResponse, copy: LearnerCopy) => {
+  const section = run.lesson.sections.find(
+    (candidate) => candidate.id === run.lesson.assignedSectionId
+  );
+  const items = section?.items ?? [];
+  return {
+    section,
+    sources: items.filter((item) => item.role === "source"),
+    targets: items.filter((item) => item.role !== "source"),
+    sourceHeading:
+      run.lesson.columns?.sourceLabel ?? copy.sourceHeadingFallback,
+    targetHeading:
+      run.lesson.columns?.targetLabel ?? copy.targetHeadingFallback,
+  };
+};
+
+const LearnBoard = ({
+  assignment,
+  variant,
+  csrf,
+}: {
+  readonly assignment: string;
+  readonly variant: string;
+  readonly csrf: string;
+}) => {
+  const {
+    requestFocus,
+    boardReference,
+    revealHeadingReference,
+    errorReference,
+  } = useFocusAfterRender();
+  const { state, submit, retry, announce } = useLearnerRun({
+    assignment,
+    variant,
+    csrf,
+    requestFocus,
+  });
+  const [activeSource, setActiveSource] = useState<string | null>(null);
+  const [pairs, setPairs] = useState<Record<string, string>>({});
+  const { phase, run, result, error, announcement, copy } = state;
+
+  const liveRegion = <output className="sr-only">{announcement}</output>;
+
+  if (phase === "error") {
+    return (
+      <>
+        {liveRegion}
+        <p
+          className="learn-status"
+          ref={errorReference}
+          role="alert"
+          tabIndex={-1}
+        >
+          {error}
+        </p>
+      </>
+    );
+  }
+  if (!run) {
+    return (
+      <output className="learn-status" aria-busy="true">
+        Opening your activity…
+      </output>
+    );
+  }
+
+  const { direction } = copy;
+  const { section, sources, targets, sourceHeading, targetHeading } =
+    deriveBoard(run, copy);
+  const pairCount = Object.keys(pairs).length;
+
+  const resetBoard = (): void => {
+    setPairs({});
+    setActiveSource(null);
+    announce(copy.progress(0, sources.length));
+  };
+
+  const pairWith = (targetId: string): void => {
+    if (activeSource === null) {
+      return;
+    }
+    const next = { ...pairs, [activeSource]: targetId };
+    setPairs(next);
+    setActiveSource(null);
+    announce(copy.progress(Object.keys(next).length, sources.length));
+    requestFocus("next-source");
+  };
+
   return (
-    <section className="learn-card" aria-labelledby="learn-heading">
-      <h1 id="learn-heading">{section?.title ?? "Matching"}</h1>
-      <p className="learn-body">{section?.body}</p>
+    <section
+      className="learn-card"
+      aria-labelledby="learn-heading"
+      dir={direction}
+      lang={run.lesson.language ?? undefined}
+      ref={boardReference}
+    >
+      {liveRegion}
+      <h1 id="learn-heading">
+        <BidiText
+          text={section?.title ?? copy.headingFallback}
+          direction={direction}
+        />
+      </h1>
+      {section?.body ? (
+        <p className="learn-body">
+          <BidiText text={section.body} direction={direction} />
+        </p>
+      ) : null}
 
-      <div className="learn-board">
-        <div>
-          <h2 className="learn-column-heading">{sourceHeading}</h2>
-          <ul className="learn-list">
-            {sources.map((item) => {
-              const isActive = activeSource === item.id;
-              const isPaired = pairs[item.id] !== undefined;
-              return (
-                <li key={item.id}>
-                  <button
-                    aria-pressed={isActive}
-                    className="learn-item"
-                    type="button"
-                    onClick={() => {
-                      setActiveSource(item.id);
-                    }}
-                  >
-                    {item.label}
-                    {isPaired ? " · matched" : ""}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-        <div>
-          <h2 className="learn-column-heading">{targetHeading}</h2>
-          <ul className="learn-list">
-            {targets.map((item) => {
-              return (
-                <li key={item.id}>
-                  <button
-                    className="learn-item"
-                    disabled={activeSource === null}
-                    type="button"
-                    onClick={() => {
-                      if (activeSource === null) {
-                        return;
-                      }
-                      setPairs((current) => {
-                        return {
-                          ...current,
-                          [activeSource]: item.id,
-                        };
-                      });
-                      setActiveSource(null);
-                    }}
-                  >
-                    {item.label}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      </div>
+      <MatchingColumns
+        copy={copy}
+        sourceHeading={sourceHeading}
+        targetHeading={targetHeading}
+        sources={sources}
+        targets={targets}
+        pairs={pairs}
+        activeSource={activeSource}
+        isLocked={phase === "saving" || phase === "done"}
+        onSelectSource={setActiveSource}
+        onSelectTarget={pairWith}
+      />
 
-      <p className="learn-status">
-        {pairCount} of {sources.length} matched.
-      </p>
+      <p className="learn-status">{copy.progress(pairCount, sources.length)}</p>
 
       {phase === "ready" && run.lesson.firstResponseStatus === "submitted" ? (
-        <RepeatEvaluationNotice />
+        <RepeatEvaluationNotice copy={copy} />
       ) : null}
 
       {phase === "done" && result ? (
-        <div className="learn-result-panel">
-          <output className="learn-result">
-            Score {result.score}. {result.correctMatches} of{" "}
-            {result.requiredMatches} correct ({result.correctness}).
-          </output>
-          <CheckOutcome correctness={result.correctness} />
-          <RevealReport reveal={result.reveal} />
-          <NextActivityCard activity={result.nextActivity} />
-          <button
-            className="learn-retry"
-            type="button"
-            onClick={() => {
-              void retry();
-            }}
-          >
-            Try again
-          </button>
-        </div>
-      ) : (
-        <button
-          className="learn-submit"
-          disabled={phase === "saving" || pairCount === 0}
-          type="button"
-          onClick={() => {
-            void submit();
+        <ResultPanel
+          copy={copy}
+          result={result}
+          revealHeadingReference={revealHeadingReference}
+          onRetry={() => {
+            void retry(resetBoard);
           }}
-        >
-          {phase === "saving" ? "Checking…" : "Done"}
-        </button>
+        />
+      ) : (
+        <BoardActions
+          copy={copy}
+          isSaving={phase === "saving"}
+          hasPairs={pairCount > 0}
+          onSubmit={() => {
+            void submit({ run, itemId: sources[0]?.id ?? "", pairs });
+          }}
+          onClear={() => {
+            resetBoard();
+            requestFocus("first-source");
+          }}
+        />
       )}
 
       {phase !== "done" && run.lesson.nextActivity ? (
-        <NextActivityCard activity={run.lesson.nextActivity} />
+        <NextActivityCard activity={run.lesson.nextActivity} copy={copy} />
       ) : null}
     </section>
   );

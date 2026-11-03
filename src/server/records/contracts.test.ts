@@ -465,6 +465,36 @@ describe("record contracts", () => {
     ).toBeTruthy();
   });
 
+  it("carries the approved pack language to the learner page", () => {
+    const run = learnerRunSchema.parse({
+      id: "run_1",
+      tenantId,
+      schemaVersion: "learner-run-v1",
+      assignmentId: "assignment_1",
+      learnerId: "learner_1",
+      publicationId: "publication_1",
+      assignedVariantId: "variant_standard",
+      stage: "assigned",
+      firstResponseStatus: "pending",
+      revision: 0,
+      nextActivity: null,
+      createdAt,
+      updatedAt: createdAt,
+    });
+    const legacy = lessonVersionSchema.parse({
+      ...lessonVersion,
+      approvedCopy: null,
+    });
+
+    expect(
+      projectStudentLesson({
+        version: lessonVersionSchema.parse(lessonVersion),
+        run,
+      }).language
+    ).toBe("en");
+    expect(projectStudentLesson({ version: legacy, run }).language).toBeNull();
+  });
+
   it("teacher and student projections omit every private field", () => {
     const version = lessonVersionSchema.parse(lessonVersion);
     const run = learnerRunSchema.parse({

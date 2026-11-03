@@ -1,43 +1,56 @@
+import { BidiText } from "./bidi-text";
+import type { Ref } from "react";
+
+import type { LearnerCopy } from "./learner-copy";
 import type { LearnerAttemptResponse } from "@/shared/learner-contract";
 
 /**
 #7 learner reveal surfaces. Every string is either approved copy arriving in
-the attempt response or a fixed local template; the component adds none.
+the attempt response or a fixed template from the learner copy; the component
+adds none.
 */
-
-const outcomeCopy = {
-  correct: "You matched every pair.",
-  partial: "Some matches are still missing.",
-  incorrect: "Not every match is right yet.",
-} as const satisfies Record<LearnerAttemptResponse["correctness"], string>;
 
 export const CheckOutcome = ({
   correctness,
+  copy,
 }: {
   readonly correctness: LearnerAttemptResponse["correctness"];
+  readonly copy: LearnerCopy;
 }) => {
   return (
-    <output className="learn-outcome" data-correctness={correctness}>
-      {outcomeCopy[correctness]}
-    </output>
-  );
-};
-
-export const RepeatEvaluationNotice = () => {
-  return (
-    <p className="learn-repeat" role="note">
-      This check repeats from the start. Your first response stays on record.
+    <p className="learn-outcome" data-correctness={correctness}>
+      {copy.outcome[correctness]}
     </p>
   );
 };
-export const RevealReport = ({
-  reveal,
+
+export const RepeatEvaluationNotice = ({
+  copy,
 }: {
-  readonly reveal: LearnerAttemptResponse["reveal"];
+  readonly copy: LearnerCopy;
 }) => {
   return (
+    <p className="learn-repeat" role="note">
+      {copy.repeatNotice}
+    </p>
+  );
+};
+
+export const RevealReport = ({
+  reveal,
+  copy,
+  headingRef,
+}: {
+  readonly reveal: LearnerAttemptResponse["reveal"];
+  readonly copy: LearnerCopy;
+  readonly headingRef?: Ref<HTMLHeadingElement>;
+}) => {
+  const { direction } = copy;
+  return (
     <section className="learn-reveal" aria-labelledby="learn-reveal-heading">
-      <h2 id="learn-reveal-heading">Your check</h2>
+      <h2 id="learn-reveal-heading" ref={headingRef} tabIndex={-1}>
+        {copy.revealHeading}
+      </h2>
       <ul className="learn-pairs">
         {reveal.pairs.map((pair) => {
           return (
@@ -47,10 +60,12 @@ export const RevealReport = ({
               data-correct={pair.correct ? "true" : "false"}
             >
               <span>
-                {pair.sourceLabel} to {pair.targetLabel}
+                <BidiText text={pair.sourceLabel} direction={direction} />{" "}
+                {copy.pairJoiner}{" "}
+                <BidiText text={pair.targetLabel} direction={direction} />
               </span>
               <span className="learn-pair-state">
-                {pair.correct ? "Correct" : "Not yet"}
+                {pair.correct ? copy.pairCorrect : copy.pairNotYet}
               </span>
             </li>
           );
@@ -58,15 +73,24 @@ export const RevealReport = ({
       </ul>
       {reveal.unresolved.length > 0 ? (
         <p className="learn-unresolved">
-          Still to match:{" "}
-          {reveal.unresolved.map((entry) => entry.sourceLabel).join(", ")}
+          {copy.stillToMatch}{" "}
+          <BidiText
+            text={reveal.unresolved
+              .map((entry) => entry.sourceLabel)
+              .join(copy.listSeparator)}
+            direction={direction}
+          />
         </p>
       ) : null}
       {reveal.feedback === null ? null : (
-        <p className="learn-feedback">{reveal.feedback}</p>
+        <p className="learn-feedback">
+          <BidiText text={reveal.feedback} direction={direction} />
+        </p>
       )}
       {reveal.connection === null ? null : (
-        <p className="learn-connection">{reveal.connection}</p>
+        <p className="learn-connection">
+          <BidiText text={reveal.connection} direction={direction} />
+        </p>
       )}
     </section>
   );
@@ -74,19 +98,21 @@ export const RevealReport = ({
 
 export const NextActivityCard = ({
   activity,
+  copy,
 }: {
   readonly activity: LearnerAttemptResponse["nextActivity"];
+  readonly copy: LearnerCopy;
 }) => {
   const isWaiting = activity === null || activity.purpose === "pause";
   return (
     <section className="learn-next" aria-labelledby="learn-next-heading">
-      <h2 id="learn-next-heading">What next</h2>
-      {activity === null ? null : <p>{activity.reason}</p>}
-      {isWaiting ? (
-        <p>Your teacher is choosing the next activity.</p>
-      ) : (
-        <p>Your next approved activity is ready.</p>
+      <h2 id="learn-next-heading">{copy.nextHeading}</h2>
+      {activity === null ? null : (
+        <p>
+          <BidiText text={activity.reason} direction={copy.direction} />
+        </p>
       )}
+      <p>{isWaiting ? copy.nextWaiting : copy.nextReady}</p>
     </section>
   );
 };
