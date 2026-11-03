@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   A2UI_CATALOG_ID,
   FRACTIONS_CATALOG_ID,
+  a2uiCatalogVersionForId,
   validateA2UIMessage,
 } from "./a2ui-contract";
 
@@ -328,6 +329,31 @@ describe("fractions-v2 catalog contract", () => {
     expect(rejected).toMatchObject({
       ok: false,
       code: "UNSUPPORTED_CATALOG",
+    });
+  });
+
+  // #110: `edu-canvas-matching-v0` is a retired fixture identifier, not a
+  // second catalog. A record that still carries it gets the documented
+  // fail-closed diagnostic instead of rendering under a catalog no reader
+  // publishes; the identifier is never aliased to `matching-v1`.
+  it("fails closed on the retired fixture catalog identifier", () => {
+    const retiredCatalogId =
+      "https://edu-canvas.app/a2ui/v0.9.1/catalogs/edu-canvas-matching-v0";
+
+    expect(a2uiCatalogVersionForId(retiredCatalogId)).toBeUndefined();
+
+    const rejected = validateA2UIMessage({
+      version: "v0.9.1",
+      createSurface: {
+        surfaceId: "preview-1",
+        catalogId: retiredCatalogId,
+      },
+    });
+
+    expect(rejected).toMatchObject({
+      ok: false,
+      code: "UNSUPPORTED_CATALOG",
+      message: "This preview catalog version is not supported.",
     });
   });
 
