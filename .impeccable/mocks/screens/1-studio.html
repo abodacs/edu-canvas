@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="base.css" />
     <style>
       .studio-h {
-        font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.375rem);
+        font-size: clamp(2rem, 1.5rem + 1.8vw, 2.375rem);
       }
       /* Drafts exist: the composer collapses to one summary line. */
       .summary {
@@ -72,14 +72,15 @@
         resize: vertical;
         background: transparent;
         font: 400 var(--fs-lead) / 1.45 var(--sans);
-        caret-color: var(--clay);
+        caret-color: var(--ink);
       }
-      /* The whole composer is the focus target, so the ring cannot be suppressed. */
-      .write:focus-within {
+      /* The card is the focus target, so the field does not draw a second ring. */
+      .composer:focus-within {
         outline: 2px solid var(--ink);
         outline-offset: 3px;
-        border-start-start-radius: var(--r-card);
-        border-start-end-radius: var(--r-card);
+      }
+      .write textarea:focus-visible {
+        outline: none;
       }
       .count {
         text-align: end;
@@ -191,7 +192,7 @@
         </div>
         <div class="acts">
           <button type="button" class="ghost">Edit objective</button>
-          <button type="button" class="btn secondary">
+          <button type="button" class="ghost">
             Draft again<span class="sr-only">
               (replaces unapproved variants)</span
             >
@@ -394,7 +395,7 @@
       <p class="synthetic" style="margin-block: var(--s-8) var(--s-2)">
         State before the first draft: the composer is open
       </p>
-      <form class="card lift" aria-label="New lesson">
+      <form class="card lift composer" aria-label="New lesson">
         <div class="write">
           <label for="objective">What should students practice?</label>
           <textarea

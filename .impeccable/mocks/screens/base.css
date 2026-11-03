@@ -329,7 +329,7 @@ h1 em {
 }
 .btn[disabled] {
   background: var(--sunk-2);
-  color: var(--ink-3);
+  color: var(--ink-2);
   cursor: not-allowed;
 }
 .btn.ink {
@@ -354,7 +354,7 @@ h1 em {
   gap: var(--s-2);
   min-block-size: 36px;
   padding: var(--s-1) var(--s-3);
-  border: 1px solid var(--line-control);
+  border: 1px solid var(--ink-3);
   border-radius: 999px;
   background: var(--surface);
   color: var(--ink);
@@ -419,9 +419,9 @@ h1 em {
   border-color: var(--ink-3);
 }
 .chip[aria-pressed="true"] {
-  background: var(--clay-soft);
-  border-color: color-mix(in oklch, var(--clay) 55%, var(--line));
-  color: var(--clay-deep);
+  background: var(--sunk-2);
+  border-color: var(--ink);
+  color: var(--ink);
   font-weight: 600;
 }
 .chip[disabled] {
@@ -923,8 +923,7 @@ h1 em {
     border: 0;
     padding: var(--s-1) var(--s-4);
   }
-  .table td:empty,
-  .table td.none {
+  .table td:empty {
     display: none;
   }
 }
@@ -992,9 +991,9 @@ h1 em {
   cursor: inherit;
 }
 .chip-radio:has(input:checked) {
-  background: var(--clay-soft);
-  border-color: color-mix(in oklch, var(--clay) 55%, var(--line));
-  color: var(--clay-deep);
+  background: var(--sunk-2);
+  border-color: var(--ink);
+  color: var(--ink);
   font-weight: 600;
 }
 .chip-radio:has(input:focus-visible) {

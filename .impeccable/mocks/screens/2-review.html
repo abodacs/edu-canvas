@@ -15,7 +15,7 @@
         margin-block: var(--s-3) var(--s-4);
       }
       .head h1 {
-        font-size: clamp(1.5rem, 1.25rem + 1vw, 2rem);
+        font-size: 2rem;
         max-inline-size: none;
       }
       .head p {
@@ -182,16 +182,16 @@
       .ack {
         display: flex;
         gap: var(--s-3);
-        align-items: flex-start;
+        align-items: center;
+        min-block-size: 44px;
         font-size: var(--fs-body);
         line-height: 1.5;
       }
       .ack input {
         inline-size: 22px;
         block-size: 22px;
-        accent-color: var(--clay);
+        accent-color: var(--ink);
         flex: none;
-        margin-block-start: 2px;
       }
       .gate .row {
         display: flex;
@@ -269,8 +269,19 @@
         .layout {
           grid-template-columns: 1fr;
         }
-        .gate {
-          position: static;
+        .gate .seal {
+          padding: var(--s-4);
+          gap: var(--s-2);
+        }
+        .gate .seal > p {
+          display: none;
+        }
+        .gate .ack {
+          font-size: var(--fs-secondary);
+        }
+        .gate .btn {
+          min-block-size: 46px;
+          font-size: var(--fs-body);
         }
         .doc {
           padding: var(--s-5) var(--s-5) 0;
@@ -329,7 +340,7 @@
       </div>
 
       <p class="count-line">
-        <span class="pill ok">1 of 4 approved</span
+        <span class="pill idle">1 of 4 approved</span
         ><span class="muted small">D is ready to publish</span>
       </p>
       <ol class="rail" aria-label="Variants">
