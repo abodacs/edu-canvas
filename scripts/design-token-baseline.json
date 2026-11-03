@@ -2,7 +2,7 @@
   "note": "Ratchet ceiling for scripts/verify-design-tokens.ts. Counts may only fall; regenerate with --update after a reduction.",
   "rules": {
     "raw-color": {
-      "src/styles.css": 38
+      "src/styles.css": 21
     },
     "literal-radius": {
       "src/styles.css": 83
@@ -22,10 +22,8 @@
     "undefined-token": {
       "src/styles.css  --font-mono": 1,
       "src/styles.css  --surface": 1,
-      "src/styles.css  --surface-muted": 1,
-      "src/styles.css  --success": 1,
-      "src/styles.css  --danger": 1,
-      "src/styles.css  --text": 1
+      "src/styles.css  --text": 1,
+      "src/styles.css  --surface-muted": 1
     },
     "inline-style-literal": {}
   }

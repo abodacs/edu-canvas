@@ -2,6 +2,9 @@ import { readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { clampCeiling, totalOf } from "./design-token-ratchet.ts";
+import type { Counts } from "./design-token-ratchet.ts";
+
 // Design-token gate for the UX revamp.
 //
 // The warm direction in b5472de never reached src/: it lived in
@@ -46,7 +49,6 @@ const RULES = [
 ] as const;
 
 type RuleId = (typeof RULES)[number];
-type Counts = Record<string, number>;
 interface Baseline {
   readonly note: string;
   readonly rules: Record<RuleId, Counts>;
@@ -265,18 +267,29 @@ const scanTsx = async (): Promise<Counts> => {
   return counts;
 };
 
-const totalOf = (perFile: Counts | undefined): number =>
-  Object.values(perFile ?? {}).reduce((sum, value) => sum + value, 0);
+const readBaseline = async (): Promise<Baseline | undefined> => {
+  try {
+    return JSON.parse(await readFile(BASELINE_PATH, "utf-8")) as Baseline;
+  } catch {
+    return undefined;
+  }
+};
 
 const writeBaseline = async (counts: Record<string, Counts>): Promise<void> => {
+  const previous = await readBaseline();
+  const { rules, refused } = clampCeiling(RULES, previous?.rules, counts);
   const next: Baseline = {
     note: "Ratchet ceiling for scripts/verify-design-tokens.ts. Counts may only fall; regenerate with --update after a reduction.",
-    rules: Object.fromEntries(
-      RULES.map((rule) => [rule, counts[rule] ?? {}])
-    ) as Record<RuleId, Counts>,
+    rules: rules as Record<RuleId, Counts>,
   };
   await writeFile(BASELINE_PATH, `${JSON.stringify(next, null, 2)}\n`, "utf-8");
   console.log(`Updated ${relative(projectRoot, BASELINE_PATH)}`);
+  for (const entry of refused) {
+    console.error(`  kept old ceiling, count grew: ${entry}`);
+  }
+  if (refused.length > 0) {
+    process.exitCode = 1;
+  }
 };
 
 const report = (
@@ -299,7 +312,7 @@ const report = (
   return grown;
 };
 
-const main = async (): Promise<string[]> => {
+const main = async (): Promise<string[] | null> => {
   const { counts, declaredCount } = await scanStylesheet();
   const current = { ...counts };
   const inline = await scanTsx();
@@ -309,7 +322,7 @@ const main = async (): Promise<string[]> => {
 
   if (process.argv.includes("--update")) {
     await writeBaseline(current);
-    return [];
+    return null;
   }
 
   console.log(`Design tokens: ${declaredCount} declarations in src/styles.css`);
@@ -320,7 +333,9 @@ const main = async (): Promise<string[]> => {
 };
 
 const grown = await main();
-if (grown.length === 0) {
+if (grown === null) {
+  // --update reported its own outcome and exit code.
+} else if (grown.length === 0) {
   console.log("\nDesign-token ratchet holds.");
 } else {
   const lines = grown.map((entry) => `  - ${entry}`);
@@ -331,4 +346,6 @@ if (grown.length === 0) {
       `If the change is genuinely unavoidable, that is a design decision: raise it in review, do not edit the baseline.`
   );
 }
-process.exitCode = grown.length > 0 ? 1 : 0;
+if (grown !== null) {
+  process.exitCode = grown.length > 0 ? 1 : 0;
+}
