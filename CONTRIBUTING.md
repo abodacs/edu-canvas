@@ -19,7 +19,7 @@ Open `http://localhost:3000`. Every environment requires PostgreSQL and a server
 
 See the [foundation runbook](docs/foundation-runbook.md) for environment overrides, Git worktrees, and PostgreSQL setup.
 
-Keep private answer keys, mastery, permissions, and credentials on the server. Use synthetic examples in contributions. Preserve the [architecture boundaries](docs/architecture-harness.md) and [safety boundaries](README.md#safety-boundaries-non-negotiable-even-under-deadline-pressure).
+Keep private answer keys, mastery, permissions, and credentials on the server. Use synthetic examples in contributions. Preserve the [architecture boundaries](docs/architecture-harness.md) and [safety boundaries](README.md#safety-boundaries).
 
 ## Write an issue someone can act on
 
