@@ -2,13 +2,41 @@
   "pack": "delegation",
   "version": "v0",
   "mode": "full",
-  "generatedAt": "2026-11-03T17:41:59.653Z",
-  "applicationRevision": "50820341907f189c5b005514deb54665c56f68f2",
+  "generatedAt": "2026-11-03T17:56:08.724Z",
+  "applicationRevision": "508f7fec920e4d93057a8940aff1a2ea15a3a10d",
   "pins": {
     "caseVersion": "v0",
     "provider": "layer A: none (in-process); layer B-det: deterministic fixture provider (orchestration only); B-browser/B-live: see results evidence"
   },
   "cases": [
+    {
+      "id": "ac-boundary-empty",
+      "practice": "S0",
+      "layer": "B-browser",
+      "status": "executed",
+      "score": 2,
+      "expected": "A teacher scoped to the other tenant sees only the designed empty screen; no cross-tenant row renders (AC3, AC6).",
+      "observed": "Designed empty heading=true; result table present=false.",
+      "evidence": [
+        "results/s0/s0-16-ac-empty.png",
+        "results/s0/s0-runner-log.txt"
+      ],
+      "flipCondition": null
+    },
+    {
+      "id": "ac-surface",
+      "practice": "S0",
+      "layer": "B-browser",
+      "status": "executed",
+      "score": 2,
+      "expected": "The dashboard renders the run from the completed loop: provisional label, reason with purpose, rule version plus evidence hash, and the read-only preview (AC1 read side, AC2 surface, AC4, AC5).",
+      "observed": "All-results table present=true; provisional note=true; reason=\"The learner needs another supported example.\"; provenance=\"Rule next-activity-rule-591a157cd85e · evidence 88bd2951264664a7a70b9d44ee303f717006f832af3240db31d78dcb0899059f\"; preview present=true.",
+      "evidence": [
+        "results/s0/s0-16-ac-surface.png",
+        "results/s0/s0-runner-log.txt"
+      ],
+      "flipCondition": null
+    },
     {
       "id": "dg-1-challenge",
       "practice": "DG1",
@@ -136,7 +164,7 @@
       "status": "executed",
       "score": 2,
       "expected": "Four ready variants render as individually selectable cards; the teacher's choice is recorded and the review surface opens.",
-      "observed": "4 variant cards rendered; titles observed: [\"Standard Matching A\",\"Standard Matching B\",\"Scaffold Matching\",\"Challenge Matching\"]; distinct titles: 4; teacher checked the first card and opened review.",
+      "observed": "4 variant cards rendered; titles observed: [\"Equivalent fractions matching - standard 1\",\"Equivalent fractions matching - standard 2\",\"Equivalent fractions matching - scaffold\",\"Equivalent fractions matching - challenge\"]; distinct titles: 4; teacher checked the first card and opened review.",
       "evidence": [
         "results/s0/s0-07-generation-outcome.png",
         "results/s0/s0-08-variant-chosen.png",
@@ -205,7 +233,7 @@
       "status": "executed",
       "score": 2,
       "expected": "Full loop completes with evidence: sign-in, moderation block, recovery revise, ready-for-review, approvals, publish, learner attempt, reveal of the approved copy.",
-      "observed": "All steps completed. Publish outcome=linked (/learn?assignment=01a1a27f-feac-7f79-a0dd-67f53f47d5d7&variant=variant_standard_01). Attempt submitted (1 of 3 matched.); board 3 sources / 3 targets.",
+      "observed": "All steps completed. Publish outcome=linked (/learn?assignment=01a1a28d-4f95-7e72-b322-45f5752727c3&variant=variant_standard_01). Attempt submitted (1 of 3 matched.); board 3 sources / 3 targets.",
       "evidence": [
         "results/s0/s0-06-moderation-block.png",
         "results/s0/s0-07-generation-outcome.png",
