@@ -487,7 +487,9 @@ const main = async () => {
         ? `${BASE_URL}/learn?assignment=${String(packAssignmentId)}`
         : `${BASE_URL}${String(learnerLink)}`
     );
-    await learnerPage.waitForLoadState("networkidle");
+    // /learn holds a connection open after load, so networkidle never
+    // settles; the learn-heading check below is the real readiness gate.
+    await learnerPage.waitForLoadState("domcontentloaded");
     // The learn surfaces fade in; capture after the transition settles.
     await learnerPage.waitForTimeout(1500);
     const learnerText = await learnerPage.locator("body").innerText();
@@ -497,7 +499,6 @@ const main = async () => {
         ? "activity opened"
         : `no learner activity opened; page says: ${learnerText.replaceAll("\n", " | ").slice(0, 300)}`;
     log(`learner outcome: ${learnerOutcome}`);
-    await learnerContext.close();
 
     let attemptTrace = "";
     let revealScore = 0;
@@ -529,6 +530,7 @@ const main = async () => {
     }
 
     const isLearnerBlocked = learnerOutcome !== "activity opened";
+    await learnerContext.close();
     results.push({
       id: "s0-smoke",
       practice: "S0",
