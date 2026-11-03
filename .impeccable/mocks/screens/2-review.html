@@ -15,7 +15,6 @@
         margin-block: var(--s-3) var(--s-4);
       }
       .head h1 {
-        font-size: 2rem;
         max-inline-size: none;
       }
       .head p {
@@ -73,7 +72,7 @@
         align-items: start;
       }
       .doc {
-        padding: var(--s-6) var(--s-7) 0;
+        padding: var(--s-6) var(--s-7) 120px;
       }
       .doc .std {
         font-size: var(--fs-meta);
@@ -153,17 +152,43 @@
         position: sticky;
         inset-block-end: 0;
         z-index: 5;
-        margin-block-start: var(--s-5);
+        margin-block-start: var(--s-4);
       }
-      .gate .seal {
-        box-shadow: 0 -14px 30px -22px rgb(31 29 26 / 0.45);
-      }
-      .gate .seal-top {
+      .gate-bar {
         display: flex;
         flex-wrap: wrap;
-        align-items: baseline;
-        justify-content: space-between;
+        align-items: center;
         gap: var(--s-2) var(--s-4);
+        padding: var(--s-3) var(--s-4);
+        background: var(--surface);
+        box-shadow: 0 -14px 30px -22px rgb(31 29 26 / 0.45);
+      }
+      .gate-title {
+        font: 500 var(--fs-heading) / 1.25 var(--serif);
+      }
+      .gate-bar .why {
+        flex: 1 1 16ch;
+        font-size: var(--fs-secondary);
+        color: var(--ink-2);
+      }
+      .approve-checks {
+        display: grid;
+        scroll-margin-block-end: 120px;
+        gap: var(--s-2);
+        margin-block-start: var(--s-4);
+        padding-block-start: var(--s-4);
+        border-block-start: 1px solid var(--line);
+      }
+      .approve-checks fieldset {
+        display: grid;
+        gap: var(--s-1);
+        margin-block-start: var(--s-2);
+      }
+      .approve-checks legend {
+        padding: 0;
+        margin-block-end: var(--s-1);
+        font-size: var(--fs-body);
+        font-weight: 600;
       }
       .gate fieldset {
         border: 0;
@@ -269,19 +294,11 @@
         .layout {
           grid-template-columns: 1fr;
         }
-        .gate .seal {
-          padding: var(--s-4);
-          gap: var(--s-2);
+        .gate-bar {
+          padding: var(--s-2) var(--s-3);
         }
-        .gate .seal > p {
-          display: none;
-        }
-        .gate .ack {
-          font-size: var(--fs-secondary);
-        }
-        .gate .btn {
+        .gate-bar .btn {
           min-block-size: 46px;
-          font-size: var(--fs-body);
         }
         .doc {
           padding: var(--s-5) var(--s-5) 0;
@@ -439,6 +456,27 @@
             <p>Is 3/6 the same amount as 1/2? Use a bar to show why.</p>
             <button class="ghost edit">Edit section</button>
           </section>
+          <section class="approve-checks" aria-labelledby="ap-legend">
+            <h2 class="seal-h" id="ap-legend">
+              Before you approve A · version 2
+            </h2>
+            <p class="small muted">
+              Approval is the trust boundary: this exact version is what a
+              learner can receive. A later edit makes version 3; version 2 stays
+              on record.
+            </p>
+            <fieldset>
+              <legend>Two things to confirm first</legend>
+              <label class="ack"
+                ><input type="checkbox" />My edit still fits “Check for
+                understanding”</label
+              >
+              <label class="ack"
+                ><input type="checkbox" />I've seen that unit fractions
+                (3.NF.A.1) aren't in the source</label
+              >
+            </fieldset>
+          </section>
         </article>
 
         <aside class="side" aria-label="Evidence for this variant">
@@ -550,38 +588,13 @@
       </div>
 
       <div class="gate">
-        <section class="seal" aria-labelledby="ap-legend">
-          <div class="seal-top">
-            <h2 class="seal-h" id="ap-legend">Approve A · version 2</h2>
-            <span class="pill warn">Not approved yet</span>
-          </div>
-          <p class="small muted">
-            Approval is the trust boundary: this exact version is what a learner
-            can receive. A later edit makes version 3; version 2 stays on
-            record.
-          </p>
-          <fieldset>
-            <legend>Two things to confirm first</legend>
-            <label class="ack"
-              ><input type="checkbox" />My edit still fits “Check for
-              understanding”</label
-            >
-            <label class="ack"
-              ><input type="checkbox" />I've seen that unit fractions (3.NF.A.1)
-              aren't in the source</label
-            >
-          </fieldset>
-          <div class="row">
-            <button class="btn" aria-disabled="true" aria-describedby="ap-why">
-              Approve version 2
-            </button>
-            <span class="why" id="ap-why"
-              ><b>2 confirmations left.</b> Both must be confirmed before this
-              version can be approved. Nothing reaches a learner until you
-              publish.</span
-            >
-          </div>
-        </section>
+        <div class="seal gate-bar">
+          <span class="gate-title">Approve A · version 2</span>
+          <span class="why" id="ap-why">2 confirmations left</span>
+          <button class="btn" aria-disabled="true" aria-describedby="ap-why">
+            Approve version 2
+          </button>
+        </div>
       </div>
 
       <p class="synthetic" style="margin-block: var(--s-7) var(--s-2)">

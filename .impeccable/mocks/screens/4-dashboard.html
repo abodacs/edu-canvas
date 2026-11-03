@@ -93,6 +93,13 @@
         color: var(--ink-2);
       }
       @media (width <= 720px) {
+        .table td[data-label]::before {
+          content: attr(data-label);
+          display: block;
+          font-size: var(--fs-micro);
+          font-weight: 600;
+          color: var(--ink-2);
+        }
         .search {
           margin: 0;
           inline-size: 100%;
@@ -140,7 +147,7 @@
             Start with what needs you. Everything else is below.
           </p>
         </div>
-        <a href="1-studio.html" class="btn"
+        <a href="1-studio.html" class="btn secondary"
           >New lesson<svg
             width="16"
             height="16"
@@ -165,7 +172,7 @@
               <b>Review 4 drafts</b
               ><span>Fractions on a number line · 3.NF.A.2 · 1 warning</span>
             </div>
-            <a class="btn secondary" href="2-review.html">Review drafts</a>
+            <a class="btn" href="2-review.html">Review drafts</a>
           </li>
           <li>
             <div>
@@ -227,52 +234,62 @@
           </thead>
           <tbody>
             <tr>
-              <td class="lesson">
+              <td class="lesson" data-label="Lesson">
                 <b>Equivalent fractions</b
                 ><span>4.NF.A.1 · published 31 Oct</span>
               </td>
-              <td><span class="pill ok">Published</span></td>
-              <td class="class">
+              <td data-label="Status">
+                <span class="pill ok">Published</span>
+              </td>
+              <td class="class" data-label="Assigned to">
                 <b>Class 4B · 26 learners</b
                 ><span>A 6 · B 4 · D 14 · 2 not assigned</span>
               </td>
-              <td class="reason">
+              <td class="reason" data-label="Results so far">
                 19 finished · 16 ready for 4.NF.A.2 · 3 need another go
               </td>
               <td><a class="ghost" href="#">Open</a></td>
             </tr>
             <tr>
-              <td class="lesson">
+              <td class="lesson" data-label="Lesson">
                 <b>Unit fractions warm-up</b
                 ><span>3.NF.A.1 · published 28 Oct</span>
               </td>
-              <td><span class="pill ok">Published</span></td>
-              <td class="class">
+              <td data-label="Status">
+                <span class="pill ok">Published</span>
+              </td>
+              <td class="class" data-label="Assigned to">
                 <b>Class 4B · 26 learners</b><span>D 26</span>
               </td>
-              <td class="reason">All 26 finished · 21 ready to move on</td>
+              <td class="reason" data-label="Results so far">
+                All 26 finished · 21 ready to move on
+              </td>
               <td><a class="ghost" href="#">Open</a></td>
             </tr>
             <tr>
-              <td class="lesson">
+              <td class="lesson" data-label="Lesson">
                 <b>Fraction bars check</b
                 ><span>4.NF.A.1 · published 24 Oct</span>
               </td>
-              <td><span class="pill ok">Published</span></td>
-              <td class="class">
+              <td data-label="Status">
+                <span class="pill ok">Published</span>
+              </td>
+              <td class="class" data-label="Assigned to">
                 <b>Small group · 5 learners</b><span>A 5</span>
               </td>
-              <td class="reason">Not started · assigned 3 days ago</td>
+              <td class="reason" data-label="Results so far">
+                Not started · assigned 3 days ago
+              </td>
               <td><a class="ghost" href="#">Open</a></td>
             </tr>
             <tr>
-              <td class="lesson">
+              <td class="lesson" data-label="Lesson">
                 <b>Fractions on a number line</b
                 ><span>3.NF.A.2 · drafted today</span>
               </td>
-              <td><span class="pill warn">Draft</span></td>
-              <td class="muted none">Not assigned</td>
-              <td class="muted none">—</td>
+              <td data-label="Status"><span class="pill warn">Draft</span></td>
+              <td class="muted" data-label="Assigned to">Not assigned</td>
+              <td class="muted" data-label="Results so far">—</td>
               <td><a class="ghost" href="2-review.html">Review</a></td>
             </tr>
           </tbody>

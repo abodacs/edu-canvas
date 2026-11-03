@@ -5,6 +5,7 @@
 :root {
   /* Type roles. Serif carries display, section and title; sans carries everything you act on or read. */
   --fs-display: clamp(2.25rem, 1.6rem + 2.4vw, 3.25rem);
+  --fs-page: clamp(2rem, 1.5rem + 1.8vw, 3.25rem);
   --fs-section: 1.625rem;
   --fs-title: 1.375rem;
   --fs-heading: 1.25rem;
@@ -53,6 +54,12 @@
 * {
   box-sizing: border-box;
   margin: 0;
+}
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-inline-size: 0;
 }
 html {
   background: var(--ground);
@@ -160,6 +167,9 @@ h3 {
   gap: 4px;
 }
 .bar nav a {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
   padding: 6px 12px;
   border-radius: 8px;
   color: var(--ink-2);
@@ -219,7 +229,7 @@ h3 {
 
 /* Type roles */
 h1 {
-  font: 500 var(--fs-display)/1.08 var(--serif);
+  font: 500 var(--fs-page)/1.08 var(--serif);
   letter-spacing: -0.022em;
   max-inline-size: 24ch;
 }
@@ -352,7 +362,7 @@ h1 em {
   align-items: center;
   justify-content: center;
   gap: var(--s-2);
-  min-block-size: 36px;
+  min-block-size: 44px;
   padding: var(--s-1) var(--s-3);
   border: 1px solid var(--ink-3);
   border-radius: 999px;
@@ -380,7 +390,7 @@ h1 em {
 .link {
   color: var(--ink);
   font-weight: 600;
-  font-size: var(--fs-meta);
+  font-size: inherit;
   text-decoration: underline;
   text-underline-offset: 0.2em;
   text-decoration-color: var(--ink-3);
@@ -405,7 +415,7 @@ h1 em {
   align-items: center;
   justify-content: center;
   gap: var(--s-2);
-  min-block-size: 36px;
+  min-block-size: 44px;
   min-inline-size: 36px;
   padding: var(--s-1) var(--s-3);
   border: 1px solid var(--line-control);

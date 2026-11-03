@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="base.css" />
     <style>
       .studio-h {
-        font-size: clamp(2rem, 1.5rem + 1.8vw, 2.375rem);
+        font-size: var(--fs-page);
       }
       /* Drafts exist: the composer collapses to one summary line. */
       .summary {
@@ -75,7 +75,7 @@
         caret-color: var(--ink);
       }
       /* The card is the focus target, so the field does not draw a second ring. */
-      .composer:focus-within {
+      .composer:has(#objective:focus-visible) {
         outline: 2px solid var(--ink);
         outline-offset: 3px;
       }
