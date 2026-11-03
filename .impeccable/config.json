@@ -23,6 +23,13 @@
         "files": [".impeccable/mocks/screens/*.html"],
         "createdAt": "2026-11-01T19:11:04.485Z",
         "reason": "Static parser does not resolve base.css, so it reads body 14px and every heading 16px. Rendered roles are 16/18/22/26/52px serif with weight separation (verified by CDP scan)."
+      },
+      {
+        "rule": "design-system-font",
+        "value": "fontfamily",
+        "files": ["scripts/design-census-capture.ts"],
+        "createdAt": "2026-11-03T21:29:47.284Z",
+        "reason": "False positive: 'fontFamily' is the CSS property name the census reads from getComputedStyle, not a font in use"
       }
     ]
   }

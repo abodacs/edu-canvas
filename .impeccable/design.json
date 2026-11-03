@@ -1,0 +1,348 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-03T12:00:00Z",
+  "title": "Design System: Scholé",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Fired Clay",
+        "canonical": "#a64b2a",
+        "tonalRamp": [
+          "oklch(20% 0.06 40)",
+          "oklch(30% 0.09 40)",
+          "oklch(40% 0.12 40)",
+          "oklch(50.5% 0.14 40)",
+          "oklch(62% 0.12 40)",
+          "oklch(74% 0.08 40)",
+          "oklch(86% 0.04 40)",
+          "oklch(94% 0.02 40)"
+        ]
+      },
+      "primary-deep": {
+        "role": "primary",
+        "displayName": "Kiln Clay",
+        "canonical": "#8f3f22"
+      },
+      "primary-soft": {
+        "role": "primary",
+        "displayName": "Clay Wash",
+        "canonical": "#f6e6de"
+      },
+      "primary-foreground": {
+        "role": "neutral",
+        "displayName": "White",
+        "canonical": "#ffffff"
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Limestone Ground",
+        "canonical": "oklch(96.5% 0.018 86deg)",
+        "tonalRamp": [
+          "oklch(20% 0.02 86)",
+          "oklch(32% 0.02 86)",
+          "oklch(45% 0.025 86)",
+          "oklch(58% 0.025 86)",
+          "oklch(70% 0.025 86)",
+          "oklch(82% 0.022 86)",
+          "oklch(91% 0.02 86)",
+          "oklch(96.5% 0.018 86)"
+        ]
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Pale Limestone",
+        "canonical": "oklch(98.5% 0.012 86deg)"
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Lamp Ink",
+        "canonical": "oklch(23.5% 0.028 65deg)"
+      },
+      "secondary": {
+        "role": "neutral",
+        "displayName": "Sand",
+        "canonical": "oklch(89% 0.045 87deg)"
+      },
+      "secondary-foreground": {
+        "role": "neutral",
+        "displayName": "Sand Ink",
+        "canonical": "oklch(28% 0.035 67deg)"
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Dust",
+        "canonical": "oklch(92.5% 0.026 86deg)"
+      },
+      "muted-foreground": {
+        "role": "neutral",
+        "displayName": "Weathered Ink",
+        "canonical": "oklch(48% 0.035 68deg)"
+      },
+      "accent": {
+        "role": "neutral",
+        "displayName": "Apricot Haze",
+        "canonical": "oklch(91% 0.065 77deg)"
+      },
+      "accent-foreground": {
+        "role": "neutral",
+        "displayName": "Haze Ink",
+        "canonical": "oklch(30% 0.04 62deg)"
+      },
+      "destructive": {
+        "role": "tertiary",
+        "displayName": "Fired Red",
+        "canonical": "oklch(55% 0.18 28deg)"
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#e6e1d8"
+      },
+      "line-strong": {
+        "role": "neutral",
+        "displayName": "Strong Hairline",
+        "canonical": "#d6cfc3"
+      },
+      "line-control": {
+        "role": "neutral",
+        "displayName": "Control Edge",
+        "canonical": "#938c80"
+      },
+      "focus-ring": {
+        "role": "neutral",
+        "displayName": "Focus Ink",
+        "canonical": "#1f1d1a"
+      }
+    },
+    "scenePalette": {
+      "status": "declared in src/styles/tokens.css, read by no shipped stylesheet; landing slice only, artwork only",
+      "colors": {
+        "scene-sky-hi": "#f8f2e6",
+        "scene-sky-mid": "#f5d9bf",
+        "scene-sky-lo": "#eeb987",
+        "scene-sun": "#fcecc9",
+        "scene-stone": "#f2e9d8",
+        "scene-stone-shade": "#c8b28e",
+        "scene-stone-deep": "#8e7354",
+        "scene-hill-far": "#cfa682",
+        "scene-hill-mid": "#8d9263",
+        "scene-hill-near": "#5b6740",
+        "scene-hill-front": "#3d4a2c",
+        "scene-olive": "#6c7848",
+        "scene-olive-hi": "#a5ab79",
+        "scene-bark": "#4b3c2b"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The page's single h1. System serif until Source Serif 4 is self-hosted."
+      },
+      "headline": { "displayName": "Headline", "purpose": "Section h2." },
+      "title": {
+        "displayName": "Title",
+        "purpose": "h3 and card-level names (declared --type-title)."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Paragraphs and lede copy, max 65ch. Hanken Grotesk shipped; mocks use Figtree."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Buttons, form labels, card titles."
+      },
+      "eyebrow": {
+        "displayName": "Eyebrow",
+        "purpose": "Uppercase kicker above a heading."
+      }
+    },
+    "typeRoles": {
+      "status": "declared (AgDR-0017 slice 1a), not yet read by surfaces",
+      "values": {
+        "type-display": "clamp(2.25rem, 1.6rem + 2.4vw, 3.25rem)",
+        "type-page": "clamp(2rem, 1.5rem + 1.8vw, 3.25rem)",
+        "type-section": "1.625rem",
+        "type-title": "1.375rem",
+        "type-heading": "1.25rem",
+        "type-lead": "1.25rem",
+        "type-body-lg": "1.0625rem",
+        "type-body": "1rem",
+        "type-secondary": "0.875rem",
+        "type-label": "0.875rem",
+        "type-meta": "0.8125rem",
+        "type-micro": "0.75rem"
+      }
+    },
+    "shadows": [
+      {
+        "name": "shadow-lift",
+        "value": "0 1px 2px rgb(31 29 26 / 4%), 0 8px 24px -12px rgb(31 29 26 / 10%)",
+        "purpose": "The one raised surface: popovers, the floated Studio window."
+      },
+      {
+        "name": "hairline-drop",
+        "value": "0 1px 0 color-mix(in oklch, var(--foreground) 6%, transparent)",
+        "purpose": "Ground line under a resting card."
+      }
+    ],
+    "focus": {
+      "color": "var(--focus-ring-color)",
+      "shippedWidth": "3px",
+      "declaredWidth": "2px",
+      "offset": "3px"
+    },
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "Default easing for entering and state changes."
+      },
+      {
+        "name": "ease-in-out",
+        "value": "cubic-bezier(0.77, 0, 0.175, 1)",
+        "purpose": "On-screen movement between two positions."
+      },
+      {
+        "name": "duration-state",
+        "value": "150ms",
+        "purpose": "Button colour, border, shadow, opacity and press transitions."
+      }
+    ],
+    "breakpoints": [
+      { "name": "narrow", "value": "38rem" },
+      { "name": "mid", "value": "48rem" },
+      { "name": "wide", "value": "60rem" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Clay fill; every non-destructive primary action.",
+      "html": "<button class=\"ds-btn-primary\">Create a teacher account</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; height: 32px; padding: 0 10px; border: 1px solid transparent; border-radius: var(--radius-field); background: var(--primary); color: var(--primary-foreground); font: 500 0.875rem/1 var(--font-sans); transition: background-color 150ms, transform 150ms; } .ds-btn-primary:hover { background: color-mix(in oklch, var(--primary) 80%, transparent); } .ds-btn-primary:active { transform: translateY(1px); } .ds-btn-primary:focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Ground fill with a hairline edge; the quiet alternative.",
+      "html": "<button class=\"ds-btn-outline\">Preview</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; height: 32px; padding: 0 10px; border: 1px solid var(--border); border-radius: var(--radius-field); background: var(--background); color: var(--foreground); font: 500 0.875rem/1 var(--font-sans); transition: background-color 150ms; } .ds-btn-outline:hover { background: var(--muted); } .ds-btn-outline:focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Sand fill for supporting actions.",
+      "html": "<button class=\"ds-btn-secondary\">Save draft</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; height: 32px; padding: 0 10px; border: 1px solid transparent; border-radius: var(--radius-field); background: var(--secondary); color: var(--secondary-foreground); font: 500 0.875rem/1 var(--font-sans); transition: background-color 150ms; } .ds-btn-secondary:hover { background: color-mix(in oklch, var(--secondary), var(--foreground) 5%); } .ds-btn-secondary:focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }"
+    },
+    {
+      "name": "Text Link",
+      "kind": "custom",
+      "refersTo": "primary",
+      "description": "Clay inline link with a soft underline that firms on hover.",
+      "html": "<a class=\"ds-text-link\" href=\"#\">See how drafts are checked</a>",
+      "css": ".ds-text-link { color: var(--primary); font: 700 0.86rem/1.4 var(--font-sans); text-decoration: underline; text-decoration-color: color-mix(in oklch, var(--primary), transparent 55%); text-underline-offset: 0.25em; } .ds-text-link:hover { text-decoration-color: currentcolor; } .ds-text-link:focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "line-control",
+      "description": "Field with the 3:1 control edge.",
+      "html": "<input class=\"ds-input\" placeholder=\"Learning objective\" />",
+      "css": ".ds-input { height: 40px; padding: 0 12px; border: 1px solid var(--input); border-radius: var(--radius-field); background: var(--card); color: var(--foreground); font: 400 1rem/1.4 var(--font-sans); } .ds-input::placeholder { color: var(--muted-foreground); } .ds-input:focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }"
+    },
+    {
+      "name": "Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Pill status label.",
+      "html": "<span class=\"ds-badge\">Checked</span> <span class=\"ds-badge ds-badge--secondary\">Draft</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; height: 20px; padding: 2px 8px; border-radius: var(--radius-pill); background: var(--primary); color: var(--primary-foreground); font: 500 0.75rem/1 var(--font-sans); } .ds-badge--secondary { background: var(--secondary); color: var(--secondary-foreground); }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Pale limestone card with a 10% ink ring; serif-free title in sans 500.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card__title\">Fractions on a number line</div><div class=\"ds-card__desc\">Grade 3, matching-v1</div></div>",
+      "css": ".ds-card { display: flex; flex-direction: column; gap: 4px; padding: 16px; border-radius: var(--radius-card); background: var(--card); color: var(--card-foreground); box-shadow: 0 0 0 1px color-mix(in oklch, var(--foreground) 10%, transparent); font-family: var(--font-sans); } .ds-card__title { font-size: 1rem; font-weight: 500; } .ds-card__desc { color: var(--muted-foreground); font-size: 0.875rem; }"
+    },
+    {
+      "name": "Brand Lockup",
+      "kind": "nav",
+      "refersTo": "foreground",
+      "description": "Stoa glyph on an ink tile plus the name; one home link.",
+      "html": "<a class=\"ds-brand\" href=\"/\"><span class=\"ds-brand__mark\" aria-hidden=\"true\"><svg viewBox=\"0 0 26 26\" fill=\"currentColor\"><path d=\"M2 8 13 2l11 6v2H2z\"/><rect x=\"4\" y=\"11\" width=\"3\" height=\"10\"/><rect x=\"11.5\" y=\"11\" width=\"3\" height=\"10\"/><rect x=\"19\" y=\"11\" width=\"3\" height=\"10\"/><rect x=\"2\" y=\"22\" width=\"22\" height=\"2.5\"/></svg></span><span><span class=\"ds-brand__name\">Scholé</span><span class=\"ds-brand__sub\">teaching, returned to its origin</span></span></a>",
+      "css": ".ds-brand { display: flex; align-items: center; gap: 0.75rem; color: var(--foreground); text-decoration: none; font-family: var(--font-sans); } .ds-brand__mark { display: grid; place-items: center; inline-size: 2.75rem; block-size: 2.75rem; border-radius: 0.9rem; background: var(--foreground); color: var(--background); } .ds-brand__mark svg { inline-size: 55%; } .ds-brand__name, .ds-brand__sub { display: block; } .ds-brand__name { font-size: 1rem; font-weight: 700; letter-spacing: -0.02em; } .ds-brand__sub { color: var(--muted-foreground); font-size: 0.7rem; letter-spacing: 0.03em; } .ds-brand:focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Stoa at Dawn",
+    "overview": "Scholé is named for the Greek word for leisure given to learning, and the system is built around one thesis: a teacher's free hour, returned. The world is a warm limestone morning. Pages sit on a light, warm ground, the type that names things is a quiet serif, the type you act on or read is a plain grotesque, and a single clay tone marks every action. The interface is meant to feel calm and checked, never busy: hairline rules, few surfaces, one lifted shadow.\n\nThe world's signature is engraved: halftone and stipple artwork (apricot sky, olive hills, limestone stoa) drawn in SVG, with the product shown floating on the art rather than beside it. That scene exists today only in the approved landing mock. The shipped code holds its palette as tokens (`--scene-*`) so the landing slice can build it without inventing colours; no shipped page renders the scene yet.\n\nThe system is mid-migration and this record is honest about it. Slice 1b repointed the semantic layer (clay primary, the divider ladder, serif headings, the radius ladder), so every component that reads shadcn semantics already speaks the new direction. The structural scale from slice 1a (type roles, 4px spacing, `--radius-card` / `--radius-field` / `--radius-pill`, `--shadow-lift`, focus-ring tokens) is declared but not yet read by any surface stylesheet; surfaces move onto it one slice at a time. The census ceiling (43 distinct font sizes, 17 radii, 4 shadows, 8 AA failures) measures how far there is to go.",
+    "keyCharacteristics": [
+      "Warm, light ground (no dark mode; the unreachable `.dark` palette was deleted by AgDR-0017).",
+      "Serif for naming (h1–h3), grotesque for doing and reading.",
+      "Clay is the only action colour.",
+      "Two radii (field 10px, card 14px) plus pills.",
+      "Hairlines over boxes; one lifted shadow.",
+      "Focus is a neutral near-black ring, never a brand moment.",
+      "Engraved stipple artwork belongs to the scene only (mock-stage, landing slice)."
+    ],
+    "rules": [
+      {
+        "name": "The One Clay Rule",
+        "body": "Clay is the only action colour. If a thing can be pressed, followed, or chosen, and it is not destructive, it is clay or it is neutral. No second accent, no green \"success\" button.",
+        "section": "colors"
+      },
+      {
+        "name": "The Scene Is Not Chrome Rule",
+        "body": "`--scene-*` colours paint the artwork and nothing else. A button, border, text run or panel that reads a scene token is a defect.",
+        "section": "colors"
+      },
+      {
+        "name": "The Control Edge Rule",
+        "body": "Hairlines decorate; controls get `line-control`. An input, checkbox or select bordered with `--border` alone fails 3:1 and fails the rule.",
+        "section": "colors"
+      },
+      {
+        "name": "The Serif Names, Sans Does Rule",
+        "body": "h1–h3 are serif at weight 500 with -0.02em tracking. Everything you click, type, or read in a paragraph is sans. Never set a button or a form label in the serif.",
+        "section": "typography"
+      },
+      {
+        "name": "The Twelve Steps Rule",
+        "body": "A new font size comes from a `--type-*` role. `verify:design-tokens` fails on an unlisted size above its ceiling, and `verify:design-census` fails if a 44th distinct size reaches the screen.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Lift Rule",
+        "body": "A new shadow is `--shadow-lift` or nothing. If a surface needs more separation, give it a stronger edge, not a bigger blur.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do read colour, radius, type and shadow from the token layer; components reach shadcn semantics (`--primary`, `--border`, `--ring`), never `--scene-*` or new `--teacher-*` names.",
+      "Do use clay (`primary`) for every non-destructive action and keep everything else neutral.",
+      "Do border every control with `line-control`; keep `line` for decoration.",
+      "Do set h1–h3 in the serif at 500 with -0.02em tracking, and everything interactive in Hanken Grotesk.",
+      "Do take new sizes from the `--type-*` roles and new gaps from `--space-*`.",
+      "Do use logical properties and keep every page free of sideways scroll at 390px.",
+      "Do run `pnpm verify:design-tokens`, `pnpm verify:ui <route>`, and `pnpm census:capture` + `pnpm verify:design-census` on every UI slice, together with the /modern-web-guidance, /emil-design-eng (motion) and /impeccable audits.",
+      "Do keep motion short and eased (`--ease-out: cubic-bezier(0.23, 1, 0.32, 1)`, 120–240ms for state changes) and honour `prefers-reduced-motion`."
+    ],
+    "donts": [
+      "Don't add a second accent colour or bring back the forest green; `--teacher-forest` is an alias awaiting deletion.",
+      "Don't use gradients as UI decoration: no gradient fills on buttons, cards, text or borders. Gradients belong only to the scene, where the sky's light and the stipple masks use them natively.",
+      "Don't paint chrome with scene colours, or put halftone texture behind controls or body text.",
+      "Don't add a shadow other than `--shadow-lift`, or a radius off the 6/8/10/14/pill ladder.",
+      "Don't make focus a brand moment; the ring is near-black, never clay.",
+      "Don't load a hosted font stylesheet or a third family; self-host through `scripts/fonts-subset.py`.",
+      "Don't add dark-mode tokens until dark mode is a real request."
+    ]
+  }
+}

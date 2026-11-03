@@ -25,6 +25,10 @@ The original single slice was split after review: "43 tokens into `@theme` with 
 | 4 | Review | large | on hold |
 | 5 | Publish | moderate | on hold |
 | 6 | Student board | large | on hold |
+| 7 | Landing page (mock redesigned 2026-11-03) | large | on hold |
+| 8 | Teacher dashboard | moderate | on hold |
+
+Slices 2–8 run in parallel on the [UX redesign stack](ux-redesign-stack.md), which names each slice's mock, owned files, gate routes, and definition of done.
 
 Verification ownership, per category. Each owner has to be able to observe the change; a check that cannot fail is not coverage.
 
