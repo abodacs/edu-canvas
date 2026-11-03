@@ -21,6 +21,7 @@ import {
   createPackPersistence,
   createRecordPersistence,
 } from "@/server/persistence";
+import { createSeededGenerationLimitStore } from "@/server/persistence/limits-seeded";
 import { createPublicationService } from "@/server/publication/service";
 import { syntheticSeed } from "@/server/seed-data";
 
@@ -95,6 +96,7 @@ const sources = createSourceService({
 const generation = createGenerationService({
   persistence: foundation,
   provider: createDeterministicLessonDraftProvider(),
+  limits: createSeededGenerationLimitStore(),
 });
 const publication = createPublicationService({
   generation: foundation,
