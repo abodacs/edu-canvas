@@ -205,6 +205,7 @@ describe("lesson generation service", () => {
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
+      limits: createSeededGenerationLimitStore(),
       requestIdFactory: () => "draft_req_source_snapshot_input",
     });
 
