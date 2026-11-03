@@ -15,6 +15,7 @@ Scholé is a production product; these documents define and verify one trustwort
 | [Sprint guide](hackathon/meta-global-2026/README.md) | Full event plan: eligibility assumptions, schedule, risks, and experiments (validation milestone) |
 | [Focused event scope](hackathon/meta-global-2026/focused-scope.md) | Current event execution decision: one teacher-controlled loop, one builder, 30 + 6 hours, checkpoints, fallback ladder |
 | [Validation tracker](hackathon/meta-global-2026/validation-tracker.md) | V1–V16 evidence gates, dated observations, and evidence links |
+| [Demo script](hackathon/meta-global-2026/demo-script.md) | Current recording script: setup, shot list, narration, claim boundaries, fallback ladder, and submission description |
 | [Teacher UI decisions](product/teacher-ui.md) | Explicit UI requirements and the existing implementation gate |
 | [Delivery priorities](product/delivery-priorities.md) | Proposed sequencing, skill recommendations, and writing guidance |
 | [Design overview](design/design-doc.md) | Technical contracts, defaults, and design decisions ("One Useful Loop") |
@@ -42,6 +43,8 @@ Scholé is a production product; these documents define and verify one trustwort
 
 ## Change log
 
+- 2026-11-04 (demo script): [demo-script.md](hackathon/meta-global-2026/demo-script.md) registered; it replaces the removed 2026-10-24 script and records the shipped teacher-to-learner loop, claim boundaries, and recording fallbacks.
+- 2026-11-04 (README): readability pass; leads with the value proposition and a current landing screenshot, adds the Foundation badge, corrects the quick start and status claims, and consolidates the project map. No implementation changed.
 - 2026-11-03 (learner hardening): [student-path-checks](engineering/student-path-checks.md) registered; it records the `verify:student-probe` matrix and the manual device pass for [#9](https://github.com/abodacs/edu-canvas/issues/9).
 - 2026-11-02 (learner loop): [l3-copy-trace](engineering/l3-copy-trace.md) registered; it records the approved-copy storage decision and the deferred carry set behind PR [#186](https://github.com/abodacs/edu-canvas/pull/186) (#176, #7).
 - 2026-11-01 (README): the root README leads with the problem, the teacher-controlled loop, and the demo story; status, safety boundaries, layout, and the code map stay below the fold. No behavior claims changed.

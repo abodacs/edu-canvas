@@ -172,7 +172,7 @@ This design serves one product in two stages. The same boundaries apply in both;
 - Protected authentication for every user; invitation credentials and seeded identities end before public availability ([Q16](design-doc-questions.md)).
 - Shared request-limit state (or equivalent) before horizontal scale; the process-local burst limits of the milestone cannot serve multiple instances.
 - Least-privilege database role, backups with restore evidence, alerting, and TLS/domain configuration.
-- DPA, EU-residency, security review, and consent handling before any real student data ([root README](../../README.md#safety-boundaries-non-negotiable-even-under-deadline-pressure)).
+- DPA, EU-residency, security review, and consent handling before any real student data ([root README](../../README.md#safety-boundaries)).
 - A production seed/data policy separate from synthetic validation data.
 - The production reference targets (10-second draft p95, 500-millisecond render p95, 99.9% published availability) measured, not asserted.
 
