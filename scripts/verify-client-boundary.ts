@@ -8,7 +8,7 @@ const projectRoot = fileURLToPath(new URL("..", import.meta.url));
 const publicDirectory = join(projectRoot, ".output", "public");
 const forbiddenTokens = [
   "answerKey",
-  "OPENAI_API_KEY",
+  "META_API_KEY",
   "DATABASE_URL",
   "postgresql://",
   "SENTRY_DSN",

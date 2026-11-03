@@ -13,7 +13,7 @@ The runbook makes no production-readiness or availability claim for the mileston
 - Supabase provides the hosted PostgreSQL database.
 - **One continuously running Fly.io instance.** The preview uses server-sent events, and the current request limits are process-local. Multiple instances would need shared request-limit state first, so scaling out stays out of scope until the production path adds it ([design decision Q12](design/design-doc-questions.md), [AgDR-0007](agdr/AgDR-0007-demo-access-and-deployment.md)).
 - The server connects to PostgreSQL with the server-only `DATABASE_URL` secret.
-- Lesson generation uses the server-only provider key secret. The product runs its selected model behind the existing provider interface; see [AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md) for the provider selection and deadlines. The historical `OPENAI_API_KEY`/`OPENAI_MODEL` secret and setting names are kept until the provider migration lands ([AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md)).
+- Lesson generation uses the server-only provider key secret. The product runs its selected model behind the existing provider interface; see [AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md) for the provider selection and deadlines. The historical `META_API_KEY`/`META_MODEL` secret and setting names are kept until the provider migration lands ([AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md)).
 - Fly runs the idempotent migration runner as a release command before replacing application Machines.
 - The app does not use `supabase-js`, Supabase Auth, or the Supabase Data API; no browser key or public table grant is required.
 - The `drizzle/` directory and `pnpm db:migrate` runner are the migration source of truth. Do not run `supabase db push`, `drizzle-kit push`, or `drizzle-kit pull` against this checkout.
@@ -38,13 +38,13 @@ Prerequisites: Docker, `pnpm`, the Fly CLI, a Supabase project, generation-provi
 
    ```bash
    read -r -s -p 'Supabase DATABASE_URL: ' DATABASE_URL; printf '\n'
-   read -r -s -p 'Provider API key (stored as OPENAI_API_KEY): ' OPENAI_API_KEY; printf '\n'
-   export DATABASE_URL OPENAI_API_KEY
-   printf 'DATABASE_URL=%s\nOPENAI_API_KEY=%s\n' "$DATABASE_URL" "$OPENAI_API_KEY" | fly secrets import
-   unset DATABASE_URL OPENAI_API_KEY
+   read -r -s -p 'Provider API key (stored as META_API_KEY): ' META_API_KEY; printf '\n'
+   export DATABASE_URL META_API_KEY
+   printf 'DATABASE_URL=%s\nMETA_API_KEY=%s\n' "$DATABASE_URL" "$META_API_KEY" | fly secrets import
+   unset DATABASE_URL META_API_KEY
    ```
 
-   A Supavisor session-mode URL is also valid. `OPENAI_MODEL` and `OPENAI_BASE_URL` are non-secret runtime settings in `fly.toml`. Do not put `DATABASE_URL`, `OPENAI_API_KEY`, or `SENTRY_DSN` in Docker build arguments or client-side `VITE_*` variables.
+   A Supavisor session-mode URL is also valid. `META_MODEL` and `META_BASE_URL` are non-secret runtime settings in `fly.toml`. Do not put `DATABASE_URL`, `META_API_KEY`, or `SENTRY_DSN` in Docker build arguments or client-side `VITE_*` variables.
 
 ## Release procedure
 
@@ -67,7 +67,7 @@ Run these commands from the repository root or from the release worktree.
    unset DATABASE_URL
    ```
 
-   Database bootstrap does not call the lesson-generation provider, so it does not require `OPENAI_API_KEY`. The running Fly application still receives that credential through its server-only secret store.
+   Database bootstrap does not call the lesson-generation provider, so it does not require `META_API_KEY`. The running Fly application still receives that credential through its server-only secret store.
 
    The migration runner records each file hash in `drizzle.__edu_canvas_drizzle_migrations` and takes a non-blocking advisory lock. It rejects an edited or out-of-order migration before applying anything, so a release cannot silently skip a change. On every later `fly deploy`, the Fly release command runs the same migration logic in a temporary Machine and aborts the deployment if it cannot complete. It never seeds or deletes data. Schema-change rules live in [drizzle/README.md](../drizzle/README.md).
 

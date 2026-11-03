@@ -13,9 +13,9 @@ interface ConfigIssueCodes {
   INVALID_DATABASE_URL: true;
   INVALID_SENTRY_DSN: true;
   DATABASE_REQUIRED: true;
-  OPENAI_API_KEY_REQUIRED: true;
-  INVALID_OPENAI_BASE_URL: true;
-  INVALID_OPENAI_TIMEOUT_MS: true;
+  META_API_KEY_REQUIRED: true;
+  INVALID_META_BASE_URL: true;
+  INVALID_META_TIMEOUT_MS: true;
   REAL_DATA_DISABLED: true;
   INVALID_AUTH_PROVIDER: true;
   INVALID_PUBLIC_ORIGIN: true;
@@ -49,10 +49,10 @@ export interface ServerConfig {
   syntheticDataOnly: true;
   databaseUrl?: string;
   sentryDsn?: string;
-  openAiApiKey?: string;
-  openAiModel: string;
-  openAiBaseUrl: string;
-  openAiTimeoutMs: number;
+  metaApiKey?: string;
+  metaModel: string;
+  metaBaseUrl: string;
+  metaTimeoutMs: number;
   auth: AuthConfig;
   issues: readonly ConfigIssue[];
 }
@@ -93,23 +93,23 @@ export const isValidSentryDsn = (value: string): boolean => {
 
 const loopbackHosts = new Set(["localhost", "127.0.0.1"]);
 
-const isAllowedOpenAiBaseUrl = (url: URL): boolean => {
+const isAllowedMetaBaseUrl = (url: URL): boolean => {
   return (
     url.protocol === "https:" ||
     (url.protocol === "http:" && loopbackHosts.has(url.hostname))
   );
 };
 
-const openAiBaseUrlSchema = z.string().refine((value) => {
+const metaBaseUrlSchema = z.string().refine((value) => {
   const url = parseUrl(value);
-  return url !== null && isAllowedOpenAiBaseUrl(url);
-}, "OPENAI_BASE_URL must use HTTPS, or HTTP for a local loopback test server.");
+  return url !== null && isAllowedMetaBaseUrl(url);
+}, "META_BASE_URL must use HTTPS, or HTTP for a local loopback test server.");
 
 // The provider receives a password and a service-role key, so a cleartext URL
 // would expose both to an on-path observer and could point at any host.
 const supabaseUrlSchema = z.string().refine((value) => {
   const url = parseUrl(value);
-  return url !== null && isAllowedOpenAiBaseUrl(url);
+  return url !== null && isAllowedMetaBaseUrl(url);
 }, "SUPABASE_URL must use HTTPS, or HTTP for a local loopback development stack.");
 
 const parseBoolean = (
@@ -217,70 +217,69 @@ const readSentryDsn = (
   return undefined;
 };
 
-const defaultOpenAiBaseUrl = "https://api.openai.com/v1";
-const defaultOpenAiTimeoutMs = 100_000;
-const minOpenAiTimeoutMs = 1000;
-const maxOpenAiTimeoutMs = 120_000;
+const defaultMetaBaseUrl = "https://api.meta.ai/v1";
+const defaultMetaTimeoutMs = 100_000;
+const minMetaTimeoutMs = 1000;
+const maxMetaTimeoutMs = 120_000;
 
-const readOpenAiTimeoutMs = (
+const readMetaTimeoutMs = (
   value: string | undefined,
   issues: ConfigIssue[]
 ): number => {
   if (value === undefined || value.trim() === "") {
-    return defaultOpenAiTimeoutMs;
+    return defaultMetaTimeoutMs;
   }
 
   const parsed = Number(value);
   if (
     !Number.isSafeInteger(parsed) ||
-    parsed < minOpenAiTimeoutMs ||
-    parsed > maxOpenAiTimeoutMs
+    parsed < minMetaTimeoutMs ||
+    parsed > maxMetaTimeoutMs
   ) {
     pushIssue(
       issues,
-      "INVALID_OPENAI_TIMEOUT_MS",
-      "OPENAI_TIMEOUT_MS",
-      "OPENAI_TIMEOUT_MS must be an integer from 1000 to 120000 milliseconds."
+      "INVALID_META_TIMEOUT_MS",
+      "META_TIMEOUT_MS",
+      "META_TIMEOUT_MS must be an integer from 1000 to 120000 milliseconds."
     );
-    return defaultOpenAiTimeoutMs;
+    return defaultMetaTimeoutMs;
   }
 
   return parsed;
 };
 
-const readOpenAiSettings = (
+const readMetaSettings = (
   environment: Record<string, string | undefined>,
   issues: ConfigIssue[]
 ) => {
-  const apiKey = environment.OPENAI_API_KEY?.trim() || undefined;
-  const model = environment.OPENAI_MODEL?.trim() || "gpt-5.6";
-  const timeoutMs = readOpenAiTimeoutMs(environment.OPENAI_TIMEOUT_MS, issues);
+  const apiKey = environment.META_API_KEY?.trim() || undefined;
+  const model = environment.META_MODEL?.trim() || "muse-spark-1.2-contributor";
+  const timeoutMs = readMetaTimeoutMs(environment.META_TIMEOUT_MS, issues);
   const requestedBaseUrl =
-    environment.OPENAI_BASE_URL?.trim() || defaultOpenAiBaseUrl;
-  const baseUrlIsValid =
-    openAiBaseUrlSchema.safeParse(requestedBaseUrl).success;
+    environment.META_BASE_URL?.trim() || defaultMetaBaseUrl;
+  const baseUrlIsValid = metaBaseUrlSchema.safeParse(requestedBaseUrl).success;
 
   if (!baseUrlIsValid) {
     pushIssue(
       issues,
-      "INVALID_OPENAI_BASE_URL",
-      "OPENAI_BASE_URL",
-      "OPENAI_BASE_URL must use HTTPS, or HTTP for a local loopback test server."
+      "INVALID_META_BASE_URL",
+      "META_BASE_URL",
+      "META_BASE_URL must use HTTPS, or HTTP for a local loopback test server."
     );
   }
   if (!apiKey) {
     pushIssue(
       issues,
-      "OPENAI_API_KEY_REQUIRED",
-      "OPENAI_API_KEY",
-      "Set OPENAI_API_KEY for server-side lesson generation."
+      "META_API_KEY_REQUIRED",
+      "META_API_KEY",
+      "Set META_API_KEY for server-side lesson generation."
     );
   }
 
   return {
     apiKey,
     model,
-    baseUrl: baseUrlIsValid ? requestedBaseUrl : defaultOpenAiBaseUrl,
+    baseUrl: baseUrlIsValid ? requestedBaseUrl : defaultMetaBaseUrl,
     timeoutMs,
   };
 };
@@ -483,7 +482,7 @@ export const readServerConfig = (
   const issues: ConfigIssue[] = [...databaseConfig.issues];
   const appEnvironment = readAppEnvironment(environment, issues);
   const sentryDsn = readSentryDsn(environment, issues);
-  const openAi = readOpenAiSettings(environment, issues);
+  const meta = readMetaSettings(environment, issues);
   const auth = readAuthConfig(environment, appEnvironment, issues);
   const { syntheticDataOnly, databaseUrl } = databaseConfig;
 
@@ -501,10 +500,10 @@ export const readServerConfig = (
     syntheticDataOnly,
     ...(databaseUrl && { databaseUrl }),
     ...(sentryDsn && { sentryDsn }),
-    ...(openAi.apiKey && { openAiApiKey: openAi.apiKey }),
-    openAiModel: openAi.model,
-    openAiBaseUrl: openAi.baseUrl,
-    openAiTimeoutMs: openAi.timeoutMs,
+    ...(meta.apiKey && { metaApiKey: meta.apiKey }),
+    metaModel: meta.model,
+    metaBaseUrl: meta.baseUrl,
+    metaTimeoutMs: meta.timeoutMs,
     auth,
     issues,
   };
@@ -517,7 +516,7 @@ export const safeConfigSummary = (config: ServerConfig) => {
     persistence: config.databaseUrl
       ? ("postgres" satisfies PersistenceKind)
       : "unconfigured",
-    provider: { timeoutMs: config.openAiTimeoutMs },
+    provider: { timeoutMs: config.metaTimeoutMs },
     auth: {
       provider: config.auth.provider,
       publicOrigin: config.auth.publicOrigin ? "configured" : "missing",

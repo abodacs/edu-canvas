@@ -84,7 +84,7 @@ export interface LessonDraftProvider {
   ) => Promise<ProviderResponse>;
 }
 
-export interface OpenAILessonDraftProviderOptions {
+export interface MetaLessonDraftProviderOptions {
   apiKey: string;
   model: string;
   baseUrl?: string;
@@ -633,13 +633,13 @@ const lessonDraftJsonSchema = {
     },
   },
 } as const;
-export const createOpenAILessonDraftProvider = (
-  options: OpenAILessonDraftProviderOptions
+export const createMetaLessonDraftProvider = (
+  options: MetaLessonDraftProviderOptions
 ): LessonDraftProvider => {
   const fetchImplementation = options.fetchImplementation ?? fetch;
-  const baseUrl = options.baseUrl ?? "https://api.openai.com/v1";
+  const baseUrl = options.baseUrl ?? "https://api.meta.ai/v1";
   const provenance: ProviderProvenance = {
-    provider: "openai",
+    provider: "meta",
     model: options.model,
     promptTemplateVersion,
     validatorVersion,

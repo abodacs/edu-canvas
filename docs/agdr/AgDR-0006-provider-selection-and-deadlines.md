@@ -6,11 +6,11 @@ Recorded 2026-10-25 for the hackathon-2026 reconciliation ([#89](https://github.
 
 ## Context
 
-The current factory selects a fixture or OpenAI provider; the July 2026 docs named GPT-5.6 under the Devpost requirement. The Meta hackathon requires an allowed Meta model. No access, latency, or contract-compatibility evidence exists yet, and the July-era "the real GPT-5.6 path is available" assumption is invalid for this event. Meanwhile the pipeline adds Learning Commons, Jev, and upload extraction, each of which can hang or fail.
+The July 2026 build used OpenAI GPT-5.6 under the Devpost requirement. That provider is retired: the Meta hackathon requires an allowed Meta model, and the runtime now builds only the Meta adapter. Access, latency, and contract compatibility were proven on 2026-10-27 ([evidence](../hackathon/meta-global-2026/evidence/ic1-2026-10-27/README.md)). Meanwhile the pipeline adds Learning Commons, Jev, and upload extraction, each of which can hang or fail.
 
 ## Decision
 
-Select the provider interface, not a model name: the demo uses a proven event-allowed Meta model behind the existing generation boundary, with the exact model identifier recorded in configuration and provenance once access and eligibility are proven (E4/E5, V1/V3). Fixtures stay explicitly labeled and separate from live mode. The historical `OPENAI_API_KEY`/`OPENAI_MODEL`/`OPENAI_BASE_URL` names remain until the adapter migration lands, then are renamed with the provider selection.
+Keep the provider interface and use Meta's `muse-spark-1.2-contributor` behind it, through Meta's OpenAI-compatible Responses endpoint (`https://api.meta.ai/v1`). The model identifier lives in configuration and in every draft's provenance (`provider: meta`). Fixtures stay explicitly labeled and separate from live mode. Settings are `META_API_KEY`, `META_MODEL`, `META_BASE_URL`, and `META_TIMEOUT_MS`; the earlier `OPENAI_*` names are removed, so deployments must re-set the secret (`fly secrets set META_API_KEY=…`).
 
 Every external operation has an explicit deadline and a single recovery path, and no hidden transport retries:
 
@@ -30,10 +30,10 @@ A timeout or rate limit offers an explicit teacher retry with a new operation ke
 
 ## Consequences
 
-- No document may claim a specific model works before V1/V3 evidence exists.
+- Claims about model behavior cite the V1/V3 evidence records.
 - Provider cost and latency are bounded per request and per demo run.
 - Request ownership survives retries, reloads, and concurrent claims.
-- Provider migration is a focused change: adapter plus secret/setting rename, with fixtures untouched.
+- The OpenAI-to-Meta migration touched only the adapter and settings names; fixtures and stored records are unchanged (`provider` is free text in provenance).
 
 ## Handoff
 

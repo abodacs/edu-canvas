@@ -118,7 +118,7 @@ Requires Node.js 26 or newer and pnpm 10.17.1.
 docker compose up -d postgres
 pnpm install
 export DATABASE_URL=postgresql://edu_canvas:edu_canvas_dev@127.0.0.1:5432/edu_canvas
-export OPENAI_API_KEY=<server-side-key>
+export META_API_KEY=<server-side-key>
 pnpm db:setup
 pnpm dev
 ```
@@ -139,7 +139,7 @@ pnpm smoke   # in another
 ```bash
 docker compose up -d postgres
 set -a; source .env.example; set +a
-export OPENAI_API_KEY=<server-side-key>
+export META_API_KEY=<server-side-key>
 pnpm db:setup
 pnpm dev
 ```

@@ -279,7 +279,7 @@ Catalog actions such as `submitAttempt` describe allowed messages. Their presenc
 
 [config.ts](src/server/config.ts) parses application and database-bootstrap settings. Invalid settings produce typed `ConfigIssue` records. Generation, preview, readiness, and persistence reject invalid configuration.
 
-`DATABASE_URL` is required: PostgreSQL is the only runtime persistence. `OPENAI_API_KEY` is required for server-side generation. `SYNTHETIC_DATA_ONLY=false` is rejected. The deterministic provider and in-memory stores are test doubles and are unreachable from runtime composition.
+`DATABASE_URL` is required: PostgreSQL is the only runtime persistence. `META_API_KEY` is required for server-side generation. `SYNTHETIC_DATA_ONLY=false` is rejected. The deterministic provider and in-memory stores are test doubles and are unreachable from runtime composition.
 
 [observability.server.ts](src/server/observability.server.ts) emits structured errors, restricts context values, redacts sensitive patterns, and optionally sends scrubbed events to Sentry. Sentry uses `sendDefaultPii: false`. This is a server-only interface, not a browser SDK.
 
@@ -332,7 +332,7 @@ sequenceDiagram
 5. Build a forward learning path and story against the versioned seeded curriculum. Missing or incompatible context blocks acceptance.
 6. Persist the final state with the expected attempt, update timestamp, and an unexpired lease. If ownership has changed, return the current record instead of overwriting it.
 
-The configured factory always builds the OpenAI Responses adapter; the deterministic provider is a test double. The live adapter uses a 100-second timeout per call. The service enforces a 200-second total budget across generation and one correction.
+The configured factory always builds the Meta adapter (OpenAI-compatible Responses transport, `muse-spark-1.2-contributor`); the deterministic provider is a test double. The live adapter uses a 100-second timeout per call. The service enforces a 200-second total budget across generation and one correction.
 
 | State | Meaning | Explicit retry |
 | --- | --- | --- |
@@ -442,7 +442,7 @@ These differences were checked against the source baseline above. They are not r
 | Grounding | Seeded curriculum, prerequisite graph, and bounded PDF/TXT/MD uploads with explicit gap states | Learning Commons retrieval, Jev matching, and grounded package contracts remain design work described in [AgDR-0005](docs/agdr/AgDR-0005-grounded-package-version-contracts.md). |
 | Safety | Deterministic content screening with a category and code, structural validation, bounded semantic review, and the artifact gate before preview and publication | Teacher-facing moderation recovery is [#119](https://github.com/abodacs/edu-canvas/issues/119). The prompt is still persisted before screening. |
 | Identity and cost controls | Session-owned identity, current membership checks, CSRF/origin guards, bounded counters, and trusted provisioning; the role-selected demo surface is retired | [#98](https://github.com/abodacs/edu-canvas/issues/98) stays open for the remaining account and roster evidence. Deployment, rollback, and monitoring gates remain pending. Least-privilege database roles belong to [#100](https://github.com/abodacs/edu-canvas/issues/100). |
-| Provider selection | Fixture or OpenAI Responses adapter with `OPENAI_*` settings and a `gpt-5.6` code default | [AgDR-0006](docs/agdr/AgDR-0006-provider-selection-and-deadlines.md) selects a provider through access evidence. The code default is not evidence for an event-allowed provider. |
+| Provider selection | Fixture or Meta adapter with `META_*` settings and a `muse-spark-1.2-contributor` code default | [AgDR-0006](docs/agdr/AgDR-0006-provider-selection-and-deadlines.md) selects the Meta provider; live access is recorded in the [2026-10-27 evidence](docs/hackathon/meta-global-2026/evidence/ic1-2026-10-27/README.md). |
 | Deadlines | 100 seconds per provider call, 200 seconds for generation plus correction, and a 220-second claim lease; writes require an unexpired lease | AgDR-0006 event decision, 2026-10-27. |
 | Idempotency conflicts | An existing tenant-local key compares the persisted normalized request hash; changed input returns `IDEMPOTENCY_CONFLICT` without a provider call | AgDR-0006 requires the conflict; unchanged input reuses the original result. |
 | Machine count | `fly.toml` sets `min_machines_running = 2` | AgDR-0007 and the release procedure select one Machine for the planned limit model. |

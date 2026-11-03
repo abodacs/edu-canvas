@@ -56,7 +56,7 @@ The release does not generate new material during learner use. It makes no claim
 
 The current code contains generation, validation, persistence, and a bounded matching preview. A bounded preview accepts only named components and actions.
 
-The current factory selects a fixture or OpenAI provider. It does not select a Meta provider. The current provider request has no educational-source snapshot. The current `matching-v1` catalog has no fraction-diagram or math component.
+The factory builds the Meta provider (`muse-spark-1.2-contributor`); fixtures are test doubles. The current provider request has no educational-source snapshot. The current `matching-v1` catalog has no fraction-diagram or math component.
 
 The expanded design therefore needs new contracts and adapters. The [code inventory](design-doc-implementation.md#existing-code-and-required-changes) identifies the files. The inventory describes this checkout, not a deployment or a fresh `origin/main` checkout.
 

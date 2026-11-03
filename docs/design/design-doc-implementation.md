@@ -10,8 +10,8 @@ This inventory comes from local source inspection. Repeat the inventory on the s
 
 | Existing file | Observed behavior | Required change |
 | --- | --- | --- |
-| [provider.ts](../../src/server/generation/provider.ts) | Fixture and OpenAI providers; four matching variants | Add a Meta adapter and a versioned source-grounded request |
-| [factory.ts](../../src/server/generation/factory.ts) | Chooses fixture or OpenAI | Select the proven provider explicitly; separate fixture mode from live mode |
+| [provider.ts](../../src/server/generation/provider.ts) | Fixture and Meta providers; four matching variants | Add a versioned source-grounded request |
+| [factory.ts](../../src/server/generation/factory.ts) | Builds the Meta provider | Select the proven provider explicitly; separate fixture mode from live mode |
 | [types.ts](../../src/server/generation/types.ts) | Generation records; 220-second claim lease | Add source/version references and bounded operation timing |
 | [service.ts](../../src/server/generation/service.ts) | Generation claims, validation, one correction | Preserve ownership checks across the expanded workflow |
 | [generation-contract.ts](../../src/shared/generation-contract.ts) | Public draft has exactly four variants | Add a versioned package contract and distinct learner projection |

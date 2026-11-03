@@ -212,7 +212,7 @@ const TeacherHome = () => {
             <span className="brand-name">Edu-Canvas</span>
           </Link>
           <p className="footer-note">
-            Synthetic fixture data only. Built with Codex and GPT-5.6.
+            Synthetic fixture data only. Lesson drafts by Meta Muse Spark.
           </p>
         </footer>
       </div>
