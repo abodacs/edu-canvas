@@ -1,6 +1,6 @@
 # Scholé demo video script
 
-> **Status:** fresh script for the current build, 2026-11-04. It replaces the removed 2026-10-24 hackathon script and the older product-strategy script. The recording rule is unchanged: show only behavior present in the submitted revision, and label live model output, synthetic data, and shortened waits honestly.
+> **Status:** fresh script for the current build, 2026-11-04. It replaces the removed 2026-10-24 hackathon script. The recording rule is unchanged: show only behavior present in the submitted revision, and label live model output, synthetic data, and shortened waits honestly.
 
 **Promise:** one teacher sentence becomes a reviewable lesson pack, a server-graded learner attempt, and evidence for the next step.
 
@@ -26,7 +26,7 @@ This script reflects the current `main` behavior, not the July 2026 slice.
 | Moderation | A hard block stops preview and publication. The recovery panel keeps the teacher’s words and the earlier draft. | Optional insert only. Do not stage a blocked prompt in the main cut. |
 | Request limits | Shared PostgreSQL limits guard provider calls; rejected requests return `RATE_LIMITED` with a retry interval. | Mention the boundary in the close if useful. Do not show a quota screen as the main story. |
 | Catalog identity | The seed and live preview pin the same `A2UI_CATALOG_VERSION`. | Show the catalog in the preview provenance strip if it is legible. |
-| Learner access | The learner page is keyboard-complete and works at phone width; the learner copy is RTL-ready. English remains the shipping scope. | Optional accessibility insert. Do not claim a bilingual product. |
+| Learner access | The learner page is keyboard-complete and works at phone width; the learner copy is RTL-ready. English is the product language. | Optional accessibility insert. Do not claim a bilingual product. |
 | UX redesign | The token foundation and verification gates shipped. The page slices are on hold. | Do not present mock screens or redesign captures as shipped behavior. |
 
 The removed demo-mode runtime is not coming back. There is no runtime fixture provider to fall back to. If the live provider fails, stop and record what actually works; do not splice in a seeded learner result.
@@ -40,8 +40,8 @@ git rev-parse HEAD
 git status --short
 pnpm check
 pnpm build
-pnpm start
-pnpm smoke
+pnpm start   # terminal 1
+pnpm smoke   # terminal 2
 ```
 
 Record the commit SHA, provider model, and database name in the edit notes. The video description may cite the SHA; the video itself should not display a terminal full of configuration.
@@ -77,7 +77,7 @@ The provider key stays server-side. Never show `.env`, a terminal export, a netw
 
 The demo tenant owns the curriculum. If the class name changed in the seed, choose the synthetic Grade 4 class that contains **Omar Nabil**. Do not choose `Grade 4A` for the main take; it does not own the seeded equivalent-fractions curriculum.
 
-Pre-sign the learner profile before the take. The learner sign-in screen is not part of the cut; open the published link directly in the already-authenticated learner profile.
+Pre-sign the learner profile before the take, then close the window. The learner sign-in screen is not part of the cut; reopen the profile only to open the published link.
 
 ### 4. Prepare one reviewed synthetic source
 
@@ -92,7 +92,7 @@ Use the sample in [Appendix B](#appendix-b-synthetic-source-file). It is short, 
 | Teacher | 1440 × 900, browser zoom 110–125% | Landing, workspace, review, publish, results |
 | Learner | 390 × 844, browser zoom 100% | Matching board, reveal, phone-width proof |
 
-Use separate browser profiles or containers so the teacher and learner sessions never share cookies. Keep the learner window closed until the published link exists. Close bookmarks bars, extensions, password managers, and notification popups.
+Use separate browser profiles or containers so the teacher and learner sessions never share cookies. Keep the learner window closed until the published link exists; reopen it only for the learner shot. Close bookmarks bars, extensions, password managers, and notification popups.
 
 ### 6. Rehearse the exact wrong path
 
@@ -113,12 +113,12 @@ Burn in a small `Synthetic data` label for the whole video. If the wait is short
 
 | Time | Picture | Narration | Caption |
 | --- | --- | --- | --- |
-| 0:00–0:12 | Landing page. Hold on the headline and the equivalent-fractions reveal illustration. Let the trust line “You stay in charge” appear. | “This is Scholé. A teacher describes one learning moment, and gets a lesson draft they can inspect before any student sees it.” | One sentence in. The teacher stays in charge. |
-| 0:12–0:27 | Teacher workspace. Show the reviewed source chip, the prompt `equivalent fractions for grade 4`, and the inferred signals: Grade 4, `4.NF.A.1`, English. | “I’m signed in as a teacher in a synthetic Grade 4 class. I’ve already reviewed this one-page source, so the next draft is bound to it. I’ll ask for equivalent fractions, Grade 4.” | A reviewed source. A visible target. |
+| 0:00–0:12 | Landing page. Hold on the headline and the equivalent-fractions reveal illustration. | “This is Scholé. A teacher describes one learning moment, and gets a lesson draft they can inspect before any student sees it.” | One sentence in. The teacher stays in charge. |
+| 0:12–0:27 | Teacher workspace. Show the reviewed source chip, the prompt `equivalent fractions for grade 4`, and the inferred signals: Grade 4, `4.NF.A.1`, English / LTR. | “I’m signed in as a teacher in a synthetic Grade 4 class. I’ve already reviewed this one-page source, so the next draft is bound to it. I’ll ask for equivalent fractions, Grade 4.” | A reviewed source. A visible target. |
 | 0:27–0:45 | Click **Create lesson**. Show “Shaping the draft…”. Cut the wait with the shortened-wait label, then reveal the four variant cards: two core options, one support option, and one stretch option. | “Meta Muse Spark runs on the server and returns a strict lesson contract: four variants, matching pieces, hints, feedback, language and accessibility metadata. It returns structured data, not executable HTML.” | Meta Muse Spark → strict lesson contract. |
 | 0:45–1:00 | Select one of the two core variants. Click **Open the preview for this version**. In the A2UI preview, select a source and one target. Hold on the provenance strip long enough to read the model and catalog. | “The draft compiles into an allowlisted A2UI catalog. The preview is semantic DOM, and the private answer key never enters it.” | Allowlisted A2UI. No generated code. |
 | 1:00–1:14 | Scroll to **Review and publish this pack** and open the review gallery. Show the validation verdict, the four screen cards, and the reverse reasoning path. | “Before publication, the server checks structure, curriculum alignment, learning quality, and safety. Warnings stay visible. A hard block stops the path.” | Validate before preview. |
-| 1:14–1:34 | Open one screen. If a warning appears, check its acknowledgement; click **Approve this screen**. Return to the gallery. Quick cuts: the remaining screens approve; the reverse path approves; the count reaches 5 of 5; the publish gate opens. | “I approve every screen and the reverse path that comes before it. Each approval is tied to this revision. Saving an edit would revalidate the pack and start the approvals again.” | Every screen. Every revision. |
+| 1:14–1:34 | Open one screen. If a warning appears, check its acknowledgement; click **Approve this screen**. Return to the gallery. Quick cuts: open and approve each remaining screen; approve the reverse path; the count reaches 5 of 5; the publish gate opens. | “I approve every screen and the reverse path that comes before it. Each approval is tied to this revision. Saving an edit would revalidate the pack and start the approvals again.” | Every screen. Every revision. |
 | 1:34–1:47 | Click **Continue to publish**. Hold on the confirmation: revision number, artifact hash, approved sequence. Select **Omar Nabil**. Click **Publish and assign**. Show the success state and the learner link. | “Publishing writes one immutable publication and one assignment. A later edit starts a new revision; it cannot change what this learner is working on.” | Immutable publication. One assigned learner. |
 | 1:47–2:10 | Learner profile at phone width. Show the assigned matching board. Pair the rehearsal's source with its non-equivalent target (for example, `1/2` with `2/3` if those labels are in the draft). Click **Done**. Hold on the server result: score, correctness, per-pair reveal, corrective feedback, and **Still to match:**. | “Omar opens the assigned screen. He pairs [source] with [decoy] — a plausible wrong answer. The server grades the submission; the browser cannot submit a score. The reveal names what is not yet matched instead of showing a false success.” | Server-authoritative grading. |
 | 2:10–2:22 | Show the “What next” card and its stored reason. Do not imply the learner has already started it. | “A fixed rule, not the model, proposes the next activity: another supported example. It is a recommendation from stored evidence, not a mastery diagnosis.” | A fixed rule, not a diagnosis. |
@@ -173,9 +173,9 @@ Use these only if the main cut has room, or publish them as separate short clips
 
 **Picture:** A persisted Arabic lesson board in RTL, with mixed Latin fraction tokens. Show the layout and the isolated tokens.
 
-**Narration:** “The learner surface can render the pack’s approved language and direction. English is the shipping scope today.”
+**Narration:** “The learner surface can render the pack’s approved language and direction. English is the product language today.”
 
-**Caption:** RTL-ready learner surface. English ships first.
+**Caption:** RTL-ready learner surface. English is the product language.
 
 **Rule:** Do not use this insert to imply that bilingual authoring or Arabic rollout is shipped.
 
@@ -188,7 +188,7 @@ Say only what the recorded revision demonstrates.
 | “Meta Muse Spark drafts the lesson on the server.” | “The model teaches” or “the model grades.” |
 | “Four validated variants, each a content option.” | “Four teaching stages” or “four lessons.” |
 | “The teacher approves every screen and the reverse path.” | “The teacher approves the learner’s next activity.” Teacher override is not shipped. |
-| “Publishing writes an immutable version and one assignment.” | “Edits update the published lesson in place.” |
+| “Publishing writes an immutable publication and one assignment.” | “Edits update the published lesson in place.” |
 | “The server grades the submission.” | “The browser calculates the score” or “the client sends the score.” |
 | “A fixed rule proposes the next approved activity.” | “AI adapts the next lesson” or “the system diagnoses the misconception.” |
 | “The learner sees one assigned matching screen.” | “The learner completes a worked example, guided practice, and an independent check.” That full sequence is not the current learner runtime. |
@@ -254,7 +254,7 @@ Landing → one sentence → four variants → approval gate → learner reveal 
 2. Sign in as `amira.north@example.test` / `synthetic-pass-1`.
 3. Choose `Grade 4S · Synthetic Fractions` (Teacher) and continue.
 4. Confirm the source chip says `Drafts use <file>`.
-5. Keep the prompt `equivalent fractions for grade 4`; confirm the signals show Grade 4, `4.NF.A.1`, English.
+5. Keep the prompt `equivalent fractions for grade 4`; confirm the signals show Grade 4, `4.NF.A.1`, English / LTR.
 6. Click **Create lesson**.
 7. Select one of the two core variants; click **Open the preview for this version**.
 8. Select a source and one target in the preview.
@@ -288,7 +288,7 @@ A fraction names equal parts of one whole.
 
 1/2, 2/4, 3/6, and 4/8 name the same amount. They are equivalent fractions.
 
-2/3 is not equivalent to 1/2. Thirds are larger than halves, so the shaded parts do not cover the same amount.
+2/3 is not equivalent to 1/2. Third pieces are smaller than half pieces, and two thirds is more than one half, so the shaded parts do not cover the same amount.
 
 To check whether two fractions are equivalent, multiply or divide the numerator and the denominator by the same number. The value does not change.
 ```
