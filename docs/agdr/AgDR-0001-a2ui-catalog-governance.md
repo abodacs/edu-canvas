@@ -42,3 +42,11 @@ July 2026 decision log (removed 2026-10-25) Q25, Q78–86, Q87 · `docs/security
 ## Issue #4 implementation boundary
 
 The first catalog slice is intentionally narrow: `matching-v1` exposes `Column`, `Row`, `Card`, `Text`, `MatchCard`, `Button`, and `Status`, plus the matching-selection action allowlist. `GET /api/a2ui/preview` accepts only the seeded teacher's persisted `ready-for-review` draft, emits pinned `v0.9.1` messages over SSE, and the browser applies them through a semantic DOM renderer. The route is a preview seam, not approval, publication, grading, or student delivery; the hard safety gate remains issue #28 work.
+
+## Issue #110 catalog identity and the retired fixture identifier
+
+One activity version has one catalog identity. Before #110 the synthetic fixture stored `edu-canvas-matching-v0` while every reader accepted only `matching-v1`, so the fixture proved nothing about the path it was meant to exercise.
+
+- **Current identity:** `src/server/seed-data.ts` imports `A2UI_CATALOG_VERSION` from the shared contract instead of restating an identifier. `pnpm verify:catalog-identity` fails when the seed pins a catalog the contract does not publish, when no reader resolves the pinned catalog, or when a `src/server/seed*.ts` module writes a `catalogVersion` literal. `src/integration/seed-catalog-roundtrip.test.ts` migrates an empty database, seeds it, and renders the fixture through the live reader and renderer.
+- **`edu-canvas-matching-v0` is retired, not aliased.** It was a fixture identifier, never a published catalog, so it stays outside `a2uiCatalogs` and `a2uiCatalogVersionForId` returns nothing for it. A message or record that still carries it receives the documented fail-closed diagnostic `UNSUPPORTED_CATALOG` ("This preview catalog version is not supported."); readers keep accepting exactly the catalogs the contract publishes.
+- **Stored rows are left as written.** `activity_versions` is inserted with `on conflict do nothing`, so a database seeded before #110 keeps the old value, and no migration rewrites content or approval provenance ([AgDR-0010](AgDR-0010-drizzle-migration-ownership.md)). Refreshing such a database means seeding a clean one; dated evidence records keep their original wording.
