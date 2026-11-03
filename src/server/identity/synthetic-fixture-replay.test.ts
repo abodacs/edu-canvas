@@ -32,19 +32,24 @@ describe.skipIf(!isRun)("synthetic identity fixture on postgres", () => {
     await Promise.all(opened.map((client) => client.end({ timeout: 3 })));
   });
 
-  it("replays the fixture without unique-constraint failures", async () => {
-    const client = postgres(requireUrl(), { max: 1 });
-    opened.push(client);
+  // Two full sequential provisions on a cold database exceed the default.
+  it(
+    "replays the fixture without unique-constraint failures",
+    { timeout: 60_000 },
+    async () => {
+      const client = postgres(requireUrl(), { max: 1 });
+      opened.push(client);
 
-    const persistence = createPostgresIdentityPersistence(
-      process.env.DATABASE_URL as string
-    );
+      const persistence = createPostgresIdentityPersistence(
+        process.env.DATABASE_URL as string
+      );
 
-    await expect(
-      ensureSyntheticIdentityFixture(persistence)
-    ).resolves.toBeUndefined();
-    await expect(
-      ensureSyntheticIdentityFixture(persistence)
-    ).resolves.toBeUndefined();
-  });
+      await expect(
+        ensureSyntheticIdentityFixture(persistence)
+      ).resolves.toBeUndefined();
+      await expect(
+        ensureSyntheticIdentityFixture(persistence)
+      ).resolves.toBeUndefined();
+    }
+  );
 });
