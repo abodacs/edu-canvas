@@ -2,7 +2,7 @@ import { globSync, readFileSync } from "node:fs";
 
 import { defineConfig } from "vitest/config";
 
-const testFiles = ["src/**/*.test.ts"];
+const testFiles = ["src/**/*.test.ts", "scripts/**/*.test.ts"];
 
 // Files that replace a module with `vi.mock` need a fresh module graph, so they
 // keep vitest's per-file isolation. Every other file shares one worker's

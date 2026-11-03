@@ -3,7 +3,7 @@ import { MailCheck, ShieldCheck, UserPlus } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 import { submitSignUp } from "@/components/auth/auth-client";
-import { AuthBrand } from "@/components/auth/auth-brand";
+import { BrandMark } from "@/components/ui/brand-mark";
 import { AuthStatus } from "@/components/auth/auth-status";
 import { PasswordField } from "@/components/auth/password-field";
 import { useAuthChallenge } from "@/components/auth/use-auth-challenge";
@@ -181,7 +181,7 @@ const SignUpPage = (): ReactElement => {
   return (
     <main className="auth-shell" aria-labelledby="sign-up-heading">
       <div className="auth-frame">
-        <AuthBrand />
+        <BrandMark withTagline className="auth-card__brand" />
         <section className="auth-card">
           <header className="auth-card__header">
             <h1 id="sign-up-heading" className="auth-heading">

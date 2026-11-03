@@ -1,4 +1,20 @@
 <!doctype html>
+<!--
+  Audit, 2026-11-03. The detector findings on this sketch stay visible until the
+  landing slice (UX-P1); none were suppressed in .impeccable/config.json. The slice
+  either moves each value onto the DESIGN.md ladder or adds it there.
+
+  Deliberately off the shipped scale: the .pitch h1 and .close .h2 clamps, the 18px
+  .studio radius, the 4px .placeholder radius, the bespoke .cta .btn shadow, and the
+  Source Serif 4 / Figtree faces (planned self-hosting in AgDR-0016; the build ships
+  the system serif stack until they land).
+
+  Verified false positives, measured rather than assumed: .site-foot renders at
+  8.62:1 median (8.12:1 p5) at 1440x900 and 8.58:1 (5.62:1 p5) at 390x844 over the
+  hill layers, because the static scan pairs its colour with the section's --sky-mid
+  and cannot resolve the inline SVG. `cramped-padding` reads the full-bleed scene
+  child and misses the 48px inset on .inner and .site-foot.
+-->
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -6,6 +22,24 @@
     <title>0 · Landing (sketch)</title>
     <link rel="stylesheet" href="base.css" />
     <style>
+      /* Landing-only scene colours. They extend base.css for the artwork; UI still uses the shared tokens. */
+      :root {
+        --sky-hi: #f8f2e6;
+        --sky-mid: #f5d9bf;
+        --sky-lo: #eeb987;
+        --sun: #fcecc9;
+        --stone: #f2e9d8;
+        --stone-shade: #c8b28e;
+        --stone-deep: #8e7354;
+        --hill-far: #cfa682;
+        --hill-mid: #8d9263;
+        --hill-near: #5b6740;
+        --hill-front: #3d4a2c;
+        --olive: #6c7848;
+        --olive-hi: #a5ab79;
+        --bark: #4b3c2b;
+      }
+
       .signed-out {
         display: flex;
         align-items: center;
@@ -17,181 +51,650 @@
         font-size: var(--fs-secondary);
         font-weight: 500;
       }
+
+      /* ---------- Hero: the scene is the page, the Studio floats on it ---------- */
       .hero {
-        display: grid;
-        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-        gap: 56px;
+        position: relative;
+        isolation: isolate;
+        padding-block-end: var(--s-8);
+      }
+      .scene {
+        position: absolute;
+        z-index: -1;
+        inset: 0 0 clamp(160px, 22vw, 300px) 0;
+        overflow: hidden;
+        background: var(--sky-hi);
+      }
+      .scene svg {
+        position: absolute;
+        inset: 0;
+        inline-size: 100%;
+        block-size: 100%;
+      }
+      .top {
+        display: flex;
         align-items: center;
+        justify-content: space-between;
+        gap: var(--s-4);
         inline-size: min(100% - 48px, 1200px);
         margin-inline: auto;
-        padding-block: 72px 56px;
+        padding-block: var(--s-5);
       }
-      .hero h1 {
-        font-size: clamp(2.6rem, 5vw, 4.4rem);
-        line-height: 1.04;
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font: 500 1.375rem/1 var(--serif);
+        letter-spacing: -0.01em;
+        text-decoration: none;
+      }
+      .brand svg {
+        color: var(--ink);
+      }
+      .top nav {
+        display: flex;
+        align-items: center;
+        gap: var(--s-1);
+      }
+      .top nav a {
+        padding: 10px 12px;
+        border-radius: 8px;
+        color: var(--ink);
+        font-size: var(--fs-secondary);
+        font-weight: 500;
+        text-decoration: none;
+      }
+      .top nav a:hover {
+        background: rgb(255 255 255 / 0.55);
+      }
+      .top .sign-in {
+        margin-inline-start: var(--s-2);
+        padding: 9px 16px;
+        border: 1px solid var(--ink);
+      }
+
+      .pitch {
+        display: grid;
+        justify-items: center;
+        gap: var(--s-4);
+        inline-size: min(100% - 48px, 960px);
+        margin-inline: auto;
+        padding-block: clamp(40px, 7vw, 96px) clamp(40px, 6vw, 72px);
+        text-align: center;
+      }
+      .pitch h1 {
+        max-inline-size: 21ch;
+        font-size: clamp(2.5rem, 1.4rem + 4.4vw, 5rem);
+        line-height: 1.02;
+        letter-spacing: -0.03em;
+      }
+      .pitch .lede {
+        margin: 0;
+        max-inline-size: 46ch;
+        color: var(--ink);
+        font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
       }
       .cta {
         display: flex;
         flex-wrap: wrap;
-        gap: 12px;
-        margin-block-start: 28px;
+        align-items: center;
+        justify-content: center;
+        gap: var(--s-3) var(--s-5);
+        margin-block-start: var(--s-2);
       }
       .cta .btn {
-        padding: 14px 22px;
-        font-size: var(--fs-body);
+        min-block-size: 52px;
+        padding: 14px 26px;
+        font-size: var(--fs-body-lg);
+        box-shadow: 0 10px 24px -14px rgb(143 63 34 / 0.9);
       }
-      .cta .ghost {
-        padding: 13px 20px;
-        font-size: var(--fs-body);
+      .cta .btn:hover {
+        background: var(--clay-deep);
       }
-      .trust {
-        display: grid;
-        gap: var(--s-2);
-        margin-block-start: var(--s-5);
-        padding: var(--s-3) var(--s-4);
-        border: 2px solid var(--ink);
-        border-radius: var(--r-field);
-        max-inline-size: 48ch;
-        font-size: var(--fs-secondary);
-      }
-      .trust b {
-        display: flex;
-        align-items: flex-start;
-        gap: var(--s-2);
-        font-size: var(--fs-body);
-        line-height: 1.45;
-      }
-      .reveal {
-        padding: 22px;
-        display: grid;
-        gap: 14px;
-      }
-      .reveal .objective {
-        padding: 12px 14px;
-        border-radius: var(--r-field);
-        background: var(--sunk);
-        font-size: var(--fs-body);
-      }
-      .reveal .row {
-        display: flex;
-        justify-content: space-between;
+      .text-link {
+        display: inline-flex;
         align-items: center;
-        gap: 12px;
-        font-size: var(--fs-secondary);
+        gap: 6px;
+        min-block-size: 44px;
+        font-weight: 600;
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 4px;
       }
-      .mini {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        column-gap: var(--s-5);
-      }
-      .mini div {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        align-items: center;
-        gap: var(--s-2);
-        padding-block: var(--s-3);
-        border-block-start: 1px solid var(--line);
+      .fine {
+        color: var(--ink);
         font-size: var(--fs-meta);
       }
-      .loop {
-        inline-size: min(100% - 48px, 1200px);
+
+      /* The Studio window, lifted onto the hills */
+      .studio {
+        inline-size: min(100% - 32px, 1080px);
         margin-inline: auto;
-        padding-block: 56px 96px;
-        border-block-start: 1px solid var(--line);
+        border: 1px solid rgb(31 29 26 / 0.12);
+        border-radius: 18px;
+        background: var(--surface);
+        box-shadow:
+          0 2px 4px rgb(31 29 26 / 0.06),
+          0 40px 80px -32px rgb(61 74 44 / 0.55);
+        overflow: hidden;
       }
-      .loop ol {
-        list-style: none;
-        padding: 0;
+      .studio-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--s-2) var(--s-4);
+        padding: var(--s-3) var(--s-5);
+        border-block-end: 1px solid var(--line);
+        background: var(--ground);
+        font-size: var(--fs-meta);
+      }
+      .studio-bar b {
+        font-weight: 600;
+      }
+      .objective {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: var(--s-3) var(--s-5);
+        padding: var(--s-5);
+        border-block-end: 1px solid var(--line);
+      }
+      .objective .label {
+        display: block;
+        margin-block-end: var(--s-1);
+        color: var(--ink-2);
+        font-size: var(--fs-meta);
+        font-weight: 600;
+      }
+      .objective q {
+        font: 500 var(--fs-title)/1.3 var(--serif);
+        letter-spacing: -0.01em;
+      }
+      .objective .src {
+        display: grid;
+        justify-items: end;
+        gap: var(--s-2);
+        color: var(--ink-2);
+        font-size: var(--fs-meta);
+      }
+      .variants {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 16px;
-        margin-block-start: 28px;
-        counter-reset: s;
+        list-style: none;
+        padding: 0;
       }
-      .loop li {
-        position: relative;
-        padding: 20px;
+      .variants li {
         display: grid;
-        gap: 8px;
-        align-content: start;
+        grid-template-rows: auto auto 1fr auto;
+        gap: var(--s-2);
+        padding: var(--s-4) var(--s-5) var(--s-5);
+        min-inline-size: 0;
       }
-      .loop li::after {
-        content: "";
-        position: absolute;
-        inset-block-start: 50%;
-        inset-inline-end: -13px;
-        inline-size: 10px;
-        block-size: 10px;
-        border-block-start: 2px solid var(--line-strong);
-        border-inline-end: 2px solid var(--line-strong);
-        transform: translateY(-50%) rotate(45deg);
+      .variants li + li {
+        border-inline-start: 1px solid var(--line);
       }
-      .loop li:last-child::after {
-        display: none;
+      .variants .kind {
+        color: var(--ink-2);
+        font-size: var(--fs-micro);
+        font-weight: 600;
       }
-      .close {
-        inline-size: min(100% - 48px, 1200px);
-        margin-inline: auto;
-        padding-block: var(--s-8);
-        border-block-start: 1px solid var(--line);
+      .variants svg.fig {
+        inline-size: 100%;
+        block-size: auto;
+        margin-block: var(--s-1);
+      }
+      .variants h3 {
+        font: 500 var(--fs-body-lg)/1.3 var(--serif);
+      }
+      .variants li.blocked {
+        background: var(--stop-soft);
+      }
+      .variants li.blocked .fig {
+        opacity: 0.45;
+      }
+      /* One authored moment: every draft is checked, then its verdict lands. */
+      .verdict {
         display: grid;
         justify-items: start;
+      }
+      .verdict > * {
+        grid-area: 1 / 1;
+      }
+      .verdict .checking {
+        opacity: 0;
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .verdict .checking {
+          animation: checking 1.6s var(--ease) both;
+          animation-delay: calc(0.5s + var(--i) * 0.45s);
+        }
+        .verdict .pill:not(.checking) {
+          animation: land 0.6s var(--ease) both;
+          animation-delay: calc(2.1s + var(--i) * 0.45s);
+        }
+      }
+      @keyframes checking {
+        0%,
+        85% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+      @keyframes land {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+          filter: blur(3px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+          filter: none;
+        }
+      }
+      .studio-foot {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--s-3) var(--s-5);
+        padding: var(--s-4) var(--s-5);
+        border-block-start: 1px solid var(--line);
+        background: var(--ground);
+        font-size: var(--fs-secondary);
+      }
+      .fake-btn {
+        display: inline-flex;
+        align-items: center;
         gap: var(--s-2);
+        padding: 8px 14px;
+        border-radius: 10px;
+        background: var(--ink);
+        color: var(--ground);
+        font-size: var(--fs-secondary);
+        font-weight: 600;
+      }
+
+      /* ---------- Proof: things anyone can check ---------- */
+      .proof {
+        inline-size: min(100% - 48px, 1080px);
+        margin-inline: auto;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        list-style: none;
+        padding: 0;
+        border-block: 1px solid var(--line-strong);
+      }
+      .proof li {
+        display: grid;
+        gap: var(--s-1);
+        padding: var(--s-5) var(--s-4);
+        font-size: var(--fs-secondary);
+        color: var(--ink-2);
+      }
+      .proof li + li {
+        border-inline-start: 1px solid var(--line);
+      }
+      .proof b {
+        color: var(--ink);
+        font: 500 var(--fs-heading)/1.25 var(--serif);
+      }
+
+      .wrap {
+        inline-size: min(100% - 48px, 1080px);
+        margin-inline: auto;
+      }
+      .block {
+        padding-block: clamp(72px, 9vw, 128px) 0;
+      }
+      .block > .h2 {
+        max-inline-size: 22ch;
+        font-size: clamp(1.875rem, 1.3rem + 1.8vw, 2.75rem);
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+      }
+      .block > .lede {
+        margin-block-start: var(--s-3);
+      }
+
+      /* ---------- The loop: a path with four stops ---------- */
+      .path {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: var(--s-5);
+        list-style: none;
+        padding: 0;
+        margin-block-start: var(--s-7);
+      }
+      .path::before {
+        content: "";
+        position: absolute;
+        inset-block-start: 15px;
+        inset-inline: 16px;
+        border-block-start: 2px dotted var(--line-control);
+      }
+      .path li {
+        position: relative;
+        display: grid;
+        align-content: start;
+        gap: var(--s-2);
+      }
+      .node {
+        display: grid;
+        place-items: center;
+        inline-size: 32px;
+        block-size: 32px;
+        margin-block-end: var(--s-3);
+        border-radius: 50%;
+        background: var(--ground);
+        box-shadow: inset 0 0 0 2px var(--line-control);
+        color: var(--ink-2);
+      }
+      .path li.you .node {
+        background: var(--clay);
+        box-shadow: none;
+        color: var(--clay-ink);
+      }
+      .path h3 {
+        font: 500 var(--fs-title)/1.25 var(--serif);
+        letter-spacing: -0.01em;
+      }
+      .path p {
+        color: var(--ink-2);
+        font-size: var(--fs-secondary);
+        max-inline-size: 30ch;
+      }
+      .who-does {
+        justify-self: start;
+        margin-block-start: var(--s-1);
+        font-size: var(--fs-micro);
+        font-weight: 600;
+        color: var(--ink-2);
+      }
+      .path li.you .who-does {
+        color: var(--clay-deep);
+      }
+
+      /* ---------- What you get back ---------- */
+      .gains {
+        display: grid;
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+        gap: var(--s-7);
+        align-items: start;
+        margin-block-start: var(--s-7);
+      }
+      .ledger {
+        display: grid;
+        list-style: none;
+        padding: 0;
+      }
+      .ledger li {
+        display: grid;
+        grid-template-columns: 2.25rem minmax(0, 1fr);
+        gap: var(--s-1) var(--s-3);
+        padding-block: var(--s-5);
+        border-block-start: 1px solid var(--line);
+      }
+      .ledger li:last-child {
+        border-block-end: 1px solid var(--line);
+      }
+      .ledger svg {
+        grid-row: span 2;
+        margin-block-start: 2px;
+        color: var(--clay);
+      }
+      .ledger b {
+        font: 500 var(--fs-heading)/1.3 var(--serif);
+      }
+      .ledger span {
+        color: var(--ink-2);
+        font-size: var(--fs-secondary);
+      }
+      .receipt {
+        position: sticky;
+        inset-block-start: var(--s-5);
+        padding: var(--s-5);
+      }
+      .receipt header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--s-2);
+        padding-block-end: var(--s-3);
+        border-block-end: 1px dashed var(--line-strong);
+      }
+      .receipt ul {
+        display: grid;
+        gap: var(--s-3);
+        list-style: none;
+        padding: var(--s-4) 0 0;
+        font-size: var(--fs-secondary);
+      }
+      .receipt li {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: var(--s-2);
+      }
+      .receipt li svg {
+        margin-block-start: 3px;
+      }
+      .receipt .ok svg {
+        color: var(--ok);
+      }
+      .receipt .warn svg {
+        color: var(--warn);
+      }
+      .receipt .stop svg {
+        color: var(--stop);
+      }
+      .receipt small {
+        display: block;
+        color: var(--ink-2);
+        font-size: var(--fs-meta);
+      }
+
+      /* ---------- Questions ---------- */
+      .faq {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0 var(--s-7);
+        margin-block-start: var(--s-6);
+      }
+      .faq details {
+        border-block-start: 1px solid var(--line-strong);
+      }
+      .faq summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--s-4);
+        min-block-size: 64px;
+        padding-block: var(--s-3);
+        font: 500 var(--fs-heading)/1.3 var(--serif);
+        cursor: pointer;
+        list-style: none;
+      }
+      .faq summary::-webkit-details-marker {
+        display: none;
+      }
+      .faq summary svg {
+        transition: transform 0.3s var(--ease);
+      }
+      .faq details[open] summary svg {
+        transform: rotate(45deg);
+      }
+      .faq details p {
+        padding-block-end: var(--s-5);
+        max-inline-size: 52ch;
+        color: var(--ink-2);
+      }
+      .placeholder {
+        padding: 4px 8px;
+        border-radius: 4px;
+        background: var(--warn-soft);
+        color: var(--warn);
+        font-weight: 600;
+      }
+
+      /* ---------- Close + footer scene ---------- */
+      .close {
+        position: relative;
+        isolation: isolate;
+        margin-block-start: clamp(96px, 12vw, 160px);
+        padding-block: clamp(72px, 9vw, 120px) 0;
+        text-align: center;
+        overflow: hidden;
+        background: var(--sky-mid);
+      }
+      .close .scene {
+        inset: 0;
+        background: none;
+      }
+      .close .inner {
+        display: grid;
+        justify-items: center;
+        gap: var(--s-4);
+        inline-size: min(100% - 48px, 760px);
+        margin-inline: auto;
+      }
+      .close .h2 {
+        font-size: clamp(2.25rem, 1.4rem + 3vw, 3.75rem);
+        line-height: 1.05;
+        letter-spacing: -0.025em;
+      }
+      .close .lede {
+        margin: 0;
+        color: var(--ink);
       }
       .site-foot {
         display: flex;
         flex-wrap: wrap;
         justify-content: space-between;
         gap: var(--s-2) var(--s-5);
-        padding: var(--s-5) var(--s-6);
-        border-block-start: 1px solid var(--line);
-        color: var(--ink-2);
+        inline-size: min(100% - 48px, 1200px);
+        margin: clamp(220px, 30vw, 420px) auto 0;
+        padding-block: var(--s-5);
+        border-block-start: 1px solid rgb(248 246 242 / 0.35);
+        color: var(--ground);
         font-size: var(--fs-meta);
+        text-align: start;
       }
-      .loop h3 {
-        font: 500 var(--fs-title)/1.25 var(--serif);
+      .site-foot .brand {
+        color: var(--ground);
+        font-size: var(--fs-heading);
       }
-      .loop p {
-        color: var(--ink-2);
-        font-size: var(--fs-secondary);
+      .site-foot .brand svg {
+        color: var(--ground);
       }
-      /* The teacher's cards are the ones with weight. The system is automatic. */
-      .loop li.you {
-        border: 2px solid var(--ink);
-      }
-      .loop li.system {
-        background: var(--sunk);
-      }
-      .loop li.student {
-        border-color: var(--line-control);
-      }
-      .who-does {
-        margin-block-start: var(--s-2);
-        font-size: var(--fs-micro);
-        font-weight: 600;
-        letter-spacing: 0.02em;
-        color: var(--ink-2);
-      }
-      @media (width <= 900px) {
-        .hero {
-          grid-template-columns: 1fr;
-        }
-        .loop ol {
-          grid-template-columns: 1fr 1fr;
-        }
-        .loop li::after {
+
+      @media (width <= 960px) {
+        .top nav a:not(.sign-in) {
           display: none;
         }
-      }
-      @media (width <= 560px) {
-        .loop ol {
+        .variants {
+          grid-template-columns: 1fr 1fr;
+        }
+        .variants li:nth-child(3) {
+          border-inline-start: 0;
+        }
+        .variants li:nth-child(n + 3) {
+          border-block-start: 1px solid var(--line);
+        }
+        .proof {
+          grid-template-columns: 1fr 1fr;
+        }
+        .proof li:nth-child(3) {
+          border-inline-start: 0;
+        }
+        .proof li:nth-child(n + 3) {
+          border-block-start: 1px solid var(--line);
+        }
+        .path {
+          grid-template-columns: 1fr 1fr;
+          row-gap: var(--s-7);
+        }
+        .path::before {
+          display: none;
+        }
+        .gains {
           grid-template-columns: 1fr;
+        }
+        .receipt {
+          position: static;
+        }
+        .faq {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (width <= 600px) {
+        .objective {
+          grid-template-columns: 1fr;
+        }
+        .objective .src {
+          justify-items: start;
+        }
+        .variants {
+          grid-template-columns: 1fr;
+        }
+        .variants li {
+          grid-template-columns: minmax(0, 1fr) auto;
+          grid-template-rows: auto auto;
+          align-items: center;
+          padding: var(--s-3) var(--s-4);
+        }
+        .variants li + li,
+        .variants li:nth-child(3) {
+          border-inline-start: 0;
+          border-block-start: 1px solid var(--line);
+        }
+        .variants svg.fig {
+          display: none;
+        }
+        .variants .kind {
+          grid-column: 1 / -1;
+        }
+        .variants .verdict {
+          justify-items: end;
+        }
+        .proof {
+          grid-template-columns: 1fr;
+        }
+        .proof li + li,
+        .proof li:nth-child(3) {
+          border-inline-start: 0;
+          border-block-start: 1px solid var(--line);
+        }
+        .path {
+          grid-template-columns: 1fr;
+          row-gap: var(--s-6);
+        }
+        .studio-bar .crumb {
+          display: none;
         }
       }
     </style>
   </head>
   <body>
+    <!--
+      THESIS: A teacher's free hour, returned. The page is a dawn landscape with a stoa, the place where
+      scholé (leisure for learning) happened, and the Studio floats on it, checking four drafts live.
+      Refuses the split hero (copy left, card right) and the beige card stack it replaces.
+      OWN-WORLD: Halftone-and-stipple SVG scene in apricot sky, olive hills and limestone, under the
+      shared mock tokens: Source Serif 4 display, Figtree UI, clay as the only action colour, white
+      Studio surfaces with hairline rules. Engraved stipple, never gradients-as-decoration.
+      STORY: Visitor sees what Scholé does (tagline), watches four drafts get checked and one blocked,
+      reads verifiable facts, sees where they decide, gets the questions answered, creates an account.
+      FIRST VIEWPORT: Centred serif tagline in the sky, one-line lede, one clay primary "Create a teacher
+      account" plus a text link; the Studio window rises from the hills below, verdicts landing in order.
+      FORM: Extension of the established mock world (no concept roll: brief-pinned by user inspiration
+      and answers: SVG halftone, same tokens, stoa and olive grove). Staging: scene-as-page, product on art.
+      FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+    -->
     <a class="skip" href="#main">Skip to content</a>
     <p class="signed-out" role="status">
       <svg
@@ -209,144 +712,972 @@
         <path d="M12 11v5M12 7.5v.01" /></svg
       >You're signed out. Your drafts are saved for next time.
     </p>
-    <header class="bar">
-      <span class="mark"
-        ><i aria-hidden="true"
-          ><svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.4"
-            stroke-linecap="round"
+
+    <section class="hero" aria-labelledby="page-title">
+      <div class="scene" aria-hidden="true">
+        <svg
+          viewBox="0 0 1600 900"
+          preserveAspectRatio="xMidYMax slice"
+          focusable="false"
+        >
+          <defs>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="var(--sky-hi)" />
+              <stop offset="0.5" stop-color="var(--sky-mid)" />
+              <stop offset="0.78" stop-color="var(--sky-lo)" />
+              <stop offset="1" stop-color="var(--sky-lo)" />
+            </linearGradient>
+            <linearGradient id="dotFade" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#fff" stop-opacity="0" />
+              <stop offset="1" stop-color="#fff" stop-opacity="0.9" />
+            </linearGradient>
+            <mask id="skyMask">
+              <rect
+                x="0"
+                y="320"
+                width="1600"
+                height="420"
+                fill="url(#dotFade)"
+              />
+            </mask>
+            <pattern
+              id="dotsClay"
+              width="7"
+              height="7"
+              patternUnits="userSpaceOnUse"
+            >
+              <circle cx="3.5" cy="3.5" r="1.5" fill="#c2734b" />
+            </pattern>
+            <pattern
+              id="dotsInk"
+              width="5"
+              height="5"
+              patternUnits="userSpaceOnUse"
+            >
+              <circle cx="2.5" cy="2.5" r="1.1" fill="#1f1d1a" />
+            </pattern>
+            <pattern
+              id="dotsSun"
+              width="6"
+              height="6"
+              patternUnits="userSpaceOnUse"
+            >
+              <circle cx="3" cy="3" r="1.6" fill="#f7d79c" />
+            </pattern>
+            <filter id="stipple" x="0" y="0" width="100%" height="100%">
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="1.1"
+                numOctaves="1"
+                seed="7"
+              />
+              <feColorMatrix
+                type="matrix"
+                values="0 0 0 0 0.12  0 0 0 0 0.11  0 0 0 0 0.1  -9 0 0 0 4.7"
+              />
+              <feComposite in2="SourceGraphic" operator="in" />
+            </filter>
+          </defs>
+
+          <rect width="1600" height="900" fill="url(#sky)" />
+          <rect
+            width="1600"
+            height="900"
+            fill="url(#dotsClay)"
+            mask="url(#skyMask)"
+            opacity="0.55"
+          />
+
+          <!-- Sun with halftone halo -->
+          <circle
+            cx="560"
+            cy="610"
+            r="210"
+            fill="url(#dotsSun)"
+            opacity="0.9"
+          />
+          <circle cx="560" cy="610" r="120" fill="var(--sun)" />
+
+          <!-- Far hills -->
+          <path
+            d="M0 640 C200 598 380 612 560 632 S900 588 1100 606 S1400 578 1600 598 V900 H0Z"
+            fill="var(--hill-far)"
+          />
+          <g fill="#9f9268">
+            <ellipse cx="760" cy="626" rx="14" ry="7" />
+            <ellipse cx="792" cy="622" rx="11" ry="6" />
+            <ellipse cx="820" cy="619" rx="13" ry="7" />
+            <ellipse cx="300" cy="624" rx="12" ry="6" />
+            <ellipse cx="330" cy="628" rx="10" ry="5" />
+          </g>
+
+          <!-- Mid hills, with the plateau the stoa stands on -->
+          <path
+            id="midHill"
+            d="M0 708 C220 668 420 694 640 688 S960 650 1040 616 L1460 612 C1520 620 1560 632 1600 640 V900 H0Z"
+            fill="var(--hill-mid)"
+          />
+          <path
+            d="M0 708 C220 668 420 694 640 688 S960 650 1040 616 L1460 612 C1520 620 1560 632 1600 640 V900 H0Z"
+            fill="#1f1d1a"
+            filter="url(#stipple)"
+            opacity="0.22"
+          />
+
+          <!-- The stoa -->
+          <g id="stoa" transform="translate(90 0)">
+            <rect
+              x="1062"
+              y="522"
+              width="356"
+              height="80"
+              fill="var(--stone-deep)"
+            />
+            <polygon points="1044,496 1240,462 1436,496" fill="var(--stone)" />
+            <polygon
+              points="1044,496 1240,462 1240,468 1056,496"
+              fill="var(--stone-shade)"
+            />
+            <rect
+              x="1050"
+              y="494"
+              width="380"
+              height="12"
+              fill="var(--stone)"
+            />
+            <g fill="var(--stone-shade)">
+              <rect x="1070" y="496" width="5" height="10" />
+              <rect x="1112" y="496" width="5" height="10" />
+              <rect x="1154" y="496" width="5" height="10" />
+              <rect x="1196" y="496" width="5" height="10" />
+              <rect x="1238" y="496" width="5" height="10" />
+              <rect x="1280" y="496" width="5" height="10" />
+              <rect x="1322" y="496" width="5" height="10" />
+              <rect x="1364" y="496" width="5" height="10" />
+              <rect x="1406" y="496" width="5" height="10" />
+            </g>
+            <rect
+              x="1056"
+              y="506"
+              width="368"
+              height="16"
+              fill="var(--stone)"
+            />
+            <rect
+              x="1056"
+              y="518"
+              width="368"
+              height="4"
+              fill="var(--stone-shade)"
+            />
+            <g id="col">
+              <rect
+                x="1066"
+                y="522"
+                width="22"
+                height="6"
+                fill="var(--stone)"
+              />
+              <rect
+                x="1069"
+                y="528"
+                width="16"
+                height="72"
+                fill="var(--stone)"
+              />
+              <rect
+                x="1080"
+                y="528"
+                width="5"
+                height="72"
+                fill="var(--stone-shade)"
+              />
+            </g>
+            <use href="#col" x="42" />
+            <use href="#col" x="84" />
+            <use href="#col" x="126" />
+            <use href="#col" x="168" />
+            <use href="#col" x="210" />
+            <use href="#col" x="252" />
+            <use href="#col" x="294" />
+            <use href="#col" x="336" />
+            <rect
+              x="1048"
+              y="600"
+              width="384"
+              height="10"
+              fill="var(--stone)"
+            />
+            <rect
+              x="1038"
+              y="610"
+              width="404"
+              height="8"
+              fill="var(--stone-shade)"
+            />
+          </g>
+          <use href="#stoa" filter="url(#stipple)" opacity="0.18" />
+
+          <!-- Near hill -->
+          <path
+            d="M0 790 C260 736 520 764 780 772 S1220 748 1600 726 V900 H0Z"
+            fill="var(--hill-near)"
+          />
+          <path
+            d="M0 790 C260 736 520 764 780 772 S1220 748 1600 726 V900 H0Z"
+            fill="url(#dotsInk)"
+            opacity="0.28"
+          />
+
+          <!-- Olive grove, foreground left -->
+          <g id="grove">
+            <path
+              d="M210 790 C214 760 200 742 212 716 M212 744 C224 734 232 728 240 714"
+              stroke="var(--bark)"
+              stroke-width="7"
+              fill="none"
+              stroke-linecap="round"
+            />
+            <g fill="var(--olive)">
+              <ellipse cx="200" cy="700" rx="52" ry="30" />
+              <ellipse cx="248" cy="690" rx="44" ry="28" />
+              <ellipse cx="226" cy="668" rx="46" ry="26" />
+            </g>
+            <g fill="var(--olive-hi)">
+              <ellipse cx="214" cy="660" rx="18" ry="8" />
+              <ellipse cx="256" cy="676" rx="14" ry="6" />
+              <ellipse cx="184" cy="688" rx="12" ry="5" />
+            </g>
+            <path
+              d="M410 772 C406 752 418 738 410 712"
+              stroke="var(--bark)"
+              stroke-width="6"
+              fill="none"
+              stroke-linecap="round"
+            />
+            <g fill="var(--olive)">
+              <ellipse cx="398" cy="702" rx="40" ry="24" />
+              <ellipse cx="432" cy="694" rx="36" ry="22" />
+              <ellipse cx="414" cy="676" rx="34" ry="20" />
+            </g>
+            <g fill="var(--olive-hi)">
+              <ellipse cx="408" cy="672" rx="13" ry="6" />
+              <ellipse cx="440" cy="686" rx="10" ry="5" />
+            </g>
+            <path
+              d="M80 800 C84 776 74 760 84 736"
+              stroke="var(--bark)"
+              stroke-width="6"
+              fill="none"
+              stroke-linecap="round"
+            />
+            <g fill="var(--olive)">
+              <ellipse cx="76" cy="726" rx="42" ry="24" />
+              <ellipse cx="108" cy="716" rx="34" ry="22" />
+            </g>
+          </g>
+          <use href="#grove" filter="url(#stipple)" opacity="0.3" />
+
+          <!-- Front ridge -->
+          <path
+            d="M0 850 C300 812 700 852 1000 836 S1400 818 1600 828 V900 H0Z"
+            fill="var(--hill-front)"
+          />
+          <path
+            d="M0 850 C300 812 700 852 1000 836 S1400 818 1600 828 V900 H0Z"
+            fill="url(#dotsInk)"
+            opacity="0.35"
+          />
+        </svg>
+      </div>
+
+      <header class="top">
+        <a class="brand" href="0-landing.html" aria-label="Scholé home">
+          <svg
+            width="26"
+            height="26"
+            viewBox="0 0 26 26"
+            fill="currentColor"
+            aria-hidden="true"
           >
-            <path d="M4 12h16M12 4v16" /></svg></i
-        >Edu-Canvas</span
-      >
-      <span class="who"
-        ><a class="ghost" href="5-sign-in.html">Sign in</a
-        ><a
-          class="btn secondary"
-          href="5-sign-in.html"
-          style="padding: 8px 14px; font-size: var(--fs-secondary)"
-          >Create account</a
-        ></span
-      >
-    </header>
-    <main id="main">
-      <section class="hero">
-        <div>
-          <h1>
+            <path d="M2 8 13 2l11 6v2H2z" />
+            <rect x="4" y="11" width="3" height="10" />
+            <rect x="11.5" y="11" width="3" height="10" />
+            <rect x="19" y="11" width="3" height="10" />
+            <rect x="2" y="22" width="22" height="2.5" />
+          </svg>
+          Scholé
+        </a>
+        <nav aria-label="Page">
+          <a href="#how">How it works</a>
+          <a href="#checked">What's checked</a>
+          <a href="#questions">Questions</a>
+          <a class="sign-in" href="5-sign-in.html">Sign in</a>
+        </nav>
+      </header>
+
+      <main id="main">
+        <div class="pitch">
+          <h1 id="page-title">
             Turn one learning objective into a lesson your students
             <em>understand</em>.
           </h1>
           <p class="lede">
-            For Grades 3–6 teachers. Write one sentence, get four lesson
-            variants checked against the standard and a safety gate, and assign
-            it to a learner.
+            For Grades 3–6 teachers. Write one objective, get four lesson
+            variants checked against the standard and a safety gate, and approve
+            exactly what your students see.
           </p>
           <div class="cta">
-            <a class="btn" href="5-sign-in.html">Start with one objective</a
-            ><a class="ghost" href="#loop">See how it works</a>
-          </div>
-          <div class="trust">
-            <b
-              ><svg
+            <a class="btn" href="5-sign-in.html">Create a teacher account</a>
+            <a class="text-link" href="#how"
+              >See how it works<svg
+                class="flip"
                 width="16"
                 height="16"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                stroke-width="2"
+                stroke-width="2.2"
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 aria-hidden="true"
               >
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg
-              >Nothing reaches a student without your approval.</b
-            >
-            <span class="small muted"
-              >Every lesson is a version you approved, with its source and
-              checks attached. Answers are graded on the server.</span
-            >
+                <path d="M5 12h14M13 6l6 6-6 6" /></svg
+            ></a>
           </div>
+          <p class="fine">Grade 4 equivalent fractions today · English</p>
         </div>
-        <aside
-          class="card lift reveal"
-          aria-label="Sample lesson (illustrative)"
+
+        <figure
+          class="studio"
+          aria-label="Illustration of the Studio: one objective, four drafted variants and their checks"
         >
-          <div class="row">
-            <b>Sample lesson</b><span class="pill idle">Illustration</span>
+          <h2 class="sr-only">Studio illustration</h2>
+          <div class="studio-bar">
+            <span><b>Studio</b><span class="crumb"> · New lesson</span></span>
+            <span class="pill idle">Illustration · synthetic data</span>
           </div>
-          <p class="objective">
-            “Students explain why 2/4 and 1/2 name the same amount using
-            fraction models.”
+          <div class="objective">
+            <div>
+              <span class="label">Your objective</span>
+              <q
+                >Students explain why 2/4 and 1/2 name the same amount using
+                fraction models.</q
+              >
+            </div>
+            <div class="src">
+              <span class="code">4.NF.A.1</span>
+              <span>Grounded in Learning Commons</span>
+            </div>
+          </div>
+          <ol class="variants">
+            <li style="--i: 0">
+              <span class="kind">A · Worked example</span>
+              <svg class="fig" viewBox="0 0 260 86" aria-hidden="true">
+                <rect class="off" x="10" y="8" width="240" height="28" rx="4" />
+                <rect class="on" x="10" y="8" width="120" height="28" rx="4" />
+                <rect
+                  class="off"
+                  x="10"
+                  y="50"
+                  width="240"
+                  height="28"
+                  rx="4"
+                />
+                <rect class="on" x="10" y="50" width="120" height="28" rx="4" />
+                <line class="cut" x1="70" y1="50" x2="70" y2="78" />
+                <line class="cut" x1="190" y1="50" x2="190" y2="78" />
+              </svg>
+              <h3>Same bar, cut two ways</h3>
+              <span class="verdict"
+                ><span class="pill idle checking">Checking…</span
+                ><span class="pill ok">Ready to review</span></span
+              >
+            </li>
+            <li style="--i: 1">
+              <span class="kind">B · Guided activity</span>
+              <svg class="fig" viewBox="0 0 260 86" aria-hidden="true">
+                <line class="track" x1="14" y1="43" x2="246" y2="43" />
+                <rect
+                  class="off"
+                  x="10"
+                  y="24"
+                  width="240"
+                  height="38"
+                  rx="4"
+                />
+                <rect class="on" x="10" y="24" width="120" height="38" rx="4" />
+                <circle class="knob" cx="130" cy="43" r="10" />
+              </svg>
+              <h3>Slide to make an equal share</h3>
+              <span class="verdict"
+                ><span class="pill idle checking">Checking…</span
+                ><span class="pill warn">Ready · 1 warning</span></span
+              >
+            </li>
+            <li class="blocked" style="--i: 2">
+              <span class="kind">C · Independent check</span>
+              <svg class="fig" viewBox="0 0 260 86" aria-hidden="true">
+                <rect class="off" x="10" y="8" width="240" height="28" rx="4" />
+                <rect class="on" x="10" y="8" width="80" height="28" rx="4" />
+                <rect
+                  class="off"
+                  x="10"
+                  y="50"
+                  width="240"
+                  height="28"
+                  rx="4"
+                />
+                <rect class="on" x="10" y="50" width="120" height="28" rx="4" />
+              </svg>
+              <h3>Answer key didn't match the diagram</h3>
+              <span class="verdict"
+                ><span class="pill idle checking">Checking…</span
+                ><span class="pill stop">Not shown to students</span></span
+              >
+            </li>
+            <li style="--i: 3">
+              <span class="kind">D · Matching</span>
+              <svg class="fig" viewBox="0 0 260 86" aria-hidden="true">
+                <rect class="off" x="10" y="10" width="70" height="28" rx="4" />
+                <rect class="off" x="10" y="48" width="70" height="28" rx="4" />
+                <rect
+                  class="off"
+                  x="180"
+                  y="10"
+                  width="70"
+                  height="28"
+                  rx="4"
+                />
+                <rect
+                  class="off"
+                  x="180"
+                  y="48"
+                  width="70"
+                  height="28"
+                  rx="4"
+                />
+                <line class="cut" x1="80" y1="24" x2="180" y2="62" />
+                <line class="cut" x1="80" y1="62" x2="180" y2="24" />
+              </svg>
+              <h3>Pair each fraction with its twin</h3>
+              <span class="verdict"
+                ><span class="pill idle checking">Checking…</span
+                ><span class="pill ok">Ready to review</span></span
+              >
+            </li>
+          </ol>
+          <div class="studio-foot">
+            <span class="muted"
+              >3 ready to review · 1 warning to acknowledge · 1 blocked before
+              you saw it</span
+            >
+            <span class="fake-btn" aria-hidden="true">Open review</span>
+          </div>
+        </figure>
+      </main>
+    </section>
+
+    <ul class="proof" aria-label="What you can check for yourself">
+      <li>
+        <b>Common Core 4.NF.A.1</b>Every draft is matched to the standard it
+        claims.
+      </li>
+      <li>
+        <b>Learning Commons sources</b>Each generation stores the source it
+        used. CC BY 4.0.
+      </li>
+      <li>
+        <b>A safety gate, not a promise</b>Unsafe drafts are blocked before you
+        preview them.
+      </li>
+      <li>
+        <b>Answers stay on the server</b>Students can't see the key or submit
+        their own score.
+      </li>
+    </ul>
+
+    <section class="wrap block" id="how" aria-labelledby="how-h">
+      <h2 class="h2" id="how-h">One loop, and you decide at every turn.</h2>
+      <ol class="path">
+        <li class="you">
+          <span class="node" aria-hidden="true"
+            ><svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M4 20h4L19 9l-4-4L4 16z" /></svg
+          ></span>
+          <h3>You write the objective</h3>
+          <p>Plain words and a grade. Add your own source file if you want.</p>
+          <span class="who-does">Your call</span>
+        </li>
+        <li>
+          <span class="node" aria-hidden="true"
+            ><svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M5 12l4 4 10-10" /></svg
+          ></span>
+          <h3>Scholé drafts and checks</h3>
+          <p>
+            Four variants, checked for structure, curriculum fit and safety
+            before you see them.
           </p>
-          <div class="row">
-            <span class="code">4.NF.A.1</span
-            ><span class="small muted">Grounded in Learning Commons</span>
-          </div>
-          <div class="mini">
-            <div><b>Worked example</b><span class="pill ok">Ready</span></div>
-            <div>
-              <b>Guided activity</b><span class="pill warn">1 warning</span>
-            </div>
-            <div>
-              <b>Independent check</b><span class="pill stop">Blocked</span>
-            </div>
-            <div><b>Matching</b><span class="pill ok">Ready</span></div>
-          </div>
+          <span class="who-does">Automatic</span>
+        </li>
+        <li class="you">
+          <span class="node" aria-hidden="true"
+            ><svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg
+          ></span>
+          <h3>You review and approve</h3>
+          <p>Edit one section at a time. An approved version never changes.</p>
+          <span class="who-does">Your call</span>
+        </li>
+        <li>
+          <span class="node" aria-hidden="true"
+            ><svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" /></svg
+          ></span>
+          <h3>Your student practises</h3>
+          <p>
+            One focused activity, graded on the server, with a reason for what
+            comes next.
+          </p>
+          <span class="who-does">After you publish</span>
+        </li>
+      </ol>
+    </section>
+
+    <section class="wrap block" id="checked" aria-labelledby="gain-h">
+      <h2 class="h2" id="gain-h">
+        Less time drafting. Every decision explained.
+      </h2>
+      <div class="gains">
+        <ul class="ledger">
+          <li>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="13" r="8" />
+              <path d="M12 9v4l2.5 2.5M9 2h6" />
+            </svg>
+            <b>Your evening back</b>
+            <span
+              >Start from four checked drafts instead of a blank page. We're
+              aiming for about three minutes from objective to approved lesson.
+              That's a target, not a measured result.</span
+            >
+          </li>
+          <li>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 6h10M4 12h16M4 18h7" />
+              <circle cx="18" cy="6" r="2" />
+              <circle cx="15" cy="18" r="2" />
+            </svg>
+            <b>A reason for every step</b>
+            <span
+              >Each lesson shows what comes before it, what comes next, and why,
+              so you can explain it to a parent or a colleague.</span
+            >
+          </li>
+          <li>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="4" y="10" width="16" height="11" rx="2" />
+              <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+            </svg>
+            <b>Nothing slips past you</b>
+            <span
+              >Warnings stay visible until you acknowledge them. Students only
+              ever see a version you approved.</span
+            >
+          </li>
+        </ul>
+
+        <aside
+          class="card lift receipt"
+          aria-label="Example check results for one draft (illustration)"
+        >
+          <header>
+            <b class="heading">Checks on variant C</b>
+            <span class="pill idle">Illustration</span>
+          </header>
+          <ul>
+            <li class="ok">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M5 12l4 4 10-10" />
+              </svg>
+              <span
+                >Structure fits the lesson format<small
+                  >Every section present and in order</small
+                ></span
+              >
+            </li>
+            <li class="ok">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M5 12l4 4 10-10" />
+              </svg>
+              <span
+                >Matches 4.NF.A.1<small
+                  >Source: Learning Commons snapshot</small
+                ></span
+              >
+            </li>
+            <li class="warn">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 4 2 20h20z" />
+                <path d="M12 10v4M12 17v.01" />
+              </svg>
+              <span
+                >Prerequisite gap: unit fractions<small
+                  >Shown to you, not hidden</small
+                ></span
+              >
+            </li>
+            <li class="stop">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="9" />
+                <path d="M8 8l8 8M16 8l-8 8" />
+              </svg>
+              <span
+                >Answer key didn't match the diagram<small
+                  >Blocked. This draft will never reach a student.</small
+                ></span
+              >
+            </li>
+          </ul>
         </aside>
-      </section>
-      <section class="loop" id="loop" aria-labelledby="lh">
-        <h2 class="h2" id="lh">
-          One loop, and the teacher decides at each turn
-        </h2>
-        <ol>
-          <li class="card you">
-            <h3>You write the objective</h3>
-            <p>Plain words, a grade, and an optional source file.</p>
-            <span class="who-does">Your call</span>
-          </li>
-          <li class="card system">
-            <h3>Edu-Canvas drafts and checks</h3>
+      </div>
+    </section>
+
+    <section class="wrap block" id="questions" aria-labelledby="faq-h">
+      <h2 class="h2" id="faq-h">Questions teachers ask first</h2>
+      <div class="faq">
+        <div>
+          <details open>
+            <summary>
+              What can I teach with it today?
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                aria-hidden="true"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </summary>
             <p>
-              Four variants, checked for structure, curriculum fit and safety
-              before you see them.
+              Grade 4 equivalent fractions (Common Core 4.NF.A.1), in English.
+              We'd rather do one topic properly than many topics loosely. More
+              grades and topics come next.
             </p>
-            <span class="who-does">Automatic</span>
-          </li>
-          <li class="card you">
-            <h3>You review and approve</h3>
-            <p>Edit one section at a time. Approved versions never change.</p>
-            <span class="who-does">Your call</span>
-          </li>
-          <li class="card student">
-            <h3>The student practices</h3>
+          </details>
+          <details>
+            <summary>
+              Can I change what it writes?
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                aria-hidden="true"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </summary>
             <p>
-              One focused activity, graded on the server, with a reason for what
-              comes next.
+              Yes. Edit any section, or reject a variant entirely. Each edit
+              makes a new version, and once you approve a version it never
+              changes behind your back.
             </p>
-            <span class="who-does">After you publish</span>
-          </li>
-        </ol>
-      </section>
-      <section class="close" aria-labelledby="close-h">
+          </details>
+          <details>
+            <summary>
+              What if a draft is wrong?
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                aria-hidden="true"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </summary>
+            <p>
+              Drafts that fail a check are blocked before you preview them.
+              Anything less serious shows up as a warning you have to
+              acknowledge before publishing.
+            </p>
+          </details>
+        </div>
+        <div>
+          <details>
+            <summary>
+              Does student data go to the AI?
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                aria-hidden="true"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </summary>
+            <p>
+              No student names or images reach the model. For now Scholé runs on
+              synthetic data and demo accounts only.
+            </p>
+          </details>
+          <details>
+            <summary>
+              What does it cost?
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                aria-hidden="true"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </summary>
+            <p>
+              <span class="placeholder">[Pricing to confirm]</span> Not decided
+              yet. Replace before launch.
+            </p>
+          </details>
+          <details>
+            <summary>
+              Do my students need an account?
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                aria-hidden="true"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </summary>
+            <p>
+              A student opens the link you assign and does one focused activity.
+              The answers are graded on the server, so nobody can fake a score.
+            </p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="close" aria-labelledby="close-h">
+      <div class="scene" aria-hidden="true">
+        <svg
+          viewBox="0 0 1600 900"
+          preserveAspectRatio="xMidYMax slice"
+          focusable="false"
+        >
+          <defs>
+            <linearGradient id="dusk" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="var(--sky-mid)" />
+              <stop offset="0.6" stop-color="var(--sky-lo)" />
+              <stop offset="1" stop-color="#d9935f" />
+            </linearGradient>
+          </defs>
+          <rect width="1600" height="900" fill="url(#dusk)" />
+          <rect
+            width="1600"
+            height="900"
+            fill="url(#dotsClay)"
+            mask="url(#skyMask)"
+            opacity="0.45"
+          />
+          <g id="duskLand">
+            <path
+              d="M0 600 C260 560 520 580 800 590 S1300 560 1600 572 V900 H0Z"
+              fill="var(--hill-mid)"
+            />
+            <!-- olive rows on the slope -->
+            <g fill="var(--olive)">
+              <ellipse cx="180" cy="618" rx="34" ry="18" />
+              <ellipse cx="300" cy="612" rx="30" ry="16" />
+              <ellipse cx="420" cy="616" rx="34" ry="18" />
+              <ellipse cx="1180" cy="604" rx="32" ry="17" />
+              <ellipse cx="1300" cy="598" rx="28" ry="15" />
+              <ellipse cx="1420" cy="602" rx="32" ry="17" />
+            </g>
+            <path
+              d="M0 680 C300 640 640 676 960 664 S1400 640 1600 652 V900 H0Z"
+              fill="var(--hill-near)"
+            />
+            <path
+              d="M0 680 C300 640 640 676 960 664 S1400 640 1600 652 V900 H0Z"
+              fill="url(#dotsInk)"
+              opacity="0.3"
+            />
+            <path
+              d="M0 740 C380 712 820 750 1200 730 S1500 720 1600 726 V900 H0Z"
+              fill="var(--hill-front)"
+            />
+          </g>
+          <use href="#duskLand" filter="url(#stipple)" opacity="0.22" />
+        </svg>
+      </div>
+      <div class="inner">
         <h2 class="h2" id="close-h">Bring tomorrow's objective.</h2>
         <p class="lede">
-          One sentence is enough. You'll have four variants to review in about a
-          minute, and nothing reaches a student until you say so.
+          One sentence is enough. You review four checked variants, and nothing
+          reaches a student until you say so.
         </p>
         <div class="cta">
-          <a class="btn" href="5-sign-in.html">Start with one objective</a>
-          <a class="btn secondary" href="5-sign-in.html">Sign in</a>
+          <a class="btn" href="5-sign-in.html">Create a teacher account</a>
         </div>
-      </section>
-    </main>
-    <footer class="site-foot">
-      <span>Edu-Canvas · Grades 3–6 · Grade 4 equivalent fractions today</span>
-      <span>Standards from Learning Commons (CC BY 4.0)</span>
-    </footer>
+        <p class="fine">
+          Already have one? <a href="5-sign-in.html">Sign in</a>
+        </p>
+      </div>
+      <footer class="site-foot">
+        <span class="brand"
+          ><svg
+            width="22"
+            height="22"
+            viewBox="0 0 26 26"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path d="M2 8 13 2l11 6v2H2z" />
+            <rect x="4" y="11" width="3" height="10" />
+            <rect x="11.5" y="11" width="3" height="10" />
+            <rect x="19" y="11" width="3" height="10" />
+            <rect x="2" y="22" width="22" height="2.5" /></svg
+          >Scholé</span
+        >
+        <span>Grades 3–6 · Grade 4 equivalent fractions today</span>
+        <span
+          >Standards from Learning Commons (CC BY 4.0) · Synthetic data
+          only</span
+        >
+      </footer>
+    </section>
   </body>
 </html>

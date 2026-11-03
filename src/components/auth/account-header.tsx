@@ -1,5 +1,5 @@
 import { LogOut } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { BrandMark } from "@/components/ui/brand-mark";
 
 import { Button } from "@/components/ui/button";
 
@@ -25,12 +25,7 @@ export const AccountHeader = ({
 }: AccountHeaderProperties): ReactElement => {
   return (
     <header className="studio-nav">
-      <Link className="studio-brand" to="/" aria-label="Scholé home">
-        <span className="studio-brand__mark" aria-hidden="true">
-          S
-        </span>
-        <span className="studio-brand__name">Scholé</span>
-      </Link>
+      <BrandMark className="studio-brand" />
       <div className="studio-nav__actions">
         <span className="account-identity">
           <span className="account-identity__name">{displayName}</span>

@@ -1,0 +1,185 @@
+/*
+ * Hanken Grotesk Variable, split into a preloaded core face (ASCII + the
+ * punctuation most pages use) and an extended face (Latin-1 + Latin
+ * Extended-A) that only downloads when a page renders one of its characters.
+ * Regenerate with scripts/fonts-subset.py; ranges must match
+ * public/fonts/manifest.json. font-display and the fallback stack are
+ * unchanged from the previous single-file setup.
+ */
+@font-face {
+  font-display: swap;
+  font-family: "Hanken Grotesk Variable";
+  font-style: normal;
+  font-weight: 100 900;
+  src: url("/fonts/hanken-grotesk-variable-core.woff2")
+    format("woff2-variations");
+  unicode-range:
+    U+0020-007E, U+00B7, U+2013-2014, U+2018-2019, U+201C-201D, U+2026;
+}
+
+@font-face {
+  font-display: swap;
+  font-family: "Hanken Grotesk Variable";
+  font-style: normal;
+  font-weight: 100 900;
+  src: url("/fonts/hanken-grotesk-variable-extended.woff2")
+    format("woff2-variations");
+  unicode-range: U+00A0-00B6, U+00B8-017E;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: oklch(96.5% 0.018 86deg);
+  --foreground: oklch(23.5% 0.028 65deg);
+  --card: oklch(98.5% 0.012 86deg);
+  --card-foreground: oklch(23.5% 0.028 65deg);
+  --popover: oklch(98.5% 0.012 86deg);
+  --popover-foreground: oklch(23.5% 0.028 65deg);
+
+  /* Clay is the one action colour (AgDR-0017 slice 1b). The mocks use
+     #b4532f; this is one step deeper so clay text passes AA (5.1:1) on
+     every warm ground the census measured. */
+  --primary: #a64b2a;
+  --primary-foreground: #fff;
+  --primary-deep: #8f3f22;
+  --primary-soft: #f6e6de;
+  --secondary: oklch(89% 0.045 87deg);
+  --secondary-foreground: oklch(28% 0.035 67deg);
+  --muted: oklch(92.5% 0.026 86deg);
+  --muted-foreground: oklch(48% 0.035 68deg);
+  --accent: oklch(91% 0.065 77deg);
+  --accent-foreground: oklch(30% 0.04 62deg);
+  --destructive: oklch(55% 0.18 28deg);
+  --border: var(--line);
+  --input: var(--line-control);
+  --ring: var(--focus-ring-color);
+
+  /* Field radius; the @theme ladder derives sm 6, md 8, lg 10, xl 14 (card). */
+  --radius: var(--radius-field);
+
+  /* Teacher studio palette. */
+  --teacher-paper: oklch(96.5% 0.018 86deg);
+  --teacher-ink: oklch(23.5% 0.028 65deg);
+
+  /* Aliased to clay until the studio slice removes the palette (AgDR-0016). */
+  --teacher-forest: var(--primary-deep);
+  --teacher-mint: var(--primary-soft);
+  --teacher-butter: oklch(92.5% 0.065 77deg);
+  --teacher-sky: oklch(92.5% 0.04 228deg);
+  --teacher-clay: oklch(78% 0.095 40deg);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
+  /*
+   * Structural scale (AgDR-0017 slice 1a), ported from
+   * .impeccable/mocks/screens/base.css. Components move onto these one
+   * surface at a time; nothing reads them until then.
+   */
+
+  /* Type roles. Serif carries display, section and title; sans carries
+     everything you act on or read. */
+  --font-display: ui-serif, georgia, "Times New Roman", serif;
+  --type-display: clamp(2.25rem, 1.6rem + 2.4vw, 3.25rem);
+  --type-page: clamp(2rem, 1.5rem + 1.8vw, 3.25rem);
+  --type-section: 1.625rem;
+  --type-title: 1.375rem;
+  --type-heading: 1.25rem;
+  --type-lead: 1.25rem;
+  --type-body-lg: 1.0625rem;
+  --type-body: 1rem;
+  --type-secondary: 0.875rem;
+  --type-label: 0.875rem;
+  --type-meta: 0.8125rem;
+  --type-micro: 0.75rem;
+
+  /* Spacing on a 4px base. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 72px;
+
+  /* Two radii: cards and fields. Pills use 999px. */
+  --radius-card: 14px;
+  --radius-field: 10px;
+  --radius-pill: 999px;
+
+  /* Divider ladder: hairline, strong, and the 3:1 control border. */
+  --line: #e6e1d8;
+  --line-strong: #d6cfc3;
+  --line-control: #938c80;
+
+  /* One raised shadow. */
+  --shadow-lift:
+    0 1px 2px rgb(31 29 26 / 4%), 0 8px 24px -12px rgb(31 29 26 / 10%);
+
+  /* Focus is not a brand moment: the strongest neutral ring. */
+  --focus-ring-color: #1f1d1a;
+  --focus-ring-width: 3px;
+  --focus-ring-offset: 3px;
+
+  /* Landing scene palette (halftone artwork only, never UI chrome). */
+  --scene-sky-hi: #f8f2e6;
+  --scene-sky-mid: #f5d9bf;
+  --scene-sky-lo: #eeb987;
+  --scene-sun: #fcecc9;
+  --scene-stone: #f2e9d8;
+  --scene-stone-shade: #c8b28e;
+  --scene-stone-deep: #8e7354;
+  --scene-hill-far: #cfa682;
+  --scene-hill-mid: #8d9263;
+  --scene-hill-near: #5b6740;
+  --scene-hill-front: #3d4a2c;
+  --scene-olive: #6c7848;
+  --scene-olive-hi: #a5ab79;
+  --scene-bark: #4b3c2b;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 0.25rem);
+  --radius-md: calc(var(--radius) - 0.125rem);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 0.25rem);
+  --font-sans:
+    "Hanken Grotesk Variable", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light;
+  min-block-size: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  min-block-size: 100%;
+  text-rendering: optimizelegibility;
+}

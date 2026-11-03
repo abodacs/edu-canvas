@@ -289,11 +289,14 @@ describe("designed teacher states (issue #8 AC6)", () => {
 });
 
 describe("dashboard styles", () => {
-  const stylesUrl = new URL("../../styles.css", import.meta.url);
+  const stylesUrl = new URL("../../styles/progress.css", import.meta.url);
   const styles = readFileSync(stylesUrl, "utf-8");
-  const progressBlock = styles.slice(
-    styles.indexOf("/* #8 teacher progress dashboard")
-  );
+  const marker = styles.indexOf("/* #8 teacher progress dashboard");
+  const progressBlock = styles.slice(marker);
+
+  it("reads the progress block it checks", () => {
+    expect(marker).toBeGreaterThanOrEqual(0);
+  });
 
   it("adds no animation to the progress surfaces", () => {
     expect(progressBlock).not.toMatch(

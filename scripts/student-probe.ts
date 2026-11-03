@@ -6,15 +6,11 @@ Runs the learner page in headless Chromium against the built server and a scratc
 Skip-safe: with no Chromium or no PostgreSQL it prints one explicit SKIP line and exits 0. Set STUDENT_PROBE_REQUIRED=true to turn a skip into a failure.
 */
 /* eslint-disable no-await-in-loop, unicorn/try-complexity -- Browser steps are sequential by design: each key press depends on the focus the previous one left, and each scenario reuses one assignment's attempt budget. The top-level try owns the scratch database and server lifetime as one unit. */
-import { spawn } from "node:child_process";
-import { once } from "node:events";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 
-import postgres from "postgres";
 import { chromium } from "playwright-core";
 
 import {
@@ -31,8 +27,8 @@ import {
   hasTabbedTo,
   touchTargetProblems,
 } from "./student-probe/checks";
+import { loadEnvironmentFile, withScratchApp } from "./ui-gate/app";
 
-import type { ChildProcess } from "node:child_process";
 import type { Browser, BrowserContext, Page, Route } from "playwright-core";
 
 type Language = "en" | "ar";
@@ -49,12 +45,7 @@ interface CheckResult {
 }
 
 const probeName = "verify:student-probe";
-const defaultDatabaseUrl =
-  "postgresql://edu_canvas:edu_canvas_dev@127.0.0.1:5432/edu_canvas";
-const serverEntry = ".output/server/index.mjs";
-const startupTimeoutMs = 60_000;
 const loadingDelayMs = 1500;
-const healthPollMs = 250;
 const studentEmail = "omar.demo@example.test";
 const studentPassword = "synthetic-pass-1";
 
@@ -90,75 +81,6 @@ const skip = (reason: string): never => {
   }
   console.log(line);
   process.exit(0);
-};
-
-const loadEnvironmentFile = (): void => {
-  if (existsSync(".env")) {
-    process.loadEnvFile(".env");
-  }
-};
-
-const run = async (
-  command: string,
-  commandArguments: readonly string[],
-  environment: NodeJS.ProcessEnv
-): Promise<string> => {
-  const child = spawn(command, commandArguments, {
-    env: environment,
-    stdio: ["ignore", "pipe", "pipe"],
-  });
-  let stdout = "";
-  let stderr = "";
-  child.stdout.on("data", (chunk: Buffer) => {
-    stdout += chunk.toString();
-  });
-  child.stderr.on("data", (chunk: Buffer) => {
-    stderr += chunk.toString();
-  });
-  const [code] = (await once(child, "close")) as [number | null];
-  if (code !== 0) {
-    throw new Error(
-      `${command} ${commandArguments.join(" ")} exited ${String(code)}: ${stderr.slice(-2000)}`
-    );
-  }
-  return stdout;
-};
-
-const freePort = async (): Promise<number> => {
-  const server = createServer();
-  server.listen(0, "127.0.0.1");
-  await once(server, "listening");
-  const address = server.address();
-  const port = typeof address === "object" && address ? address.port : 0;
-  server.close();
-  await once(server, "close");
-  return port;
-};
-
-const isHealthy = async (baseUrl: string): Promise<boolean> => {
-  try {
-    const response = await fetch(`${baseUrl}/api/health`);
-    return response.ok;
-  } catch {
-    return false;
-  }
-};
-
-const waitForHealth = async (baseUrl: string): Promise<void> => {
-  const deadline = Date.now() + startupTimeoutMs;
-  while (Date.now() < deadline) {
-    if (await isHealthy(baseUrl)) {
-      return;
-    }
-    await delay(healthPollMs);
-  }
-  throw new Error(`The server did not become healthy at ${baseUrl}.`);
-};
-
-const scratchDatabaseUrl = (baseUrl: string, name: string): string => {
-  const url = new URL(baseUrl);
-  url.pathname = `/${name}`;
-  return url.href;
 };
 
 const signIn = async (page: Page, baseUrl: string): Promise<void> => {
@@ -621,17 +543,6 @@ const report = (matrix: Matrix): number => {
   return failed.length === 0 ? 0 : 1;
 };
 
-const ignoreNotice = (): void => {
-  // Server notices (such as "database does not exist, skipping") are not
-  // probe evidence.
-};
-
-const stopServer = (server: ChildProcess | undefined): void => {
-  if (server && server.exitCode === null) {
-    server.kill("SIGTERM");
-  }
-};
-
 const main = async (): Promise<number> => {
   loadEnvironmentFile();
 
@@ -642,98 +553,49 @@ const main = async (): Promise<number> => {
       `no Chromium at ${chromiumPath} (install with \`pnpm exec playwright-core install chromium\` or set STUDENT_PROBE_CHROMIUM)`
     );
   }
-  if (!existsSync(serverEntry)) {
+
+  let browser: Browser | undefined;
+  const outcome = await withScratchApp(
+    {
+      prefix: "edu_canvas_probe",
+      seedScripts: ["scripts/student-probe/seed.ts"],
+    },
+    async ({ baseUrl, seedOutputs }) => {
+      const links = JSON.parse(
+        seedOutputs[0]?.trim().split("\n").at(-1) ?? "{}"
+      ) as Record<Language, LearnerLink>;
+      try {
+        browser = await chromium.launch({ executablePath: chromiumPath });
+        const signInContext = await browser.newContext({ viewport: phone });
+        await signIn(await signInContext.newPage(), baseUrl);
+        const storageState = await signInContext.storageState();
+        await signInContext.close();
+
+        const matrix: Matrix = {
+          browser,
+          baseUrl,
+          storageState,
+          links,
+          results: [],
+          traces: {},
+        };
+        await runMatrix(matrix);
+        return report(matrix);
+      } finally {
+        await browser?.close();
+      }
+    }
+  );
+  if (outcome.kind === "missing-build") {
     console.error(
-      `${probeName}: ${serverEntry} is missing; run pnpm build first.`
+      `${probeName}: .output/server/index.mjs is missing; run pnpm build first.`
     );
     return 1;
   }
-
-  const baseDatabaseUrl = process.env.DATABASE_URL ?? defaultDatabaseUrl;
-  const admin = postgres(baseDatabaseUrl, {
-    max: 1,
-    connect_timeout: 5,
-    onnotice: ignoreNotice,
-  });
-  try {
-    await admin`select 1`;
-  } catch {
-    await admin.end();
-    const target = new URL(baseDatabaseUrl);
-    skip(`PostgreSQL unreachable at ${target.host}`);
+  if (outcome.kind === "skipped") {
+    return skip(outcome.reason);
   }
-
-  const scratchName = `edu_canvas_probe_${process.pid}_${Date.now()}`;
-  await admin.unsafe(`create database ${scratchName}`);
-  const databaseUrl = scratchDatabaseUrl(baseDatabaseUrl, scratchName);
-  let server: ChildProcess | undefined;
-  let browser: Browser | undefined;
-  try {
-    const port = await freePort();
-    const baseUrl = `http://localhost:${port}`;
-    // The probe forces the development composition so the deterministic
-    // identity provider signs the synthetic learner in; CI's preview values
-    // never reach the child.
-    const environment: NodeJS.ProcessEnv = {
-      PATH: process.env.PATH,
-      HOME: process.env.HOME,
-      NODE_ENV: "production",
-      APP_ENV: "development",
-      SYNTHETIC_DATA_ONLY: "true",
-      DATABASE_URL: databaseUrl,
-      OPENAI_API_KEY: "student-probe-unused",
-      AUTH_PROVIDER: "deterministic",
-      AUTH_PUBLIC_ORIGIN: baseUrl,
-      PORT: String(port),
-      HOST: "127.0.0.1",
-    };
-    await run(
-      process.execPath,
-      ["--import", "tsx", "scripts/database-migrate.ts"],
-      environment
-    );
-    await run(
-      process.execPath,
-      ["--import", "tsx", "scripts/database-seed.ts"],
-      environment
-    );
-    const seeded = await run(
-      process.execPath,
-      ["--import", "tsx", "scripts/student-probe/seed.ts"],
-      environment
-    );
-    const links = JSON.parse(
-      seeded.trim().split("\n").at(-1) ?? "{}"
-    ) as Record<Language, LearnerLink>;
-
-    server = spawn(process.execPath, [serverEntry], {
-      env: environment,
-      stdio: "ignore",
-    });
-    await waitForHealth(baseUrl);
-
-    browser = await chromium.launch({ executablePath: chromiumPath });
-    const signInContext = await browser.newContext({ viewport: phone });
-    await signIn(await signInContext.newPage(), baseUrl);
-    const storageState = await signInContext.storageState();
-    await signInContext.close();
-
-    const matrix: Matrix = {
-      browser,
-      baseUrl,
-      storageState,
-      links,
-      results: [],
-      traces: {},
-    };
-    await runMatrix(matrix);
-    return report(matrix);
-  } finally {
-    await browser?.close();
-    stopServer(server);
-    await admin.unsafe(`drop database if exists ${scratchName} with (force)`);
-    await admin.end();
-  }
+  return outcome.value;
 };
 
 try {

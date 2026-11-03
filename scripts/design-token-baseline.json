@@ -2,30 +2,57 @@
   "note": "Ratchet ceiling for scripts/verify-design-tokens.ts. Counts may only fall; regenerate with --update after a reduction.",
   "rules": {
     "raw-color": {
-      "src/styles.css": 38
+      "src/styles/progress.css": 19,
+      "src/styles/studio.css": 2
     },
     "literal-radius": {
-      "src/styles.css": 83
+      "src/styles/a2ui.css": 17,
+      "src/styles/auth.css": 6,
+      "src/styles/base.css": 2,
+      "src/styles/generation.css": 3,
+      "src/styles/landing.css": 3,
+      "src/styles/learn.css": 5,
+      "src/styles/progress.css": 7,
+      "src/styles/review.css": 3,
+      "src/styles/source.css": 7,
+      "src/styles/studio.css": 24,
+      "src/styles/workspace.css": 6
     },
     "literal-font-size": {
-      "src/styles.css": 202
+      "src/styles/a2ui.css": 33,
+      "src/styles/auth.css": 15,
+      "src/styles/base.css": 11,
+      "src/styles/generation.css": 15,
+      "src/styles/landing.css": 26,
+      "src/styles/learn.css": 2,
+      "src/styles/progress.css": 5,
+      "src/styles/review.css": 19,
+      "src/styles/source.css": 12,
+      "src/styles/studio.css": 56,
+      "src/styles/workspace.css": 8
     },
     "literal-font-family": {
-      "src/styles.css": 3
+      "src/styles/source.css": 1,
+      "src/styles/tokens.css": 2
     },
     "literal-shadow": {
-      "src/styles.css": 5
+      "src/styles/auth.css": 1,
+      "src/styles/studio.css": 3,
+      "src/styles/workspace.css": 1
     },
     "teacher-alias": {
-      "src/styles.css": 151
+      "src/styles/auth.css": 11,
+      "src/styles/generation.css": 1,
+      "src/styles/review.css": 6,
+      "src/styles/source.css": 7,
+      "src/styles/studio.css": 112,
+      "src/styles/workspace.css": 14
     },
     "undefined-token": {
-      "src/styles.css  --font-mono": 1,
-      "src/styles.css  --surface": 1,
-      "src/styles.css  --surface-muted": 1,
-      "src/styles.css  --success": 1,
-      "src/styles.css  --danger": 1,
-      "src/styles.css  --text": 1
+      "src/styles/progress.css  --surface": 1,
+      "src/styles/progress.css  --text": 1,
+      "src/styles/progress.css  --surface-muted": 1,
+      "src/styles/progress.css  --font-mono": 1
     },
     "inline-style-literal": {}
   }

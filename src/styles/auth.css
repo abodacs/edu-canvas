@@ -1,0 +1,354 @@
+/* Authentication surfaces: a calm, single-column focus for sign-in, sign-up,
+   and class selection. They reuse the studio palette tokens and logical
+   properties, so the existing Arabic / RTL surfaces keep working. */
+.auth-shell {
+  display: grid;
+  align-items: center;
+  background:
+    radial-gradient(
+      60% 45% at 88% 0%,
+      color-mix(in oklch, var(--teacher-butter) 66%, transparent),
+      transparent 100%
+    ),
+    var(--teacher-paper);
+  min-block-size: 100dvh;
+  padding-block: clamp(1.5rem, 5vw, 4rem);
+  padding-inline: clamp(1rem, 5vw, 3rem);
+}
+
+.auth-frame {
+  inline-size: min(100%, 32rem);
+  margin-inline: auto;
+}
+
+.auth-card {
+  display: grid;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border: 1px solid
+    color-mix(in oklch, var(--teacher-forest) 20%, var(--border));
+  border-radius: 1.5rem;
+  background: color-mix(in oklch, var(--card) 88%, var(--teacher-mint));
+  box-shadow: 0 1.5rem 3rem
+    color-mix(in oklch, var(--teacher-forest) 9%, transparent);
+  gap: 1.25rem;
+  margin-block-start: 1.25rem;
+}
+
+.auth-card__brand {
+  inline-size: fit-content;
+}
+
+.auth-card__header {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.auth-heading {
+  margin: 0;
+  color: var(--teacher-ink);
+  font-size: clamp(1.7rem, 4vw, 2.35rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  max-inline-size: 20ch;
+}
+
+.auth-lede {
+  margin: 0;
+  color: color-mix(in oklch, var(--teacher-ink) 66%, transparent);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  max-inline-size: 46ch;
+}
+
+.auth-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.auth-eyebrow svg {
+  block-size: 0.9rem;
+  inline-size: 0.9rem;
+}
+
+.auth-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.field__label {
+  color: var(--teacher-ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.field__control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.field__input {
+  border: 1px solid var(--input);
+  border-radius: 0.65rem;
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+  inline-size: 100%;
+  min-block-size: 2.75rem;
+  padding-block: 0.55rem;
+  padding-inline: 0.8rem;
+}
+
+.field__input--with-toggle {
+  padding-inline-end: 5.25rem;
+}
+
+.field__input[aria-invalid="true"] {
+  border-color: var(--destructive);
+}
+
+.password-toggle {
+  position: absolute;
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 750;
+  gap: 0.3rem;
+  inset-inline-end: 0.3rem;
+}
+
+.password-toggle svg {
+  block-size: 0.9rem;
+  inline-size: 0.9rem;
+}
+
+.field__hint {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.field__error {
+  margin: 0;
+  color: var(--destructive);
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.auth-status {
+  display: grid;
+  border-radius: 0.8rem;
+  gap: 0.35rem;
+  padding-block: 0.85rem;
+  padding-inline: 1rem;
+}
+
+.auth-status:empty {
+  display: none;
+}
+
+.auth-status:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 3px;
+}
+
+.auth-status__title {
+  font-size: 0.85rem;
+  font-weight: 750;
+}
+
+.auth-status p {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.auth-status__action {
+  inline-size: fit-content;
+  margin-block-start: 0.35rem;
+}
+
+.auth-status--error {
+  border: 1px solid color-mix(in oklch, var(--destructive) 32%, var(--border));
+  background: color-mix(in oklch, var(--destructive) 7%, var(--card));
+  color: var(--destructive);
+}
+
+.auth-status--info {
+  border: 1px solid color-mix(in oklch, var(--primary) 26%, var(--border));
+  background: color-mix(in oklch, var(--primary) 7%, var(--card));
+  color: color-mix(in oklch, var(--primary) 60%, var(--foreground));
+}
+
+.auth-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.auth-submit {
+  border-radius: 0.8rem;
+  font-size: 0.95rem;
+  font-weight: 750;
+  min-block-size: 2.9rem;
+}
+
+.auth-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 0.84rem;
+  gap: 0.75rem;
+}
+
+.auth-links__aside {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.auth-links__aside svg {
+  block-size: 0.85rem;
+  inline-size: 0.85rem;
+}
+
+.auth-note {
+  display: flex;
+  align-items: flex-start;
+  margin: 0;
+  border-block-start: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 0.78rem;
+  gap: 0.5rem;
+  line-height: 1.5;
+  padding-block-start: 1rem;
+}
+
+.auth-note svg {
+  flex: none;
+  block-size: 1rem;
+  inline-size: 1rem;
+  margin-block-start: 0.1rem;
+}
+
+.auth-note--quiet {
+  border-block-start: 0;
+  padding-block-start: 0;
+}
+
+.verification-panel {
+  display: grid;
+  border: 1px solid color-mix(in oklch, var(--primary) 26%, var(--border));
+  border-radius: 0.9rem;
+  background: color-mix(in oklch, var(--primary) 6%, var(--card));
+  gap: 0.7rem;
+  padding-block: 1.1rem;
+  padding-inline: 1.1rem;
+}
+
+.verification-panel:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 3px;
+}
+
+.verification-panel__heading {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  color: var(--teacher-ink);
+  font-size: 1.05rem;
+  gap: 0.45rem;
+}
+
+.verification-panel p {
+  margin: 0;
+  color: color-mix(in oklch, var(--teacher-ink) 72%, transparent);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.verification-panel__address {
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+
+.membership-fieldset {
+  display: grid;
+  padding: 0;
+  border: 0;
+  margin: 0;
+  gap: 0.6rem;
+}
+
+.membership-options {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.membership-option {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--card);
+  cursor: pointer;
+  gap: 0.75rem;
+  min-block-size: 3.25rem;
+  padding-block: 0.6rem;
+  padding-inline: 0.85rem;
+  transition:
+    border-color 0.16s ease,
+    background-color 0.16s ease;
+}
+
+.membership-option:has(input:checked) {
+  border-color: color-mix(in oklch, var(--primary) 52%, var(--border));
+  background: color-mix(in oklch, var(--primary) 8%, var(--card));
+}
+
+/* Keyboard focus reads as a soft card ring (#168 P1-5); the radio itself
+   carries the checked tint inside the card instead of a heavy halo. */
+.membership-option:has(input:focus-visible) {
+  border-color: color-mix(in oklch, var(--ring) 55%, var(--border));
+  outline: 2px solid color-mix(in oklch, var(--ring) 60%, transparent);
+  outline-offset: 2px;
+}
+
+.membership-option input:focus-visible {
+  outline: none;
+}
+
+.membership-option input {
+  accent-color: var(--primary);
+  block-size: 1.15rem;
+  inline-size: 1.15rem;
+}
+
+.membership-option__copy {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.membership-option__class {
+  color: var(--teacher-ink);
+  font-size: 0.92rem;
+  font-weight: 750;
+}
+
+.membership-option__role {
+  color: var(--muted-foreground);
+  font-size: 0.76rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}

@@ -2,6 +2,9 @@ import { readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { clampCeiling, totalOf } from "./design-token-ratchet.ts";
+import type { Counts } from "./design-token-ratchet.ts";
+
 // Design-token gate for the UX revamp.
 //
 // The warm direction in b5472de never reached src/: it lived in
@@ -28,7 +31,8 @@ const BASELINE_PATH = join(
   "scripts",
   "design-token-baseline.json"
 );
-const STYLESHEET = join(projectRoot, "src", "styles.css");
+const STYLESHEET_ROOT = join(projectRoot, "src", "styles.css");
+const STYLESHEET_DIR = join(projectRoot, "src", "styles");
 const TSX_ROOTS = [
   join(projectRoot, "src", "components"),
   join(projectRoot, "src", "routes"),
@@ -46,7 +50,6 @@ const RULES = [
 ] as const;
 
 type RuleId = (typeof RULES)[number];
-type Counts = Record<string, number>;
 interface Baseline {
   readonly note: string;
   readonly rules: Record<RuleId, Counts>;
@@ -54,9 +57,8 @@ interface Baseline {
 interface ScanState {
   readonly counts: Record<string, Counts>;
   readonly declared: Set<string>;
-  readonly referenced: Set<string>;
-  readonly file: string;
-  aliasCount: number;
+  readonly referenced: Map<string, string>;
+  file: string;
 }
 
 const COLOUR_PATTERNS = [
@@ -174,50 +176,67 @@ const scanLine = (text: string, state: ScanState): void => {
 
   for (const match of text.matchAll(DECLARATION_TOKEN)) {
     const name = match.groups?.name;
-    if (name) {
-      state.referenced.add(name);
+    if (name && !state.referenced.has(name)) {
+      state.referenced.set(name, state.file);
     }
   }
 
   if (text.includes("var(--teacher-")) {
-    state.aliasCount += 1;
+    incrementFor(state.counts, "teacher-alias", state.file);
   }
 };
 
-const scanStylesheet = async (): Promise<{
+const stylesheetFiles = async (): Promise<string[]> => {
+  const entries = await readdir(STYLESHEET_DIR, { withFileTypes: true });
+  const nested = entries
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".css"))
+    .map((entry) => join(STYLESHEET_DIR, entry.name))
+    .toSorted();
+  return [STYLESHEET_ROOT, ...nested];
+};
+
+// Every stylesheet shares one declaration set: a token declared in
+// styles/tokens.css is defined for every surface file.
+const scanStylesheets = async (): Promise<{
   counts: Record<string, Counts>;
   declaredCount: number;
+  fileCount: number;
 }> => {
-  const source = await readFile(STYLESHEET, "utf-8");
+  const files = await stylesheetFiles();
+  const sources = await Promise.all(
+    files.map((file) => readFile(file, "utf-8"))
+  );
   const state: ScanState = {
     counts: {},
     declared: new Set<string>(),
-    referenced: new Set<string>(),
-    file: relative(projectRoot, STYLESHEET),
-    aliasCount: 0,
+    referenced: new Map<string, string>(),
+    file: "",
   };
 
-  for (const text of stripComments(source)) {
-    if (text.length > 0) {
-      scanLine(text, state);
+  for (const [index, file] of files.entries()) {
+    state.file = relative(projectRoot, file);
+    for (const text of stripComments(sources[index] ?? "")) {
+      if (text.length > 0) {
+        scanLine(text, state);
+      }
     }
   }
 
-  if (state.aliasCount > 0) {
-    state.counts["teacher-alias"] = { [state.file]: state.aliasCount };
-  }
-
   const missing: Counts = {};
-  for (const name of state.referenced) {
+  for (const [name, file] of state.referenced) {
     if (!state.declared.has(name)) {
-      missing[`${state.file}  ${name}`] = 1;
+      missing[`${file}  ${name}`] = 1;
     }
   }
   if (Object.keys(missing).length > 0) {
     state.counts["undefined-token"] = missing;
   }
 
-  return { counts: state.counts, declaredCount: state.declared.size };
+  return {
+    counts: state.counts,
+    declaredCount: state.declared.size,
+    fileCount: files.length,
+  };
 };
 
 const collectTsx = async (directory: string): Promise<string[]> => {
@@ -265,18 +284,29 @@ const scanTsx = async (): Promise<Counts> => {
   return counts;
 };
 
-const totalOf = (perFile: Counts | undefined): number =>
-  Object.values(perFile ?? {}).reduce((sum, value) => sum + value, 0);
+const readBaseline = async (): Promise<Baseline | undefined> => {
+  try {
+    return JSON.parse(await readFile(BASELINE_PATH, "utf-8")) as Baseline;
+  } catch {
+    return undefined;
+  }
+};
 
 const writeBaseline = async (counts: Record<string, Counts>): Promise<void> => {
+  const previous = await readBaseline();
+  const { rules, refused } = clampCeiling(RULES, previous?.rules, counts);
   const next: Baseline = {
     note: "Ratchet ceiling for scripts/verify-design-tokens.ts. Counts may only fall; regenerate with --update after a reduction.",
-    rules: Object.fromEntries(
-      RULES.map((rule) => [rule, counts[rule] ?? {}])
-    ) as Record<RuleId, Counts>,
+    rules: rules as Record<RuleId, Counts>,
   };
   await writeFile(BASELINE_PATH, `${JSON.stringify(next, null, 2)}\n`, "utf-8");
   console.log(`Updated ${relative(projectRoot, BASELINE_PATH)}`);
+  for (const entry of refused) {
+    console.error(`  kept old ceiling, count grew: ${entry}`);
+  }
+  if (refused.length > 0) {
+    process.exitCode = 1;
+  }
 };
 
 const report = (
@@ -299,8 +329,8 @@ const report = (
   return grown;
 };
 
-const main = async (): Promise<string[]> => {
-  const { counts, declaredCount } = await scanStylesheet();
+const main = async (): Promise<string[] | null> => {
+  const { counts, declaredCount, fileCount } = await scanStylesheets();
   const current = { ...counts };
   const inline = await scanTsx();
   if (Object.keys(inline).length > 0) {
@@ -309,10 +339,12 @@ const main = async (): Promise<string[]> => {
 
   if (process.argv.includes("--update")) {
     await writeBaseline(current);
-    return [];
+    return null;
   }
 
-  console.log(`Design tokens: ${declaredCount} declarations in src/styles.css`);
+  console.log(
+    `Design tokens: ${declaredCount} declarations across ${fileCount} stylesheets`
+  );
   const baseline = JSON.parse(
     await readFile(BASELINE_PATH, "utf-8")
   ) as Baseline;
@@ -320,7 +352,9 @@ const main = async (): Promise<string[]> => {
 };
 
 const grown = await main();
-if (grown.length === 0) {
+if (grown === null) {
+  // --update reported its own outcome and exit code.
+} else if (grown.length === 0) {
   console.log("\nDesign-token ratchet holds.");
 } else {
   const lines = grown.map((entry) => `  - ${entry}`);
@@ -331,4 +365,6 @@ if (grown.length === 0) {
       `If the change is genuinely unavoidable, that is a design decision: raise it in review, do not edit the baseline.`
   );
 }
-process.exitCode = grown.length > 0 ? 1 : 0;
+if (grown !== null) {
+  process.exitCode = grown.length > 0 ? 1 : 0;
+}
