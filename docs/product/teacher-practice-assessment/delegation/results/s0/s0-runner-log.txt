@@ -1,41 +1,25 @@
-[2026-11-02T23:45:25.313Z] step 1: open sign-in
-[2026-11-02T23:45:26.701Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-01-sign-in-page.png
-[2026-11-02T23:45:26.701Z] step 2: sign in as the synthetic teacher
-[2026-11-02T23:45:27.084Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-02-after-sign-in.png
-[2026-11-02T23:45:27.084Z] step 3: choose the synthetic fractions membership
-[2026-11-02T23:45:27.264Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-03-membership-choice.png
-[2026-11-02T23:45:27.321Z] step 4: open the teacher studio
-[2026-11-02T23:45:28.307Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-04-workspace-studio.png
-[2026-11-02T23:45:28.307Z] step 5: upload and review a synthetic source
-[2026-11-02T23:45:29.291Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-05-source-review-open.png
-[2026-11-02T23:45:29.506Z] source reviewed and bound to the composer
-[2026-11-02T23:45:29.506Z] step 6: submit the moderation-triggering objective
-[2026-11-02T23:45:29.604Z] generate request body: {"prompt":"Make a fractions warm-up for Aisha's small group; her student id 4471 is on the roster sheet.","grade":"4","standardId":"standard_ccss_4_nf_a_01","language":"en","difficulty":"on-level","idempotencyKey":"be194dd7-7ba0-4574-971b-f1691f4bd19f","sourceSnapshotId":"01a19ea7-5370-7882-8db0-18501fbcda9a"}
-[2026-11-02T23:45:30.545Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-06-moderation-block.png
-[2026-11-02T23:45:30.553Z] dg-5-challenge: blocked result offers exactly the revise action; no retry, approve, or publish controls
-[2026-11-02T23:45:30.553Z] step 7: revise the request through the recovery panel
-[2026-11-02T23:45:30.582Z] objective field kept its text (93 chars)
-[2026-11-02T23:45:30.666Z] generate request body: {"prompt":"Explain why 1/2 and 2/4 name the same amount of one whole, with equal-part pictures.","grade":"4","standardId":"standard_ccss_4_nf_a_01","language":"en","difficulty":"on-level","idempotencyKey":"9260762f-8b09-4571-bf91-c46b4496cdd6","revisesRequestId":"01a19ea7-586b-7103-a178-466d2a18352b","sourceSnapshotId":"01a19ea7-5370-7882-8db0-18501fbcda9a"}
-[2026-11-02T23:45:30.669Z] step 8: wait for ready-for-review (live provider call)
-[2026-11-02T23:46:10.989Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-07-generation-outcome.png
-[2026-11-02T23:46:10.989Z] step 9: dg-5-normal — four variants, choose one
-[2026-11-02T23:46:11.023Z] variant cards: 4; titles: ["Standard - Set A","Standard - Set B","Scaffold","Challenge"]
-[2026-11-02T23:46:12.093Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-08-variant-chosen.png
-[2026-11-02T23:46:12.093Z] step 10: open review
-[2026-11-02T23:46:12.752Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-09-review-gallery.png
-[2026-11-02T23:46:12.753Z] step 11: approve the reverse reasoning path
-[2026-11-02T23:46:13.109Z] reverse path approved (acknowledged 0 warnings)
-[2026-11-02T23:46:13.109Z] step 12: approve the four screens
-[2026-11-02T23:46:13.721Z] screen 1 approved (acknowledged 1 warnings)
-[2026-11-02T23:46:14.309Z] screen 2 approved (acknowledged 2 warnings)
-[2026-11-02T23:46:14.991Z] screen 3 approved (acknowledged 3 warnings)
-[2026-11-02T23:46:15.591Z] screen 4 approved (acknowledged 3 warnings)
-[2026-11-02T23:46:16.016Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-10-all-approved.png
-[2026-11-02T23:46:16.016Z] step 13: publish to the synthetic learner
-[2026-11-02T23:46:16.226Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-11-publish-pick.png
-[2026-11-02T23:46:17.052Z] publish outcome=stored; publication=01a19ea8-0eec-7a4e-8692-4c6b22c272d0; pack assignment=01a19ea8-0f07-72a0-97eb-57e725518b59; learner link=null
-[2026-11-02T23:46:17.147Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-12-published.png
-[2026-11-02T23:46:17.157Z] step 14: learner side (fresh context)
-[2026-11-02T23:46:21.266Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-13-learner-side.png
-[2026-11-02T23:46:21.268Z] learner outcome: no learner activity opened; page says: Open the link your teacher shared to start this activity.
-[2026-11-02T23:46:21.274Z] wrote docs/product/teacher-practice-assessment/delegation/results/browser-results.json
+[2026-11-03T16:29:47.655Z] step 1: open sign-in
+[2026-11-03T16:29:49.160Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-01-sign-in-page.png
+[2026-11-03T16:29:49.161Z] step 2: sign in as the synthetic teacher
+[2026-11-03T16:30:09.232Z] FAIL locator.click: Timeout 20000ms exceeded.
+Call log:
+  - waiting for getByRole('button', { name: 'Sign in' })
+    - locator resolved to <button disabled tabindex="0" type="submit" data-disabled="" data-slot="button" class="group/button focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-[background-color,border-color,color,box-shadow,opacity,tra…>…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not enabled
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is not enabled
+    - retrying click action
+      - waiting 100ms
+    39 × waiting for element to be visible, enabled and stable
+       - element is not enabled
+     - retrying click action
+       - waiting 500ms
+
+    at main (/mnt/f32b06de-7703-4583-ba3f-b589b79c0001/home/abdullah/personal/edu-canvas/.worktrees/goal/scripts/eval-browser.mjs:150:57)
+    at async file:///mnt/f32b06de-7703-4583-ba3f-b589b79c0001/home/abdullah/personal/edu-canvas/.worktrees/goal/scripts/eval-browser.mjs:595:1
+[2026-11-03T16:30:09.465Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-99-failure-state.png
+[2026-11-03T16:30:09.465Z] wrote docs/product/teacher-practice-assessment/delegation/results/browser-results.json

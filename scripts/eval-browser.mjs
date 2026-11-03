@@ -65,6 +65,9 @@ const SOURCE_TEXT = [
 ].join("\n");
 const PROVIDER_WAIT_MS = 150_000;
 const STEP_WAIT_MS = 20_000;
+// The publish saga writes four transactions; a cold dev server can exceed the
+// step wait before the linked/stored indicator renders.
+const PUBLISH_WAIT_MS = Number(process.env.PUBLISH_WAIT_MS ?? 120_000);
 
 const logLines = [];
 const log = (message) => {
@@ -407,7 +410,11 @@ const main = async () => {
       .click({ timeout: STEP_WAIT_MS });
     const learnerSelect = page.locator("select");
     await learnerSelect.waitFor({ timeout: STEP_WAIT_MS });
-    await learnerSelect.selectOption({ label: "Omar Nabil" });
+    // The synthetic roster has two students named "Omar Nabil"; only
+    // learner_omar carries the active records membership, and the learner
+    // segment signs in as that identity. Label matching picks the unrostered
+    // first row and the records assignment correctly refuses it.
+    await learnerSelect.selectOption({ value: "learner_omar" });
     await shot(page, "s0-11-publish-pick");
     await page
       .getByRole("button", { name: "Publish and assign" })
@@ -415,8 +422,12 @@ const main = async () => {
     const linkedIndicator = page.getByText("now has the reviewed pack");
     const storedIndicator = page.getByText("The reviewed pack is stored for");
     const publishOutcome = await Promise.race([
-      linkedIndicator.waitFor({ timeout: STEP_WAIT_MS }).then(() => "linked"),
-      storedIndicator.waitFor({ timeout: STEP_WAIT_MS }).then(() => "stored"),
+      linkedIndicator
+        .waitFor({ timeout: PUBLISH_WAIT_MS })
+        .then(() => "linked"),
+      storedIndicator
+        .waitFor({ timeout: PUBLISH_WAIT_MS })
+        .then(() => "stored"),
     ]).catch(() => "timeout");
     const publishedText = await page
       .locator(".review-published")
