@@ -34,6 +34,18 @@ const compareValues = (left: unknown, right: unknown): number => {
   return String(left) < String(right) ? -1 : 1;
 };
 
+const assertColumns = (
+  table: RecordTableName,
+  values: Readonly<Record<string, RecordValue>>
+): void => {
+  const allowed = new Set<string>(recordTableColumns[table]);
+  for (const column of Object.keys(values)) {
+    if (!allowed.has(column)) {
+      throw new Error(`Unknown column ${column} on ${table}.`);
+    }
+  }
+};
+
 /**
  * In-memory implementation of the record port. It enforces the same unique constraints as PostgreSQL and rolls the whole store back when the work throws. It is not restart-durable; PostgreSQL is the durability authority.
  */
@@ -50,18 +62,6 @@ export const createSeededRecordBackend = (
     const created: StoredRow[] = [];
     tables.set(table, created);
     return created;
-  };
-
-  const assertColumns = (
-    table: RecordTableName,
-    values: Readonly<Record<string, RecordValue>>
-  ): void => {
-    const allowed = new Set<string>(recordTableColumns[table]);
-    for (const column of Object.keys(values)) {
-      if (!allowed.has(column)) {
-        throw new Error(`Unknown column ${column} on ${table}.`);
-      }
-    }
   };
 
   const doesViolate = (

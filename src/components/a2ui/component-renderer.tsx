@@ -200,8 +200,7 @@ export const A2UIComponentRenderer = ({
   if (!component) {
     return null;
   }
-  const nextVisited = new Set(visited);
-  nextVisited.add(componentId);
+  const nextVisited = new Set([...visited, componentId]);
 
   const renderChild = (childId: string): ReactNode => {
     return (

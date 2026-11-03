@@ -1,0 +1,28 @@
+name: Set up Node.js and dependencies
+description: >-
+  Install pnpm and Node.js, then restore node_modules from cache or install it. Pushes to main save the cache, and pull requests can read main's caches, so a PR whose lockfile matches main starts warm instead of reinstalling.
+
+runs:
+  using: composite
+  steps:
+    - name: Set up pnpm
+      uses: pnpm/action-setup@v6.1.0
+      with:
+        version: 10.17.1
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v7.1.0
+      with:
+        node-version: 26
+
+    - name: Restore node_modules
+      id: modules
+      uses: actions/cache@v6.1.0
+      with:
+        path: node_modules
+        key: node-modules-${{ runner.os }}-node26-${{ hashFiles('pnpm-lock.yaml') }}
+
+    - name: Install dependencies
+      if: steps.modules.outputs.cache-hit != 'true'
+      shell: bash
+      run: pnpm install --frozen-lockfile

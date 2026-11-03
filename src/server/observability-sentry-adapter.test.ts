@@ -45,6 +45,7 @@ const captureProductionError = () => {
     { safeCode: "PERSISTENCE_UNAVAILABLE" }
   );
 
+  // oxlint-disable-next-line no-unsafe-optional-chaining -- the init call above guarantees one recorded call; a miss should throw here.
   const { beforeSend } = sentrySdk.init.mock.calls[0]?.[0] as {
     beforeSend: (event: Record<string, unknown>) => Record<string, unknown>;
   };

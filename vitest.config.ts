@@ -1,4 +1,16 @@
+import { globSync, readFileSync } from "node:fs";
+
 import { defineConfig } from "vitest/config";
+
+const testFiles = ["src/**/*.test.ts"];
+
+// Files that replace a module with `vi.mock` need a fresh module graph, so they
+// keep vitest's per-file isolation. Every other file shares one worker's
+// module cache, which skips re-importing the app for each file (16 s to 5 s on
+// 2026-11-03). Found by content so a new `vi.mock` file isolates itself.
+const isolatedFiles = testFiles
+  .flatMap((pattern) => globSync(pattern))
+  .filter((file) => readFileSync(file, "utf-8").includes("vi.mock("));
 
 const config = defineConfig({
   resolve: {
@@ -6,8 +18,29 @@ const config = defineConfig({
   },
   test: {
     environment: "node",
-    include: ["src/**/*.test.ts"],
     reporters: ["default"],
+    // Shared workers leak state between files unless each file cleans up.
+    // This hook undoes env stubs, global stubs, spies, and fake timers after
+    // every file; anything else a test changes (module-level caches, servers,
+    // database rows) the test must restore itself.
+    setupFiles: ["./src/test-setup.ts"],
+    // `include` lives on each project: `extends: true` concatenates arrays, so a
+    // root `include` would make the isolated project run every file too.
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "shared",
+          include: testFiles,
+          exclude: isolatedFiles,
+          isolate: false,
+        },
+      },
+      {
+        extends: true,
+        test: { name: "isolated", include: isolatedFiles },
+      },
+    ],
     coverage: {
       provider: "v8",
       include: ["src/**/*.ts"],

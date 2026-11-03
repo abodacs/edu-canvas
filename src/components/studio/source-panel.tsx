@@ -996,6 +996,7 @@ export const SourcePanel = ({
       abortReference.current?.abort();
     };
     // eslint-enable react-doctor/no-fetch-in-effect, react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- restore once on mount (see the block note above).
   }, []);
 
   useEffect(() => {

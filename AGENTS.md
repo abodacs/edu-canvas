@@ -8,7 +8,7 @@ For issue reports, commit messages, and verification, follow [CONTRIBUTING.md](C
 
 ## Enforced rules
 
-These are checks, not conventions. [Foundation CI](.github/workflows/foundation.yml) runs `pnpm check`, which runs every one of them.
+These are checks, not conventions. `pnpm check` runs every one of them locally; [Foundation CI](.github/workflows/foundation.yml) runs the same scripts split across parallel jobs (`pnpm check:static`, `pnpm test:coverage`, and the build and database job).
 
 | Rule | Enforced by | Fails when |
 | --- | --- | --- |
