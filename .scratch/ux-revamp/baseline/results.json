@@ -1,0 +1,41 @@
+{
+  "baseUrl": "http://localhost:3001",
+  "at": "2026-11-02T20:03:12.423Z",
+  "results": [
+    {
+      "id": "T1-sign-in-to-workspace",
+      "success": true,
+      "seconds": 6.2,
+      "steps": 0,
+      "errors": 0
+    },
+    {
+      "id": "T3-ground-source",
+      "success": true,
+      "seconds": 1.4,
+      "steps": 0,
+      "errors": 0
+    },
+    {
+      "id": "T2-objective-to-variants",
+      "success": true,
+      "seconds": 16.3,
+      "steps": 0,
+      "errors": 0
+    },
+    {
+      "id": "T4-review-and-approve-one-screen",
+      "success": true,
+      "seconds": 3.1,
+      "steps": 0,
+      "errors": 0
+    },
+    {
+      "id": "T5-publish-to-one-learner",
+      "success": true,
+      "seconds": 14.5,
+      "steps": 0,
+      "errors": 0
+    }
+  ]
+}

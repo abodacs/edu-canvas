@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="base.css" />
     <style>
       .studio-h {
-        font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.375rem);
+        font-size: var(--fs-page);
       }
       /* Drafts exist: the composer collapses to one summary line. */
       .summary {
@@ -72,9 +72,14 @@
         resize: vertical;
         background: transparent;
         font: 400 var(--fs-lead) / 1.45 var(--sans);
-        caret-color: var(--clay);
+        caret-color: var(--ink);
       }
-      .write textarea:focus {
+      /* The card is the focus target, so the field does not draw a second ring. */
+      .composer:has(#objective:focus-visible) {
+        outline: 2px solid var(--ink);
+        outline-offset: 3px;
+      }
+      .write textarea:focus-visible {
         outline: none;
       }
       .count {
@@ -100,7 +105,7 @@
       }
       .opt h2,
       .opt legend {
-        font-size: var(--fs-meta);
+        font-size: var(--fs-label);
         font-weight: 600;
         color: var(--ink-2);
         margin-block-end: var(--s-2);
@@ -150,9 +155,8 @@
         >Edu-Canvas</a
       >
       <nav aria-label="Workspace">
-        <a href="1-studio.html" aria-current="page">Studio</a
-        ><a href="2-review.html">Review</a
-        ><a href="4-dashboard.html">Lessons</a>
+        <a href="4-dashboard.html">Lessons</a
+        ><a href="1-studio.html" aria-current="page">New lesson</a>
       </nav>
       <span class="who"
         ><span class="name">Ms. Rivera · Lincoln Elementary</span
@@ -160,6 +164,15 @@
       >
     </header>
     <main id="main" class="page">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="4-dashboard.html">Lessons</a><span aria-hidden="true">/</span>
+        <span aria-current="page">Equivalent fractions</span>
+      </nav>
+      <ol class="steps" aria-label="Lesson steps">
+        <li aria-current="step"><span class="n">1</span>Draft</li>
+        <li><span class="n">2</span>Review</li>
+        <li><span class="n">3</span>Publish</li>
+      </ol>
       <h1 class="studio-h">Equivalent fractions</h1>
       <p class="lede">
         One learning objective in, four ways to teach it out. Nothing reaches a
@@ -179,7 +192,7 @@
         </div>
         <div class="acts">
           <button type="button" class="ghost">Edit objective</button>
-          <button type="button" class="btn secondary">
+          <button type="button" class="ghost">
             Draft again<span class="sr-only">
               (replaces unapproved variants)</span
             >
@@ -194,7 +207,22 @@
       <section aria-labelledby="board-h">
         <div class="board-head">
           <h2 class="h2" id="board-h">Four variants to review</h2>
-          <p class="small muted num">3 of 4 ready · drafted in 41 s</p>
+          <p class="small muted num">2 of 4 ready · 1 blocked · 1 drafting</p>
+          <a class="btn" href="2-review.html"
+            >Review variants<svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+              class="flip"
+            >
+              <path d="M5 12h14M13 6l6 6-6 6" /></svg
+          ></a>
         </div>
         <p class="board-why">
           Four ways into the same objective. Approve only the ones you'd use;
@@ -259,7 +287,8 @@
                 Students get: worked example, then matching (4 pairs)
               </p>
               <div class="meta">
-                <span class="pill ok">Ready to review</span
+                <span class="pill warn">Gap · unit fractions</span
+                ><span class="pill ok">Ready to review</span
                 ><a href="2-review.html" class="ghost act">Open review</a>
               </div>
             </div>
@@ -303,7 +332,8 @@
                 Students get: guided slider with hints, then matching (4 pairs)
               </p>
               <div class="meta">
-                <span class="pill warn">Ready · 1 warning</span
+                <span class="pill warn">Gap · unit fractions</span
+                ><span class="pill warn">Ready · 1 warning</span
                 ><a href="2-review.html" class="ghost act">Open review</a>
               </div>
             </div>
@@ -338,7 +368,7 @@
               </p>
               <div class="meta">
                 <span class="pill stop">Not shown to students</span
-                ><button type="button" class="ghost act">Retry variant</button>
+                ><button type="button" class="ghost act">Retry C</button>
               </div>
             </div>
           </article>
@@ -355,7 +385,7 @@
               <p class="gets">Students get: matching (4 pairs)</p>
               <div class="meta">
                 <span class="pill idle">Drafting</span
-                ><button type="button" class="ghost act">Cancel</button>
+                ><button type="button" class="ghost act">Cancel draft</button>
               </div>
             </div>
           </article>
@@ -365,7 +395,7 @@
       <p class="synthetic" style="margin-block: var(--s-8) var(--s-2)">
         State before the first draft: the composer is open
       </p>
-      <form class="card lift" aria-label="New lesson">
+      <form class="card lift composer" aria-label="New lesson">
         <div class="write">
           <label for="objective">What should students practice?</label>
           <textarea
@@ -373,9 +403,8 @@
             maxlength="500"
             aria-describedby="count"
             placeholder="e.g. equivalent fractions for grade 4"
-          >
-Students explain why 2/4 and 1/2 name the same amount using fraction models.</textarea>
-          <p class="count small num" id="count">78 of 500 characters</p>
+          ></textarea>
+          <p class="count small num" id="count">0 of 500 characters</p>
           <div class="attach">
             <button type="button" class="ghost">
               <svg
@@ -438,7 +467,7 @@ Students explain why 2/4 and 1/2 name the same amount using fraction models.</te
           </fieldset>
           <div class="opt">
             <h2 id="l">Language</h2>
-            <p aria-labelledby="l">English</p>
+            <p>English</p>
           </div>
           <div class="opt wide">
             <h2>Matched standard</h2>
