@@ -60,6 +60,73 @@
   --teacher-clay: oklch(78% 0.095 40deg);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
+  /*
+   * Structural scale (AgDR-0017 slice 1a), ported from
+   * .impeccable/mocks/screens/base.css. Components move onto these one
+   * surface at a time; nothing reads them until then.
+   */
+
+  /* Type roles. Serif carries display, section and title; sans carries
+     everything you act on or read. */
+  --font-display: ui-serif, georgia, "Times New Roman", serif;
+  --type-display: clamp(2.25rem, 1.6rem + 2.4vw, 3.25rem);
+  --type-page: clamp(2rem, 1.5rem + 1.8vw, 3.25rem);
+  --type-section: 1.625rem;
+  --type-title: 1.375rem;
+  --type-heading: 1.25rem;
+  --type-lead: 1.25rem;
+  --type-body-lg: 1.0625rem;
+  --type-body: 1rem;
+  --type-secondary: 0.875rem;
+  --type-label: 0.875rem;
+  --type-meta: 0.8125rem;
+  --type-micro: 0.75rem;
+
+  /* Spacing on a 4px base. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 72px;
+
+  /* Two radii: cards and fields. Pills use 999px. */
+  --radius-card: 14px;
+  --radius-field: 10px;
+  --radius-pill: 999px;
+
+  /* Divider ladder: hairline, strong, and the 3:1 control border. */
+  --line: #e6e1d8;
+  --line-strong: #d6cfc3;
+  --line-control: #938c80;
+
+  /* One raised shadow. */
+  --shadow-lift:
+    0 1px 2px rgb(31 29 26 / 4%), 0 8px 24px -12px rgb(31 29 26 / 10%);
+
+  /* Focus is not a brand moment: the strongest neutral ring. */
+  --focus-ring-color: #1f1d1a;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 3px;
+
+  /* Landing scene palette (halftone artwork only, never UI chrome). */
+  --scene-sky-hi: #f8f2e6;
+  --scene-sky-mid: #f5d9bf;
+  --scene-sky-lo: #eeb987;
+  --scene-sun: #fcecc9;
+  --scene-stone: #f2e9d8;
+  --scene-stone-shade: #c8b28e;
+  --scene-stone-deep: #8e7354;
+  --scene-hill-far: #cfa682;
+  --scene-hill-mid: #8d9263;
+  --scene-hill-near: #5b6740;
+  --scene-hill-front: #3d4a2c;
+  --scene-olive: #6c7848;
+  --scene-olive-hi: #a5ab79;
+  --scene-bark: #4b3c2b;
 }
 
 .dark {
