@@ -1,20 +1,53 @@
 {
-  "generatedAt": "2026-11-03T16:30:09.465Z",
+  "generatedAt": "2026-11-03T17:41:05.654Z",
   "baseUrl": "http://localhost:3112",
   "cases": [
+    {
+      "id": "dg-5-challenge",
+      "practice": "DG5",
+      "layer": "B-browser",
+      "status": "executed",
+      "score": 2,
+      "expected": "The blocked result exposes exactly the revise action: no retry, no approve, no publish, no withheld-draft preview.",
+      "observed": "Recovery panel rendered (#revise-request present=true); retry-style control present=false; publish control present=false.",
+      "evidence": [
+        "results/s0/s0-06-moderation-block.png",
+        "results/s0/s0-runner-log.txt"
+      ],
+      "flipCondition": null
+    },
+    {
+      "id": "dg-5-normal",
+      "practice": "DG5",
+      "layer": "B-live",
+      "status": "executed",
+      "score": 2,
+      "expected": "Four ready variants render as individually selectable cards; the teacher's choice is recorded and the review surface opens.",
+      "observed": "4 variant cards rendered; titles observed: [\"Standard Matching A\",\"Standard Matching B\",\"Scaffold Matching\",\"Challenge Matching\"]; distinct titles: 4; teacher checked the first card and opened review.",
+      "evidence": [
+        "results/s0/s0-07-generation-outcome.png",
+        "results/s0/s0-08-variant-chosen.png",
+        "results/s0/s0-09-review-gallery.png"
+      ],
+      "flipCondition": null
+    },
     {
       "id": "s0-smoke",
       "practice": "S0",
       "layer": "B-browser",
       "status": "executed",
-      "score": 0,
-      "expected": "Full loop completes with evidence: sign-in, moderation block, recovery revise, ready-for-review, approvals, publish, learner attempt, reveal.",
-      "observed": "Runner error: locator.click: Timeout 20000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: 'Sign in' })\n    - locator resolved to <button disabled tabindex=\"0\" type=\"submit\" data-disabled=\"\" data-slot=\"button\" class=\"group/button focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-[background-color,border-color,color,box-shadow,opacity,tra…>…</button>\n  - attempting click action\n    2 × waiting for element to be visible, enabled and stable\n      - element is not enabled\n    - retrying click action\n    - waiting 20ms\n    2 × waiting for element to be visible, enabled and stable\n      - element is not enabled\n    - retrying click action\n      - waiting 100ms\n    39 × waiting for element to be visible, enabled and stable\n       - element is not enabled\n     - retrying click action\n       - waiting 500ms\n",
+      "score": 2,
+      "expected": "Full loop completes with evidence: sign-in, moderation block, recovery revise, ready-for-review, approvals, publish, learner attempt, reveal of the approved copy.",
+      "observed": "All steps completed. Publish outcome=linked (/learn?assignment=01a1a27f-feac-7f79-a0dd-67f53f47d5d7&variant=variant_standard_01). Attempt submitted (1 of 3 matched.); board 3 sources / 3 targets.",
       "evidence": [
-        "results/s0/s0-99-failure-state.png",
+        "results/s0/s0-06-moderation-block.png",
+        "results/s0/s0-07-generation-outcome.png",
+        "results/s0/s0-10-all-approved.png",
+        "results/s0/s0-12-published.png",
+        "results/s0/s0-13-learner-side.png",
         "results/s0/s0-runner-log.txt"
       ],
-      "flipCondition": "Recorded with the exact failing step in the runner log."
+      "flipCondition": null
     }
   ]
 }
