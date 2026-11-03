@@ -64,9 +64,10 @@ const compareValues = (left: unknown, right: unknown): number => {
 The seeded double rejects a column the real table does not have, so a mapper that
 invents a name fails in tests instead of in production. The column set comes from
 the schema; this file owns only the name-to-table binding, which `Record<
-RecordTableName, PgTable>` forces to be total.
+RecordTableName, PgTable>` forces to be total. Tests reuse the binding to hold
+the record port's per-table settings against the same schema.
 */
-const tablesByStoredName = {
+export const tablesByStoredName = {
   actors,
   assignments,
   assistance_events: assistanceEvents,

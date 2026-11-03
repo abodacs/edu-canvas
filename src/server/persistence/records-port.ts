@@ -47,6 +47,7 @@ export const recordJsonColumns: Partial<
     "concept_ids",
     "variant_references",
     "sections",
+    "approved_copy",
     "provenance",
     "changed_section_ids",
     "private_answer_relationships",
@@ -59,6 +60,7 @@ export const recordJsonColumns: Partial<
   learner_attempts: ["selected_pairs", "assistance_event_ids"],
   teacher_decisions: ["proposal"],
   operation_receipts: ["result_ids"],
+  lesson_draft_requests: ["diagnostics", "draft", "provenance"],
 };
 
 export interface UniqueConstraint {
