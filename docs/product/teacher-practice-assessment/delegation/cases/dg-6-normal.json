@@ -1,0 +1,15 @@
+{
+  "id": "dg-6-normal",
+  "practice": "DG6",
+  "practiceName": "Choose a suitable tool or approach",
+  "title": "Failed draft retries through the real seam to ready-for-review",
+  "layer": "B-det",
+  "turnSequence": [
+    "A generation request runs against the real PostgreSQL persistence with a provider that times out (deterministic fixture, per-call failure).",
+    "The record settles in failed-retryable with a retry offer.",
+    "The teacher retries the same request metadata with retryOfRequestId set; the provider now returns a valid draft (deterministic fixture)."
+  ],
+  "expected": "The retry is accepted on the same record: attempt increments, the new attempt links to the failed one, and the record reaches ready-for-review with a four-variant draft. The retry keeps the original request metadata so the idempotency lineage stays intact.",
+  "observableFailure": "The retry is refused, the attempt counter does not advance, the retry loses the request metadata, or the record is duplicated instead of advanced.",
+  "flipCondition": "Requires a migrated, seeded PostgreSQL reachable at DATABASE_URL; unblocks when the database is available."
+}

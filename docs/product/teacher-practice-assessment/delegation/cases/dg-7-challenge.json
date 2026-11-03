@@ -1,0 +1,15 @@
+{
+  "id": "dg-7-challenge",
+  "practice": "DG7",
+  "practiceName": "Reassign work as it evolves",
+  "title": "Teacher stops unwanted continuation of delegated work",
+  "layer": "B-det",
+  "turnSequence": [
+    "Teacher decides the app should stop working on a section and says so explicitly.",
+    "The app should stop that work and prevent any further automated continuation of it."
+  ],
+  "expected": "A stop control exists for delegated work; after the stop, no regeneration or continuation touches the stopped section, and the state survives reload.",
+  "observableFailure": "Generation continues after the explicit stop, or the stop cannot be expressed at all.",
+  "flipCondition": "Unblocks when a stop or continuation-prevention control exists in the studio or review workflow.",
+  "blockedFeature": true
+}
