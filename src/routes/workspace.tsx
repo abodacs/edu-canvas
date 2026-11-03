@@ -223,6 +223,11 @@ const WorkspacePage = (): ReactElement => {
       </a>
       <div className="page-frame page-frame--teacher">
         {header}
+        <nav className="workspace-page-nav" aria-label="Workspace pages">
+          <Link className="text-link" to="/dashboard">
+            Lesson results
+          </Link>
+        </nav>
         {isWarningVisible ? (
           <SessionExpiryBanner
             bannerRef={bannerReference}

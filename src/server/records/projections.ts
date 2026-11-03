@@ -5,6 +5,12 @@ import {
   learnerNextActivitySchema,
   learnerSectionSchema,
 } from "@/shared/learner-contract";
+import {
+  progressAttemptSchema,
+  progressPreviewSchema,
+  progressRunSchema,
+  teacherProgressResponseSchema,
+} from "@/shared/progress-contract";
 
 import { createEvidenceHash } from "./hashes";
 import { isoTimestampSchema, recordIdSchema, scoreSchema } from "./envelope";
@@ -329,6 +335,10 @@ export type TeacherEvidenceProjection = z.infer<
   typeof teacherEvidenceProjectionSchema
 >;
 
+export type TeacherProgressResponse = z.infer<
+  typeof teacherProgressResponseSchema
+>;
+
 export const projectTeacherEvidence = (input: {
   readonly run: LearnerRun;
   readonly attempts: readonly LearnerAttempt[];
@@ -354,5 +364,79 @@ export const projectTeacherEvidence = (input: {
       projectAssistance(event)
     ),
     decisions: input.decisions.map((decision) => projectDecision(decision)),
+  });
+};
+
+/**
+#8: one run of the teacher progress read model. The stored decision crosses
+verbatim and the preview reuses the learner section projection, so the teacher
+sees the assigned screen and never an answer key. A version whose assigned
+section cannot be resolved yields a null preview instead of failing the whole
+dashboard.
+*/
+const projectProgressPreview = (
+  version: LessonVersion | null,
+  run: LearnerRun
+): z.infer<typeof progressPreviewSchema> | null => {
+  if (version === null) {
+    return null;
+  }
+  try {
+    const section = assignedSection(version, run.assignedVariantId);
+    return progressPreviewSchema.parse({
+      lessonVersionId: version.id,
+      variantId: run.assignedVariantId,
+      section: projectLearnerSection(section),
+      columns: assignedColumns(version, run.assignedVariantId),
+    });
+  } catch {
+    return null;
+  }
+};
+
+const projectProgressAttempt = (attempt: LearnerAttempt) => {
+  return progressAttemptSchema.parse({
+    attemptId: attempt.id,
+    itemId: attempt.itemId,
+    ordinal: attempt.ordinal,
+    priorAttemptId: attempt.priorAttemptId,
+    score: attempt.score,
+    correctness: attempt.correctness,
+    assistanceState: attempt.assistanceState,
+    assistanceEventIds: [...attempt.assistanceEventIds],
+    createdAt: attempt.createdAt,
+  });
+};
+
+export const projectTeacherProgress = (input: {
+  readonly fetchedAt: string;
+  readonly runs: readonly {
+    readonly run: LearnerRun;
+    readonly attempts: readonly LearnerAttempt[];
+    readonly version: LessonVersion | null;
+  }[];
+}): z.infer<typeof teacherProgressResponseSchema> => {
+  const ordered = input.runs.toSorted((left, right) => {
+    const byTime = right.run.updatedAt.localeCompare(left.run.updatedAt);
+    return byTime === 0 ? left.run.id.localeCompare(right.run.id) : byTime;
+  });
+  return teacherProgressResponseSchema.parse({
+    fetchedAt: input.fetchedAt,
+    runs: ordered.map(({ run, attempts, version }) => {
+      return progressRunSchema.parse({
+        runId: run.id,
+        assignmentId: run.assignmentId,
+        learnerId: run.learnerId,
+        publicationId: run.publicationId,
+        assignedVariantId: run.assignedVariantId,
+        stage: run.stage,
+        firstResponseStatus: run.firstResponseStatus,
+        revision: run.revision,
+        updatedAt: run.updatedAt,
+        attempts: attempts.map((attempt) => projectProgressAttempt(attempt)),
+        decision: run.nextActivity,
+        preview: projectProgressPreview(version, run),
+      });
+    }),
   });
 };

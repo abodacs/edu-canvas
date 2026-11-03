@@ -41,6 +41,7 @@ import {
   projectStudentEvidence,
   projectStudentLesson,
   projectTeacherEvidence,
+  projectTeacherProgress,
   projectTeacherVersion,
 } from "../records/projections";
 import { decideReceipt, withoutOperationKey } from "./receipt";
@@ -64,6 +65,7 @@ import type {
   StudentEvidenceProjection,
   StudentLessonProjection,
   TeacherEvidenceProjection,
+  TeacherProgressResponse,
   TeacherVersionProjection,
 } from "../records/projections";
 import type {
@@ -181,6 +183,7 @@ export interface RecordPersistence {
     actor: Actor,
     input: ReadAttemptContextInput
   ) => Promise<AttemptContext>;
+  readTeacherProgress: (actor: Actor) => Promise<TeacherProgressResponse>;
 }
 
 const writeCapability: Record<WriteAction, Capability> = {
@@ -1812,6 +1815,84 @@ export const createRecordCommands = <TTransaction>(
     });
   };
 
+  /**
+   * #8: the teacher progress read model. Only runs on assignments this actor
+   * assigned, inside the actor's tenant, reach the projection; other tenants'
+   * rows are filtered out before mapping. Read-only: nothing here writes or
+   * revises history.
+   */
+  const readTeacherProgress = (
+    actor: Actor
+  ): Promise<TeacherProgressResponse> => {
+    return read(actor, "teacher_decision", async (transaction) => {
+      const assignmentRows = await backend.list(transaction, "assignments", {
+        tenant_id: actor.tenantId,
+        assigning_actor_id: actor.actorId,
+      });
+      const ownedAssignments = new Set(
+        assignmentRows.map((row) => String(row.id))
+      );
+      const runRows = await backend.list(
+        transaction,
+        "learner_runs",
+        { tenant_id: actor.tenantId },
+        { column: "updated_at", direction: "desc" }
+      );
+      const runs = runRows
+        .map(mapRun)
+        .filter((run) => ownedAssignments.has(run.assignmentId));
+      const runIds = new Set(runs.map((run) => run.id));
+      const attemptRows = await backend.list(
+        transaction,
+        "learner_attempts",
+        { tenant_id: actor.tenantId },
+        { column: "ordinal", direction: "asc" }
+      );
+      const attemptsByRun = new Map<string, LearnerAttempt[]>();
+      for (const row of attemptRows) {
+        const attempt = mapAttempt(row);
+        if (!runIds.has(attempt.runId)) {
+          continue;
+        }
+        const attempts = attemptsByRun.get(attempt.runId) ?? [];
+        attempts.push(attempt);
+        attemptsByRun.set(attempt.runId, attempts);
+      }
+      const versionsByPublication = new Map<string, LessonVersion>();
+      for (const run of runs) {
+        if (versionsByPublication.has(run.publicationId)) {
+          continue;
+        }
+        // eslint-disable-next-line no-await-in-loop -- one version load per distinct publication, sequential inside the read transaction.
+        const publication = await requirePublication(
+          transaction,
+          actor.tenantId,
+          run.publicationId
+        );
+
+        versionsByPublication.set(
+          run.publicationId,
+          // eslint-disable-next-line no-await-in-loop -- one version load per distinct publication, sequential inside the read transaction.
+          await loadVersion(
+            transaction,
+            publication.lessonVersionId,
+            actor.tenantId
+          )
+        );
+      }
+      return projectTeacherProgress({
+        fetchedAt: clock(),
+        runs: runs.map((run) => {
+          return {
+            run,
+            attempts: attemptsByRun.get(run.id) ?? [],
+            version: versionsByPublication.get(run.publicationId) ?? null,
+          };
+        }),
+      });
+    });
+  };
+
   return {
     kind: backend.kind,
     check: backend.check,
@@ -1827,5 +1908,6 @@ export const createRecordCommands = <TTransaction>(
     readEvidence,
     readLesson,
     readAttemptContext,
+    readTeacherProgress,
   };
 };

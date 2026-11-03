@@ -1,9 +1,10 @@
 import { createHash } from "node:crypto";
 
 import { canonicalJson } from "@/server/records/canonical-json";
+import { createDecisionEvidenceHash } from "@/server/records/hashes";
 import type { variantKindValues } from "@/shared/generation-contract";
 import type { NextActivityPurpose } from "@/shared/learner-contract";
-import type { Correctness } from "@/server/records/vocabulary";
+import type { AssistanceState, Correctness } from "@/server/records/vocabulary";
 
 /**
  * #7 deterministic next-activity rule.
@@ -176,4 +177,88 @@ export const decideNextActivity = (
     evidence,
     isGuidedNeedingHelp(evidence.guided) ? "standard" : "challenge"
   );
+};
+
+/**
+The one assisted-response rule for the whole decision pass. The submit path and the replay read it from here, so they cannot disagree.
+*/
+export const wasAssisted = (evidence: {
+  readonly assistanceState: AssistanceState;
+  readonly assistanceEventIds: readonly string[];
+}): boolean => {
+  return (
+    evidence.assistanceState === "hinted" ||
+    evidence.assistanceEventIds.length > 0
+  );
+};
+
+/**
+ * #8 replay evidence: the fields the submit pass reads, as they persist. One attempt in ordinal order.
+ */
+export interface PersistedAttemptEvidence {
+  readonly itemId: string;
+  readonly correctness: Correctness;
+  readonly assistanceState: AssistanceState;
+  readonly assistanceEventIds: readonly string[];
+}
+
+export interface NextActivityReplayInput {
+  readonly runId: string;
+  readonly assignedActivityId: string;
+  /**
+  The item ids of the assigned variant's section; the first response is the first persisted attempt inside them.
+  */
+  readonly sectionItemIds: readonly string[];
+  readonly attempts: readonly PersistedAttemptEvidence[];
+  readonly activities: readonly ActivityOption[];
+}
+
+/**
+The decision fields a fresh pass over the persisted evidence must produce. `null` when no attempt covers the assigned section: the pass runs with a submission, so a run without one can carry no rule decision.
+*/
+export interface NextActivityReplay {
+  readonly activityId: string | null;
+  readonly purpose: RulePurpose;
+  readonly reason: string;
+  readonly ruleVersion: string;
+  readonly evidenceHash: string;
+}
+
+/**
+ * #8: the deterministic replay of the submit-time decision pass (src/server/learner/service.ts) from persisted rows only. Reads no clock, no client input, and no database.
+ */
+export const replayNextActivity = (
+  input: NextActivityReplayInput
+): NextActivityReplay | null => {
+  const firstResponse =
+    input.attempts.find((attempt) =>
+      input.sectionItemIds.includes(attempt.itemId)
+    ) ?? null;
+  if (firstResponse === null) {
+    return null;
+  }
+  const isAssisted = wasAssisted(firstResponse);
+  const evidenceHash = createDecisionEvidenceHash({
+    runId: input.runId,
+    itemId: firstResponse.itemId,
+    correctness: firstResponse.correctness,
+    assisted: isAssisted,
+    assistanceEventIds: firstResponse.assistanceEventIds,
+  });
+  const outcome = decideNextActivity({
+    assignedActivityId: input.assignedActivityId,
+    independent: {
+      correctness: firstResponse.correctness,
+      assisted: isAssisted,
+    },
+    guided: null,
+    activities: input.activities,
+  });
+  return {
+    activityId: outcome.activityId,
+    purpose: outcome.purpose,
+    reason: outcome.reason,
+    ruleVersion: outcome.ruleVersion,
+    evidenceHash,
+  };
 };
