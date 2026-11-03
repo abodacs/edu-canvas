@@ -1,0 +1,399 @@
+/* Landing: teacher-first hero. */
+.hero-headline {
+  font-size: clamp(2rem, 4.5vw, 3.25rem);
+  letter-spacing: -0.04em;
+  line-height: 1.03;
+  max-inline-size: 24ch;
+  text-wrap: balance;
+}
+
+.cta-primary {
+  font-size: 1rem;
+  min-block-size: 3rem;
+}
+
+/* Landing: seeded connection-reveal preview (public illustration only). */
+.reveal {
+  display: grid;
+  align-self: center;
+  padding: clamp(1.25rem, 2vw, 1.75rem);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin: 0;
+  background: var(--card);
+  box-shadow: 0 1px 0 color-mix(in oklch, var(--foreground) 6%, transparent);
+  gap: 1rem;
+}
+
+.reveal__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.reveal__tag {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.reveal__std {
+  color: var(--muted-foreground);
+  font-size: 0.74rem;
+}
+
+.reveal__prompt {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.reveal__source-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.reveal__source-label {
+  color: var(--muted-foreground);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.reveal__source {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.reveal__targets {
+  display: grid;
+  padding: 0;
+  margin: 0;
+  gap: 0.6rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  list-style: none;
+}
+
+.reveal__target {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--background);
+  font-size: 1rem;
+  font-weight: 600;
+  gap: 0.5rem;
+}
+
+.reveal__target svg {
+  block-size: 1rem;
+  color: var(--primary);
+  inline-size: 1rem;
+}
+
+.reveal__target.is-correct {
+  border-color: color-mix(in oklch, var(--primary) 40%, var(--border));
+  background: color-mix(in oklch, var(--primary) 10%, var(--background));
+  color: color-mix(in oklch, var(--primary) 55%, var(--foreground));
+}
+
+.reveal__target.is-distractor {
+  color: var(--muted-foreground);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(
+    in oklch,
+    var(--muted-foreground) 60%,
+    transparent
+  );
+}
+
+.reveal__equal {
+  display: grid;
+  border-block-start: 1px dashed var(--border);
+  gap: 0.4rem;
+  margin-block-start: 0.25rem;
+  padding-block-start: 0.85rem;
+}
+
+.reveal__equal-labels {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted-foreground);
+  font-size: 0.72rem;
+  inline-size: 50%;
+}
+
+.reveal__equal-bar {
+  position: relative;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--foreground) 8%, transparent);
+  block-size: 0.7rem;
+}
+
+.reveal__equal-fill {
+  position: absolute;
+  border-radius: 999px;
+  background: var(--primary);
+  inline-size: 50%;
+  inset-block: 0;
+  inset-inline-start: 0;
+}
+
+.reveal__equal-note {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+.reveal__why {
+  margin: 0;
+  color: var(--primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.reveal__caption {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 0.72rem;
+}
+
+/* Landing: teacher-time metric (target, from the PRD). */
+.metric {
+  display: grid;
+  padding: clamp(1.25rem, 2.5vw, 1.75rem);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: color-mix(in oklch, var(--card) 70%, var(--accent));
+  gap: 0.85rem;
+  margin-block-start: clamp(3.5rem, 8vw, 5.5rem);
+}
+
+.metric__lead {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.metric__row {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+}
+
+.metric__cell {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.metric__cell--to {
+  margin-inline-start: auto;
+  text-align: end;
+}
+
+.metric__cell-label {
+  color: var(--muted-foreground);
+  font-size: 0.74rem;
+}
+
+.metric__cell-value {
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.metric__cell--to .metric__cell-value {
+  color: var(--primary);
+}
+
+.metric__arrow {
+  flex: none;
+  block-size: 1.5rem;
+  color: var(--primary);
+  inline-size: 1.5rem;
+}
+
+.metric__note {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 0.76rem;
+}
+
+/* Landing: teacher-control trust band. */
+.control {
+  margin-block-start: clamp(4.5rem, 10vw, 7.5rem);
+}
+
+.control h2 {
+  margin-block-end: 1.25rem;
+}
+
+.control__list {
+  display: grid;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.control__list li {
+  display: flex;
+  align-items: flex-start;
+  border-block-start: 1px solid var(--border);
+  gap: 0.85rem;
+  padding-block: 1rem;
+}
+
+.control__list li:last-child {
+  border-block-end: 1px solid var(--border);
+}
+
+.control__list svg {
+  flex: none;
+  block-size: 1.25rem;
+  color: var(--foreground);
+  inline-size: 1.25rem;
+  margin-block-start: 0.1rem;
+}
+
+.control__list span {
+  color: var(--muted-foreground);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.control__list strong {
+  color: var(--foreground);
+  font-weight: 700;
+}
+
+/* Landing: footer. */
+
+.footer-note {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 0.78rem;
+}
+
+/* Landing: closing call to action. */
+.cta-final {
+  margin-block-start: clamp(4.5rem, 10vw, 7.5rem);
+}
+
+.cta-final__inner {
+  display: grid;
+  padding: clamp(2rem, 5vw, 3.5rem);
+  border: 1px solid color-mix(in oklch, var(--primary) 25%, var(--border));
+  border-radius: var(--radius-xl);
+  background: color-mix(in oklch, var(--primary) 7%, var(--card));
+  gap: 1rem;
+  justify-items: center;
+  text-align: center;
+}
+
+.cta-final__inner h2 {
+  font-size: clamp(1.8rem, 4vw, 2.7rem);
+  line-height: 1.05;
+  margin-inline: auto;
+  max-inline-size: 20ch;
+}
+
+.cta-final__sub {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 1rem;
+  line-height: 1.6;
+  max-inline-size: 42ch;
+}
+
+.cta-final .cta-primary {
+  margin-block-start: 0.5rem;
+}
+
+.site-footer {
+  justify-content: space-between;
+  border-block-start: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 0.78rem;
+  gap: 1rem;
+  margin-block-start: 5rem;
+  padding-block-start: 1rem;
+}
+
+.security-note {
+  border-block-start: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 0.78rem;
+  gap: 0.5rem;
+  line-height: 1.5;
+  margin-block-start: 1.5rem;
+  padding-block-start: 1rem;
+}
+
+.data-list {
+  display: grid;
+  margin: 0;
+  gap: 1rem;
+}
+
+.data-list div {
+  display: flex;
+  justify-content: space-between;
+  border-block-end: 1px solid var(--border);
+  gap: 1rem;
+  padding-block-end: 0.75rem;
+}
+
+.data-list div:last-child {
+  border-block-end: 0;
+  padding-block-end: 0;
+}
+
+.data-list dt {
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+}
+
+.data-list dd {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 0.8rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+  text-align: end;
+}
+
+.fixture-section svg {
+  block-size: 2rem;
+  color: var(--primary);
+  inline-size: 2rem;
+}
+
+.fixture-stat {
+  display: grid;
+  align-content: end;
+  background: color-mix(in oklch, var(--card) 78%, var(--accent));
+  border-block-end: 2px solid var(--primary);
+  gap: 0.3rem;
+  min-block-size: 7.5rem;
+  padding-block: 1rem;
+  padding-inline: 1rem;
+}
+
+.fixture-stat strong {
+  font-size: 2rem;
+  letter-spacing: -0.06em;
+}
+
+.fixture-stat span {
+  color: var(--muted-foreground);
+  font-size: 0.78rem;
+  text-transform: capitalize;
+}

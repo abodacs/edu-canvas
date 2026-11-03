@@ -263,7 +263,7 @@ const learnerDeclarations = (css: string): string[] => {
 };
 
 describe("learn styles", () => {
-  const stylesUrl = new URL("../../styles.css", import.meta.url);
+  const stylesUrl = new URL("../../styles/learn.css", import.meta.url);
   const styles = readFileSync(stylesUrl, "utf-8");
 
   it("wraps the board columns so they stack at 320px", () => {

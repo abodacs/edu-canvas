@@ -1,0 +1,129 @@
+/*
+ * Hanken Grotesk Variable, split into a preloaded core face (ASCII + the
+ * punctuation most pages use) and an extended face (Latin-1 + Latin
+ * Extended-A) that only downloads when a page renders one of its characters.
+ * Regenerate with scripts/fonts-subset.py; ranges must match
+ * public/fonts/manifest.json. font-display and the fallback stack are
+ * unchanged from the previous single-file setup.
+ */
+@font-face {
+  font-display: swap;
+  font-family: "Hanken Grotesk Variable";
+  font-style: normal;
+  font-weight: 100 900;
+  src: url("/fonts/hanken-grotesk-variable-core.woff2")
+    format("woff2-variations");
+  unicode-range:
+    U+0020-007E, U+00B7, U+2013-2014, U+2018-2019, U+201C-201D, U+2026;
+}
+
+@font-face {
+  font-display: swap;
+  font-family: "Hanken Grotesk Variable";
+  font-style: normal;
+  font-weight: 100 900;
+  src: url("/fonts/hanken-grotesk-variable-extended.woff2")
+    format("woff2-variations");
+  unicode-range: U+00A0-00B6, U+00B8-017E;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: oklch(96.5% 0.018 86deg);
+  --foreground: oklch(23.5% 0.028 65deg);
+  --card: oklch(98.5% 0.012 86deg);
+  --card-foreground: oklch(23.5% 0.028 65deg);
+  --popover: oklch(98.5% 0.012 86deg);
+  --popover-foreground: oklch(23.5% 0.028 65deg);
+  --primary: oklch(45% 0.15 158deg);
+  --primary-foreground: oklch(98% 0.015 86deg);
+  --secondary: oklch(89% 0.045 87deg);
+  --secondary-foreground: oklch(28% 0.035 67deg);
+  --muted: oklch(92.5% 0.026 86deg);
+  --muted-foreground: oklch(48% 0.035 68deg);
+  --accent: oklch(91% 0.065 77deg);
+  --accent-foreground: oklch(30% 0.04 62deg);
+  --destructive: oklch(55% 0.18 28deg);
+  --border: oklch(86% 0.034 82deg);
+  --input: oklch(86% 0.034 82deg);
+  --ring: oklch(45% 0.15 158deg);
+  --radius: 0.75rem;
+
+  /* Teacher studio palette. */
+  --teacher-paper: oklch(96.5% 0.018 86deg);
+  --teacher-ink: oklch(23.5% 0.028 65deg);
+  --teacher-forest: oklch(34% 0.11 158deg);
+  --teacher-mint: oklch(92.5% 0.045 158deg);
+  --teacher-butter: oklch(92.5% 0.065 77deg);
+  --teacher-sky: oklch(92.5% 0.04 228deg);
+  --teacher-clay: oklch(78% 0.095 40deg);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+.dark {
+  --background: oklch(19% 0.025 70deg);
+  --foreground: oklch(94% 0.025 86deg);
+  --card: oklch(23.5% 0.027 70deg);
+  --card-foreground: oklch(94% 0.025 86deg);
+  --popover: oklch(23.5% 0.027 70deg);
+  --popover-foreground: oklch(94% 0.025 86deg);
+  --primary: oklch(72% 0.15 158deg);
+  --primary-foreground: oklch(19% 0.025 70deg);
+  --secondary: oklch(31% 0.035 70deg);
+  --secondary-foreground: oklch(92% 0.025 86deg);
+  --muted: oklch(28% 0.03 70deg);
+  --muted-foreground: oklch(75% 0.025 86deg);
+  --accent: oklch(40% 0.07 77deg);
+  --accent-foreground: oklch(94% 0.025 86deg);
+  --destructive: oklch(70% 0.15 28deg);
+  --border: oklch(36% 0.032 70deg);
+  --input: oklch(36% 0.032 70deg);
+  --ring: oklch(72% 0.15 158deg);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 0.25rem);
+  --radius-md: calc(var(--radius) - 0.125rem);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 0.25rem);
+  --font-sans:
+    "Hanken Grotesk Variable", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light;
+  min-block-size: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  min-block-size: 100%;
+  text-rendering: optimizelegibility;
+}

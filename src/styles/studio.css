@@ -1,0 +1,1464 @@
+/* Teacher studio: a calm, asymmetric authoring surface built around one
+   sentence and one meaningful next step. */
+.app-shell--teacher {
+  background:
+    radial-gradient(
+      55% 40% at 93% 0%,
+      color-mix(in oklch, var(--teacher-butter) 70%, transparent),
+      transparent 100%
+    ),
+    var(--teacher-paper);
+  padding-block: clamp(1rem, 3vw, 2.5rem) clamp(4rem, 9vw, 8rem);
+}
+
+.page-frame--teacher {
+  inline-size: min(100%, 88rem);
+}
+
+.studio-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-block-end: clamp(2rem, 5vw, 4.5rem);
+}
+
+.studio-brand,
+.studio-nav__actions,
+.studio-nav__state,
+.studio-nav__exit,
+.teacher-trust-line,
+.teacher-guidance__signal,
+.teacher-result__footer,
+.prompt-composer__bottom,
+.prompt-signal,
+.prompt-signals__label,
+.teacher-action-band > span,
+.variant-card__heading,
+.variant-kind,
+.insight-card__topline,
+.insight-card__levels,
+.teacher-evidence-card__topline {
+  display: flex;
+  align-items: center;
+}
+
+.studio-brand {
+  gap: 0.7rem;
+}
+
+.studio-brand__mark {
+  display: grid;
+  border-radius: 0.85rem 0.35rem;
+  background: var(--teacher-forest);
+  block-size: 2.5rem;
+  color: var(--teacher-paper);
+  font-size: 0.72rem;
+  font-weight: 800;
+  inline-size: 2.5rem;
+  letter-spacing: 0.08em;
+  place-items: center;
+}
+
+.studio-brand__name {
+  color: var(--teacher-ink);
+  font-size: 0.95rem;
+  font-weight: 750;
+  letter-spacing: -0.025em;
+}
+
+.studio-nav__actions {
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+}
+
+.studio-nav__state {
+  color: color-mix(in oklch, var(--teacher-ink) 68%, transparent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  gap: 0.5rem;
+}
+
+.studio-nav__dot,
+.teacher-guidance__signal-dot,
+.result-state > span,
+.status-pulse > span {
+  display: inline-block;
+  border-radius: 50%;
+  background: var(--primary);
+  block-size: 0.45rem;
+  inline-size: 0.45rem;
+}
+
+.studio-nav__dot {
+  box-shadow: 0 0 0 0.24rem color-mix(in oklch, var(--primary) 14%, transparent);
+}
+
+.studio-nav__exit {
+  color: var(--teacher-ink);
+  font-size: 0.78rem;
+  font-weight: 750;
+  gap: 0.3rem;
+  text-decoration: underline;
+  text-decoration-color: color-mix(
+    in oklch,
+    var(--teacher-ink) 25%,
+    transparent
+  );
+  text-underline-offset: 0.3em;
+  transition:
+    color 180ms ease,
+    text-decoration-color 180ms ease;
+}
+
+.studio-nav__exit svg {
+  block-size: 0.9rem;
+  inline-size: 0.9rem;
+}
+
+.teacher-studio {
+  display: grid;
+  gap: clamp(1.25rem, 3vw, 2rem);
+}
+
+.teacher-hero {
+  display: grid;
+  align-items: center;
+  gap: clamp(2rem, 7vw, 7rem);
+  grid-template-columns: minmax(0, 1.12fr) minmax(19rem, 0.88fr);
+  min-block-size: clamp(30rem, 55vw, 44rem);
+  padding-block: clamp(1rem, 4vw, 3rem) clamp(2rem, 6vw, 5rem);
+}
+
+.teacher-hero__copy {
+  max-inline-size: 50rem;
+}
+
+.studio-kicker {
+  display: flex;
+  align-items: center;
+  margin: 0 0 1rem;
+  color: var(--primary);
+  font-size: 0.72rem;
+  font-weight: 800;
+  gap: 0.7rem;
+  letter-spacing: 0.12em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.studio-kicker__line {
+  display: inline-block;
+  background: currentcolor;
+  block-size: 1px;
+  inline-size: 2.2rem;
+}
+
+.teacher-hero h1 {
+  color: var(--teacher-ink);
+  font-size: clamp(3.1rem, 7vw, 6.8rem);
+  font-weight: 720;
+  letter-spacing: -0.085em;
+  line-height: 0.9;
+  max-inline-size: 18ch;
+  text-wrap: balance;
+}
+
+.inline-fraction-art {
+  display: inline-grid;
+  block-size: 0.98em;
+  color: var(--primary);
+  font-size: 0.72em;
+  font-weight: 800;
+  inline-size: 0.78em;
+  line-height: 0.8;
+  margin-inline: 0.05em;
+  place-items: center center;
+  vertical-align: 0.02em;
+}
+
+.inline-fraction-art i,
+.fraction-orbit i {
+  display: block;
+  border-radius: 999px;
+  background: currentcolor;
+  block-size: 0.09em;
+  inline-size: 100%;
+}
+
+.teacher-hero__description {
+  color: color-mix(in oklch, var(--teacher-ink) 68%, transparent);
+  font-size: clamp(1rem, 1.4vw, 1.2rem);
+  line-height: 1.65;
+  margin-block-start: clamp(1.5rem, 3vw, 2rem);
+  max-inline-size: 48ch;
+}
+
+.teacher-hero__art {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklch, var(--teacher-forest) 35%, transparent);
+  border-radius: 3rem 1rem;
+  background:
+    radial-gradient(
+      circle at 30% 18%,
+      color-mix(in oklch, var(--teacher-butter) 62%, transparent),
+      transparent 34%
+    ),
+    var(--teacher-forest);
+  isolation: isolate;
+  min-block-size: clamp(22rem, 39vw, 35rem);
+}
+
+.teacher-hero__art::before,
+.teacher-hero__art::after {
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  content: "";
+}
+
+.teacher-hero__art::before {
+  background: color-mix(in oklch, var(--teacher-sky) 36%, transparent);
+  block-size: 15rem;
+  filter: blur(1px);
+  inline-size: 15rem;
+  inset-block-start: -5rem;
+  inset-inline-end: -3rem;
+}
+
+.teacher-hero__art::after {
+  border: 1px solid color-mix(in oklch, var(--teacher-butter) 35%, transparent);
+  block-size: 21rem;
+  inline-size: 21rem;
+  inset-block-end: -9rem;
+  inset-inline-start: -7rem;
+}
+
+.teacher-hero__art-image {
+  position: absolute;
+  z-index: -1;
+  border-radius: 52% 42% 49% 38%;
+
+  /* Local gradient only: the enforced CSP (#130) allows no remote image host. */
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--teacher-forest) 16%, transparent),
+    color-mix(in oklch, var(--teacher-butter) 28%, transparent)
+  );
+  background-position: center;
+  background-size: cover;
+  filter: grayscale(100%) contrast(115%);
+  inset: 12% 11%;
+  mix-blend-mode: screen;
+  opacity: 0.28;
+}
+
+.fraction-orbit {
+  position: absolute;
+  display: grid;
+  align-content: center;
+  border: 1px solid color-mix(in oklch, var(--teacher-paper) 65%, transparent);
+  border-radius: 50%;
+  block-size: clamp(5.6rem, 10vw, 8.5rem);
+  color: var(--teacher-paper);
+  font-size: clamp(1.25rem, 2.4vw, 2rem);
+  font-weight: 700;
+  gap: 0.15rem;
+  inline-size: clamp(5.6rem, 10vw, 8.5rem);
+  line-height: 0.8;
+  place-items: center;
+}
+
+.fraction-orbit i {
+  block-size: 1px;
+  inline-size: 38%;
+}
+
+.fraction-orbit--one {
+  background: color-mix(in oklch, var(--teacher-forest) 45%, transparent);
+  inset-block-start: 22%;
+  inset-inline-start: 13%;
+}
+
+.fraction-orbit--two {
+  background: color-mix(in oklch, var(--teacher-butter) 86%, transparent);
+  color: var(--teacher-ink);
+  inset-block-end: 17%;
+  inset-inline-end: 11%;
+  transform: rotate(9deg);
+}
+
+.teacher-hero__art-note {
+  position: absolute;
+  color: color-mix(in oklch, var(--teacher-paper) 75%, transparent);
+  font-size: 0.72rem;
+  inset-block-end: 1.4rem;
+  inset-inline-start: 1.5rem;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+}
+
+.prompt-composer {
+  display: grid;
+  padding: clamp(1.2rem, 3vw, 2rem);
+  border: 1px solid
+    color-mix(in oklch, var(--teacher-forest) 22%, var(--border));
+  border-radius: 1.5rem;
+  background: color-mix(in oklch, var(--card) 82%, var(--teacher-mint));
+  box-shadow: 0 1.5rem 3.5rem
+    color-mix(in oklch, var(--teacher-forest) 8%, transparent);
+  gap: 1.2rem;
+}
+
+.prompt-composer__heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.prompt-composer__heading label {
+  color: var(--teacher-ink);
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  font-weight: 750;
+  letter-spacing: -0.025em;
+}
+
+.prompt-composer__heading > span {
+  color: color-mix(in oklch, var(--teacher-ink) 48%, transparent);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.prompt-composer textarea {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  border-block-end: 1px solid
+    color-mix(in oklch, var(--teacher-forest) 20%, var(--border));
+  color: var(--teacher-ink);
+  font: inherit;
+  font-size: clamp(1.2rem, 2.4vw, 1.85rem);
+  font-weight: 520;
+  inline-size: 100%;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+  min-block-size: clamp(4.25rem, 8vw, 6rem);
+  padding-block: 0.5rem 1rem;
+  resize: vertical;
+}
+
+.prompt-composer textarea::placeholder {
+  color: color-mix(in oklch, var(--teacher-ink) 32%, transparent);
+}
+
+.prompt-composer textarea:focus {
+  border-block-end-color: var(--primary);
+  box-shadow: 0 0.25rem 0 color-mix(in oklch, var(--primary) 18%, transparent);
+}
+
+.prompt-composer__bottom {
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.prompt-signals {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  color: color-mix(in oklch, var(--teacher-ink) 62%, transparent);
+  font-size: 0.75rem;
+  gap: 0.55rem 0.8rem;
+}
+
+.prompt-signals__label {
+  color: var(--primary);
+  font-weight: 750;
+  gap: 0.35rem;
+}
+
+.prompt-signals__label svg {
+  block-size: 0.9rem;
+  inline-size: 0.9rem;
+}
+
+.prompt-signal {
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+
+.prompt-signal svg {
+  block-size: 0.8rem;
+  color: color-mix(in oklch, var(--teacher-ink) 55%, transparent);
+  inline-size: 0.8rem;
+}
+
+.prompt-signal__mark {
+  border-radius: 50%;
+  background: var(--teacher-clay);
+  block-size: 0.36rem;
+  inline-size: 0.36rem;
+}
+
+.prompt-composer__submit {
+  border-radius: 0.85rem;
+  background: var(--teacher-forest);
+  box-shadow: 0 0.8rem 1.6rem
+    color-mix(in oklch, var(--teacher-forest) 18%, transparent);
+  color: var(--teacher-paper);
+  font-size: 0.95rem;
+  font-weight: 750;
+  gap: 0.7rem;
+  min-block-size: 3.5rem;
+  padding-inline: 1.25rem;
+  transition:
+    background-color 150ms ease,
+    transform 140ms var(--ease-out);
+}
+
+.prompt-composer__submit:active {
+  transform: scale(0.97);
+}
+
+.prompt-composer__submit svg {
+  block-size: 1.05rem;
+  inline-size: 1.05rem;
+}
+
+.teacher-trust-line {
+  color: color-mix(in oklch, var(--teacher-ink) 58%, transparent);
+  font-size: 0.78rem;
+  gap: 0.5rem;
+  line-height: 1.5;
+  padding-inline: 0.35rem;
+}
+
+.teacher-trust-line svg {
+  flex: none;
+  block-size: 1rem;
+  color: var(--primary);
+  inline-size: 1rem;
+}
+
+.teacher-guidance {
+  display: grid;
+  border-block-start: 1px solid
+    color-mix(in oklch, var(--teacher-ink) 15%, transparent);
+  gap: clamp(2rem, 7vw, 8rem);
+  grid-template-columns: minmax(16rem, 0.72fr) minmax(0, 1.28fr);
+  margin-block-start: clamp(4rem, 11vw, 9rem);
+  padding-block: clamp(2.5rem, 7vw, 6rem);
+}
+
+.teacher-guidance__rail {
+  align-self: start;
+  max-inline-size: 27rem;
+}
+
+.teacher-guidance__rail h2 {
+  margin: 0;
+  color: var(--teacher-ink);
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  letter-spacing: -0.07em;
+  line-height: 0.96;
+  max-inline-size: 14ch;
+}
+
+.teacher-guidance__rail > p:not(.studio-kicker) {
+  color: color-mix(in oklch, var(--teacher-ink) 63%, transparent);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  margin-block-start: 1.2rem;
+  max-inline-size: 34ch;
+}
+
+.teacher-guidance__signal {
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 750;
+  gap: 0.55rem;
+  margin-block-start: 2rem;
+}
+
+.teacher-guidance__signal-dot {
+  background: var(--teacher-clay);
+}
+
+.teacher-guidance__content {
+  min-inline-size: 0;
+}
+
+.insight-grid {
+  display: grid;
+  gap: 0.85rem;
+  grid-auto-flow: dense;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.insight-card {
+  display: grid;
+  align-content: space-between;
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+  border: 1px solid color-mix(in oklch, var(--teacher-ink) 12%, transparent);
+  border-radius: 1.25rem;
+  background: color-mix(in oklch, var(--card) 80%, var(--teacher-mint));
+  gap: 1.2rem;
+  grid-column: span 4;
+  min-block-size: 14rem;
+  transition: border-color 150ms ease;
+}
+
+.insight-card--wide {
+  grid-column: span 8;
+}
+
+.insight-card--warm {
+  background: color-mix(in oklch, var(--teacher-butter) 72%, var(--card));
+}
+
+.insight-card--cool {
+  background: color-mix(in oklch, var(--teacher-sky) 68%, var(--card));
+}
+
+.insight-card--dark {
+  align-items: end;
+  background: var(--teacher-forest);
+  color: var(--teacher-paper);
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.insight-card__topline {
+  color: color-mix(in oklch, var(--teacher-ink) 58%, transparent);
+  font-size: 0.68rem;
+  font-weight: 800;
+  gap: 0.45rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.insight-card__topline svg {
+  block-size: 0.9rem;
+  color: var(--primary);
+  inline-size: 0.9rem;
+}
+
+.insight-card__mark {
+  color: var(--teacher-clay);
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.insight-card h3,
+.insight-card strong,
+.insight-card p {
+  margin: 0;
+}
+
+.insight-card h3 {
+  color: var(--teacher-ink);
+  font-size: clamp(1.35rem, 2.7vw, 2.4rem);
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+  max-inline-size: 25ch;
+  overflow-wrap: anywhere;
+}
+
+.insight-card > p,
+.insight-card > div > p {
+  color: color-mix(in oklch, var(--teacher-ink) 65%, transparent);
+  font-size: 0.86rem;
+  line-height: 1.55;
+  max-inline-size: 42ch;
+}
+
+.insight-card > strong {
+  color: var(--teacher-ink);
+  font-size: clamp(1.65rem, 3.5vw, 2.8rem);
+  letter-spacing: -0.07em;
+}
+
+.insight-card--dark .insight-card__topline,
+.insight-card--dark h3,
+.insight-card--dark > div > p {
+  color: var(--teacher-paper);
+}
+
+.insight-card--dark .insight-card__topline svg {
+  color: var(--teacher-butter);
+}
+
+.insight-card__levels {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
+  min-inline-size: 6.2rem;
+}
+
+.insight-card__levels span {
+  border: 1px solid color-mix(in oklch, var(--teacher-paper) 30%, transparent);
+  border-radius: 0.4rem;
+  color: color-mix(in oklch, var(--teacher-paper) 82%, transparent);
+  font-size: 0.68rem;
+  font-weight: 750;
+  padding-block: 0.4rem;
+  padding-inline: 0.65rem;
+  text-align: center;
+}
+
+.guidance-accordion {
+  display: grid;
+  gap: 0.35rem;
+  margin-block-start: 1.8rem;
+}
+
+.guidance-panel {
+  display: grid;
+  align-items: center;
+  border: 1px solid color-mix(in oklch, var(--teacher-ink) 13%, transparent);
+  border-radius: 0.8rem;
+  background: transparent;
+  color: var(--teacher-ink);
+  font: inherit;
+  gap: 0.75rem;
+  grid-template-columns: auto minmax(5rem, 0.35fr) minmax(0, 1fr) auto;
+  min-block-size: 4.2rem;
+  padding-block: 0.7rem;
+  padding-inline: 0.75rem;
+  text-align: start;
+  transition:
+    transform 180ms var(--ease-out),
+    background-color 180ms ease,
+    border-color 180ms ease;
+}
+
+.guidance-panel:focus-visible,
+.guidance-panel.is-active {
+  border-color: color-mix(in oklch, var(--primary) 42%, var(--border));
+  background: color-mix(in oklch, var(--teacher-mint) 65%, var(--card));
+}
+
+.guidance-panel:active {
+  transform: scale(0.985);
+}
+
+.guidance-panel__icon {
+  display: grid;
+  border-radius: 0.55rem;
+  background: color-mix(in oklch, var(--teacher-butter) 72%, var(--card));
+  block-size: 2rem;
+  color: var(--teacher-ink);
+  inline-size: 2rem;
+  place-items: center;
+}
+
+.guidance-panel__icon svg,
+.guidance-panel > svg {
+  block-size: 0.95rem;
+  inline-size: 0.95rem;
+}
+
+.guidance-panel__title {
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.guidance-panel__copy {
+  color: color-mix(in oklch, var(--teacher-ink) 61%, transparent);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.guidance-panel > svg {
+  color: var(--primary);
+}
+
+.teacher-marquee {
+  overflow: hidden;
+  border-block: 1px solid
+    color-mix(in oklch, var(--teacher-ink) 13%, transparent);
+  color: color-mix(in oklch, var(--teacher-ink) 62%, transparent);
+  inline-size: 100%;
+  margin-block-start: 2.5rem;
+  padding-block: 0.8rem;
+  white-space: nowrap;
+}
+
+.teacher-marquee__track {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.teacher-marquee__track span {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 750;
+  gap: 1rem;
+  letter-spacing: 0.08em;
+  padding-inline: 1rem;
+  text-transform: uppercase;
+}
+
+.teacher-marquee__track i {
+  display: inline-block;
+  border-radius: 50%;
+  background: var(--teacher-clay);
+  block-size: 0.3rem;
+  inline-size: 0.3rem;
+}
+
+.teacher-generation-status {
+  min-block-size: 2.6rem;
+  padding-block-start: 0.5rem;
+}
+
+.status-pulse {
+  display: flex;
+  align-items: center;
+  color: var(--primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  gap: 0.55rem;
+}
+
+.status-pulse > span {
+  animation: status-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes status-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.teacher-action-band {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  border-block-start: 1px solid
+    color-mix(in oklch, var(--teacher-ink) 13%, transparent);
+  gap: 1rem;
+  margin-block-start: clamp(1.5rem, 4vw, 3rem);
+  padding-block: 1.5rem;
+}
+
+.teacher-action-band .studio-kicker {
+  margin-block-end: 0.45rem;
+}
+
+.teacher-action-band p:not(.studio-kicker) {
+  color: color-mix(in oklch, var(--teacher-ink) 68%, transparent);
+  font-size: 0.9rem;
+}
+
+.teacher-action-band > span {
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 750;
+  gap: 0.4rem;
+}
+
+.teacher-action-band > span svg,
+.teacher-result__footer svg {
+  block-size: 1rem;
+  inline-size: 1rem;
+}
+
+.teacher-result {
+  border-block-start: 1px solid
+    color-mix(in oklch, var(--teacher-ink) 18%, transparent);
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  margin-block-start: clamp(2rem, 5vw, 4.5rem);
+  padding-block-start: clamp(2rem, 5vw, 4rem);
+}
+
+.teacher-result__header {
+  align-items: end;
+}
+
+.teacher-result__header h2 {
+  color: var(--teacher-ink);
+  font-size: clamp(2rem, 4.8vw, 4rem);
+  letter-spacing: -0.075em;
+  line-height: 0.95;
+  max-inline-size: 21ch;
+}
+
+.teacher-result__description {
+  color: color-mix(in oklch, var(--teacher-ink) 64%, transparent);
+  font-size: 0.93rem;
+  line-height: 1.6;
+  margin-block-start: 1rem;
+  max-inline-size: 58ch;
+}
+
+.result-state {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  border: 1px solid color-mix(in oklch, var(--primary) 28%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--teacher-mint) 72%, var(--card));
+  color: var(--primary);
+  font-size: 0.72rem;
+  font-weight: 800;
+  gap: 0.45rem;
+  padding-block: 0.45rem;
+  padding-inline: 0.7rem;
+}
+
+.result-state--generating {
+  border-color: color-mix(in oklch, var(--teacher-clay) 34%, var(--border));
+  background: color-mix(in oklch, var(--teacher-butter) 58%, var(--card));
+  color: var(--teacher-ink);
+}
+
+.result-state--blocked-by-validation,
+.result-state--blocked-by-moderation,
+.result-state--failed-retryable,
+.result-state--failed-terminal {
+  border-color: color-mix(in oklch, var(--destructive) 30%, var(--border));
+  background: color-mix(in oklch, var(--destructive) 8%, var(--card));
+  color: var(--destructive);
+}
+
+.result-state--generating > span {
+  background: var(--teacher-clay);
+}
+
+.result-state--blocked-by-validation > span,
+.result-state--blocked-by-moderation > span,
+.result-state--failed-retryable > span,
+.result-state--failed-terminal > span {
+  background: var(--destructive);
+}
+
+.teacher-diagnostics {
+  border-block: 1px solid
+    color-mix(in oklch, var(--teacher-ink) 15%, transparent);
+}
+
+.teacher-diagnostics li {
+  padding-block: 0.9rem;
+}
+
+.teacher-diagnostics strong {
+  color: var(--primary);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.validation-diagnostics {
+  display: grid;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid color-mix(in oklch, var(--destructive) 28%, var(--border));
+  border-radius: 0.9rem;
+  background: color-mix(in oklch, var(--destructive) 5%, var(--card));
+  gap: 0.9rem;
+}
+
+.validation-diagnostics h3 {
+  margin: 0;
+}
+
+.validation-diagnostics__screen {
+  display: grid;
+  border-block-start: 1px solid
+    color-mix(in oklch, var(--teacher-ink) 14%, transparent);
+  gap: 0.5rem;
+  padding-block-start: 0.9rem;
+}
+
+.validation-diagnostics__screen h4 {
+  margin: 0;
+  color: var(--primary);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.validation-diagnostics__findings {
+  display: grid;
+  padding: 0;
+  margin: 0;
+  gap: 0.65rem;
+  list-style: none;
+}
+
+.validation-diagnostics__finding {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  border-block-start: 1px solid
+    color-mix(in oklch, var(--teacher-ink) 10%, transparent);
+  gap: 0.65rem;
+  padding-block: 0.65rem;
+}
+
+.validation-diagnostics__field {
+  color: var(--muted-foreground);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.validation-diagnostics__finding p {
+  margin: 0.2rem 0 0;
+  color: var(--teacher-ink);
+  font-size: 0.9rem;
+}
+
+.validation-diagnostics__action {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--teacher-ink);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  min-block-size: 2.75rem;
+  padding-block: 0.55rem;
+  padding-inline: 1rem;
+}
+
+.validation-diagnostics__action:hover {
+  border-color: var(--primary);
+}
+
+/* #119: the moderation recovery panel. It is a safety review, not a system
+   failure, so it carries the primary tint and never the destructive one. */
+.moderation-recovery {
+  display: grid;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid color-mix(in oklch, var(--primary) 24%, var(--border));
+  border-radius: 0.9rem;
+  background: color-mix(in oklch, var(--primary) 4%, var(--card));
+  gap: 0.9rem;
+}
+
+.moderation-recovery h2 {
+  margin: 0;
+}
+
+.moderation-recovery p {
+  margin: 0;
+  color: var(--teacher-ink);
+}
+
+.moderation-recovery__objective {
+  margin: 0;
+  border-inline-start: 2px solid
+    color-mix(in oklch, var(--primary) 40%, transparent);
+  color: var(--teacher-ink);
+  font-size: 0.95rem;
+  padding-inline-start: 0.9rem;
+  white-space: pre-wrap;
+}
+
+.moderation-recovery__draft-note {
+  color: var(--muted-foreground);
+  font-size: 0.85rem;
+}
+
+#blocked-generation-reference {
+  color: var(--muted-foreground);
+  font-size: 0.78rem;
+}
+
+.moderation-recovery__action {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.teacher-review-layout {
+  display: grid;
+  align-items: start;
+  gap: clamp(1rem, 3vw, 2rem);
+  grid-template-columns: minmax(15rem, 0.6fr) minmax(0, 1.4fr);
+}
+
+.teacher-evidence-card {
+  display: grid;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid color-mix(in oklch, var(--teacher-forest) 45%, transparent);
+  border-radius: 1.25rem;
+  background: var(--teacher-forest);
+  color: var(--teacher-paper);
+  gap: 0.8rem;
+}
+
+.teacher-evidence-card__topline {
+  justify-content: space-between;
+  color: color-mix(in oklch, var(--teacher-paper) 72%, transparent);
+  font-size: 0.7rem;
+  font-weight: 800;
+  gap: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.teacher-evidence-card__topline svg {
+  block-size: 1.1rem;
+  color: var(--teacher-butter);
+  inline-size: 1.1rem;
+}
+
+.teacher-evidence-card > strong {
+  color: var(--teacher-butter);
+  font-size: clamp(1.9rem, 4vw, 3.2rem);
+  letter-spacing: -0.08em;
+  margin-block-start: 1rem;
+}
+
+.teacher-evidence-card > p {
+  color: color-mix(in oklch, var(--teacher-paper) 78%, transparent);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  max-inline-size: 26ch;
+}
+
+.teacher-evidence-card dl {
+  display: grid;
+  gap: 0.55rem;
+  margin-block-start: 0.8rem;
+}
+
+.teacher-evidence-card dl div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-block-start: 1px solid
+    color-mix(in oklch, var(--teacher-paper) 20%, transparent);
+  gap: 1rem;
+  padding-block-start: 0.6rem;
+}
+
+.teacher-evidence-card dt {
+  color: color-mix(in oklch, var(--teacher-paper) 62%, transparent);
+  font-size: 0.72rem;
+}
+
+.teacher-evidence-card dd {
+  margin: 0;
+  color: var(--teacher-paper);
+  font-size: 0.78rem;
+  font-weight: 750;
+  text-align: end;
+}
+
+.teacher-evidence-card__note {
+  border-block-start: 1px solid
+    color-mix(in oklch, var(--teacher-paper) 20%, transparent);
+  font-size: 0.76rem !important;
+  margin-block-start: 1.2rem;
+  padding-block-start: 1rem;
+}
+
+.variant-stack {
+  display: grid;
+  gap: 0;
+}
+
+.variant-picker {
+  padding: 0;
+  border: 0;
+  margin: 0;
+  min-inline-size: 0;
+}
+
+.variant-picker__cards {
+  display: grid;
+}
+
+.variant-card {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  padding: clamp(1.15rem, 2.4vw, 1.75rem);
+  border: 1px solid color-mix(in oklch, var(--teacher-ink) 14%, var(--border));
+  border-radius: 1.15rem;
+  background: var(--card);
+  box-shadow: 0 1rem 2.2rem
+    color-mix(in oklch, var(--teacher-ink) 7%, transparent);
+  gap: 0.85rem;
+  min-inline-size: 0;
+  transition: border-color 150ms ease;
+}
+
+/* The radio is the real control; the card is its label surface. The input
+   itself stays 1px so the card's ring carries keyboard focus. */
+.variant-card__radio {
+  position: absolute;
+  margin: 0;
+  block-size: 1px;
+  inline-size: 1px;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  opacity: 0;
+}
+
+.variant-card:has(.variant-card__radio:focus-visible) {
+  z-index: 10;
+  outline: 3px solid var(--ring);
+  outline-offset: 3px;
+}
+
+.variant-card:has(.variant-card__radio:checked) {
+  z-index: 10;
+  border-color: color-mix(in oklch, var(--primary) 55%, var(--border));
+  background: color-mix(in oklch, var(--primary) 4%, var(--card));
+}
+
+.variant-card__pick {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in oklch, var(--teacher-ink) 28%, transparent);
+  border-radius: 50%;
+  block-size: 1.35rem;
+  color: transparent;
+  inline-size: 1.35rem;
+  inset-block-start: 1rem;
+  inset-inline-end: 1rem;
+}
+
+.variant-card__pick svg {
+  block-size: 0.85rem;
+  inline-size: 0.85rem;
+}
+
+.variant-card__pick--on {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--card);
+}
+
+.variant-picker__action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block-start: 1.4rem;
+}
+
+.variant-card + .variant-card {
+  margin-block-start: -0.85rem;
+}
+
+.variant-picker__cards .variant-card:nth-child(2) {
+  z-index: 2;
+}
+
+.variant-picker__cards .variant-card:nth-child(3) {
+  z-index: 3;
+}
+
+.variant-picker__cards .variant-card:nth-child(4) {
+  z-index: 4;
+}
+
+.variant-card__heading {
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.variant-card__heading > span:last-child {
+  color: color-mix(in oklch, var(--teacher-ink) 49%, transparent);
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+.variant-kind {
+  border-radius: 0.4rem;
+  background: color-mix(in oklch, var(--teacher-mint) 75%, var(--card));
+  color: var(--primary);
+  font-size: 0.68rem;
+  font-weight: 800;
+  min-block-size: 1.65rem;
+  padding-inline: 0.55rem;
+}
+
+.variant-kind--scaffold {
+  background: color-mix(in oklch, var(--teacher-sky) 80%, var(--card));
+  color: color-mix(in oklch, var(--teacher-ink) 74%, oklch(40% 0.1 228deg));
+}
+
+.variant-kind--challenge {
+  background: color-mix(in oklch, var(--teacher-butter) 80%, var(--card));
+  color: color-mix(in oklch, var(--teacher-ink) 78%, oklch(42% 0.13 40deg));
+}
+
+.variant-card h3,
+.variant-card p {
+  margin: 0;
+}
+
+.variant-card h3 {
+  color: var(--teacher-ink);
+  font-size: clamp(1.2rem, 2.3vw, 1.75rem);
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.variant-card > p {
+  color: color-mix(in oklch, var(--teacher-ink) 66%, transparent);
+  font-size: 0.86rem;
+  line-height: 1.55;
+  max-inline-size: 62ch;
+}
+
+.variant-card__items {
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-block-start: 0.35rem;
+}
+
+.variant-card__items div {
+  display: grid;
+  border-block-start: 1px solid
+    color-mix(in oklch, var(--teacher-ink) 13%, transparent);
+  gap: 0.2rem;
+  padding-block-start: 0.6rem;
+}
+
+.variant-card__items span {
+  color: color-mix(in oklch, var(--teacher-ink) 52%, transparent);
+  font-size: 0.68rem;
+}
+
+.variant-card__items strong {
+  color: var(--teacher-ink);
+  font-size: 0.78rem;
+}
+
+.retry-button {
+  gap: 0.55rem;
+  min-block-size: 2.8rem;
+}
+
+.retry-button svg {
+  block-size: 0.95rem;
+  inline-size: 0.95rem;
+}
+
+.teacher-result__footer {
+  justify-content: space-between;
+  border-block-start: 1px solid
+    color-mix(in oklch, var(--teacher-ink) 13%, transparent);
+  color: color-mix(in oklch, var(--teacher-ink) 55%, transparent);
+  font-size: 0.74rem;
+  gap: 1rem;
+  padding-block-start: 1rem;
+}
+
+.teacher-result__footer span:first-child {
+  display: flex;
+  align-items: center;
+  color: var(--primary);
+  font-weight: 750;
+  gap: 0.4rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .studio-nav__exit:hover {
+    color: var(--primary);
+    text-decoration-color: currentcolor;
+  }
+
+  .prompt-composer__submit:hover {
+    background: color-mix(
+      in oklch,
+      var(--teacher-forest) 88%,
+      var(--foreground)
+    );
+  }
+
+  .guidance-panel:hover {
+    border-color: color-mix(in oklch, var(--primary) 42%, var(--border));
+    background: color-mix(in oklch, var(--teacher-mint) 65%, var(--card));
+  }
+
+  .insight-card:hover {
+    border-color: color-mix(in oklch, var(--primary) 34%, var(--border));
+  }
+
+  .variant-card:hover {
+    z-index: 5;
+    border-color: color-mix(in oklch, var(--primary) 36%, var(--border));
+  }
+}
+
+@media (width <= 60rem) {
+  .teacher-hero {
+    gap: 2rem;
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.75fr);
+  }
+
+  .teacher-guidance {
+    gap: 2.5rem;
+    grid-template-columns: minmax(14rem, 0.65fr) minmax(0, 1.35fr);
+  }
+}
+
+@media (width <= 48rem) {
+  .teacher-hero,
+  .teacher-guidance,
+  .teacher-review-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .teacher-hero {
+    min-block-size: auto;
+    padding-block-start: 1rem;
+  }
+
+  .teacher-hero h1 {
+    max-inline-size: 12ch;
+  }
+
+  .teacher-hero__art {
+    min-block-size: 19rem;
+  }
+
+  .teacher-guidance__rail {
+    max-inline-size: 38rem;
+  }
+
+  .teacher-guidance__rail h2 {
+    max-inline-size: 19ch;
+  }
+
+  .insight-card,
+  .insight-card--wide {
+    grid-column: span 6;
+  }
+
+  .prompt-composer__bottom,
+  .teacher-action-band,
+  .teacher-result__header,
+  .teacher-result__footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .prompt-composer__bottom {
+    display: grid;
+  }
+
+  .prompt-composer__submit {
+    justify-content: space-between;
+    inline-size: 100%;
+  }
+
+  .guidance-panel {
+    grid-template-columns: auto minmax(5rem, 0.4fr) minmax(0, 1fr) auto;
+  }
+
+  .teacher-evidence-card {
+    max-inline-size: 34rem;
+  }
+}
+
+@media (width <= 38rem) {
+  .app-shell--teacher {
+    padding-inline: 1rem;
+  }
+
+  .studio-nav__state {
+    display: none;
+  }
+
+  .teacher-hero h1 {
+    font-size: clamp(3.1rem, 16vw, 5.5rem);
+  }
+
+  .prompt-composer {
+    border-radius: 1.1rem;
+  }
+
+  .prompt-composer__heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+
+  .prompt-composer textarea {
+    font-size: 1.25rem;
+    min-block-size: 9rem;
+  }
+
+  .insight-card,
+  .insight-card--wide {
+    grid-column: span 12;
+  }
+
+  .insight-card--dark {
+    grid-template-columns: 1fr;
+  }
+
+  .insight-card__levels {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .guidance-panel {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .guidance-panel__copy {
+    grid-column: 2 / -1;
+    grid-row: 2;
+  }
+
+  .teacher-marquee {
+    margin-block-start: 1.75rem;
+  }
+
+  .variant-card + .variant-card {
+    margin-block-start: -0.45rem;
+  }
+
+  .variant-card__heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.45rem;
+  }
+
+  .variant-card__items {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-pulse > span {
+    animation: none;
+  }
+
+  .studio-nav__exit,
+  .prompt-composer__submit,
+  .insight-card,
+  .guidance-panel,
+  .variant-card {
+    transition: none;
+  }
+
+  .guidance-panel:active,
+  .prompt-composer__submit:active {
+    transform: none;
+  }
+}

@@ -7,7 +7,7 @@ The site ships two subset files of Hanken Grotesk Variable (single CSS family `"
 | `public/fonts/hanken-grotesk-variable-core.woff2` | ASCII + curly quotes, dashes, ellipsis | every page (preloaded from `src/routes/__root.tsx`) |
 | `public/fonts/hanken-grotesk-variable-extended.woff2` | Latin-1 Supplement + Latin Extended-A (U+00A0-017E) | only pages rendering one of those characters (`unicode-range`) |
 
-Both faces are declared at the top of `src/styles.css`. Arabic, `≈` (U+2248), combining marks, and everything outside the two ranges fall back to `Trebuchet MS`/`Segoe UI`/`system-ui` — the same behavior as before the split.
+Both faces are declared at the top of `src/styles/tokens.css`. Arabic, `≈` (U+2248), combining marks, and everything outside the two ranges fall back to `Trebuchet MS`/`Segoe UI`/`system-ui` — the same behavior as before the split.
 
 ## Regenerating
 

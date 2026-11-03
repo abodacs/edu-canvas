@@ -1,0 +1,181 @@
+/* #6 learner matching surface. */
+.learn-card {
+  padding: 1.5rem;
+  margin-block: 2rem;
+  margin-inline: auto;
+  max-inline-size: 48rem;
+}
+
+.learn-board {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  margin-block-start: 1.5rem;
+}
+
+.learn-column-heading {
+  font-size: 1rem;
+  margin-block: 0 0.75rem;
+  margin-inline: 0;
+}
+
+.learn-list {
+  display: grid;
+  padding: 0;
+  margin: 0;
+  gap: 0.5rem;
+  list-style: none;
+}
+
+.learn-item {
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--card);
+  cursor: pointer;
+  inline-size: 100%;
+  min-block-size: 2.75rem;
+  overflow-wrap: anywhere;
+  padding-block: 0.5rem;
+  padding-inline: 0.75rem;
+  text-align: start;
+}
+
+.learn-item[aria-pressed="true"] {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+.learn-item:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.learn-body,
+.learn-status {
+  color: var(--muted-foreground);
+}
+
+.learn-result {
+  font-weight: 600;
+}
+
+.learn-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.learn-submit {
+  border: 0;
+  border-radius: 0.5rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  cursor: pointer;
+  min-block-size: 2.75rem;
+  padding-block: 0.5rem;
+  padding-inline: 1.25rem;
+}
+
+.learn-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* #7 reveal report and next-activity card. */
+.learn-result-panel {
+  display: grid;
+  gap: 1.25rem;
+  margin-block-start: 1.5rem;
+}
+
+.learn-reveal,
+.learn-next {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--card);
+}
+
+.learn-reveal h2,
+.learn-next h2 {
+  font-size: 1rem;
+  margin-block: 0 0.75rem;
+  margin-inline: 0;
+}
+
+.learn-pairs {
+  display: grid;
+  padding: 0;
+  gap: 0.5rem;
+  list-style: none;
+  margin-block: 0 0.75rem;
+  margin-inline: 0;
+}
+
+.learn-pair {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  border-radius: 0.5rem;
+  background: var(--muted);
+  gap: 0.25rem 0.75rem;
+  overflow-wrap: anywhere;
+  padding-block: 0.5rem;
+  padding-inline: 0.65rem;
+}
+
+.learn-pair-state {
+  font-weight: 600;
+}
+
+.learn-pair[data-correct="true"] .learn-pair-state {
+  color: var(--primary);
+}
+
+.learn-pair[data-correct="false"] .learn-pair-state {
+  color: var(--destructive);
+}
+
+.learn-retry {
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  min-block-size: 2.75rem;
+  padding-block: 0.5rem;
+  padding-inline: 1.25rem;
+}
+
+.learn-retry:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.learn-unresolved,
+.learn-feedback,
+.learn-connection,
+.learn-next p,
+.learn-repeat {
+  color: var(--muted-foreground);
+  margin-block: 0.5rem 0;
+  margin-inline: 0;
+  overflow-wrap: anywhere;
+}
+
+.learn-feedback {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.learn-outcome {
+  color: var(--muted-foreground);
+  margin-block: 0.5rem 0;
+  margin-inline: 0;
+  overflow-wrap: anywhere;
+}
+
+.learn-outcome[data-correctness="correct"] {
+  color: var(--foreground);
+  font-weight: 600;
+}

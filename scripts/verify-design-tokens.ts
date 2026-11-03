@@ -31,7 +31,8 @@ const BASELINE_PATH = join(
   "scripts",
   "design-token-baseline.json"
 );
-const STYLESHEET = join(projectRoot, "src", "styles.css");
+const STYLESHEET_ROOT = join(projectRoot, "src", "styles.css");
+const STYLESHEET_DIR = join(projectRoot, "src", "styles");
 const TSX_ROOTS = [
   join(projectRoot, "src", "components"),
   join(projectRoot, "src", "routes"),
@@ -56,9 +57,8 @@ interface Baseline {
 interface ScanState {
   readonly counts: Record<string, Counts>;
   readonly declared: Set<string>;
-  readonly referenced: Set<string>;
-  readonly file: string;
-  aliasCount: number;
+  readonly referenced: Map<string, string>;
+  file: string;
 }
 
 const COLOUR_PATTERNS = [
@@ -176,50 +176,67 @@ const scanLine = (text: string, state: ScanState): void => {
 
   for (const match of text.matchAll(DECLARATION_TOKEN)) {
     const name = match.groups?.name;
-    if (name) {
-      state.referenced.add(name);
+    if (name && !state.referenced.has(name)) {
+      state.referenced.set(name, state.file);
     }
   }
 
   if (text.includes("var(--teacher-")) {
-    state.aliasCount += 1;
+    incrementFor(state.counts, "teacher-alias", state.file);
   }
 };
 
-const scanStylesheet = async (): Promise<{
+const stylesheetFiles = async (): Promise<string[]> => {
+  const entries = await readdir(STYLESHEET_DIR, { withFileTypes: true });
+  const nested = entries
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".css"))
+    .map((entry) => join(STYLESHEET_DIR, entry.name))
+    .toSorted();
+  return [STYLESHEET_ROOT, ...nested];
+};
+
+// Every stylesheet shares one declaration set: a token declared in
+// styles/tokens.css is defined for every surface file.
+const scanStylesheets = async (): Promise<{
   counts: Record<string, Counts>;
   declaredCount: number;
+  fileCount: number;
 }> => {
-  const source = await readFile(STYLESHEET, "utf-8");
+  const files = await stylesheetFiles();
+  const sources = await Promise.all(
+    files.map((file) => readFile(file, "utf-8"))
+  );
   const state: ScanState = {
     counts: {},
     declared: new Set<string>(),
-    referenced: new Set<string>(),
-    file: relative(projectRoot, STYLESHEET),
-    aliasCount: 0,
+    referenced: new Map<string, string>(),
+    file: "",
   };
 
-  for (const text of stripComments(source)) {
-    if (text.length > 0) {
-      scanLine(text, state);
+  for (const [index, file] of files.entries()) {
+    state.file = relative(projectRoot, file);
+    for (const text of stripComments(sources[index] ?? "")) {
+      if (text.length > 0) {
+        scanLine(text, state);
+      }
     }
   }
 
-  if (state.aliasCount > 0) {
-    state.counts["teacher-alias"] = { [state.file]: state.aliasCount };
-  }
-
   const missing: Counts = {};
-  for (const name of state.referenced) {
+  for (const [name, file] of state.referenced) {
     if (!state.declared.has(name)) {
-      missing[`${state.file}  ${name}`] = 1;
+      missing[`${file}  ${name}`] = 1;
     }
   }
   if (Object.keys(missing).length > 0) {
     state.counts["undefined-token"] = missing;
   }
 
-  return { counts: state.counts, declaredCount: state.declared.size };
+  return {
+    counts: state.counts,
+    declaredCount: state.declared.size,
+    fileCount: files.length,
+  };
 };
 
 const collectTsx = async (directory: string): Promise<string[]> => {
@@ -313,7 +330,7 @@ const report = (
 };
 
 const main = async (): Promise<string[] | null> => {
-  const { counts, declaredCount } = await scanStylesheet();
+  const { counts, declaredCount, fileCount } = await scanStylesheets();
   const current = { ...counts };
   const inline = await scanTsx();
   if (Object.keys(inline).length > 0) {
@@ -325,7 +342,9 @@ const main = async (): Promise<string[] | null> => {
     return null;
   }
 
-  console.log(`Design tokens: ${declaredCount} declarations in src/styles.css`);
+  console.log(
+    `Design tokens: ${declaredCount} declarations across ${fileCount} stylesheets`
+  );
   const baseline = JSON.parse(
     await readFile(BASELINE_PATH, "utf-8")
   ) as Baseline;
