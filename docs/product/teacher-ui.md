@@ -42,7 +42,7 @@ Verification ownership, per category. Each owner has to be able to observe the c
 
 Recorded gaps, rather than claims:
 
-- **Pedagogy is not covered by a skill.** Slices 1a–1b touch no lesson content, so they do not need one. Slices 3–6 do; their approval requires either a named skill or an explicit decision to proceed without one.
+- **Pedagogy is not covered by a skill.** Slices 1a–1b touch no lesson content, so they do not need one. Slices 3–6 do; their approval requires either a named skill or an explicit decision to proceed without one. **Decided 2026-11-03:** Abdullah chose to proceed without a pedagogy skill, because the slices change styling only, not lesson content. Each slice still needs its own row approved. The foundation follow-up ([#197](https://github.com/abodacs/edu-canvas/issues/197)) proceeds now, and it keeps the named type roles rather than the mock's twelve-step ladder.
 - **Rendered math is unverifiable today.** Generation emits `matching-v1` only, so no persisted draft carries `catalogVersion: fractions-v2`; the MathML path's entire styling is `font-size: 1.3rem; line-height: 1.7`. Math typography is #116's scope, and slices 1a–1b only define the tokens it will consume.
 - **The census has a prerequisite.** All 17 seeded drafts belong to `identity_demo_teacher`, and no seeded account can sign in as that identity (`PUBLICATION_FORBIDDEN`), so Review has no automated capture path until the seed is fixed.
 - **Fonts.** Slice 1b uses a system serif for display per AgDR-0017; [AgDR-0016](../agdr/AgDR-0016-studio-redesign-ui-stack-and-provider-transport.md) still requires self-hosting Source Serif 4 before public release.
