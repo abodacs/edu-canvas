@@ -83,7 +83,7 @@ export const createPostgresRecordBackend = (
     transaction: SqlTransaction,
     table: RecordTableName,
     values: Readonly<Record<string, RecordValue>>,
-    options?: { readonly onConflictDoNothing?: boolean }
+    insertOptions?: { readonly onConflictDoNothing?: boolean }
   ): Promise<void> => {
     const columns = Object.keys(values);
     const json = jsonColumns(table);
@@ -97,7 +97,7 @@ export const createPostgresRecordBackend = (
     // The conflict clause arbitrates every unique index on the table, so a
     // concurrent writer's committed row makes the loser skip instead of
     // aborting the transaction; the caller re-reads the winner's row.
-    const conflictSql = options?.onConflictDoNothing
+    const conflictSql = insertOptions?.onConflictDoNothing
       ? " on conflict do nothing"
       : "";
     try {

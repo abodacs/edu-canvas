@@ -14,9 +14,9 @@ import { createPostgresRecordBackend } from "./records-postgres";
 describe("records postgres insert conflict option", () => {
   const captured: string[] = [];
   const transaction = {
-    unsafe: async (sql: string): Promise<unknown> => {
+    unsafe: (sql: string): Promise<unknown> => {
       captured.push(sql);
-      return [];
+      return Promise.resolve([]);
     },
   };
 
@@ -31,6 +31,7 @@ describe("records postgres insert conflict option", () => {
       { id: "run_1", tenant_id: "tenant_1" },
       { onConflictDoNothing: true }
     );
+
     expect(captured[0]).toContain("on conflict do nothing");
   });
 
@@ -43,6 +44,7 @@ describe("records postgres insert conflict option", () => {
       id: "run_2",
       tenant_id: "tenant_1",
     });
+
     expect(captured[0]).not.toContain("on conflict");
   });
 });

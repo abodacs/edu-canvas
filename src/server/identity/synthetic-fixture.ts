@@ -199,6 +199,7 @@ export const ensureSyntheticIdentityFixture = async (
     if (!actor) {
       continue;
     }
+    // eslint-disable-next-line no-await-in-loop -- sequential provisioning is the fix: concurrent grants race on the shared tenant row.
     await provisioning.bindIdentity({
       providerIssuer: syntheticProviderIssuer,
       providerSubject: account.subject,
@@ -211,6 +212,7 @@ export const ensureSyntheticIdentityFixture = async (
 
   for (const membership of fixture.memberships) {
     const tenant = tenantFor(membership.tenantKey);
+    // eslint-disable-next-line no-await-in-loop -- sequential provisioning is the fix: concurrent grants race on the shared tenant row.
     await provisioning.grantMembership({
       membershipId: parseMembershipId(membership.membershipId),
       actorId: parseActorId(membership.actorId),
@@ -230,6 +232,7 @@ export const ensureSyntheticIdentityFixture = async (
 
   for (const assignment of fixture.classAssignments) {
     const tenant = fixture.tenants.north;
+    // eslint-disable-next-line no-await-in-loop -- sequential provisioning is the fix: concurrent grants race on the shared tenant row.
     await provisioning.assignClass({
       membershipId: parseMembershipId(assignment.membershipId),
       classId: parseClassId(assignment.classId),

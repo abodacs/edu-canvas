@@ -556,17 +556,16 @@ const main = async () => {
     });
     if (isLearnerBlocked) {
       process.exitCode = 1;
-    }
+    } else {
+      // --- Dashboard surface cases (#8 acceptance map) --------------------
 
-    // --- Dashboard surface cases (#8 acceptance map) ----------------------
-    if (!isLearnerBlocked) {
-      const openDashboardAs = async (email, membershipLabel, tag) => {
+      const openDashboardAs = async (membershipLabel, tag) => {
         const context = await browser.newContext();
         const dashPage = await context.newPage();
         dashPage.setDefaultTimeout(STEP_WAIT_MS);
         await dashPage.goto(`${BASE_URL}/login`);
         await dashPage.waitForLoadState("networkidle");
-        await dashPage.getByLabel("Email address").fill(email);
+        await dashPage.getByLabel("Email address").fill(TEACHER_EMAIL);
         await dashPage.locator('input[type="password"]').fill(PASSWORD);
         await dashPage.getByRole("button", { name: "Sign in" }).click();
         await dashPage.waitForURL(/membership|workspace/, {
@@ -594,8 +593,25 @@ const main = async () => {
 
       try {
         log("step 16: dashboard surface as the assigning teacher");
+        const scoreSurface = ({
+          tableHeading,
+          provisional,
+          reason,
+          provenance,
+          preview,
+        }) => {
+          const isRowRendered = tableHeading > 0 && provisional > 0;
+          const isReasonRendered = reason.trim().length > 0;
+          const isProvenanceRendered =
+            /Rule next-activity-rule-/.test(provenance) &&
+            /\b[0-9a-f]{12,}\b/i.test(provenance);
+          if (!isRowRendered || !isReasonRendered || !isProvenanceRendered) {
+            return 0;
+          }
+          return preview > 0 ? 2 : 1;
+        };
+
         const { context: dashContext, dashPage } = await openDashboardAs(
-          TEACHER_EMAIL,
           "Synthetic Fractions",
           "ac-surface"
         );
@@ -617,16 +633,13 @@ const main = async () => {
           .innerText()
           .catch(() => "");
         const preview = await dashPage.locator(".progress-preview").count();
-        const surfaceScore =
-          tableHeading > 0 &&
-          provisional > 0 &&
-          reason.trim().length > 0 &&
-          /Rule next-activity-rule-/.test(provenance) &&
-          /\b[0-9a-f]{12,}\b/i.test(provenance)
-            ? preview > 0
-              ? 2
-              : 1
-            : 0;
+        const surfaceScore = scoreSurface({
+          tableHeading,
+          provisional,
+          reason,
+          provenance,
+          preview,
+        });
         await dashContext.close();
         results.push({
           id: "ac-surface",
@@ -669,7 +682,7 @@ const main = async () => {
       try {
         log("step 17: dashboard boundary and empty state from another tenant");
         const { context: otherContext, dashPage: otherPage } =
-          await openDashboardAs(TEACHER_EMAIL, "Ratio Reasoning", "ac-empty");
+          await openDashboardAs("Ratio Reasoning", "ac-empty");
         const emptyHeading = await otherPage
           .getByRole("heading", { name: "No learner results yet" })
           .count();
@@ -677,7 +690,7 @@ const main = async () => {
           .locator(".progress-table-card")
           .count();
         await otherContext.close();
-        const boundaryScore = emptyHeading > 0 && tableRows === 0 ? 2 : 0;
+        const boundaryScore = tableRows === 0 && emptyHeading > 0 ? 2 : 0;
         results.push({
           id: "ac-boundary-empty",
           practice: "S0",
