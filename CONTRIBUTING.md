@@ -1,4 +1,4 @@
-# Contributing to Edu-Canvas
+# Contributing to Scholé
 
 Use this guide to report a problem, propose a bounded change, or prepare a contribution for review. Follow [CODING_STANDARDS.md](CODING_STANDARDS.md) for code rules and [coding patterns](docs/engineering/coding-patterns.md) for design guidance.
 

@@ -326,6 +326,6 @@ const SignUpPage = (): ReactElement => {
 };
 
 export const Route = createFileRoute("/sign-up")({
-  head: () => ({ meta: [{ title: "Create a teacher account | Edu-Canvas" }] }),
+  head: () => ({ meta: [{ title: "Create a teacher account | Scholé" }] }),
   component: SignUpPage,
 });

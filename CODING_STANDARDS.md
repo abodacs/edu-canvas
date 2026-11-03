@@ -1,6 +1,6 @@
 # Code standards
 
-These standards apply to code changes and reviews in Edu-Canvas. See [coding patterns](docs/engineering/coding-patterns.md) for guidance on domain rules, integration boundaries, state, errors, and reviewable changes. Preserve the layer and contract boundaries in the [architecture harness](docs/architecture-harness.md).
+These standards apply to code changes and reviews in Scholé. See [coding patterns](docs/engineering/coding-patterns.md) for guidance on domain rules, integration boundaries, state, errors, and reviewable changes. Preserve the layer and contract boundaries in the [architecture harness](docs/architecture-harness.md).
 
 For setup, issue reports, commit messages, and contribution checks, read [CONTRIBUTING.md](CONTRIBUTING.md).
 

@@ -28,12 +28,12 @@ export const Route = createRootRoute({
           content: "width=device-width, initial-scale=1, viewport-fit=cover",
         },
         {
-          title: "Edu-Canvas · Lessons that land",
+          title: "Scholé · Teaching, returned to its origin",
         },
         {
           name: "description",
           content:
-            "Turn one sentence into a standards-aligned visual lesson your students understand. Teachers approve every variant; AI never grades or publishes unreviewed content.",
+            "Scholé takes the repetitive lesson prep off your desk, so you get your time and focus back for teaching. Teachers approve every variant; AI never grades or publishes unreviewed content.",
         },
       ],
       links: [

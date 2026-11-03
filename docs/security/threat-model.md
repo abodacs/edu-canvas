@@ -1,4 +1,4 @@
-# Threat Model — Edu-Canvas (STRIDE)
+# Threat Model — Scholé (STRIDE)
 
 > Refreshed 2026-10-27 against the implemented generation, A2UI/SSE preview, persistence, and synthetic-data paths ([#73](https://github.com/abodacs/edu-canvas/issues/73)). Replaces the pre-build pass of 2026-10-25. Each control names the code or migration that implements it. Each residual is marked **accepted**, **partial**, or **open**, and links to its owner where a follow-up exists. This is a milestone model: synthetic data only. Server-owned sessions bind every action ([#98](https://github.com/abodacs/edu-canvas/issues/98), [AgDR-0009](../agdr/AgDR-0009-application-owned-opaque-sessions.md)), and the demo-mode runtime is removed ([#162](https://github.com/abodacs/edu-canvas/issues/162)). Generation quotas remain open ([#104](https://github.com/abodacs/edu-canvas/issues/104)). **Children's data and server-authoritative grading make the production surface higher than usual; these controls are not deferable.**
 

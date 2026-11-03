@@ -11,7 +11,7 @@ export const membershipCopy = {
   expiredLede:
     "Choosing a class has a five-minute window. Nothing was changed, so you can start again.",
   signInAgain: "Sign in again",
-  pageTitle: "Choose your class | Edu-Canvas",
+  pageTitle: "Choose your class | Scholé",
   errors: {
     rateLimited: {
       title: "Too many attempts",

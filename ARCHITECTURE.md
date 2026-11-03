@@ -1,6 +1,6 @@
 # Architecture
 
-Edu-Canvas is a full-stack TanStack Start application. Its implemented loop runs from a teacher prompt to a published lesson and a graded learner attempt: authenticate, ground the request in the seeded curriculum or an uploaded source, generate and validate four variants, preview through A2UI, review and approve a version, publish it, assign it to a learner, and grade a server-authoritative attempt that returns the approved reveal and a deterministic next-activity decision. Adaptation and teacher evidence remain target contracts.
+Scholé is a full-stack TanStack Start application. Its implemented loop runs from a teacher prompt to a published lesson and a graded learner attempt: authenticate, ground the request in the seeded curriculum or an uploaded source, generate and validate four variants, preview through A2UI, review and approve a version, publish it, assign it to a learner, and grade a server-authoritative attempt that returns the approved reveal and a deterministic next-activity decision. Adaptation and teacher evidence remain target contracts.
 
 This document describes the code inspected on **2026-11-01**, using `07a065a` as the source baseline. It owns module boundaries, runtime flows, state ownership, and the checks that protect them. [Design contracts](docs/design/design-doc.md) own intended behavior; [AgDRs](docs/agdr/) own decision rationale; [runbooks](docs/foundation-runbook.md) own setup and operation. A disagreement between this document and the implementation is documentation drift, not permission to change behavior.
 

@@ -33,7 +33,7 @@ const WorkspaceStatus = ({
       <div className="page-frame page-frame--teacher">
         <div className="workspace-status">
           <span className="workspace-status__mark" aria-hidden="true">
-            EC
+            S
           </span>
           <h1 id="workspace-status-heading" className="auth-heading">
             {title}
@@ -277,6 +277,6 @@ export const Route = createFileRoute("/workspace")({
       ? { review: search.review }
       : {};
   },
-  head: () => ({ meta: [{ title: "Teacher studio | Edu-Canvas" }] }),
+  head: () => ({ meta: [{ title: "Teacher studio | Scholé" }] }),
   component: WorkspacePage,
 });

@@ -411,8 +411,8 @@ const TeacherGuidance = ({
         <p className="studio-kicker">A little help, quietly</p>
         <h2 id="guidance-heading">Good prompts carry more than a topic.</h2>
         <p>
-          As you write, Edu-Canvas looks for the small details that help a
-          visual lesson feel fair, focused, and ready to review.
+          As you write, Scholé looks for the small details that help a visual
+          lesson feel fair, focused, and ready to review.
         </p>
         <div className="teacher-guidance__signal">
           <span className="teacher-guidance__signal-dot" aria-hidden="true" />

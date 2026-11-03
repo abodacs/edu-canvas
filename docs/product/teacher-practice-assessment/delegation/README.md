@@ -2,7 +2,7 @@
 
 Assessment owner: [#135](https://github.com/abodacs/edu-canvas/issues/135). Parent method: [#138](https://github.com/abodacs/edu-canvas/issues/138). Pack version: **v0**, dated **2026-11-03**. Dataset (`cases/`), results (`results/`), and runner (`scripts/eval-practices.ts`) live in-repo. Bump the version on any change to cases, anchors, or runner semantics.
 
-This pack assesses whether Edu-Canvas supports seven teacher delegation practices. It does not score a teacher's competence.
+This pack assesses whether Scholé supports seven teacher delegation practices. It does not score a teacher's competence.
 
 ## Issue state recorded at pack time
 
