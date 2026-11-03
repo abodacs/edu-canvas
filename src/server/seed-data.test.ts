@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  A2UI_CATALOG_VERSION,
+  a2uiCatalogVersionForId,
+  a2uiCatalogs,
+} from "@/shared/a2ui-contract";
+
+import {
   assertSeedIntegrity,
   syntheticSeed,
   getSyntheticSeedCounts,
@@ -19,6 +25,16 @@ describe("synthetic seed", () => {
       activityVersions: 1,
       attempts: 1,
     });
+  });
+
+  // #110: the fixture and the live preview are one catalog identity.
+  it("pins the live catalog the preview and renderer accept", () => {
+    const { catalogVersion } = syntheticSeed.activityVersion;
+
+    expect(catalogVersion).toBe(A2UI_CATALOG_VERSION);
+    expect(
+      a2uiCatalogVersionForId(a2uiCatalogs[A2UI_CATALOG_VERSION].catalogId)
+    ).toBe(A2UI_CATALOG_VERSION);
   });
 
   it("keeps the private answer key out of the public seed projection", () => {
