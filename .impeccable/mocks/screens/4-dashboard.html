@@ -50,7 +50,7 @@
         display: flex;
         align-items: center;
         gap: var(--s-2);
-        min-block-size: 36px;
+        min-block-size: 40px;
         padding: 0 var(--s-3);
         border: 1px solid var(--line-control);
         border-radius: 999px;
@@ -58,6 +58,18 @@
         color: var(--ink-3);
         font-size: var(--fs-meta);
         min-inline-size: 220px;
+      }
+      .search input {
+        inline-size: 100%;
+        min-block-size: 38px;
+        border: 0;
+        background: transparent;
+        font-size: var(--fs-meta);
+        outline: none;
+      }
+      .search:focus-within {
+        outline: 2px solid var(--ink);
+        outline-offset: 2px;
       }
       .lesson b {
         display: -webkit-box;
@@ -112,8 +124,8 @@
         >Edu-Canvas</a
       >
       <nav aria-label="Workspace">
-        <a href="1-studio.html">Studio</a><a href="2-review.html">Review</a
-        ><a href="4-dashboard.html" aria-current="page">Lessons</a>
+        <a href="4-dashboard.html" aria-current="page">Lessons</a
+        ><a href="1-studio.html">New lesson</a>
       </nav>
       <span class="who"
         ><span class="name">Ms. Rivera · Lincoln Elementary</span
@@ -144,7 +156,7 @@
       </div>
 
       <section aria-labelledby="needs-h">
-        <h2 id="needs-h" class="h3" style="margin-block-end: var(--s-1)">
+        <h2 id="needs-h" class="h2" style="margin-block-end: var(--s-1)">
           Needs you · 3
         </h2>
         <ul class="needs">
@@ -166,7 +178,9 @@
           </li>
           <li>
             <div>
-              <b>Rewrite a blocked objective</b
+              <b
+                >Rewrite a blocked objective
+                <span class="pill stop">Blocked</span></b
               ><span
                 >Compare fractions with bars · stopped by the safety check,
                 nothing was shared</span
@@ -177,14 +191,15 @@
         </ul>
       </section>
 
-      <h2 class="h2 section-h" id="t">All lessons</h2>
+      <h2 class="heading section-h" id="t">All lessons</h2>
       <section class="card" aria-labelledby="t">
         <div class="filters" role="group" aria-label="Filter lessons">
           <button class="chip" aria-pressed="true">All · 4</button
-          ><button class="chip">Published · 3</button
-          ><button class="chip">Drafts · 1</button>
-          <span class="search"
-            ><svg
+          ><button class="chip" aria-pressed="false">Published · 3</button
+          ><button class="chip" aria-pressed="false">Drafts · 1</button>
+          <label class="search">
+            <span class="sr-only">Search lessons</span>
+            <svg
               width="14"
               height="14"
               viewBox="0 0 24 24"
@@ -195,9 +210,10 @@
               aria-hidden="true"
             >
               <circle cx="11" cy="11" r="7" />
-              <path d="m20 20-3.5-3.5" /></svg
-            >Search lessons</span
-          >
+              <path d="m20 20-3.5-3.5" />
+            </svg>
+            <input type="search" placeholder="Search lessons" />
+          </label>
         </div>
         <table class="table">
           <thead>
@@ -217,7 +233,8 @@
               </td>
               <td><span class="pill ok">Published</span></td>
               <td class="class">
-                <b>Class 4B · 24 learners</b><span>A 6 · B 4 · D 14</span>
+                <b>Class 4B · 26 learners</b
+                ><span>A 6 · B 4 · D 14 · 2 not assigned</span>
               </td>
               <td class="reason">
                 19 finished · 16 ready for 4.NF.A.2 · 3 need another go
@@ -263,7 +280,8 @@
       </section>
       <p class="synthetic">
         Sketch. Lessons, classes and results are synthetic. The blocked
-        objective lives in “Needs you” only.
+        objective lives in “Needs you” only. Class-level assignment and results
+        are the S8 target; today a publication reaches one learner (G1).
       </p>
     </main>
   </body>

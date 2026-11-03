@@ -22,40 +22,47 @@
         color: var(--ink-2);
         font-size: var(--fs-secondary);
       }
-      /* Variant tabs: status in words. On phones they become a 2×2 grid so C and D never hide. */
-      .tabs {
-        display: flex;
-        gap: var(--s-1);
-        padding: var(--s-1);
-        background: var(--sunk);
-        border-radius: 12px;
-        inline-size: fit-content;
-        max-inline-size: 100%;
+      /* Variant rail: all four are always visible with their status in words.
+         A plain list of links, so there are no tab panels to dangle. */
+      .rail {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: var(--s-2);
+        list-style: none;
+        padding: 0;
+        margin-block: var(--s-3) var(--s-4);
       }
-      .tabs [role="tab"] {
+      .rail a {
         display: grid;
         gap: 2px;
         min-block-size: 44px;
-        padding: 6px var(--s-3);
-        border: 0;
-        border-radius: 9px;
-        background: transparent;
+        padding: var(--s-3);
+        border: 1px solid var(--line-control);
+        border-radius: 10px;
+        background: var(--surface);
         color: var(--ink-2);
         font-size: var(--fs-secondary);
-        font-weight: 500;
-        text-align: start;
+        text-decoration: none;
       }
-      .tabs [role="tab"][aria-selected="true"] {
-        background: var(--surface);
+      .rail a:hover {
+        border-color: var(--ink-3);
+      }
+      .rail a[aria-current="page"] {
+        border-color: var(--ink);
         color: var(--ink);
+      }
+      .rail b {
+        font-size: var(--fs-body);
         font-weight: 600;
-        box-shadow: 0 1px 2px rgb(31 29 26 / 0.08);
+      }
+      .rail a[aria-current="page"] b {
+        text-decoration: underline;
+        text-underline-offset: 0.22em;
+        text-decoration-thickness: 2px;
       }
       @media (width <= 720px) {
-        .tabs {
-          display: grid;
+        .rail {
           grid-template-columns: 1fr 1fr;
-          inline-size: 100%;
         }
       }
       .layout {
@@ -140,51 +147,66 @@
         max-inline-size: 100%;
         block-size: auto;
       }
-      /* Approve bar: sticks to the bottom of the viewport while the document scrolls. */
-      .approve {
+      /* Approve gate: the loudest object on the screen, anchored outside the
+         document so it is never below the fold. */
+      .gate {
         position: sticky;
         inset-block-end: 0;
-        margin-inline: calc(-1 * var(--s-7));
-        margin-block-start: var(--s-4);
-        padding: var(--s-4) var(--s-7);
-        border-block-start: 1px solid var(--line);
-        background: var(--surface);
-        border-end-start-radius: var(--r-card);
-        border-end-end-radius: var(--r-card);
-        box-shadow: 0 -8px 16px -12px rgb(31 29 26 / 0.18);
-        display: grid;
-        gap: var(--s-3);
+        z-index: 5;
+        margin-block-start: var(--s-5);
       }
-      .approve fieldset {
+      .gate .seal {
+        box-shadow: 0 -14px 30px -22px rgb(31 29 26 / 0.45);
+      }
+      .gate .seal-top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--s-2) var(--s-4);
+      }
+      .gate fieldset {
         border: 0;
         padding: 0;
         margin: 0;
         display: grid;
         gap: var(--s-2);
       }
-      .approve legend {
-        font-size: var(--fs-secondary);
-        font-weight: 600;
-        margin-block-end: var(--s-2);
+      .gate legend {
         padding: 0;
+        margin-block-end: var(--s-2);
+        color: var(--ink);
+        font-size: var(--fs-body);
+        font-weight: 600;
       }
       .ack {
         display: flex;
         gap: var(--s-3);
         align-items: flex-start;
-        font-size: var(--fs-secondary);
+        font-size: var(--fs-body);
+        line-height: 1.5;
       }
       .ack input {
-        inline-size: 20px;
-        block-size: 20px;
+        inline-size: 22px;
+        block-size: 22px;
         accent-color: var(--clay);
         flex: none;
+        margin-block-start: 2px;
       }
-      .approve .row {
+      .gate .row {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        gap: var(--s-3);
+        gap: var(--s-2) var(--s-4);
+      }
+      .gate .btn {
+        min-block-size: 52px;
+        padding-inline: var(--s-6);
+        font-size: var(--fs-body-lg);
+      }
+      .gate .why {
+        flex: 1 1 22ch;
+        font-size: var(--fs-body);
       }
       .why {
         color: var(--ink-2);
@@ -198,9 +220,6 @@
         padding: var(--s-5);
       }
       .side h2 {
-        font-size: var(--fs-body);
-        font-weight: 600;
-        line-height: 1.35;
         margin-block-end: var(--s-1);
       }
       .side .explain {
@@ -229,8 +248,8 @@
         background: var(--surface);
       }
       .path li.here i {
-        border-color: var(--clay);
-        background: var(--clay);
+        border-color: var(--ink);
+        background: var(--ink);
       }
       .path li.missing {
         color: var(--warn);
@@ -250,11 +269,13 @@
         .layout {
           grid-template-columns: 1fr;
         }
+        .gate {
+          position: static;
+        }
         .doc {
           padding: var(--s-5) var(--s-5) 0;
         }
-        .sec.changed,
-        .approve {
+        .sec.changed {
           margin-inline: calc(-1 * var(--s-5));
           padding-inline: var(--s-5);
         }
@@ -279,9 +300,8 @@
         >Edu-Canvas</a
       >
       <nav aria-label="Workspace">
-        <a href="1-studio.html">Studio</a
-        ><a href="2-review.html" aria-current="page">Review</a
-        ><a href="4-dashboard.html">Lessons</a>
+        <a href="4-dashboard.html">Lessons</a
+        ><a href="1-studio.html">New lesson</a>
       </nav>
       <span class="who"
         ><span class="name">Ms. Rivera · Lincoln Elementary</span
@@ -290,72 +310,67 @@
     </header>
     <main id="main" class="page wide">
       <nav class="crumbs" aria-label="Breadcrumb">
-        <a href="1-studio.html">Studio</a><span aria-hidden="true">/</span
-        ><span>Equivalent fractions · Grade 4</span>
+        <a href="4-dashboard.html">Lessons</a><span aria-hidden="true">/</span
+        ><a href="1-studio.html">Equivalent fractions</a
+        ><span aria-hidden="true">/</span
+        ><span aria-current="page">Review</span>
       </nav>
+      <ol class="steps" aria-label="Lesson steps">
+        <li class="done"><span class="n">1</span>Draft</li>
+        <li aria-current="step"><span class="n">2</span>Review</li>
+        <li><span class="n">3</span>Publish</li>
+      </ol>
       <div class="head">
-        <h1>Review · Equivalent fractions</h1>
+        <h1>Equivalent fractions</h1>
         <p>
           Approve only the variants you'd use. Each learner gets one when you
           publish.
         </p>
       </div>
 
-      <div class="tabs" role="tablist" aria-label="Variants, 1 of 4 approved">
-        <button
-          role="tab"
-          id="t-a"
-          aria-selected="true"
-          aria-controls="p-a"
-          tabindex="0"
-        >
-          A · Worked example<span class="status-word warn"
-            >Edited · needs approval</span
-          >
-        </button>
-        <button
-          role="tab"
-          id="t-b"
-          aria-selected="false"
-          aria-controls="p-b"
-          tabindex="-1"
-        >
-          B · Guided activity<span class="status-word warn"
-            >Ready · 1 warning</span
-          >
-        </button>
-        <button
-          role="tab"
-          id="t-c"
-          aria-selected="false"
-          aria-controls="p-c"
-          tabindex="-1"
-        >
-          C · Independent check<span class="status-word stop">Blocked</span>
-        </button>
-        <button
-          role="tab"
-          id="t-d"
-          aria-selected="false"
-          aria-controls="p-d"
-          tabindex="-1"
-        >
-          D · Matching<span class="status-word ok">Approved</span>
-        </button>
-      </div>
+      <p class="count-line">
+        <span class="pill ok">1 of 4 approved</span
+        ><span class="muted small">D is ready to publish</span>
+      </p>
+      <ol class="rail" aria-label="Variants">
+        <li>
+          <a href="2-review.html" aria-current="page">
+            <b>A · Worked example</b>
+            <span class="status-word warn">Edited · needs approval</span>
+          </a>
+        </li>
+        <li>
+          <a href="2-review.html">
+            <b>B · Guided activity</b>
+            <span class="status-word warn">Ready · 1 warning</span>
+          </a>
+        </li>
+        <li>
+          <a href="2-review.html">
+            <b>C · Independent check</b>
+            <span class="status-word stop">Blocked</span>
+          </a>
+        </li>
+        <li>
+          <a href="2-review.html">
+            <b>D · Matching</b>
+            <span class="status-word ok">Approved</span>
+          </a>
+        </li>
+      </ol>
 
       <div class="layout">
         <article
           class="card doc"
-          role="tabpanel"
-          id="p-a"
-          aria-labelledby="t-a"
+          id="panel-a"
+          aria-labelledby="review-a"
           tabindex="0"
         >
           <p class="std">Grade 4 · 4.NF.A.1 · Version 2 (you edited it)</p>
-          <h2>Same bar, cut two ways</h2>
+          <h2 id="review-a">Same bar, cut two ways</h2>
           <p class="gets">
             <b>Students get:</b> this worked example, then matching (4 pairs).
+            <a class="link" href="7-learn.html">Preview as student</a>
           </p>
           <section class="sec">
             <h3>Warm-up</h3>
@@ -413,40 +428,11 @@
             <p>Is 3/6 the same amount as 1/2? Use a bar to show why.</p>
             <button class="ghost edit">Edit section</button>
           </section>
-
-          <section class="approve" aria-labelledby="ap-legend">
-            <fieldset>
-              <legend id="ap-legend">
-                This variant needs two checks because it has an edit and a gap:
-              </legend>
-              <label class="ack"
-                ><input type="checkbox" checked />My edit still fits “Check for
-                understanding”</label
-              >
-              <label class="ack"
-                ><input type="checkbox" />I've seen that unit fractions
-                (3.NF.A.1) aren't in the source</label
-              >
-            </fieldset>
-            <div class="row">
-              <button
-                class="btn"
-                aria-disabled="true"
-                aria-describedby="ap-why"
-              >
-                Approve version 2
-              </button>
-              <span class="why" id="ap-why"
-                >1 check left. Once approved, this version can't change; a later
-                edit makes version 3.</span
-              >
-            </div>
-          </section>
         </article>
 
         <aside class="side" aria-label="Evidence for this variant">
           <section class="card">
-            <h2>Where this comes from</h2>
+            <h2 class="heading">Where this comes from</h2>
             <p class="explain">
               The standard and skills this variant was drafted from, from
               Learning Commons, a public library of curriculum standards.
@@ -519,7 +505,7 @@
             >
           </section>
           <section class="card">
-            <h2>Learning path</h2>
+            <h2 class="heading">Learning path</h2>
             <p class="explain">What comes before and after this lesson.</p>
             <ol class="path">
               <li class="missing">
@@ -552,14 +538,52 @@
         </aside>
       </div>
 
+      <div class="gate">
+        <section class="seal" aria-labelledby="ap-legend">
+          <div class="seal-top">
+            <h2 class="seal-h" id="ap-legend">Approve A · version 2</h2>
+            <span class="pill warn">Not approved yet</span>
+          </div>
+          <p class="small muted">
+            Approval is the trust boundary: this exact version is what a learner
+            can receive. A later edit makes version 3; version 2 stays on
+            record.
+          </p>
+          <fieldset>
+            <legend>Two things to confirm first</legend>
+            <label class="ack"
+              ><input type="checkbox" />My edit still fits “Check for
+              understanding”</label
+            >
+            <label class="ack"
+              ><input type="checkbox" />I've seen that unit fractions (3.NF.A.1)
+              aren't in the source</label
+            >
+          </fieldset>
+          <div class="row">
+            <button class="btn" aria-disabled="true" aria-describedby="ap-why">
+              Approve version 2
+            </button>
+            <span class="why" id="ap-why"
+              ><b>2 confirmations left.</b> Both must be confirmed before this
+              version can be approved. Nothing reaches a learner until you
+              publish.</span
+            >
+          </div>
+        </section>
+      </div>
+
       <p class="synthetic" style="margin-block: var(--s-7) var(--s-2)">
         State of an approved variant (D)
       </p>
       <section class="card approved" aria-label="Variant D approved">
         <span class="pill ok">Approved · version 1</span>
         <span
-          >D · Matching. The approval is pinned to this version; a later edit
-          starts version 2.</span
+          >D · Matching. Approval is final: a later edit makes a new version.
+          Nobody has it yet.</span
+        >
+        <a class="ghost" href="3-publish.html" style="margin-inline-start: auto"
+          >Go to Publish</a
         >
       </section>
       <p class="synthetic">

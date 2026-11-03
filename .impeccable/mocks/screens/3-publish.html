@@ -51,7 +51,7 @@
       }
       .bulk-row {
         display: grid;
-        grid-template-columns: 7rem minmax(0, 16rem) auto;
+        grid-template-columns: 7rem minmax(0, 22rem) auto;
         justify-content: start;
         align-items: center;
         gap: var(--s-3);
@@ -102,6 +102,20 @@
       .summary {
         padding: var(--s-4) var(--s-5);
         border-block-start: 1px solid var(--line);
+        background: var(--sunk);
+        font-size: var(--fs-body);
+      }
+      .mode {
+        display: grid;
+        gap: var(--s-2);
+        margin: 0;
+        padding: var(--s-4) var(--s-5);
+      }
+      .mode legend {
+        padding: 0;
+        font-size: var(--fs-body);
+        font-weight: 600;
+        color: var(--ink);
       }
       .done {
         display: grid;
@@ -163,8 +177,8 @@
         >Edu-Canvas</a
       >
       <nav aria-label="Workspace">
-        <a href="1-studio.html">Studio</a><a href="2-review.html">Review</a
-        ><a href="4-dashboard.html">Lessons</a>
+        <a href="4-dashboard.html">Lessons</a
+        ><a href="1-studio.html">New lesson</a>
       </nav>
       <span class="who"
         ><span class="name">Ms. Rivera · Lincoln Elementary</span
@@ -173,9 +187,16 @@
     </header>
     <main id="main" class="page">
       <nav class="crumbs" aria-label="Breadcrumb">
-        <a href="2-review.html">Review</a><span aria-hidden="true">/</span
-        ><span aria-current="page">Publish and assign</span>
+        <a href="4-dashboard.html">Lessons</a><span aria-hidden="true">/</span
+        ><a href="1-studio.html">Equivalent fractions</a
+        ><span aria-hidden="true">/</span
+        ><span aria-current="page">Publish</span>
       </nav>
+      <ol class="steps" aria-label="Lesson steps">
+        <li class="done"><span class="n">1</span>Draft</li>
+        <li class="done"><span class="n">2</span>Review</li>
+        <li aria-current="step"><span class="n">3</span>Publish</li>
+      </ol>
       <h1>Publish equivalent fractions</h1>
       <p class="lede">
         Your learner sees one variant: the one you assign. Publishing freezes
@@ -185,7 +206,7 @@
       <form class="card lift" aria-labelledby="v-h">
         <h2
           id="v-h"
-          class="title section"
+          class="heading section"
           style="padding-block-end: var(--s-2)"
         >
           Approved variants
@@ -195,19 +216,16 @@
             <span
               ><b>A · Worked example, version 2</b>Worked example, then matching
               (4 pairs)</span
-            ><span class="count">6 learners</span
             ><a class="ghost" href="7-learn.html">Preview as student</a>
           </li>
           <li>
             <span
               ><b>B · Guided activity, version 1</b>Guided slider with hints,
               then matching (4 pairs)</span
-            ><span class="count">4 learners</span
             ><a class="ghost" href="7-learn.html">Preview as student</a>
           </li>
           <li>
             <span><b>D · Matching, version 1</b>Matching (4 pairs)</span
-            ><span class="count">14 learners</span
             ><a class="ghost" href="7-learn.html">Preview as student</a>
           </li>
           <li>
@@ -218,9 +236,31 @@
           </li>
         </ul>
 
+        <fieldset class="mode">
+          <legend>How the learner opens it</legend>
+          <div class="chips">
+            <label class="chip chip-radio"
+              ><input type="radio" name="open" checked />A link for this
+              learner</label
+            >
+            <label class="chip chip-radio"
+              ><input type="radio" name="open" disabled />Class code</label
+            >
+            <label class="chip chip-radio"
+              ><input type="radio" name="open" disabled />Present to the
+              class</label
+            >
+          </div>
+          <p class="small muted">
+            <b>Interim:</b> today one learner link per publication. A class code
+            and a presented view are the target and need class assignment (G1);
+            both stay visible so the decision is not made by omission.
+          </p>
+        </fieldset>
+
         <h2
           id="as"
-          class="title section"
+          class="heading section"
           style="
             border-block-start: 1px solid var(--line);
             padding-block-end: var(--s-1);
@@ -232,8 +272,8 @@
           class="small muted"
           style="padding-inline: var(--s-5); margin-block-end: var(--s-3)"
         >
-          One publication reaches one learner. Per-class assignment needs a
-          backend capability first (gap G1).
+          <b>Interim:</b> one publication reaches one learner. Assigning a whole
+          class is the target (G1).
         </p>
         <div class="bulk" role="group" aria-label="Assign one learner">
           <div class="bulk-row">
@@ -244,10 +284,18 @@
               <option>Yusuf Demir</option>
             </select>
           </div>
+          <div class="bulk-row">
+            <label for="which"><b>Variant</b></label>
+            <select id="which">
+              <option>A · Worked example, version 2</option>
+              <option>B · Guided activity, version 1</option>
+              <option>D · Matching, version 1</option>
+            </select>
+          </div>
         </div>
         <p class="summary" id="pub-sum">
-          <b>You're about to publish one reviewed pack to Omar Nabil.</b> It
-          opens as their next activity.
+          <b>You're about to publish variant A, version 2, to Omar Nabil.</b>
+          It opens as their next activity.
         </p>
         <div class="foot">
           <span class="small muted"
@@ -274,7 +322,7 @@
           <li><b>A · Worked example, version 2</b><span>Omar Nabil</span></li>
         </ul>
         <div class="row">
-          <button class="btn secondary">Copy learner link</button>
+          <button class="btn">Copy learner link</button>
           <a class="link" href="#">Open the preview</a>
         </div>
         <p class="small muted">

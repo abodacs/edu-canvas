@@ -78,10 +78,10 @@
       .banner .ghost {
         background: transparent;
         color: var(--ground);
-        border-color: #5e5950;
+        border-color: color-mix(in oklch, var(--ground) 55%, transparent);
       }
       .banner .ghost:hover {
-        background: #34302b;
+        background: color-mix(in oklch, var(--ground) 12%, transparent);
       }
       @media (width <= 720px) {
         .grid {
@@ -108,9 +108,8 @@
         >Edu-Canvas</a
       >
       <nav aria-label="Workspace">
-        <a href="1-studio.html" aria-current="page">Studio</a
-        ><a href="2-review.html">Review</a
-        ><a href="4-dashboard.html">Lessons</a>
+        <a href="4-dashboard.html">Lessons</a
+        ><a href="1-studio.html">New lesson</a>
       </nav>
       <span class="who"
         ><span class="name">Ms. Rivera · Lincoln Elementary</span

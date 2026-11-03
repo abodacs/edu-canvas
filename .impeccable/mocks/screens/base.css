@@ -6,12 +6,13 @@
   /* Type roles. Serif carries display, section and title; sans carries everything you act on or read. */
   --fs-display: clamp(2.25rem, 1.6rem + 2.4vw, 3.25rem);
   --fs-section: 1.625rem;
-  --fs-stat: 1.875rem;
   --fs-title: 1.375rem;
+  --fs-heading: 1.25rem;
   --fs-lead: 1.25rem;
   --fs-body-lg: 1.0625rem;
   --fs-body: 1rem;
   --fs-secondary: 0.875rem;
+  --fs-label: 0.875rem;
   --fs-meta: 0.8125rem;
   --fs-micro: 0.75rem;
   /* Spacing: 4px base. */
@@ -64,17 +65,17 @@ body {
   overflow-wrap: break-word;
 }
 ::selection {
-  background: var(--clay-soft);
+  background: var(--sunk-2);
   color: var(--ink);
 }
 ::placeholder {
   color: var(--ink-3);
   opacity: 1;
 }
+/* Focus is not a brand moment: it is the strongest neutral ring we have. */
 :focus-visible {
-  outline: 2px solid var(--clay);
+  outline: 2px solid var(--ink);
   outline-offset: 3px;
-  border-radius: 6px;
 }
 svg {
   flex: none;
@@ -194,8 +195,8 @@ h3 {
   inline-size: 28px;
   block-size: 28px;
   border-radius: 50%;
-  background: var(--clay-soft);
-  color: var(--clay-deep);
+  background: var(--sunk-2);
+  color: var(--ink);
   display: grid;
   place-items: center;
   font-weight: 700;
@@ -224,7 +225,7 @@ h1 {
 }
 h1 em {
   font-style: italic;
-  color: var(--clay);
+  color: inherit;
 }
 .h2 {
   font: 500 var(--fs-section)/1.2 var(--serif);
@@ -234,6 +235,17 @@ h1 em {
   font: 500 var(--fs-title)/1.25 var(--serif);
   letter-spacing: -0.01em;
 }
+/* Card and panel headings: a real step above body, below the page section. */
+.heading {
+  font: 500 var(--fs-heading)/1.3 var(--serif);
+  letter-spacing: -0.008em;
+}
+/* Field and column labels: named, not shouted, never smaller than body metadata. */
+.label {
+  font-size: var(--fs-label);
+  font-weight: 600;
+  color: var(--ink-2);
+}
 .title {
   font-size: var(--fs-body);
   font-weight: 600;
@@ -241,7 +253,7 @@ h1 em {
 }
 .lede {
   margin-block-start: var(--s-3);
-  max-inline-size: 62ch;
+  max-inline-size: 50ch;
   color: var(--ink-2);
   font-size: var(--fs-body-lg);
   line-height: 1.6;
@@ -320,6 +332,13 @@ h1 em {
   color: var(--ink-3);
   cursor: not-allowed;
 }
+.btn.ink {
+  background: var(--ink);
+  color: var(--ground);
+}
+.btn.ink:hover {
+  background: var(--ink-2);
+}
 .btn.secondary {
   background: var(--surface);
   color: var(--ink);
@@ -348,21 +367,33 @@ h1 em {
 .ghost:hover {
   background: var(--sunk);
 }
-.ghost[disabled] {
+.ghost[disabled],
+.ghost[aria-disabled="true"] {
   color: var(--ink-3);
+  background: var(--ground);
+  border-style: dashed;
+  cursor: not-allowed;
+}
+.ghost[aria-disabled="true"]:hover {
   background: var(--ground);
 }
 .link {
-  color: var(--clay-deep);
+  color: var(--ink);
   font-weight: 600;
   font-size: var(--fs-meta);
   text-decoration: underline;
   text-underline-offset: 0.2em;
-  text-decoration-color: color-mix(in oklch, var(--clay) 40%, transparent);
+  text-decoration-color: var(--ink-3);
   overflow-wrap: anywhere;
 }
 .link:hover {
   text-decoration-color: currentColor;
+}
+.link[aria-disabled="true"] {
+  color: var(--ink-3);
+  text-decoration-color: transparent;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 .chips {
   display: flex;
@@ -413,19 +444,19 @@ h1 em {
   inline-size: 100%;
   min-block-size: 44px;
   padding-inline: var(--s-3);
-  border: 1px solid var(--line-strong);
+  border: 1px solid var(--line-control);
   border-radius: var(--r-field);
   background: var(--surface);
   font-size: var(--fs-body);
 }
+/* Keep the platform outline: a 1.21:1 halo cannot carry focus on its own. */
 .field input:focus {
-  outline: none;
-  border-color: var(--clay);
-  box-shadow: 0 0 0 3px var(--clay-soft);
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+  border-color: var(--ink);
 }
 .field[data-invalid] input {
-  border-color: var(--stop);
-  box-shadow: 0 0 0 3px var(--stop-soft);
+  border: 2px solid var(--stop);
 }
 .field .err {
   display: flex;
@@ -600,18 +631,10 @@ h1 em {
   font-size: var(--fs-body);
   font-weight: 600;
   line-height: 1.35;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 .v p {
   color: var(--ink-2);
   font-size: var(--fs-secondary);
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 .v .meta {
   display: flex;
@@ -700,6 +723,123 @@ h1 em {
 .empty p {
   max-inline-size: 52ch;
   color: var(--ink-2);
+}
+
+/* A fraction is two numbers, not a slash. */
+.frac {
+  display: inline-grid;
+  grid-template-rows: auto auto;
+  justify-items: center;
+  line-height: 1.05;
+  vertical-align: -0.28em;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.frac > span {
+  padding-inline: 0.12em;
+}
+.frac > i {
+  inline-size: 100%;
+  border-block-start: 1.5px solid currentColor;
+  margin-block: 0.1em;
+}
+
+/* The lesson shell: one spine from draft to publish, visible on every teacher screen. */
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+  list-style: none;
+  padding: 0;
+  margin-block: var(--s-3) var(--s-5);
+  font-size: var(--fs-secondary);
+  color: var(--ink-2);
+}
+.steps li {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+.steps li + li::before {
+  content: "";
+  inline-size: 18px;
+  block-size: 1px;
+  background: var(--line-control);
+  margin-inline-end: var(--s-1);
+}
+.steps .n {
+  display: grid;
+  place-items: center;
+  inline-size: 22px;
+  block-size: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line-control);
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.steps li.done .n {
+  border-color: var(--ink);
+  background: var(--sunk-2);
+  color: var(--ink);
+}
+.steps li[aria-current="step"] {
+  color: var(--ink);
+  font-weight: 600;
+}
+.steps li[aria-current="step"] .n {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--ground);
+}
+
+/* The trust boundary gets a real edge, not a line of grey text. */
+.seal {
+  display: grid;
+  gap: var(--s-4);
+  padding: var(--s-5);
+  border: 2px solid var(--ink);
+  border-radius: var(--r-card);
+  background: var(--surface);
+}
+.seal-h {
+  font: 500 var(--fs-heading)/1.3 var(--serif);
+  letter-spacing: -0.008em;
+}
+.seal-record {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-4);
+  align-items: center;
+  font-size: var(--fs-meta);
+  color: var(--ink-2);
+  border-block-start: 1px solid var(--line);
+  padding-block-start: var(--s-3);
+}
+.count-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-secondary);
+  font-weight: 600;
+}
+/* Phones get a 3-up stepper instead of a sentence that wraps mid-connector. */
+@media (width <= 560px) {
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s-2);
+  }
+  .steps li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--s-1);
+  }
+  .steps li + li::before {
+    display: none;
+  }
 }
 
 .synthetic {
@@ -791,7 +931,7 @@ h1 em {
 
 /* Illustrations: colours come from tokens, never literals. */
 .fig .on {
-  fill: var(--clay);
+  fill: var(--ink);
 }
 .fig .off {
   fill: var(--surface);
@@ -858,10 +998,16 @@ h1 em {
   font-weight: 600;
 }
 .chip-radio:has(input:focus-visible) {
-  outline: 2px solid var(--clay);
+  outline: 2px solid var(--ink);
   outline-offset: 3px;
 }
 .chip-radio:has(input:disabled) {
+  color: var(--ink-3);
+  background: var(--ground);
+  border-style: dashed;
+  cursor: not-allowed;
+}
+.chip-radio:has(input[aria-disabled="true"]) {
   color: var(--ink-3);
   background: var(--ground);
   border-style: dashed;

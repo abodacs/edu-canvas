@@ -12,8 +12,8 @@
         justify-content: center;
         gap: 10px;
         padding: 10px 16px;
-        background: var(--ok-soft);
-        color: var(--ok);
+        background: var(--sunk);
+        color: var(--ink-2);
         font-size: var(--fs-secondary);
         font-weight: 500;
       }
@@ -45,12 +45,21 @@
         font-size: var(--fs-body);
       }
       .trust {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-block-start: 16px;
-        color: var(--ink-2);
+        display: grid;
+        gap: var(--s-2);
+        margin-block-start: var(--s-5);
+        padding: var(--s-3) var(--s-4);
+        border: 2px solid var(--ink);
+        border-radius: var(--r-field);
+        max-inline-size: 48ch;
         font-size: var(--fs-secondary);
+      }
+      .trust b {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--s-2);
+        font-size: var(--fs-body);
+        line-height: 1.45;
       }
       .reveal {
         padding: 22px;
@@ -147,10 +156,22 @@
         color: var(--ink-2);
         font-size: var(--fs-secondary);
       }
+      /* The teacher's cards are the ones with weight. The system is automatic. */
+      .loop li.you {
+        border: 2px solid var(--ink);
+      }
+      .loop li.system {
+        background: var(--sunk);
+      }
+      .loop li.student {
+        border-color: var(--line-control);
+      }
       .who-does {
+        margin-block-start: var(--s-2);
         font-size: var(--fs-micro);
         font-weight: 600;
-        color: var(--clay-deep);
+        letter-spacing: 0.02em;
+        color: var(--ink-2);
       }
       @media (width <= 900px) {
         .hero {
@@ -184,7 +205,8 @@
         stroke-linejoin="round"
         aria-hidden="true"
       >
-        <path d="M20 6 9 17l-5-5" /></svg
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 11v5M12 7.5v.01" /></svg
       >You're signed out. Your drafts are saved for next time.
     </p>
     <header class="bar">
@@ -222,28 +244,33 @@
           <p class="lede">
             For Grades 3–6 teachers. Write one sentence, get four lesson
             variants checked against the standard and a safety gate, and assign
-            one to each learner.
+            it to a learner.
           </p>
           <div class="cta">
             <a class="btn" href="5-sign-in.html">Start with one objective</a
             ><a class="ghost" href="#loop">See how it works</a>
           </div>
-          <p class="trust">
-            <svg
-              width="15"
-              height="15"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
+          <div class="trust">
+            <b
+              ><svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg
+              >Nothing reaches a student without your approval.</b
             >
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg
-            >Nothing reaches a student without your approval. Answers are graded
-            on the server.
-          </p>
+            <span class="small muted"
+              >Every lesson is a version you approved, with its source and
+              checks attached. Answers are graded on the server.</span
+            >
+          </div>
         </div>
         <aside
           class="card lift reveal"
@@ -277,31 +304,31 @@
           One loop, and the teacher decides at each turn
         </h2>
         <ol>
-          <li class="card">
-            <span class="who-does">Teacher</span>
-            <h3>Write the objective</h3>
+          <li class="card you">
+            <h3>You write the objective</h3>
             <p>Plain words, a grade, and an optional source file.</p>
+            <span class="who-does">Your call</span>
           </li>
-          <li class="card">
-            <span class="who-does">Edu-Canvas</span>
-            <h3>Draft and check</h3>
+          <li class="card system">
+            <h3>Edu-Canvas drafts and checks</h3>
             <p>
               Four variants, checked for structure, curriculum fit and safety
               before you see them.
             </p>
+            <span class="who-does">Automatic</span>
           </li>
-          <li class="card">
-            <span class="who-does">Teacher</span>
-            <h3>Review and approve</h3>
+          <li class="card you">
+            <h3>You review and approve</h3>
             <p>Edit one section at a time. Approved versions never change.</p>
+            <span class="who-does">Your call</span>
           </li>
-          <li class="card">
-            <span class="who-does">Student</span>
-            <h3>Practice, then the next step</h3>
+          <li class="card student">
+            <h3>The student practices</h3>
             <p>
               One focused activity, graded on the server, with a reason for what
               comes next.
             </p>
+            <span class="who-does">After you publish</span>
           </li>
         </ol>
       </section>
