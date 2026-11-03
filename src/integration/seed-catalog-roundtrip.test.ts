@@ -6,6 +6,7 @@ import { createGenerationService } from "@/server/generation/service";
 import { createDeterministicLessonDraftProvider } from "@/server/generation/provider";
 import { parseTenantId } from "@/server/identity/identifiers";
 import { syntheticTeacherActor } from "@/server/identity/test-actors";
+import { createSeededGenerationLimitStore } from "@/server/persistence/limits-seeded";
 import { createSeededPersistence } from "@/server/persistence/seeded";
 import { seedFoundationDatabase } from "@/server/persistence/seed-postgres";
 import { syntheticSeed } from "@/server/seed-data";
@@ -135,6 +136,7 @@ describe.skipIf(!isRun)("seeded catalog round trip", () => {
     const result = await createGenerationService({
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
+      limits: createSeededGenerationLimitStore(),
     }).generate({ actor: teacherActor, input: lessonInput });
     if (!result.record.draft) {
       throw new Error("Expected the generated fixture to be reviewable.");
