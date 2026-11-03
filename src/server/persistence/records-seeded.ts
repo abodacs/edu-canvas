@@ -1,6 +1,28 @@
+import { getTableColumns, getTableName } from "drizzle-orm";
+
+import {
+  actors,
+  assistanceEvents,
+  assignments,
+  curatedReferences,
+  identities,
+  identitySessions,
+  learnerAttempts,
+  learnerRuns,
+  lessonDraftRequests,
+  lessonPackages,
+  lessonVersions,
+  memberships,
+  operationReceipts,
+  prerequisiteNodes,
+  publications,
+  sourceSnapshots,
+  standards,
+  teacherDecisions,
+  tenants,
+} from "../../../drizzle/schema";
 import {
   RecordUniqueViolationError,
-  recordTableColumns,
   recordUniqueConstraints,
 } from "./records-port";
 import type {
@@ -11,6 +33,7 @@ import type {
   StoredRow,
   UniqueConstraint,
 } from "./records-port";
+import type { PgTable } from "drizzle-orm/pg-core";
 
 export interface SeededRecordBackend extends RecordBackend<undefined> {
   seed: (table: RecordTableName, rows: readonly StoredRow[]) => void;
@@ -34,11 +57,52 @@ const compareValues = (left: unknown, right: unknown): number => {
   return String(left) < String(right) ? -1 : 1;
 };
 
+/**
+ * In-memory implementation of the record port. It enforces the same unique constraints as PostgreSQL and rolls the whole store back when the work throws. It is not restart-durable; PostgreSQL is the durability authority.
+ */
+/**
+The seeded double rejects a column the real table does not have, so a mapper that
+invents a name fails in tests instead of in production. The column set comes from
+the schema; this file owns only the name-to-table binding, which `Record<
+RecordTableName, PgTable>` forces to be total. Tests reuse the binding to hold
+the record port's per-table settings against the same schema.
+*/
+export const tablesByStoredName = {
+  actors,
+  assignments,
+  assistance_events: assistanceEvents,
+  curated_references: curatedReferences,
+  identities,
+  identity_sessions: identitySessions,
+  learner_attempts: learnerAttempts,
+  learner_runs: learnerRuns,
+  lesson_draft_requests: lessonDraftRequests,
+  lesson_packages: lessonPackages,
+  lesson_versions: lessonVersions,
+  memberships,
+  operation_receipts: operationReceipts,
+  prerequisite_nodes: prerequisiteNodes,
+  publications,
+  source_snapshots: sourceSnapshots,
+  standards,
+  teacher_decisions: teacherDecisions,
+  tenants,
+} as const satisfies Record<RecordTableName, PgTable>;
+
+const columnsOf = (table: RecordTableName): readonly string[] => {
+  const bound = tablesByStoredName[table];
+  const stored = getTableName(bound);
+  if (stored !== table) {
+    throw new Error(`Record table ${table} is bound to ${stored}.`);
+  }
+  return Object.values(getTableColumns(bound)).map((column) => column.name);
+};
+
 const assertColumns = (
   table: RecordTableName,
   values: Readonly<Record<string, RecordValue>>
 ): void => {
-  const allowed = new Set<string>(recordTableColumns[table]);
+  const allowed = new Set<string>(columnsOf(table));
   for (const column of Object.keys(values)) {
     if (!allowed.has(column)) {
       throw new Error(`Unknown column ${column} on ${table}.`);
@@ -46,9 +110,6 @@ const assertColumns = (
   }
 };
 
-/**
- * In-memory implementation of the record port. It enforces the same unique constraints as PostgreSQL and rolls the whole store back when the work throws. It is not restart-durable; PostgreSQL is the durability authority.
- */
 export const createSeededRecordBackend = (
   seed: Partial<Record<RecordTableName, readonly StoredRow[]>> = {}
 ): SeededRecordBackend => {
