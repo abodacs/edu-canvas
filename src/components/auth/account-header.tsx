@@ -25,11 +25,11 @@ export const AccountHeader = ({
 }: AccountHeaderProperties): ReactElement => {
   return (
     <header className="studio-nav">
-      <Link className="studio-brand" to="/" aria-label="Edu-Canvas home">
+      <Link className="studio-brand" to="/" aria-label="Scholé home">
         <span className="studio-brand__mark" aria-hidden="true">
-          EC
+          S
         </span>
-        <span className="studio-brand__name">Edu-Canvas</span>
+        <span className="studio-brand__name">Scholé</span>
       </Link>
       <div className="studio-nav__actions">
         <span className="account-identity">

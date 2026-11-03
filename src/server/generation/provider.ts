@@ -442,7 +442,7 @@ const buildPrompt = (
     : "";
 
   return [
-    "Create a structured lesson draft for Edu-Canvas equivalent-fractions matching.",
+    "Create a structured lesson draft for Scholé equivalent-fractions matching.",
     "Return only the canonical JSON contract. Never return HTML, CSS, JavaScript, A2UI, URLs, or executable content.",
     `Teacher request: ${request.prompt}`,
     `Grade: ${request.grade}. Primary standard: ${request.standardId}. Language: ${request.language}. Difficulty: ${request.difficulty}.`,

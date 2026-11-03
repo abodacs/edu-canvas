@@ -1,4 +1,4 @@
-# Edu-Canvas roadmap: build one useful teaching loop
+# Scholé roadmap: build one useful teaching loop
 
 Revised 2026-10-24 from the education notes (retained in the local notes workspace, `.worktrees/hackthon-docs/education/`), the existing product strategy, and the previous hackathon plan; reframed 2026-10-25 for production use ([#89](https://github.com/abodacs/edu-canvas/issues/89)). This is the production direction: product outcomes, delivery order, and lifecycle gates from first use through classroom validation. It does not claim implementation is complete or change GitHub issue status. The [hackathon plan](docs/hackathon/meta-global-2026/README.md) runs the October 26 – November 4, 2026 event as the first external validation milestone on this path — the event proves the loop publicly; it is not the product goal.
 
@@ -33,7 +33,7 @@ The instructional sequence is supported by Rosenshine’s discussion of modeling
 | Material | Useful implication | Evidence limit |
 | --- | --- | --- |
 | ChatGPT for Teachers | Planning, adapting materials, context, and teacher control are already described in a broad teacher workspace. | Saved vendor material, not a current feature audit or proof of our users’ needs. |
-| Claude for Teachers | Curriculum grounding, differentiation, and instructional follow-up belong in the comparison. | Vendor claims do not establish Edu-Canvas demand or learning effects. |
+| Claude for Teachers | Curriculum grounding, differentiation, and instructional follow-up belong in the comparison. | Vendor claims do not establish Scholé demand or learning effects. |
 | Teacher research | Workload and mixed readiness are candidate problems worth investigating. | A compiled AI-style synthesis, not recorded interviews; its impact ratings are unvalidated. |
 | Direct instruction | Put explanation and a worked example before unsupported exploration for beginners. | An unattributed argument, not sufficient evidence for a universal teaching rule. |
 
@@ -77,7 +77,7 @@ Create one hand-authored lesson following the seven steps above, with a correct-
 
 ### 3. Test whether the workflow earns its place
 
-Ask three teachers to prepare the same short lesson using their normal method or an accessible general AI tool — free Claude for Teachers, ChatGPT for Teachers, or whichever copilot they already use — then the reference Edu-Canvas prototype. Vary the order between participants. Include prompting, review, corrections, sharing, and interpretation of sample attempts in the timing. Include the teacher’s best reusable material and one accessible specialist tool when relevant. Match content availability and quality requirements; record researcher assistance. Prototype timing tests the workflow only—repeat with generated drafts before claiming preparation savings.
+Ask three teachers to prepare the same short lesson using their normal method or an accessible general AI tool — free Claude for Teachers, ChatGPT for Teachers, or whichever copilot they already use — then the reference Scholé prototype. Vary the order between participants. Include prompting, review, corrections, sharing, and interpretation of sample attempts in the timing. Include the teacher’s best reusable material and one accessible specialist tool when relevant. Match content availability and quality requirements; record researcher assistance. Prototype timing tests the workflow only—repeat with generated drafts before claiming preparation savings.
 
 **Deliverable:** a comparison sheet (V7): total time, corrections, unresolved errors, help needed, preferred method, and reason. Include review of incorrect-feedback branches; teacher approval may be the largest cost. Record one next lesson each teacher would actually try.
 

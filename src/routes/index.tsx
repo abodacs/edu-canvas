@@ -49,13 +49,15 @@ const TeacherHome = () => {
           </output>
         ) : null}
         <header className="site-header">
-          <Link className="brand-lockup" to="/" aria-label="Edu-Canvas home">
+          <Link className="brand-lockup" to="/" aria-label="Scholé home">
             <span className="brand-mark" aria-hidden="true">
-              EC
+              S
             </span>
             <span>
-              <span className="brand-name">Edu-Canvas</span>
-              <span className="brand-subtitle">lessons that land</span>
+              <span className="brand-name">Scholé</span>
+              <span className="brand-subtitle">
+                teaching, returned to its origin
+              </span>
             </span>
           </Link>
           {hasActiveSession ? (
@@ -153,7 +155,7 @@ const TeacherHome = () => {
             </div>
             <ArrowRight className="metric__arrow" aria-hidden="true" />
             <div className="metric__cell metric__cell--to">
-              <span className="metric__cell-label">With Edu-Canvas</span>
+              <span className="metric__cell-label">With Scholé</span>
               <strong className="metric__cell-value">≈ 3 min</strong>
             </div>
           </div>
@@ -205,11 +207,11 @@ const TeacherHome = () => {
         </section>
 
         <footer className="site-footer">
-          <Link className="brand-lockup" to="/" aria-label="Edu-Canvas home">
+          <Link className="brand-lockup" to="/" aria-label="Scholé home">
             <span className="brand-mark" aria-hidden="true">
-              EC
+              S
             </span>
-            <span className="brand-name">Edu-Canvas</span>
+            <span className="brand-name">Scholé</span>
           </Link>
           <p className="footer-note">
             Synthetic fixture data only. Lesson drafts by Meta Muse Spark.

@@ -1,6 +1,6 @@
-# Edu-Canvas documentation
+# Scholé documentation
 
-Edu-Canvas is a production product; these documents define and verify one trustworthy teacher-to-student loop that teachers return to. The hackathon event (October 26 – November 4, 2026) is the first external validation milestone, not the objective. The corpus was imported from the hackathon-2026 notes workspace on 2026-10-24 and reconciled on 2026-10-25 (PR 02, [#89](https://github.com/abodacs/edu-canvas/issues/89)): every requirement has one owning document.
+Scholé is a production product; these documents define and verify one trustworthy teacher-to-student loop that teachers return to. The hackathon event (October 26 – November 4, 2026) is the first external validation milestone, not the objective. The corpus was imported from the hackathon-2026 notes workspace on 2026-10-24 and reconciled on 2026-10-25 (PR 02, [#89](https://github.com/abodacs/edu-canvas/issues/89)): every requirement has one owning document.
 
 ## Document ownership
 
@@ -27,7 +27,7 @@ Edu-Canvas is a production product; these documents define and verify one trustw
 | [Contributing](../CONTRIBUTING.md) | Local setup, actionable issues, useful commits, and contribution checks |
 | [Domain study](domain/README.md) | As-is stories, boundary verdicts, the homonym register, and the language map |
 | [Code standards](../CODING_STANDARDS.md) | Coding and review rules, Ultracite commands, and documentation formatting |
-| [Coding patterns](engineering/coding-patterns.md) | Seven engineering patterns adapted to Edu-Canvas domain rules and boundaries |
+| [Coding patterns](engineering/coding-patterns.md) | Seven engineering patterns adapted to Scholé domain rules and boundaries |
 | [Student path checks](engineering/student-path-checks.md) | The #9 learner probe matrix, the language locus, and the manual device pass |
 | [L3 copy trace](engineering/l3-copy-trace.md) | The #176/#7 approved-copy carry decisions: storage shape, rejected alternatives, and the owning tests |
 | [Research index](research/README.md) | Registry of locally retained reference materials; raw research notes stay untracked |

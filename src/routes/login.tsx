@@ -201,7 +201,7 @@ const LoginPage = (): ReactElement => {
       tone: "info",
       title: "Contact your school administrator",
       message:
-        "Edu-Canvas does not issue password resets itself. Your school administrator can restore access to your account.",
+        "Scholé does not issue password resets itself. Your school administrator can restore access to your account.",
     });
   };
 
@@ -212,7 +212,7 @@ const LoginPage = (): ReactElement => {
         <section className="auth-card">
           <header className="auth-card__header">
             <h1 id="login-heading" className="auth-heading">
-              Sign in to Edu-Canvas
+              Sign in to Scholé
             </h1>
             <p className="auth-lede">
               Use the email address and password your school set up for you.
@@ -302,7 +302,7 @@ const LoginPage = (): ReactElement => {
 
           <p className="auth-links">
             <span>
-              New to Edu-Canvas?{" "}
+              New to Scholé?{" "}
               <Link className="text-link" to="/sign-up">
                 Create a teacher account
               </Link>
@@ -336,5 +336,5 @@ const LoginPage = (): ReactElement => {
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
-  head: () => ({ meta: [{ title: "Sign in | Edu-Canvas" }] }),
+  head: () => ({ meta: [{ title: "Sign in | Scholé" }] }),
 });

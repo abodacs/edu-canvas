@@ -1,6 +1,6 @@
 ---
 name: verify-lesson-gate
-description: "Formal verification skill for Edu-Canvas's Validation & Safety gate. Use when: (1) any change touches src/server/generation/validation.ts (lesson contract validation), src/server/generation/learning-path.ts (validated prerequisite path), the provider draft contract in src/shared/generation-contract.ts, or generation diagnostics/shared contract types, (2) a change adds, removes, or loosens a rule of what lesson drafts may contain, (3) reviewing or debugging why a provider draft was accepted into ready-for-review or blocked, (4) running or extending the property checks for the gate (verify:lesson-gate)."
+description: "Formal verification skill for Scholé's Validation & Safety gate. Use when: (1) any change touches src/server/generation/validation.ts (lesson contract validation), src/server/generation/learning-path.ts (validated prerequisite path), the provider draft contract in src/shared/generation-contract.ts, or generation diagnostics/shared contract types, (2) a change adds, removes, or loosens a rule of what lesson drafts may contain, (3) reviewing or debugging why a provider draft was accepted into ready-for-review or blocked, (4) running or extending the property checks for the gate (verify:lesson-gate)."
 ---
 
 # Verify the lesson gate

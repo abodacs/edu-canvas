@@ -2,7 +2,7 @@
 
 Use these patterns when implementing or reviewing domain rules, integrations, state transitions, and error handling. The [code standards](../../CODING_STANDARDS.md) contain the language and tooling checklist. The [architecture harness](../architecture-harness.md) defines the existing layer boundaries.
 
-Adapted from CodeByUmar, _7 Coding Patterns I Stole From Senior Engineers_, published in Skill Stuff on Medium, June 8, 2026 (saved PDF, pages 1-2). The [research index](../research/README.md#local-reference-materials) records the local source. The examples below apply the ideas to Edu-Canvas; they describe design guidance, not implementation status.
+Adapted from CodeByUmar, _7 Coding Patterns I Stole From Senior Engineers_, published in Skill Stuff on Medium, June 8, 2026 (saved PDF, pages 1-2). The [research index](../research/README.md#local-reference-materials) records the local source. The examples below apply the ideas to Scholé; they describe design guidance, not implementation status.
 
 ## 1. Use early returns for failure paths
 
@@ -24,7 +24,7 @@ Use short names for small, obvious scopes. Add detail when a name carries a doma
 
 Validate external input and map it into an application-owned contract at the entry point. Keep provider response fields, database rows, HTTP details, and environment parsing inside their owning adapters.
 
-For Edu-Canvas, model output must pass the lesson contract before domain code consumes it. Return only the permitted public projection to the browser. Follow the [architecture harness](../architecture-harness.md) for shared modules and named server delivery seams.
+For Scholé, model output must pass the lesson contract before domain code consumes it. Return only the permitted public projection to the browser. Follow the [architecture harness](../architecture-harness.md) for shared modules and named server delivery seams.
 
 Test malformed responses and provider changes at the adapter boundary. Add mapping where external details would otherwise spread across callers; a pass-through wrapper with no validation or translation adds little value.
 

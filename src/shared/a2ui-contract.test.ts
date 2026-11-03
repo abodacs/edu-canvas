@@ -7,7 +7,7 @@ import {
   validateA2UIMessage,
 } from "./a2ui-contract";
 
-describe("Edu-Canvas A2UI catalog contract", () => {
+describe("Scholé A2UI catalog contract", () => {
   it("accepts the allowlisted semantic learning-path component and safe pins", () => {
     const result = validateA2UIMessage({
       version: "v0.9.1",
@@ -150,7 +150,7 @@ describe("Edu-Canvas A2UI catalog contract", () => {
     });
   });
 
-  it("rejects a catalog identifier that is not the pinned Edu-Canvas version", () => {
+  it("rejects a catalog identifier that is not the pinned Scholé version", () => {
     const rejected = validateA2UIMessage({
       version: "v0.9.1",
       createSurface: {

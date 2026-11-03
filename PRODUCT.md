@@ -14,7 +14,7 @@ web
 
 ## Product Purpose
 
-Edu-Canvas is a lesson-preparation workspace that turns one learning objective into a lesson students understand. The model drafts. The server checks structure, curriculum quality, and safety. The teacher approves. Success means a teacher prepares, reviews, and follows up in less total time than their current method, can explain every learning decision, and can correct or reject any generated content.
+Scholé is a lesson-preparation workspace that turns one learning objective into a lesson students understand. The model drafts. The server checks structure, curriculum quality, and safety. The teacher approves. Success means a teacher prepares, reviews, and follows up in less total time than their current method, can explain every learning decision, and can correct or reject any generated content.
 
 The current release covers Grade 4 equivalent fractions (Common Core `4.NF.A.1`), in English only.
 
@@ -60,7 +60,7 @@ User flows:
 
 ## Brand Commitments
 
-- Name: **Edu-Canvas** (binding).
+- Name: **Scholé** (binding).
 - Tagline: **"Turn one learning objective into a lesson your students understand."** (binding).
 - Hanken Grotesk is the font in use today. It is not a binding commitment.
 

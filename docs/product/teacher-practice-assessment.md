@@ -2,7 +2,7 @@
 
 Assessment design and code audit: **2026-10-28**. Source: Abdullah's teacher-practice list in this conversation. The groups are **Description (8), Delegation (7), Discernment (5), and Diligence (4): 24 practices**.
 
-This assesses whether Edu-Canvas enables these practices. It does not assess individual teachers, establish classroom effectiveness, or claim that the app already supports every example.
+This assesses whether Scholé enables these practices. It does not assess individual teachers, establish classroom effectiveness, or claim that the app already supports every example.
 
 ## Finding
 

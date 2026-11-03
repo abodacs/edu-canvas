@@ -1,9 +1,9 @@
 ---
 name: drizzle
-description: "Drizzle ORM and migration skill for Edu-Canvas. Use when: (1) changing drizzle/schema.ts or adding a table, column, index, check, foreign key, or policy, (2) generating, reviewing, or debugging a migration under drizzle/, (3) writing a `generate --custom` migration for forced RLS, triggers, or functions, (4) investigating schema drift or a failed db:setup, release-command migration, or db:drizzle:check, (5) writing Drizzle queries, relations, transactions, or inferred types in src/server/persistence/, (6) deciding whether raw SQL or the query builder is correct here."
+description: "Drizzle ORM and migration skill for Scholé. Use when: (1) changing drizzle/schema.ts or adding a table, column, index, check, foreign key, or policy, (2) generating, reviewing, or debugging a migration under drizzle/, (3) writing a `generate --custom` migration for forced RLS, triggers, or functions, (4) investigating schema drift or a failed db:setup, release-command migration, or db:drizzle:check, (5) writing Drizzle queries, relations, transactions, or inferred types in src/server/persistence/, (6) deciding whether raw SQL or the query builder is correct here."
 ---
 
-# Drizzle in Edu-Canvas
+# Drizzle in Scholé
 
 `drizzle/schema.ts` is the single source of truth. SQL files under `drizzle/` are generated artifacts. The app never migrates at startup; Fly runs `scripts/database-migrate-runtime.mjs` as its release command.
 

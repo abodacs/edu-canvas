@@ -257,6 +257,6 @@ export const Route = createFileRoute("/dashboard")({
       ? { run: search.run }
       : {};
   },
-  head: () => ({ meta: [{ title: "Lesson results | Edu-Canvas" }] }),
+  head: () => ({ meta: [{ title: "Lesson results | Scholé" }] }),
   component: DashboardPage,
 });

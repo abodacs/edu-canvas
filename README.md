@@ -1,8 +1,10 @@
-# Edu-Canvas
+# Scholé
 
-> Turn one learning objective into a lesson your students understand.
+> Teaching, returned to its origin.
 
-Edu-Canvas is an adaptive lesson-preparation workspace for teachers of Grades 3–6. The current release focuses on Grade 4 equivalent fractions in Common Core Math. English ships first; Arabic is a deferred product goal.
+_Scholé_ (skoh-LAY) is the Greek word for leisure and the root of the word "school". It names the product's promise: Scholé takes the heavy, repetitive work of lesson preparation off the teacher, so they get their time, focus, and creativity back for teaching.
+
+Scholé is an adaptive lesson-preparation workspace for teachers of Grades 3–6. The current release focuses on Grade 4 equivalent fractions in Common Core Math. English ships first; Arabic is a deferred product goal.
 
 A teacher describes an objective and gets four structured lesson variants, validated and ready to review in one place. The model drafts; the server checks structure, curriculum quality, and safety; the teacher keeps the final decision.
 
@@ -21,9 +23,9 @@ Most AI tools for teachers:
 
 For Grades 3–6 the gap is sharper: teachers need content that is age-appropriate, aligned, and safe to put in front of students.
 
-## What Edu-Canvas does
+## What Scholé does
 
-Edu-Canvas is built around one teacher-controlled loop:
+Scholé is built around one teacher-controlled loop:
 
 1. A teacher enters a topic, grade, standard, and learning goal.
 2. The system generates four structured lesson variants, each validated before display.
@@ -35,7 +37,8 @@ Generation, review, approval, publication, and server-side learner grading work 
 
 ## Why it matters
 
-- Saves teacher preparation time
+- Saves teacher preparation time, so teachers get free time and focus time back
+- Offers four lesson variants as starting ideas, not one generic answer
 - Keeps the teacher in the decision loop
 - Produces explainable, standards-aware learning flows
 - Keeps answer keys and private rules on the server
@@ -68,8 +71,8 @@ The loop below is the target contract. The green block is available now; the amb
 sequenceDiagram
     autonumber
     actor Teacher
-    participant UI as Edu-Canvas UI
-    participant Server as Edu-Canvas server
+    participant UI as Scholé UI
+    participant Server as Scholé server
     participant Model as Generation model
     participant Catalog as Validator + A2UI catalog
     participant Store as PostgreSQL / seeded store
