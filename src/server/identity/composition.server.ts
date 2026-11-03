@@ -94,3 +94,12 @@ export const resetConfiguredIdentityCache = (): void => {
   configuredCache.clear();
   sharedRateLimiter.reset();
 };
+
+/**
+Test-only: clear the module-scoped limiter between files. Shared workers run
+every non-mocked file in one process, so sign-in attempts would otherwise
+accumulate across the suite and rate-limit unrelated files' fixtures.
+*/
+export const resetSharedRateLimiter = (): void => {
+  sharedRateLimiter.reset();
+};
