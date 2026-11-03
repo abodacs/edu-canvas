@@ -91,3 +91,19 @@ Pin requirements for any reported run: application revision (git SHA), provider/
 ## Evidence rules
 
 Every score in `results/v0.json` cites its evidence artifact (runner assertion output, screenshot path, or HTTP trace). Every blocked row carries its flip condition. If a step fails, the failure and its evidence are recorded as observed — a failing step is never rewritten into a pass.
+
+## v1 rerun record (2026-11-03)
+
+`s0-smoke` flipped 0 → 2 after three product fixes, each with a committed red-first or replay test:
+
+1. `0e0962a` — `runAttempt` rebuilt `record.input` without `sourceSnapshotId`, so a source-grounded publish refused to create the learner assignment (the probe's "live proof absent" was right: the bridge had never run end to end).
+2. `518e56f` — the synthetic fixture provisioned concurrently and raced on the tenant insert's second unique index (slug); one loser rejected the whole fixture and the composition cache held the rejected promise for the process lifetime, so every later sign-in returned `AUTH_UNAVAILABLE`.
+3. `5082034` — the learner surface double-fires its start request; concurrent `start-run` writes now skip on conflict and read back the winner's row and receipt instead of aborting.
+
+Rerun set: `{s0-smoke}` → `ac-surface`, `ac-boundary-empty` (new cases for the #8 acceptance map). Results: `results/v1.json`, `results/v1-rollup.md`; v0 stays as the pre-fix record.
+
+## Observations recorded, not fixed here
+
+- Seed gap: the synthetic roster lists `identity_demo_student` ("Omar Nabil") with **no** records-membership row while `learner_omar` shares the same display name and carries the membership. Assigning to the unrostered twin fails the records assignment check after the publication commits (503 after partial persistence) — a teacher hitting that picker entry sees "temporarily unavailable" with rows already written. Owner: Abdullah (seed data + the publish-after-commit UX).
+- Runbook correction: serving on a non-default port requires `AUTH_PUBLIC_ORIGIN` to match the served port byte-for-byte (CSRF origin compare, `src/server/identity/csrf.ts:46-49`); this lane ran `--port 3112` with `AUTH_PUBLIC_ORIGIN=http://localhost:3112`. The scratch-DB recipe is not in `docs/foundation-runbook.md` — it recommends `docker compose down -v`, which this lane never used.
+- `/learn` holds a connection open past load; `networkidle` never settles on it (harness note for future browser cases).
