@@ -36,8 +36,14 @@
   --card-foreground: oklch(23.5% 0.028 65deg);
   --popover: oklch(98.5% 0.012 86deg);
   --popover-foreground: oklch(23.5% 0.028 65deg);
-  --primary: oklch(45% 0.15 158deg);
-  --primary-foreground: oklch(98% 0.015 86deg);
+
+  /* Clay is the one action colour (AgDR-0017 slice 1b). The mocks use
+     #b4532f; this is one step deeper so clay text passes AA (5.1:1) on
+     every warm ground the census measured. */
+  --primary: #a64b2a;
+  --primary-foreground: #fff;
+  --primary-deep: #8f3f22;
+  --primary-soft: #f6e6de;
   --secondary: oklch(89% 0.045 87deg);
   --secondary-foreground: oklch(28% 0.035 67deg);
   --muted: oklch(92.5% 0.026 86deg);
@@ -45,16 +51,20 @@
   --accent: oklch(91% 0.065 77deg);
   --accent-foreground: oklch(30% 0.04 62deg);
   --destructive: oklch(55% 0.18 28deg);
-  --border: oklch(86% 0.034 82deg);
-  --input: oklch(86% 0.034 82deg);
-  --ring: oklch(45% 0.15 158deg);
-  --radius: 0.75rem;
+  --border: var(--line);
+  --input: var(--line-control);
+  --ring: var(--focus-ring-color);
+
+  /* Field radius; the @theme ladder derives sm 6, md 8, lg 10, xl 14 (card). */
+  --radius: var(--radius-field);
 
   /* Teacher studio palette. */
   --teacher-paper: oklch(96.5% 0.018 86deg);
   --teacher-ink: oklch(23.5% 0.028 65deg);
-  --teacher-forest: oklch(34% 0.11 158deg);
-  --teacher-mint: oklch(92.5% 0.045 158deg);
+
+  /* Aliased to clay until the studio slice removes the palette (AgDR-0016). */
+  --teacher-forest: var(--primary-deep);
+  --teacher-mint: var(--primary-soft);
   --teacher-butter: oklch(92.5% 0.065 77deg);
   --teacher-sky: oklch(92.5% 0.04 228deg);
   --teacher-clay: oklch(78% 0.095 40deg);
@@ -127,27 +137,6 @@
   --scene-olive: #6c7848;
   --scene-olive-hi: #a5ab79;
   --scene-bark: #4b3c2b;
-}
-
-.dark {
-  --background: oklch(19% 0.025 70deg);
-  --foreground: oklch(94% 0.025 86deg);
-  --card: oklch(23.5% 0.027 70deg);
-  --card-foreground: oklch(94% 0.025 86deg);
-  --popover: oklch(23.5% 0.027 70deg);
-  --popover-foreground: oklch(94% 0.025 86deg);
-  --primary: oklch(72% 0.15 158deg);
-  --primary-foreground: oklch(19% 0.025 70deg);
-  --secondary: oklch(31% 0.035 70deg);
-  --secondary-foreground: oklch(92% 0.025 86deg);
-  --muted: oklch(28% 0.03 70deg);
-  --muted-foreground: oklch(75% 0.025 86deg);
-  --accent: oklch(40% 0.07 77deg);
-  --accent-foreground: oklch(94% 0.025 86deg);
-  --destructive: oklch(70% 0.15 28deg);
-  --border: oklch(36% 0.032 70deg);
-  --input: oklch(36% 0.032 70deg);
-  --ring: oklch(72% 0.15 158deg);
 }
 
 @theme inline {

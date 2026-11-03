@@ -19,7 +19,7 @@
 .a2ui-preview__header h3 {
   margin: 0;
   font-size: clamp(1.35rem, 2.4vw, 2rem);
-  letter-spacing: -0.04em;
+  letter-spacing: -0.02em;
   line-height: 1.05;
   max-inline-size: 28ch;
 }
@@ -354,8 +354,8 @@
 .a2ui-text--heading {
   color: var(--foreground);
   font-size: clamp(1.35rem, 2.8vw, 2.2rem);
-  font-weight: 700;
-  letter-spacing: -0.045em;
+  font-weight: 500;
+  letter-spacing: -0.02em;
   line-height: 1;
 }
 

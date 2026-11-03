@@ -1,7 +1,7 @@
 /* Landing: teacher-first hero. */
 .hero-headline {
   font-size: clamp(2rem, 4.5vw, 3.25rem);
-  letter-spacing: -0.04em;
+  letter-spacing: -0.02em;
   line-height: 1.03;
   max-inline-size: 24ch;
   text-wrap: balance;

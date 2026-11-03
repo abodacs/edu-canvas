@@ -95,6 +95,19 @@ jobs:
       - name: Build and check the client bundle
         run: pnpm build && pnpm verify:client-boundary
 
+      # AgDR-0017: the census and the per-route UI gate need a browser and the
+      # database this job already has.
+      - name: Install Chromium for browser checks
+        run: pnpm exec playwright-core install --with-deps chromium
+
+      - name: Check every route against the UI gate budget
+        env:
+          UI_GATE_REQUIRED: "true"
+        run: pnpm verify:ui
+
+      - name: Capture the design census and check its budget
+        run: pnpm census:capture && pnpm verify:design-census -- .scratch/ui-gate/census.json
+
       - name: Apply and repeat database bootstrap
         run: |
           pnpm db:setup
