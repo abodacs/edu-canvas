@@ -1,4 +1,20 @@
 <!doctype html>
+<!--
+  Audit, 2026-11-03. The detector findings on this sketch stay visible until the
+  landing slice (UX-P1); none were suppressed in .impeccable/config.json. The slice
+  either moves each value onto the DESIGN.md ladder or adds it there.
+
+  Deliberately off the shipped scale: the .pitch h1 and .close .h2 clamps, the 18px
+  .studio radius, the 4px .placeholder radius, the bespoke .cta .btn shadow, and the
+  Source Serif 4 / Figtree faces (planned self-hosting in AgDR-0016; the build ships
+  the system serif stack until they land).
+
+  Verified false positives, measured rather than assumed: .site-foot renders at
+  8.62:1 median (8.12:1 p5) at 1440x900 and 8.58:1 (5.62:1 p5) at 390x844 over the
+  hill layers, because the static scan pairs its colour with the section's --sky-mid
+  and cannot resolve the inline SVG. `cramped-padding` reads the full-bleed scene
+  child and misses the 48px inset on .inner and .site-foot.
+-->
 <html lang="en">
   <head>
     <meta charset="utf-8" />
