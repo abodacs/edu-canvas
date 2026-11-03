@@ -626,21 +626,38 @@ export const createRecordCommands = <TTransaction>(
         }
 
         const result = await perform(transaction, input);
-        await backend.insert(transaction, "operation_receipts", {
-          id: createId(),
+        // Two concurrent writers for the same operation key can both pass the
+        // receipt lookup; the loser skips this insert and reads back the
+        // winner's committed receipt, whose result ids are the replay truth.
+        await backend.insert(
+          transaction,
+          "operation_receipts",
+          {
+            id: createId(),
+            tenant_id: actor.tenantId,
+            schema_version: "operation-receipt-v1",
+            actor_id: actor.actorId,
+            membership_id: actor.membershipId,
+            authorization_revision: actor.authorizationRevision,
+            action,
+            operation_key: input.operationKey,
+            input_hash: inputHash,
+            result_kind: result.resultKind,
+            result_ids: [...result.resultIds],
+            created_at: clock(),
+          },
+          { onConflictDoNothing: true }
+        );
+        const stored = await findOne(transaction, "operation_receipts", {
           tenant_id: actor.tenantId,
-          schema_version: "operation-receipt-v1",
           actor_id: actor.actorId,
-          membership_id: actor.membershipId,
-          authorization_revision: actor.authorizationRevision,
           action,
           operation_key: input.operationKey,
-          input_hash: inputHash,
-          result_kind: result.resultKind,
-          result_ids: [...result.resultIds],
-          created_at: clock(),
         });
-        const [first] = result.resultIds;
+        const storedIds = (stored?.result_ids as readonly string[] | undefined) ?? [
+          ...result.resultIds,
+        ];
+        const [first] = storedIds;
         if (typeof first !== "string") {
           throw recordError("PERSISTENCE_UNAVAILABLE");
         }
@@ -1284,23 +1301,41 @@ export const createRecordCommands = <TTransaction>(
           updatedAt: clock(),
         });
 
-        await backend.insert(transaction, "learner_runs", {
-          id: run.id,
+        // The surface double-fires its start request (React strict mode in
+        // development, an impatient double-click in production); a concurrent
+        // writer's committed run must win over this transaction's new id.
+        await backend.insert(
+          transaction,
+          "learner_runs",
+          {
+            id: run.id,
+            tenant_id: run.tenantId,
+            schema_version: run.schemaVersion,
+            assignment_id: run.assignmentId,
+            learner_id: run.learnerId,
+            publication_id: run.publicationId,
+            assigned_variant_id: run.assignedVariantId,
+            stage: run.stage,
+            first_response_status: run.firstResponseStatus,
+            revision: run.revision,
+            next_activity: run.nextActivity,
+            created_at: run.createdAt,
+            updated_at: run.updatedAt,
+          },
+          { onConflictDoNothing: true }
+        );
+        const storedRun = await findOne(transaction, "learner_runs", {
           tenant_id: run.tenantId,
-          schema_version: run.schemaVersion,
           assignment_id: run.assignmentId,
-          learner_id: run.learnerId,
-          publication_id: run.publicationId,
-          assigned_variant_id: run.assignedVariantId,
-          stage: run.stage,
-          first_response_status: run.firstResponseStatus,
-          revision: run.revision,
-          next_activity: run.nextActivity,
-          created_at: run.createdAt,
-          updated_at: run.updatedAt,
         });
+        if (!storedRun) {
+          throw recordError("PERSISTENCE_UNAVAILABLE");
+        }
+        if (storedRun.learner_id !== actor.learnerId) {
+          throw recordError("FORBIDDEN");
+        }
 
-        return { resultKind: "learner-run", resultIds: [run.id] };
+        return { resultKind: "learner-run", resultIds: [storedRun.id as string] };
       }
     );
   };
