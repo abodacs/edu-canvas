@@ -30,7 +30,7 @@ Lesson planning is slow and repetitive. Most AI tools for teachers generate gene
 4. A published version is immutable. A student opens the assignment and submits answers.
 5. The server grades the attempt and returns the approved reveal and a deterministic next-activity decision.
 
-Generation, review, approval, publication, assignment, server-side grading, the connection reveal, and the read-only teacher results view work today. Teacher override and pause are next; [Status](#status) separates what ships from what is planned.
+Generation, review, approval, publication, assignment, and server-side grading work today. The connection reveal and the read-only teacher results view are also live. Teacher override and pause are next; [Status](#status) separates what ships from what is planned.
 
 ## Quick start
 
