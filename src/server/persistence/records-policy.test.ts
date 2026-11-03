@@ -26,8 +26,7 @@ type Action =
   | "choose"
   | "read-authoring"
   | "read-evidence"
-  | "read-lesson"
-  | "read-teacher-progress";
+  | "read-lesson";
 
 type ActorKind =
   | "teacher"
@@ -54,7 +53,6 @@ const teacherActions: readonly Action[] = [
   "choose",
   "read-authoring",
   "read-evidence",
-  "read-teacher-progress",
 ];
 
 const studentActions: readonly Action[] = [
@@ -199,13 +197,6 @@ const prepareCall = async (
           fixture.records.readLesson(actor, { runId: loop.runId }),
       };
     }
-    case "read-teacher-progress": {
-      await buildLoop(fixture, setup, "run");
-      return {
-        fixture,
-        call: (actor) => fixture.records.readTeacherProgress(actor, {}),
-      };
-    }
     default: {
       throw new Error("Unknown action");
     }
@@ -272,7 +263,7 @@ const cases: PolicyCase[] = rawCases.map((policyCase, index) => {
 });
 
 /**
- * Focused-slice policy matrix: 12 implemented actions × role, cross-tenant, revocation, and unauthenticated cases. The design's StoreMatch, InvalidateMatch, and StoreBlocked rows belong to the deferred grounding and matching contract and are not implemented here.
+ * Focused-slice policy matrix: 11 implemented actions × role, cross-tenant, revocation, and unauthenticated cases. The design's StoreMatch, InvalidateMatch, and StoreBlocked rows belong to the deferred grounding and matching contract and are not implemented here.
  */
 describe("record policy matrix", () => {
   it.each(cases)("$tag $description", async (policyCase) => {

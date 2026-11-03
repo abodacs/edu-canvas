@@ -6,8 +6,10 @@ import {
   learnerSectionSchema,
 } from "@/shared/learner-contract";
 import {
+  progressAttemptSchema,
+  progressPreviewSchema,
+  progressRunSchema,
   teacherProgressResponseSchema,
-  teacherProgressRunSchema,
 } from "@/shared/progress-contract";
 
 import { createEvidenceHash } from "./hashes";
@@ -30,7 +32,6 @@ import {
   runStageValues,
   teacherDecisionActionValues,
 } from "./vocabulary";
-import type { TeacherProgressResponse } from "@/shared/progress-contract";
 import type {
   AssistanceEvent,
   LearnerAttempt,
@@ -334,6 +335,10 @@ export type TeacherEvidenceProjection = z.infer<
   typeof teacherEvidenceProjectionSchema
 >;
 
+export type TeacherProgressResponse = z.infer<
+  typeof teacherProgressResponseSchema
+>;
+
 export const projectTeacherEvidence = (input: {
   readonly run: LearnerRun;
   readonly attempts: readonly LearnerAttempt[];
@@ -363,88 +368,74 @@ export const projectTeacherEvidence = (input: {
 };
 
 /**
- * #8: the teacher progress row. It composes stored facts — the run, its
- * attempts, and the stored next-activity decision — into the teacher surface.
- * Nothing is re-decided here: the reason shown is the reason the rule wrote, and the keystone replay test proves the rule still agrees with the row.
- *
- * The screen material is the approved section the run sits on: labels and roles only. Private answer relationships never enter this projection.
- */
-export const projectTeacherProgressRun = (input: {
-  readonly run: LearnerRun;
-  readonly attempts: readonly LearnerAttempt[];
-  /**
-  Null when the publication or the approved version behind the run is gone.
-  The row still lists, so the teacher sees a designed "content missing" state instead of the run silently disappearing.
-  */
-  readonly version: LessonVersion | null;
-}): TeacherProgressResponse["runs"][number] => {
-  const section = input.version
-    ? assignedSection(input.version, input.run.assignedVariantId)
-    : null;
-  return teacherProgressRunSchema.parse({
-    runId: input.run.id,
-    learnerId: input.run.learnerId,
-    publicationId: input.run.publicationId,
-    stage: input.run.stage,
-    firstResponseStatus: input.run.firstResponseStatus,
-    revision: input.run.revision,
-    updatedAt: input.run.updatedAt,
-    // The progress attempt carries the assistance event ids so the stored
-    // decision can be replayed from the row alone; the shared learner
-    // evidence projection stays narrower.
-    attempts: input.attempts.map((attempt) => {
-      return {
-        attemptId: attempt.id,
-        itemId: attempt.itemId,
-        ordinal: attempt.ordinal,
-        score: attempt.score,
-        correctness: attempt.correctness,
-        assistanceState: attempt.assistanceState,
-        assistanceEventIds: [...attempt.assistanceEventIds],
-        createdAt: attempt.createdAt,
-      };
-    }),
-    nextActivity: input.run.nextActivity,
-    screen:
-      section && input.version
-        ? {
-            lessonVersionId: input.version.id,
-            assignedSectionId: section.id,
-            title: section.title,
-            body: section.body,
-            items:
-              section.items?.map((item) => {
-                return {
-                  id: item.id,
-                  label: item.label,
-                  role: item.role,
-                };
-              }) ?? [],
-            sequence: input.version.sections.map((entry) => {
-              return {
-                id: entry.id,
-                kind: entry.kind,
-                title: entry.title,
-              };
-            }),
-          }
-        : null,
+#8: one run of the teacher progress read model. The stored decision crosses
+verbatim and the preview reuses the learner section projection, so the teacher
+sees the assigned screen and never an answer key. A version whose assigned
+section cannot be resolved yields a null preview instead of failing the whole
+dashboard.
+*/
+const projectProgressPreview = (
+  version: LessonVersion | null,
+  run: LearnerRun
+): z.infer<typeof progressPreviewSchema> | null => {
+  if (version === null) {
+    return null;
+  }
+  try {
+    const section = assignedSection(version, run.assignedVariantId);
+    return progressPreviewSchema.parse({
+      lessonVersionId: version.id,
+      variantId: run.assignedVariantId,
+      section: projectLearnerSection(section),
+      columns: assignedColumns(version, run.assignedVariantId),
+    });
+  } catch {
+    return null;
+  }
+};
+
+const projectProgressAttempt = (attempt: LearnerAttempt) => {
+  return progressAttemptSchema.parse({
+    attemptId: attempt.id,
+    itemId: attempt.itemId,
+    ordinal: attempt.ordinal,
+    priorAttemptId: attempt.priorAttemptId,
+    score: attempt.score,
+    correctness: attempt.correctness,
+    assistanceState: attempt.assistanceState,
+    assistanceEventIds: [...attempt.assistanceEventIds],
+    createdAt: attempt.createdAt,
   });
 };
 
 export const projectTeacherProgress = (input: {
+  readonly fetchedAt: string;
   readonly runs: readonly {
     readonly run: LearnerRun;
     readonly attempts: readonly LearnerAttempt[];
     readonly version: LessonVersion | null;
   }[];
-}): TeacherProgressResponse => {
+}): z.infer<typeof teacherProgressResponseSchema> => {
+  const ordered = input.runs.toSorted((left, right) => {
+    const byTime = right.run.updatedAt.localeCompare(left.run.updatedAt);
+    return byTime === 0 ? left.run.id.localeCompare(right.run.id) : byTime;
+  });
   return teacherProgressResponseSchema.parse({
-    runs: input.runs.map((entry) => {
-      return projectTeacherProgressRun({
-        run: entry.run,
-        attempts: entry.attempts,
-        version: entry.version,
+    fetchedAt: input.fetchedAt,
+    runs: ordered.map(({ run, attempts, version }) => {
+      return progressRunSchema.parse({
+        runId: run.id,
+        assignmentId: run.assignmentId,
+        learnerId: run.learnerId,
+        publicationId: run.publicationId,
+        assignedVariantId: run.assignedVariantId,
+        stage: run.stage,
+        firstResponseStatus: run.firstResponseStatus,
+        revision: run.revision,
+        updatedAt: run.updatedAt,
+        attempts: attempts.map((attempt) => projectProgressAttempt(attempt)),
+        decision: run.nextActivity,
+        preview: projectProgressPreview(version, run),
       });
     }),
   });

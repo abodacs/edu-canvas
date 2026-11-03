@@ -198,17 +198,6 @@ export type ReadAttemptContextInput = z.infer<
   typeof readAttemptContextInputSchema
 >;
 
-export const readTeacherProgressInputSchema = z.strictObject({
-  /**
-  Absent reads the teacher's whole assigned list. Present reads one run and still refuses a run this teacher did not assign — a foreign or unknown run gets the same deny, never an existence oracle.
-  */
-  runId: recordIdSchema.optional(),
-});
-
-export type ReadTeacherProgressInput = z.infer<
-  typeof readTeacherProgressInputSchema
->;
-
 export const referentTableValues = [
   "standards",
   "actors",

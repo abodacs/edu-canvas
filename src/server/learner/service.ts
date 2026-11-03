@@ -1,6 +1,7 @@
+import { createDecisionEvidenceHash } from "@/server/records/hashes";
+import { decideNextActivity, wasAssisted } from "./decision";
 import { gradeMatching, matchingGradingRuleVersion } from "./grading";
 import { buildReveal } from "./reveal";
-import { buildDecisionDraft, firstStoredResponse, wasAssisted } from "./replay";
 import type { MatchingGrade, SubmittedPair } from "./grading";
 import type { Reveal } from "./reveal";
 import type { RecordPersistence } from "@/server/persistence/records-commands";
@@ -59,22 +60,48 @@ export const createLearnerService = (
       relationships: context.relationships,
     });
 
-    const draft: NextActivityDraft = buildDecisionDraft({
+    const firstResponse =
+      context.attempts.find((attempt) =>
+        context.section.itemIds.includes(attempt.itemId)
+      ) ?? null;
+    const independent = firstResponse
+      ? {
+          correctness: firstResponse.correctness,
+          assisted: wasAssisted(firstResponse),
+        }
+      : {
+          correctness: grade.correctness,
+          assisted: wasAssisted(input),
+        };
+    const evidenceHash = createDecisionEvidenceHash({
       runId: input.runId,
+      itemId: firstResponse?.itemId ?? input.itemId,
+      correctness: independent.correctness,
+      assisted: independent.assisted,
+      assistanceEventIds:
+        firstResponse?.assistanceEventIds ?? input.assistanceEventIds,
+    });
+    const outcome = decideNextActivity({
       assignedActivityId: context.run.assignedVariantId,
+      independent,
+      // The run model has one stage. Guided evidence stays null until a
+      // multi-stage run exists, so the rule's guided rows are fixture-only.
+      guided: null,
       activities: context.activities.map((activity) => {
         return {
           activityId: activity.variantId,
           kind: activity.kind,
         };
       }),
-      first: firstStoredResponse(context.attempts, context.section.itemIds) ?? {
-        itemId: input.itemId,
-        correctness: grade.correctness,
-        assisted: wasAssisted(input),
-        assistanceEventIds: input.assistanceEventIds,
-      },
     });
+    const draft: NextActivityDraft = {
+      activityId: outcome.activityId,
+      activityAxis: "variant-kind",
+      purpose: outcome.purpose,
+      reason: outcome.reason,
+      ruleVersion: outcome.ruleVersion,
+      evidenceHash,
+    };
 
     const written = await records.recordAttempt(actor, {
       operationKey: input.operationKey,

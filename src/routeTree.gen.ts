@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as LearnRouteImport } from './routes/learn'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignUpRouteImport } from './routes/sign-up'
@@ -32,6 +33,7 @@ import { Route as ApiPublicationsIndexRouteImport } from './routes/api/publicati
 import { Route as ApiPublicationsApprovalsRouteImport } from './routes/api/publications/approvals'
 import { Route as ApiPublicationsReviewRouteImport } from './routes/api/publications/review'
 import { Route as ApiPublicationsRevisionsRouteImport } from './routes/api/publications/revisions'
+import { Route as ApiTeacherProgressRouteImport } from './routes/api/teacher/progress'
 import { Route as ApiLessonsDraftIdCancelRouteImport } from './routes/api/lessons/$draftId/cancel'
 import { Route as ApiLessonsSourcesIndexRouteImport } from './routes/api/lessons/sources/index'
 import { Route as ApiLessonsSourcesSourceIdIndexRouteImport } from './routes/api/lessons/sources/$sourceId/index'
@@ -42,6 +44,11 @@ import { Route as ApiPublicationsVersionsVersionIdPreviewRouteImport } from './r
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LearnRoute = LearnRouteImport.update({
@@ -156,6 +163,11 @@ const ApiPublicationsRevisionsRoute =
     path: '/api/publications/revisions',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiTeacherProgressRoute = ApiTeacherProgressRouteImport.update({
+  id: '/api/teacher/progress',
+  path: '/api/teacher/progress',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiLessonsDraftIdCancelRoute = ApiLessonsDraftIdCancelRouteImport.update({
   id: '/api/lessons/$draftId/cancel',
   path: '/api/lessons/$draftId/cancel',
@@ -193,6 +205,7 @@ const ApiPublicationsVersionsVersionIdPreviewRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/learn': typeof LearnRoute
   '/login': typeof LoginRouteWithChildren
   '/sign-up': typeof SignUpRoute
@@ -214,6 +227,7 @@ export interface FileRoutesByFullPath {
   '/api/publications/approvals': typeof ApiPublicationsApprovalsRoute
   '/api/publications/review': typeof ApiPublicationsReviewRoute
   '/api/publications/revisions': typeof ApiPublicationsRevisionsRoute
+  '/api/teacher/progress': typeof ApiTeacherProgressRoute
   '/api/publications/': typeof ApiPublicationsIndexRoute
   '/api/lessons/$draftId/cancel': typeof ApiLessonsDraftIdCancelRoute
   '/api/lessons/sources/': typeof ApiLessonsSourcesIndexRoute
@@ -224,6 +238,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/learn': typeof LearnRoute
   '/login': typeof LoginRouteWithChildren
   '/sign-up': typeof SignUpRoute
@@ -245,6 +260,7 @@ export interface FileRoutesByTo {
   '/api/publications/approvals': typeof ApiPublicationsApprovalsRoute
   '/api/publications/review': typeof ApiPublicationsReviewRoute
   '/api/publications/revisions': typeof ApiPublicationsRevisionsRoute
+  '/api/teacher/progress': typeof ApiTeacherProgressRoute
   '/api/publications': typeof ApiPublicationsIndexRoute
   '/api/lessons/$draftId/cancel': typeof ApiLessonsDraftIdCancelRoute
   '/api/lessons/sources': typeof ApiLessonsSourcesIndexRoute
@@ -256,6 +272,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/learn': typeof LearnRoute
   '/login': typeof LoginRouteWithChildren
   '/sign-up': typeof SignUpRoute
@@ -277,6 +294,7 @@ export interface FileRoutesById {
   '/api/publications/approvals': typeof ApiPublicationsApprovalsRoute
   '/api/publications/review': typeof ApiPublicationsReviewRoute
   '/api/publications/revisions': typeof ApiPublicationsRevisionsRoute
+  '/api/teacher/progress': typeof ApiTeacherProgressRoute
   '/api/publications/': typeof ApiPublicationsIndexRoute
   '/api/lessons/$draftId/cancel': typeof ApiLessonsDraftIdCancelRoute
   '/api/lessons/sources/': typeof ApiLessonsSourcesIndexRoute
@@ -289,6 +307,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/dashboard'
     | '/learn'
     | '/login'
     | '/sign-up'
@@ -310,6 +329,7 @@ export interface FileRouteTypes {
     | '/api/publications/approvals'
     | '/api/publications/review'
     | '/api/publications/revisions'
+    | '/api/teacher/progress'
     | '/api/publications/'
     | '/api/lessons/$draftId/cancel'
     | '/api/lessons/sources/'
@@ -320,6 +340,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/dashboard'
     | '/learn'
     | '/login'
     | '/sign-up'
@@ -341,6 +362,7 @@ export interface FileRouteTypes {
     | '/api/publications/approvals'
     | '/api/publications/review'
     | '/api/publications/revisions'
+    | '/api/teacher/progress'
     | '/api/publications'
     | '/api/lessons/$draftId/cancel'
     | '/api/lessons/sources'
@@ -351,6 +373,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/dashboard'
     | '/learn'
     | '/login'
     | '/sign-up'
@@ -372,6 +395,7 @@ export interface FileRouteTypes {
     | '/api/publications/approvals'
     | '/api/publications/review'
     | '/api/publications/revisions'
+    | '/api/teacher/progress'
     | '/api/publications/'
     | '/api/lessons/$draftId/cancel'
     | '/api/lessons/sources/'
@@ -383,6 +407,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRoute
   LearnRoute: typeof LearnRoute
   LoginRoute: typeof LoginRouteWithChildren
   SignUpRoute: typeof SignUpRoute
@@ -403,6 +428,7 @@ export interface RootRouteChildren {
   ApiPublicationsApprovalsRoute: typeof ApiPublicationsApprovalsRoute
   ApiPublicationsReviewRoute: typeof ApiPublicationsReviewRoute
   ApiPublicationsRevisionsRoute: typeof ApiPublicationsRevisionsRoute
+  ApiTeacherProgressRoute: typeof ApiTeacherProgressRoute
   ApiPublicationsIndexRoute: typeof ApiPublicationsIndexRoute
   ApiLessonsDraftIdCancelRoute: typeof ApiLessonsDraftIdCancelRoute
   ApiLessonsSourcesIndexRoute: typeof ApiLessonsSourcesIndexRoute
@@ -419,6 +445,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/learn': {
@@ -575,6 +608,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicationsRevisionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/teacher/progress': {
+      id: '/api/teacher/progress'
+      path: '/api/teacher/progress'
+      fullPath: '/api/teacher/progress'
+      preLoaderRoute: typeof ApiTeacherProgressRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/lessons/$draftId/cancel': {
       id: '/api/lessons/$draftId/cancel'
       path: '/api/lessons/$draftId/cancel'
@@ -632,6 +672,7 @@ const LoginRouteWithChildren = LoginRoute._addFileChildren(LoginRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRoute: DashboardRoute,
   LearnRoute: LearnRoute,
   LoginRoute: LoginRouteWithChildren,
   SignUpRoute: SignUpRoute,
@@ -652,6 +693,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicationsApprovalsRoute: ApiPublicationsApprovalsRoute,
   ApiPublicationsReviewRoute: ApiPublicationsReviewRoute,
   ApiPublicationsRevisionsRoute: ApiPublicationsRevisionsRoute,
+  ApiTeacherProgressRoute: ApiTeacherProgressRoute,
   ApiPublicationsIndexRoute: ApiPublicationsIndexRoute,
   ApiLessonsDraftIdCancelRoute: ApiLessonsDraftIdCancelRoute,
   ApiLessonsSourcesIndexRoute: ApiLessonsSourcesIndexRoute,
