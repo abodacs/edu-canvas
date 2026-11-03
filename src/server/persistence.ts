@@ -1,5 +1,6 @@
 import { serverObservability } from "./observability.server";
 import { createPostgresIdentityPersistence } from "./persistence/identity-postgres";
+import { createPostgresGenerationLimitStore } from "./persistence/limits-postgres";
 import { createPostgresPackPersistence } from "./persistence/pack-postgres";
 import { createPostgresPersistence } from "./persistence/postgres";
 import { createRecordCommands } from "./persistence/records-commands";
@@ -7,6 +8,7 @@ import { createPostgresRecordBackend } from "./persistence/records-postgres";
 
 import type { ServerConfig } from "./config";
 import type { IdentityPersistence } from "./identity/persistence-port";
+import type { GenerationLimitStore } from "./limits/contract";
 import type { PackPersistence } from "./persistence/pack-port";
 import type { RecordPersistence } from "./persistence/records-commands";
 import type {
@@ -83,6 +85,18 @@ record.
 */
 export const createPackPersistence = (config: ServerConfig): PackPersistence =>
   createPostgresPackPersistence(requireDatabaseUrl(config, "pack"));
+
+/**
+Shared request-limit state (#104). The counters and leases must be visible to
+every application Machine, so this port is always PostgreSQL.
+*/
+export const createGenerationLimitStore = (
+  config: ServerConfig
+): GenerationLimitStore => {
+  return createPostgresGenerationLimitStore(
+    requireDatabaseUrl(config, "limits")
+  );
+};
 
 /**
 The versioned-record port (#112).

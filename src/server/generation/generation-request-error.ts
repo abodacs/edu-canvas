@@ -9,6 +9,11 @@ export const GENERATION_INPUT_INVALID_MESSAGE = "Generation input is invalid.";
 
 export interface GenerationRequestErrorOptions extends ErrorOptions {
   code: GenerationRequestErrorCode;
+  /**
+  Present only for `RATE_LIMITED`; the transport states the same wait in the
+  body and the `Retry-After` header.
+  */
+  retryAfterMs?: number;
 }
 
 /**
@@ -19,12 +24,14 @@ carries its own status.
 export class GenerationRequestError extends Error {
   readonly code: GenerationRequestErrorCode;
   readonly status: number;
+  readonly retryAfterMs?: number;
 
   constructor(message: string, options: GenerationRequestErrorOptions) {
     super(message, options);
     this.name = "GenerationRequestError";
     this.code = options.code;
     this.status = generationRequestErrorStatusByCode[options.code];
+    this.retryAfterMs = options.retryAfterMs;
   }
 }
 

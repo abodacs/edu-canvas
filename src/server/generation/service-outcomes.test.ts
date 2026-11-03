@@ -4,6 +4,7 @@ import { syntheticSeed } from "@/server/seed-data";
 import { parseTenantId } from "@/server/identity/identifiers";
 import { syntheticTeacherActor } from "@/server/identity/test-actors";
 
+import { createSeededGenerationLimitStore } from "@/server/persistence/limits-seeded";
 import { createSeededPersistence } from "../persistence/seeded";
 import {
   allowedSafetyResult,
@@ -36,6 +37,7 @@ describe("generation attempt outcomes", () => {
     const provider =
       createDeterministicLessonDraftProvider("invalid-then-valid");
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence,
       provider,
       safety: {
@@ -81,6 +83,7 @@ describe("generation attempt outcomes", () => {
       "invalid-then-invalid"
     );
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider,
     });
@@ -107,6 +110,7 @@ describe("generation attempt outcomes", () => {
         corrected ? "invalid-then-valid" : "valid"
       );
       const service = createGenerationService({
+        limits: createSeededGenerationLimitStore(),
         persistence,
         provider,
         semanticValidation: () => {
@@ -145,6 +149,7 @@ describe("generation attempt outcomes", () => {
   it("blocks a curriculum context that does not match the request before semantic review", async () => {
     let isReviewed = false;
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
       curriculumContext: (request) => {
@@ -173,6 +178,7 @@ describe("generation attempt outcomes", () => {
 
   it("blocks a path that cannot be accepted even when semantic review passes", async () => {
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider: {
         provenance: createDeterministicLessonDraftProvider().provenance,

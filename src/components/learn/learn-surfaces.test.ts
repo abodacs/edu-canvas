@@ -10,7 +10,12 @@ import {
   RepeatEvaluationNotice,
   RevealReport,
 } from "./learn-surfaces";
+import { BidiText } from "./bidi-text";
+import { learnerCopyFor } from "./learner-copy";
 import type { LearnerAttemptResponse } from "@/shared/learner-contract";
+
+const copy = learnerCopyFor("en");
+const arabicCopy = learnerCopyFor("ar");
 
 const render = (element: React.ReactElement): string =>
   renderToStaticMarkup(element);
@@ -38,7 +43,9 @@ const reveal = (
 
 describe(RevealReport, () => {
   it("renders the incorrect report for a distractor-only submission", () => {
-    const markup = render(createElement(RevealReport, { reveal: reveal() }));
+    const markup = render(
+      createElement(RevealReport, { reveal: reveal(), copy })
+    );
 
     expect(markup).toContain("Not yet");
     expect(markup).toContain("1/2 to 3/4");
@@ -48,7 +55,9 @@ describe(RevealReport, () => {
   });
 
   it("never renders the answer the learner did not submit", () => {
-    const markup = render(createElement(RevealReport, { reveal: reveal() }));
+    const markup = render(
+      createElement(RevealReport, { reveal: reveal(), copy })
+    );
 
     expect(markup).not.toContain("2/4");
     expect(markup).not.toContain("target-half");
@@ -58,6 +67,7 @@ describe(RevealReport, () => {
     const markup = render(
       createElement(RevealReport, {
         reveal: reveal({ feedback: null, connection: null }),
+        copy,
       })
     );
 
@@ -80,6 +90,7 @@ describe(NextActivityCard, () => {
           evidenceHash: "a".repeat(64),
           derivedFromAttemptId: null,
         },
+        copy,
       })
     );
 
@@ -100,6 +111,7 @@ describe(NextActivityCard, () => {
           evidenceHash: "a".repeat(64),
           derivedFromAttemptId: "attempt_1",
         },
+        copy,
       })
     );
 
@@ -108,7 +120,9 @@ describe(NextActivityCard, () => {
   });
 
   it("renders the waiting surface when no decision exists yet", () => {
-    const markup = render(createElement(NextActivityCard, { activity: null }));
+    const markup = render(
+      createElement(NextActivityCard, { activity: null, copy })
+    );
 
     expect(markup).toContain("Your teacher is choosing the next activity.");
   });
@@ -119,16 +133,18 @@ describe(CheckOutcome, () => {
 
   it("renders an intentional surface for each correctness state", () => {
     for (const correctness of correctnessStates) {
-      const markup = render(createElement(CheckOutcome, { correctness }));
+      const markup = render(createElement(CheckOutcome, { correctness, copy }));
 
       expect(markup).toContain(`data-correctness="${correctness}"`);
-      expect(markup).toContain("<output");
+      // The page's single live region announces the grade; the outcome line
+      // itself stays static so the result is not announced twice.
+      expect(markup).not.toContain("<output");
     }
   });
 
   it("keeps every state's fixed template distinct", () => {
     const markups = correctnessStates.map((correctness) =>
-      render(createElement(CheckOutcome, { correctness }))
+      render(createElement(CheckOutcome, { correctness, copy }))
     );
 
     const distinctMarkups = new Set(markups);
@@ -142,12 +158,109 @@ describe(CheckOutcome, () => {
 
 describe(RepeatEvaluationNotice, () => {
   it("names the repeat state without reclassifying the first response", () => {
-    const markup = render(createElement(RepeatEvaluationNotice));
+    const markup = render(createElement(RepeatEvaluationNotice, { copy }));
 
     expect(markup).toContain("This check repeats from the start.");
     expect(markup).toContain("Your first response stays on record.");
   });
 });
+
+describe("Arabic learner surfaces", () => {
+  it("renders the reveal in Arabic with isolated Latin tokens", () => {
+    const markup = render(
+      createElement(RevealReport, {
+        reveal: reveal({ feedback: "راجع المعيار 4.NF.A.1 ثم حاول." }),
+        copy: arabicCopy,
+      })
+    );
+
+    expect(markup).toContain("نتيجة تحققك");
+    expect(markup).toContain(
+      '<bdi dir="ltr">1/2</bdi> مع <bdi dir="ltr">3/4</bdi>'
+    );
+    expect(markup).toContain('المعيار <bdi dir="ltr">4.NF.A.1</bdi> ثم');
+    expect(markup).not.toContain("Your check");
+  });
+});
+
+describe(BidiText, () => {
+  it("leaves a sentence period with the Arabic text", () => {
+    const markup = render(
+      createElement(BidiText, { text: "تمت مطابقة 3 من 6.", direction: "rtl" })
+    );
+
+    expect(markup).toBe(
+      'تمت مطابقة <bdi dir="ltr">3</bdi> من <bdi dir="ltr">6</bdi>.'
+    );
+  });
+
+  it("passes left-to-right text through untouched", () => {
+    const markup = render(
+      createElement(BidiText, { text: "Match 1/2.", direction: "ltr" })
+    );
+
+    expect(markup).toBe("Match 1/2.");
+  });
+});
+
+// #9: learner rules must not pin a physical side, or the Arabic page cannot
+// mirror. One- and two-value margin and padding are symmetric and allowed.
+const physicalSides = ["top", "right", "bottom", "left"] as const;
+const physicalProperties = new Set<string>([
+  ...physicalSides,
+  "width",
+  "height",
+  "min-width",
+  "min-height",
+  "max-width",
+  "max-height",
+  ...["margin", "padding", "border"].flatMap((box) =>
+    physicalSides.map((side) => `${box}-${side}`)
+  ),
+  ...["top", "bottom"].flatMap((block) =>
+    ["left", "right"].map((inline) => `border-${block}-${inline}-radius`)
+  ),
+]);
+const sidedValueProperties = new Set(["text-align", "float", "clear"]);
+const symmetricShorthands = new Set(["margin", "padding", "inset"]);
+const maximumSymmetricValues = 2;
+
+const isPhysicalDeclaration = (declaration: string): boolean => {
+  const separator = declaration.indexOf(":");
+  if (separator === -1) {
+    return false;
+  }
+  const property = declaration.slice(0, separator).trim();
+  const value = declaration.slice(separator + 1).trim();
+  const isBorderSide = physicalSides.some((side) =>
+    property.startsWith(`border-${side}-`)
+  );
+  if (isBorderSide || physicalProperties.has(property)) {
+    return true;
+  }
+  return sidedValueProperties.has(property)
+    ? value === "left" || value === "right"
+    : symmetricShorthands.has(property) &&
+        value.split(" ").filter(Boolean).length > maximumSymmetricValues;
+};
+
+const learnerDeclarations = (css: string): string[] => {
+  const declarations: string[] = [];
+  for (const block of css.split("}")) {
+    const open = block.lastIndexOf("{");
+    const selector = block.slice(0, open).split("{").at(-1)?.trim() ?? "";
+    if (open === -1 || !selector.includes(".learn-")) {
+      continue;
+    }
+    const body = block.slice(open + 1).split(";");
+    for (const declaration of body) {
+      if (declaration.trim() !== "") {
+        declarations.push(`${selector} { ${declaration.trim()} }`);
+      }
+    }
+  }
+  return declarations;
+};
 
 describe("learn styles", () => {
   const stylesUrl = new URL("../../styles.css", import.meta.url);
@@ -157,6 +270,30 @@ describe("learn styles", () => {
     expect(styles).toContain(
       "grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));"
     );
+  });
+
+  it("uses only logical properties in learner rules", () => {
+    const declarations = learnerDeclarations(styles);
+    const violations = declarations.filter((line) => {
+      return isPhysicalDeclaration(
+        line.slice(line.indexOf("{") + 1, line.lastIndexOf("}"))
+      );
+    });
+
+    expect(declarations.length).toBeGreaterThan(0);
+    expect(violations).toStrictEqual([]);
+  });
+
+  it("flags a physical side in a learner rule", () => {
+    const flagged = learnerDeclarations(
+      ".learn-x { margin-left: 1rem; inline-size: 100%; margin: 0 0 1rem; text-align: left; padding: 0 1rem }"
+    ).filter((line) => {
+      return isPhysicalDeclaration(
+        line.slice(line.indexOf("{") + 1, line.lastIndexOf("}"))
+      );
+    });
+
+    expect(flagged).toHaveLength(3);
   });
 
   it("adds no animation to the learner surfaces", () => {

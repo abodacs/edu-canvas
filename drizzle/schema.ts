@@ -1964,3 +1964,102 @@ export const operationReceipts = pgTable(
     ];
   }
 ).enableRLS();
+
+// #104 shared request-limit state. Counters and leases live in Postgres so a
+// second Machine cannot bypass process-local buckets. Every table is
+// tenant-scoped like the rest of the foundation.
+export const requestLimitCounters = pgTable(
+  "request_limit_counters",
+  {
+    tenantId: text("tenant_id").notNull(),
+    scopeKind: text("scope_kind").notNull(),
+    scopeId: text("scope_id").notNull(),
+    counterKind: text("counter_kind").notNull(),
+    windowStart: timestamp("window_start", {
+      withTimezone: true,
+      mode: "string",
+    }).notNull(),
+    windowEnd: timestamp("window_end", {
+      withTimezone: true,
+      mode: "string",
+    }).notNull(),
+    count: integer().default(0).notNull(),
+  },
+  (table) => {
+    return [
+      primaryKey({
+        columns: [
+          table.tenantId,
+          table.scopeKind,
+          table.scopeId,
+          table.counterKind,
+          table.windowStart,
+        ],
+        name: "request_limit_counters_pkey",
+      }),
+      index("request_limit_counters_expiry_idx").using(
+        "btree",
+        table.tenantId.asc().nullsLast(),
+        table.windowEnd.asc().nullsLast()
+      ),
+      pgPolicy("request_limit_counters_are_tenant_scoped", {
+        as: "permissive",
+        for: "all",
+        to: ["public"],
+        using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
+      }),
+      check(
+        "request_limit_counters_scope_kind_check",
+        sql`scope_kind = ANY (ARRAY['teacher'::text, 'tenant'::text, 'session'::text])`
+      ),
+      check(
+        "request_limit_counters_counter_kind_check",
+        sql`counter_kind = ANY (ARRAY['generation-attempt'::text, 'provider-call'::text, 'authoring-request'::text])`
+      ),
+      check("request_limit_counters_count_check", sql`count >= 0`),
+      check(
+        "request_limit_counters_window_check",
+        sql`window_end > window_start`
+      ),
+    ];
+  }
+).enableRLS();
+
+export const activeGenerationLeases = pgTable(
+  "active_generation_leases",
+  {
+    tenantId: text("tenant_id").notNull(),
+    teacherId: text("teacher_id").notNull(),
+    holder: text().notNull(),
+    acquiredAt: timestamp("acquired_at", {
+      withTimezone: true,
+      mode: "string",
+    }).notNull(),
+    expiresAt: timestamp("expires_at", {
+      withTimezone: true,
+      mode: "string",
+    }).notNull(),
+  },
+  (table) => {
+    return [
+      primaryKey({
+        columns: [table.tenantId, table.teacherId],
+        name: "active_generation_leases_pkey",
+      }),
+      index("active_generation_leases_expiry_idx").using(
+        "btree",
+        table.expiresAt.asc().nullsLast()
+      ),
+      pgPolicy("active_generation_leases_are_tenant_scoped", {
+        as: "permissive",
+        for: "all",
+        to: ["public"],
+        using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
+      }),
+      check(
+        "active_generation_leases_window_check",
+        sql`expires_at > acquired_at`
+      ),
+    ];
+  }
+).enableRLS();

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { generationRequestErrorStatusByCode } from "@/shared/generation-contract";
 
 import { IdentityError } from "../identity/errors";
+import { GenerationLimitError } from "../limits/errors";
 import { mapGenerationError } from "./delivery.server";
 import {
   GenerationRequestError,
@@ -25,8 +26,17 @@ const requestErrorCodes = Object.keys(
 
 const errorBodyOf = async (
   response: Response
-): Promise<{ code?: string; message?: string }> =>
-  (await response.json()) as { code?: string; message?: string };
+): Promise<{
+  code?: string;
+  message?: string;
+  retryAfterSeconds?: number;
+}> => {
+  return (await response.json()) as {
+    code?: string;
+    message?: string;
+    retryAfterSeconds?: number;
+  };
+};
 
 describe("generation delivery error mapping", () => {
   it("rejects an unsupported objective with an explicit 422 code and the curated message", async () => {
@@ -102,5 +112,23 @@ describe("generation delivery error mapping", () => {
       status: response.status,
       ...(await errorBodyOf(response)),
     }).toStrictEqual({ status: 500, ...FALLBACK_BODY });
+  });
+
+  it("states the real retry window on a rate-limited 429", async () => {
+    const response = mapGenerationError(new GenerationLimitError(42_000));
+    const body = await errorBodyOf(response);
+
+    expect({
+      status: response.status,
+      retryAfter: response.headers.get("retry-after"),
+      ...body,
+    }).toStrictEqual({
+      status: 429,
+      retryAfter: "42",
+      code: "RATE_LIMITED",
+      retryAfterSeconds: 42,
+      message:
+        "Too many generation requests right now. Try again in 42 seconds.",
+    });
   });
 });

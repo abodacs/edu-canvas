@@ -87,6 +87,7 @@ Dependency versions belong in `package.json` and `pnpm-lock.yaml`. The [Nitro co
 | `src/server/identity/` | Provider adapter contract, verified actor construction, session establishment/resolution/expiry/logout, CSRF and rate limits, trusted provisioning, browser-safe session projection | [service.ts](src/server/identity/service.ts), [api.server.ts](src/server/identity/api.server.ts), [persistence-port.ts](src/server/identity/persistence-port.ts) |
 | `src/routes/api/auth/`, `src/routes/api/lessons/` | Authenticated delivery seams; they resolve an actor and delegate, and never select a role | `context.ts`, `sign-in.ts`, `generate.ts` |
 | `src/server/generation/` | Generation policy, attempts, validation, provider interface, learning path, public projection | [service.ts](src/server/generation/service.ts), [types.ts](src/server/generation/types.ts) |
+| `src/server/limits/` | Shared request-limit counters, active-generation leases, the typed limit policy, and the rate-limited verdict | [config.ts](src/server/limits/config.ts), [contract.ts](src/server/limits/contract.ts), [policy.ts](src/server/limits/policy.ts) |
 | `src/server/a2ui/` | Preview access checks, compilation, SSE delivery | [preview.server.ts](src/server/a2ui/preview.server.ts), [compiler.ts](src/server/a2ui/compiler.ts) |
 | `src/server/safety/` | Artifact gate verdicts, findings, renderable-artifact brand, recovery policy, and enforcement before preview | [artifact-gate.ts](src/server/safety/artifact-gate.ts), [artifact-enforcement.ts](src/server/safety/artifact-enforcement.ts) |
 | `src/server/grounding/` | Source upload limits, extraction, gap states, source gate, and public projection | [source-service.ts](src/server/grounding/source-service.ts), [delivery.server.ts](src/server/grounding/delivery.server.ts) |
@@ -132,7 +133,8 @@ Contexts are derived from the teaching loop's verbs — draft → validate → p
 | Teacher Review | Core | Preview access checks, A2UI compilation and SSE delivery, review versions, per-target approval, the publication fact and assignment; replacement is a target | `src/server/a2ui/`, `src/components/a2ui/`, `src/server/publication/`, `src/server/records/`; [AgDR-0012](docs/agdr/AgDR-0012-generated-pack-publication-records.md) |
 | Student Learning | Core | Learner assignment, run start, server-authoritative matching grade, reveal, and next-activity decision; the teacher reads the stored decision read-only (#8); mastery and adaptation are targets | `src/server/learner/`, `src/server/records/`, `/learn`, `/dashboard`, `/api/learner/*`, `/api/teacher/*`; [AgDR-0002](docs/agdr/AgDR-0002-server-authoritative-grading.md) |
 | Curriculum & Standards | Supporting | Seeded standards, versioned prerequisite graph, bounded source uploads, Learning Commons grounding (target) | `src/server/seed-data.ts`, `src/server/grounding/`; [AgDR-0005](docs/agdr/AgDR-0005-grounded-package-version-contracts.md) |
-| Identity & Tenancy | Supporting | Sessions, roles, capabilities, tenant membership, CSRF, rate limits, trusted provisioning | `src/server/identity/`; [#98](https://github.com/abodacs/edu-canvas/issues/98), [#99](https://github.com/abodacs/edu-canvas/issues/99) |
+| Identity & Tenancy | Supporting | Sessions, roles, capabilities, tenant membership, CSRF, sign-in rate limits, trusted provisioning | `src/server/identity/`; [#98](https://github.com/abodacs/edu-canvas/issues/98), [#99](https://github.com/abodacs/edu-canvas/issues/99) |
+| Request Limits | Supporting | Shared counters, per-session bursts, active-generation leases, and the rate-limited retry verdict | `src/server/limits/`; PostgreSQL adapters in `src/server/persistence/limits-*.ts`; [#104](https://github.com/abodacs/edu-canvas/issues/104) |
 | A2UI Protocol | Supporting | Catalog governance, message schemas, compiler and renderer conformance | [a2ui-contract.ts](src/shared/a2ui-contract.ts); [AgDR-0001](docs/agdr/AgDR-0001-a2ui-catalog-governance.md) |
 | Shared contracts | Published language | Browser-safe input and output schemas | `src/shared/` |
 | Platform | Generic | Persistence adapters, configuration, observability, health, identifier minting, UI primitives | `src/server/persistence*`, `config.ts`, `observability.server.ts`, `ids.ts`, `src/lib/`, `src/components/ui/` |
@@ -279,7 +281,7 @@ Catalog actions such as `submitAttempt` describe allowed messages. Their presenc
 
 [config.ts](src/server/config.ts) parses application and database-bootstrap settings. Invalid settings produce typed `ConfigIssue` records. Generation, preview, readiness, and persistence reject invalid configuration.
 
-`DATABASE_URL` is required: PostgreSQL is the only runtime persistence. `OPENAI_API_KEY` is required for server-side generation. `SYNTHETIC_DATA_ONLY=false` is rejected. The deterministic provider and in-memory stores are test doubles and are unreachable from runtime composition.
+`DATABASE_URL` is required: PostgreSQL is the only runtime persistence. `META_API_KEY` is required for server-side generation. `SYNTHETIC_DATA_ONLY=false` is rejected. The deterministic provider and in-memory stores are test doubles and are unreachable from runtime composition.
 
 [observability.server.ts](src/server/observability.server.ts) emits structured errors, restricts context values, redacts sensitive patterns, and optionally sends scrubbed events to Sentry. Sentry uses `sendDefaultPii: false`. This is a server-only interface, not a browser SDK.
 
@@ -332,7 +334,7 @@ sequenceDiagram
 5. Build a forward learning path and story against the versioned seeded curriculum. Missing or incompatible context blocks acceptance.
 6. Persist the final state with the expected attempt, update timestamp, and an unexpired lease. If ownership has changed, return the current record instead of overwriting it.
 
-The configured factory always builds the OpenAI Responses adapter; the deterministic provider is a test double. The live adapter uses a 100-second timeout per call. The service enforces a 200-second total budget across generation and one correction.
+The configured factory always builds the Meta adapter (OpenAI-compatible Responses transport, `muse-spark-1.2-contributor`); the deterministic provider is a test double. The live adapter uses a 100-second timeout per call. The service enforces a 200-second total budget across generation and one correction.
 
 | State | Meaning | Explicit retry |
 | --- | --- | --- |
@@ -430,7 +432,7 @@ The [Dockerfile](Dockerfile) builds `.output/`, copies runtime dependencies and 
 
 The seeded store is local to one process and disappears on restart. PostgreSQL is required for shared durable records. SSE state belongs to each response and is rebuilt from persisted data on a new preview request.
 
-The release design selects one continuously running Fly Machine with database-backed quotas and process-local burst limits. Those controls are targets. Multiple Machines can serve persisted snapshots, but the planned process-local limits require either a single instance or shared limit state. [AgDR-0007](docs/agdr/AgDR-0007-demo-access-and-deployment.md) records that tradeoff; the [release runbook](docs/release-fly-supabase.md) owns launch requirements.
+The release design selects one continuously running Fly Machine. Database-backed quotas, burst limits, and active-generation leases (#104) enforce its limit model; the single-Machine milestone stays in force until a two-Machine rehearsal and load evidence. [AgDR-0007](docs/agdr/AgDR-0007-demo-access-and-deployment.md) records the tradeoff; the [release runbook](docs/release-fly-supabase.md) owns launch requirements.
 
 ## Implementation gaps and drift
 
@@ -442,10 +444,10 @@ These differences were checked against the source baseline above. They are not r
 | Grounding | Seeded curriculum, prerequisite graph, and bounded PDF/TXT/MD uploads with explicit gap states | Learning Commons retrieval, Jev matching, and grounded package contracts remain design work described in [AgDR-0005](docs/agdr/AgDR-0005-grounded-package-version-contracts.md). |
 | Safety | Deterministic content screening with a category and code, structural validation, bounded semantic review, and the artifact gate before preview and publication | Teacher-facing moderation recovery is [#119](https://github.com/abodacs/edu-canvas/issues/119). The prompt is still persisted before screening. |
 | Identity and cost controls | Session-owned identity, current membership checks, CSRF/origin guards, bounded counters, and trusted provisioning; the role-selected demo surface is retired | [#98](https://github.com/abodacs/edu-canvas/issues/98) stays open for the remaining account and roster evidence. Deployment, rollback, and monitoring gates remain pending. Least-privilege database roles belong to [#100](https://github.com/abodacs/edu-canvas/issues/100). |
-| Provider selection | Fixture or OpenAI Responses adapter with `OPENAI_*` settings and a `gpt-5.6` code default | [AgDR-0006](docs/agdr/AgDR-0006-provider-selection-and-deadlines.md) selects a provider through access evidence. The code default is not evidence for an event-allowed provider. |
+| Provider selection | Fixture or Meta adapter with `META_*` settings and a `muse-spark-1.2-contributor` code default | [AgDR-0006](docs/agdr/AgDR-0006-provider-selection-and-deadlines.md) selects the Meta provider; live access is recorded in the [2026-10-27 evidence](docs/hackathon/meta-global-2026/evidence/ic1-2026-10-27/README.md). |
 | Deadlines | 100 seconds per provider call, 200 seconds for generation plus correction, and a 220-second claim lease; writes require an unexpired lease | AgDR-0006 event decision, 2026-10-27. |
 | Idempotency conflicts | An existing tenant-local key compares the persisted normalized request hash; changed input returns `IDEMPOTENCY_CONFLICT` without a provider call | AgDR-0006 requires the conflict; unchanged input reuses the original result. |
-| Machine count | `fly.toml` sets `min_machines_running = 2` | AgDR-0007 and the release procedure select one Machine for the planned limit model. |
+| Machine count | `fly.toml` sets `min_machines_running = 1`; the runbook keeps `fly scale count 1` | Shared request-limit state (#104) now lives in PostgreSQL, but multi-Machine remains disabled until a two-Machine rehearsal and [#109](https://github.com/abodacs/edu-canvas/issues/109) load evidence. |
 | Connections | Each database operation creates and closes a client | There is no application-wide connection pool. |
 | Seeded catalog | The fixture imports `A2UI_CATALOG_VERSION`, so the seed, the compiler, and every reader pin one identity; `pnpm verify:catalog-identity` enforces it and `seed-catalog-roundtrip.test.ts` proves it across a fresh migrate-and-seed | The retired fixture identifier `edu-canvas-matching-v0` is not a catalog: a payload carrying it fails closed with `UNSUPPORTED_CATALOG` ([AgDR-0001](docs/agdr/AgDR-0001-a2ui-catalog-governance.md)). A database seeded before #110 keeps that value because `activity_versions` is inserted with `on conflict do nothing`; `activity_versions.catalog_version` still has no production reader. |
 | Context boundary debt | Drafting imports seed data directly | Curriculum context port (wave 2) per [AgDR-0008](docs/agdr/AgDR-0008-bounded-contexts-and-screaming-layout.md); tracked as a `verify:boundaries` warn rule. |

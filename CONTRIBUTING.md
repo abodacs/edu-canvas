@@ -10,7 +10,7 @@ Use Node.js 26 or newer and the pnpm version pinned in [package.json](package.js
 docker compose up -d postgres
 pnpm install --frozen-lockfile
 export DATABASE_URL=postgresql://edu_canvas:edu_canvas_dev@127.0.0.1:5432/edu_canvas
-export OPENAI_API_KEY=<server-side-key>
+export META_API_KEY=<server-side-key>
 pnpm db:setup
 pnpm dev
 ```

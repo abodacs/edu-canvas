@@ -5,6 +5,7 @@ import { syntheticTeacherActor } from "@/server/identity/test-actors";
 import { createServerObservability } from "@/server/observability.server";
 import { syntheticSeed } from "@/server/seed-data";
 
+import { createSeededGenerationLimitStore } from "@/server/persistence/limits-seeded";
 import { createDeterministicLessonDraftProvider } from "../generation/provider";
 import { createGenerationService } from "../generation/service";
 import { createSeededPersistence } from "../persistence/seeded";
@@ -26,6 +27,7 @@ const buildService = () => {
   const persistence = createSeededPersistence();
   const provider = createDeterministicLessonDraftProvider();
   const service = createGenerationService({
+    limits: createSeededGenerationLimitStore(),
     persistence,
     provider,
     safety: createDefaultContentSafety(),

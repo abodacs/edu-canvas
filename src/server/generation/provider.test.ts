@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   createDeterministicLessonDraftProvider,
   createEquivalentFractionsDraft,
-  createOpenAILessonDraftProvider,
+  createMetaLessonDraftProvider,
   LessonProviderError,
 } from "./provider";
 import { validateProviderDraft } from "./validation";
@@ -32,7 +32,7 @@ const expectCanonicalRequestBody = (body: {
   input: string;
   text: { format: { name: string; type: string } };
 }) => {
-  expect(body.model).toBe("gpt-5.6");
+  expect(body.model).toBe("muse-spark-1.2-contributor");
   expect(body.text.format).toMatchObject({
     type: "json_schema",
     name: "edu_canvas_lesson_draft",
@@ -99,12 +99,12 @@ describe("lesson draft providers", () => {
     });
   });
 
-  it("sends the canonical contract to the server-only OpenAI adapter", async () => {
+  it("sends the canonical contract to the server-only Meta adapter", async () => {
     let requestUrl = "";
     let requestInit: RequestInit | undefined;
-    const provider = createOpenAILessonDraftProvider({
+    const provider = createMetaLessonDraftProvider({
       apiKey: "server-only-test-key",
-      model: "gpt-5.6",
+      model: "muse-spark-1.2-contributor",
       fetchImplementation: (input, init) => {
         requestUrl = String(input);
         requestInit = init;
@@ -133,7 +133,7 @@ describe("lesson draft providers", () => {
     };
     const headers = new Headers(requestInit?.headers);
 
-    expect(requestUrl).toBe("https://api.openai.com/v1/responses");
+    expect(requestUrl).toBe("https://api.meta.ai/v1/responses");
     expect(headers.get("authorization")).toBe("Bearer server-only-test-key");
 
     expectCanonicalRequestBody(body);
@@ -142,9 +142,9 @@ describe("lesson draft providers", () => {
   });
 
   it("maps provider rate limits to a safe retryable error", async () => {
-    const provider = createOpenAILessonDraftProvider({
+    const provider = createMetaLessonDraftProvider({
       apiKey: "server-only-test-key",
-      model: "gpt-5.6",
+      model: "muse-spark-1.2-contributor",
       fetchImplementation: () => {
         return Promise.resolve(
           new Response("provider details must stay server-side", {
@@ -176,9 +176,9 @@ describe("lesson draft providers", () => {
     "sends exactly one outbound attempt for a %s response",
     async (status) => {
       let attempts = 0;
-      const provider = createOpenAILessonDraftProvider({
+      const provider = createMetaLessonDraftProvider({
         apiKey: "server-only-test-key",
-        model: "gpt-5.6",
+        model: "muse-spark-1.2-contributor",
         fetchImplementation: () => {
           attempts += 1;
           return Promise.resolve(new Response("provider details", { status }));
@@ -198,9 +198,9 @@ describe("lesson draft providers", () => {
   it("propagates the caller signal to the outbound transport", async () => {
     const controller = new AbortController();
     const { state, fetchImplementation } = createHangingFetch();
-    const provider = createOpenAILessonDraftProvider({
+    const provider = createMetaLessonDraftProvider({
       apiKey: "server-only-test-key",
-      model: "gpt-5.6",
+      model: "muse-spark-1.2-contributor",
       fetchImplementation,
     });
 
@@ -218,9 +218,9 @@ describe("lesson draft providers", () => {
 
   it("aborts a hanging transport at the configured timeout with one attempt", async () => {
     const { state, fetchImplementation } = createHangingFetch();
-    const provider = createOpenAILessonDraftProvider({
+    const provider = createMetaLessonDraftProvider({
       apiKey: "server-only-test-key",
-      model: "gpt-5.6",
+      model: "muse-spark-1.2-contributor",
       timeoutMs: 5,
       fetchImplementation,
     });
@@ -260,9 +260,9 @@ describe("lesson draft providers", () => {
 
   it("sends approved curriculum and reference context to the adapter", async () => {
     let requestInit: RequestInit | undefined;
-    const provider = createOpenAILessonDraftProvider({
+    const provider = createMetaLessonDraftProvider({
       apiKey: "server-only-test-key",
-      model: "gpt-5.6",
+      model: "muse-spark-1.2-contributor",
       fetchImplementation: (_input, init) => {
         requestInit = init;
         return Promise.resolve(

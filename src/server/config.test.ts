@@ -39,7 +39,7 @@ describe("server configuration", () => {
       syntheticDataOnly: true,
     });
     expect(config.issues.map((issue) => issue.code)).toStrictEqual([
-      "OPENAI_API_KEY_REQUIRED",
+      "META_API_KEY_REQUIRED",
       "DATABASE_REQUIRED",
     ]);
     expect(config.sentryDsn).toBeUndefined();
@@ -90,7 +90,7 @@ describe("server configuration", () => {
   it("requires persistence in every environment", () => {
     const config = readServerConfig({
       APP_ENV: "production",
-      OPENAI_API_KEY: "test-server-key",
+      META_API_KEY: "test-server-key",
     });
 
     expect(config.issues).toContainEqual({
@@ -139,14 +139,14 @@ describe("server configuration", () => {
     });
 
     expect(config.issues).toContainEqual({
-      code: "OPENAI_API_KEY_REQUIRED",
-      field: "OPENAI_API_KEY",
-      message: "Set OPENAI_API_KEY for server-side lesson generation.",
+      code: "META_API_KEY_REQUIRED",
+      field: "META_API_KEY",
+      message: "Set META_API_KEY for server-side lesson generation.",
     });
   });
 
   it("keeps the provider credential out of the safe configuration summary", () => {
-    const config = readServerConfig({ OPENAI_API_KEY: "server-secret" });
+    const config = readServerConfig({ META_API_KEY: "server-secret" });
 
     expect(JSON.stringify(safeConfigSummary(config))).not.toContain(
       "server-secret"
@@ -157,48 +157,48 @@ describe("server configuration", () => {
     const config = readServerConfig({
       // The clear-text scheme is the input under test.
       // eslint-disable-next-line sonarjs/no-clear-text-protocols
-      OPENAI_BASE_URL: "ftp://untrusted.invalid",
+      META_BASE_URL: "ftp://untrusted.invalid",
     });
 
     expect(config.issues).toContainEqual({
-      code: "INVALID_OPENAI_BASE_URL",
-      field: "OPENAI_BASE_URL",
+      code: "INVALID_META_BASE_URL",
+      field: "META_BASE_URL",
       message:
-        "OPENAI_BASE_URL must use HTTPS, or HTTP for a local loopback test server.",
+        "META_BASE_URL must use HTTPS, or HTTP for a local loopback test server.",
     });
-    expect(config.openAiBaseUrl).toBe("https://api.openai.com/v1");
+    expect(config.metaBaseUrl).toBe("https://api.meta.ai/v1");
   });
 
   it("uses a 100-second provider timeout by default", () => {
-    expect(readServerConfig({}).openAiTimeoutMs).toBe(100_000);
+    expect(readServerConfig({}).metaTimeoutMs).toBe(100_000);
   });
 
   it("accepts a bounded provider timeout override", () => {
     const config = readServerConfig({
       DATABASE_URL: "postgresql://demo:secret@db.invalid:5432/app",
-      OPENAI_API_KEY: "test-server-key",
-      OPENAI_TIMEOUT_MS: "45000",
+      META_API_KEY: "test-server-key",
+      META_TIMEOUT_MS: "45000",
     });
 
-    expect(config.openAiTimeoutMs).toBe(45_000);
+    expect(config.metaTimeoutMs).toBe(45_000);
     expect(config.issues).toHaveLength(0);
   });
 
   it("fails safe for an invalid provider timeout", () => {
-    const config = readServerConfig({ OPENAI_TIMEOUT_MS: "0" });
+    const config = readServerConfig({ META_TIMEOUT_MS: "0" });
 
-    expect(config.openAiTimeoutMs).toBe(100_000);
+    expect(config.metaTimeoutMs).toBe(100_000);
     expect(config.issues).toContainEqual({
-      code: "INVALID_OPENAI_TIMEOUT_MS",
-      field: "OPENAI_TIMEOUT_MS",
+      code: "INVALID_META_TIMEOUT_MS",
+      field: "META_TIMEOUT_MS",
       message:
-        "OPENAI_TIMEOUT_MS must be an integer from 1000 to 120000 milliseconds.",
+        "META_TIMEOUT_MS must be an integer from 1000 to 120000 milliseconds.",
     });
   });
 
   it("refuses the deterministic provider outside development", () => {
     const secretEnvironment = {
-      OPENAI_API_KEY: "sk-not-used",
+      META_API_KEY: "sk-not-used",
       AUTH_PUBLIC_ORIGIN: "https://education.example.test",
       AUTH_SESSION_SECRET: "s".repeat(40),
       AUTH_CREDENTIAL_KEY: Uint8Array.from({ length: 32 }, () => 3).toBase64(),

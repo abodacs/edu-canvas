@@ -42,6 +42,7 @@ import { syntheticSeed } from "@/server/seed-data";
 import { testServerEnvironment } from "@/server/test-environment";
 
 import { publicationPublishResultSchema } from "@/shared/publication-contract";
+import { createSeededGenerationLimitStore } from "@/server/persistence/limits-seeded";
 import type { AuthDependencies } from "@/server/identity/api.server";
 import type { NewSessionInput } from "@/server/identity/persistence-port";
 import type { LearnerActor } from "@/server/identity/types";
@@ -81,7 +82,7 @@ vi.stubEnv(
   "postgresql://test:test@127.0.0.1:5432/edu_canvas_test"
 );
 vi.stubEnv("APP_ENV", "development");
-vi.stubEnv("OPENAI_API_KEY", "test-server-key");
+vi.stubEnv("META_API_KEY", "test-server-key");
 // CI sets AUTH_PROVIDER=supabase for the preview-shaped smoke job. The seams read
 // process.env, so without this pin the synthetic sessions never resolve here.
 vi.stubEnv("AUTH_PROVIDER", "deterministic");
@@ -106,6 +107,10 @@ vi.mock(
       /* webpackChunkName: "policy-matrix-seeded-pack" */
       "@/server/persistence/pack-seeded"
     );
+    const seededLimits = await import(
+      /* webpackChunkName: "policy-matrix-seeded-limits" */
+      "@/server/persistence/limits-seeded"
+    );
     const synthetic = await import(
       /* webpackChunkName: "policy-matrix-synthetic-fixture" */
       "@/server/identity/synthetic-fixture"
@@ -122,6 +127,8 @@ vi.mock(
       createFoundationPersistence: () => foundation,
       createIdentityPersistence: () => identity,
       createPackPersistence: () => packs,
+      createGenerationLimitStore: () =>
+        seededLimits.createUnboundedGenerationLimitStore(),
     };
   }
 );
@@ -2295,6 +2302,7 @@ describe("protected domain policy matrix", () => {
       };
       let sequence = 0;
       const service = createGenerationService({
+        limits: createSeededGenerationLimitStore(),
         persistence: createSeededPersistence(),
         provider: countingProvider,
         requestIdFactory: () => {
