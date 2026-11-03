@@ -28,6 +28,7 @@ Edu-Canvas is a production product; these documents define and verify one trustw
 | [Domain study](domain/README.md) | As-is stories, boundary verdicts, the homonym register, and the language map |
 | [Code standards](../CODING_STANDARDS.md) | Coding and review rules, Ultracite commands, and documentation formatting |
 | [Coding patterns](engineering/coding-patterns.md) | Seven engineering patterns adapted to Edu-Canvas domain rules and boundaries |
+| [Student path checks](engineering/student-path-checks.md) | The #9 learner probe matrix, the language locus, and the manual device pass |
 | [L3 copy trace](engineering/l3-copy-trace.md) | The #176/#7 approved-copy carry decisions: storage shape, rejected alternatives, and the owning tests |
 | [Research index](research/README.md) | Registry of locally retained reference materials; raw research notes stay untracked |
 | [Archive](archive/README.md) | Historical records kept for provenance; owns no current contract |
@@ -41,6 +42,7 @@ Edu-Canvas is a production product; these documents define and verify one trustw
 
 ## Change log
 
+- 2026-11-03 (learner hardening): [student-path-checks](engineering/student-path-checks.md) registered; it records the `verify:student-probe` matrix and the manual device pass for [#9](https://github.com/abodacs/edu-canvas/issues/9).
 - 2026-11-02 (learner loop): [l3-copy-trace](engineering/l3-copy-trace.md) registered; it records the approved-copy storage decision and the deferred carry set behind PR [#186](https://github.com/abodacs/edu-canvas/pull/186) (#176, #7).
 - 2026-11-01 (README): the root README leads with the problem, the teacher-controlled loop, and the demo story; status, safety boundaries, layout, and the code map stay below the fold. No behavior claims changed.
 - 2026-10-31 (recovery): the [blocked generation recovery](design/blocked-generation-recovery.md), [keyboard](design/blocked-generation-keyboard.md), and [scenarios](design/blocked-generation-scenarios.md) documents specify the moderation fallback for [#119](https://github.com/abodacs/edu-canvas/issues/119). The revision-link gap is [#148](https://github.com/abodacs/edu-canvas/issues/148).

@@ -4806,21 +4806,23 @@ h2 {
 
 /* #6 learner matching surface. */
 .learn-card {
-  max-width: 48rem;
   padding: 1.5rem;
-  margin: 2rem auto;
+  margin-block: 2rem;
+  margin-inline: auto;
+  max-inline-size: 48rem;
 }
 
 .learn-board {
   display: grid;
-  margin-top: 1.5rem;
   gap: 1.5rem;
   grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  margin-block-start: 1.5rem;
 }
 
 .learn-column-heading {
-  margin: 0 0 0.75rem;
   font-size: 1rem;
+  margin-block: 0 0.75rem;
+  margin-inline: 0;
 }
 
 .learn-list {
@@ -4832,19 +4834,21 @@ h2 {
 }
 
 .learn-item {
-  width: 100%;
-  min-height: 2.75rem;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--border, #cfd4dc);
+  border: 1px solid var(--border);
   border-radius: 0.5rem;
-  background: var(--surface, #fff);
+  background: var(--card);
   cursor: pointer;
+  inline-size: 100%;
+  min-block-size: 2.75rem;
+  overflow-wrap: anywhere;
+  padding-block: 0.5rem;
+  padding-inline: 0.75rem;
   text-align: start;
 }
 
 .learn-item[aria-pressed="true"] {
-  border-color: var(--accent, #1f5fbf);
-  box-shadow: 0 0 0 2px var(--accent, #1f5fbf);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary);
 }
 
 .learn-item:disabled {
@@ -4854,21 +4858,28 @@ h2 {
 
 .learn-body,
 .learn-status {
-  color: var(--muted, #4a5568);
+  color: var(--muted-foreground);
 }
 
 .learn-result {
   font-weight: 600;
 }
 
+.learn-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
 .learn-submit {
-  min-height: 2.75rem;
-  padding: 0.5rem 1.25rem;
   border: 0;
   border-radius: 0.5rem;
-  background: var(--accent, #1f5fbf);
-  color: #fff;
+  background: var(--primary);
+  color: var(--primary-foreground);
   cursor: pointer;
+  min-block-size: 2.75rem;
+  padding-block: 0.5rem;
+  padding-inline: 1.25rem;
 }
 
 .learn-submit:disabled {
@@ -4879,41 +4890,44 @@ h2 {
 /* #7 reveal report and next-activity card. */
 .learn-result-panel {
   display: grid;
-  margin-top: 1.5rem;
   gap: 1.25rem;
+  margin-block-start: 1.5rem;
 }
 
 .learn-reveal,
 .learn-next {
   padding: 1rem;
-  border: 1px solid var(--border, #cfd4dc);
+  border: 1px solid var(--border);
   border-radius: 0.75rem;
-  background: var(--surface, #fff);
+  background: var(--card);
 }
 
 .learn-reveal h2,
 .learn-next h2 {
-  margin: 0 0 0.75rem;
   font-size: 1rem;
+  margin-block: 0 0.75rem;
+  margin-inline: 0;
 }
 
 .learn-pairs {
   display: grid;
   padding: 0;
-  margin: 0 0 0.75rem;
   gap: 0.5rem;
   list-style: none;
+  margin-block: 0 0.75rem;
+  margin-inline: 0;
 }
 
 .learn-pair {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  padding: 0.5rem 0.65rem;
   border-radius: 0.5rem;
-  background: var(--surface-muted, #f4f6f9);
+  background: var(--muted);
   gap: 0.25rem 0.75rem;
   overflow-wrap: anywhere;
+  padding-block: 0.5rem;
+  padding-inline: 0.65rem;
 }
 
 .learn-pair-state {
@@ -4921,21 +4935,22 @@ h2 {
 }
 
 .learn-pair[data-correct="true"] .learn-pair-state {
-  color: var(--success, #1d6b3f);
+  color: var(--primary);
 }
 
 .learn-pair[data-correct="false"] .learn-pair-state {
-  color: var(--danger, #9b2c2c);
+  color: var(--destructive);
 }
 
 .learn-retry {
-  min-height: 2.75rem;
-  padding: 0.5rem 1.25rem;
-  border: 1px solid var(--border, #cfd4dc);
+  border: 1px solid var(--border);
   border-radius: 0.5rem;
   background: transparent;
-  color: var(--text, #1a202c);
+  color: var(--foreground);
   cursor: pointer;
+  min-block-size: 2.75rem;
+  padding-block: 0.5rem;
+  padding-inline: 1.25rem;
 }
 
 .learn-retry:disabled {
@@ -4948,24 +4963,26 @@ h2 {
 .learn-connection,
 .learn-next p,
 .learn-repeat {
-  margin: 0.5rem 0 0;
-  color: var(--muted, #4a5568);
+  color: var(--muted-foreground);
+  margin-block: 0.5rem 0;
+  margin-inline: 0;
   overflow-wrap: anywhere;
 }
 
 .learn-feedback {
-  color: var(--foreground, #1a202c);
+  color: var(--foreground);
   font-weight: 600;
 }
 
 .learn-outcome {
-  margin: 0.5rem 0 0;
-  color: var(--muted, #4a5568);
+  color: var(--muted-foreground);
+  margin-block: 0.5rem 0;
+  margin-inline: 0;
   overflow-wrap: anywhere;
 }
 
 .learn-outcome[data-correctness="correct"] {
-  color: var(--foreground, #1a202c);
+  color: var(--foreground);
   font-weight: 600;
 }
 
