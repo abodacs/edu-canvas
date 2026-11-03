@@ -22,7 +22,7 @@ describe("foundation persistence boundary", () => {
     const config = readServerConfig({
       APP_ENV: "production",
       DATABASE_URL: "not-a-url",
-      OPENAI_API_KEY: "test-server-key",
+      META_API_KEY: "test-server-key",
       AUTH_PUBLIC_ORIGIN: "https://app.example.com",
       AUTH_SESSION_SECRET: "a-session-secret-that-is-long-enough",
       AUTH_CREDENTIAL_KEY: "ZWR1LWNhbnZhcy1kZXYta2V5LTAwMDAwMDAwMDAwMDA=",
@@ -55,9 +55,9 @@ describe("foundation persistence boundary", () => {
     const config: ServerConfig = {
       appEnv: "production",
       syntheticDataOnly: true,
-      openAiModel: "gpt-5.6",
-      openAiBaseUrl: "https://api.openai.com/v1",
-      openAiTimeoutMs: 100_000,
+      metaModel: "muse-spark-1.2-contributor",
+      metaBaseUrl: "https://api.meta.ai/v1",
+      metaTimeoutMs: 100_000,
       auth: {
         provider: "supabase",
         publicOrigin: "https://app.example.com",
@@ -85,9 +85,9 @@ describe("foundation persistence boundary", () => {
     const config: ServerConfig = {
       appEnv: "production",
       syntheticDataOnly: true,
-      openAiModel: "gpt-5.6",
-      openAiBaseUrl: "https://api.openai.com/v1",
-      openAiTimeoutMs: 100_000,
+      metaModel: "muse-spark-1.2-contributor",
+      metaBaseUrl: "https://api.meta.ai/v1",
+      metaTimeoutMs: 100_000,
       auth: {
         provider: "supabase",
         publicOrigin: "https://app.example.com",

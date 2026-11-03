@@ -20,7 +20,7 @@ vi.stubEnv(
   "DATABASE_URL",
   "postgresql://test:test@127.0.0.1:5432/edu_canvas_test"
 );
-vi.stubEnv("OPENAI_API_KEY", "test-server-key");
+vi.stubEnv("META_API_KEY", "test-server-key");
 vi.stubEnv("AUTH_PROVIDER", "deterministic");
 
 const mocks = vi.hoisted(() => {

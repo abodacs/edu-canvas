@@ -10,12 +10,12 @@ The app requires PostgreSQL and a provider credential:
 docker compose up -d postgres
 pnpm install --frozen-lockfile
 export DATABASE_URL=postgresql://edu_canvas:edu_canvas_dev@127.0.0.1:5432/edu_canvas
-export OPENAI_API_KEY=<server-side-key>
+export META_API_KEY=<server-side-key>
 pnpm db:setup
 pnpm dev
 ```
 
-There is no in-memory runtime fallback. Missing `DATABASE_URL` or `OPENAI_API_KEY` fails readiness with field-level diagnostics.
+There is no in-memory runtime fallback. Missing `DATABASE_URL` or `META_API_KEY` fails readiness with field-level diagnostics.
 
 ## Local Git worktrees
 
@@ -54,10 +54,10 @@ Copy `.env.example` to `.env` only when you need local overrides. Unprefixed val
 | `SYNTHETIC_DATA_ONLY` | `true` | Real-student mode is blocked by the foundation |
 | `DATABASE_URL` | required | `postgres://` or `postgresql://` persistence URL |
 | `SENTRY_DSN` | unset | Optional server-only Sentry delivery for scrubbed errors |
-| `OPENAI_API_KEY` | required | Server-only provider credential; startup fails without it ([AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md)) |
-| `OPENAI_MODEL` | `gpt-5.6` | Structured-output model code default. The value must change with the provider selection ([AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md)); it is not an asserted working model |
-| `OPENAI_BASE_URL` | OpenAI Responses API | HTTPS provider endpoint in the current code; moves with the provider selection; loopback HTTP is test-only |
-| `OPENAI_TIMEOUT_MS` | `100000` | Per-call provider timeout in milliseconds; integer from 1000 to 120000. The event decision allows 100 seconds for the current Meta model |
+| `META_API_KEY` | required | Server-only provider credential; startup fails without it ([AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md)) |
+| `META_MODEL` | `muse-spark-1.2-contributor` | Meta model used for structured lesson drafts; recorded in every draft's provenance. Live access was proven in the [2026-10-27 run](hackathon/meta-global-2026/evidence/ic1-2026-10-27/README.md) ([AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md)) |
+| `META_BASE_URL` | `https://api.meta.ai/v1` | HTTPS Meta endpoint (OpenAI-compatible Responses transport); loopback HTTP is test-only |
+| `META_TIMEOUT_MS` | `100000` | Per-call provider timeout in milliseconds; integer from 1000 to 120000. The event decision allows 100 seconds for the current Meta model |
 
 Invalid configuration fails readiness with field-level, secret-free diagnostics. The server never returns a database URL, API key, or private answer key in an error response.
 

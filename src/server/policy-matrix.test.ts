@@ -81,7 +81,7 @@ vi.stubEnv(
   "postgresql://test:test@127.0.0.1:5432/edu_canvas_test"
 );
 vi.stubEnv("APP_ENV", "development");
-vi.stubEnv("OPENAI_API_KEY", "test-server-key");
+vi.stubEnv("META_API_KEY", "test-server-key");
 // CI sets AUTH_PROVIDER=supabase for the preview-shaped smoke job. The seams read
 // process.env, so without this pin the synthetic sessions never resolve here.
 vi.stubEnv("AUTH_PROVIDER", "deterministic");

@@ -24,14 +24,14 @@ describe("readiness", () => {
       code: "CONFIG_INVALID",
     });
     expect(JSON.stringify(payload)).toContain("DATABASE_URL");
-    expect(JSON.stringify(payload)).toContain("OPENAI_API_KEY");
+    expect(JSON.stringify(payload)).toContain("META_API_KEY");
   });
 
   it("reports actionable invalid configuration without secret values", async () => {
     const payload = await getReadinessPayload({
       APP_ENV: "production",
       DATABASE_URL: "not-a-url",
-      OPENAI_API_KEY: "test-server-key",
+      META_API_KEY: "test-server-key",
       AUTH_PUBLIC_ORIGIN: "https://app.example.com",
       AUTH_SESSION_SECRET: "a-session-secret-that-is-long-enough",
       AUTH_CREDENTIAL_KEY: "ZWR1LWNhbnZhcy1kZXYta2V5LTAwMDAwMDAwMDAwMDA=",
@@ -58,7 +58,7 @@ describe("readiness", () => {
       {
         APP_ENV: "production",
         DATABASE_URL: "not-a-url",
-        OPENAI_API_KEY: "test-server-key",
+        META_API_KEY: "test-server-key",
         AUTH_PUBLIC_ORIGIN: "https://app.example.com",
         AUTH_SESSION_SECRET: "a-session-secret-that-is-long-enough",
         AUTH_CREDENTIAL_KEY: "ZWR1LWNhbnZhcy1kZXYta2V5LTAwMDAwMDAwMDAwMDA=",

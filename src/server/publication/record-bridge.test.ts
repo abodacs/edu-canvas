@@ -110,7 +110,7 @@ const source: PackBridgeSource = {
     a2uiCompileGuardVersion: "a2ui-compile-guard-v1",
   },
   provenance: {
-    provider: "openai",
+    provider: "meta",
     model: "test-model",
     promptTemplateVersion: "prompt-v1",
     validatorVersion: "lesson-validator-v2",
