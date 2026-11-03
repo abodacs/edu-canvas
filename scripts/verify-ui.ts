@@ -27,10 +27,14 @@ import { chromium } from "playwright-core";
 
 import { axeProblems, overflowProblems } from "./student-probe/checks";
 import { loadEnvironmentFile, withScratchApp } from "./ui-gate/app";
+import {
+  learnerQuery as learnerQueryFrom,
+  signedInState,
+} from "./ui-gate/session";
+
+import type { Audience, StorageState } from "./ui-gate/session";
 
 import type { Browser, BrowserContext, Page } from "playwright-core";
-
-type Audience = "public" | "teacher" | "student";
 
 interface RouteSpec {
   readonly path: string;
@@ -58,12 +62,6 @@ const budgetPath = path.join("scripts", "ui-gate-budget.json");
 // Load, then let hydration and the first data fetch settle. Not networkidle:
 // signed-in pages keep a session poll open.
 const settleMs = 1500;
-const accounts: Record<Exclude<Audience, "public">, string> = {
-  teacher: "amira.north@example.test",
-  student: "omar.demo@example.test",
-};
-const syntheticPassword = "synthetic-pass-1";
-
 interface Finding {
   readonly key: string;
   readonly route: string;
@@ -133,25 +131,6 @@ const parseArguments = (): {
 
 const slug = (route: string): string =>
   route === "/" ? "home" : route.replaceAll("/", "-").replace(/^-/u, "");
-
-const signIn = async (
-  context: BrowserContext,
-  baseUrl: string,
-  email: string
-): Promise<void> => {
-  const page = await context.newPage();
-  await page.goto(`${baseUrl}/login`);
-  await page.getByLabel("Email address").fill(email);
-  await page.getByLabel("Password", { exact: true }).fill(syntheticPassword);
-  await page.locator("button[type='submit']").click();
-  await page.waitForURL((url) => url.pathname !== "/login");
-  if (page.url().includes("/login/membership")) {
-    await page.locator("input[type='radio']").first().check();
-    await page.locator("button[type='submit']").click();
-    await page.waitForURL((url) => !url.pathname.startsWith("/login"));
-  }
-  await page.close();
-};
 
 const distinctValues = (
   page: Page
@@ -267,16 +246,13 @@ const inspect = async (
 ): Promise<Finding[]> => {
   mkdirSync(options.out, { recursive: true });
   const findings: Finding[] = [];
-  const states = new Map<
-    Audience,
-    Awaited<ReturnType<BrowserContext["storageState"]>>
-  >();
+  const states = new Map<Audience, StorageState>();
   for (const audience of ["teacher", "student"] as const) {
     if (options.routes.some((route) => route.audience === audience)) {
-      const context = await browser.newContext();
-      await signIn(context, options.baseUrl, accounts[audience]);
-      states.set(audience, await context.storageState());
-      await context.close();
+      states.set(
+        audience,
+        await signedInState(browser, options.baseUrl, audience)
+      );
     }
   }
 
@@ -402,18 +378,11 @@ const main = async (): Promise<number> => {
       seedScripts: ["scripts/student-probe/seed.ts"],
     },
     async ({ baseUrl, seedOutputs }) => {
-      const links = JSON.parse(
-        seedOutputs[0]?.trim().split("\n").at(-1) ?? "{}"
-      ) as Record<string, { assignment: string; variant: string }>;
-      const learner = links.en;
-      const learnerQuery = learner
-        ? `assignment=${learner.assignment}&variant=${learner.variant}`
-        : "";
       const browser = await chromium.launch({ executablePath: chromiumPath });
       try {
         const findings = await inspect(browser, {
           baseUrl,
-          learnerQuery,
+          learnerQuery: learnerQueryFrom(seedOutputs[0]),
           routes: options.routes,
           out: options.out,
           compare: options.compare,

@@ -53,6 +53,7 @@
     "verify:design-tokens": "node --import tsx scripts/verify-design-tokens.ts",
     "verify:design-census": "node --import tsx scripts/verify-design-census.ts",
     "verify:ui": "node --import tsx scripts/verify-ui.ts",
+    "census:capture": "node --import tsx scripts/design-census-capture.ts",
     "verify:limits": "node --import tsx scripts/verify-limit-config.ts",
     "check:static": "pnpm format:check && pnpm lint && pnpm lint:styles && pnpm typecheck && pnpm verify:architecture && pnpm verify:architecture-map && pnpm verify:glossary-coverage && pnpm verify:identity-surface && pnpm verify:demo-removal && pnpm verify:limits && pnpm verify:catalog-identity && pnpm verify:lc-mcp-eval && pnpm verify:lc-free-text && pnpm verify:design-tokens && pnpm verify:boundaries",
     "eval:practices": "node --import tsx scripts/eval-practices.ts"
