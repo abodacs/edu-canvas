@@ -92,6 +92,24 @@ const writeResults = async (cases) => {
   log(`wrote ${resultsFile}`);
 };
 
+const scoreSurface = ({
+  tableHeading,
+  provisional,
+  reason,
+  provenance,
+  preview,
+}) => {
+  const isRowRendered = tableHeading > 0 && provisional > 0;
+  const isReasonRendered = reason.trim().length > 0;
+  const isProvenanceRendered =
+    /Rule next-activity-rule-/.test(provenance) &&
+    /\b[0-9a-f]{12,}\b/i.test(provenance);
+  if (!isRowRendered || !isReasonRendered || !isProvenanceRendered) {
+    return 0;
+  }
+  return preview > 0 ? 2 : 1;
+};
+
 const main = async () => {
   await mkdir(EVIDENCE_DIR, { recursive: true });
   await writeFile(SOURCE_FILE, `${SOURCE_TEXT}\n`);
@@ -593,24 +611,6 @@ const main = async () => {
 
       try {
         log("step 16: dashboard surface as the assigning teacher");
-        const scoreSurface = ({
-          tableHeading,
-          provisional,
-          reason,
-          provenance,
-          preview,
-        }) => {
-          const isRowRendered = tableHeading > 0 && provisional > 0;
-          const isReasonRendered = reason.trim().length > 0;
-          const isProvenanceRendered =
-            /Rule next-activity-rule-/.test(provenance) &&
-            /\b[0-9a-f]{12,}\b/i.test(provenance);
-          if (!isRowRendered || !isReasonRendered || !isProvenanceRendered) {
-            return 0;
-          }
-          return preview > 0 ? 2 : 1;
-        };
-
         const { context: dashContext, dashPage } = await openDashboardAs(
           "Synthetic Fractions",
           "ac-surface"
