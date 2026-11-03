@@ -1,0 +1,14 @@
+{
+  "id": "dg-4-challenge",
+  "practice": "DG4",
+  "practiceName": "Consider strengths and limits",
+  "title": "Validator flags reading load and unsafe claims on a weak draft",
+  "layer": "A",
+  "turnSequence": [
+    "The same strong draft is mutated: variant 0 instructions grow past 30 words (Grade 4 reading-load heuristic) and variant 1 title gains an unsafe claim.",
+    "reviewLearningQuality runs again on the mutated draft."
+  ],
+  "expected": "The review returns verdict hard_block with a READING_LEVEL_TOO_COMPLEX warning on the long instructions (Grade 4 word cap) and an UNSAFE_CLAIM hard block on the unsafe copy, each naming field, variant, reason, and recommendation — the app identifies what to double-check without claiming it verified the lesson.",
+  "observableFailure": "The weak draft passes the validator, or findings lose the field/reason/recommendation the teacher needs to act on.",
+  "flipCondition": null
+}

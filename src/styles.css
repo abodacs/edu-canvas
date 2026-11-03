@@ -4968,3 +4968,224 @@ h2 {
   color: var(--foreground, #1a202c);
   font-weight: 600;
 }
+
+/* #8 teacher progress dashboard. */
+.workspace-page-nav {
+  margin-block-start: 0.75rem;
+}
+
+.progress-lede {
+  color: var(--muted, #4a5568);
+}
+
+.progress-nav {
+  margin-block-end: 1rem;
+}
+
+.progress-state {
+  max-width: 48rem;
+  padding: 1.5rem;
+  margin: 2rem auto;
+}
+
+.progress-state p {
+  color: var(--muted, #4a5568);
+}
+
+.progress-provisional {
+  margin: 0.5rem 0 0;
+  color: var(--muted, #4a5568);
+  font-style: italic;
+  overflow-wrap: anywhere;
+}
+
+.progress-asof {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  color: var(--muted, #4a5568);
+  gap: 0.5rem;
+  margin-block: 0.75rem;
+}
+
+.progress-refresh,
+.progress-retry,
+.progress-open {
+  min-height: 2.25rem;
+  padding: 0.35rem 0.9rem;
+  border: 1px solid var(--border, #cfd4dc);
+  border-radius: 0.5rem;
+  background: var(--surface, #fff);
+  color: var(--text, #1a202c);
+  cursor: pointer;
+}
+
+.progress-refresh:disabled,
+.progress-retry:disabled,
+.progress-open:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.progress-stale {
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--border, #cfd4dc);
+  border-radius: 0.5rem;
+  border-inline-start: 4px solid var(--accent, #1f5fbf);
+  color: var(--muted, #4a5568);
+  overflow-wrap: anywhere;
+}
+
+.progress-needs {
+  padding: 1rem;
+  border: 1px solid var(--border, #cfd4dc);
+  border-radius: 0.75rem;
+  background: var(--surface, #fff);
+  margin-block-end: 1.5rem;
+}
+
+.progress-needs h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.progress-needs-list {
+  display: grid;
+  padding: 0;
+  margin: 0;
+  gap: 0.75rem;
+  list-style: none;
+}
+
+.progress-needs-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+}
+
+.progress-needs-list b {
+  display: block;
+}
+
+.progress-needs-list span {
+  color: var(--muted, #4a5568);
+  overflow-wrap: anywhere;
+}
+
+.progress-table-card {
+  padding: 1rem;
+  border: 1px solid var(--border, #cfd4dc);
+  border-radius: 0.75rem;
+  background: var(--surface, #fff);
+  margin-block-end: 1.5rem;
+}
+
+.progress-table-card h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.progress-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.progress-table th,
+.progress-table td {
+  padding: 0.5rem 0.65rem;
+  border-block-end: 1px solid var(--border, #cfd4dc);
+  overflow-wrap: anywhere;
+  text-align: start;
+  vertical-align: top;
+}
+
+.progress-sr {
+  position: absolute;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.progress-detail {
+  padding: 1rem;
+  border: 1px solid var(--border, #cfd4dc);
+  border-radius: 0.75rem;
+  background: var(--surface, #fff);
+}
+
+.progress-detail h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+}
+
+.progress-detail h3 {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 0.95rem;
+}
+
+.progress-attempts {
+  display: grid;
+  padding: 0;
+  margin: 0;
+  gap: 0.5rem;
+  list-style: none;
+}
+
+.progress-attempt {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.5rem;
+  background: var(--surface-muted, #f4f6f9);
+  gap: 0.25rem 0.75rem;
+  overflow-wrap: anywhere;
+}
+
+.progress-decision {
+  padding: 0.75rem;
+  border: 1px solid var(--border, #cfd4dc);
+  border-radius: 0.5rem;
+}
+
+.progress-purpose {
+  margin: 0;
+  font-weight: 600;
+}
+
+.progress-reason {
+  margin: 0.35rem 0 0;
+}
+
+.progress-provenance {
+  margin: 0.5rem 0 0;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.progress-preview {
+  overflow-wrap: anywhere;
+}
+
+.progress-preview-title {
+  margin: 0.5rem 0 0;
+  font-weight: 600;
+}
+
+.progress-preview-columns {
+  color: var(--muted, #4a5568);
+}
+
+.progress-preview-items {
+  display: grid;
+  padding: 0;
+  margin: 0.5rem 0 0;
+  gap: 0.35rem;
+  list-style: none;
+}

@@ -167,7 +167,8 @@ export interface RecordBackend<TTransaction> {
   insert: (
     transaction: TTransaction,
     table: RecordTableName,
-    values: Readonly<Record<string, RecordValue>>
+    values: Readonly<Record<string, RecordValue>>,
+    options?: { readonly onConflictDoNothing?: boolean }
   ) => Promise<void>;
   findOne: (
     transaction: TTransaction,

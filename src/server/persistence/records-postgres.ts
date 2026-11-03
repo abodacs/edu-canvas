@@ -82,7 +82,8 @@ export const createPostgresRecordBackend = (
   const insert = async (
     transaction: SqlTransaction,
     table: RecordTableName,
-    values: Readonly<Record<string, RecordValue>>
+    values: Readonly<Record<string, RecordValue>>,
+    insertOptions?: { readonly onConflictDoNothing?: boolean }
   ): Promise<void> => {
     const columns = Object.keys(values);
     const json = jsonColumns(table);
@@ -93,9 +94,15 @@ export const createPostgresRecordBackend = (
       )
       .join(", ");
     const parameters = columns.map((column) => toParameter(values[column]));
+    // The conflict clause arbitrates every unique index on the table, so a
+    // concurrent writer's committed row makes the loser skip instead of
+    // aborting the transaction; the caller re-reads the winner's row.
+    const conflictSql = insertOptions?.onConflictDoNothing
+      ? " on conflict do nothing"
+      : "";
     try {
       await transaction.unsafe(
-        `insert into "${table}" (${columnSql}) values (${valueSql})`,
+        `insert into "${table}" (${columnSql}) values (${valueSql})${conflictSql}`,
         parameters
       );
     } catch (error) {

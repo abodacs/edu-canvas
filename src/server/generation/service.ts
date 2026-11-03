@@ -728,6 +728,11 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         ...(input.revisesRequestId && {
           revisesRequestId: input.revisesRequestId,
         }),
+        // The publish bridge proves source grounding from the stored input,
+        // so the citation survives the rebuild (delegation pack case s0-smoke).
+        ...(input.sourceSnapshotId && {
+          sourceSnapshotId: input.sourceSnapshotId,
+        }),
       },
       state: "generating",
       attempt: attemptNumber,

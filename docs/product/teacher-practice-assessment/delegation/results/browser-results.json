@@ -1,0 +1,81 @@
+{
+  "generatedAt": "2026-11-03T17:55:45.855Z",
+  "baseUrl": "http://localhost:3112",
+  "cases": [
+    {
+      "id": "dg-5-challenge",
+      "practice": "DG5",
+      "layer": "B-browser",
+      "status": "executed",
+      "score": 2,
+      "expected": "The blocked result exposes exactly the revise action: no retry, no approve, no publish, no withheld-draft preview.",
+      "observed": "Recovery panel rendered (#revise-request present=true); retry-style control present=false; publish control present=false.",
+      "evidence": [
+        "results/s0/s0-06-moderation-block.png",
+        "results/s0/s0-runner-log.txt"
+      ],
+      "flipCondition": null
+    },
+    {
+      "id": "dg-5-normal",
+      "practice": "DG5",
+      "layer": "B-live",
+      "status": "executed",
+      "score": 2,
+      "expected": "Four ready variants render as individually selectable cards; the teacher's choice is recorded and the review surface opens.",
+      "observed": "4 variant cards rendered; titles observed: [\"Equivalent fractions matching - standard 1\",\"Equivalent fractions matching - standard 2\",\"Equivalent fractions matching - scaffold\",\"Equivalent fractions matching - challenge\"]; distinct titles: 4; teacher checked the first card and opened review.",
+      "evidence": [
+        "results/s0/s0-07-generation-outcome.png",
+        "results/s0/s0-08-variant-chosen.png",
+        "results/s0/s0-09-review-gallery.png"
+      ],
+      "flipCondition": null
+    },
+    {
+      "id": "s0-smoke",
+      "practice": "S0",
+      "layer": "B-browser",
+      "status": "executed",
+      "score": 2,
+      "expected": "Full loop completes with evidence: sign-in, moderation block, recovery revise, ready-for-review, approvals, publish, learner attempt, reveal of the approved copy.",
+      "observed": "All steps completed. Publish outcome=linked (/learn?assignment=01a1a28d-4f95-7e72-b322-45f5752727c3&variant=variant_standard_01). Attempt submitted (1 of 3 matched.); board 3 sources / 3 targets.",
+      "evidence": [
+        "results/s0/s0-06-moderation-block.png",
+        "results/s0/s0-07-generation-outcome.png",
+        "results/s0/s0-10-all-approved.png",
+        "results/s0/s0-12-published.png",
+        "results/s0/s0-13-learner-side.png",
+        "results/s0/s0-runner-log.txt"
+      ],
+      "flipCondition": null
+    },
+    {
+      "id": "ac-surface",
+      "practice": "S0",
+      "layer": "B-browser",
+      "status": "executed",
+      "score": 2,
+      "expected": "The dashboard renders the run from the completed loop: provisional label, reason with purpose, rule version plus evidence hash, and the read-only preview (AC1 read side, AC2 surface, AC4, AC5).",
+      "observed": "All-results table present=true; provisional note=true; reason=\"The learner needs another supported example.\"; provenance=\"Rule next-activity-rule-591a157cd85e · evidence 88bd2951264664a7a70b9d44ee303f717006f832af3240db31d78dcb0899059f\"; preview present=true.",
+      "evidence": [
+        "results/s0/s0-16-ac-surface.png",
+        "results/s0/s0-runner-log.txt"
+      ],
+      "flipCondition": null
+    },
+    {
+      "id": "ac-boundary-empty",
+      "practice": "S0",
+      "layer": "B-browser",
+      "status": "executed",
+      "score": 2,
+      "expected": "A teacher scoped to the other tenant sees only the designed empty screen; no cross-tenant row renders (AC3, AC6).",
+      "observed": "Designed empty heading=true; result table present=false.",
+      "evidence": [
+        "results/s0/s0-16-ac-empty.png",
+        "results/s0/s0-runner-log.txt"
+      ],
+      "flipCondition": null
+    }
+  ]
+}

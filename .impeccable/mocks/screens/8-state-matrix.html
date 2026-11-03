@@ -103,7 +103,7 @@
       }
       .mini-field {
         block-size: 40px;
-        border: 1px solid var(--line-strong);
+        border: 1px solid var(--line-control);
         border-radius: var(--r-field);
         background: var(--surface);
         padding-inline: 12px;
@@ -165,7 +165,12 @@
           <div class="card t">
             <span class="name">submitting</span>
             <div class="mini-field">ana.rivera@lincoln.example</div>
-            <button class="btn" disabled style="gap: 10px">
+            <button
+              class="btn"
+              aria-disabled="true"
+              aria-busy="true"
+              style="gap: 10px"
+            >
               <span class="spin" aria-hidden="true"></span>Signing in…
             </button>
           </div>
@@ -232,10 +237,12 @@
             </p>
           </div>
           <div class="card t">
-            <span class="name">30 s resend cooldown</span>
+            <span class="name">Resend cooldown · 30 s</span>
             <h3>Check your inbox</h3>
             <p>We sent a confirmation link to ana.rivera@lincoln.example.</p>
-            <button class="ghost" disabled>Resend in 24 s</button>
+            <button class="ghost" aria-disabled="true" aria-busy="true">
+              Resend in 24 s
+            </button>
           </div>
           <div class="card t">
             <span class="name">unavailable</span>
@@ -255,7 +262,12 @@
         <div class="tiles">
           <div class="card t">
             <span class="name">submitting</span
-            ><button class="btn" disabled style="gap: 10px">
+            ><button
+              class="btn"
+              aria-disabled="true"
+              aria-busy="true"
+              style="gap: 10px"
+            >
               <span class="spin" aria-hidden="true"></span>Opening Lincoln
               Elementary…
             </button>
@@ -411,7 +423,12 @@
           </div>
           <div class="card t">
             <span class="name">saving</span
-            ><button class="btn" disabled style="gap: 10px">
+            ><button
+              class="btn"
+              aria-disabled="true"
+              aria-busy="true"
+              style="gap: 10px"
+            >
               <span class="spin" aria-hidden="true"></span>Checking your
               answers…
             </button>

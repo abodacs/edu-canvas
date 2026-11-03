@@ -1,5 +1,5 @@
 import { createDecisionEvidenceHash } from "@/server/records/hashes";
-import { decideNextActivity } from "./decision";
+import { decideNextActivity, wasAssisted } from "./decision";
 import { gradeMatching, matchingGradingRuleVersion } from "./grading";
 import { buildReveal } from "./reveal";
 import type { MatchingGrade, SubmittedPair } from "./grading";
@@ -43,15 +43,6 @@ export interface LearnerService {
     input: SubmitAttemptInput
   ) => Promise<SubmittedAttempt>;
 }
-
-const wasAssisted = (input: {
-  readonly assistanceState: AssistanceState;
-  readonly assistanceEventIds: readonly string[];
-}): boolean => {
-  return (
-    input.assistanceState === "hinted" || input.assistanceEventIds.length > 0
-  );
-};
 
 export const createLearnerService = (
   records: RecordPersistence

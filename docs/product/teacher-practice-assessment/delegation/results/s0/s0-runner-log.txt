@@ -1,0 +1,48 @@
+[2026-11-03T17:54:22.616Z] step 1: open sign-in
+[2026-11-03T17:54:27.577Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-01-sign-in-page.png
+[2026-11-03T17:54:27.577Z] step 2: sign in as the synthetic teacher
+[2026-11-03T17:54:28.126Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-02-after-sign-in.png
+[2026-11-03T17:54:28.126Z] step 3: choose the synthetic fractions membership
+[2026-11-03T17:54:28.392Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-03-membership-choice.png
+[2026-11-03T17:54:28.463Z] step 4: open the teacher studio
+[2026-11-03T17:54:30.826Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-04-workspace-studio.png
+[2026-11-03T17:54:30.826Z] step 5: upload and review a synthetic source
+[2026-11-03T17:54:32.466Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-05-source-review-open.png
+[2026-11-03T17:54:32.804Z] source reviewed and bound to the composer
+[2026-11-03T17:54:32.804Z] step 6: submit the moderation-triggering objective
+[2026-11-03T17:54:32.958Z] generate request body: {"prompt":"Make a fractions warm-up for Aisha's small group; her student id 4471 is on the roster sheet.","grade":"4","standardId":"standard_ccss_4_nf_a_01","language":"en","difficulty":"on-level","idempotencyKey":"9006f571-9839-4895-9dac-118dd8719886","sourceSnapshotId":"01a1a28c-6016-70a8-9234-9ae911135d7c"}
+[2026-11-03T17:54:34.086Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-06-moderation-block.png
+[2026-11-03T17:54:34.098Z] dg-5-challenge: blocked result offers exactly the revise action; no retry, approve, or publish controls
+[2026-11-03T17:54:34.098Z] step 7: revise the request through the recovery panel
+[2026-11-03T17:54:34.144Z] objective field kept its text (93 chars)
+[2026-11-03T17:54:34.260Z] generate request body: {"prompt":"Explain why 1/2 and 2/4 name the same amount of one whole, with equal-part pictures.","grade":"4","standardId":"standard_ccss_4_nf_a_01","language":"en","difficulty":"on-level","idempotencyKey":"2ed3fee7-fbf3-495c-96bf-c8b05b47bf6f","revisesRequestId":"01a1a28c-6812-7d96-a1ee-d5766e1a7133","sourceSnapshotId":"01a1a28c-6016-70a8-9234-9ae911135d7c"}
+[2026-11-03T17:54:34.268Z] step 8: wait for ready-for-review (live provider call)
+[2026-11-03T17:55:23.000Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-07-generation-outcome.png
+[2026-11-03T17:55:23.006Z] step 9: dg-5-normal — four variants, choose one
+[2026-11-03T17:55:23.056Z] variant cards: 4; titles: ["Equivalent fractions matching - standard 1","Equivalent fractions matching - standard 2","Equivalent fractions matching - scaffold","Equivalent fractions matching - challenge"]
+[2026-11-03T17:55:24.422Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-08-variant-chosen.png
+[2026-11-03T17:55:24.423Z] step 10: open review
+[2026-11-03T17:55:25.881Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-09-review-gallery.png
+[2026-11-03T17:55:25.881Z] step 11: approve the reverse reasoning path
+[2026-11-03T17:55:26.747Z] reverse path approved (acknowledged 0 warnings)
+[2026-11-03T17:55:26.747Z] step 12: approve the four screens
+[2026-11-03T17:55:27.863Z] screen 1 approved (acknowledged 1 warnings)
+[2026-11-03T17:55:29.166Z] screen 2 approved (acknowledged 2 warnings)
+[2026-11-03T17:55:30.032Z] screen 3 approved (acknowledged 3 warnings)
+[2026-11-03T17:55:30.894Z] screen 4 approved (acknowledged 3 warnings)
+[2026-11-03T17:55:31.475Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-10-all-approved.png
+[2026-11-03T17:55:31.475Z] step 13: publish to the synthetic learner
+[2026-11-03T17:55:31.798Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-11-publish-pick.png
+[2026-11-03T17:55:32.685Z] publish outcome=linked; publication=01a1a28d-4e97-7679-982c-eb6e686c3965; pack assignment=01a1a28d-4eba-7670-a38a-a5e4e4acd26e; learner link=/learn?assignment=01a1a28d-4f95-7e72-b322-45f5752727c3&variant=variant_standard_01
+[2026-11-03T17:55:32.938Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-12-published.png
+[2026-11-03T17:55:32.956Z] step 14: learner side (fresh context)
+[2026-11-03T17:55:36.757Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-13-learner-side.png
+[2026-11-03T17:55:36.761Z] learner outcome: activity opened
+[2026-11-03T17:55:36.761Z] step 15: submit an attempt
+[2026-11-03T17:55:37.119Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-14-attempt-paired.png
+[2026-11-03T17:55:37.788Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-15-reveal.png
+[2026-11-03T17:55:37.794Z] step 16: dashboard surface as the assigning teacher
+[2026-11-03T17:55:41.951Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-16-ac-surface.png
+[2026-11-03T17:55:42.062Z] step 17: dashboard boundary and empty state from another tenant
+[2026-11-03T17:55:45.836Z] screenshot docs/product/teacher-practice-assessment/delegation/results/s0/s0-16-ac-empty.png
+[2026-11-03T17:55:45.856Z] wrote docs/product/teacher-practice-assessment/delegation/results/browser-results.json

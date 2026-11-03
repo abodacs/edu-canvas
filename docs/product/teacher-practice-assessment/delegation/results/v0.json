@@ -1,0 +1,220 @@
+{
+  "pack": "delegation",
+  "version": "v0",
+  "mode": "full",
+  "generatedAt": "2026-11-02T23:50:27.051Z",
+  "applicationRevision": "4353c5c9deec148eb2a406bda5d17c039866f3a8",
+  "pins": {
+    "caseVersion": "v0",
+    "provider": "layer A: none (in-process); layer B-det: deterministic fixture provider (orchestration only); B-browser/B-live: see results evidence"
+  },
+  "cases": [
+    {
+      "id": "dg-1-challenge",
+      "practice": "DG1",
+      "layer": "A",
+      "status": "executed",
+      "score": 2,
+      "expected": "normalizeGenerationInput throws GENERATION_INPUT_INVALID with the curated message 'This learning objective is not supported. Use Grade 4 equivalent fractions (4.NF.A.1).' and the shared status table maps the code to 422. The .strict() contract also rejects the extra successCriteria field, evidence that success criteria are not captured separately (practice result partial, not supported).",
+      "observed": "service.ts:181-186 threw GENERATION_INPUT_INVALID status 422 with the curated Grade 4 message; the .strict() contract also rejected the extra successCriteria field, confirming goal criteria are not captured separately.",
+      "evidence": [
+        "scripts/eval-practices.ts dg-1-challenge assertion output"
+      ],
+      "flipCondition": null
+    },
+    {
+      "id": "dg-1-normal",
+      "practice": "DG1",
+      "layer": "A",
+      "status": "executed",
+      "score": 2,
+      "expected": "The shared contract rejects the input (zod issue on standardId) and the delivery seam maps a parse failure to 422 INVALID_INPUT (src/server/generation/delivery.server.ts:65-70). No generation record is created; nothing reaches the provider.",
+      "observed": "lessonGenerationInputSchema rejected the input; zod issues name standardId. The delivery seam maps a parse failure to IdentityError INVALID_INPUT, status 422 (src/server/identity/errors.ts:26). No record is created and no provider call is possible.",
+      "evidence": [
+        "scripts/eval-practices.ts dg-1-normal assertion output"
+      ],
+      "flipCondition": null
+    },
+    {
+      "id": "dg-2-challenge",
+      "practice": "DG2",
+      "layer": "B-det",
+      "status": "deferred",
+      "deferredKind": "blocked-feature",
+      "score": null,
+      "expected": "A recorded approach choice scopes the subsequent generation and survives a retry or page state.",
+      "observed": "The required workflow does not exist at the pinned revision; absence evidence is the recorded grep in the pack README.",
+      "evidence": [
+        "README.md practice rows (grep at 1a8c94e)"
+      ],
+      "flipCondition": "Unblocks when an approach-comparison stage exists in the generation workflow and a chosen approach can be recorded and honored."
+    },
+    {
+      "id": "dg-2-normal",
+      "practice": "DG2",
+      "layer": "B-det",
+      "status": "deferred",
+      "deferredKind": "blocked-feature",
+      "score": null,
+      "expected": "An approach-comparison stage exists in the generation workflow: the server exposes options with tradeoffs and holds drafting until the teacher chooses.",
+      "observed": "The required workflow does not exist at the pinned revision; absence evidence is the recorded grep in the pack README.",
+      "evidence": [
+        "README.md practice rows (grep at 1a8c94e)"
+      ],
+      "flipCondition": "Unblocks when an approach-comparison stage exists in the generation workflow (options plus tradeoffs plus wait-for-choice before drafting)."
+    },
+    {
+      "id": "dg-3-challenge",
+      "practice": "DG3",
+      "layer": "A",
+      "status": "executed",
+      "score": 1,
+      "expected": "Boundary half: checkPrompt blocks the request with category personal-data before generation starts, so the sensitive content never reaches the provider; the block is not an error crash but a revision-required state. Capability half: the app would stop that work and hand the sensitive judgment back with bounded help; that interaction is a documented GAP, so the case score cannot exceed 1.",
+      "observed": "Boundary half holds: checkPrompt blocked the request with category personal-data and code MODERATION_BLOCKED before any provider call (a prompt block makes zero provider calls per the service conformance suite). Capability half (teacher-judgment handback with bounded help) stays a GAP, so the score is capped at 1.",
+      "evidence": [
+        "scripts/eval-practices.ts dg-3-challenge assertion output"
+      ],
+      "flipCondition": null
+    },
+    {
+      "id": "dg-3-normal",
+      "practice": "DG3",
+      "layer": "A",
+      "status": "executed",
+      "score": 1,
+      "expected": "Boundary half: the request is rejected with 422 GENERATION_INPUT_INVALID and the curated message, and no draft is created. Capability half: the app would stop that work and offer only requested bounded help or a teacher-judgment handback. This case asserts the boundary half only; the capability half is a documented GAP (no handback interaction exists at 1a8c94e), so the case score cannot exceed 1.",
+      "observed": "Boundary half holds: the unsuitable task was rejected GENERATION_INPUT_INVALID 422 before any draft. Capability half stays a GAP: no handback interaction exists at 1a8c94e (grep evidence in the pack README), so the score is capped at 1 and the practice result stays missing.",
+      "evidence": [
+        "scripts/eval-practices.ts dg-3-normal assertion output"
+      ],
+      "flipCondition": null
+    },
+    {
+      "id": "dg-4-challenge",
+      "practice": "DG4",
+      "layer": "A",
+      "status": "executed",
+      "score": 2,
+      "expected": "The review returns verdict hard_block with a READING_LEVEL_TOO_COMPLEX warning on the long instructions (Grade 4 word cap) and an UNSAFE_CLAIM hard block on the unsafe copy, each naming field, variant, reason, and recommendation — the app identifies what to double-check without claiming it verified the lesson.",
+      "observed": "reviewLearningQuality returned hard_block with READING_LEVEL_TOO_COMPLEX (warning, field instructions, recommendation present) and UNSAFE_CLAIM (hard block) — the app names what to double-check without claiming verification.",
+      "evidence": [
+        "scripts/eval-practices.ts dg-4-challenge assertion output"
+      ],
+      "flipCondition": null
+    },
+    {
+      "id": "dg-4-normal",
+      "practice": "DG4",
+      "layer": "A",
+      "status": "executed",
+      "score": 2,
+      "expected": "reviewLearningQuality returns verdict pass with no warning or hard_block findings for the strong draft, so the teacher is not asked to re-check work that meets the pinned heuristics. The validator supplies limited heuristics only; it claims no verification of reading level or pedagogy.",
+      "observed": "reviewLearningQuality (learning-quality-validator.ts:295) returned verdict pass with no warning or hard_block findings on the strong draft. The validator claims no verification of reading level or pedagogy, matching the partial capability.",
+      "evidence": [
+        "scripts/eval-practices.ts dg-4-normal assertion output"
+      ],
+      "flipCondition": null
+    },
+    {
+      "id": "dg-5-challenge",
+      "practice": "DG5",
+      "layer": "B-browser",
+      "status": "executed",
+      "score": 2,
+      "expected": "The blocked result exposes exactly the revise action: no retry, no approve, no publish, no withheld-draft preview.",
+      "observed": "Recovery panel rendered (#revise-request present=true); retry-style control present=false; publish control present=false.",
+      "evidence": [
+        "results/s0/s0-06-moderation-block.png",
+        "results/s0/s0-runner-log.txt"
+      ],
+      "flipCondition": null
+    },
+    {
+      "id": "dg-5-normal",
+      "practice": "DG5",
+      "layer": "B-live",
+      "status": "executed",
+      "score": 2,
+      "expected": "Four ready variants render as individually selectable cards; the teacher's choice is recorded and the review surface opens.",
+      "observed": "4 variant cards rendered; titles observed: [\"Standard - Set A\",\"Standard - Set B\",\"Scaffold\",\"Challenge\"]; distinct titles: 4; teacher checked the first card and opened review.",
+      "evidence": [
+        "results/s0/s0-07-generation-outcome.png",
+        "results/s0/s0-08-variant-chosen.png",
+        "results/s0/s0-09-review-gallery.png"
+      ],
+      "flipCondition": null
+    },
+    {
+      "id": "dg-6-challenge",
+      "practice": "DG6",
+      "layer": "B-det",
+      "status": "executed",
+      "score": 2,
+      "expected": "The metadata-drift retry is refused with 409 RETRY_METADATA_MISMATCH and the ready-for-review retry is refused with 409 DRAFT_NOT_RETRYABLE; neither attempt starts a provider call or mutates the record.",
+      "observed": "Decision rules held: the drifted retry was refused RETRY_METADATA_MISMATCH 409 and the ready-for-review retry was refused DRAFT_NOT_RETRYABLE 409; the record stayed at state ready-for-review attempt 1.",
+      "evidence": [
+        "scripts/eval-practices.ts dg-6-challenge assertion output"
+      ],
+      "flipCondition": null
+    },
+    {
+      "id": "dg-6-normal",
+      "practice": "DG6",
+      "layer": "B-det",
+      "status": "executed",
+      "score": 2,
+      "expected": "The retry is accepted on the same record: attempt increments, the new attempt links to the failed one, and the record reaches ready-for-review with a four-variant draft. The retry keeps the original request metadata so the idempotency lineage stays intact.",
+      "observed": "Real PostgreSQL persistence plus the deterministic fixture provider: the first attempt settled failed-retryable with retry available; the retry (retryOfRequestId set) advanced the same record to ready-for-review at attempt 2 with 2 recorded attempts and a four-variant draft.",
+      "evidence": [
+        "scripts/eval-practices.ts dg-6-normal assertion output"
+      ],
+      "flipCondition": null
+    },
+    {
+      "id": "dg-7-challenge",
+      "practice": "DG7",
+      "layer": "B-det",
+      "status": "deferred",
+      "deferredKind": "blocked-feature",
+      "score": null,
+      "expected": "A stop control exists for delegated work; after the stop, no regeneration or continuation touches the stopped section, and the state survives reload.",
+      "observed": "The required workflow does not exist at the pinned revision; absence evidence is the recorded grep in the pack README.",
+      "evidence": [
+        "README.md practice rows (grep at 1a8c94e)"
+      ],
+      "flipCondition": "Unblocks when a stop or continuation-prevention control exists in the studio or review workflow."
+    },
+    {
+      "id": "dg-7-normal",
+      "practice": "DG7",
+      "layer": "B-det",
+      "status": "deferred",
+      "deferredKind": "blocked-feature",
+      "score": null,
+      "expected": "A section handback exists: the teacher-authored section is stored and preserved byte-for-byte, and the delegated remainder continues without overwriting it.",
+      "observed": "The required workflow does not exist at the pinned revision; absence evidence is the recorded grep in the pack README.",
+      "evidence": [
+        "README.md practice rows (grep at 1a8c94e)"
+      ],
+      "flipCondition": "Unblocks when a section handback control exists in the studio or review workflow."
+    },
+    {
+      "id": "s0-smoke",
+      "practice": "S0",
+      "layer": "B-browser",
+      "status": "executed",
+      "score": 0,
+      "expected": "Full loop completes with evidence: sign-in, moderation block, recovery revise, ready-for-review, approvals, publish, learner attempt, reveal of the approved copy.",
+      "observed": "Teacher segment passed end to end: moderation block revised via the recovery panel; the revise request carried sourceSnapshotId 01a19ea7-5370-7882-8db0-18501fbcda9a (logged request body); generation reached ready-for-review with four variants; reverse path plus 4 screens approved; publish completed (publication 01a19ea8-0eec-7a4e-8692-4c6b22c272d0, pack assignment 01a19ea8-0f07-72a0-97eb-57e725518b59). Learner segment blocked by observed product behavior: the app states the review cites no source material, so the learner runtime has no activity to open (no learner activity opened; page says: Open the link your teacher shared to start this activity.). Root cause evidence: the record row stores source_snapshot_id NULL even though the request body carried it — runAttempt rebuilds record.input without sourceSnapshotId (src/server/generation/service.ts:702-728), so source lineage never persists.",
+      "evidence": [
+        "results/s0/s0-06-moderation-block.png",
+        "results/s0/s0-07-generation-outcome.png",
+        "results/s0/s0-10-all-approved.png",
+        "results/s0/s0-12-published.png",
+        "results/s0/s0-13-learner-side.png",
+        "results/s0/s0-runner-log.txt"
+      ],
+      "flipCondition": "Unblocks when the generation record preserves input.sourceSnapshotId (runAttempt at src/server/generation/service.ts:702-728 currently drops it), so a source-grounded publish creates the learner assignment and /learn can open the activity."
+    }
+  ]
+}

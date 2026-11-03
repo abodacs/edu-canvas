@@ -151,13 +151,17 @@ export const createSeededRecordBackend = (
   const insert = (
     _transaction: undefined,
     table: RecordTableName,
-    values: Readonly<Record<string, RecordValue>>
+    values: Readonly<Record<string, RecordValue>>,
+    options?: { readonly onConflictDoNothing?: boolean }
   ): Promise<void> => {
     assertColumns(table, values);
     const candidate = structuredClone(values) as StoredRow;
     const constraints = recordUniqueConstraints[table] ?? [];
     for (const constraint of constraints) {
       if (doesViolate(table, candidate, constraint)) {
+        if (options?.onConflictDoNothing === true) {
+          return Promise.resolve();
+        }
         throw new RecordUniqueViolationError(constraint.name);
       }
     }

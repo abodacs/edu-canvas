@@ -197,6 +197,27 @@ describe("lesson generation service", () => {
     ]);
   });
 
+  it("keeps the cited source snapshot on the persisted input", async () => {
+    const service = createGenerationService({
+      persistence: createSeededPersistence(),
+      provider: createDeterministicLessonDraftProvider(),
+      requestIdFactory: () => "draft_req_source_snapshot_input",
+    });
+
+    const result = await service.generate(
+      teacherCommand({
+        ...validInput,
+        sourceSnapshotId: "source_snapshot_persisted_input",
+        idempotencyKey: "request-source-snapshot-input",
+      })
+    );
+
+    expect(result.record.state).toBe("ready-for-review");
+    expect(result.record.input.sourceSnapshotId).toBe(
+      "source_snapshot_persisted_input"
+    );
+  });
+
   it("blocks a provider draft that omits the prerequisite path", async () => {
     const provider: LessonDraftProvider = {
       provenance: {

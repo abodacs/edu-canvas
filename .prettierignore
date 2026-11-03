@@ -18,3 +18,9 @@ docs/research/142-mcp-eval/evidence.json
 docs/research/142-mcp-eval/free-text-evidence.json
 docs/research/142-mcp-eval/tool-schemas.json
 docs/research/142-mcp-eval/measurements.md
+# Written by `pnpm eval:practices` and `scripts/eval-browser.mjs`; regenerated on every run.
+docs/product/teacher-practice-assessment/delegation/results/v0.json
+docs/product/teacher-practice-assessment/delegation/results/v0-rollup.md
+docs/product/teacher-practice-assessment/delegation/results/browser-results.json
+# Written by the design census capture and read back by verify-design-census.ts.
+scripts/design-census.json

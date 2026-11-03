@@ -1,0 +1,27 @@
+Grade 4 mathematics — equivalent fractions, source notes for the week.
+
+Prior skills students already have:
+- Identify the numerator and denominator of a fraction.
+- Compare unit fractions with the same denominator.
+- Partition rectangles and circles into equal parts.
+
+New learning for this week:
+A fraction can name the same amount in more than one way. One half, two
+quarters, and four eighths all cover the same part of the same whole.
+
+Method we use in class:
+1. Fold a paper strip into two equal parts and shade one part. Write 1/2.
+2. Fold the same strip into four equal parts and shade two parts. Write 2/4.
+3. Line the strips up. The shaded lengths match, so 1/2 = 2/4.
+
+Language that must match the source:
+- "same whole" — both fractions must describe the same size whole.
+- "equal parts" — parts must be equal before we compare them.
+- "equivalent" — different names, same amount.
+
+Common mistakes to plan feedback for:
+- Adding to numerator and denominator without thinking about the whole.
+- Saying 2/4 is bigger than 1/2 because 2 and 4 are bigger numbers.
+- Comparing fractions of different wholes.
+
+Vocabulary: equivalent, numerator, denominator, whole, partition, strip.

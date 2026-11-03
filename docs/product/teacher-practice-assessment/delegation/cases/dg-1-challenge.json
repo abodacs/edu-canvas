@@ -1,0 +1,15 @@
+{
+  "id": "dg-1-challenge",
+  "practice": "DG1",
+  "practiceName": "Clarify the goal",
+  "title": "Out-of-allowlist objective is rejected with the curated Grade 4 message and the contract captures no separate success criteria",
+  "layer": "A",
+  "turnSequence": [
+    "Teacher submits a Grade 5 objective (standardId standard_ccss_5_nf_b_03) with a well-formed prompt.",
+    "The service allowlist check runs (src/server/generation/service.ts:181-186).",
+    "The teacher also sends an extra successCriteria field to test whether the goal contract can capture one."
+  ],
+  "expected": "normalizeGenerationInput throws GENERATION_INPUT_INVALID with the curated message 'This learning objective is not supported. Use Grade 4 equivalent fractions (4.NF.A.1).' and the shared status table maps the code to 422. The .strict() contract also rejects the extra successCriteria field, evidence that success criteria are not captured separately (practice result partial, not supported).",
+  "observableFailure": "The out-of-allowlist objective is accepted, the curated message is missing, the status is not 422, or the contract silently accepts a successCriteria field.",
+  "flipCondition": null
+}

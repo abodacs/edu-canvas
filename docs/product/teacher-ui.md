@@ -10,6 +10,39 @@ This document owns the UI interview requirements and provider findings; [product
 
 This gate covers implementation of this UI direction, including integrations, prototypes, dependencies, and application changes. Approval of interview recommendations is not implementation approval. Record the approved scope and skill references here when supplied, then run the required checks before reporting completion.
 
+### Approved scope, 2026-11-02
+
+Abdullah approved the **token slices** and the verification plan recorded in [AgDR-0017](../agdr/AgDR-0017-design-token-layer-and-verification.md). A screen change stays on hold until it has its own scoped approval below.
+
+The original single slice was split after review: "43 tokens into `@theme` with no visual change" cannot be one unit, because the sketch palette and the shipped palette differ by value. Adopting it _is_ a visual change.
+
+| # | Scope | Visual diff | Status |
+| --- | --- | --- | --- |
+| 1a | Structural scale as new semantic properties (type roles, 4px spacing, two radii, three-tier dividers, one shadow, focus ring). Rewire nothing. | none | **approved** |
+| 1b | Repoint `--primary` to clay, `--border` to the divider ladder, headings to the serif, radii to the ladder; delete the unreachable `.dark` block | large, expected — reviewed as a before/after census | **approved** |
+| 2 | Sign-in / sign-up | moderate | on hold |
+| 3 | Studio compose + variants (adopts [#168](https://github.com/abodacs/edu-canvas/issues/168)) | large | on hold |
+| 4 | Review | large | on hold |
+| 5 | Publish | moderate | on hold |
+| 6 | Student board | large | on hold |
+
+Verification ownership, per category. Each owner has to be able to observe the change; a check that cannot fail is not coverage.
+
+| Category | Owner | Note |
+| --- | --- | --- |
+| Content / structure | [`verify-lesson-gate`](../../.agents/skills/verify-lesson-gate) (`pnpm verify:lesson-gate`) | Validates draft structure, not teaching quality |
+| Interaction / a11y | `impeccable` critique, `better-ui`, `better-accessibility` | Focus, keyboard, reduced motion, surface and motion values |
+| Rendering (math) | [#116](https://github.com/abodacs/edu-canvas/issues/116) | Owns `fractions-v2`, the 320px keyboard path and the invalid-math block |
+| Pedagogy | [#106](https://github.com/abodacs/edu-canvas/issues/106), [#118](https://github.com/abodacs/edu-canvas/issues/118) | Gates automation and adoption, not styling |
+| Enforcing checks | `pnpm verify:design-tokens` (in `pnpm check`), `pnpm verify:design-census` (`foundation.yml` step) | Both are ratchets; counts may only fall |
+
+Recorded gaps, rather than claims:
+
+- **Pedagogy is not covered by a skill.** Slices 1a–1b touch no lesson content, so they do not need one. Slices 3–6 do; their approval requires either a named skill or an explicit decision to proceed without one.
+- **Rendered math is unverifiable today.** Generation emits `matching-v1` only, so no persisted draft carries `catalogVersion: fractions-v2`; the MathML path's entire styling is `font-size: 1.3rem; line-height: 1.7`. Math typography is #116's scope, and slices 1a–1b only define the tokens it will consume.
+- **The census has a prerequisite.** All 17 seeded drafts belong to `identity_demo_teacher`, and no seeded account can sign in as that identity (`PUBLICATION_FORBIDDEN`), so Review has no automated capture path until the seed is fixed.
+- **Fonts.** Slice 1b uses a system serif for display per AgDR-0017; [AgDR-0016](../agdr/AgDR-0016-studio-redesign-ui-stack-and-provider-transport.md) still requires self-hosting Source Serif 4 before public release.
+
 ## Agreed direction
 
 - Help teachers generate related teaching materials and interactive tutorials grounded in their teaching sources.
