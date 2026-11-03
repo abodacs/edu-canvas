@@ -22,3 +22,6 @@ teaching/
 
 # GUI test evidence
 gui-test-screenshots/
+
+# Tool caches (prettier --cache).
+.prettier-cache

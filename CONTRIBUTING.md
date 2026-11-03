@@ -89,6 +89,8 @@ pnpm exec prettier --check CODING_STANDARDS.md CONTRIBUTING.md .github/ISSUE_TEM
 
 Include any other changed documentation files in that command. The `format:check` script currently covers selected documentation files. Use the existing formatter configuration. Avoid unrelated formatting changes.
 
+`pnpm install` enables the [pre-push hook](.githooks/pre-push) through `core.hooksPath`. Before every push it runs Prettier, oxlint, and Stylelint on the changed files and type-checks the project with `tsrs`, in a few seconds. Fix what it reports rather than skipping it. CI still runs every check.
+
 Record the commands, results, and untested cases in the PR. Documentation-only edits can use documentation checks; explain why a runtime check was skipped when it would otherwise apply.
 
 ## Prepare a focused pull request

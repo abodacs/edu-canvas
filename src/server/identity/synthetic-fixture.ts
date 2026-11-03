@@ -193,6 +193,7 @@ export const ensureSyntheticIdentityFixture = async (
     syntheticAccounts.map((account, index) => {
       const actor = fixture.actors[index];
       if (!actor) {
+        // oxlint-disable-next-line promise/no-return-wrap -- a map callback, not a then-chain; Promise.all needs a promise per account.
         return Promise.resolve();
       }
       return provisioning.bindIdentity({

@@ -1,0 +1,25 @@
+#!/usr/bin/env sh
+# Fast local gate: format, lint, and style-lint the files this push changes,
+# then type-check the project. Runs in seconds so a failure is fixed before CI
+# sees it. Skip once with `git push --no-verify`; CI still runs `pnpm check`.
+set -eu
+
+base=$(git merge-base HEAD origin/main 2>/dev/null || git rev-parse HEAD~1)
+changed=$(git diff --name-only --diff-filter=ACMR "$base" HEAD)
+
+[ -n "$changed" ] || exit 0
+
+code=$(printf '%s\n' "$changed" | grep -E '\.(ts|tsx|js|jsx|mjs|cjs)$' || true)
+styles=$(printf '%s\n' "$changed" | grep -E '^src/.*\.css$' || true)
+
+# shellcheck disable=SC2086 # word splitting is the point: one argument per path.
+pnpm exec prettier --check --ignore-unknown $changed
+if [ -n "$code" ]; then
+  # shellcheck disable=SC2086
+  pnpm exec oxlint -c oxlint.config.ts $code
+fi
+if [ -n "$styles" ]; then
+  # shellcheck disable=SC2086
+  pnpm exec stylelint $styles
+fi
+pnpm exec tsrs --noEmit

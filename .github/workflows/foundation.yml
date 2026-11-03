@@ -8,25 +8,59 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: foundation-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# Shared by every job: the preview shape the app and its checks run under.
+env:
+  APP_ENV: preview
+  SYNTHETIC_DATA_ONLY: "true"
+  DATABASE_URL: postgresql://edu_canvas:edu_canvas_dev@127.0.0.1:5432/edu_canvas
+  # Test-only value: smoke exercises public HTTP routes and never calls OpenAI.
+  OPENAI_API_KEY: ci-test-key
+  # Test-only authentication configuration. Preview must use the hosted
+  # provider and fails closed without these values, so CI supplies
+  # synthetic ones rather than falling back to the local provider.
+  AUTH_PROVIDER: supabase
+  AUTH_PUBLIC_ORIGIN: http://127.0.0.1:3000
+  AUTH_SESSION_SECRET: ci-only-session-secret-that-is-long-enough
+  AUTH_CREDENTIAL_KEY: ZWR1LWNhbnZhcy1jaS1rZXktMDAwMDAwMDAwMDAwMDA=
+  SUPABASE_URL: https://synthetic-project.supabase.co
+  SUPABASE_ANON_KEY: synthetic-anon-key
+  SUPABASE_SERVICE_ROLE_KEY: synthetic-service-role-key
+
 jobs:
-  foundation:
+  # Format, lint, types, and repository rules. No database or build needed.
+  static:
     runs-on: ubuntu-latest
-    env:
-      APP_ENV: preview
-      SYNTHETIC_DATA_ONLY: "true"
-      DATABASE_URL: postgresql://edu_canvas:edu_canvas_dev@127.0.0.1:5432/edu_canvas
-      # Test-only value: smoke exercises public HTTP routes and never calls OpenAI.
-      OPENAI_API_KEY: ci-test-key
-      # Test-only authentication configuration. Preview must use the hosted
-      # provider and fails closed without these values, so CI supplies
-      # synthetic ones rather than falling back to the local provider.
-      AUTH_PROVIDER: supabase
-      AUTH_PUBLIC_ORIGIN: http://127.0.0.1:3000
-      AUTH_SESSION_SECRET: ci-only-session-secret-that-is-long-enough
-      AUTH_CREDENTIAL_KEY: ZWR1LWNhbnZhcy1jaS1rZXktMDAwMDAwMDAwMDAwMDA=
-      SUPABASE_URL: https://synthetic-project.supabase.co
-      SUPABASE_ANON_KEY: synthetic-anon-key
-      SUPABASE_SERVICE_ROLE_KEY: synthetic-service-role-key
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up Node.js and dependencies
+        uses: ./.github/actions/setup
+
+      - name: Run static checks
+        run: pnpm check:static
+
+  # Unit tests run once, with coverage; `pnpm check` runs the same suite
+  # without coverage locally.
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up Node.js and dependencies
+        uses: ./.github/actions/setup
+
+      - name: Run tests with coverage
+        run: pnpm test:coverage
+
+  # Build, database, release image, and smoke tests.
+  integration:
+    runs-on: ubuntu-latest
     services:
       postgres:
         image: postgres:17-alpine
@@ -43,19 +77,8 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v7.0.1
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v6.1.0
-        with:
-          version: 10.17.1
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v7.1.0
-        with:
-          node-version: 26
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Set up Node.js and dependencies
+        uses: ./.github/actions/setup
 
       - name: Check Drizzle schema history
         run: pnpm db:drizzle:check
@@ -66,11 +89,8 @@ jobs:
       - name: Prepare database for integration checks
         run: pnpm db:setup
 
-      - name: Run release checks
-        run: pnpm check
-
-      - name: Run tests with coverage
-        run: pnpm test:coverage
+      - name: Build and check the client bundle
+        run: pnpm build && pnpm verify:client-boundary
 
       - name: Apply and repeat database bootstrap
         run: |
@@ -145,3 +165,18 @@ jobs:
 
           curl --fail --silent http://127.0.0.1:3000/api/readiness
           pnpm smoke
+
+  # The one required status check. Branch protection names `foundation`, so
+  # this job keeps that name and passes only when every job above passed
+  # (a skipped or cancelled job fails it too).
+  foundation:
+    if: always()
+    needs: [static, unit, integration]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every foundation job
+        run: |
+          echo '${{ toJSON(needs) }}'
+          test "${{ needs.static.result }}" = success
+          test "${{ needs.unit.result }}" = success
+          test "${{ needs.integration.result }}" = success
