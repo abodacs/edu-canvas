@@ -2,19 +2,19 @@
   "note": "Ratchet ceiling for scripts/verify-ui.ts: blocking findings per route and viewport. Counts may only fall; regenerate with --update after a reduction.",
   "routes": {
     "/@desktop": {
-      "axe": 1,
+      "axe": 0,
       "overflow": 0
     },
     "/@phone": {
-      "axe": 1,
+      "axe": 0,
       "overflow": 0
     },
     "/dashboard@desktop": {
-      "axe": 1,
+      "axe": 0,
       "overflow": 0
     },
     "/dashboard@phone": {
-      "axe": 1,
+      "axe": 0,
       "overflow": 0
     },
     "/learn@desktop": {
@@ -26,27 +26,27 @@
       "overflow": 0
     },
     "/login@desktop": {
-      "axe": 1,
+      "axe": 0,
       "overflow": 0
     },
     "/login@phone": {
-      "axe": 1,
+      "axe": 0,
       "overflow": 0
     },
     "/sign-up@desktop": {
-      "axe": 1,
+      "axe": 0,
       "overflow": 0
     },
     "/sign-up@phone": {
-      "axe": 1,
+      "axe": 0,
       "overflow": 0
     },
     "/workspace@desktop": {
-      "axe": 2,
+      "axe": 1,
       "overflow": 0
     },
     "/workspace@phone": {
-      "axe": 2,
+      "axe": 1,
       "overflow": 0
     }
   }

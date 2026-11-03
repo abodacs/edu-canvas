@@ -7,7 +7,7 @@ import {
   readPendingMembershipHandoff,
   submitMembership,
 } from "@/components/auth/auth-client";
-import { AuthBrand } from "@/components/auth/auth-brand";
+import { BrandMark } from "@/components/ui/brand-mark";
 import { AuthStatus } from "@/components/auth/auth-status";
 import { membershipCopy } from "@/components/auth/membership-copy";
 import { MembershipRadio } from "@/components/auth/membership-radio";
@@ -112,7 +112,7 @@ const MembershipPage = (): ReactElement => {
     return (
       <main className="auth-shell" aria-labelledby="membership-heading">
         <div className="auth-frame">
-          <AuthBrand />
+          <BrandMark withTagline className="auth-card__brand" />
           <section className="auth-card">
             <h1 id="membership-heading" className="auth-heading">
               {membershipCopy.expiredHeading}
@@ -160,7 +160,7 @@ const MembershipPage = (): ReactElement => {
   return (
     <main className="auth-shell" aria-labelledby="membership-heading">
       <div className="auth-frame">
-        <AuthBrand />
+        <BrandMark withTagline className="auth-card__brand" />
         <section className="auth-card">
           <header className="auth-card__header">
             <p className="eyebrow auth-eyebrow">

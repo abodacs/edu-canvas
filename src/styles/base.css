@@ -94,6 +94,15 @@ a {
   place-items: center;
 }
 
+.brand-mark svg {
+  block-size: auto;
+  inline-size: 55%;
+}
+
+.brand-lockup .brand-name {
+  white-space: nowrap;
+}
+
 .brand-name,
 .brand-subtitle {
   display: block;

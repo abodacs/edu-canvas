@@ -10,6 +10,7 @@ import {
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { useAuthSession } from "@/components/auth/use-auth-session";
+import { BrandMark } from "@/components/ui/brand-mark";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utilities";
 
@@ -49,17 +50,7 @@ const TeacherHome = () => {
           </output>
         ) : null}
         <header className="site-header">
-          <Link className="brand-lockup" to="/" aria-label="Scholé home">
-            <span className="brand-mark" aria-hidden="true">
-              S
-            </span>
-            <span>
-              <span className="brand-name">Scholé</span>
-              <span className="brand-subtitle">
-                teaching, returned to its origin
-              </span>
-            </span>
-          </Link>
+          <BrandMark withTagline />
           {hasActiveSession ? (
             <div className="hero-actions site-header__actions">
               <span className="site-header__identity">
@@ -207,12 +198,7 @@ const TeacherHome = () => {
         </section>
 
         <footer className="site-footer">
-          <Link className="brand-lockup" to="/" aria-label="Scholé home">
-            <span className="brand-mark" aria-hidden="true">
-              S
-            </span>
-            <span className="brand-name">Scholé</span>
-          </Link>
+          <BrandMark />
           <p className="footer-note">
             Synthetic fixture data only. Lesson drafts by Meta Muse Spark.
           </p>
