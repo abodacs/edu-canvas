@@ -8,7 +8,7 @@
   },
   "detector": {
     "ignoreRules": [],
-    "ignoreFiles": [],
+    "ignoreFiles": [".project-map/index.html"],
     "ignoreValues": [
       {
         "rule": "cream-palette",
