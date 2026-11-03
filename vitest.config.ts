@@ -34,6 +34,11 @@ const config = defineConfig({
           include: testFiles,
           exclude: isolatedFiles,
           isolate: false,
+          // Concatenated onto the root setup files. Shared files must clear
+          // the module-scoped identity rate limiter between files; isolated
+          // files rebuild their module graph anyway and must not load this
+          // server import.
+          setupFiles: ["./src/test-shared-setup.ts"],
         },
       },
       {

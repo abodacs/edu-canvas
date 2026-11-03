@@ -18,7 +18,7 @@
     "start": "node .output/server/index.mjs",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:database": "RUN_DATABASE_TESTS=true vitest run src/server/persistence/persistence-contract.test.ts src/server/persistence/source-contract.test.ts src/server/persistence/pack-database.test.ts src/server/persistence/records-database.test.ts src/server/persistence/records-restart.test.ts src/integration/seed-catalog-roundtrip.test.ts",
+    "test:database": "RUN_DATABASE_TESTS=true vitest run src/server/persistence/persistence-contract.test.ts src/server/persistence/source-contract.test.ts src/server/persistence/pack-database.test.ts src/server/persistence/records-database.test.ts src/server/persistence/records-restart.test.ts src/server/persistence/progress-database.test.ts src/integration/seed-catalog-roundtrip.test.ts",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "lint": "oxlint -c oxlint.config.ts",
@@ -27,7 +27,7 @@
     "format:check": "prettier --check --cache .",
     "typecheck": "tsrs --noEmit",
     "bench:typecheck": "node scripts/bench-typecheck.mjs",
-    "check": "pnpm check:static && pnpm test && pnpm build && pnpm verify:client-boundary",
+    "check": "pnpm check:static && pnpm test && pnpm eval:practices --pack delegation --deterministic && pnpm build && pnpm verify:client-boundary",
     "db:migrate": "node --import tsx scripts/database-migrate.ts",
     "db:seed": "node --import tsx scripts/database-seed.ts",
     "db:setup": "pnpm db:migrate && pnpm db:seed",
@@ -49,7 +49,10 @@
     "typecheck:tsc": "tsc --noEmit",
     "prepare": "git config core.hooksPath .githooks || true",
     "verify:catalog-identity": "node --import tsx scripts/verify-catalog-identity.ts",
-    "check:static": "pnpm format:check && pnpm lint && pnpm lint:styles && pnpm typecheck && pnpm verify:architecture && pnpm verify:architecture-map && pnpm verify:glossary-coverage && pnpm verify:identity-surface && pnpm verify:demo-removal && pnpm verify:catalog-identity && pnpm verify:lc-mcp-eval && pnpm verify:lc-free-text && pnpm verify:boundaries"
+    "verify:design-tokens": "node --import tsx scripts/verify-design-tokens.ts",
+    "verify:design-census": "node --import tsx scripts/verify-design-census.ts",
+    "check:static": "pnpm format:check && pnpm lint && pnpm lint:styles && pnpm typecheck && pnpm verify:architecture && pnpm verify:architecture-map && pnpm verify:glossary-coverage && pnpm verify:identity-surface && pnpm verify:demo-removal && pnpm verify:catalog-identity && pnpm verify:lc-mcp-eval && pnpm verify:lc-free-text && pnpm verify:design-tokens && pnpm verify:boundaries",
+    "eval:practices": "node --import tsx scripts/eval-practices.ts"
   },
   "dependencies": {
     "@base-ui/react": "1.6.0",

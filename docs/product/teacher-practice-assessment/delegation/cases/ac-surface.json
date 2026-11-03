@@ -1,0 +1,16 @@
+{
+  "id": "ac-surface",
+  "practice": "S0",
+  "practiceName": "#8 teacher progress surface (covers AC1, AC2, AC4, AC5 evidence on the live view)",
+  "title": "The assigning teacher opens the dashboard and sees the provisional run result with reason, provenance, and a read-only preview",
+  "layer": "B-browser",
+  "turnSequence": [
+    "After the s0-smoke loop completes in the same browser session, sign in again as amira.north@example.test and pick the synthetic fractions membership.",
+    "Open /dashboard and wait for the All results table.",
+    "Read the run row for the learner from s0-smoke and open its detail.",
+    "Assert the provisional note is present, the stored reason renders verbatim with the decision purpose, and the provenance line shows the rule version and evidence hash.",
+    "Assert the read-only preview section for the assigned approved screen is present (AC4)."
+  ],
+  "expected": "The dashboard renders the run from the just-completed loop: provisional label, plain-language reason with purpose, rule version plus evidence hash, and the read-only preview of the approved screen. Refreshing the dashboard repeats the same fields (AC1's read-side; the storage immutability proof is the progress database suite).",
+  "observableFailure": "The table is empty for the assigning teacher, the reason or provenance line is missing, a mastery-style diagnosis appears instead of the provisional framing, or the preview section is absent."
+}

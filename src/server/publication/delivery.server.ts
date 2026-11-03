@@ -57,6 +57,7 @@ export const mapPublicationError = (error: unknown): Response => {
       error.status
     );
   }
+  console.error("[publish] unhandled failure", error);
   return noStoreJson(
     { code: "PUBLICATION_UNAVAILABLE", message: unavailableMessage },
     503

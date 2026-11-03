@@ -1,0 +1,16 @@
+{
+  "id": "dg-5-normal",
+  "practice": "DG5",
+  "practiceName": "Stay involved",
+  "title": "Teacher compares four variant previews and chooses one before review",
+  "layer": "B-live",
+  "turnSequence": [
+    "Teacher submits a valid 4.NF.A.1 objective in the studio and waits for ready-for-review.",
+    "The studio renders four variant cards (src/components/studio/teacher-studio.tsx:551) with distinct hooks.",
+    "Teacher previews the chosen variant, checks the explanation against the objective, and selects it (input[name=\"chosen-variant\"]).",
+    "Teacher opens the review surface for the chosen draft."
+  ],
+  "expected": "Four ready variants render as individually selectable cards with per-variant titles; the teacher's choice is recorded and the review surface opens for that request. Whether the four hooks are genuinely different is a model-output-quality judgment recorded from the observed trace, not assumed.",
+  "observableFailure": "Fewer than four variants render, cards are not selectable, the choice is not persisted, or all four variants are structurally identical copies.",
+  "flipCondition": "Requires a reachable lesson provider (live model) and a running server with a browser; unblocks when EVAL_LIVE_MODEL=1 is set and S0's generation step succeeds."
+}

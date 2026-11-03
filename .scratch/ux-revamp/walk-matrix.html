@@ -1,0 +1,921 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Edu-Canvas UX revamp — walked state matrix (2026-11-02)</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #2b2118;
+        --ink-2: #6b5d4d;
+        --line: #e5dbc9;
+        --surface: #fffdf7;
+        --paper: #f8efe0;
+        --ok: #1d6b48;
+        --warn: #8a5a17;
+        --stop: #a1352c;
+        --flag: #fff4d6;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font: 15px/1.55 "Hanken Grotesk", system-ui, sans-serif;
+      }
+      .skip {
+        position: absolute;
+        inset-inline-start: -999px;
+        top: 8px;
+      }
+      .skip:focus {
+        inset-inline-start: 8px;
+        background: var(--surface);
+        padding: 8px 14px;
+        border-radius: 8px;
+      }
+      main {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 32px 20px 80px;
+      }
+      h1 {
+        font-size: 34px;
+        line-height: 1.1;
+        margin: 0 0 6px;
+        letter-spacing: -0.02em;
+      }
+      h2 {
+        font-size: 21px;
+        margin: 40px 0 4px;
+      }
+      .lede {
+        color: var(--ink-2);
+        max-width: 72ch;
+        margin: 0 0 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+        font-size: 13.5px;
+      }
+      caption {
+        text-align: left;
+        color: var(--ink-2);
+        padding: 10px 2px;
+        font-size: 13px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 8px 10px;
+        border-block-start: 1px solid var(--line);
+        vertical-align: top;
+      }
+      thead th {
+        border-block-start: 0;
+        background: #f3ead8;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--ink-2);
+      }
+      tbody th {
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      code {
+        font: 12px/1.4 ui-monospace, monospace;
+        background: #f1e7d2;
+        padding: 1px 5px;
+        border-radius: 5px;
+      }
+      .tag {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        padding: 1px 8px;
+        border-radius: 999px;
+      }
+      .live {
+        background: #ddf2e4;
+        color: var(--ok);
+      }
+      .code-cite {
+        background: #e8e4da;
+        color: #4d4437;
+      }
+      .missing {
+        background: #f7ddd9;
+        color: var(--stop);
+      }
+      .p0 {
+        background: var(--stop);
+        color: #fff;
+      }
+      .p1 {
+        background: var(--warn);
+        color: #fff;
+      }
+      .p2 {
+        background: var(--flag);
+        color: var(--warn);
+      }
+      a {
+        color: var(--ok);
+      }
+      .shots a {
+        margin-inline-end: 10px;
+        white-space: nowrap;
+      }
+      footer {
+        margin-block-start: 48px;
+        color: var(--ink-2);
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <main id="main">
+      <h1>Walked state matrix</h1>
+      <p class="lede">
+        Every route × state from the running app at
+        <code>3e65861</code> (+ worktree docs), deterministic sign-in, live
+        <code>muse-spark-1.2-contributor</code>, real source files (TXT, MD,
+        text PDF, scanned PDF, mixed PDF). Walked 2026-11-02, DB
+        <code>edu_canvas_uxwalk</code>. Coverage marks: <strong>M</strong> mock
+        exists, <strong>8</strong> in 8-state-matrix, <strong>C</strong> state
+        exists in code, <strong>—</strong> no mock. Screenshots are relative to
+        this file: <code>walk/shots/…</code>.
+      </p>
+
+      <h2 id="legend">Legend</h2>
+      <p>
+        <span class="tag live">walked</span> captured live with a screenshot and
+        the real response code ·
+        <span class="tag code-cite">code-cited</span> state exists in code but
+        was not reachable live (reason in notes) ·
+        <span class="tag missing">gap</span> state missing from mocks and from
+        the running UI.
+      </p>
+
+      <h2 id="findings">Walk findings (new, 2026-11-02)</h2>
+      <table>
+        <caption>
+          Defects and UX findings the walk produced, ranked.
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Severity</th>
+            <th scope="col">Finding</th>
+            <th scope="col">Evidence</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">W6</th>
+            <td><span class="tag p0">P0</span></td>
+            <td>
+              Generation records never store
+              <code>provenance.sourceSnapshotId</code>
+              (<code>service.ts:715</code> writes only provider provenance), so
+              the publish-time learner bridge (<code>publication/service.ts:737</code>)
+              can never fire. Every publish ends “this review cites no source
+              material, so the learner runtime has no activity to open”. The
+              student loop is unreachable through the UI.
+            </td>
+            <td>
+              <code>shots/94-published-grounded.png</code>; DB:
+              <code>provenance-&gt;&gt;sourceSnapshotId</code> empty on all 4
+              attempts
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">W5</th>
+            <td><span class="tag p1">P1</span></td>
+            <td>
+              Session idle expiry never renews on activity:
+              <code>touchSession</code> runs only in <code>continueSession</code>
+              (<code>identity/service.ts:644</code>); normal API calls do not
+              renew. A teacher working steadily is signed out 30 min after
+              sign-in, mid-action.
+            </td>
+            <td>
+              <code>shots/76-partial-state.png</code> (banner) →
+              <code>shots/80-grounded-result.png</code> (ended 2 min after live
+              activity)
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">W3</th>
+            <td><span class="tag p1">P1</span></td>
+            <td>
+              Source upload 500s for every real class tenant: the seed inserts
+              standard <code>4.NF.A.1</code> only under
+              <code>tenant_demo_eu_synthetic</code>, but the studio pins that
+              standard for all tenants (<code>teacher-studio.tsx:55</code>) and
+              <code>source_snapshots(tenant_id, standard_id)</code> is an FK to
+              <code>standards</code>. Only the demo tenant can upload.
+            </td>
+            <td>
+              FK 23503 in <code>walk/log.jsonl</code>; POST 500 in phase-2d;
+              walk completed via the demo tenant
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">W2</th>
+            <td><span class="tag p2">P2</span></td>
+            <td>
+              <code>GET /api/lessons/sources</code> always 403
+              <code>CSRF_REJECTED</code>: the origin guard requires an
+              <code>Origin</code> header but same-origin GET fetches send none
+              (<code>csrf.ts:48</code>,
+              <code>delivery.server.ts:207</code>). The panel’s restore and
+              cancel-on-mount silently no-op; after a reload the uploaded
+              source vanishes from the panel.
+            </td>
+            <td>
+              API log in <code>walk/log.jsonl</code>;
+              <code>shots/15-upload-immediate.png</code>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">W4</th>
+            <td><span class="tag p2">P2</span></td>
+            <td>
+              The generation result view (variants and blocked states) is lost
+              on reload; there is no draft list. The review surface is
+              URL-addressable (<code>/workspace?review=&lt;versionId&gt;</code>
+              restores approvals), but the variant chooser and blocked views
+              are not. Regeneration also silently drops the source binding.
+            </td>
+            <td>
+              <code>shots/28-after-reload-top.png</code>;
+              <code>shots/90-source-bound-fresh.png</code> vs
+              <code>shots/94-published-grounded.png</code>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">W1</th>
+            <td><span class="tag p2">P2</span></td>
+            <td>
+              The composer ships pre-filled with a sample objective
+              (<code>teacher-studio.tsx:953</code>). The “empty” studio state is
+              not empty; a teacher can submit the sample text.
+            </td>
+            <td><code>shots/09-studio-fullpage.png</code></td>
+          </tr>
+          <tr>
+            <th scope="row">W7</th>
+            <td><span class="tag p2">P2</span></td>
+            <td>
+              <code>/learn</code> empty state renders nearly invisible copy
+              (“Open the link your teacher shared to start this activity.”) —
+              low-contrast text on the paper background.
+            </td>
+            <td><code>shots/102-learn-student.png</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 id="landing">Landing <code>/</code></h2>
+      <table>
+        <caption>
+          Landing route states.
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">State</th>
+            <th scope="col">Mock</th>
+            <th scope="col">Walk</th>
+            <th scope="col">Evidence / notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">logged out</th>
+            <td>M</td>
+            <td><span class="tag live">walked</span></td>
+            <td class="shots">
+              <a href="walk/shots/01-landing-logged-out.png">01</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">phone 390px</th>
+            <td>—</td>
+            <td><span class="tag live">walked</span></td>
+            <td class="shots"><a href="walk/shots/110-phone-landing.png">110</a></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 id="login">Sign in <code>/login</code></h2>
+      <table>
+        <caption>
+          Sign-in states; the mock’s six failure tiles map to 5 named cases +
+          generic fallback (<code>login.tsx:34-84</code>).
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">State</th>
+            <th scope="col">Mock</th>
+            <th scope="col">Walk</th>
+            <th scope="col">Evidence / notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">empty</th>
+            <td>M</td>
+            <td><span class="tag live">walked</span></td>
+            <td class="shots"><a href="walk/shots/02-login-empty.png">02</a></td>
+          </tr>
+          <tr>
+            <th scope="row">wrong password (UNAUTHENTICATED)</th>
+            <td>8</td>
+            <td><span class="tag live">walked</span></td>
+            <td>
+              copy: “Sign-in could not be completed. Check your email address
+              and password, then try again.” —
+              <a href="walk/shots/03-login-wrong-password.png">03</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">CSRF rejected</th>
+            <td>—</td>
+            <td><span class="tag live">walked</span></td>
+            <td>
+              copy: “This page needs to be reloaded.” — first captured by
+              accident (origin/port mismatch), a real reachable state
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">RATE_LIMITED</th>
+            <td>8</td>
+            <td><span class="tag code-cite">code-cited</span></td>
+            <td>
+              not triggered live (would lock the account 15 min); named switch
+              case in <code>login.tsx</code>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">AUTH_UNAVAILABLE</th>
+            <td>8</td>
+            <td><span class="tag code-cite">code-cited</span></td>
+            <td>named switch case; requires taking the identity provider down</td>
+          </tr>
+          <tr>
+            <th scope="row">ACCESS_NOT_PROVISIONED / FORBIDDEN</th>
+            <td>8</td>
+            <td><span class="tag code-cite">code-cited</span></td>
+            <td>named switch cases</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 id="signup">Sign up <code>/sign-up</code> · membership <code>/login/membership</code></h2>
+      <table>
+        <caption>
+          Account creation and class pick.
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">State</th>
+            <th scope="col">Mock</th>
+            <th scope="col">Walk</th>
+            <th scope="col">Evidence / notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">sign-up empty + validation</th>
+            <td>M</td>
+            <td><span class="tag live">walked</span></td>
+            <td class="shots">
+              <a href="walk/shots/04-signup-empty.png">04</a>
+              <a href="walk/shots/05-signup-validation.png">05</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">membership picker (3 classes, teacher)</th>
+            <td>M</td>
+            <td><span class="tag live">walked</span></td>
+            <td>
+              class names per #175; pending-choice expiry 5 min noted on page —
+              <a href="walk/shots/06-after-signin.png">06</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">membership submitting / error / 5-min expiry</th>
+            <td>8</td>
+            <td><span class="tag code-cite">code-cited</span></td>
+            <td>8-state-matrix tiles; not driven live</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 id="workspace">Workspace <code>/workspace</code></h2>
+      <table>
+        <caption>
+          Shell and session states.
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">State</th>
+            <th scope="col">Mock</th>
+            <th scope="col">Walk</th>
+            <th scope="col">Evidence / notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">loaded (teacher)</th>
+            <td>M</td>
+            <td><span class="tag live">walked</span></td>
+            <td class="shots">
+              <a href="walk/shots/08-workspace-loaded.png">08</a>
+              <a href="walk/shots/09-studio-fullpage.png">09 full</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">idle warning banner</th>
+            <td>— (index text only)</td>
+            <td><span class="tag live">walked</span></td>
+            <td>
+              “Your session will end soon … anything unsent is cleared when it
+              ends.” — <a href="walk/shots/76-partial-state.png">76</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">session ended</th>
+            <td>—</td>
+            <td><span class="tag live">walked</span></td>
+            <td>
+              “Your session ended … nothing was submitted twice.” —
+              <a href="walk/shots/80-grounded-result.png">80</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">phone 390px</th>
+            <td>—</td>
+            <td><span class="tag live">walked</span></td>
+            <td class="shots">
+              <a href="walk/shots/111-phone-workspace.png">111</a>
+              <a href="walk/shots/112-phone-workspace-full.png">112 full</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">loading / unavailable tiles</th>
+            <td>8</td>
+            <td><span class="tag code-cite">code-cited</span></td>
+            <td>8-state-matrix; dev server never showed them</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 id="studio">Studio — compose <code>/workspace</code></h2>
+      <table>
+        <caption>
+          Objective composer and source panel states.
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">State</th>
+            <th scope="col">Mock</th>
+            <th scope="col">Walk</th>
+            <th scope="col">Evidence / notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">composer “empty”</th>
+            <td>M (shows empty)</td>
+            <td><span class="tag missing">gap</span></td>
+            <td>
+              W1: ships pre-filled “equivalent fractions for grade 4” —
+              <a href="walk/shots/10-studio-composer-empty.png">10</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">objective + live context</th>
+            <td>M</td>
+            <td><span class="tag live">walked</span></td>
+            <td class="shots">
+              <a href="walk/shots/11-studio-objective-context.png">11</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">upload complete + alignment notice</th>
+            <td>M (in review mock)</td>
+            <td><span class="tag live">walked</span></td>
+            <td class="shots">
+              <a href="walk/shots/18-source-complete.png">18</a>
+              <a href="walk/shots/22-source-complete-same-session.png">22</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">source review + skills confirm</th>
+            <td>M</td>
+            <td><span class="tag live">walked</span></td>
+            <td class="shots">
+              <a href="walk/shots/23-source-review-open.png">23</a>
+              <a href="walk/shots/24-source-reviewed.png">24</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">partial extraction with page gap</th>
+            <td>M</td>
+            <td><span class="tag live">walked</span></td>
+            <td>
+              “No text layer on page 2; it looks scanned. … (page 2)” — G9
+              resolved: pages are real —
+              <a href="walk/shots/76-partial-state.png">76</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">failed (scanned, 0 text)</th>
+            <td>—</td>
+            <td><span class="tag live">walked</span></td>
+            <td>
+              “No readable text was found. A scanned document needs corrected
+              text instead.” —
+              <a href="walk/shots/74-scanned-partial.png">74</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">upload 500 (non-demo tenants)</th>
+            <td>—</td>
+            <td><span class="tag missing">gap</span></td>
+            <td>W3 — real classes cannot upload at all</td>
+          </tr>
+          <tr>
+            <th scope="row">restore after reload</th>
+            <td>—</td>
+            <td><span class="tag missing">gap</span></td>
+            <td>W2 — restore GET always 403; panel resets to empty</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 id="generation">Generation results</h2>
+      <table>
+        <caption>
+          The seven <code>generationStateValues</code> states as the studio
+          shows them.
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">State</th>
+            <th scope="col">Mock</th>
+            <th scope="col">Walk</th>
+            <th scope="col">Evidence / notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">generating</th>
+            <td>—</td>
+            <td><span class="tag live">walked</span></td>
+            <td class="shots">
+              <a href="walk/shots/25-generating-early.png">25</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">ready-for-review (variants)</th>
+            <td>partial (mock has no variant chooser)</td>
+            <td><span class="tag live">walked</span></td>
+            <td class="shots">
+              <a href="walk/shots/41-variants-pass.png">41</a>
+              <a href="walk/shots/27-generation-fullpage.png">27 full</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">blocked-by-validation</th>
+            <td>M (6-errors variant)</td>
+            <td><span class="tag live">walked</span></td>
+            <td>
+              4 findings: relationships conflict + variant-structure warnings;
+              per-screen “Edit this lesson” —
+              <a href="walk/shots/31-variants-again.png">31</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">blocked-by-moderation + recovery panel</th>
+            <td>M (6-errors)</td>
+            <td><span class="tag live">walked</span></td>
+            <td>
+              #185 panel live: category <code>personal-data</code>, request id,
+              “Revise request” —
+              <a href="walk/shots/70-moderation-blocked.png">70</a>
+              <a href="walk/shots/71-moderation-fullpage.png">71 full</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">failed-retryable</th>
+            <td>—</td>
+            <td><span class="tag code-cite">code-cited</span></td>
+            <td>
+              needs a provider timeout/rate-limit; copy exists
+              (“The first pass missed a beat.”, <code>service</code> state
+              map)
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">failed-terminal</th>
+            <td>—</td>
+            <td><span class="tag code-cite">code-cited</span></td>
+            <td>copy exists (“That draft could not be finished.”)</td>
+          </tr>
+          <tr>
+            <th scope="row">IDEMPOTENCY_CONFLICT / stale</th>
+            <td>—</td>
+            <td><span class="tag code-cite">code-cited</span></td>
+            <td>409 seam codes in <code>generation-contract.ts:59-86</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 id="review">Review and approve <code>/workspace?review=…</code></h2>
+      <table>
+        <caption>
+          Review studio: URL-restorable; approvals persist across reloads.
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">State</th>
+            <th scope="col">Mock</th>
+            <th scope="col">Walk</th>
+            <th scope="col">Evidence / notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">gallery (0 of 5 approvals)</th>
+            <td>M</td>
+            <td><span class="tag live">walked</span></td>
+            <td class="shots">
+              <a href="walk/shots/42-review-studio.png">42</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">variant editor + approve</th>
+            <td>M</td>
+            <td><span class="tag live">walked</span></td>
+            <td class="shots">
+              <a href="walk/shots/44-screen-approved-1.png">44</a>
+              <a href="walk/shots/60-approved-screen-2.png">60-2</a>
+              <a href="walk/shots/60-approved-screen-4.png">60-4</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">all approved (5 of 5)</th>
+            <td>M</td>
+            <td><span class="tag live">walked</span></td>
+            <td class="shots">
+              <a href="walk/shots/61-gallery-approved.png">61</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">restored after reload</th>
+            <td>—</td>
+            <td><span class="tag live">walked</span></td>
+            <td>
+              <code>/workspace?review=…</code> keeps approvals (“1 of 5”) —
+              <a href="walk/shots/50-review-restored.png">50</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">WARNINGS_UNACKNOWLEDGED path</th>
+            <td>—</td>
+            <td><span class="tag code-cite">code-cited</span></td>
+            <td>
+              ack checkboxes render only when warnings exist; this pack had
+              “validation found warnings” but no per-screen warning codes to
+              ack
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 id="publish">Publish</h2>
+      <table>
+        <caption>
+          Publish confirmation and outcomes.
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">State</th>
+            <th scope="col">Mock</th>
+            <th scope="col">Walk</th>
+            <th scope="col">Evidence / notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">picker (single learner)</th>
+            <td>M (amended)</td>
+            <td><span class="tag live">walked</span></td>
+            <td class="shots">
+              <a href="walk/shots/62-publish-picker.png">62</a>
+              <a href="walk/shots/93-picker.png">93</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">published — grounded (with learner activity)</th>
+            <td>M</td>
+            <td><span class="tag missing">gap</span></td>
+            <td>
+              W6 — unreachable: provenance drops <code>sourceSnapshotId</code>,
+              bridge never fires
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">published — no activity</th>
+            <td>—</td>
+            <td><span class="tag live">walked</span></td>
+            <td>
+              “stored for Omar Nabil, but … no activity to open” —
+              <a href="walk/shots/65-published-summary.png">65</a>
+              <a href="walk/shots/94-published-grounded.png">94</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">MISSING_APPROVAL / GATE_STALE</th>
+            <td>—</td>
+            <td><span class="tag code-cite">code-cited</span></td>
+            <td>
+              blocker list renders in the gallery (<code>BlockerList</code>);
+              publish 409/422 codes in <code>publication-contract.ts:18-30</code>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 id="learn">Student board <code>/learn</code></h2>
+      <table>
+        <caption>
+          Learner route states; assigned states blocked by W6.
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">State</th>
+            <th scope="col">Mock</th>
+            <th scope="col">Walk</th>
+            <th scope="col">Evidence / notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">signed out</th>
+            <td>8</td>
+            <td><span class="tag live">walked</span></td>
+            <td class="shots">
+              <a href="walk/shots/100-learn-signed-out.png">100</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">student, no assignment params</th>
+            <td>—</td>
+            <td><span class="tag live">walked</span></td>
+            <td>
+              W7 near-invisible empty copy —
+              <a href="walk/shots/102-learn-student.png">102</a>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">assigned / active / submitted / awaiting-decision / paused</th>
+            <td>M (7-learn)</td>
+            <td><span class="tag missing">gap</span></td>
+            <td>
+              blocked by W6 (no canonical activity can exist); logic
+              code-cited in <code>learner-contract.ts</code> + <code>learn.tsx</code>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">401/403/409 error copy</th>
+            <td>8</td>
+            <td><span class="tag code-cite">code-cited</span></td>
+            <td><code>messageByStatus</code> map in <code>learn.tsx:20-24</code></td>
+          </tr>
+          <tr>
+            <th scope="row">phone 390px</th>
+            <td>—</td>
+            <td><span class="tag live">walked</span></td>
+            <td class="shots">
+              <a href="walk/shots/113-phone-learn.png">113</a>
+              <a href="../../.impeccable/mocks/screens/captures/7-learn-mobile-target.png">mock target</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 id="gap-status">Gap list status after the walk</h2>
+      <table>
+        <caption>
+          What changed in the G1–G19 list.
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Gap</th>
+            <th scope="col">Status</th>
+            <th scope="col">Resolution</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">G1</th>
+            <td><span class="tag live">amended</span></td>
+            <td>3-publish rewritten to a single-learner picker; class assign is a backend issue</td>
+          </tr>
+          <tr>
+            <th scope="row">G2</th>
+            <td><span class="tag live">amended</span></td>
+            <td>“You can unpublish later” removed</td>
+          </tr>
+          <tr>
+            <th scope="row">G3</th>
+            <td><span class="tag live">amended</span></td>
+            <td>Un-approve control dropped; approval is pinned per version</td>
+          </tr>
+          <tr>
+            <th scope="row">G5</th>
+            <td><span class="tag live">verified</span></td>
+            <td>
+              Live labels: Core / Core / Scaffold(Support) / Stretch on cards;
+              “Teach the model / Independent practice / Guided practice / Review
+              and challenge” in the review gallery
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">G6</th>
+            <td><span class="tag live">resolved</span></td>
+            <td>
+              “Draft again” = a NEW request (new pack version); approvals do not
+              carry over. Mock bows to code.
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">G7</th>
+            <td><span class="tag live">resolved</span></td>
+            <td>
+              #185 landed <code>revisesRequestId</code>; recovery panel live
+              (shots 70–72)
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">G9</th>
+            <td><span class="tag live">resolved</span></td>
+            <td>
+              <code>sourceGapSchema.pages</code> is real and rendered
+              (“(page 2)”, shot 76)
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">G13</th>
+            <td><span class="tag live">resolved</span></td>
+            <td>
+              /login has 5 named cases + generic; wrong-password and CSRF copy
+              captured live
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">G19</th>
+            <td><span class="tag live">amended</span></td>
+            <td>“Copy all 24 links” → single “Copy learner link”</td>
+          </tr>
+          <tr>
+            <th scope="row">G16–G18</th>
+            <td><span class="tag code-cite">unchanged</span></td>
+            <td>
+              Still hypothesis-only (v1 runs are synthetic;
+              <code>legacy/README.md:10</code>)
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">G14 (RTL/Arabic)</th>
+            <td><span class="tag code-cite">unchanged</span></td>
+            <td>Deferred; listed for the RTL pass</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <footer>
+        Generated by the UX-revamp lane, 2026-11-02. Raw walk log:
+        <code>walk/log.jsonl</code>; driver scripts:
+        <code>walk/phase*.mjs</code>; fixtures:
+        <code>fixtures/</code>. Evidence caveat: quote-backed evidence requires
+        real teacher sessions (issue #118); nothing here substitutes for them.
+      </footer>
+    </main>
+  </body>
+</html>

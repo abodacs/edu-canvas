@@ -1,0 +1,15 @@
+{
+  "id": "dg-7-normal",
+  "practice": "DG7",
+  "practiceName": "Reassign work as it evolves",
+  "title": "Teacher takes one section back for manual authoring",
+  "layer": "B-det",
+  "turnSequence": [
+    "Teacher reviews a ready draft and takes one section back for manual authoring while keeping the rest delegated.",
+    "The app should preserve the teacher-authored section verbatim and continue only the delegated remainder."
+  ],
+  "expected": "A section handback exists: the teacher-authored section is stored and preserved byte-for-byte, and the delegated remainder continues without overwriting it.",
+  "observableFailure": "The handback cannot be expressed, the teacher-authored section is overwritten by a regeneration, or the whole draft must be redone.",
+  "flipCondition": "Unblocks when a section handback control exists in the studio or review workflow.",
+  "blockedFeature": true
+}

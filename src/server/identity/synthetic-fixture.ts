@@ -189,55 +189,56 @@ export const ensureSyntheticIdentityFixture = async (
 ): Promise<void> => {
   const provisioning = createIdentityProvisioning({ persistence });
 
-  await Promise.all(
-    syntheticAccounts.map((account, index) => {
-      const actor = fixture.actors[index];
-      if (!actor) {
-        // oxlint-disable-next-line promise/no-return-wrap -- a map callback, not a then-chain; Promise.all needs a promise per account.
-        return Promise.resolve();
-      }
-      return provisioning.bindIdentity({
-        providerIssuer: syntheticProviderIssuer,
-        providerSubject: account.subject,
-        actorId: parseActorId(actor.id),
-        displayName: actor.displayName,
-        principal,
-        requestId: `fixture-bind-${actor.id}`,
-      });
-    })
-  );
+  // Sequential, not Promise.all: several memberships share one tenant row,
+  // and concurrent grant calls race on the tenant insert's second unique
+  // index (slug), which `on conflict (id)` does not arbitrate. One loser
+  // failed the whole fixture, and the composition cache then held the
+  // rejected promise for the process lifetime (delegation pack case s0-smoke).
+  for (const [index, account] of syntheticAccounts.entries()) {
+    const actor = fixture.actors[index];
+    if (!actor) {
+      continue;
+    }
+    // eslint-disable-next-line no-await-in-loop -- sequential provisioning is the fix: concurrent grants race on the shared tenant row.
+    await provisioning.bindIdentity({
+      providerIssuer: syntheticProviderIssuer,
+      providerSubject: account.subject,
+      actorId: parseActorId(actor.id),
+      displayName: actor.displayName,
+      principal,
+      requestId: `fixture-bind-${actor.id}`,
+    });
+  }
 
-  await Promise.all(
-    fixture.memberships.map((membership) => {
-      const tenant = tenantFor(membership.tenantKey);
-      return provisioning.grantMembership({
-        membershipId: parseMembershipId(membership.membershipId),
-        actorId: parseActorId(membership.actorId),
-        tenantId: parseTenantId(tenant.id),
-        tenantName: tenant.name,
-        role: membership.role,
-        ...("learner" in membership && {
-          learner: {
-            ...membership.learner,
-            id: parseLearnerId(membership.learner.id),
-          },
-        }),
-        principal,
-        requestId: `fixture-membership-${membership.membershipId}`,
-      });
-    })
-  );
+  for (const membership of fixture.memberships) {
+    const tenant = tenantFor(membership.tenantKey);
+    // eslint-disable-next-line no-await-in-loop -- sequential provisioning is the fix: concurrent grants race on the shared tenant row.
+    await provisioning.grantMembership({
+      membershipId: parseMembershipId(membership.membershipId),
+      actorId: parseActorId(membership.actorId),
+      tenantId: parseTenantId(tenant.id),
+      tenantName: tenant.name,
+      role: membership.role,
+      ...("learner" in membership && {
+        learner: {
+          ...membership.learner,
+          id: parseLearnerId(membership.learner.id),
+        },
+      }),
+      principal,
+      requestId: `fixture-membership-${membership.membershipId}`,
+    });
+  }
 
-  await Promise.all(
-    fixture.classAssignments.map((assignment) => {
-      const tenant = fixture.tenants.north;
-      return provisioning.assignClass({
-        membershipId: parseMembershipId(assignment.membershipId),
-        classId: parseClassId(assignment.classId),
-        tenantId: parseTenantId(tenant.id),
-        principal,
-        requestId: `fixture-class-${assignment.membershipId}-${assignment.classId}`,
-      });
-    })
-  );
+  for (const assignment of fixture.classAssignments) {
+    const tenant = fixture.tenants.north;
+    // eslint-disable-next-line no-await-in-loop -- sequential provisioning is the fix: concurrent grants race on the shared tenant row.
+    await provisioning.assignClass({
+      membershipId: parseMembershipId(assignment.membershipId),
+      classId: parseClassId(assignment.classId),
+      tenantId: parseTenantId(tenant.id),
+      principal,
+      requestId: `fixture-class-${assignment.membershipId}-${assignment.classId}`,
+    });
+  }
 };

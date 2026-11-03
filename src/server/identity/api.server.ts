@@ -771,6 +771,7 @@ export const resolveAuthOrError = async (): Promise<
 > => {
   const config = readServerConfig();
   if (config.issues.length > 0) {
+    console.error("[auth] config issues", config.issues);
     return {
       ok: false,
       response: identityErrorJson(new IdentityError("AUTH_UNAVAILABLE")),
@@ -778,7 +779,8 @@ export const resolveAuthOrError = async (): Promise<
   }
   try {
     return { ok: true, dependencies: await resolveAuthDependencies(config) };
-  } catch {
+  } catch (error) {
+    console.error("[auth] dependency resolution failed", error);
     return {
       ok: false,
       response: identityErrorJson(new IdentityError("AUTH_UNAVAILABLE")),

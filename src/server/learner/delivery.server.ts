@@ -63,6 +63,9 @@ export const learnerErrorJson = (error: unknown): Response => {
   if (error instanceof IdentityError) {
     return identityErrorJson(error);
   }
+  if (!isRecordStoreError(error)) {
+    console.error("[learner] unhandled failure", error);
+  }
   return isRecordStoreError(error)
     ? noStoreJson(
         { code: error.code, message: error.message },

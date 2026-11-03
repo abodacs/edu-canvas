@@ -281,7 +281,7 @@ describe.skipIf(!isRunDatabaseTests)(
           learner: {
             id: learnerId,
             displayName: "Lina Farouk",
-            demoHandle: "lina.demo",
+            demoHandle: `lina.demo-${runId}`,
           },
         })
       ).resolves.toMatchObject({
@@ -296,7 +296,7 @@ describe.skipIf(!isRunDatabaseTests)(
         tenant_id: learnerTenantId,
         role: "student",
         display_name: "Lina Farouk",
-        demo_handle: "lina.demo",
+        demo_handle: `lina.demo-${runId}`,
         is_active: true,
       });
     });
@@ -315,7 +315,7 @@ describe.skipIf(!isRunDatabaseTests)(
           learner: {
             id: learnerId,
             displayName: "Lina Farouk",
-            demoHandle: "lina.demo",
+            demoHandle: `lina.demo-${runId}`,
           },
         })
       ).resolves.toMatchObject({
