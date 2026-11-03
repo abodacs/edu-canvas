@@ -14,19 +14,11 @@ import {
   resolveTeacherActor,
   resolveTeacherSession,
 } from "./api.server";
-import {
-  buildConfiguredIdentity,
-  resetConfiguredIdentityCache,
-} from "./composition.server";
+import { buildConfiguredIdentity } from "./composition.server";
 
 import type { AuthDependencies } from "./api.server";
 
 const password = "synthetic-pass-1";
-
-// Shared workers keep one module graph across files (see vitest.config.ts), and
-// the composed identity below signs in against the process-wide rate limiter.
-// Start from a fresh budget instead of inheriting the previous file's spend.
-resetConfiguredIdentityCache();
 
 const testConfig = readServerConfig({ ...testServerEnvironment });
 const testDependencies = authDependenciesFrom(

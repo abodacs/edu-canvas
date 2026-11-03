@@ -19,10 +19,7 @@ import {
   authDependenciesFrom,
 } from "./api.server";
 import { createCredentialCipher } from "./cipher";
-import {
-  buildConfiguredIdentity,
-  resetConfiguredIdentityCache,
-} from "./composition.server";
+import { buildConfiguredIdentity } from "./composition.server";
 import {
   parseActorId,
   parseClassId,
@@ -153,11 +150,6 @@ interface SignUpBody {
   readonly status: string;
   readonly email: string;
 }
-
-// Shared workers keep one module graph across files (see vitest.config.ts), and
-// the composed identity below signs in against the process-wide rate limiter.
-// Start from a fresh budget instead of inheriting the previous file's spend.
-resetConfiguredIdentityCache();
 
 const configuredConfig = readServerConfig({ ...testServerEnvironment });
 const configuredTestDependencies = authDependenciesFrom(
