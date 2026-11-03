@@ -557,6 +557,165 @@ const main = async () => {
     if (isLearnerBlocked) {
       process.exitCode = 1;
     }
+
+    // --- Dashboard surface cases (#8 acceptance map) ----------------------
+    if (!isLearnerBlocked) {
+      const openDashboardAs = async (email, membershipLabel, tag) => {
+        const context = await browser.newContext();
+        const dashPage = await context.newPage();
+        dashPage.setDefaultTimeout(STEP_WAIT_MS);
+        await dashPage.goto(`${BASE_URL}/login`);
+        await dashPage.waitForLoadState("networkidle");
+        await dashPage.getByLabel("Email address").fill(email);
+        await dashPage.locator('input[type="password"]').fill(PASSWORD);
+        await dashPage.getByRole("button", { name: "Sign in" }).click();
+        await dashPage.waitForURL(/membership|workspace/, {
+          timeout: STEP_WAIT_MS,
+        });
+        if (dashPage.url().includes("membership")) {
+          await dashPage
+            .locator("label", { hasText: membershipLabel })
+            .first()
+            .click();
+          await dashPage
+            .getByRole("button", { name: /continue/i })
+            .first()
+            .click();
+          await dashPage.waitForURL(/workspace|dashboard|learn/, {
+            timeout: STEP_WAIT_MS,
+          });
+        }
+        await dashPage.goto(`${BASE_URL}/dashboard`);
+        await dashPage.waitForLoadState("domcontentloaded");
+        await dashPage.waitForTimeout(1500);
+        await shot(dashPage, `s0-16-${tag}`);
+        return { context, dashPage };
+      };
+
+      try {
+        log("step 16: dashboard surface as the assigning teacher");
+        const { context: dashContext, dashPage } = await openDashboardAs(
+          TEACHER_EMAIL,
+          "Synthetic Fractions",
+          "ac-surface"
+        );
+        const tableHeading = await dashPage
+          .getByRole("heading", { name: "All results" })
+          .count();
+        await dashPage.locator("button.progress-open").first().click();
+        const provisional = await dashPage
+          .locator(".progress-provisional")
+          .count();
+        const reason = await dashPage
+          .locator(".progress-reason")
+          .first()
+          .innerText()
+          .catch(() => "");
+        const provenance = await dashPage
+          .locator(".progress-provenance")
+          .first()
+          .innerText()
+          .catch(() => "");
+        const preview = await dashPage.locator(".progress-preview").count();
+        const surfaceScore =
+          tableHeading > 0 &&
+          provisional > 0 &&
+          reason.trim().length > 0 &&
+          /Rule next-activity-rule-/.test(provenance) &&
+          /\b[0-9a-f]{12,}\b/i.test(provenance)
+            ? preview > 0
+              ? 2
+              : 1
+            : 0;
+        await dashContext.close();
+        results.push({
+          id: "ac-surface",
+          practice: "S0",
+          layer: "B-browser",
+          status: "executed",
+          score: surfaceScore,
+          expected:
+            "The dashboard renders the run from the completed loop: provisional label, reason with purpose, rule version plus evidence hash, and the read-only preview (AC1 read side, AC2 surface, AC4, AC5).",
+          observed: `All-results table present=${String(tableHeading > 0)}; provisional note=${String(provisional > 0)}; reason="${reason.trim().slice(0, 120)}"; provenance="${provenance.trim().slice(0, 120)}"; preview present=${String(preview > 0)}.`,
+          evidence: [
+            "results/s0/s0-16-ac-surface.png",
+            "results/s0/s0-runner-log.txt",
+          ],
+          flipCondition:
+            surfaceScore === 0
+              ? "Unblocks when the dashboard renders the run's reason, provenance, and preview; the progress database suite proves the storage side."
+              : null,
+        });
+      } catch (error) {
+        results.push({
+          id: "ac-surface",
+          practice: "S0",
+          layer: "B-browser",
+          status: "executed",
+          score: 0,
+          expected:
+            "The dashboard renders the run from the completed loop with reason, provenance, and preview.",
+          observed: `Runner error: ${Error.isError(error) ? error.message : String(error)}`,
+          evidence: [
+            "results/s0/s0-99-failure-state.png",
+            "results/s0/s0-runner-log.txt",
+          ],
+          flipCondition:
+            "Recorded with the exact failing step in the runner log.",
+        });
+        process.exitCode = 1;
+      }
+
+      try {
+        log("step 17: dashboard boundary and empty state from another tenant");
+        const { context: otherContext, dashPage: otherPage } =
+          await openDashboardAs(TEACHER_EMAIL, "Ratio Reasoning", "ac-empty");
+        const emptyHeading = await otherPage
+          .getByRole("heading", { name: "No learner results yet" })
+          .count();
+        const tableRows = await otherPage
+          .locator(".progress-table-card")
+          .count();
+        await otherContext.close();
+        const boundaryScore = emptyHeading > 0 && tableRows === 0 ? 2 : 0;
+        results.push({
+          id: "ac-boundary-empty",
+          practice: "S0",
+          layer: "B-browser",
+          status: "executed",
+          score: boundaryScore,
+          expected:
+            "A teacher scoped to the other tenant sees only the designed empty screen; no cross-tenant row renders (AC3, AC6).",
+          observed: `Designed empty heading=${String(emptyHeading > 0)}; result table present=${String(tableRows > 0)}.`,
+          evidence: [
+            "results/s0/s0-16-ac-empty.png",
+            "results/s0/s0-runner-log.txt",
+          ],
+          flipCondition:
+            boundaryScore === 0
+              ? "Unblocks when the other-tenant dashboard shows the designed empty state and no foreign rows."
+              : null,
+        });
+      } catch (error) {
+        results.push({
+          id: "ac-boundary-empty",
+          practice: "S0",
+          layer: "B-browser",
+          status: "executed",
+          score: 0,
+          expected:
+            "A teacher scoped to the other tenant sees only the designed empty screen.",
+          observed: `Runner error: ${Error.isError(error) ? error.message : String(error)}`,
+          evidence: [
+            "results/s0/s0-99-failure-state.png",
+            "results/s0/s0-runner-log.txt",
+          ],
+          flipCondition:
+            "Recorded with the exact failing step in the runner log.",
+        });
+        process.exitCode = 1;
+      }
+    }
   } catch (error) {
     fail(Error.isError(error) ? (error.stack ?? error.message) : String(error));
     try {

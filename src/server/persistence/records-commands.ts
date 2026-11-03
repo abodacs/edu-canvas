@@ -654,9 +654,8 @@ export const createRecordCommands = <TTransaction>(
           action,
           operation_key: input.operationKey,
         });
-        const storedIds = (stored?.result_ids as readonly string[] | undefined) ?? [
-          ...result.resultIds,
-        ];
+        const storedIds = (stored?.result_ids as
+          readonly string[] | undefined) ?? [...result.resultIds];
         const [first] = storedIds;
         if (typeof first !== "string") {
           throw recordError("PERSISTENCE_UNAVAILABLE");
@@ -1335,7 +1334,10 @@ export const createRecordCommands = <TTransaction>(
           throw recordError("FORBIDDEN");
         }
 
-        return { resultKind: "learner-run", resultIds: [storedRun.id as string] };
+        return {
+          resultKind: "learner-run",
+          resultIds: [storedRun.id as string],
+        };
       }
     );
   };

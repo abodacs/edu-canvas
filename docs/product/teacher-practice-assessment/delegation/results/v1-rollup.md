@@ -40,7 +40,6 @@ Capability labels come from the re-pinned rows in the pack README; they are not 
 
 None of the statuses above is a pass by itself.
 
-
 ## #8 acceptance map (issue #8, all 7 ACs)
 
 | AC | Claim | Case id / evidence |
