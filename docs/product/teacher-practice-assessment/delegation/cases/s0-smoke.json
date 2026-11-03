@@ -1,0 +1,18 @@
+{
+  "id": "s0-smoke",
+  "practice": "S0",
+  "practiceName": "Full delivery loop smoke (own row; spans DG1, DG3, DG4, DG5, DG6)",
+  "title": "Sign-in to blocked generation to recovery to review, approve, publish, and learner reveal",
+  "layer": "B-browser",
+  "turnSequence": [
+    "Sign in as amira.north@example.test (synthetic credential) and open the tenant 'Grade 4S · Synthetic Fractions'.",
+    "Submit a 4.NF.A.1 objective whose prompt trips the moderation seam (personal data).",
+    "Observe the blocked-by-moderation recovery panel and revise the request (revisesRequestId link) with a clean prompt.",
+    "Wait for ready-for-review; choose a variant; open review; approve; publish to the class assignment.",
+    "Sign in as the learner (omar.demo@example.test), open /learn, start the assigned run, and submit an attempt.",
+    "Reveal the outcome and confirm the feedback shown is the approved copy carried through the bridge (PR #186)."
+  ],
+  "expected": "Every step completes with evidence: the block is visible with a category explanation, the revised request reaches ready-for-review with four variants, the teacher's chosen variant is approved and published, the learner sees the assignment, the attempt records, and the reveal shows the approved feedback. Sessions idle-expire after 30 minutes with renewal only on continueSession, so the browser work is batched or re-signed-in per segment.",
+  "observableFailure": "Any step fails: CSRF rejection on a mutation, provider failure on generation, approval bypass, missing learner assignment, or a reveal that does not match the approved copy. S0 passing is the gate — every learner-side case stays blocked-environment until it passes.",
+  "flipCondition": "Requires the dev server on http://localhost:3111 with AUTH_PUBLIC_ORIGIN=http://localhost:3111, the scratch PostgreSQL, a browser, and a reachable lesson provider for the generation step; each missing piece is recorded with its exact failure."
+}

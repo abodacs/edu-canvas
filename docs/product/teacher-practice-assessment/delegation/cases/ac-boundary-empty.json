@@ -1,0 +1,15 @@
+{
+  "id": "ac-boundary-empty",
+  "practice": "S0",
+  "practiceName": "#8 tenant boundary and designed empty state (covers AC3 and AC6)",
+  "title": "A teacher scoped to a different tenant sees only the designed empty screen, never another tenant's rows",
+  "layer": "B-browser",
+  "turnSequence": [
+    "Sign in as amira.north@example.test but choose the other membership ('Grade 5B · Ratio Reasoning', a different tenant with no assignments).",
+    "Open /dashboard.",
+    "Assert the designed empty-state screen ('No learner results yet') renders instead of a generic error, and that no result table with the synthetic fractions run appears.",
+    "Role and permission screens are covered by the dashboard unit suites; this case proves the live tenant scoping and the designed no-data state."
+  ],
+  "expected": "The teacher scoped to the other tenant sees the designed empty screen only; the synthetic-fractions run never crosses the tenant boundary.",
+  "observableFailure": "Any row from the other tenant renders, or the no-data state is a generic error instead of the designed screen."
+}

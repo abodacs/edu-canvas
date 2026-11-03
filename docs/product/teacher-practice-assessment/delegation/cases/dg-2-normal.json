@@ -1,0 +1,15 @@
+{
+  "id": "dg-2-normal",
+  "practice": "DG2",
+  "practiceName": "Consult on the approach",
+  "title": "Teacher asks for two or three ways to reteach equivalence before any draft",
+  "layer": "B-det",
+  "turnSequence": [
+    "Teacher asks the app for two or three ways to reteach equivalent fractions, with tradeoffs, before any drafting.",
+    "The app should present the options, compare relevant tradeoffs, and wait for a choice."
+  ],
+  "expected": "An approach-comparison stage exists in the generation workflow: the server exposes options with tradeoffs and holds drafting until the teacher chooses.",
+  "observableFailure": "The app drafts immediately without offering or comparing approaches, or invents a comparison that does not exist.",
+  "flipCondition": "Unblocks when an approach-comparison stage exists in the generation workflow (options plus tradeoffs plus wait-for-choice before drafting).",
+  "blockedFeature": true
+}

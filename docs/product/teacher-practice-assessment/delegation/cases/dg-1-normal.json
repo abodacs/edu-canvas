@@ -1,0 +1,14 @@
+{
+  "id": "dg-1-normal",
+  "practice": "DG1",
+  "practiceName": "Clarify the goal",
+  "title": "Generation input without a standard is rejected at the shared contract",
+  "layer": "A",
+  "turnSequence": [
+    "Teacher submits a lesson request with a prompt, grade 4, and language en but no standardId.",
+    "The delivery seam parses the body with lessonGenerationInputSchema (src/shared/generation-contract.ts:28)."
+  ],
+  "expected": "The shared contract rejects the input (zod issue on standardId) and the delivery seam maps a parse failure to 422 INVALID_INPUT (src/server/generation/delivery.server.ts:65-70). No generation record is created; nothing reaches the provider.",
+  "observableFailure": "The contract accepts a request with no captured goal standard, or the rejection is not 422, or a record is created anyway.",
+  "flipCondition": null
+}

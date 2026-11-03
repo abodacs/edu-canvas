@@ -89,6 +89,9 @@ jobs:
       - name: Prepare database for integration checks
         run: pnpm db:setup
 
+      - name: Run the deterministic delegation practice eval
+        run: pnpm eval:practices --pack delegation --deterministic
+
       - name: Build and check the client bundle
         run: pnpm build && pnpm verify:client-boundary
 

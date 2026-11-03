@@ -1,0 +1,15 @@
+{
+  "id": "dg-2-challenge",
+  "practice": "DG2",
+  "practiceName": "Consult on the approach",
+  "title": "Teacher picks one of the compared approaches and asks to continue with it",
+  "layer": "B-det",
+  "turnSequence": [
+    "After a comparison of approaches, the teacher selects one approach (for example, number-line first).",
+    "The app should continue generation scoped to the chosen approach and record the choice."
+  ],
+  "expected": "A recorded approach choice scopes the subsequent generation and survives a retry or page state.",
+  "observableFailure": "The choice cannot be recorded, or generation ignores it and drafts the same fixed four variants regardless.",
+  "flipCondition": "Unblocks when an approach-comparison stage exists in the generation workflow and a chosen approach can be recorded and honored.",
+  "blockedFeature": true
+}

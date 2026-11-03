@@ -41,6 +41,7 @@ import {
   projectStudentEvidence,
   projectStudentLesson,
   projectTeacherEvidence,
+  projectTeacherProgress,
   projectTeacherVersion,
 } from "../records/projections";
 import { decideReceipt, withoutOperationKey } from "./receipt";
@@ -64,6 +65,7 @@ import type {
   StudentEvidenceProjection,
   StudentLessonProjection,
   TeacherEvidenceProjection,
+  TeacherProgressResponse,
   TeacherVersionProjection,
 } from "../records/projections";
 import type {
@@ -181,6 +183,7 @@ export interface RecordPersistence {
     actor: Actor,
     input: ReadAttemptContextInput
   ) => Promise<AttemptContext>;
+  readTeacherProgress: (actor: Actor) => Promise<TeacherProgressResponse>;
 }
 
 const writeCapability: Record<WriteAction, Capability> = {
@@ -623,21 +626,37 @@ export const createRecordCommands = <TTransaction>(
         }
 
         const result = await perform(transaction, input);
-        await backend.insert(transaction, "operation_receipts", {
-          id: createId(),
+        // Two concurrent writers for the same operation key can both pass the
+        // receipt lookup; the loser skips this insert and reads back the
+        // winner's committed receipt, whose result ids are the replay truth.
+        await backend.insert(
+          transaction,
+          "operation_receipts",
+          {
+            id: createId(),
+            tenant_id: actor.tenantId,
+            schema_version: "operation-receipt-v1",
+            actor_id: actor.actorId,
+            membership_id: actor.membershipId,
+            authorization_revision: actor.authorizationRevision,
+            action,
+            operation_key: input.operationKey,
+            input_hash: inputHash,
+            result_kind: result.resultKind,
+            result_ids: [...result.resultIds],
+            created_at: clock(),
+          },
+          { onConflictDoNothing: true }
+        );
+        const stored = await findOne(transaction, "operation_receipts", {
           tenant_id: actor.tenantId,
-          schema_version: "operation-receipt-v1",
           actor_id: actor.actorId,
-          membership_id: actor.membershipId,
-          authorization_revision: actor.authorizationRevision,
           action,
           operation_key: input.operationKey,
-          input_hash: inputHash,
-          result_kind: result.resultKind,
-          result_ids: [...result.resultIds],
-          created_at: clock(),
         });
-        const [first] = result.resultIds;
+        const storedIds = (stored?.result_ids as
+          readonly string[] | undefined) ?? [...result.resultIds];
+        const [first] = storedIds;
         if (typeof first !== "string") {
           throw recordError("PERSISTENCE_UNAVAILABLE");
         }
@@ -1281,23 +1300,44 @@ export const createRecordCommands = <TTransaction>(
           updatedAt: clock(),
         });
 
-        await backend.insert(transaction, "learner_runs", {
-          id: run.id,
+        // The surface double-fires its start request (React strict mode in
+        // development, an impatient double-click in production); a concurrent
+        // writer's committed run must win over this transaction's new id.
+        await backend.insert(
+          transaction,
+          "learner_runs",
+          {
+            id: run.id,
+            tenant_id: run.tenantId,
+            schema_version: run.schemaVersion,
+            assignment_id: run.assignmentId,
+            learner_id: run.learnerId,
+            publication_id: run.publicationId,
+            assigned_variant_id: run.assignedVariantId,
+            stage: run.stage,
+            first_response_status: run.firstResponseStatus,
+            revision: run.revision,
+            next_activity: run.nextActivity,
+            created_at: run.createdAt,
+            updated_at: run.updatedAt,
+          },
+          { onConflictDoNothing: true }
+        );
+        const storedRun = await findOne(transaction, "learner_runs", {
           tenant_id: run.tenantId,
-          schema_version: run.schemaVersion,
           assignment_id: run.assignmentId,
-          learner_id: run.learnerId,
-          publication_id: run.publicationId,
-          assigned_variant_id: run.assignedVariantId,
-          stage: run.stage,
-          first_response_status: run.firstResponseStatus,
-          revision: run.revision,
-          next_activity: run.nextActivity,
-          created_at: run.createdAt,
-          updated_at: run.updatedAt,
         });
+        if (!storedRun) {
+          throw recordError("PERSISTENCE_UNAVAILABLE");
+        }
+        if (storedRun.learner_id !== actor.learnerId) {
+          throw recordError("FORBIDDEN");
+        }
 
-        return { resultKind: "learner-run", resultIds: [run.id] };
+        return {
+          resultKind: "learner-run",
+          resultIds: [storedRun.id as string],
+        };
       }
     );
   };
@@ -1812,6 +1852,84 @@ export const createRecordCommands = <TTransaction>(
     });
   };
 
+  /**
+   * #8: the teacher progress read model. Only runs on assignments this actor
+   * assigned, inside the actor's tenant, reach the projection; other tenants'
+   * rows are filtered out before mapping. Read-only: nothing here writes or
+   * revises history.
+   */
+  const readTeacherProgress = (
+    actor: Actor
+  ): Promise<TeacherProgressResponse> => {
+    return read(actor, "teacher_decision", async (transaction) => {
+      const assignmentRows = await backend.list(transaction, "assignments", {
+        tenant_id: actor.tenantId,
+        assigning_actor_id: actor.actorId,
+      });
+      const ownedAssignments = new Set(
+        assignmentRows.map((row) => String(row.id))
+      );
+      const runRows = await backend.list(
+        transaction,
+        "learner_runs",
+        { tenant_id: actor.tenantId },
+        { column: "updated_at", direction: "desc" }
+      );
+      const runs = runRows
+        .map(mapRun)
+        .filter((run) => ownedAssignments.has(run.assignmentId));
+      const runIds = new Set(runs.map((run) => run.id));
+      const attemptRows = await backend.list(
+        transaction,
+        "learner_attempts",
+        { tenant_id: actor.tenantId },
+        { column: "ordinal", direction: "asc" }
+      );
+      const attemptsByRun = new Map<string, LearnerAttempt[]>();
+      for (const row of attemptRows) {
+        const attempt = mapAttempt(row);
+        if (!runIds.has(attempt.runId)) {
+          continue;
+        }
+        const attempts = attemptsByRun.get(attempt.runId) ?? [];
+        attempts.push(attempt);
+        attemptsByRun.set(attempt.runId, attempts);
+      }
+      const versionsByPublication = new Map<string, LessonVersion>();
+      for (const run of runs) {
+        if (versionsByPublication.has(run.publicationId)) {
+          continue;
+        }
+        // eslint-disable-next-line no-await-in-loop -- one version load per distinct publication, sequential inside the read transaction.
+        const publication = await requirePublication(
+          transaction,
+          actor.tenantId,
+          run.publicationId
+        );
+
+        versionsByPublication.set(
+          run.publicationId,
+          // eslint-disable-next-line no-await-in-loop -- one version load per distinct publication, sequential inside the read transaction.
+          await loadVersion(
+            transaction,
+            publication.lessonVersionId,
+            actor.tenantId
+          )
+        );
+      }
+      return projectTeacherProgress({
+        fetchedAt: clock(),
+        runs: runs.map((run) => {
+          return {
+            run,
+            attempts: attemptsByRun.get(run.id) ?? [],
+            version: versionsByPublication.get(run.publicationId) ?? null,
+          };
+        }),
+      });
+    });
+  };
+
   return {
     kind: backend.kind,
     check: backend.check,
@@ -1827,5 +1945,6 @@ export const createRecordCommands = <TTransaction>(
     readEvidence,
     readLesson,
     readAttemptContext,
+    readTeacherProgress,
   };
 };
