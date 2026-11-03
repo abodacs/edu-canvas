@@ -15,6 +15,7 @@ import {
   applyA2UIMessage,
   createA2UIRenderState,
 } from "@/components/a2ui/renderer";
+import { createSeededGenerationLimitStore } from "@/server/persistence/limits-seeded";
 import type { LessonGenerationInput } from "@/shared/generation-contract";
 
 const teacherActor = syntheticTeacherActor({
@@ -33,6 +34,7 @@ describe("compiled lesson preview", () => {
         difficulty: "on-level" as const,
       };
       const result = await createGenerationService({
+        limits: createSeededGenerationLimitStore(),
         persistence: createSeededPersistence(),
         provider: createDeterministicLessonDraftProvider(),
       }).generate({ actor: teacherActor, input });

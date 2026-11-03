@@ -9,6 +9,8 @@ import {
   MODERATION_BLOCKED_CODE,
 } from "../moderation/content-safety";
 
+import { limitsUnavailableRetryMs } from "../limits/config";
+import { GenerationLimitError, rateLimitedMessage } from "../limits/errors";
 import {
   GenerationRequestError,
   GENERATION_INPUT_INVALID_MESSAGE,
@@ -33,6 +35,7 @@ import type {
   LessonDifficulty,
 } from "@/shared/generation-contract";
 import type { SourceGate } from "../grounding/types";
+import type { GenerationLimitStore, LimitVerdict } from "../limits/contract";
 import type {
   ContentSafety,
   ContentSafetyResult,
@@ -83,6 +86,11 @@ const DEADLINE_DIAGNOSTIC_CODE = "GENERATION_DEADLINE_EXCEEDED";
 export interface GenerationServiceOptions extends DraftAcceptanceOptions {
   persistence: GenerationPersistence;
   provider: LessonDraftProvider;
+  /**
+  Shared request-limit state (#104). Required: reaching the provider without a
+  limit decision is exactly the bypass this port closes.
+  */
+  limits: GenerationLimitStore;
   safety?: ContentSafety;
   /**
   Blocks generation behind an incomplete or unreviewed source snapshot (#114).
@@ -110,7 +118,8 @@ type ProviderCallFailure =
   | { ok: false; kind: "provider"; error: unknown }
   | { ok: false; kind: "per-call" }
   | { ok: false; kind: "total" }
-  | { ok: false; kind: "cancelled" };
+  | { ok: false; kind: "cancelled" }
+  | { ok: false; kind: "limited"; retryAfterMs: number };
 
 type ProviderCallOutcome =
   ProviderCallFailure | { ok: true; response: ProviderResponse };
@@ -261,6 +270,9 @@ const providerTimeoutDiagnostic = (): GenerationDiagnostic => {
     "The lesson provider timed out. Try again."
   );
 };
+
+const limitDiagnostic = (retryAfterMs: number): GenerationDiagnostic =>
+  diagnostic("RATE_LIMITED", rateLimitedMessage(retryAfterMs));
 
 const resultFor = (record: LessonGenerationRecord): GenerationServiceResult => {
   return {
@@ -628,7 +640,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
 
   const persistCallFailure = (
     baseRecord: LessonGenerationRecord,
-    failure: ProviderCallFailure,
+    failure: Exclude<ProviderCallFailure, { kind: "limited" }>,
     priorDiagnostics: GenerationDiagnostic[] = []
   ): Promise<GenerationServiceResult> => {
     if (failure.kind === "cancelled") {
@@ -649,13 +661,64 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     return persistProviderFailure(baseRecord, failure.error, priorDiagnostics);
   };
 
+  const handleCallFailure = async (
+    record: LessonGenerationRecord,
+    failure: ProviderCallFailure,
+    priorDiagnostics: GenerationDiagnostic[] = []
+  ): Promise<GenerationServiceResult> => {
+    if (failure.kind !== "limited") {
+      return persistCallFailure(record, failure, priorDiagnostics);
+    }
+
+    const diagnostics = [
+      ...priorDiagnostics,
+      limitDiagnostic(failure.retryAfterMs),
+    ];
+    await finishAttempt(
+      record,
+      { state: FAILED_RETRYABLE_STATE, diagnostics },
+      diagnostics
+    );
+    throw new GenerationLimitError(failure.retryAfterMs);
+  };
+
   const runProviderCall = async (
     record: LessonGenerationRecord,
     input: NormalizedCommandInput,
     context: ProviderGenerationContext,
     budgetMs: number,
-    budgetKind: "per-call" | "total"
+    budgetKind: "per-call" | "total",
+    sessionId: string
   ): Promise<ProviderCallOutcome> => {
+    // The single provider choke point. Every provider call, including a
+    // correction, must reserve shared limit state before it can run.
+    let reservation: LimitVerdict;
+    try {
+      reservation = await options.limits.reserveProviderCall({
+        tenantId: record.tenantId,
+        teacherId: record.teacherId,
+        sessionId,
+        requestId: record.requestId,
+        attemptNumber: record.attempt,
+        correction: context.correctionAttempt,
+        leaseTtlMs: deadlines.leaseMs,
+      });
+    } catch {
+      // Fail closed: an unavailable limit store rejects with a bounded wait.
+      return {
+        ok: false,
+        kind: "limited",
+        retryAfterMs: limitsUnavailableRetryMs,
+      };
+    }
+    if (!reservation.allowed) {
+      return {
+        ok: false,
+        kind: "limited",
+        retryAfterMs: reservation.retryAfterMs,
+      };
+    }
+
     const key = generationCallKey(record.tenantId, record.requestId);
     const controller = new AbortController();
     const abortError = new GenerationAbortError(budgetKind);
@@ -701,7 +764,8 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
 
   const runAttempt = async (
     baseRecord: LessonGenerationRecord,
-    input: NormalizedCommandInput
+    input: NormalizedCommandInput,
+    sessionId: string
   ): Promise<GenerationServiceResult> => {
     const attemptNumber = baseRecord.attempt + 1;
     const timestamp = now();
@@ -804,10 +868,11 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       input,
       buildProviderContext(curriculum, false, []),
       firstBudget,
-      firstBudget < deadlines.perCallMs ? "total" : "per-call"
+      firstBudget < deadlines.perCallMs ? "total" : "per-call",
+      sessionId
     );
     if (!firstOutcome.ok) {
-      return persistCallFailure(record, firstOutcome);
+      return handleCallFailure(record, firstOutcome);
     }
 
     const firstDecision = safety.checkGeneratedContent(
@@ -870,10 +935,11 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       input,
       buildProviderContext(curriculum, true, correctionDiagnostics),
       correctionBudget,
-      correctionBudget < deadlines.perCallMs ? "total" : "per-call"
+      correctionBudget < deadlines.perCallMs ? "total" : "per-call",
+      sessionId
     );
     if (!correctionOutcome.ok) {
-      return persistCallFailure(
+      return handleCallFailure(
         record,
         correctionOutcome,
         correctionDiagnostics
@@ -944,29 +1010,60 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     }
   };
 
+  const markSourceSnapshotUsed = async (
+    result: GenerationServiceResult,
+    input: NormalizedCommandInput
+  ): Promise<void> => {
+    const { sourceGate } = options;
+    if (
+      !sourceGate ||
+      !input.sourceSnapshotId ||
+      result.record.state !== READY_FOR_REVIEW_STATE
+    ) {
+      return;
+    }
+    try {
+      await sourceGate.markUsed(
+        result.record.tenantId,
+        result.record.teacherId,
+        input.sourceSnapshotId,
+        now()
+      );
+    } catch {
+      // Usage tracking must not fail an accepted draft; the hourly sweep
+      // still expires the snapshot on its original 24-hour bound.
+    }
+  };
+
+  const releaseAttemptLease = async (
+    baseRecord: LessonGenerationRecord
+  ): Promise<void> => {
+    // A provider error, timeout, limit rejection, or cancellation must not
+    // leave the teacher locked out until the lease expires.
+    try {
+      await options.limits.releaseGenerationLease({
+        tenantId: baseRecord.tenantId,
+        teacherId: baseRecord.teacherId,
+        requestId: baseRecord.requestId,
+        attemptNumber: baseRecord.attempt + 1,
+      });
+    } catch {
+      // The lease is time-bounded; a failed release cannot mask the result.
+    }
+  };
+
   const runAttemptWithSourceUsage = async (
     baseRecord: LessonGenerationRecord,
-    input: NormalizedCommandInput
+    input: NormalizedCommandInput,
+    sessionId: string
   ): Promise<GenerationServiceResult> => {
-    const result = await runAttempt(baseRecord, input);
-    if (
-      input.sourceSnapshotId &&
-      options.sourceGate &&
-      result.record.state === READY_FOR_REVIEW_STATE
-    ) {
-      try {
-        await options.sourceGate.markUsed(
-          result.record.tenantId,
-          result.record.teacherId,
-          input.sourceSnapshotId,
-          now()
-        );
-      } catch {
-        // Usage tracking must not fail an accepted draft; the hourly sweep
-        // still expires the snapshot on its original 24-hour bound.
-      }
+    try {
+      const result = await runAttempt(baseRecord, input, sessionId);
+      await markSourceSnapshotUsed(result, input);
+      return result;
+    } finally {
+      await releaseAttemptLease(baseRecord);
     }
-    return result;
   };
 
   // #148: a revision is a new request that names the blocked one. It never
@@ -1079,7 +1176,11 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
             { code: "RETRY_METADATA_MISMATCH" }
           );
         }
-        return runAttemptWithSourceUsage(retryRecord, effectiveInput);
+        return runAttemptWithSourceUsage(
+          retryRecord,
+          effectiveInput,
+          command.actor.sessionId
+        );
       }
 
       const timestamp = now();
@@ -1108,7 +1209,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         createdAt: timestamp,
         updatedAt: timestamp,
       };
-      return runAttemptWithSourceUsage(record, input);
+      return runAttemptWithSourceUsage(record, input, command.actor.sessionId);
     },
 
     async cancel(

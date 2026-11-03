@@ -9,6 +9,8 @@ import {
   syntheticTeacherActor,
 } from "@/server/identity/test-actors";
 
+import { createSeededGenerationLimitStore } from "@/server/persistence/limits-seeded";
+import { limitsUnavailableRetryMs } from "@/server/limits/config";
 import { createSeededPersistence } from "../persistence/seeded";
 import {
   createDeterministicLessonDraftProvider,
@@ -123,6 +125,7 @@ const expectRetryableTimeout = (
 describe("lesson generation service", () => {
   it("returns four safe variants for a seeded teacher", async () => {
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
       requestIdFactory: () => "draft_req_test_1",
@@ -170,6 +173,7 @@ describe("lesson generation service", () => {
 
   it("localizes the accepted learning path for Arabic requests", async () => {
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
       requestIdFactory: () => "draft_req_arabic_learning_path",
@@ -201,6 +205,7 @@ describe("lesson generation service", () => {
     const service = createGenerationService({
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
+      limits: createSeededGenerationLimitStore(),
       requestIdFactory: () => "draft_req_source_snapshot_input",
     });
 
@@ -233,6 +238,7 @@ describe("lesson generation service", () => {
       },
     };
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider,
       requestIdFactory: () => "draft_req_missing_learning_path",
@@ -259,6 +265,7 @@ describe("lesson generation service", () => {
 
   it("keeps a lesson in teacher review when the approved prerequisite pack is missing", async () => {
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
       curriculumContext: () => {
@@ -291,6 +298,7 @@ describe("lesson generation service", () => {
 
   it("blocks a prerequisite graph from another tenant", async () => {
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
       curriculumContext: (input) => {
@@ -323,6 +331,7 @@ describe("lesson generation service", () => {
 
   it("blocks an unsupported prerequisite graph version", async () => {
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
       curriculumContext: (input) => {
@@ -355,6 +364,7 @@ describe("lesson generation service", () => {
 
   it("keeps semantic quality warnings visible with validator provenance", async () => {
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       // The fixture's standard variants are genuinely different now (#168),
       // so the warning scenario serves an actual duplicate structure on
@@ -448,6 +458,7 @@ describe("lesson generation service", () => {
       },
     };
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider,
       requestIdFactory: () => "draft_req_semantic_block",
@@ -480,6 +491,7 @@ describe("lesson generation service", () => {
   it("keeps semantic timeout retryable and allows one explicit retry", async () => {
     let validationCalls = 0;
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
       requestIdFactory: () => "draft_req_semantic_retry",
@@ -543,6 +555,7 @@ describe("lesson generation service", () => {
   it("does not duplicate a draft when the same idempotency key is retried", async () => {
     const provider = createDeterministicLessonDraftProvider();
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider,
       requestIdFactory: () => "draft_req_test_2",
@@ -560,6 +573,7 @@ describe("lesson generation service", () => {
     const provider = createDeterministicLessonDraftProvider();
     let requestNumber = 0;
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider,
       requestIdFactory: () => {
@@ -620,6 +634,7 @@ describe("lesson generation service", () => {
     ]);
     const provider = createDeterministicLessonDraftProvider();
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence({ generationStore }),
       provider,
       now: () => "2026-07-18T00:00:00.000Z",
@@ -708,6 +723,7 @@ describe("lesson generation service", () => {
       readGeneration: () => Promise.resolve(structuredClone(currentRecord)),
     };
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence,
       provider: createDeterministicLessonDraftProvider(),
       now: () => "2026-07-18T00:00:00.000Z",
@@ -741,6 +757,7 @@ describe("lesson generation service", () => {
       },
     };
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence,
       provider: {
         provenance,
@@ -811,6 +828,7 @@ describe("lesson generation service", () => {
     const provider =
       createDeterministicLessonDraftProvider("invalid-then-valid");
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider,
       requestIdFactory: () => "draft_req_test_3",
@@ -826,6 +844,7 @@ describe("lesson generation service", () => {
 
   it("blocks a draft after the correction attempt is also invalid", async () => {
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider("invalid-then-invalid"),
       requestIdFactory: () => "draft_req_test_4",
@@ -840,6 +859,7 @@ describe("lesson generation service", () => {
 
   it("blocks output whose language direction does not match the teacher request", async () => {
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider: {
         provenance: {
@@ -908,6 +928,7 @@ describe("lesson generation service", () => {
       },
     };
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider,
       requestIdFactory: () => "draft_req_test_5",
@@ -931,6 +952,7 @@ describe("lesson generation service", () => {
 
   it("persists configured provider provenance for an initial retryable failure", async () => {
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider("timeout"),
       requestIdFactory: () => "draft_req_test_initial_provenance_failure",
@@ -963,6 +985,7 @@ describe("lesson generation service", () => {
       validatorVersion: "lesson-validator-v2",
     };
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider: {
         provenance,
@@ -994,6 +1017,7 @@ describe("lesson generation service", () => {
       validatorVersion: "lesson-validator-v1",
     };
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider: {
         provenance,
@@ -1028,6 +1052,7 @@ describe("lesson generation service", () => {
 
   it("rejects a learner actor and invalid metadata for generation", async () => {
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
     });
@@ -1069,6 +1094,7 @@ describe("lesson generation service", () => {
   it("blocks unsafe teacher prompts before calling the provider", async () => {
     const provider = createDeterministicLessonDraftProvider();
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider,
       requestIdFactory: () => "draft_req_test_moderated_prompt",
@@ -1092,6 +1118,7 @@ describe("lesson generation service", () => {
 
   it("blocks unsafe provider output without exposing it or correcting it", async () => {
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider: {
         provenance: {
@@ -1123,6 +1150,7 @@ describe("lesson generation service", () => {
 
   it("returns a retryable state for a rate-limited provider", async () => {
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider("rate-limit"),
       requestIdFactory: () => "draft_req_test_rate_limit",
@@ -1143,5 +1171,130 @@ describe("lesson generation service", () => {
     expect(result.publicResult.diagnostics[0]?.code).toBe(
       "PROVIDER_RATE_LIMIT"
     );
+  });
+
+  it("rejects at the provider choke point without invoking the provider or consuming budget", async () => {
+    const limits = createSeededGenerationLimitStore({
+      policy: { tenantProviderCallsPerDay: 0 },
+    });
+    const persistence = createSeededPersistence();
+    const provider = createDeterministicLessonDraftProvider();
+    const service = createGenerationService({
+      limits,
+      persistence,
+      provider,
+      requestIdFactory: () => "draft_req_test_limit_rejected",
+    });
+
+    await expect(service.generate(teacherCommand())).rejects.toMatchObject({
+      code: "RATE_LIMITED",
+      retryAfterMs: expect.any(Number),
+    });
+
+    expect(provider.calls).toBe(0);
+    expect(limits.snapshot().counters).toHaveLength(0);
+    expect(limits.snapshot().leases).toHaveLength(0);
+    await expect(
+      persistence.readGeneration(
+        syntheticSeed.tenant.id,
+        "draft_req_test_limit_rejected"
+      )
+    ).resolves.toMatchObject({ state: "failed-retryable" });
+  });
+
+  it("counts a correction against the provider-call budget", async () => {
+    const limits = createSeededGenerationLimitStore({
+      policy: { tenantProviderCallsPerDay: 1 },
+    });
+    const persistence = createSeededPersistence();
+    const provider =
+      createDeterministicLessonDraftProvider("invalid-then-valid");
+    const service = createGenerationService({
+      limits,
+      persistence,
+      provider,
+      requestIdFactory: () => "draft_req_test_correction_budget",
+    });
+
+    await expect(service.generate(teacherCommand())).rejects.toMatchObject({
+      code: "RATE_LIMITED",
+    });
+
+    expect(provider.calls).toBe(1);
+    expect(
+      limits
+        .snapshot()
+        .counters.filter((counter) => counter.kind === "provider-call")
+    ).toContainEqual(expect.objectContaining({ count: 1 }));
+    await expect(
+      persistence.readGeneration(
+        syntheticSeed.tenant.id,
+        "draft_req_test_correction_budget"
+      )
+    ).resolves.toMatchObject({ state: "failed-retryable" });
+  });
+
+  it("releases the active-generation lease after a provider timeout", async () => {
+    const limits = createSeededGenerationLimitStore();
+    let calls = 0;
+    const provider: LessonDraftProvider = {
+      provenance: {
+        provider: "test",
+        model: "test",
+        promptTemplateVersion: "test",
+        validatorVersion: "test",
+      },
+      generate(request) {
+        calls += 1;
+        if (calls === 1) {
+          throw new LessonProviderError(
+            "timeout",
+            "The lesson provider timed out. Try again."
+          );
+        }
+        return Promise.resolve({
+          draft: createEquivalentFractionsDraft(request),
+        });
+      },
+    };
+    const service = createGenerationService({
+      limits,
+      persistence: createSeededPersistence(),
+      provider,
+      requestIdFactory: () => `draft_req_test_lease_${calls}`,
+    });
+
+    const first = await service.generate(teacherCommand());
+
+    expect(first.record.state).toBe("failed-retryable");
+    expect(limits.snapshot().leases).toHaveLength(0);
+
+    const second = await service.generate(
+      teacherCommand({
+        ...validInput,
+        idempotencyKey: "request-after-timeout",
+      })
+    );
+
+    expect(second.record.state).toBe("ready-for-review");
+  });
+
+  it("fails closed when the shared limit store is unavailable", async () => {
+    const provider = createDeterministicLessonDraftProvider();
+    const service = createGenerationService({
+      limits: {
+        reserveProviderCall: () => Promise.reject(new Error("store down")),
+        releaseGenerationLease: () => Promise.resolve(),
+      },
+      persistence: createSeededPersistence(),
+      provider,
+      requestIdFactory: () => "draft_req_test_limit_outage",
+    });
+
+    await expect(service.generate(teacherCommand())).rejects.toMatchObject({
+      code: "RATE_LIMITED",
+      retryAfterMs: limitsUnavailableRetryMs,
+    });
+    expect(provider.calls).toBe(0);
   });
 });

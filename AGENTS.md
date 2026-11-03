@@ -13,6 +13,7 @@ These are checks, not conventions. `pnpm check` runs every one of them locally; 
 | Rule | Enforced by | Fails when |
 | --- | --- | --- |
 | The demo-mode runtime is gone; use `syntheticSeed`, not the removed demo names | `pnpm verify:demo-removal` | a removed identifier (`DEMO_MODE`, `demoSeed`, `demoMode`, `seededDemoMode`, `readDemoCounts`, and the rest) appears outside `docs/archive/` and dated evidence records |
+| The deployment shape and request-limit policy agree | `pnpm verify:limits` | `fly.toml`, the release runbook, AgDR-0007, or `src/server/limits/config.ts` state a different Machine count or quota number |
 | Runtime composition uses PostgreSQL; in-memory stores are test doubles | `runtime-imports-in-memory-store` in `pnpm verify:boundaries` | a non-test `src/` module imports `persistence/seeded.ts` or any `persistence/*-seeded.ts`; name every new double with the `-seeded.ts` suffix |
 | No server-only value reaches the browser bundle | `pnpm verify:client-boundary` | a key or secret marker appears in `.output/public` |
 | Every private API route resolves a session | `pnpm verify:identity-surface` | a route under `src/routes/api` is neither public-listed nor reaches a delivery module that resolves the caller |

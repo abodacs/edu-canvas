@@ -11,7 +11,7 @@ The runbook makes no production-readiness or availability claim for the mileston
 
 - Fly.io builds and runs the checked-in `Dockerfile`.
 - Supabase provides the hosted PostgreSQL database.
-- **One continuously running Fly.io instance.** The preview uses server-sent events, and the current request limits are process-local. Multiple instances would need shared request-limit state first, so scaling out stays out of scope until the production path adds it ([design decision Q12](design/design-doc-questions.md), [AgDR-0007](agdr/AgDR-0007-demo-access-and-deployment.md)).
+- **One continuously running Fly.io instance.** The preview uses server-sent events. Request counters and active-generation leases are shared in PostgreSQL ([#104](https://github.com/abodacs/edu-canvas/issues/104)), but the milestone still deploys one Machine; scaling out stays out of scope until the production path rehearses it and load evidence lands ([design decision Q12](design/design-doc-questions.md), [AgDR-0007](agdr/AgDR-0007-demo-access-and-deployment.md)).
 - The server connects to PostgreSQL with the server-only `DATABASE_URL` secret.
 - Lesson generation uses the server-only provider key secret. The product runs its selected model behind the existing provider interface; see [AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md) for the provider selection and deadlines. The historical `META_API_KEY`/`META_MODEL` secret and setting names are kept until the provider migration lands ([AgDR-0006](agdr/AgDR-0006-provider-selection-and-deadlines.md)).
 - Fly runs the idempotent migration runner as a release command before replacing application Machines.
@@ -85,7 +85,7 @@ Run these commands from the repository root or from the release worktree.
    fly scale show
    ```
 
-   [`fly.toml`](../fly.toml) owns the count through `min_machines_running = 1`; do not restate it. If the app already ran more Machines, bring it down once with `fly scale count 1 --region ams --yes`, replacing `ams` when `primary_region` changed. This app stores data in Supabase and has no Fly volume, so the Machine can be replaced independently. Do not scale out: SSE preview delivery and the process-local burst limits assume a single instance ([Q12](design/design-doc-questions.md)); shared limit state is a prerequisite for more than one Machine and is a production-path item, not a milestone one.
+   [`fly.toml`](../fly.toml) owns the count through `min_machines_running = 1`; do not restate it. If the app already ran more Machines, bring it down once with `fly scale count 1 --region ams --yes`, replacing `ams` when `primary_region` changed. This app stores data in Supabase and has no Fly volume, so the Machine can be replaced independently. Do not scale out: SSE preview delivery assumes a single instance for the milestone, and multi-Machine remains a production decision after the [#104](https://github.com/abodacs/edu-canvas/issues/104) shared limits are rehearsed and [#109](https://github.com/abodacs/edu-canvas/issues/109) load evidence exists.
 
 5. Verify the public service. Replace the hostname if the Fly app name was changed:
 
@@ -101,10 +101,10 @@ Readiness must report `status: "ready"`, `config.persistence: "postgres"`, and n
 
 The [implementation contracts](design/design-doc-implementation.md#apply-access-limits-and-safe-release-changes) define the limits; the deployment must have them active. Verify each before giving the URL to anyone:
 
-**Status 2026-10-27:** the current build implements none of these limits or the invitation sessions. The [threat model](security/threat-model.md) records them as open, and [#74](https://github.com/abodacs/edu-canvas/issues/74) owns the protected session and cost guard. Do not open a public URL until they land.
+**Status 2026-11-03:** implemented by [#104](https://github.com/abodacs/edu-canvas/issues/104). Every limit below is a row in PostgreSQL (`request_limit_counters` and `active_generation_leases`), and `src/server/limits/config.ts` owns every number. A generate request reserves at the single provider choke point; a rejected request never reaches the provider and returns `RATE_LIMITED` (HTTP 429) with an honest `Retry-After`. `pnpm verify:limits` keeps this runbook, `fly.toml`, AgDR-0007, and the policy constants in agreement.
 
 - Database-backed generation quotas in Postgres: at most 10 generation attempts per teacher per hour and 100 per tenant per day. Corrections count against the provider-call budget; all generation stops at 200 provider calls per tenant per day.
-- Process-local burst limits: at most 30 authoring requests per session per minute and at most one active generation per teacher. Rejected requests receive a stated retry interval (`RATE_LIMITED`, HTTP 429).
+- Shared burst limits: at most 30 authoring requests per session per minute and at most one active generation per teacher. The lease expires, so a crashed worker cannot lock a teacher out permanently. Rejected requests receive a stated retry interval (`RATE_LIMITED`, HTTP 429).
 - Separate teacher and learner invitation credentials exchanged for signed, HttpOnly, Secure, SameSite session cookies; no invitation credential in client bundles or repository files.
 
 ## Operations
@@ -123,7 +123,7 @@ Fly only displays secret names and digests, not secret values. Rotate the Supaba
 Every item below is required before this deployment serves real users. None is satisfied by the milestone configuration; each needs an owner and evidence before launch.
 
 - **Authentication and sessions.** A reviewed authentication model for every user; invitation credentials and seeded identities end. Role and identity derive only from protected server sessions ([Q16](design/design-doc-questions.md)).
-- **Shared request-limit state.** The database-backed quotas stay; the process-local burst limits must move to shared state before the app runs on more than one Machine.
+- **Shared request-limit state.** Implemented by [#104](https://github.com/abodacs/edu-canvas/issues/104): counters, bursts, and active-generation leases are PostgreSQL rows. The remaining gate is a rehearsed two-Machine run with the [#109](https://github.com/abodacs/edu-canvas/issues/109) load evidence; do not scale out before it.
 - **Data protection.** Least-privilege database role, backups with tested restore evidence, DPA, EU-residency approval, consent handling, and a separate production seed/data policy. `SYNTHETIC_DATA_ONLY=true` stays until all of them pass.
 - **Operations.** TLS/domain configuration, alerting, log retention that keeps answer keys and learner data out of operational logs, and measured production targets (10-second draft p95, 500-millisecond render p95, 99.9% published availability — reference values, to be measured).
 - **Capacity and cost.** Provider-call budgets per tenant measured against real cost; quota defaults reviewed against billing before opening generation to real classrooms.

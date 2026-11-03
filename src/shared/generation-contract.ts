@@ -67,6 +67,7 @@ export const generationRequestErrorCodeValues = [
   "DRAFT_SUPERSEDED",
   "CANCELLATION_FORBIDDEN",
   "GENERATION_SOURCE_NOT_READY",
+  "RATE_LIMITED",
 ] as const;
 
 export type GenerationRequestErrorCode =
@@ -83,6 +84,7 @@ export const generationRequestErrorStatusByCode = {
   DRAFT_SUPERSEDED: 409,
   CANCELLATION_FORBIDDEN: 409,
   GENERATION_SOURCE_NOT_READY: 422,
+  RATE_LIMITED: 429,
 } as const satisfies Record<GenerationRequestErrorCode, number>;
 
 export type SemanticValidationVerdict =

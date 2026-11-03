@@ -20,6 +20,7 @@ import { createSeededPersistence } from "@/server/persistence/seeded";
 import { createPublicationService } from "@/server/publication/service";
 import { syntheticSeed } from "@/server/seed-data";
 
+import { createSeededGenerationLimitStore } from "@/server/persistence/limits-seeded";
 import type { ReviewPack } from "@/shared/publication-contract";
 
 const requestId = "draft_req_review_render";
@@ -34,6 +35,7 @@ const teacher = syntheticTeacherActor({
 const openReview = async (): Promise<ReviewPack> => {
   const persistence = createSeededPersistence();
   await createGenerationService({
+    limits: createSeededGenerationLimitStore(),
     persistence,
     provider: createDeterministicLessonDraftProvider(),
     requestIdFactory: () => requestId,

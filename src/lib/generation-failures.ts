@@ -97,7 +97,14 @@ export const resolveFailure = (
   }
 
   if (status === 429 || code === "RATE_LIMITED") {
-    return { kind: "error", message: ERROR_COPY.rateLimited, code: null };
+    // #104: the server states the real retry window in its curated message.
+    // Surface it when present; keep the canned copy when it is absent.
+    const curated = curatedMessageOf(code, message);
+    return {
+      kind: "error",
+      message: curated ?? ERROR_COPY.rateLimited,
+      code: curated === null ? null : seamCodeOf(code),
+    };
   }
 
   if (status === 503 || code === "AUTH_UNAVAILABLE") {

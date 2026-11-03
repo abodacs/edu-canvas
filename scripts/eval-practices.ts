@@ -25,6 +25,7 @@ import {
 } from "@/server/generation/service";
 import { validateProviderDraft } from "@/server/generation/validation";
 import { createDefaultContentSafety } from "@/server/moderation/content-safety";
+import { createSeededGenerationLimitStore } from "@/server/persistence/limits-seeded";
 import { createPostgresPersistence } from "@/server/persistence/postgres";
 import { syntheticSeed } from "@/server/seed-data";
 import { lessonGenerationInputSchema } from "@/shared/generation-contract";
@@ -600,6 +601,7 @@ const generateOnce = async (
   const service = createGenerationService({
     persistence,
     provider: createDeterministicLessonDraftProvider(scenario),
+    limits: createSeededGenerationLimitStore(),
   });
   return await service.generate({
     actor: evalActor(),

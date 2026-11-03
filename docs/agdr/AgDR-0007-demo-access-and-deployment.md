@@ -21,6 +21,8 @@ Usage is bounded at two layers:
 - **Database-backed quotas (Postgres counters):** at most 10 generation attempts per teacher per hour and 100 per tenant per day; corrections count against the provider-call budget; all generation stops at 200 provider calls per tenant per day.
 - **Process-local burst limits:** at most 30 authoring requests per session per minute; at most one active generation per teacher. Rejected requests return `RATE_LIMITED` with a stated retry interval.
 
+**Update 2026-11-03 ([#104](https://github.com/abodacs/edu-canvas/issues/104)).** Burst limits and active-generation leases now use the same PostgreSQL store as the quotas; the numbers above are unchanged. The deployment still runs exactly one continuously running application Machine, and this record's single-Machine tradeoff stays in force until a two-Machine rehearsal and [#109](https://github.com/abodacs/edu-canvas/issues/109) load evidence exist.
+
 These defaults bound demo use; they are not measured production limits. Measure costs before changing them.
 
 ## Consequences

@@ -5,6 +5,7 @@ import { syntheticTeacherActor } from "@/server/identity/test-actors";
 import { createSeededPersistence } from "@/server/persistence/seeded";
 import { syntheticSeed } from "@/server/seed-data";
 
+import { createSeededGenerationLimitStore } from "@/server/persistence/limits-seeded";
 import {
   createDeterministicLessonDraftProvider,
   createEquivalentFractionsDraft,
@@ -153,6 +154,7 @@ const generateFixture = (
   Awaited<ReturnType<ReturnType<typeof createGenerationService>["generate"]>>
 > => {
   const service = createGenerationService({
+    limits: createSeededGenerationLimitStore(),
     persistence: createSeededPersistence(),
     provider: createDeterministicLessonDraftProvider(),
     requestIdFactory: () => "draft_req_share_fixture",
@@ -272,6 +274,7 @@ describe("acceptance gate snapshot", () => {
 
   it("fails closed as retryable through the generation service", async () => {
     const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
       requestIdFactory: () => "draft_req_gate_crash",
