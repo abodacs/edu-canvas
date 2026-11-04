@@ -1,13 +1,24 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  fractionEquivalencePack,
+  multistepWordProblemsPack,
+} from "@/server/curriculum/built-in-packs";
+
+import {
+  buildLessonPrompt,
   createDeterministicLessonDraftProvider,
   createEquivalentFractionsDraft,
   createMetaLessonDraftProvider,
   LessonProviderError,
 } from "./provider";
+import { createSyntheticCurriculumContext } from "./semantic-validation";
 import { validateProviderDraft } from "./validation";
-import type { NormalizedGenerationRequest } from "./provider";
+import type {
+  NormalizedGenerationRequest,
+  ProviderGenerationContext,
+} from "./provider";
+import type { ProviderLessonDraft } from "./types";
 
 const captureRejection = async (
   promise: Promise<unknown>
@@ -25,6 +36,72 @@ const request: NormalizedGenerationRequest = {
   standardId: "standard_ccss_4_nf_a_01",
   language: "en",
   difficulty: "on-level",
+};
+
+/**
+ * The provider context a resolved pack produces: the acceptance path maps a
+ * `VersionedCurriculumContext` into this shape. Building it from
+ * `createSyntheticCurriculumContext` keeps the test on the real pack data, so a
+ * frame change in `built-in-packs.ts` reaches these assertions.
+ */
+const packProviderContext = (
+  standardId: string,
+  language: "en" | "ar" = "en"
+): ProviderGenerationContext => {
+  const curriculum = createSyntheticCurriculumContext({
+    grade: 4,
+    language,
+    standardId,
+  });
+  const { reference } = curriculum;
+
+  return {
+    correctionAttempt: false,
+    diagnostics: [],
+    ...(curriculum.promptFrame && { promptFrame: curriculum.promptFrame }),
+    curriculumContext: {
+      nodes: curriculum.nodes.map((node) => {
+        return { id: node.id, screenPurposeId: node.screenPurposeId };
+      }),
+      edges: curriculum.edges.map((edge) => {
+        return {
+          prerequisiteId: edge.prerequisiteId,
+          successorId: edge.successorId,
+        };
+      }),
+      targetNodeId: curriculum.targetNodeId,
+    },
+    ...(reference && {
+      referenceContext: {
+        id: reference.id,
+        version: reference.version,
+        graphVersion: curriculum.graphVersion,
+        standardCode: curriculum.standardCode,
+        source: reference.source,
+        targets: reference.targets,
+        prompt: reference.prompt,
+      },
+    }),
+  };
+};
+
+const buildPackDraft = async (
+  standardId: string
+): Promise<ProviderLessonDraft> => {
+  const provider = createDeterministicLessonDraftProvider();
+  const response = await provider.generate(
+    { ...request, standardId },
+    packProviderContext(standardId)
+  );
+  const result = validateProviderDraft(response.draft);
+
+  if (!result.ok) {
+    throw new Error(
+      `Expected the deterministic draft for ${standardId} to validate.`
+    );
+  }
+
+  return result.draft;
 };
 
 const expectCanonicalRequestBody = (body: {
@@ -95,7 +172,7 @@ describe("lesson draft providers", () => {
     expect(provider.provenance).toMatchObject({
       provider: "deterministic-fixture",
       model: "equivalent-fractions-fixture-v1",
-      promptTemplateVersion: "lesson-prompt-v1",
+      promptTemplateVersion: "lesson-prompt-v2",
     });
   });
 
@@ -320,5 +397,108 @@ describe("lesson draft providers", () => {
     );
     expect(body.input).toContain("Do not use any other node");
     expect(body.input).not.toContain("answerKey");
+  });
+});
+
+describe("pack-framed provider prompt (#221)", () => {
+  it("asks for word-problem to equation matching on a 4.OA.A.3 pack", () => {
+    const frame = multistepWordProblemsPack.promptFrame;
+    const prompt = buildLessonPrompt(
+      {
+        ...request,
+        prompt: "multistep word problems for grade 4",
+        standardId: multistepWordProblemsPack.standardId,
+      },
+      packProviderContext(multistepWordProblemsPack.standardId)
+    );
+
+    expect(prompt).toContain(`Task: ${frame.taskLine}`);
+    expect(prompt).toContain(`source items from "${frame.sourceGroupLabel}"`);
+    expect(prompt).toContain(
+      `matching target items from "${frame.targetGroupLabel}"`
+    );
+    expect(prompt).toContain(`${frame.sourceItemCount} source items`);
+    expect(prompt).not.toMatch(/equivalent[- ]fractions?|1\/2/iu);
+  });
+
+  it("keeps a 4.NF.A.1 prompt on equivalent-fraction matching", () => {
+    const frame = fractionEquivalencePack.promptFrame;
+    const prompt = buildLessonPrompt(
+      request,
+      packProviderContext(fractionEquivalencePack.standardId)
+    );
+
+    expect(prompt).toContain(`Task: ${frame.taskLine}`);
+    expect(prompt).toContain(`source items from "${frame.sourceGroupLabel}"`);
+    expect(prompt).toContain(`${frame.targetItemCount} matching target items`);
+    expect(prompt).toMatch(/fractions?/iu);
+    expect(prompt).not.toMatch(/word problems?|equations?/iu);
+  });
+});
+
+describe("pack-framed deterministic fixture (#221)", () => {
+  it.each([
+    { label: "4.NF.A.1", pack: fractionEquivalencePack },
+    { label: "4.OA.A.3", pack: multistepWordProblemsPack },
+  ])("builds the $label draft from the pack frame", async ({ pack }) => {
+    const draft = await buildPackDraft(pack.standardId);
+    const frame = pack.promptFrame;
+    const [practice] = draft.variants;
+
+    expect(draft.variants.map((variant) => variant.kind)).toStrictEqual([
+      "standard",
+      "standard",
+      "scaffold",
+      "challenge",
+    ]);
+    expect(practice?.instructions).toBe(frame.taskLine);
+    expect(practice?.sourceItems).toHaveLength(frame.sourceItemCount);
+    expect(practice?.targetItems).toHaveLength(frame.targetItemCount);
+    expect(
+      draft.variants.map((variant) => {
+        return {
+          source: variant.accessibilityMetadata.sourceGroupLabel,
+          target: variant.accessibilityMetadata.targetGroupLabel,
+          paired: variant.relationships.length === variant.sourceItems.length,
+        };
+      })
+    ).toStrictEqual(
+      draft.variants.map(() => {
+        return {
+          source: frame.sourceGroupLabel,
+          target: frame.targetGroupLabel,
+          paired: true,
+        };
+      })
+    );
+  });
+
+  it("walks the resolved pack graph instead of the seeded path", async () => {
+    const draft = await buildPackDraft(multistepWordProblemsPack.standardId);
+
+    expect(draft.learningPath?.steps.map((step) => step.nodeId)).toStrictEqual(
+      multistepWordProblemsPack.graph.nodes.map((node) => node.id)
+    );
+  });
+
+  it("keeps equivalent-fraction wording out of a 4.OA.A.3 draft", async () => {
+    const draft = await buildPackDraft(multistepWordProblemsPack.standardId);
+    const copy = draft.variants.map((variant) => {
+      return [variant.title, variant.instructions];
+    });
+
+    expect(JSON.stringify(copy)).not.toMatch(/equivalent[- ]fractions?/iu);
+  });
+
+  it("keeps the 4.NF.A.1 draft shape and its fraction item labels", async () => {
+    const draft = await buildPackDraft(fractionEquivalencePack.standardId);
+
+    expect(
+      draft.variants[0]?.sourceItems.map((item) => item.label)
+    ).toStrictEqual(["1/2", "2/3", "3/4"]);
+    expect(
+      draft.variants[0]?.targetItems.map((item) => item.label)
+    ).toStrictEqual(["2/4", "4/6", "6/8"]);
+    expect(draft.variants[0]?.relationships).toHaveLength(3);
   });
 });

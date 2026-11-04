@@ -368,6 +368,7 @@ const buildProviderContext = (
   return {
     correctionAttempt: isCorrectionAttempt,
     diagnostics,
+    ...(curriculum?.promptFrame && { promptFrame: curriculum.promptFrame }),
     ...(curriculum && {
       curriculumContext: {
         nodes: curriculum.nodes.map((node) => {

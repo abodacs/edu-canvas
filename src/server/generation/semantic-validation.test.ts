@@ -420,7 +420,9 @@ describe("bounded semantic lesson validation", () => {
         }),
       ])
     );
-    expect(draft.variants[0]?.title).toBe("Practice equivalent fractions");
+    expect(draft.variants[0]?.title).toBe(
+      "Practice — Possible equivalent fractions"
+    );
     expect(JSON.stringify(result)).not.toContain("3/4");
   });
 
@@ -464,7 +466,9 @@ describe("bounded semantic lesson validation", () => {
 
     expect(result.verdict).toBe("warning");
     expect(advisoryRelationshipCount).toBe(0);
-    expect(draft.variants[0]?.title).toBe("Practice equivalent fractions");
+    expect(draft.variants[0]?.title).toBe(
+      "Practice — Possible equivalent fractions"
+    );
 
     expectPrivateOutputScrubbed(result);
 

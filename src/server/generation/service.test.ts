@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { lessonGenerationInputSchema } from "@/shared/generation-contract";
 
+import { multistepWordProblemsPack } from "@/server/curriculum/built-in-packs";
 import { syntheticSeed } from "@/server/seed-data";
 import { parseTenantId } from "@/server/identity/identifiers";
 import {
@@ -170,6 +171,44 @@ describe("lesson generation service", () => {
         validatorVersion: "semantic-validation-runner-v1",
       },
     });
+  });
+
+  it("generates a 4.OA.A.3 draft from the pack frame without a live provider", async () => {
+    const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
+      persistence: createSeededPersistence(),
+      provider: createDeterministicLessonDraftProvider(),
+      requestIdFactory: () => "draft_req_operations_1",
+    });
+    const frame = multistepWordProblemsPack.promptFrame;
+
+    const result = await service.generate(
+      teacherCommand({
+        prompt: "multistep word problems for grade 4",
+        grade: 4,
+        standardId: multistepWordProblemsPack.standardId,
+        language: "en",
+        difficulty: "on-level",
+        idempotencyKey: "request-multistep-word-problems-1",
+      })
+    );
+
+    expect(result.record.state).toBe("ready-for-review");
+    expect(result.record.draft?.variants[0]?.instructions).toBe(frame.taskLine);
+    expect(
+      result.record.draft?.variants[0]?.accessibilityMetadata
+    ).toMatchObject({
+      sourceGroupLabel: frame.sourceGroupLabel,
+      targetGroupLabel: frame.targetGroupLabel,
+    });
+    expect(
+      result.record.draft?.learningPath.steps.map((step) => step.nodeId)
+    ).toStrictEqual(
+      multistepWordProblemsPack.graph.nodes.map((node) => node.id)
+    );
+    expect(
+      JSON.stringify(result.record.draft?.variants[0]?.instructions)
+    ).not.toMatch(/equivalent[- ]fractions?/iu);
   });
 
   it("localizes the accepted learning path for Arabic requests", async () => {
@@ -970,7 +1009,7 @@ describe("lesson generation service", () => {
     expect(result.record.provenance).toStrictEqual({
       provider: "deterministic-fixture",
       model: "equivalent-fractions-fixture-v1",
-      promptTemplateVersion: "lesson-prompt-v1",
+      promptTemplateVersion: "lesson-prompt-v2",
       validatorVersion: "lesson-validator-v2",
     });
     expect(result.record.attempts[0]?.provenance).toStrictEqual(

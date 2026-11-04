@@ -3,6 +3,7 @@ import { syntheticSeed } from "@/server/seed-data";
 import type {
   AnswerRule,
   StandardsPack,
+  StandardsPackPromptFrame,
   StandardsPackReference,
 } from "@/server/curriculum/standards-pack";
 import type {
@@ -49,6 +50,12 @@ export interface VersionedCurriculumContext {
   edges: readonly CurriculumEdge[];
   answerRules: readonly AnswerRule[];
   allowedScreenPatterns: readonly "matching"[];
+  /**
+  The task the pack asks the provider for (#221). Optional only for hand-built
+  test contexts: every pack carries one, and `createCurriculumContextFromPack`
+  always copies it.
+  */
+  promptFrame?: StandardsPackPromptFrame;
   reference?: StandardsPackReference;
 }
 
@@ -158,6 +165,7 @@ export const createCurriculumContextFromPack = (
     edges: pack.graph.edges,
     answerRules: pack.answerRules,
     allowedScreenPatterns: pack.allowedScreenPatterns,
+    promptFrame: pack.promptFrame,
     ...(pack.reference && { reference: pack.reference }),
   };
 };
