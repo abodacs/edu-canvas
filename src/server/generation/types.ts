@@ -38,6 +38,13 @@ export interface ProviderProvenance {
   promptTemplateVersion: string;
   validatorVersion: string;
   catalogVersion?: string;
+  /**
+   * The standards pack the draft was generated against, plus the screen
+   * patterns it allowed. Both are optional because a provider provenance that
+   * arrived before pack resolution can be stored without them.
+   */
+  packVersion?: string;
+  allowedScreenPatterns?: readonly "matching"[];
 }
 
 export type VariantKind = (typeof variantKindValues)[number];

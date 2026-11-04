@@ -1,12 +1,12 @@
 import { z } from "zod";
 
+import { standardsPackRegistry } from "@/server/curriculum/registry";
 import {
   correctedSourceTextSchema,
   sourceReviewInputSchema,
 } from "@/shared/source-contract";
 
 import { readServerConfig } from "../config";
-import { resolveCurriculumContext } from "../generation/draft-acceptance";
 import {
   identityErrorJson,
   resolveProtectedTeacher,
@@ -27,26 +27,27 @@ resolves a verified teacher actor and the mutation guard before any domain
 work; the cleanup sweep starts lazily with this module's first request.
 */
 
+/**
+ * A source snapshot is only complete when the requested standard resolves to
+ * a real standards pack. Resolving the registry directly keeps an unknown
+ * standard from reporting a false positive.
+ */
+export const resolveStandardPack = (
+  standardId: string,
+  tenantId: string
+): boolean => {
+  return (
+    standardsPackRegistry.resolve({ tenantId, standard: standardId }) !==
+    undefined
+  );
+};
+
 const createService = (): ReturnType<typeof createSourceService> => {
   const config = readServerConfig();
   return createSourceService({
     persistence: createFoundationPersistence(config),
     safety: createDefaultContentSafety(),
-    resolveStandardPack: (standardId, tenantId) => {
-      return (
-        resolveCurriculumContext(
-          {
-            prompt: "",
-            grade: 4,
-            standardId,
-            language: "en",
-            difficulty: "on-level",
-          },
-          tenantId,
-          {}
-        ) !== undefined
-      );
-    },
+    resolveStandardPack,
   });
 };
 

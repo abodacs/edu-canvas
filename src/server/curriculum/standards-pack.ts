@@ -18,6 +18,13 @@ export const standardsPackSourceKinds = [
   "hand-authored",
 ] as const;
 
+/**
+ * Packs pinned to this tenant are shared templates: every tenant may resolve
+ * them, but they never carry another tenant's private data. A tenant-owned pack
+ * for the same standard takes precedence over the template.
+ */
+export const sharedStandardsPackTenantId = "tenant_shared_standards";
+
 const identifierSchema = z.string().trim().min(1).max(120);
 const copySchema = (maximum: number) => z.string().trim().min(1).max(maximum);
 
@@ -130,6 +137,9 @@ export const standardsPackSchema = z
 
 export type StandardsPack = z.infer<typeof standardsPackSchema>;
 export type StandardsPackSourceKind = (typeof standardsPackSourceKinds)[number];
+export type StandardsPackReference = z.infer<
+  typeof standardsPackReferenceSchema
+>;
 export type AnswerRule = z.infer<typeof answerRuleSchema>;
 export type CurriculumNode = z.infer<typeof curriculumNodeSchema>;
 export type CurriculumEdge = z.infer<typeof curriculumEdgeSchema>;

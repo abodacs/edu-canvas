@@ -18,6 +18,7 @@ import {
   LessonProviderError,
 } from "./provider";
 import { createGenerationService, normalizeGenerationInput } from "./service";
+import { GENERATION_STANDARD_UNSUPPORTED_MESSAGE } from "./generation-request-error";
 import {
   createSyntheticCurriculumContext,
   validateSemanticLesson,
@@ -1079,16 +1080,15 @@ describe("lesson generation service", () => {
       }).success
     ).toBeFalsy();
 
-    // Normalization owns what the schema cannot say: which standard this
-    // product supports.
+    // Normalization owns what the schema cannot say: which standards have a
+    // pack. An unknown standard fails closed without naming another lesson.
     expect(() => {
       return normalizeGenerationInput({
         ...validInput,
         standardId: "standard_ccss_5_nbt_b_05",
       });
-    }).toThrow(
-      "This learning objective is not supported. Use Grade 4 equivalent fractions (4.NF.A.1)."
-    );
+    }).toThrow(GENERATION_STANDARD_UNSUPPORTED_MESSAGE);
+    expect(GENERATION_STANDARD_UNSUPPORTED_MESSAGE).not.toContain("4.NF.A.1");
   });
 
   it("blocks unsafe teacher prompts before calling the provider", async () => {

@@ -1,6 +1,10 @@
-import { fractionEquivalencePack } from "@/server/curriculum/built-in-packs";
+import { standardsPackRegistry } from "@/server/curriculum/registry";
 import { syntheticSeed } from "@/server/seed-data";
-import type { AnswerRule } from "@/server/curriculum/standards-pack";
+import type {
+  AnswerRule,
+  StandardsPack,
+  StandardsPackReference,
+} from "@/server/curriculum/standards-pack";
 import type {
   LessonLanguage,
   RecoveryAction,
@@ -44,6 +48,8 @@ export interface VersionedCurriculumContext {
   nodes: readonly CurriculumNode[];
   edges: readonly CurriculumEdge[];
   answerRules: readonly AnswerRule[];
+  allowedScreenPatterns: readonly "matching"[];
+  reference?: StandardsPackReference;
 }
 
 export interface NormalizedReasoningPath {
@@ -130,28 +136,51 @@ export interface SemanticValidationOptions {
 }
 
 /**
- * The seeded curriculum is a stand-in, not a tenant-owned catalogue (#110 owns
- * that). Its context is therefore bound to the acting tenant so that a real
- * signed-in teacher is not rejected by the tenant-match check. Replace this
- * default with tenant-owned graph resolution when it lands.
+ * A resolved pack is the only source of a curriculum context. The acting
+ * tenant owns the context even when the pack is a shared template, so the
+ * acceptance tenant check still proves the lesson belongs to this classroom.
+ */
+export const createCurriculumContextFromPack = (
+  pack: StandardsPack,
+  input: Pick<NormalizedGenerationRequest, "grade" | "language">,
+  tenantId: string
+): VersionedCurriculumContext => {
+  return {
+    tenantId,
+    standardId: pack.standardId,
+    standardCode: pack.standardCode,
+    grade: input.grade,
+    language: input.language,
+    packVersion: pack.packVersion,
+    graphVersion: pack.graph.version,
+    targetNodeId: pack.graph.targetNodeId,
+    nodes: pack.graph.nodes,
+    edges: pack.graph.edges,
+    answerRules: pack.answerRules,
+    allowedScreenPatterns: pack.allowedScreenPatterns,
+    ...(pack.reference && { reference: pack.reference }),
+  };
+};
+
+/**
+ * Test and fixture helper: resolve the registered pack for the requested
+ * standard and fail loudly when none exists. Production resolves through
+ * `resolveCurriculumContext` and returns `undefined` instead.
  */
 export const createSyntheticCurriculumContext = (
   input: Pick<NormalizedGenerationRequest, "grade" | "language" | "standardId">,
   tenantId: string = syntheticSeed.tenant.id
 ): VersionedCurriculumContext => {
-  return {
+  const pack = standardsPackRegistry.resolve({
     tenantId,
-    standardId: input.standardId,
-    standardCode: fractionEquivalencePack.standardCode,
-    grade: input.grade,
-    language: input.language,
-    packVersion: fractionEquivalencePack.packVersion,
-    graphVersion: fractionEquivalencePack.graph.version,
-    targetNodeId: fractionEquivalencePack.graph.targetNodeId,
-    nodes: fractionEquivalencePack.graph.nodes,
-    edges: fractionEquivalencePack.graph.edges,
-    answerRules: fractionEquivalencePack.answerRules,
-  };
+    standard: input.standardId,
+  });
+  if (!pack) {
+    throw new Error(
+      `No standards pack resolves standard ${input.standardId} for tenant ${tenantId}.`
+    );
+  }
+  return createCurriculumContextFromPack(pack, input, tenantId);
 };
 
 export {

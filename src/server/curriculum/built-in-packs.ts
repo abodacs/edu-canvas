@@ -1,16 +1,22 @@
 import { syntheticSeed } from "@/server/seed-data";
 import { A2UI_CATALOG_VERSION } from "@/shared/a2ui-contract";
 
-import { standardsPackSchema } from "./standards-pack";
+import {
+  sharedStandardsPackTenantId,
+  standardsPackSchema,
+} from "./standards-pack";
 
 import type { StandardsPack } from "./standards-pack";
 
-const tenantId = syntheticSeed.tenant.id;
+const tenantId = sharedStandardsPackTenantId;
 
 /**
- * Today's seeded equivalent-fractions content expressed as a standards pack.
- * The graph, target node, catalog and standard identity mirror
- * `syntheticSeed`, so resolving this pack changes no observable verdict.
+ * Today's seeded equivalent-fractions content expressed as a shared standards
+ * pack. The graph, target node, catalog and standard identity mirror
+ * `syntheticSeed`, so resolving this pack changes no observable verdict. The
+ * pack is a template pinned to the shared tenant, not to the seeded tenant, so
+ * a real signed-in classroom can resolve it without reading another tenant's
+ * private data.
  */
 export const fractionEquivalencePack: StandardsPack = standardsPackSchema.parse(
   {

@@ -9,11 +9,11 @@ import { syntheticSeed } from "@/server/seed-data";
 
 import { reviewDraftForAcceptance } from "./draft-acceptance";
 import { GenerationRequestError } from "./generation-request-error";
-import { createDeterministicLessonDraftProvider } from "./provider";
 import { createSyntheticCurriculumContext } from "./semantic-validation";
 import { createGenerationService, normalizeGenerationInput } from "./service";
 import { validateProviderDraft } from "./validation";
 
+import type { ProviderGenerationContext } from "./provider";
 import type { VersionedCurriculumContext } from "./semantic-validation-contract";
 import type {
   NormalizedGenerationRequest,
@@ -21,6 +21,7 @@ import type {
   ProviderProvenance,
   ProviderVariant,
 } from "./types";
+import type { LessonGenerationInput } from "@/shared/generation-contract";
 
 /**
 Characterization of known gaps for the standards-generalization research
@@ -181,6 +182,7 @@ const operationsContext: VersionedCurriculumContext = {
     },
   ],
   answerRules: multistepWordProblemsPack.answerRules,
+  allowedScreenPatterns: multistepWordProblemsPack.allowedScreenPatterns,
 };
 
 const operationsSteps = [
@@ -215,6 +217,7 @@ const readingContext: VersionedCurriculumContext = {
   ],
   edges: [],
   answerRules: [{ kind: "teacher-review", unverifiedVerdict: "warning" }],
+  allowedScreenPatterns: ["matching"],
 };
 
 const readingSteps = [
@@ -286,6 +289,21 @@ const codesOf = (diagnostics: readonly CodedDiagnostic[]): string[] => {
   ].toSorted();
 };
 
+const captureStandardRejection = (standardId: string): unknown => {
+  try {
+    normalizeGenerationInput({
+      prompt: "Multistep word problems",
+      grade: 4,
+      standardId,
+      language: "en",
+      difficulty: "on-level",
+    });
+  } catch (error) {
+    return error;
+  }
+  return undefined;
+};
+
 // The fixture repeats one interaction structure across variants, so the
 // learning-quality validator adds its own warnings; the answer rule is the
 // curriculum validator's, so these checks read its findings only.
@@ -298,46 +316,88 @@ const curriculumFindings = (
 };
 
 describe("standards generalization: 4.OA.A.3 word problem -> equation matching", () => {
-  it("B1: the generation command rejects the standard before any draft exists", async () => {
-    expect(() =>
-      normalizeGenerationInput({
-        prompt: "Multistep word problems",
-        grade: 4,
-        standardId: "4.OA.A.3",
-        language: "en",
-        difficulty: "on-level",
-      })
-    ).toThrow(GenerationRequestError);
+  it("B1: accepts a registry-resolved standard and reaches the provider with its pack context", async () => {
+    const input: LessonGenerationInput = {
+      prompt: "Multistep word problems",
+      grade: 4,
+      standardId: "4.OA.A.3",
+      language: "en",
+      difficulty: "on-level",
+    };
 
+    expect(normalizeGenerationInput(input).standardId).toBe(
+      multistepWordProblemsPack.standardId
+    );
+
+    let received:
+      | {
+          request: NormalizedGenerationRequest;
+          context: ProviderGenerationContext;
+        }
+      | undefined;
     const service = createGenerationService({
       limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
-      provider: createDeterministicLessonDraftProvider(),
+      provider: {
+        provenance: fixtureProvenance,
+        generate(request, context) {
+          received = { request, context };
+          return Promise.resolve({
+            draft: buildDraft(wordProblemPairs, operationsSteps),
+          });
+        },
+      },
       requestIdFactory: () => "draft_req_4_oa_a_3",
     });
-    const rejection = await service
-      .generate({
-        actor: syntheticTeacherActor({ tenantId: parseTenantId(tenantId) }),
-        input: {
-          prompt: "Multistep word problems",
-          grade: 4,
-          standardId: "4.OA.A.3",
-          language: "en",
-          difficulty: "on-level",
-          idempotencyKey: "standards-generalization-4-oa-a-3",
-        },
-      })
-      .then(
-        () => null,
-        (error: unknown) => error
-      );
+
+    const result = await service.generate({
+      actor: syntheticTeacherActor({ tenantId: parseTenantId(tenantId) }),
+      input: {
+        ...input,
+        idempotencyKey: "standards-generalization-4-oa-a-3",
+      },
+    });
+
+    expect({
+      normalizedStandardId: normalizeGenerationInput(input).standardId,
+      requestStandardId: received?.request.standardId,
+      targetNodeId: received?.context.curriculumContext?.targetNodeId,
+      referenceContext: received?.context.referenceContext,
+      state: result.record.state,
+      versionPins: {
+        graphVersion:
+          result.record.draft?.learningPath.versionPins.graphVersion,
+        packVersion: result.record.draft?.learningPath.versionPins.packVersion,
+      },
+      provenance: {
+        packVersion: result.record.draft?.provenance.packVersion,
+        allowedScreenPatterns:
+          result.record.draft?.provenance.allowedScreenPatterns,
+      },
+    }).toStrictEqual({
+      normalizedStandardId: multistepWordProblemsPack.standardId,
+      requestStandardId: multistepWordProblemsPack.standardId,
+      targetNodeId: multistepWordProblemsPack.graph.targetNodeId,
+      referenceContext: undefined,
+      state: "ready-for-review",
+      versionPins: {
+        graphVersion: multistepWordProblemsPack.graph.version,
+        packVersion: multistepWordProblemsPack.packVersion,
+      },
+      provenance: {
+        packVersion: multistepWordProblemsPack.packVersion,
+        allowedScreenPatterns: multistepWordProblemsPack.allowedScreenPatterns,
+      },
+    });
+  });
+
+  it("B1: rejects an unknown standard without naming another lesson", () => {
+    const rejection = captureStandardRejection("5.NBT.A.1");
 
     expect(rejection).toBeInstanceOf(GenerationRequestError);
-    expect(rejection).toMatchObject({
-      code: "GENERATION_INPUT_INVALID",
-      message:
-        "This learning objective is not supported. Use Grade 4 equivalent fractions (4.NF.A.1).",
-    });
+    expect(rejection).toMatchObject({ code: "GENERATION_INPUT_INVALID" });
+    expect((rejection as Error).message).toContain("not supported");
+    expect((rejection as Error).message).not.toContain("4.NF.A.1");
   });
 
   it("B6: a correct answer set passes the structural gate and reaches ready-for-review", async () => {

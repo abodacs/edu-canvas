@@ -209,6 +209,7 @@ export const buildCorpusCurriculumContext = (
       },
     ],
     answerRules: fractionEquivalencePack.answerRules,
+    allowedScreenPatterns: fractionEquivalencePack.allowedScreenPatterns,
   };
 };
 
@@ -291,6 +292,7 @@ export const buildVersionedPlanContext = (
     nodes,
     edges: [...chainEdges, ...extraEdges],
     answerRules: fractionEquivalencePack.answerRules,
+    allowedScreenPatterns: fractionEquivalencePack.allowedScreenPatterns,
   };
 };
 
