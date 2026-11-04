@@ -20,8 +20,12 @@ const otherTenantId = `tenant_pack_other_${runId}`;
 const teacherId = `actor_pack_teacher_${runId}`;
 const otherTeacherId = `actor_pack_teacher_other_${runId}`;
 const membershipId = `membership_pack_${runId}`;
+const learnerActorId = `actor_pack_learner_${runId}`;
+const learnerMembershipId = `membership_pack_learner_${runId}`;
 const learnerId = `identity_pack_learner_${runId}`;
 const secondLearnerId = `identity_pack_learner_second_${runId}`;
+const revokedLearnerId = `identity_pack_learner_revoked_${runId}`;
+const revokedActorId = `actor_pack_learner_revoked_${runId}`;
 const standardId = `standard_pack_${runId}`;
 const requestId = `request_pack_${runId}`;
 const versionId = `version_pack_${runId}`;
@@ -58,7 +62,11 @@ const seedFixtures = async (): Promise<void> => {
   await withRawDatabase(async (sql) => {
     await sql`
       insert into actors (id, display_name)
-      values (${teacherId}, 'Pack Teacher'), (${otherTeacherId}, 'Other Teacher')
+      values
+        (${teacherId}, 'Pack Teacher'),
+        (${otherTeacherId}, 'Other Teacher'),
+        (${learnerActorId}, 'Pack Learner'),
+        (${revokedActorId}, 'Revoked Learner')
     `;
     await sql`
       insert into tenants (id, slug, name, synthetic_data_only)
@@ -76,7 +84,16 @@ const seedFixtures = async (): Promise<void> => {
       )
       values
         (${learnerId}, ${tenantId}, 'student', 'Pack Learner', ${`pack-${runId}`}, true),
-        (${secondLearnerId}, ${tenantId}, 'student', 'Second Learner', ${`pack-second-${runId}`}, true)
+        (${secondLearnerId}, ${tenantId}, 'student', 'Second Learner', ${`pack-second-${runId}`}, true),
+        (${revokedLearnerId}, ${tenantId}, 'student', 'Revoked Learner', ${`pack-revoked-${runId}`}, true)
+    `;
+    // Only the first learner has a membership. The second is an active
+    // student identity with no membership, which the records bridge refuses.
+    await sql`
+      insert into memberships (id, actor_id, tenant_id, role, status, learner_id, revision)
+      values
+        (${learnerMembershipId}, ${learnerActorId}, ${tenantId}, 'student', 'active', ${learnerId}, 1),
+        (${`membership_pack_revoked_${runId}`}, ${revokedActorId}, ${tenantId}, 'student', 'revoked', ${revokedLearnerId}, 1)
     `;
     await sql`
       insert into standards (id, tenant_id, code, name, subject, grade_band)
@@ -117,11 +134,11 @@ const cleanFixtures = async (): Promise<void> => {
         await transaction`delete from pack_versions where tenant_id = ${tenant}`;
         await transaction`delete from lesson_draft_requests where tenant_id = ${tenant}`;
         await transaction`delete from standards where tenant_id = ${tenant}`;
-        await transaction`delete from identities where tenant_id = ${tenant}`;
         await transaction`delete from memberships where tenant_id = ${tenant}`;
+        await transaction`delete from identities where tenant_id = ${tenant}`;
       }
       await transaction`delete from tenants where id in (${tenantId}, ${otherTenantId})`;
-      await transaction`delete from actors where id in (${teacherId}, ${otherTeacherId})`;
+      await transaction`delete from actors where id in (${teacherId}, ${otherTeacherId}, ${learnerActorId}, ${revokedActorId})`;
       for (const table of [
         "pack_versions",
         "pack_approvals",
@@ -379,6 +396,15 @@ describe.skipIf(!isRunDatabaseTests)("pack records in PostgreSQL", () => {
     await expect(
       packs().readLearner(otherTenantId, learnerId)
     ).resolves.toBeUndefined();
+  });
+
+  it.each([
+    ["no membership", secondLearnerId],
+    ["a revoked membership", revokedLearnerId],
+  ])("leaves out a student with %s", async (_case, id) => {
+    const learners = await packs().listLearners(tenantId);
+    expect(learners.map((learner) => learner.id)).not.toContain(id);
+    await expect(packs().readLearner(tenantId, id)).resolves.toBeUndefined();
   });
 
   it("reports the schema is present", async () => {
