@@ -161,6 +161,7 @@ const storedRow = (
     draft: storedGenerationDraft(record),
     provenance: record.provenance,
     sourceSnapshotId: null,
+    advisoryReview: record.advisoryReview,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
   };
@@ -233,6 +234,82 @@ describe("generation codec gate snapshot", () => {
 
     expect(legacy.draft).toStrictEqual(record.draft);
     expect(legacy.gate).toBeUndefined();
+  });
+
+  it("round-trips the warning-only advisory review beside the draft", () => {
+    const record = readyRecord();
+    const withAdvisory: LessonGenerationRecord = {
+      ...record,
+      advisoryReview: {
+        schemaVersion: "advisory-review-v1",
+        agent: {
+          provider: "meta",
+          model: "muse-spark-1.2-contributor",
+          validatorVersion: "advisory-reviewer-v1",
+        },
+        reviewedAt: "2026-11-04T12:00:00.000Z",
+        latencyMs: 1234,
+        findings: [
+          {
+            code: "AGENT_RECOMMENDATION",
+            field: "title",
+            reason: "The challenge title repeats the practice title.",
+            variantId: "variant-challenge",
+          },
+        ],
+      },
+    };
+
+    const hydrated = hydrateGenerationRecord(storedRow(withAdvisory), []);
+
+    expect(hydrated.advisoryReview).toStrictEqual(withAdvisory.advisoryReview);
+    expect(hydrated.state).toBe(record.state);
+    expect(hydrated.diagnostics).toStrictEqual(record.diagnostics);
+    expect(hydrated.draft).toStrictEqual(record.draft);
+    expect(hydrated.gate).toStrictEqual(record.gate);
+  });
+
+  it("reads a row written before the advisory column as no review", () => {
+    const record = readyRecord();
+    const row = storedRow(record);
+
+    expect(row.advisoryReview).toBeUndefined();
+    expect(hydrateGenerationRecord(row, []).advisoryReview).toBeUndefined();
+    expect(
+      hydrateGenerationRecord({ ...row, advisoryReview: null }, [])
+        .advisoryReview
+    ).toBeUndefined();
+  });
+
+  it("rejects a stored advisory review that could carry a verdict", () => {
+    const row = storedRow(readyRecord());
+
+    expect(() => {
+      return hydrateGenerationRecord(
+        {
+          ...row,
+          advisoryReview: {
+            schemaVersion: "advisory-review-v1",
+            agent: {
+              provider: "meta",
+              model: "muse-spark-1.2-contributor",
+              validatorVersion: "advisory-reviewer-v1",
+            },
+            reviewedAt: "2026-11-04T12:00:00.000Z",
+            latencyMs: 1,
+            findings: [
+              {
+                code: "AGENT_RECOMMENDATION",
+                field: "title",
+                reason: "A block smuggled into the advisory field.",
+                verdict: "hard_block",
+              },
+            ],
+          },
+        },
+        []
+      );
+    }).toThrow(/advisory review does not match its contract/u);
   });
 
   it("rejects a stored snapshot that breaks its contract", () => {
