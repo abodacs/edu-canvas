@@ -427,3 +427,261 @@ h2 {
 .steps__item[data-state="done"] {
   color: var(--foreground);
 }
+
+/* ── app shell (foundation) ──
+   AppShell, SkipLink and SyntheticDataMarker (src/components/ui). Slices read
+   these classes; only the foundation changes them. */
+.skip-link {
+  position: absolute;
+  z-index: 30;
+  border-radius: 0.5rem;
+  background: var(--teacher-forest);
+  color: var(--teacher-paper);
+  font-size: 0.82rem;
+  font-weight: 750;
+  inset-block-start: 0.75rem;
+  inset-inline-start: 0.75rem;
+  padding-block: 0.55rem;
+  padding-inline: 0.9rem;
+  transform: translateY(-150%);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+/* The skip-link target takes focus programmatically; it is not a control. */
+#main:focus {
+  outline: none;
+}
+
+.app-frame {
+  background:
+    radial-gradient(
+      55% 40% at 93% 0%,
+      color-mix(in oklch, var(--teacher-butter) 70%, transparent),
+      transparent 100%
+    ),
+    var(--teacher-paper);
+  padding-block: clamp(1rem, 3vw, 2.5rem) clamp(4rem, 9vw, 8rem);
+}
+
+.app-frame__page[data-width="wide"] {
+  inline-size: min(100%, 90rem);
+}
+
+.app-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  margin-block-end: clamp(2rem, 5vw, 4.5rem);
+}
+
+.app-bar__brand {
+  flex: 0 0 auto;
+}
+
+.app-bar__nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+  margin: 0;
+  gap: var(--space-2) var(--space-4);
+  list-style: none;
+}
+
+.app-bar__link[aria-current="page"] {
+  color: var(--foreground);
+  text-decoration-color: currentcolor;
+}
+
+.app-bar__account {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  margin-inline-start: auto;
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-inline-size: 0;
+}
+
+.who__avatar {
+  display: grid;
+  flex: none;
+  border-radius: var(--radius-pill);
+  background: var(--primary-deep);
+  block-size: 2rem;
+  color: var(--primary-foreground);
+  font-size: var(--type-micro);
+  font-weight: 700;
+  inline-size: 2rem;
+  place-items: center;
+}
+
+.who__text {
+  display: grid;
+  gap: 0.1rem;
+  text-align: end;
+}
+
+.who__name {
+  color: var(--teacher-ink);
+  font-size: 0.86rem;
+  font-weight: 750;
+}
+
+.who__context {
+  color: color-mix(in oklch, var(--teacher-ink) 62%, transparent);
+  font-size: 0.74rem;
+}
+
+.app-bar__signout {
+  color: var(--teacher-ink);
+  font-size: 0.78rem;
+  font-weight: 750;
+  gap: 0.35rem;
+}
+
+.app-bar__signout svg {
+  block-size: 0.95rem;
+  inline-size: 0.95rem;
+}
+
+.app-crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+  margin: 0 0 var(--space-5);
+  color: var(--muted-foreground);
+  font-size: var(--type-meta);
+  gap: var(--space-2);
+  list-style: none;
+}
+
+.app-crumbs li + li::before {
+  content: "/";
+  margin-inline-end: var(--space-2);
+}
+
+.app-frame__caption {
+  margin: var(--space-7) 0 0;
+  color: var(--muted-foreground);
+  font-size: var(--type-micro);
+}
+
+.session-banner {
+  position: sticky;
+  z-index: 20;
+  display: grid;
+  align-items: center;
+  border: 1px solid color-mix(in oklch, var(--teacher-clay) 45%, var(--border));
+  border-radius: 1.1rem;
+  background: color-mix(in oklch, var(--teacher-butter) 78%, var(--card));
+  box-shadow: 0 1rem 2.5rem
+    color-mix(in oklch, var(--teacher-forest) 12%, transparent);
+  gap: 0.75rem 1.25rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  inset-block-start: 0.75rem;
+  margin-block-end: 1.25rem;
+  padding-block: 0.9rem;
+  padding-inline: 1.1rem;
+}
+
+.session-banner:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 3px;
+}
+
+.session-banner__icon {
+  display: grid;
+  border-radius: 50%;
+  background: color-mix(in oklch, var(--teacher-clay) 34%, var(--card));
+  block-size: 2.1rem;
+  inline-size: 2.1rem;
+  place-items: center;
+}
+
+.session-banner__icon svg {
+  block-size: 1.1rem;
+  inline-size: 1.1rem;
+}
+
+.session-banner__copy {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.session-banner__copy strong {
+  color: var(--teacher-ink);
+  font-size: 0.92rem;
+}
+
+.session-banner__copy p {
+  margin: 0;
+  color: color-mix(in oklch, var(--teacher-ink) 72%, transparent);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  max-inline-size: 62ch;
+}
+
+.session-banner__error {
+  color: var(--destructive) !important;
+  font-weight: 700;
+}
+
+.session-banner__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.session-banner__continue {
+  border-radius: 0.7rem;
+  font-weight: 750;
+  min-block-size: 2.4rem;
+}
+
+@media (width <= 38rem) {
+  .app-frame {
+    padding-inline: 1rem;
+  }
+
+  .session-banner {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .session-banner__actions {
+    grid-column: 1 / -1;
+  }
+
+  /* #168 P2-2: at 390 px the identity and sign-out take their own full row,
+     so nothing competes with the brand and nav in one line. */
+  .app-bar__account {
+    flex: 1 1 100%;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-block-size: 2.2rem;
+  }
+
+  .who__text {
+    min-inline-size: 0;
+    text-align: start;
+  }
+
+  .who__context {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .app-bar__signout:hover {
+    background: color-mix(in oklch, var(--teacher-ink) 8%, transparent);
+  }
+}

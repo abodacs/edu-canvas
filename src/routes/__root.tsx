@@ -1,5 +1,7 @@
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
 
+import { SkipLink } from "@/components/ui/skip-link";
+
 import appCss from "../styles.css?url";
 
 import type { ReactNode } from "react";
@@ -11,6 +13,7 @@ const RootDocument = ({ children }: { readonly children: ReactNode }) => {
         <HeadContent />
       </head>
       <body>
+        <SkipLink />
         {children}
         <Scripts />
       </body>
