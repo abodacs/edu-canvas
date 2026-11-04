@@ -1,3 +1,4 @@
+import { fractionEquivalencePack } from "@/server/curriculum/built-in-packs";
 import { gateArtifact } from "@/server/safety/artifact-gate";
 import {
   buildValidatedLearningPath,
@@ -193,6 +194,7 @@ export const buildCorpusCurriculumContext = (
     standardCode: "4.NF.A.1",
     grade: 4,
     language,
+    packVersion: fractionEquivalencePack.packVersion,
     graphVersion: "graph-corpus-v1",
     targetNodeId: "graph_node_equivalent_fractions",
     nodes: corpusNodes,
@@ -206,6 +208,8 @@ export const buildCorpusCurriculumContext = (
         successorId: "graph_node_equivalent_fractions",
       },
     ],
+    answerRules: fractionEquivalencePack.answerRules,
+    allowedScreenPatterns: fractionEquivalencePack.allowedScreenPatterns,
   };
 };
 
@@ -282,10 +286,13 @@ export const buildVersionedPlanContext = (
     standardCode: "TEST.1",
     grade: 4,
     language: plan.language,
+    packVersion: "TEST.1-v1",
     graphVersion: "graph-v-test-1",
     targetNodeId: `graph_node_${plan.nodeCount - 1}`,
     nodes,
     edges: [...chainEdges, ...extraEdges],
+    answerRules: fractionEquivalencePack.answerRules,
+    allowedScreenPatterns: fractionEquivalencePack.allowedScreenPatterns,
   };
 };
 

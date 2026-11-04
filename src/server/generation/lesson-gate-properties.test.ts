@@ -1,6 +1,7 @@
 import {
   array,
   assert as assertProperty,
+  asyncProperty,
   boolean,
   constantFrom,
   integer,
@@ -24,6 +25,8 @@ import {
   buildValidatedLearningPath,
   LearningPathBuildError,
 } from "./learning-path";
+import { reviewCurriculum } from "./curriculum-validator";
+import { validateSemanticLesson } from "./semantic-validation";
 import { validateProviderDraft } from "./validation";
 import type { DraftPlan, PathPlan } from "./artifact-corpus";
 import type { ProviderProvenance } from "./provider";
@@ -762,6 +765,101 @@ describe("lesson gate properties", () => {
 
           expect(reportedCode).toBe(probe.expectedCode);
         }
+      }),
+      propertyOptions()
+    );
+  });
+
+  it("no relationship passes the curriculum gate when the pack declares no answer rule", () => {
+    assertProperty(
+      property(pathPlanArb, (plan) => {
+        const context: VersionedCurriculumContext = {
+          ...buildVersionedPlanContext(plan),
+          answerRules: [],
+        };
+        const report = reviewCurriculum({
+          draft: buildValidBaseDraft({
+            sourceCount: 4,
+            language: plan.language,
+          }),
+          context,
+        });
+
+        expect(report.verdict).toBe("hard_block");
+        expect(
+          report.findings.some(
+            (finding) =>
+              finding.code === "ANSWER_RELATIONSHIP_UNVERIFIED" &&
+              finding.verdict === "hard_block"
+          )
+        ).toBeTruthy();
+        expect(
+          report.findings.every(
+            (finding) => finding.code !== "VALIDATION_PASSED"
+          )
+        ).toBeTruthy();
+      }),
+      propertyOptions()
+    );
+  });
+
+  it("a recommendation agent cannot downgrade a hard_block answer rule", async () => {
+    await assertProperty(
+      asyncProperty(pathPlanArb, async (plan) => {
+        const context: VersionedCurriculumContext = {
+          ...buildVersionedPlanContext(plan),
+          answerRules: [
+            {
+              kind: "text-evidence",
+              passage: "A passage that carries none of the draft details.",
+              unverifiedVerdict: "hard_block",
+            },
+          ],
+        };
+        const draft = buildValidBaseDraft({
+          sourceCount: 4,
+          language: plan.language,
+        });
+
+        const blocking = await validateSemanticLesson({ draft, context });
+        expect(blocking.verdict).toBe("hard_block");
+
+        const withAgent = await validateSemanticLesson(
+          { draft, context },
+          {
+            recommendationAgents: [
+              {
+                role: "curriculum",
+                version: "agent-pass-fixture-v1",
+                review(agentInput) {
+                  const [firstVariant] = agentInput.draft.variants;
+                  if (firstVariant) {
+                    firstVariant.relationships = [];
+                  }
+                  return Promise.resolve([
+                    {
+                      verdict: "pass" as const,
+                      code: "AGENT_APPROVED",
+                      field: "relationships",
+                      reason: "The agent recommends accepting every match.",
+                    },
+                  ]);
+                },
+              },
+            ],
+          }
+        );
+
+        expect(withAgent.verdict).toBe("hard_block");
+        expect(withAgent.findings).toStrictEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              code: "ANSWER_MISMATCH",
+              verdict: "hard_block",
+              validator: "curriculum",
+            }),
+          ])
+        );
       }),
       propertyOptions()
     );

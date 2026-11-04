@@ -301,6 +301,7 @@ const learningPathDataSchema = z.strictObject({
   versionPins: z.strictObject({
     draftId: componentIdSchema,
     graphVersion: componentIdSchema,
+    packVersion: componentIdSchema.optional(),
     catalogVersion: componentIdSchema,
     modelVersion: componentIdSchema,
     validatorVersion: componentIdSchema,

@@ -2,8 +2,12 @@
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useEffect, useReducer } from "react";
 
-import { AccountHeader } from "@/components/auth/account-header";
 import { useAuthSession } from "@/components/auth/use-auth-session";
+import { AppShell } from "@/components/ui/app-shell";
+import {
+  initialsFor,
+  teacherNavigation,
+} from "@/components/ui/app-shell-navigation";
 import {
   NeedsYouPanel,
   ProgressEmpty,
@@ -186,11 +190,9 @@ const DashboardPage = (): ReactElement => {
 
   if (session.phase === "loading") {
     return (
-      <main className="app-shell app-shell--teacher">
-        <div className="page-frame page-frame--teacher">
-          <ProgressLoading />
-        </div>
-      </main>
+      <AppShell width="wide">
+        <ProgressLoading />
+      </AppShell>
     );
   }
   if (session.phase === "unauthenticated" || !session.projection) {
@@ -200,54 +202,50 @@ const DashboardPage = (): ReactElement => {
   const { projection } = session;
   if (projection.actor.role !== "teacher") {
     return (
-      <main className="app-shell app-shell--teacher">
-        <div className="page-frame page-frame--teacher">
-          <ProgressPermission
-            actions={
-              <Link className="text-link" to="/login">
-                Sign in
-              </Link>
-            }
-          />
-        </div>
-      </main>
+      <AppShell width="wide">
+        <ProgressPermission
+          actions={
+            <Link className="text-link" to="/login">
+              Sign in
+            </Link>
+          }
+        />
+      </AppShell>
     );
   }
 
   return (
-    <main className="app-shell app-shell--teacher">
-      <a className="skip-link" href="#dashboard-content">
-        Skip to content
-      </a>
-      <div className="page-frame page-frame--teacher">
-        <AccountHeader
-          displayName={projection.actor.displayName}
-          tenantName={projection.actor.tenantName}
-          roleLabel="Teacher"
-          isSigningOut={session.isSigningOut}
-          onSignOut={() => {
-            void session.signOut();
+    <AppShell
+      nav={teacherNavigation}
+      identity={{
+        displayName: projection.actor.displayName,
+        context: `${projection.actor.tenantName} · Teacher`,
+        initials: initialsFor(projection.actor.displayName),
+      }}
+      isSigningOut={session.isSigningOut}
+      onSignOut={() => {
+        void session.signOut();
+      }}
+      width="wide"
+    >
+      <div id="dashboard-content" className="workspace-content">
+        <h1>Your lessons</h1>
+        <p className="progress-lede">
+          Start with what needs you. Everything else is below.
+        </p>
+        <nav className="progress-nav" aria-label="Workspace">
+          <Link className="text-link" to="/workspace">
+            Open the lesson studio
+          </Link>
+        </nav>
+        <DashboardBoard
+          selectedRunId={run}
+          onOpenRun={(runId) => {
+            void navigate({ search: { run: runId } });
           }}
         />
-        <div id="dashboard-content" className="workspace-content">
-          <h1>Your lessons</h1>
-          <p className="progress-lede">
-            Start with what needs you. Everything else is below.
-          </p>
-          <nav className="progress-nav" aria-label="Workspace">
-            <Link className="text-link" to="/workspace">
-              Open the lesson studio
-            </Link>
-          </nav>
-          <DashboardBoard
-            selectedRunId={run}
-            onOpenRun={(runId) => {
-              void navigate({ search: { run: runId } });
-            }}
-          />
-        </div>
       </div>
-    </main>
+    </AppShell>
   );
 };
 

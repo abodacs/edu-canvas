@@ -1,52 +1,92 @@
 {
-  "note": "Ratchet ceiling for scripts/verify-ui.ts: blocking findings per route and viewport. Counts may only fall; regenerate with --update after a reduction.",
+  "note": "Ratchet ceiling for scripts/verify-ui.ts: blocking findings per view key and viewport. Counts may only fall; regenerate with --update after a reduction.",
   "routes": {
-    "/@desktop": {
+    "blocked-moderation@desktop": {
       "axe": 0,
       "overflow": 0
     },
-    "/@phone": {
+    "blocked-moderation@phone": {
       "axe": 0,
       "overflow": 0
     },
-    "/dashboard@desktop": {
+    "blocked-validation@desktop": {
       "axe": 0,
       "overflow": 0
     },
-    "/dashboard@phone": {
+    "blocked-validation@phone": {
       "axe": 0,
       "overflow": 0
     },
-    "/learn@desktop": {
+    "dashboard@desktop": {
       "axe": 0,
       "overflow": 0
     },
-    "/learn@phone": {
+    "dashboard@phone": {
       "axe": 0,
       "overflow": 0
     },
-    "/login@desktop": {
+    "home@desktop": {
       "axe": 0,
       "overflow": 0
     },
-    "/login@phone": {
+    "home@phone": {
       "axe": 0,
       "overflow": 0
     },
-    "/sign-up@desktop": {
+    "learn@desktop": {
       "axe": 0,
       "overflow": 0
     },
-    "/sign-up@phone": {
+    "learn@phone": {
       "axe": 0,
       "overflow": 0
     },
-    "/workspace@desktop": {
-      "axe": 1,
+    "login@desktop": {
+      "axe": 0,
       "overflow": 0
     },
-    "/workspace@phone": {
-      "axe": 1,
+    "login@phone": {
+      "axe": 0,
+      "overflow": 0
+    },
+    "publish@desktop": {
+      "axe": 0,
+      "overflow": 0
+    },
+    "publish@phone": {
+      "axe": 0,
+      "overflow": 0
+    },
+    "published@desktop": {
+      "axe": 0,
+      "overflow": 0
+    },
+    "published@phone": {
+      "axe": 0,
+      "overflow": 0
+    },
+    "review@desktop": {
+      "axe": 0,
+      "overflow": 0
+    },
+    "review@phone": {
+      "axe": 0,
+      "overflow": 0
+    },
+    "sign-up@desktop": {
+      "axe": 0,
+      "overflow": 0
+    },
+    "sign-up@phone": {
+      "axe": 0,
+      "overflow": 0
+    },
+    "workspace@desktop": {
+      "axe": 0,
+      "overflow": 0
+    },
+    "workspace@phone": {
+      "axe": 0,
       "overflow": 0
     }
   }

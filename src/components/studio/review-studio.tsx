@@ -162,7 +162,7 @@ export const ReviewStudio = ({
           error={state.error}
           onDismiss={() => dispatch({ type: "error", error: null })}
         />
-        <Button type="button" variant="outline" onClick={onClose}>
+        <Button type="button" variant="secondary" onClick={onClose}>
           Back to the studio
         </Button>
       </section>
@@ -308,7 +308,7 @@ export const ReviewStudio = ({
   return (
     <section className="review-studio" aria-label="Review and publish">
       <div className="review-studio__toolbar">
-        <Button type="button" variant="outline" onClick={onClose}>
+        <Button type="button" variant="secondary" onClick={onClose}>
           <ArrowLeft aria-hidden="true" /> Back to the studio
         </Button>
         <span className="review-studio__lock">

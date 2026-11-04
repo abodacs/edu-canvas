@@ -141,14 +141,14 @@ export const VariantEditor = ({
   return (
     <section className="review-variant" aria-labelledby="variant-heading">
       <div className="review-variant__topline">
-        <Button type="button" variant="outline" onClick={onBack}>
+        <Button type="button" variant="secondary" onClick={onBack}>
           <ArrowLeft aria-hidden="true" /> Back to the gallery
         </Button>
         <ApprovalState approved={approved} label={`screen ${variant.id}`} />
       </div>
 
       <header>
-        <p className="studio-kicker">
+        <p className="kicker">
           {variantPurposeLabels[index] ?? "Screen review"}
         </p>
         <h2 id="variant-heading" ref={heading} tabIndex={-1}>
@@ -249,7 +249,7 @@ export const VariantEditor = ({
       <div className="review-variant__actions">
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           disabled={busy || !valuesAreFilled}
           onClick={() => {
             onSave(

@@ -18,7 +18,7 @@
     "start": "node .output/server/index.mjs",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:database": "RUN_DATABASE_TESTS=true vitest run src/server/persistence/persistence-contract.test.ts src/server/persistence/source-contract.test.ts src/server/persistence/pack-database.test.ts src/server/persistence/records-database.test.ts src/server/persistence/records-restart.test.ts src/server/persistence/progress-database.test.ts src/server/persistence/limits-database.test.ts src/integration/seed-catalog-roundtrip.test.ts",
+    "test:database": "RUN_DATABASE_TESTS=true vitest run src/server/persistence/persistence-contract.test.ts src/server/persistence/source-contract.test.ts src/server/persistence/standard-grounding-database.test.ts src/server/persistence/pack-database.test.ts src/server/persistence/records-database.test.ts src/server/persistence/records-restart.test.ts src/server/persistence/progress-database.test.ts src/server/persistence/limits-database.test.ts src/server/persistence/advisory-review-database.test.ts src/server/persistence/tenant-provisioning-database.test.ts src/integration/seed-catalog-roundtrip.test.ts",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "lint": "oxlint -c oxlint.config.ts",
@@ -45,6 +45,7 @@
     "fix": "ultracite fix",
     "verify:lc-mcp-eval": "node --import tsx scripts/lc-mcp-eval.ts check",
     "verify:lc-free-text": "node --import tsx scripts/lc-mcp-eval.ts free-text check",
+    "lc:rest-matrix": "node --import tsx scripts/lc-rest-matrix.ts",
     "verify:demo-removal": "node --import tsx scripts/verify-demo-removal.ts",
     "typecheck:tsc": "tsc --noEmit",
     "prepare": "git config core.hooksPath .githooks || true",
@@ -55,7 +56,8 @@
     "verify:ui": "node --import tsx scripts/verify-ui.ts",
     "census:capture": "node --import tsx scripts/design-census-capture.ts",
     "verify:limits": "node --import tsx scripts/verify-limit-config.ts",
-    "check:static": "pnpm format:check && pnpm lint && pnpm lint:styles && pnpm typecheck && pnpm verify:architecture && pnpm verify:architecture-map && pnpm verify:glossary-coverage && pnpm verify:identity-surface && pnpm verify:demo-removal && pnpm verify:limits && pnpm verify:catalog-identity && pnpm verify:lc-mcp-eval && pnpm verify:lc-free-text && pnpm verify:design-tokens && pnpm verify:boundaries",
+    "verify:ux-ownership": "node --import tsx scripts/verify-ux-ownership.ts",
+    "check:static": "pnpm format:check && pnpm lint && pnpm lint:styles && pnpm typecheck && pnpm verify:architecture && pnpm verify:architecture-map && pnpm verify:glossary-coverage && pnpm verify:identity-surface && pnpm verify:demo-removal && pnpm verify:limits && pnpm verify:catalog-identity && pnpm verify:lc-mcp-eval && pnpm verify:lc-free-text && pnpm verify:design-tokens && pnpm verify:ux-ownership && pnpm verify:boundaries",
     "eval:practices": "node --import tsx scripts/eval-practices.ts"
   },
   "dependencies": {

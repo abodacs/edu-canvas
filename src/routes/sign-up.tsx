@@ -179,7 +179,12 @@ const SignUpPage = (): ReactElement => {
   };
 
   return (
-    <main className="auth-shell" aria-labelledby="sign-up-heading">
+    <main
+      id="main"
+      tabIndex={-1}
+      className="auth-shell"
+      aria-labelledby="sign-up-heading"
+    >
       <div className="auth-frame">
         <BrandMark withTagline className="auth-card__brand" />
         <section className="auth-card">
@@ -218,7 +223,7 @@ const SignUpPage = (): ReactElement => {
               <div className="auth-actions">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   className="auth-submit"
                   disabled={isPending || cooldown > 0}
                   onClick={() => {

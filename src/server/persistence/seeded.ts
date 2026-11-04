@@ -1,6 +1,6 @@
 import { generationClaimExpiredDiagnostic } from "../generation/types";
 import { serverObservability } from "../observability.server";
-import { getSyntheticSeedCounts } from "../seed-data";
+import { getSyntheticSeedCounts } from "./seed-catalog";
 import { inMemoryPersistenceKind } from "./kinds";
 import { createSeededSourcePersistence } from "./source-seeded";
 import type { FoundationPersistence } from "./types";
@@ -190,6 +190,21 @@ export const createSeededPersistence = (
     readGeneration(tenantId, requestId) {
       const record = generationStore.get(`${tenantId}:${requestId}`);
       return Promise.resolve(record ? structuredClone(record) : undefined);
+    },
+
+    writeAdvisoryReview(tenantId, requestId, review) {
+      const key = `${tenantId}:${requestId}`;
+      const existing = generationStore.get(key);
+      if (!existing || existing.state !== "ready-for-review") {
+        return Promise.resolve(false);
+      }
+      // #223: additive only. The draft, state, diagnostics and gate stay as
+      // they were; the advisory result rides in its own field.
+      generationStore.set(
+        key,
+        structuredClone({ ...existing, advisoryReview: review })
+      );
+      return Promise.resolve(true);
     },
   };
 };

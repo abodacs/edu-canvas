@@ -121,11 +121,29 @@ module.exports = {
       },
     },
     {
+      name: "curriculum-owns-its-context",
+      comment:
+        "Curriculum & Standards may use shared contracts and, until the seed inverts, the seeded curriculum data. It must not import drafting, preview, delivery, or UI modules; the anticorruption adapter depends on the curriculum context, not the reverse (AgDR-0018).",
+      severity: "error",
+      from: { path: "^src/server/curriculum" },
+      to: {
+        path: [
+          "^src/server/generation",
+          "^src/server/a2ui",
+          "^src/routes",
+          "^src/components",
+        ],
+      },
+    },
+    {
       name: "drafting-imports-seed-curriculum-directly",
       comment:
-        "BACKLOG (wave 2, curriculum context): generation reads the seeded curriculum module directly. Move seed data into a curriculum context behind a versioned context port (AgDR-0005 direction).",
-      severity: "warn",
-      from: { path: "^src/server/generation", pathNot: "\\.test\\.tsx?$" },
+        "Retired in #30 (AgDR-0018). Generation resolves a versioned pack context and no longer imports the seeded curriculum module; the only remaining seed reader is the test-support `*-fixtures.ts` module, which production never imports.",
+      severity: "error",
+      from: {
+        path: "^src/server/generation",
+        pathNot: ["\\.test\\.tsx?$", "-fixtures\\.ts$"],
+      },
       to: { path: "^src/server/seed-data" },
     },
   ],

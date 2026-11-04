@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
 
+import {
+  ri52MainIdeaPack,
+  ri52Passage,
+} from "@/server/curriculum/built-in-packs";
 import { createEquivalentFractionsDraft } from "@/server/generation/provider";
 import { buildValidatedLearningPath } from "@/server/generation/learning-path";
-import { createSyntheticCurriculumContext } from "@/server/generation/semantic-validation";
+import { createSyntheticCurriculumContext } from "@/server/generation/semantic-validation-fixtures";
 import { gateArtifact } from "@/server/safety/artifact-gate";
 
 import { validateA2UIMessage } from "@/shared/a2ui-contract";
@@ -11,6 +15,10 @@ import {
   compileRawLessonPreview,
   LessonPreviewCompileError,
 } from "./compiler";
+import type {
+  ProviderLessonDraft,
+  ProviderVariant,
+} from "@/server/generation/types";
 import type { A2UIComponent } from "@/shared/a2ui-contract";
 import type {
   CompiledLessonPreview,
@@ -462,5 +470,131 @@ describe("lesson preview compiler", () => {
     expect(serialized).toContain("كشف الارتباط");
     expect(serialized).toContain("قصة المتعلم");
     expect(serialized).toContain("ما يفعله المتعلم");
+  });
+});
+
+const ri52Pairs = [
+  {
+    source: "Bees carry pollen from one flower to the next.",
+    target: "Bees help plants make seeds.",
+  },
+  {
+    source: "Farmers rent hives so their orchards produce more fruit.",
+    target: "People depend on bees for food.",
+  },
+  {
+    source: "Fewer wildflowers means bees have less to eat.",
+    target: "Bees face threats to their survival.",
+  },
+] as const;
+
+const ri52Draft = (): ProviderLessonDraft => {
+  const variants = (
+    [
+      { id: "standard_1", kind: "standard" },
+      { id: "standard_2", kind: "standard" },
+      { id: "scaffold_1", kind: "scaffold" },
+      { id: "challenge_1", kind: "challenge" },
+    ] as const
+  ).map((plan): ProviderVariant => {
+    return {
+      id: plan.id,
+      kind: plan.kind,
+      title: `Main idea match (${plan.id})`,
+      instructions: ri52Passage,
+      sourceItems: ri52Pairs.map((pair, index) => {
+        return { id: `${plan.id}_source_${index}`, label: pair.source };
+      }),
+      targetItems: ri52Pairs.map((pair, index) => {
+        return { id: `${plan.id}_target_${index}`, label: pair.target };
+      }),
+      distractorItems: [],
+      relationships: ri52Pairs.map((_, index) => {
+        return {
+          id: `${plan.id}_relationship_${index}`,
+          sourceId: `${plan.id}_source_${index}`,
+          targetId: `${plan.id}_target_${index}`,
+        };
+      }),
+      hints: ["Reread the passage before you match each detail."],
+      feedback: {
+        correct: "Each detail supports the main idea you chose.",
+        incorrect: "Reread the passage and try one match again.",
+      },
+      languageMetadata: { language: "en", direction: "ltr", locale: "en-US" },
+      accessibilityMetadata: {
+        instructions: ri52Passage,
+        sourceGroupLabel: "Key details",
+        targetGroupLabel: "Main ideas",
+      },
+    };
+  });
+
+  return {
+    variants,
+    learningPath: {
+      direction: "forward",
+      steps: ri52MainIdeaPack.graph.nodes.map((node) => {
+        return { nodeId: node.id, screenPurposeId: node.screenPurposeId };
+      }),
+      rationale: "Start with one main idea, then support two or more ideas.",
+      nextScreenRationale: "The matching screen checks detail-to-idea fit.",
+    },
+  };
+};
+
+describe("one A2UI contract across subjects", () => {
+  it("renders the math and ELA packs as different subject-appropriate screens", () => {
+    const elaDraft = ri52Draft();
+    const elaContext = createSyntheticCurriculumContext({
+      grade: 5,
+      language: "en",
+      standardId: ri52MainIdeaPack.standardId,
+    });
+    const elaPath = buildValidatedLearningPath({
+      proposal: requireLearningPath(elaDraft),
+      context: elaContext,
+      draftId: "draft_req_ri_5_2_preview",
+      provenance: {
+        provider: "deterministic-fixture",
+        model: "standards-pack-fixture-v1",
+        promptTemplateVersion: "lesson-prompt-v1",
+        validatorVersion: "lesson-validator-v2",
+      },
+      validatorVersion: "semantic-validation-runner-v1",
+    });
+    const elaPreview = compileGatedPreview({
+      requestId: "draft_req_ri_5_2_preview",
+      grade: 5,
+      standardId: ri52MainIdeaPack.standardId,
+      language: "en",
+      draft: elaDraft,
+      learningPath: elaPath,
+    });
+    const mathPreview = compileGatedPreview(request);
+    const elaText = JSON.stringify(elaPreview.messages);
+    const mathText = JSON.stringify(mathPreview.messages);
+
+    expect({
+      sameCatalog: elaPreview.catalogId === mathPreview.catalogId,
+      sameProtocol: elaPreview.protocolVersion === mathPreview.protocolVersion,
+      elaHasKeyDetails: elaText.includes("Key details"),
+      elaHasMainIdeas: elaText.includes("Main ideas"),
+      elaHasPassage: elaText.includes(
+        "Bees carry pollen from one flower to the next."
+      ),
+      elaHasNoFractionLabel: !elaText.includes("Fractions to match"),
+      mathHasFractionLabel: mathText.includes("Fractions to match"),
+      mathHasNoElaLabel: !mathText.includes("Key details"),
+    }).toStrictEqual({
+      sameCatalog: true,
+      sameProtocol: true,
+      elaHasKeyDetails: true,
+      elaHasMainIdeas: true,
+      elaHasPassage: true,
+      elaHasNoFractionLabel: true,
+      mathHasFractionLabel: true,
+      mathHasNoElaLabel: true,
+    });
   });
 });

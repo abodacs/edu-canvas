@@ -5,10 +5,8 @@ import { describe, expect, it } from "vitest";
 import { syntheticSeed } from "@/server/seed-data";
 
 import { createEquivalentFractionsDraft } from "./provider";
-import {
-  createSyntheticCurriculumContext,
-  validateSemanticLesson,
-} from "./semantic-validation";
+import { validateSemanticLesson } from "./semantic-validation";
+import { createSyntheticCurriculumContext } from "./semantic-validation-fixtures";
 
 const expectPrivateOutputScrubbed = (result: unknown) => {
   const serialized = JSON.stringify(result);
@@ -420,7 +418,9 @@ describe("bounded semantic lesson validation", () => {
         }),
       ])
     );
-    expect(draft.variants[0]?.title).toBe("Practice equivalent fractions");
+    expect(draft.variants[0]?.title).toBe(
+      "Practice — Possible equivalent fractions"
+    );
     expect(JSON.stringify(result)).not.toContain("3/4");
   });
 
@@ -464,7 +464,9 @@ describe("bounded semantic lesson validation", () => {
 
     expect(result.verdict).toBe("warning");
     expect(advisoryRelationshipCount).toBe(0);
-    expect(draft.variants[0]?.title).toBe("Practice equivalent fractions");
+    expect(draft.variants[0]?.title).toBe(
+      "Practice — Possible equivalent fractions"
+    );
 
     expectPrivateOutputScrubbed(result);
 

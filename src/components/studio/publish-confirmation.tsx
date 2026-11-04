@@ -102,13 +102,13 @@ export const PublishConfirmation = ({
 
   return (
     <section className="review-confirm" aria-labelledby="confirm-heading">
-      <div className="review-variant__topline">
-        <Button type="button" variant="outline" onClick={onBack}>
+      <div className="publish-variant__topline">
+        <Button type="button" variant="secondary" onClick={onBack}>
           <ArrowLeft aria-hidden="true" /> Back to the gallery
         </Button>
       </div>
       <header>
-        <p className="studio-kicker">Publish confirmation</p>
+        <p className="kicker">Publish confirmation</p>
         <h2 id="confirm-heading" ref={heading} tabIndex={-1}>
           Publish this exact revision
         </h2>
@@ -137,7 +137,7 @@ export const PublishConfirmation = ({
         </li>
       </ol>
 
-      <label className="review-edit-field">
+      <label className="publish-edit-field">
         <span>Assign to learner</span>
         <select
           aria-label="Assign to learner"

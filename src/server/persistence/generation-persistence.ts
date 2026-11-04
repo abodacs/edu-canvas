@@ -10,6 +10,7 @@ import type {
   GenerationWriteExpectation,
   LessonGenerationRecord,
 } from "../generation/types";
+import type { AdvisoryReview } from "@/shared/generation-contract";
 
 export interface GenerationPersistenceBackend<TTransaction> {
   withTransaction: <T>(
@@ -77,6 +78,12 @@ export interface GenerationPersistenceBackend<TTransaction> {
     tenantId: string,
     requestId: string
   ) => Promise<LessonGenerationRecord | undefined>;
+  writeAdvisoryReview: (
+    transaction: TTransaction,
+    tenantId: string,
+    requestId: string,
+    review: AdvisoryReview
+  ) => Promise<boolean>;
 }
 
 class ClaimConflictSignalError extends Error {
@@ -276,5 +283,17 @@ export const createGenerationPersistence = <TTransaction>(
 
     readGeneration: (tenantId, requestId) =>
       backend.readGeneration(tenantId, requestId),
+
+    writeAdvisoryReview: (tenantId, requestId, review) => {
+      return backend.withTransaction(async (transaction) => {
+        await backend.setTenant(transaction, tenantId);
+        return backend.writeAdvisoryReview(
+          transaction,
+          tenantId,
+          requestId,
+          review
+        );
+      });
+    },
   };
 };

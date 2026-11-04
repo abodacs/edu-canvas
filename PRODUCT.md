@@ -62,7 +62,7 @@ User flows:
 
 - Name: **Scholé** (binding).
 - Tagline: **"Turn one learning objective into a lesson your students understand."** (binding).
-- Hanken Grotesk is the font in use today. It is not a binding commitment.
+- Source Serif 4 (display) and Figtree (body) are the fonts in use today (AgDR-0016). They are not a binding commitment.
 
 ## Evidence on Hand
 

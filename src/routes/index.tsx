@@ -11,6 +11,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { useAuthSession } from "@/components/auth/use-auth-session";
 import { BrandMark } from "@/components/ui/brand-mark";
+import { SyntheticDataMarker } from "@/components/ui/synthetic-data-marker";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utilities";
 
@@ -42,7 +43,12 @@ const TeacherHome = () => {
   const isSignedOutArrival = Route.useSearch().signedOut === true;
 
   return (
-    <main className="app-shell" aria-labelledby="page-title">
+    <main
+      id="main"
+      tabIndex={-1}
+      className="app-shell"
+      aria-labelledby="page-title"
+    >
       <div className="page-frame">
         {isSignedOutArrival ? (
           <output className="sign-out-banner">
@@ -75,7 +81,7 @@ const TeacherHome = () => {
               </Link>
               <Link
                 className={cn(
-                  buttonVariants({ variant: "outline", size: "sm" })
+                  buttonVariants({ variant: "secondary", size: "sm" })
                 )}
                 to="/sign-up"
               >
@@ -121,7 +127,7 @@ const TeacherHome = () => {
                   </Link>
                   <Link
                     className={cn(
-                      buttonVariants({ variant: "outline", size: "lg" }),
+                      buttonVariants({ variant: "secondary", size: "lg" }),
                       "min-h-12"
                     )}
                     to="/sign-up"
@@ -199,9 +205,9 @@ const TeacherHome = () => {
 
         <footer className="site-footer">
           <BrandMark />
-          <p className="footer-note">
+          <SyntheticDataMarker as="p" className="footer-note">
             Synthetic fixture data only. Lesson drafts by Meta Muse Spark.
-          </p>
+          </SyntheticDataMarker>
         </footer>
       </div>
     </main>
@@ -255,9 +261,13 @@ const RevealPreview = () => {
 
       <p className="reveal__why">Different names, same amount.</p>
 
-      <figcaption className="reveal__caption">
+      <SyntheticDataMarker
+        variant="caption"
+        as="figcaption"
+        className="reveal__caption"
+      >
         Illustration of the seeded curriculum. Synthetic data only.
-      </figcaption>
+      </SyntheticDataMarker>
     </figure>
   );
 };

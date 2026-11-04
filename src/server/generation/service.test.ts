@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import { lessonGenerationInputSchema } from "@/shared/generation-contract";
 
+import {
+  fractionEquivalencePack,
+  multistepWordProblemsPack,
+} from "@/server/curriculum/built-in-packs";
 import { syntheticSeed } from "@/server/seed-data";
 import { parseTenantId } from "@/server/identity/identifiers";
 import {
@@ -18,10 +22,9 @@ import {
   LessonProviderError,
 } from "./provider";
 import { createGenerationService, normalizeGenerationInput } from "./service";
-import {
-  createSyntheticCurriculumContext,
-  validateSemanticLesson,
-} from "./semantic-validation";
+import { GENERATION_STANDARD_UNSUPPORTED_MESSAGE } from "./generation-request-error";
+import { validateSemanticLesson } from "./semantic-validation";
+import { createSyntheticCurriculumContext } from "./semantic-validation-fixtures";
 import { createGenerationRequestHash } from "./types";
 import type { LessonGenerationInput } from "@/shared/generation-contract";
 import type { LessonGenerationRecord } from "./types";
@@ -169,6 +172,70 @@ describe("lesson generation service", () => {
         validatorVersion: "semantic-validation-runner-v1",
       },
     });
+  });
+
+  it("#30: exposes the pack version and allowed screen patterns on the record and result", async () => {
+    const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
+      persistence: createSeededPersistence(),
+      provider: createDeterministicLessonDraftProvider(),
+      requestIdFactory: () => "draft_req_pack_provenance",
+    });
+
+    const result = await service.generate(
+      teacherCommand({
+        ...validInput,
+        idempotencyKey: "request-pack-provenance",
+      })
+    );
+    const expected = {
+      packVersion: fractionEquivalencePack.packVersion,
+      allowedScreenPatterns: [...fractionEquivalencePack.allowedScreenPatterns],
+    };
+
+    // Preview reads the record, so the record must carry the enriched
+    // provenance acceptance wrote onto the draft, not the bare provider one.
+    expect(result.record.provenance).toMatchObject(expected);
+    expect(result.record.draft?.provenance).toMatchObject(expected);
+    expect(result.publicResult.provenance).toMatchObject(expected);
+  });
+
+  it("generates a 4.OA.A.3 draft from the pack frame without a live provider", async () => {
+    const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
+      persistence: createSeededPersistence(),
+      provider: createDeterministicLessonDraftProvider(),
+      requestIdFactory: () => "draft_req_operations_1",
+    });
+    const frame = multistepWordProblemsPack.promptFrame;
+
+    const result = await service.generate(
+      teacherCommand({
+        prompt: "multistep word problems for grade 4",
+        grade: 4,
+        standardId: multistepWordProblemsPack.standardId,
+        language: "en",
+        difficulty: "on-level",
+        idempotencyKey: "request-multistep-word-problems-1",
+      })
+    );
+
+    expect(result.record.state).toBe("ready-for-review");
+    expect(result.record.draft?.variants[0]?.instructions).toBe(frame.taskLine);
+    expect(
+      result.record.draft?.variants[0]?.accessibilityMetadata
+    ).toMatchObject({
+      sourceGroupLabel: frame.sourceGroupLabel,
+      targetGroupLabel: frame.targetGroupLabel,
+    });
+    expect(
+      result.record.draft?.learningPath.steps.map((step) => step.nodeId)
+    ).toStrictEqual(
+      multistepWordProblemsPack.graph.nodes.map((node) => node.id)
+    );
+    expect(
+      JSON.stringify(result.record.draft?.variants[0]?.instructions)
+    ).not.toMatch(/equivalent[- ]fractions?/iu);
   });
 
   it("localizes the accepted learning path for Arabic requests", async () => {
@@ -969,7 +1036,7 @@ describe("lesson generation service", () => {
     expect(result.record.provenance).toStrictEqual({
       provider: "deterministic-fixture",
       model: "equivalent-fractions-fixture-v1",
-      promptTemplateVersion: "lesson-prompt-v1",
+      promptTemplateVersion: "lesson-prompt-v2",
       validatorVersion: "lesson-validator-v2",
     });
     expect(result.record.attempts[0]?.provenance).toStrictEqual(
@@ -1079,16 +1146,15 @@ describe("lesson generation service", () => {
       }).success
     ).toBeFalsy();
 
-    // Normalization owns what the schema cannot say: which standard this
-    // product supports.
+    // Normalization owns what the schema cannot say: which standards have a
+    // pack. An unknown standard fails closed without naming another lesson.
     expect(() => {
       return normalizeGenerationInput({
         ...validInput,
         standardId: "standard_ccss_5_nbt_b_05",
       });
-    }).toThrow(
-      "This learning objective is not supported. Use Grade 4 equivalent fractions (4.NF.A.1)."
-    );
+    }).toThrow(GENERATION_STANDARD_UNSUPPORTED_MESSAGE);
+    expect(GENERATION_STANDARD_UNSUPPORTED_MESSAGE).not.toContain("4.NF.A.1");
   });
 
   it("blocks unsafe teacher prompts before calling the provider", async () => {

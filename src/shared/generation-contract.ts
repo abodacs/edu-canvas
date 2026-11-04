@@ -226,6 +226,13 @@ export const publicGenerationResultSchema = z
         promptTemplateVersion: z.string(),
         validatorVersion: z.string(),
         catalogVersion: z.string().optional(),
+        /**
+         * The standards pack that shaped the draft and the screen patterns it
+         * allowed. Optional so a record written before pack pins still parses;
+         * the current server always writes both for a pack-resolved draft.
+         */
+        packVersion: z.string().optional(),
+        allowedScreenPatterns: z.array(z.string()).optional(),
       })
       .strict()
       .nullable(),
@@ -237,6 +244,104 @@ export const publicGenerationResultSchema = z
       .strict(),
   })
   .strict();
+
+/**
+#223: the advisory review a teacher may request after a draft reaches
+`ready-for-review`. It is separate from the draft diagnostics on purpose: the
+reviewer runs outside the generation deadline and may only add warnings, so it
+cannot change the record's state, its diagnostics, or its answer keys.
+*/
+export const advisoryReviewFindingSchema = z
+  .object({
+    code: z.string().min(1),
+    field: z.string().min(1),
+    reason: z.string().min(1),
+    variantId: z.string().optional(),
+    nodeId: z.string().optional(),
+    recommendation: z.string().optional(),
+  })
+  .strict();
+
+export const advisoryReviewAgentSchema = z
+  .object({
+    provider: z.string().min(1),
+    model: z.string().min(1),
+    validatorVersion: z.string().min(1),
+  })
+  .strict();
+
+export const advisoryReviewSchema = z
+  .object({
+    schemaVersion: z.literal("advisory-review-v1"),
+    agent: advisoryReviewAgentSchema,
+    reviewedAt: z.string().min(1),
+    latencyMs: z.number().int().min(0),
+    /**
+    Every entry is a warning by construction: the stored shape has no verdict
+    field, so a reviewer result cannot express a block.
+    */
+    findings: z.array(advisoryReviewFindingSchema),
+  })
+  .strict();
+
+/**
+The advisory reviewer's failure classes. A failure is reported to the teacher
+and never persisted against the draft.
+*/
+export const advisoryReviewFailureClassValues = [
+  "timeout",
+  "agent-failure",
+] as const;
+
+export const advisoryReviewFailureSchema = z
+  .object({
+    class: z.enum(advisoryReviewFailureClassValues),
+    message: z.string().min(1),
+  })
+  .strict();
+
+export const advisoryReviewRunResponseSchema = z.discriminatedUnion("status", [
+  z
+    .object({ status: z.literal("complete"), review: advisoryReviewSchema })
+    .strict(),
+  z
+    .object({
+      status: z.literal("failed"),
+      failure: advisoryReviewFailureSchema,
+    })
+    .strict(),
+]);
+
+export const advisoryReviewReadResponseSchema = z
+  .object({ review: advisoryReviewSchema.nullable() })
+  .strict();
+
+export type AdvisoryReview = z.infer<typeof advisoryReviewSchema>;
+export type AdvisoryReviewFinding = z.infer<typeof advisoryReviewFindingSchema>;
+export type AdvisoryReviewFailure = z.infer<typeof advisoryReviewFailureSchema>;
+export type AdvisoryReviewRunResponse = z.infer<
+  typeof advisoryReviewRunResponseSchema
+>;
+export type AdvisoryReviewReadResponse = z.infer<
+  typeof advisoryReviewReadResponseSchema
+>;
+
+/**
+GET /api/lessons/:draftId — one persisted draft for its owning teacher. The
+public result is the same projection a fresh generation returns; `prompt` is
+the teacher's own objective, so a reopened draft can be retried or revised
+with the request it was generated from.
+*/
+export const storedGenerationResultSchema = z
+  .object({
+    result: publicGenerationResultSchema,
+    prompt: z.string(),
+  })
+  .strict();
+
+export type StoredGenerationResult = z.infer<
+  typeof storedGenerationResultSchema
+>;
 
 export type PublicLessonDraft = z.infer<typeof publicLessonDraftSchema>;
 export type PublicGenerationDiagnostic = z.infer<

@@ -5,6 +5,7 @@ import { readServerConfig } from "@/server/config";
 import {
   handleCancelGenerationRequest,
   handleGenerateLessonRequest,
+  handleReadGenerationRequest,
 } from "@/server/generation/delivery.server";
 import { createDeterministicLessonDraftProvider } from "@/server/generation/provider";
 import { createGenerationService } from "@/server/generation/service";
@@ -41,6 +42,7 @@ import { createSeededPersistence } from "@/server/persistence/seeded";
 import { syntheticSeed } from "@/server/seed-data";
 import { testServerEnvironment } from "@/server/test-environment";
 
+import { storedGenerationResultSchema } from "@/shared/generation-contract";
 import { publicationPublishResultSchema } from "@/shared/publication-contract";
 import { createSeededGenerationLimitStore } from "@/server/persistence/limits-seeded";
 import type { AuthDependencies } from "@/server/identity/api.server";
@@ -431,6 +433,20 @@ const generate = async (
     response,
     body: (await response.clone().json()) as PublicGenerationResult,
   };
+};
+
+const readDraft = (
+  dependencies: AuthDependencies,
+  requestId: string,
+  cookie?: string
+): Promise<Response> => {
+  return handleReadGenerationRequest(
+    new Request(
+      `${dependencies.publicOrigin}/api/lessons/${encodeURIComponent(requestId)}`,
+      cookie === undefined ? undefined : { headers: { cookie } }
+    ),
+    requestId
+  );
 };
 
 /**
@@ -1691,7 +1707,7 @@ describe("protected domain policy matrix", () => {
         status: 422,
         code: "GENERATION_INPUT_INVALID",
         message:
-          "This learning objective is not supported. Use Grade 4 equivalent fractions (4.NF.A.1).",
+          "This learning objective is not supported. Choose a supported standard.",
         hasRow: false,
       });
     });
@@ -1744,6 +1760,117 @@ describe("protected domain policy matrix", () => {
         message: "This operation key belongs to a different lesson request.",
         unchangedRequestId: first.requestId,
       });
+    });
+  });
+
+  describe("draft read — GET /api/lessons/:draftId", () => {
+    it("returns the owning teacher's persisted result and objective, uncached", async () => {
+      const dependencies = await authDependencies();
+      const teacher = await signInDirect(dependencies, teacherEmail);
+      const draft = await generateReadyDraft(
+        dependencies,
+        teacher,
+        "policy-draft-read-owner"
+      );
+
+      const response = await readDraft(
+        dependencies,
+        draft.requestId,
+        teacher.cookie
+      );
+      const stored = storedGenerationResultSchema.parse(await response.json());
+
+      expect({
+        status: response.status,
+        cache: response.headers.get("cache-control"),
+        requestId: stored.result.requestId,
+        state: stored.result.state,
+        prompt: stored.prompt,
+        sameProjection: JSON.stringify(stored.result) === JSON.stringify(draft),
+      }).toStrictEqual({
+        status: 200,
+        cache: "no-store",
+        requestId: draft.requestId,
+        state: "ready-for-review",
+        prompt: "equivalent fractions for grade 4",
+        sameProjection: true,
+      });
+    });
+
+    it("refuses another teacher, another tenant, and a missing draft with one generic 403", async () => {
+      const dependencies = await authDependencies();
+      const teacher = await signInDirect(dependencies, teacherEmail);
+      const colleague = await signInForTenant(dependencies, northTenantName);
+      const foreign = await signInForTenant(dependencies, southTenantName);
+      const colleagueDraft = await generateReadyDraft(
+        dependencies,
+        colleague,
+        "policy-draft-read-colleague"
+      );
+      const foreignDraft = await generateReadyDraft(
+        dependencies,
+        foreign,
+        "policy-draft-read-foreign"
+      );
+
+      const responses = await Promise.all(
+        [colleagueDraft.requestId, foreignDraft.requestId, "draft_missing"].map(
+          (requestId) => readDraft(dependencies, requestId, teacher.cookie)
+        )
+      );
+      const bodies = await Promise.all(
+        responses.map((response) => response.text())
+      );
+
+      expect({
+        statuses: responses.map((response) => response.status),
+        identical: new Set(bodies).size === 1,
+        code: (JSON.parse(bodies[0] ?? "{}") as { code?: string }).code,
+      }).toStrictEqual({
+        statuses: [403, 403, 403],
+        identical: true,
+        code: "FORBIDDEN",
+      });
+    });
+
+    it("refuses a learner and an unauthenticated caller", async () => {
+      const dependencies = await authDependencies();
+      const teacher = await signInDirect(dependencies, teacherEmail);
+      const draft = await generateReadyDraft(
+        dependencies,
+        teacher,
+        "policy-draft-read-learner"
+      );
+      const learner = await signInDirect(dependencies, learnerEmail);
+
+      const learnerResponse = await readDraft(
+        dependencies,
+        draft.requestId,
+        learner.cookie
+      );
+      const anonymousResponse = await readDraft(dependencies, draft.requestId);
+
+      expect({
+        learner: [learnerResponse.status, await errorCode(learnerResponse)],
+        anonymous: [
+          anonymousResponse.status,
+          await errorCode(anonymousResponse),
+        ],
+      }).toStrictEqual({
+        learner: [403, "FORBIDDEN"],
+        anonymous: [401, "UNAUTHENTICATED"],
+      });
+    });
+
+    it("rejects a malformed draft id before any read", async () => {
+      const dependencies = await authDependencies();
+      const teacher = await signInDirect(dependencies, teacherEmail);
+      const response = await readDraft(dependencies, "../x", teacher.cookie);
+
+      expect({
+        status: response.status,
+        code: await errorCode(response),
+      }).toStrictEqual({ status: 422, code: "INVALID_INPUT" });
     });
   });
 

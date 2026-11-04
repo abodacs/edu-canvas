@@ -217,6 +217,87 @@ describe("teacher lesson preview delivery seam", () => {
     });
   });
 
+  it("refuses a screen pattern the pack does not allow instead of falling back", async () => {
+    sessionState.resolution = activeSession(owningTeacher);
+
+    const response = await handleLessonPreviewRequest(
+      new Request(
+        `http://localhost/api/a2ui/preview?requestId=${encodeURIComponent(draftRequestId)}&screenPattern=free-text`,
+        { headers: { cookie: "edu_canvas_session=owner-credential" } }
+      )
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(406);
+    expect(body).toMatchObject({
+      code: "UNSUPPORTED_SCREEN_PATTERN",
+      message: expect.stringContaining("matching"),
+    });
+    expect(body).not.toHaveProperty("messages");
+  });
+
+  it("still renders when the request names the pack's allowed pattern", async () => {
+    sessionState.resolution = activeSession(owningTeacher);
+
+    const response = await handleLessonPreviewRequest(
+      new Request(
+        `http://localhost/api/a2ui/preview?requestId=${encodeURIComponent(draftRequestId)}&screenPattern=matching`,
+        { headers: { cookie: "edu_canvas_session=owner-credential" } }
+      )
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("text/event-stream");
+  });
+
+  it("keeps matching-only for a legacy record with no pinned patterns", async () => {
+    const persistence = persistenceState.current as FoundationPersistence;
+    const record = await persistence.readGeneration(
+      syntheticSeed.tenant.id,
+      draftRequestId
+    );
+    if (!record?.provenance) {
+      throw new Error("The prepared draft must carry provenance.");
+    }
+    const legacy = {
+      ...record,
+      provenance: {
+        provider: record.provenance.provider,
+        model: record.provenance.model,
+        promptTemplateVersion: record.provenance.promptTemplateVersion,
+        validatorVersion: record.provenance.validatorVersion,
+        ...(record.provenance.catalogVersion && {
+          catalogVersion: record.provenance.catalogVersion,
+        }),
+      },
+    };
+    useRecord(legacy);
+    sessionState.resolution = activeSession(owningTeacher);
+
+    try {
+      const refused = await handleLessonPreviewRequest(
+        new Request(
+          `http://localhost/api/a2ui/preview?requestId=${encodeURIComponent(draftRequestId)}&screenPattern=free-text`,
+          { headers: { cookie: "edu_canvas_session=owner-credential" } }
+        )
+      );
+      expect(refused.status).toBe(406);
+      await expect(refused.json()).resolves.toMatchObject({
+        code: "UNSUPPORTED_SCREEN_PATTERN",
+      });
+
+      const allowed = await handleLessonPreviewRequest(
+        new Request(
+          `http://localhost/api/a2ui/preview?requestId=${encodeURIComponent(draftRequestId)}&screenPattern=matching`,
+          { headers: { cookie: "edu_canvas_session=owner-credential" } }
+        )
+      );
+      expect(allowed.status).toBe(200);
+    } finally {
+      persistenceState.current = persistence;
+    }
+  });
+
   it("returns 401 for an unauthenticated caller with no session cookie", async () => {
     const response = await handleLessonPreviewRequest(previewRequest());
 

@@ -10,6 +10,7 @@ The repository has more than one context, so the language has more than one home
 | Identity and tenancy | [src/server/identity/GLOSSARY.md](src/server/identity/GLOSSARY.md) | Actors, memberships, sessions, provisioning. |
 | Lesson drafting | [src/server/generation/GLOSSARY.md](src/server/generation/GLOSSARY.md) | Drafts, attempts, variants, diagnostics. |
 | Records and student learning | [src/server/records/GLOSSARY.md](src/server/records/GLOSSARY.md) | Versions, publications, runs, attempts, evidence. |
+| Standards packs | [src/server/curriculum/GLOSSARY.md](src/server/curriculum/GLOSSARY.md) | Pack versions, curriculum graphs, components, answer rules, prompt frames. |
 | Publication and review | [src/server/publication/GLOSSARY.md](src/server/publication/GLOSSARY.md) | Packs, approvals, the bridge. |
 | Curriculum and sources | [src/server/grounding/GLOSSARY.md](src/server/grounding/GLOSSARY.md) | Uploads, extraction, gaps, grounding. |
 | Validation and safety | [src/server/safety/GLOSSARY.md](src/server/safety/GLOSSARY.md) | Gate, verdicts, blocks, recovery. |

@@ -40,6 +40,7 @@ interface GenerationRequestRow {
   provenance: unknown;
   source_snapshot_id: string | null;
   revises_request_id: string | null;
+  advisory_review: unknown;
   created_at: string | Date;
   updated_at: string | Date;
 }
@@ -147,6 +148,7 @@ const hydrateStoredGeneration = async (
     provenance: row.provenance,
     sourceSnapshotId: row.source_snapshot_id,
     revisesRequestId: row.revises_request_id,
+    advisoryReview: row.advisory_review,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -502,6 +504,18 @@ const createPostgresGenerationBackend = (
       return readGenerationByQuery(databaseUrl, tenantId, requestId, {
         byRequestId: true,
       });
+    },
+
+    async writeAdvisoryReview(transaction, tenantId, requestId, review) {
+      const rows = await transaction<{ id: string }[]>`
+        update lesson_draft_requests
+        set advisory_review = ${transaction.json(jsonValue(review))}::jsonb
+        where tenant_id = ${tenantId}
+          and id = ${requestId}
+          and state = 'ready-for-review'
+        returning id
+      `;
+      return rows.length > 0;
     },
   };
 };

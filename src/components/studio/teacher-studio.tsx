@@ -19,9 +19,11 @@ import {
 import { cn } from "@/lib/utilities";
 import { LessonPreview } from "@/components/a2ui/lesson-preview";
 import { Button } from "@/components/ui/button";
+import { Notice } from "@/components/ui/notice";
 import { ModerationRecoveryPanel } from "@/components/studio/moderation-recovery-panel";
 import { ReviewStudio } from "@/components/studio/review-studio";
 import { SourcePanel } from "@/components/studio/source-panel";
+import { useStoredDraft } from "@/components/studio/use-stored-draft";
 import { ValidationDiagnostics } from "@/components/studio/validation-diagnostics";
 import { csrfHeaderName } from "@/shared/identity-contract";
 import { publicGenerationResultSchema } from "@/shared/generation-contract";
@@ -37,6 +39,7 @@ import type {
 
 import type {
   KeyboardEvent as ReactKeyboardEvent,
+  RefObject,
   SyntheticEvent,
 } from "react";
 
@@ -44,6 +47,8 @@ interface TeacherStudioProperties {
   readonly csrf: string;
   readonly generation: string;
   readonly reviewRequestId?: string;
+  /** A persisted draft to open in the composer (`/workspace?draft=<id>`). */
+  readonly draftRequestId?: string;
   readonly onOpenReview: (requestId: string) => void;
   readonly onCloseReview: () => void;
   readonly onUnauthorized: () => void;
@@ -122,6 +127,7 @@ const getPromptContext = (prompt: string): PromptContext => {
 };
 
 const READY_FOR_REVIEW_STATE = "ready-for-review";
+const GENERATING_STATE = "generating";
 const BLOCKED_BY_VALIDATION_STATE = "blocked-by-validation";
 const BLOCKED_BY_MODERATION_STATE = "blocked-by-moderation";
 
@@ -408,7 +414,7 @@ const TeacherGuidance = ({
   return (
     <section className="teacher-guidance" aria-labelledby="guidance-heading">
       <div className="teacher-guidance__rail">
-        <p className="studio-kicker">A little help, quietly</p>
+        <p className="kicker">A little help, quietly</p>
         <h2 id="guidance-heading">Good prompts carry more than a topic.</h2>
         <p>
           As you write, Scholé looks for the small details that help a visual
@@ -719,7 +725,7 @@ const GenerationResult = ({
       )}
       <div className="generation-result__header teacher-result__header">
         <div>
-          <p className="studio-kicker">Your first pass</p>
+          <p className="kicker">Your first pass</p>
           <h2>{getResultTitle(result.state)}</h2>
           <p className="teacher-result__description">
             {getResultDescription(result, requiresTeacherReview)}
@@ -841,7 +847,7 @@ const GenerationResult = ({
 
       {result.retry.available ? (
         <form onSubmit={onRetry}>
-          <Button type="submit" variant="outline" className="retry-button">
+          <Button type="submit" variant="secondary" className="retry-button">
             Try that again <ArrowRight aria-hidden="true" />
           </Button>
         </form>
@@ -862,6 +868,7 @@ const GenerationResult = ({
 interface TeacherLessonComposerProperties {
   readonly csrf: string;
   readonly generation: string;
+  readonly draftRequestId?: string;
   readonly onOpenReview: (requestId: string) => void;
   readonly onUnauthorized: () => void;
   readonly standardId: string;
@@ -930,7 +937,7 @@ const TeacherComposerOutcome = ({
       {visibleResult || hasModerationPanel ? null : (
         <div className="teacher-action-band">
           <div>
-            <p className="studio-kicker">Ready when you are</p>
+            <p className="kicker">Ready when you are</p>
             <p>One sentence is enough to start a useful conversation.</p>
           </div>
           <span>
@@ -943,9 +950,144 @@ const TeacherComposerOutcome = ({
   );
 };
 
+const composerBusyMessage = (
+  isOpeningDraft: boolean,
+  isGenerating: boolean
+): string | null => {
+  if (isOpeningDraft) {
+    return "Opening the saved draft…";
+  }
+  if (isGenerating) {
+    return "Reading the idea, finding the cleanest path…";
+  }
+  return null;
+};
+
+/**
+The status line beside Create lesson: opening a saved draft, generating, or
+the failure the teacher can fix. Both tones come from the shared Notice, so
+they look and announce like every other in-page message. The wrapper receives
+focus on failure (#168 P0-2) so the cause lands in view.
+*/
+const ComposerStatus = ({
+  statusRef,
+  isOpeningDraft,
+  isGenerating,
+  requestError,
+}: {
+  readonly statusRef: RefObject<HTMLDivElement | null>;
+  readonly isOpeningDraft: boolean;
+  readonly isGenerating: boolean;
+  readonly requestError: string | null;
+}) => {
+  const busyMessage = composerBusyMessage(isOpeningDraft, isGenerating);
+
+  return (
+    <div className="teacher-generation-status" tabIndex={-1} ref={statusRef}>
+      {busyMessage ? (
+        <Notice tone="info">
+          <p className="status-pulse">
+            <span aria-hidden="true" /> {busyMessage}
+          </p>
+        </Notice>
+      ) : null}
+      {requestError ? (
+        <Notice tone="stop">
+          <p>{requestError}</p>
+          <p className="generation-error__hint">
+            Fix the objective or the source, then press Create lesson again.
+          </p>
+        </Notice>
+      ) : null}
+    </div>
+  );
+};
+
+interface ReopenedDraftTargets {
+  readonly setPrompt: (prompt: string) => void;
+  readonly setResult: (result: PublicGenerationResult | null) => void;
+  readonly setPriorDraft: (result: PublicGenerationResult | null) => void;
+  readonly setFailure: (failure: GenerationFailure | null) => void;
+  /** The reopened request is not the composer's last submission. */
+  readonly forgetLastSubmission: () => void;
+  readonly onUnauthorized: () => void;
+}
+
+/**
+Wires a draft link (`/workspace?draft=<id>`) into the composer's state. A new
+link clears what the composer showed; a loaded draft fills the objective and
+the result. A draft still `generating` has no result yet, so it surfaces as a
+pending id the composer explains once (no polling).
+*/
+const useReopenedDraft = (
+  draftRequestId: string | undefined,
+  targets: ReopenedDraftTargets
+) => {
+  const [pendingDraftId, setPendingDraftId] = useState<string | null>(null);
+  const storedDraft = useStoredDraft(draftRequestId, {
+    onReset: () => {
+      targets.setResult(null);
+      targets.setPriorDraft(null);
+      targets.setFailure(null);
+      setPendingDraftId(null);
+    },
+    onDraft: (stored) => {
+      targets.forgetLastSubmission();
+      targets.setPrompt(stored.prompt);
+      if (stored.result.state === GENERATING_STATE) {
+        setPendingDraftId(stored.result.requestId);
+        return;
+      }
+      if (stored.result.state === READY_FOR_REVIEW_STATE) {
+        targets.setPriorDraft(stored.result);
+      }
+      targets.setResult(stored.result);
+    },
+    onUnauthorized: targets.onUnauthorized,
+    onUnavailable: (message) => {
+      targets.setFailure({ kind: "error", message, code: null });
+    },
+  });
+  return {
+    isOpening: storedDraft.isOpening,
+    reload: storedDraft.reload,
+    pendingDraftId,
+  };
+};
+
+/**
+A reopened draft that was still generating. It is a terminal notice: nothing
+refreshes on its own, and "Check again" reads the same link once more.
+*/
+const StoredDraftPending = ({
+  requestId,
+  onCheckAgain,
+}: {
+  readonly requestId: string;
+  readonly onCheckAgain: () => void;
+}) => {
+  return (
+    <Notice
+      tone="info"
+      title="This draft is still in progress"
+      action={
+        <Button type="button" variant="secondary" onClick={onCheckAgain}>
+          Check again
+        </Button>
+      }
+    >
+      <p>
+        Request {requestId} was still being generated when this link opened.
+        Check again in a moment to see the finished draft.
+      </p>
+    </Notice>
+  );
+};
+
 const TeacherLessonComposer = ({
   csrf,
   generation,
+  draftRequestId,
   onOpenReview,
   onUnauthorized,
   standardId,
@@ -970,7 +1112,7 @@ const TeacherLessonComposer = ({
   // #168 P0-2: on failure the inline status next to Create lesson receives
   // focus, so the cause lands in view and in the screen reader's mouth. The
   // moderation panel owns focus for its own path.
-  const statusReference = useRef<HTMLOutputElement>(null);
+  const statusReference = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (requestError && !hasModerationFailure) {
       statusReference.current?.focus();
@@ -989,6 +1131,21 @@ const TeacherLessonComposer = ({
     generationReference.current = generation;
   }, [generation]);
 
+  const reopened = useReopenedDraft(draftRequestId, {
+    setPrompt,
+    setResult,
+    setPriorDraft,
+    setFailure,
+    forgetLastSubmission: () => {
+      // The next Create starts a fresh operation key and arms no revision.
+      requestKeyReference.current = "";
+      revisionTargetReference.current = null;
+    },
+    onUnauthorized,
+  });
+  const { isOpening: isOpeningDraft, pendingDraftId } = reopened;
+  const handleCheckDraftAgain = reopened.reload;
+
   const updateRequestKey = () => {
     requestKeyReference.current = "";
     setResult(null);
@@ -1000,7 +1157,9 @@ const TeacherLessonComposer = ({
     retryOfRequestId?: string
   ): Promise<void> => {
     event?.preventDefault();
-    if (submittingReference.current) {
+    // No submission may race the stored-draft read: it would overwrite the
+    // composer the read is about to fill.
+    if (submittingReference.current || isOpeningDraft) {
       return;
     }
     submittingReference.current = true;
@@ -1074,9 +1233,9 @@ const TeacherLessonComposer = ({
     <section className="teacher-studio" aria-labelledby="generation-heading">
       <div className="teacher-hero">
         <div className="teacher-hero__copy">
-          <p className="studio-kicker">
-            <span className="studio-kicker__line" aria-hidden="true" />A calmer
-            way to begin
+          <p className="kicker">
+            <span className="kicker__line" aria-hidden="true" />A calmer way to
+            begin
           </p>
           <h1 id="generation-heading">
             Make the idea{" "}
@@ -1143,7 +1302,7 @@ const TeacherLessonComposer = ({
             type="submit"
             size="lg"
             className="prompt-composer__submit"
-            disabled={isGenerating}
+            disabled={isGenerating || isOpeningDraft}
           >
             <WandSparkles aria-hidden="true" />
             {isGenerating ? "Shaping the draft…" : "Create lesson"}
@@ -1153,27 +1312,12 @@ const TeacherLessonComposer = ({
         {/* #168 P0-2: progress and failure feedback sit with the submit
             button, in the form, where a teacher looks for it — the guidance
             rail never stands between them. */}
-        <output
-          className="generation-status teacher-generation-status"
-          aria-live="polite"
-          tabIndex={-1}
-          ref={statusReference}
-        >
-          {isGenerating ? (
-            <p className="status-pulse">
-              <span aria-hidden="true" /> Reading the idea, finding the cleanest
-              path…
-            </p>
-          ) : null}
-          {requestError && !hasModerationFailure ? (
-            <p className="generation-error">
-              {requestError}
-              <span className="generation-error__hint">
-                Fix the objective or the source, then press Create lesson again.
-              </span>
-            </p>
-          ) : null}
-        </output>
+        <ComposerStatus
+          statusRef={statusReference}
+          isOpeningDraft={isOpeningDraft}
+          isGenerating={isGenerating}
+          requestError={hasModerationFailure ? null : requestError}
+        />
       </form>
 
       <SourcePanel
@@ -1195,6 +1339,13 @@ const TeacherLessonComposer = ({
         prompt={prompt}
         standardId={standardId}
       />
+
+      {pendingDraftId ? (
+        <StoredDraftPending
+          requestId={pendingDraftId}
+          onCheckAgain={handleCheckDraftAgain}
+        />
+      ) : null}
 
       <TeacherComposerOutcome
         prompt={prompt}
@@ -1232,6 +1383,7 @@ export const TeacherStudio = ({
   csrf,
   generation,
   reviewRequestId,
+  draftRequestId,
   onOpenReview,
   onCloseReview,
   onUnauthorized,
@@ -1251,6 +1403,7 @@ export const TeacherStudio = ({
     <TeacherLessonComposer
       csrf={csrf}
       generation={generation}
+      draftRequestId={draftRequestId}
       onOpenReview={onOpenReview}
       onUnauthorized={onUnauthorized}
       standardId={DEFAULT_STANDARD_ID}

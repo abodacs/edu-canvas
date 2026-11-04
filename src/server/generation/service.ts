@@ -1,7 +1,10 @@
 import { setTimeout as delay } from "node:timers/promises";
 
 import { createId } from "@/server/ids";
-import { syntheticSeed } from "@/server/seed-data";
+import {
+  resolveSharedStandardPack,
+  standardsPackRegistry,
+} from "@/server/curriculum/registry";
 
 import { IdentityError } from "../identity/errors";
 import {
@@ -14,12 +17,14 @@ import { GenerationLimitError, rateLimitedMessage } from "../limits/errors";
 import {
   GenerationRequestError,
   GENERATION_INPUT_INVALID_MESSAGE,
+  GENERATION_STANDARD_UNSUPPORTED_MESSAGE,
 } from "./generation-request-error";
 import { toPublicGenerationResult } from "./projection";
 
 import { LessonProviderError, RATE_LIMIT_KIND } from "./provider";
 import {
   resolveCurriculumContext,
+  resolveExpectedGraphVersion,
   reviewDraftForAcceptance,
 } from "./draft-acceptance";
 import {
@@ -108,6 +113,9 @@ export interface GenerationCancellationCommand {
   requestId: string;
 }
 
+/** The owning teacher and the persisted request a draft read names. */
+export type GenerationReadCommand = GenerationCancellationCommand;
+
 interface NormalizedCommandInput extends NormalizedGenerationRequest {
   idempotencyKey: string;
   requestHash: string;
@@ -137,10 +145,15 @@ class GenerationAbortError extends Error {
   }
 }
 
-const supportedStandardIds: ReadonlySet<string> = new Set([
-  syntheticSeed.standard.id,
-  syntheticSeed.standard.code,
-]);
+const packForStandard = (standard: string, tenantId?: string) => {
+  if (tenantId !== undefined) {
+    return standardsPackRegistry.resolve({ tenantId, standard });
+  }
+  // Without a tenant there is no private-pack resolution: only a shared
+  // template may answer, so another tenant's pack never makes a standard
+  // "supported" for everyone.
+  return resolveSharedStandardPack(standardsPackRegistry.packs, standard);
+};
 
 // Idempotency keys are persisted and looked up across deploys; keep FNV-1a so a retry that spans a deployment still matches its record.
 const hashForIdempotency = (value: string): string => {
@@ -175,9 +188,10 @@ const createImplicitIdempotencyKey = (
 
 // The delivery seam parses the body with `lessonGenerationInputSchema`; this
 // function owns only what the schema cannot say: which grades and standards
-// this product supports, and the derived idempotency key.
+// this product supports for the acting tenant, and the derived idempotency key.
 export const normalizeGenerationInput = (
-  input: LessonGenerationInput
+  input: LessonGenerationInput,
+  tenantId?: string
 ): NormalizedCommandInput => {
   const grade =
     typeof input.grade === "number" ? input.grade : Number(input.grade);
@@ -187,17 +201,14 @@ export const normalizeGenerationInput = (
     });
   }
 
-  if (!supportedStandardIds.has(input.standardId)) {
-    throw new GenerationRequestError(
-      "This learning objective is not supported. Use Grade 4 equivalent fractions (4.NF.A.1).",
-      { code: "GENERATION_INPUT_INVALID" }
-    );
+  const pack = packForStandard(input.standardId, tenantId);
+  if (!pack) {
+    throw new GenerationRequestError(GENERATION_STANDARD_UNSUPPORTED_MESSAGE, {
+      code: "GENERATION_INPUT_INVALID",
+    });
   }
 
-  const standardId =
-    input.standardId === syntheticSeed.standard.code
-      ? syntheticSeed.standard.id
-      : input.standardId;
+  const { standardId } = pack;
   const difficulty: LessonDifficulty = input.difficulty ?? "on-level";
   const { retryOfRequestId, revisesRequestId } = input;
   const normalized = {
@@ -359,20 +370,14 @@ const buildProviderContext = (
   isCorrectionAttempt: boolean,
   diagnostics: GenerationDiagnostic[]
 ): ProviderGenerationContext => {
-  const reference = {
-    id: syntheticSeed.activityVersion.id,
-    version: String(syntheticSeed.activityVersion.versionNumber),
-    graphVersion: syntheticSeed.activityVersion.graphVersion,
-    standardCode: syntheticSeed.standard.code,
-    source: syntheticSeed.activityVersion.publicContent.source,
-    targets: syntheticSeed.activityVersion.publicContent.targets,
-    prompt: syntheticSeed.activityVersion.publicContent.prompt,
-  };
+  const reference = curriculum?.reference;
 
   return {
     correctionAttempt: isCorrectionAttempt,
     diagnostics,
-    referenceContext: reference,
+    ...(curriculum?.promptFrame && { promptFrame: curriculum.promptFrame }),
+    ...(curriculum?.examples && { examples: curriculum.examples }),
+    ...(curriculum?.answerRules && { answerRules: curriculum.answerRules }),
     ...(curriculum && {
       curriculumContext: {
         nodes: curriculum.nodes.map((node) => {
@@ -390,6 +395,18 @@ const buildProviderContext = (
         targetNodeId: curriculum.targetNodeId,
       },
     }),
+    ...(reference &&
+      curriculum && {
+        referenceContext: {
+          id: reference.id,
+          version: reference.version,
+          graphVersion: curriculum.graphVersion,
+          standardCode: curriculum.standardCode,
+          source: reference.source,
+          targets: reference.targets,
+          prompt: reference.prompt,
+        },
+      }),
   };
 };
 
@@ -500,8 +517,12 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         "A ready-for-review generation record requires an artifact gate snapshot."
       );
     }
-    const provenance = baseRecord.provenance ?? options.provider.provenance;
     const draft = "draft" in outcome ? outcome.draft : null;
+    // The draft carries the enriched provenance (pack version and allowed
+    // screen patterns) acceptance wrote; the record and attempt must expose
+    // that same provenance or preview falls back to matching-only.
+    const provenance =
+      draft?.provenance ?? baseRecord.provenance ?? options.provider.provenance;
     const record: LessonGenerationRecord = {
       ...baseRecord,
       state: outcome.state,
@@ -579,6 +600,8 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
   const acceptDraft = async (
     baseRecord: LessonGenerationRecord,
     input: NormalizedCommandInput,
+    curriculum: ReturnType<typeof resolveCurriculumContext>,
+    expectedGraphVersion: string | undefined,
     providerDraft: ProviderLessonDraft,
     structuralDiagnostics: GenerationDiagnostic[]
   ): Promise<GenerationServiceResult> => {
@@ -591,13 +614,21 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         requestId: baseRecord.requestId,
         provenance,
         structuralDiagnostics,
-        graphVersion: syntheticSeed.activityVersion.graphVersion,
+        ...(expectedGraphVersion && { graphVersion: expectedGraphVersion }),
       },
       options
     );
     if (acceptance.state !== READY_FOR_REVIEW_STATE) {
       return finishAttempt(baseRecord, acceptance);
     }
+
+    const draftProvenance = curriculum
+      ? {
+          ...provenance,
+          packVersion: curriculum.packVersion,
+          allowedScreenPatterns: [...curriculum.allowedScreenPatterns],
+        }
+      : provenance;
 
     return finishAttempt(baseRecord, {
       state: acceptance.state,
@@ -614,7 +645,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
           language: input.language,
           difficulty: input.difficulty,
         },
-        provenance,
+        provenance: draftProvenance,
         createdAt: now(),
       },
     });
@@ -814,6 +845,9 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       record.tenantId,
       options
     );
+    const expectedGraphVersion =
+      resolveExpectedGraphVersion(input.standardId, record.tenantId) ??
+      curriculum?.graphVersion;
 
     let claim: GenerationClaim;
     try {
@@ -898,6 +932,8 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       return acceptDraft(
         record,
         input,
+        curriculum,
+        expectedGraphVersion,
         firstValidation.draft,
         firstValidation.diagnostics
       );
@@ -976,6 +1012,8 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       return acceptDraft(
         record,
         input,
+        curriculum,
+        expectedGraphVersion,
         correctedValidation.draft,
         correctedValidation.diagnostics
       );
@@ -1109,7 +1147,10 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       command: GenerationCommand
     ): Promise<GenerationServiceResult> {
       assertTeacherCanGenerate(command.actor);
-      const input = normalizeGenerationInput(command.input);
+      const input = normalizeGenerationInput(
+        command.input,
+        command.actor.tenantId
+      );
       await assertSourceReady(command.actor, input.sourceSnapshotId);
       const existing = await options.persistence.findGenerationByIdempotencyKey(
         command.actor.tenantId,
@@ -1210,6 +1251,25 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         updatedAt: timestamp,
       };
       return runAttemptWithSourceUsage(record, input, command.actor.sessionId);
+    },
+
+    /**
+    Read one persisted draft for its owning teacher. A missing request, another
+    teacher's request, and another tenant's request are one indistinguishable
+    refusal, so the read never reveals whether a draft exists (PT-19).
+    */
+    async read(
+      command: GenerationReadCommand
+    ): Promise<GenerationServiceResult> {
+      assertTeacherCanGenerate(command.actor);
+      const record = await options.persistence.readGeneration(
+        command.actor.tenantId,
+        command.requestId
+      );
+      if (!record || record.teacherId !== command.actor.actorId) {
+        throw new IdentityError("FORBIDDEN");
+      }
+      return resultFor(record);
     },
 
     async cancel(

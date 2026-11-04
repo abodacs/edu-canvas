@@ -4,10 +4,15 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { createEquivalentFractionsDraft } from "../generation/provider";
 import { buildValidatedLearningPath } from "../generation/learning-path";
-import { createSyntheticCurriculumContext } from "../generation/semantic-validation";
-import { getSyntheticSeedCounts } from "../seed-data";
+import { createCurriculumContextFromPack } from "../generation/semantic-validation";
+import {
+  fractionEquivalencePack,
+  multistepWordProblemsPack,
+} from "@/server/curriculum/built-in-packs";
+import { syntheticSeed } from "../seed-data";
 import { createGenerationRequestHash } from "../generation/types";
 import { createPostgresPersistence } from "./postgres";
+import { getSyntheticSeedCounts } from "./seed-catalog";
 import {
   isRunDatabaseTests,
   requireDatabaseUrl,
@@ -303,6 +308,58 @@ describe.skipIf(!isRunDatabaseTests)("PostgreSQL persistence parity", () => {
       );
     });
 
+    it("claims a 4.OA.A.3 generation against the seeded standards row", async () => {
+      const persistence = adapter.create();
+      const teacherId = `actor_issue_219_${runId}`;
+      const fixture: TenantFixture = {
+        tenantId: syntheticSeed.tenant.id,
+        teacherId,
+        otherTeacherId: teacherId,
+        standardId: multistepWordProblemsPack.standardId,
+      };
+      const record = createGeneratingRecord(
+        fixture,
+        "pack_4_oa_a_3",
+        "2026-07-18T00:00:00.000Z"
+      );
+
+      await withTenantSql(syntheticSeed.tenant.id, async (transaction) => {
+        await transaction`
+          insert into actors (id, display_name)
+          values (${teacherId}, ${"Issue 219 pack teacher"})
+          on conflict (id) do nothing
+        `;
+      });
+
+      try {
+        await expect(
+          persistence.claimGeneration(record)
+        ).resolves.toStrictEqual({ claimed: true, record });
+        await expect(
+          persistence.readGeneration(syntheticSeed.tenant.id, record.requestId)
+        ).resolves.toMatchObject({
+          input: { standardId: multistepWordProblemsPack.standardId },
+          state: "generating",
+        });
+      } finally {
+        await withTenantSql(syntheticSeed.tenant.id, async (transaction) => {
+          await transaction`
+            delete from lesson_generation_attempts
+            where tenant_id = ${syntheticSeed.tenant.id}
+              and request_id = ${record.requestId}
+          `;
+          await transaction`
+            delete from lesson_draft_requests
+            where tenant_id = ${syntheticSeed.tenant.id}
+              and id = ${record.requestId}
+          `;
+          await transaction`
+            delete from actors where id = ${teacherId}
+          `;
+        });
+      }
+    });
+
     it("keeps idempotency claims tenant-local and returns the winner", async () => {
       const persistence = adapter.create();
       const idempotencyKey = `issue-42-shared-key-${adapter.name}-${runId}`;
@@ -443,7 +500,14 @@ describe.skipIf(!isRunDatabaseTests)("PostgreSQL persistence parity", () => {
       const generatedDraft = createEquivalentFractionsDraft(retry.input);
       const learningPath = buildValidatedLearningPath({
         proposal: requireLearningPath(generatedDraft),
-        context: createSyntheticCurriculumContext(retry.input),
+        context: {
+          ...createCurriculumContextFromPack(
+            fractionEquivalencePack,
+            retry.input,
+            retry.tenantId
+          ),
+          standardId: retry.input.standardId,
+        },
         draftId: retry.requestId,
         provenance,
         validatorVersion: "semantic-validation-runner-v1",

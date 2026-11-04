@@ -1,0 +1,205 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-04T12:53:44.036Z",
+  "origin": "https://api.learningcommons.org/knowledge-graph/v0",
+  "rows": [
+    {
+      "id": "multi-state-4.NF.A.1",
+      "jurisdiction": "Multi-State",
+      "statementCode": "4.NF.A.1",
+      "found": true,
+      "standardId": "6b9c09e2-d7cc-11e8-824f-0242ac160002",
+      "descriptionHash": "cc2757e5af6fca099a365e665ef8407a5dad54b95e19e0d589eef89861d76e6c",
+      "contentHash": "e48b961b57f5bb8ff30865ab82d54acf4eac8a8aed7840d95ecd4f367561bd9e",
+      "componentCount": 5,
+      "prerequisiteResolution": "direct",
+      "prerequisiteCodes": [
+        "4.OA.A.2",
+        "3.NF.A.3"
+      ],
+      "prerequisiteMatchTypes": [
+        "direct",
+        "direct"
+      ],
+      "gapClasses": [],
+      "latencyMs": 5630,
+      "errorCode": null
+    },
+    {
+      "id": "multi-state-4.NF.A.2",
+      "jurisdiction": "Multi-State",
+      "statementCode": "4.NF.A.2",
+      "found": true,
+      "standardId": "6b9d4e66-d7cc-11e8-824f-0242ac160002",
+      "descriptionHash": "f616ab8727cfb9cd751af03ecdb368b989c3b8a6ad042b4d97a38146fecae563",
+      "contentHash": "d0e1df2696cdb3b2b8b553ce68120fb99bcb8c75f2b78709e297fcd93cda3007",
+      "componentCount": 7,
+      "prerequisiteResolution": "direct",
+      "prerequisiteCodes": [
+        "4.NF.A.1"
+      ],
+      "prerequisiteMatchTypes": [
+        "direct"
+      ],
+      "gapClasses": [],
+      "latencyMs": 4114,
+      "errorCode": null
+    },
+    {
+      "id": "multi-state-3.NF.A.3",
+      "jurisdiction": "Multi-State",
+      "statementCode": "3.NF.A.3",
+      "found": true,
+      "standardId": "6b9e210d-d7cc-11e8-824f-0242ac160002",
+      "descriptionHash": "ab8b74d01f96703c7aa3991c9372f8770621ade896259e7d92a0eba9c4e1c3f8",
+      "contentHash": "3d394e9d3f647b8e4df2762848bfd607bc1f1a96538c5becc3e4b04f3e40b00b",
+      "componentCount": 2,
+      "prerequisiteResolution": "direct",
+      "prerequisiteCodes": [
+        "3.NF.A.1",
+        "3.NF.A.2"
+      ],
+      "prerequisiteMatchTypes": [
+        "direct",
+        "direct"
+      ],
+      "gapClasses": [],
+      "latencyMs": 4034,
+      "errorCode": null
+    },
+    {
+      "id": "multi-state-4.OA.A.3",
+      "jurisdiction": "Multi-State",
+      "statementCode": "4.OA.A.3",
+      "found": true,
+      "standardId": "6b9e2e91-d7cc-11e8-824f-0242ac160002",
+      "descriptionHash": "a03d172075d30332960e4d452a46dfe2fabe5d79724f00a0146c7d302f2a82fb",
+      "contentHash": "2e31d0faac9a3b8a19b0948d005f62bf4b307ddc1903d08a3ba98afb93d58fbe",
+      "componentCount": 18,
+      "prerequisiteResolution": "direct",
+      "prerequisiteCodes": [
+        "4.NBT.A.3",
+        "4.NBT.B.6",
+        "3.OA.D.8"
+      ],
+      "prerequisiteMatchTypes": [
+        "direct",
+        "direct",
+        "direct"
+      ],
+      "gapClasses": [],
+      "latencyMs": 6208,
+      "errorCode": null
+    },
+    {
+      "id": "california-4.NF.A.1",
+      "jurisdiction": "California",
+      "statementCode": "4.NF.A.1",
+      "found": true,
+      "standardId": "5ebefbed-d7cc-11e8-824f-0242ac160002",
+      "descriptionHash": "fffe5c425b0eb7d8b748b7155524d8de6b6fe1d478078fad8643a4eb212ac97a",
+      "contentHash": "55554e3cb79889c69dde4e587109f3778f9776e9a378b7bc925cc7f41dcb47ba",
+      "componentCount": 5,
+      "prerequisiteResolution": "crosswalk",
+      "prerequisiteCodes": [
+        "4.OA.A.2",
+        "3.NF.A.3"
+      ],
+      "prerequisiteMatchTypes": [
+        "crosswalk",
+        "crosswalk"
+      ],
+      "gapClasses": [],
+      "latencyMs": 13776,
+      "errorCode": null
+    },
+    {
+      "id": "california-4.NF.A.2",
+      "jurisdiction": "California",
+      "statementCode": "4.NF.A.2",
+      "found": true,
+      "standardId": "5ec026d1-d7cc-11e8-824f-0242ac160002",
+      "descriptionHash": "31ebc41f2c89eda21ff86c68983e3660a1b1b1bb423d514969cf1da93fab7c7f",
+      "contentHash": "ab0a2da6c5ac6b0d4217bd31c0cd9e27f1b9120263bb306bc0e69885e6ead37b",
+      "componentCount": 7,
+      "prerequisiteResolution": "crosswalk",
+      "prerequisiteCodes": [
+        "4.NF.A.1"
+      ],
+      "prerequisiteMatchTypes": [
+        "crosswalk"
+      ],
+      "gapClasses": [],
+      "latencyMs": 10350,
+      "errorCode": null
+    },
+    {
+      "id": "california-3.NF.A.3",
+      "jurisdiction": "California",
+      "statementCode": "3.NF.A.3",
+      "found": true,
+      "standardId": "5ec0f3b6-d7cc-11e8-824f-0242ac160002",
+      "descriptionHash": "ab8b74d01f96703c7aa3991c9372f8770621ade896259e7d92a0eba9c4e1c3f8",
+      "contentHash": "5621277c1de8a6ebc88c4d2100a2ee3fa65a8c48077d7fa8f8408ea99abfaafa",
+      "componentCount": 2,
+      "prerequisiteResolution": "crosswalk",
+      "prerequisiteCodes": [
+        "3.NF.A.1",
+        "3.NF.A.2"
+      ],
+      "prerequisiteMatchTypes": [
+        "crosswalk",
+        "crosswalk"
+      ],
+      "gapClasses": [],
+      "latencyMs": 7415,
+      "errorCode": null
+    },
+    {
+      "id": "california-4.OA.A.3",
+      "jurisdiction": "California",
+      "statementCode": "4.OA.A.3",
+      "found": true,
+      "standardId": "5ec100e3-d7cc-11e8-824f-0242ac160002",
+      "descriptionHash": "a03d172075d30332960e4d452a46dfe2fabe5d79724f00a0146c7d302f2a82fb",
+      "contentHash": "410cd081315d2f93d42c91f0026b82726721d9ab928de468202af58df5c26c75",
+      "componentCount": 18,
+      "prerequisiteResolution": "crosswalk",
+      "prerequisiteCodes": [
+        "4.NBT.A.3",
+        "4.NBT.B.6",
+        "3.OA.D.8"
+      ],
+      "prerequisiteMatchTypes": [
+        "crosswalk",
+        "crosswalk",
+        "crosswalk"
+      ],
+      "gapClasses": [],
+      "latencyMs": 5684,
+      "errorCode": null
+    },
+    {
+      "id": "multi-state-RI.5.2",
+      "jurisdiction": "Multi-State",
+      "statementCode": "RI.5.2",
+      "found": true,
+      "standardId": "6b36c8ef-d7cc-11e8-824f-0242ac160002",
+      "descriptionHash": "c307a0c11f923164714f77bd3ce7c2622c734d165d2d8a61a0d32a46cbd097b3",
+      "contentHash": "2b73f834ac780cc9b99fe5ef77b49e412386416e846f801ecbdb9fdaebc1d1ef",
+      "componentCount": 0,
+      "prerequisiteResolution": "unavailable",
+      "prerequisiteCodes": [],
+      "prerequisiteMatchTypes": [],
+      "gapClasses": [
+        "skills-missing",
+        "prerequisites-unavailable"
+      ],
+      "latencyMs": 8596,
+      "errorCode": null
+    }
+  ],
+  "pilotRows": 9,
+  "boundaryRows": 1,
+  "failures": []
+}

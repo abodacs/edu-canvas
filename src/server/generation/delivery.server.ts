@@ -1,10 +1,14 @@
 import { z } from "zod";
 
-import { lessonGenerationInputSchema } from "@/shared/generation-contract";
+import {
+  lessonGenerationInputSchema,
+  storedGenerationResultSchema,
+} from "@/shared/generation-contract";
 
 import {
   identityErrorJson,
   resolveProtectedTeacher,
+  resolveTeacherActor,
 } from "../identity/api.server";
 import { IdentityError } from "../identity/errors";
 import { readJsonBody, noStoreJson } from "../http.server";
@@ -13,9 +17,20 @@ import {
   createFoundationPersistence,
   createGenerationLimitStore,
 } from "../persistence";
+import {
+  AdvisoryReviewError,
+  createAdvisoryReviewService,
+} from "./advisory-review";
+import {
+  advisoryReviewTimeoutMs,
+  advisoryReviewerVersion,
+} from "./advisory-review-contract";
+import { createMetaAdvisoryReviewAgent } from "./advisory-review-agent";
 import { createConfiguredLessonDraftProvider } from "./factory";
 import { GenerationRequestError } from "./generation-request-error";
 import { createGenerationService } from "./service";
+
+import type { AdvisoryReviewService } from "./advisory-review";
 
 const createService = (): ReturnType<typeof createGenerationService> => {
   const config = readServerConfig();
@@ -23,6 +38,29 @@ const createService = (): ReturnType<typeof createGenerationService> => {
     persistence: createFoundationPersistence(config),
     provider: createConfiguredLessonDraftProvider(config),
     limits: createGenerationLimitStore(config),
+  });
+};
+
+/**
+#223: the advisory reviewer is a separate composition. It uses the same
+persistence port and the same Meta configuration, but it has its own bound and
+never joins the generation request.
+*/
+const createAdvisoryReviewServiceFromConfig = (): AdvisoryReviewService => {
+  const config = readServerConfig();
+  if (!config.metaApiKey) {
+    throw new Error("Meta provider configuration is incomplete.");
+  }
+
+  return createAdvisoryReviewService({
+    generation: createFoundationPersistence(config),
+    agent: createMetaAdvisoryReviewAgent({
+      apiKey: config.metaApiKey,
+      model: config.metaModel,
+      version: advisoryReviewerVersion,
+      baseUrl: config.metaBaseUrl,
+      timeoutMs: advisoryReviewTimeoutMs,
+    }),
   });
 };
 
@@ -118,6 +156,130 @@ export const handleCancelGenerationRequest = async (
       requestId: parsedDraftId.data,
     });
     return noStoreJson(result.publicResult);
+  } catch (error) {
+    return mapGenerationError(error);
+  }
+};
+
+const advisoryUnavailableMessage =
+  "The advisory review is temporarily unavailable. Try again later.";
+
+/**
+Map an advisory refusal or infrastructure failure to its transport response.
+The reviewer is optional, so an unavailable provider is a 503, not a draft
+failure.
+*/
+export const mapAdvisoryReviewError = (error: unknown): Response => {
+  if (error instanceof IdentityError) {
+    return identityErrorJson(error);
+  }
+  if (error instanceof AdvisoryReviewError) {
+    return noStoreJson(
+      { code: error.code, message: error.message },
+      error.status
+    );
+  }
+  return noStoreJson(
+    {
+      code: "ADVISORY_REVIEW_UNAVAILABLE",
+      message: advisoryUnavailableMessage,
+    },
+    503
+  );
+};
+
+/**
+POST /api/lessons/:draftId/advisory-review — owning teacher, mutation-protected.
+Runs the bounded reviewer after `ready-for-review` and appends warnings only.
+*/
+export const handleRequestAdvisoryReview = async (
+  request: Request,
+  draftId: string
+): Promise<Response> => {
+  const resolved = await resolveTeacher(request);
+  if (!resolved.ok) {
+    return resolved.response;
+  }
+
+  const parsedDraftId = draftIdSchema.safeParse(draftId);
+  if (!parsedDraftId.success) {
+    return identityErrorJson(new IdentityError("INVALID_INPUT"));
+  }
+
+  try {
+    const result = await createAdvisoryReviewServiceFromConfig().review(
+      resolved.actor,
+      parsedDraftId.data
+    );
+    return noStoreJson(result, result.status === "failed" ? 503 : 200);
+  } catch (error) {
+    return mapAdvisoryReviewError(error);
+  }
+};
+
+/**
+GET /api/lessons/:draftId/advisory-review — owning teacher, read-only.
+Returns the stored advisory result, or null when none was requested.
+*/
+export const handleReadAdvisoryReview = async (
+  request: Request,
+  draftId: string
+): Promise<Response> => {
+  const resolved = await resolveTeacherActor(request);
+  if (!resolved.ok) {
+    return noStoreJson(
+      { code: resolved.error.code, message: resolved.error.message },
+      resolved.error.status
+    );
+  }
+
+  const parsedDraftId = draftIdSchema.safeParse(draftId);
+  if (!parsedDraftId.success) {
+    return identityErrorJson(new IdentityError("INVALID_INPUT"));
+  }
+
+  try {
+    const result = await createAdvisoryReviewServiceFromConfig().read(
+      resolved.actor,
+      parsedDraftId.data
+    );
+    return noStoreJson(result);
+  } catch (error) {
+    return mapAdvisoryReviewError(error);
+  }
+};
+
+/**
+GET /api/lessons/:draftId — owning teacher, read-only. A read carries no
+mutation challenge, so it resolves the session without the forgery guard, the
+same way the review read does. Any draft outside the caller's scope, or one
+that does not exist, returns the same generic 403.
+*/
+export const handleReadGenerationRequest = async (
+  request: Request,
+  draftId: string
+): Promise<Response> => {
+  const resolved = await resolveTeacherActor(request);
+  if (!resolved.ok) {
+    return identityErrorJson(resolved.error);
+  }
+
+  const parsedDraftId = draftIdSchema.safeParse(draftId);
+  if (!parsedDraftId.success) {
+    return identityErrorJson(new IdentityError("INVALID_INPUT"));
+  }
+
+  try {
+    const result = await createService().read({
+      actor: resolved.actor,
+      requestId: parsedDraftId.data,
+    });
+    return noStoreJson(
+      storedGenerationResultSchema.parse({
+        result: result.publicResult,
+        prompt: result.record.input.prompt,
+      })
+    );
   } catch (error) {
     return mapGenerationError(error);
   }

@@ -3,10 +3,12 @@ import { setTimeout as delay } from "node:timers/promises";
 import { reviewCurriculum } from "./curriculum-validator";
 import { reviewLearningQuality } from "./learning-quality-validator";
 import {
+  cloneSemanticValidationInput,
   createReview,
   finding,
   reportRecovery,
   reviewVerdict,
+  sanitizedRecommendations,
 } from "./semantic-validation-utilities";
 import type {
   SemanticAgentRecommendation,
@@ -20,7 +22,7 @@ import type {
 } from "./semantic-validation-contract";
 
 export {
-  createSyntheticCurriculumContext,
+  createCurriculumContextFromPack,
   curriculumValidatorVersion,
   learningQualityValidatorVersion,
   semanticValidationRunnerVersion,
@@ -66,100 +68,16 @@ const withTimeout = async <T>(
   }
 };
 
-const unsafeAgentTextPatterns = [
-  /answer\s*key/iu,
-  /api\s*key/iu,
-  /secret/iu,
-  /student/iu,
-  /chain[- ]of[- ]thought/iu,
-  /\d{1,9}\s{0,3}\/\s{0,3}\d{1,9}/iu,
-];
-
-const hasUnsafeAgentText = (value: string): boolean =>
-  unsafeAgentTextPatterns.some((pattern) => pattern.test(value));
-
-const safeAgentText = (value: string, fallback: string): string => {
-  const text = value.trim().replaceAll(/\s+/gu, " ");
-  return !text || text.length > 240 || hasUnsafeAgentText(text)
-    ? fallback
-    : text;
-};
-
-const isUnsafeIdentifier = (value: string): boolean => {
-  return (
-    value.length > 80 ||
-    !/^[a-z][a-z0-9_.:-]*$/iu.test(value) ||
-    /student|learner|identity|user/iu.test(value)
-  );
-};
-
-const safeIdentifier = (value: string | undefined): string | undefined =>
-  value && !isUnsafeIdentifier(value) ? value : undefined;
-
-const cloneSemanticValidationInput = (
-  input: SemanticValidationInput
-): SemanticValidationInput => {
-  return {
-    draft: {
-      variants: input.draft.variants.map((variant) => {
-        return {
-          ...variant,
-          sourceItems: variant.sourceItems.map((item) => ({ ...item })),
-          targetItems: variant.targetItems.map((item) => ({ ...item })),
-          distractorItems: variant.distractorItems.map((item) => ({ ...item })),
-          // Advisory agents review learning quality, not private answer keys.
-          relationships: [],
-          hints: [...variant.hints],
-          feedback: { ...variant.feedback },
-          languageMetadata: { ...variant.languageMetadata },
-          accessibilityMetadata: { ...variant.accessibilityMetadata },
-        };
-      }),
-    },
-    context: {
-      ...input.context,
-      nodes: input.context.nodes.map((node) => ({ ...node })),
-      edges: input.context.edges.map((edge) => ({ ...edge })),
-    },
-    ...(input.path && {
-      path: {
-        ...input.path,
-        nodeIds: [...input.path.nodeIds],
-        ...(input.path.screenPurposeIds && {
-          screenPurposeIds: [...input.path.screenPurposeIds],
-        }),
-      },
-    }),
-  };
-};
-
 const recommendationFindings = (
   agent: SemanticValidationAgent,
   recommendations: readonly SemanticAgentRecommendation[]
 ): SemanticValidationFinding[] => {
-  return recommendations
-    .filter((recommendation) => recommendation.verdict !== "pass")
-    .map((recommendation) => {
-      const variantId = safeIdentifier(recommendation.variantId);
-      const nodeId = safeIdentifier(recommendation.nodeId);
-      return finding(agent.role, agent.version, {
-        verdict: "warning",
-        code: "AGENT_RECOMMENDATION",
-        field: safeAgentText(recommendation.field ?? "draft", "draft"),
-        ...(variantId && { variantId }),
-        ...(nodeId && { nodeId }),
-        reason: safeAgentText(
-          recommendation.reason,
-          "A validator recommendation needs teacher review."
-        ),
-        ...(recommendation.recommendation && {
-          recommendation: safeAgentText(
-            recommendation.recommendation,
-            "Review this recommendation before continuing."
-          ),
-        }),
-      });
+  return sanitizedRecommendations(recommendations).map((recommendation) => {
+    return finding(agent.role, agent.version, {
+      verdict: "warning",
+      ...recommendation,
     });
+  });
 };
 
 const runRecommendationAgent = async (

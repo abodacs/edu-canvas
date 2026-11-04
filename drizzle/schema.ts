@@ -106,7 +106,9 @@ export const identities = pgTable(
 export const standards = pgTable(
   "standards",
   {
-    id: text().primaryKey().notNull(),
+    // A standard identity is tenant-local: every tenant owns one row per
+    // built-in pack, so the same catalog id appears once per tenant (#225).
+    id: text().notNull(),
     tenantId: text("tenant_id").notNull(),
     code: text().notNull(),
     name: text().notNull(),
@@ -127,6 +129,12 @@ export const standards = pgTable(
         foreignColumns: [tenants.id],
         name: "standards_tenant_id_fkey",
       }),
+      primaryKey({
+        columns: [table.tenantId, table.id],
+        name: "standards_pkey",
+      }),
+      // The composite unique stays because the six tenant-scoped foreign keys
+      // are bound to it; dropping it would require recreating them (#225).
       unique("standards_tenant_id_id_key").on(table.tenantId, table.id),
       unique("standards_tenant_id_code_key").on(table.tenantId, table.code),
       pgPolicy("standards_are_tenant_scoped", {
@@ -351,6 +359,10 @@ export const lessonDraftRequests = pgTable(
     // like sourceSnapshotId: the link is readable lineage, not an FK contract,
     // and a referent that is missing or foreign is refused in the service.
     revisesRequestId: text("revises_request_id"),
+    // #223: the warning-only advisory review requested after the draft reaches
+    // ready-for-review. Nullable and separate from `diagnostics`, so the
+    // reviewer can never change the record's state or gate evidence.
+    advisoryReview: jsonb("advisory_review"),
     createdAt: timestamp("created_at", {
       withTimezone: true,
       mode: "string",
@@ -897,6 +909,109 @@ export const sourceSnapshots = pgTable(
       check(
         "source_snapshots_failure_reason_check",
         sql`failure_reason IS NULL OR failure_reason = ANY (ARRAY['unsupported-format'::text, 'oversized-file'::text, 'too-many-pages'::text, 'encrypted'::text, 'empty-source'::text, 'encoding'::text, 'character-limit-exceeded'::text, 'parser-fault'::text, 'extraction-timeout'::text, 'interrupted'::text, 'personal-data'::text])`
+      ),
+    ];
+  }
+).enableRLS();
+
+// Standard groundings (#218). The immutable, tenant-scoped record of one
+// Learning Commons retrieval. This is #113's SourceSnapshot under a distinct
+// name: `source_snapshots` already means a teacher upload. A re-retrieval
+// inserts a new row linked through predecessor_grounding_id; a trigger in
+// drizzle/0018_standard_grounding_behaviors.sql rejects update and delete.
+export const standardGroundings = pgTable(
+  "standard_groundings",
+  {
+    id: text().primaryKey().notNull(),
+    tenantId: text("tenant_id").notNull(),
+    requestKey: text("request_key").notNull(),
+    inputHash: text("input_hash").notNull(),
+    registryVersion: text("registry_version").notNull(),
+    frameworkId: text("framework_id").notNull(),
+    jurisdiction: text().notNull(),
+    statementCode: text("statement_code").notNull(),
+    subject: text().notNull(),
+    grade: integer().notNull(),
+    standardId: text("standard_id"),
+    description: text(),
+    descriptionHash: text("description_hash"),
+    components: jsonb().default([]).notNull(),
+    prerequisites: jsonb().default([]).notNull(),
+    prerequisiteResolution: text("prerequisite_resolution").notNull(),
+    gaps: jsonb().default([]).notNull(),
+    provenance: jsonb().notNull(),
+    contentHash: text("content_hash").notNull(),
+    retrievalAttempt: integer("retrieval_attempt").default(1).notNull(),
+    retrievedAt: timestamp("retrieved_at", {
+      withTimezone: true,
+      mode: "string",
+    }).notNull(),
+    predecessorGroundingId: text("predecessor_grounding_id"),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => {
+    return [
+      index("standard_groundings_standard_idx").using(
+        "btree",
+        table.tenantId.asc().nullsLast(),
+        table.jurisdiction.asc().nullsLast(),
+        table.statementCode.asc().nullsLast(),
+        table.createdAt.desc().nullsFirst()
+      ),
+      foreignKey({
+        columns: [table.tenantId],
+        foreignColumns: [tenants.id],
+        name: "standard_groundings_tenant_id_fkey",
+      }),
+      foreignKey({
+        columns: [table.tenantId, table.predecessorGroundingId],
+        foreignColumns: [table.tenantId, table.id],
+        name: "standard_groundings_tenant_id_predecessor_grounding_id_fkey",
+      }),
+      unique("standard_groundings_tenant_id_id_key").on(
+        table.tenantId,
+        table.id
+      ),
+      unique("standard_groundings_tenant_id_request_key_key").on(
+        table.tenantId,
+        table.requestKey
+      ),
+      pgPolicy("standard_groundings_are_tenant_scoped", {
+        as: "permissive",
+        for: "all",
+        to: ["public"],
+        using: sql`(tenant_id = current_setting('app.tenant_id'::text, true))`,
+      }),
+      check(
+        "standard_groundings_retrieval_attempt_check",
+        sql`retrieval_attempt = ANY (ARRAY[1, 2])`
+      ),
+      check("standard_groundings_grade_check", sql`grade >= 0`),
+      check(
+        "standard_groundings_statement_code_length_check",
+        sql`char_length(statement_code) <= 40`
+      ),
+      check(
+        "standard_groundings_description_length_check",
+        sql`description IS NULL OR char_length(description) <= 1200`
+      ),
+      check(
+        "standard_groundings_prerequisite_resolution_check",
+        sql`prerequisite_resolution = ANY (ARRAY['direct'::text, 'crosswalk'::text, 'unavailable'::text])`
+      ),
+      check(
+        "standard_groundings_input_hash_check",
+        sql`input_hash ~ '^[a-f0-9]{64}$'`
+      ),
+      check(
+        "standard_groundings_content_hash_check",
+        sql`content_hash ~ '^[a-f0-9]{64}$'`
+      ),
+      check(
+        "standard_groundings_description_hash_check",
+        sql`description_hash IS NULL OR description_hash ~ '^[a-f0-9]{64}$'`
       ),
     ];
   }

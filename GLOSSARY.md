@@ -30,6 +30,10 @@ A statement of what students are expected to know or do, published by a curricul
 
 **Implementing names:** `standards`
 
+### Standards pack
+
+A versioned record of the curriculum facts for one standard: where the facts came from, the prerequisite graph, the components, the answer rules, the screens and catalogs it may use, and the framing the provider receives. A standards pack is data, not a code path per standard; a new subject ships as a new pack version. It is not the publication **Pack**, which is the generated review-and-publication model.
+
 ### Prerequisite
 
 Knowledge or a skill a student needs before a later task. A prerequisite is a relationship between concepts, not a previous lesson and not a record of what a student has done.

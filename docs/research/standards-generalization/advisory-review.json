@@ -1,0 +1,307 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-04T13:09:52.989Z",
+  "provider": {
+    "provider": "meta",
+    "model": "muse-spark-1.2-contributor",
+    "baseUrl": "https://api.meta.ai/v1",
+    "validatorVersion": "advisory-reviewer-v1",
+    "boundMs": 60000
+  },
+  "caseCount": 6,
+  "summary": {
+    "defectCases": 3,
+    "defectRecall": "3/3",
+    "controlCases": 3,
+    "controlFalseAlarms": "3/3",
+    "agreement": "3/6",
+    "failures": 0,
+    "meanLatencyMs": 14501,
+    "maximumLatencyMs": 18551
+  },
+  "cases": [
+    {
+      "id": "fraction-control",
+      "kind": "control",
+      "source": "pack-draft",
+      "standardCode": "4.NF.A.1",
+      "deterministic": {
+        "state": "ready-for-review",
+        "codes": []
+      },
+      "advisory": {
+        "verdict": "warning",
+        "status": "complete",
+        "findingCount": 4,
+        "latencyMs": 15051,
+        "failureClass": null,
+        "findings": [
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "learningPath",
+            "variantId": "hint",
+            "reason": "Teacher may want to review progression across variants. variant-1 and variant-3 use the same 3-item set, and variant-2 and variant-4 use the same 5-item set with the same distractor, so the four screens repeat one matching interaction with",
+            "recommendation": "Consider whether the scaffold/challenge variants provide differentiated cognitive demand or progression along graph_node_equal_parts -> graph_node_equivalent_fractions beyond instruction text alone. This is advisory only - not a grading or"
+          },
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "feedback",
+            "variantId": "distractor",
+            "reason": "Teacher may want to review feedback usefulness for learning. Both correct and incorrect feedback across all variants is circular and identical - correct states pairs belong, incorrect states to check again - without explaining the",
+            "recommendation": "Consider whether feedback should help learners diagnose why a pairing belongs or not in grade 4 terms, without revealing the mapping. This is advisory only."
+          },
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "hints",
+            "variantId": "feedback",
+            "reason": "Teacher may want to review hint usefulness and age-appropriateness. Hints in all variants repeat a general procedural direction to read items on the left, and the additional hints add only vague procedural language",
+            "recommendation": "Consider whether hints provide conceptual scaffolding appropriate for grades 3-6 for the task 'another name for the same part of a whole' distinct from generic reading directions. This is advisory only."
+          },
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "instructions",
+            "variantId": "progression",
+            "reason": "Teacher may want to review distractor quality and instruction-interaction alignment. variant-1 and variant-3 list no distractor items, which reduces diagnostic value for matching. variant-2 and variant-4 list a single",
+            "recommendation": "Consider reviewing whether vocabulary such as 'decoys' is clear for grades 3-6, whether variant-4's instruction to explain the decoy aligns with a matching-only interaction, and whether a single distractor that visually duplicates an item"
+          }
+        ]
+      },
+      "agreesWithGate": false
+    },
+    {
+      "id": "fraction-wrong-target",
+      "kind": "defect",
+      "source": "characterization-fixture",
+      "standardCode": "4.NF.A.1",
+      "deterministic": {
+        "state": "blocked-by-validation",
+        "codes": ["ANSWER_MISMATCH"]
+      },
+      "advisory": {
+        "verdict": "warning",
+        "status": "complete",
+        "findingCount": 4,
+        "latencyMs": 16162,
+        "failureClass": null,
+        "findings": [
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "targetItems",
+            "variantId": "variant-1",
+            "reason": "Teacher review suggested - pairing completeness",
+            "recommendation": "Please verify that every target item can be correctly paired with a source item under 4.NF.A.1 equivalent fractions. In variant-1 one target does not appear to have a valid partner among the sources, which conflicts with the instruction to'"
+          },
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "hints",
+            "reason": "Hint usefulness - generic prompt",
+            "recommendation": "Hints across all variants are the same generic reading direction and do not scaffold the equivalent-fraction reasoning for grades 3-6. For the scaffold and challenge levels especially, consider whether hints prompt attention to the relevant"
+          },
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "feedback",
+            "reason": "Feedback usefulness - not explanatory",
+            "recommendation": "Correct/incorrect feedback is identical and generic across all variants and does not explain why a pair belongs or what to reconsider. Consider whether feedback reinforces the concept without revealing pairings."
+          },
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "learningPath",
+            "reason": "Distractor quality and progression",
+            "recommendation": "Please review distractor design and progression across variants. One distractor duplicates an item already in the source set, which reduces its value as a close decoy and may confuse learners. The explore and challenge variants also use"
+          }
+        ]
+      },
+      "agreesWithGate": true
+    },
+    {
+      "id": "word-problem-control",
+      "kind": "control",
+      "source": "pack-draft",
+      "standardCode": "4.OA.A.3",
+      "deterministic": {
+        "state": "ready-for-review",
+        "codes": []
+      },
+      "advisory": {
+        "verdict": "warning",
+        "status": "complete",
+        "findingCount": 4,
+        "latencyMs": 13772,
+        "failureClass": null,
+        "findings": [
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "learningPath",
+            "variantId": "variant-2",
+            "reason": "A validator recommendation needs teacher review.",
+            "recommendation": "Review whether the balance of item types across screens builds specifically toward multistep representation or leans heavily on other skills."
+          },
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "hints",
+            "variantId": "variant-1",
+            "reason": "Hints prompt procedural behavior (\"read each item\", \"take one pair at a time\", \"say which group\") without cueing the grade 4 reasoning for this standard such as operation choice, order, or how quantities relate.",
+            "recommendation": "Consider whether hints could model a content-specific strategy without revealing pairings."
+          },
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "feedback",
+            "variantId": "variant-1",
+            "reason": "Correct and incorrect feedback is identical across all variants and is generic (\"pairs an item with the one that belongs with it\" / \"check each pair again\") - it does not explain what to reconsider or what makes a match appropriate.",
+            "recommendation": "Consider adding feedback that directs attention to the relevant feature of a pairing without naming the intended match."
+          },
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "targetItems",
+            "variantId": "variant-2",
+            "reason": "Decoy inventory is minimal and format-mismatched in the extended sets. Instructions describe \"decoys that look close\" while the listed decoy format differs noticeably from all targets, reducing its value as a close-distractor decision.",
+            "recommendation": "Review distractor plausibility - decoys should resemble targets closely enough to require discrimination on the learning goal."
+          }
+        ]
+      },
+      "agreesWithGate": false
+    },
+    {
+      "id": "word-problem-wrong-equation",
+      "kind": "defect",
+      "source": "characterization-fixture",
+      "standardCode": "4.OA.A.3",
+      "deterministic": {
+        "state": "blocked-by-validation",
+        "codes": ["ANSWER_MISMATCH"]
+      },
+      "advisory": {
+        "verdict": "warning",
+        "status": "complete",
+        "findingCount": 4,
+        "latencyMs": 18551,
+        "failureClass": null,
+        "findings": [
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "targetItems",
+            "variantId": "variant-1",
+            "reason": "clarity / consistency across variants",
+            "recommendation": "Review this recommendation before continuing."
+          },
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "instructions",
+            "variantId": "variant-2",
+            "reason": "distractor quality / age-appropriate discrimination",
+            "recommendation": "Teacher may want to review decoy design - variant-2 and variant-4 instructions refer to 'decoys that look close but do not belong' (plural / close resemblance) while only a single fraction-form item is present that does not resemble the e"
+          },
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "hints",
+            "variantId": "all",
+            "reason": "hint usefulness and feedback usefulness",
+            "recommendation": "Teacher may want to review hints and feedback - the same generic hint ('Read each item on the left before you choose its match') is repeated verbatim across variants and both feedback messages restate the task ('belongs with it' / 'does not"
+          },
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "learningPath",
+            "variantId": "all",
+            "reason": "progression of interaction",
+            "recommendation": "Teacher may want to review progression - all variants repeat the same match-problem-to-equation interaction with only a change in number of pairs (3 vs 5). Scaffold and challenge versions add little differentiation in cognitive demand or s"
+          }
+        ]
+      },
+      "agreesWithGate": true
+    },
+    {
+      "id": "main-idea-control",
+      "kind": "control",
+      "source": "pack-draft",
+      "standardCode": "RI.5.2",
+      "deterministic": {
+        "state": "ready-for-review",
+        "codes": ["ANSWER_RELATIONSHIP_UNVERIFIED"]
+      },
+      "advisory": {
+        "verdict": "warning",
+        "status": "complete",
+        "findingCount": 4,
+        "latencyMs": 11662,
+        "failureClass": null,
+        "findings": [
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "learningPath",
+            "variantId": "all",
+            "reason": "variant-1 and variant-3 use identical source/target sets, and variant-2 and variant-4 use identical sets with no change in complexity. No progression is visible across Practice / Explore / Guided / Review - teacher should verify intended 3-",
+            "recommendation": "progression_check"
+          },
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "instructions",
+            "reason": "A validator recommendation needs teacher review.",
+            "recommendation": "clarity_check"
+          },
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "sourceItems",
+            "reason": "A validator recommendation needs teacher review.",
+            "recommendation": "distractor_quality_check"
+          },
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "hints",
+            "variantId": "all",
+            "reason": "Hints repeat the same generic direction across all variants and feedback is identical for correct and incorrect across scaffold and challenge levels - One match does not belong yet. Teacher should review whether hints and feedback provide -",
+            "recommendation": "hint_feedback_check"
+          }
+        ]
+      },
+      "agreesWithGate": false
+    },
+    {
+      "id": "main-idea-absent-detail",
+      "kind": "defect",
+      "source": "characterization-fixture",
+      "standardCode": "RI.5.2",
+      "deterministic": {
+        "state": "blocked-by-validation",
+        "codes": ["ANSWER_MISMATCH", "ANSWER_RELATIONSHIP_UNVERIFIED"]
+      },
+      "advisory": {
+        "verdict": "warning",
+        "status": "complete",
+        "findingCount": 4,
+        "latencyMs": 11808,
+        "failureClass": null,
+        "findings": [
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "learningPath",
+            "variantId": "variant-3",
+            "reason": "path_language",
+            "recommendation": "Review this recommendation before continuing."
+          },
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "learningPath",
+            "variantId": "variant-1",
+            "reason": "path_language",
+            "recommendation": "Source/target wording overlap benefit from review before classroom use: variant-2 and variant-4 place identical phrasing on both sides of the match, and variant-1 includes a detail that may create a misconception for the target node graph_"
+          },
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "learningPath",
+            "variantId": "variant-3",
+            "reason": "learning_quality_hint_feedback",
+            "recommendation": "Hint and feedback usefulness benefit from review before classroom use: hints across variants repeat the same generic prompt (\"Read each item on the left...\") and feedback repeats the same generic correct/incorrect string in all var"
+          },
+          {
+            "code": "AGENT_RECOMMENDATION",
+            "field": "learningPath",
+            "variantId": "variant-4",
+            "reason": "progression",
+            "recommendation": "Progression across screens benefits from review before classroom use: variant-2 (Explore) and variant-4 (Review/Challenge) use the same 5+5 item set, so the challenge adds an instruction to \"explain why the close decoy does not belong\" with"
+          }
+        ]
+      },
+      "agreesWithGate": true
+    }
+  ]
+}

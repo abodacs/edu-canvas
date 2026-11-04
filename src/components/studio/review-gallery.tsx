@@ -102,7 +102,7 @@ export const ReviewGallery = ({
   return (
     <>
       <header className="review-gallery__header">
-        <p className="studio-kicker">Review and publish</p>
+        <p className="kicker">Review and publish</p>
         <h2 id="review-heading" ref={headingRef} tabIndex={-1}>
           Approve every screen before students see the pack
         </h2>
@@ -133,7 +133,7 @@ export const ReviewGallery = ({
             return (
               <li key={variant.id}>
                 <article className="review-card">
-                  <p className="studio-kicker">
+                  <p className="kicker">
                     {variantPurposeLabels[index] ?? "Screen"}
                   </p>
                   <h4>{variant.title}</h4>
@@ -178,7 +178,7 @@ export const ReviewGallery = ({
                   />
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="secondary"
                     onClick={() => onOpenVariant(variant.id)}
                   >
                     Review screen <ArrowRight aria-hidden="true" />

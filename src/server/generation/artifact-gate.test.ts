@@ -14,8 +14,8 @@ import {
 } from "./artifact-corpus";
 import { buildValidatedLearningPath } from "./learning-path";
 import { createEquivalentFractionsDraft } from "./provider";
+import { createSyntheticCurriculumContext } from "./semantic-validation-fixtures";
 import {
-  createSyntheticCurriculumContext,
   semanticValidationRunnerVersion,
   validateSemanticLesson,
 } from "./semantic-validation";
