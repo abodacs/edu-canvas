@@ -1,7 +1,10 @@
 import { setTimeout as delay } from "node:timers/promises";
 
 import { createId } from "@/server/ids";
-import { standardsPackRegistry } from "@/server/curriculum/registry";
+import {
+  resolveSharedStandardPack,
+  standardsPackRegistry,
+} from "@/server/curriculum/registry";
 
 import { IdentityError } from "../identity/errors";
 import {
@@ -143,9 +146,10 @@ const packForStandard = (standard: string, tenantId?: string) => {
   if (tenantId !== undefined) {
     return standardsPackRegistry.resolve({ tenantId, standard });
   }
-  return standardsPackRegistry.packs.find((pack) => {
-    return pack.standardId === standard || pack.standardCode === standard;
-  });
+  // Without a tenant there is no private-pack resolution: only a shared
+  // template may answer, so another tenant's pack never makes a standard
+  // "supported" for everyone.
+  return resolveSharedStandardPack(standardsPackRegistry.packs, standard);
 };
 
 // Idempotency keys are persisted and looked up across deploys; keep FNV-1a so a retry that spans a deployment still matches its record.
@@ -369,6 +373,8 @@ const buildProviderContext = (
     correctionAttempt: isCorrectionAttempt,
     diagnostics,
     ...(curriculum?.promptFrame && { promptFrame: curriculum.promptFrame }),
+    ...(curriculum?.examples && { examples: curriculum.examples }),
+    ...(curriculum?.answerRules && { answerRules: curriculum.answerRules }),
     ...(curriculum && {
       curriculumContext: {
         nodes: curriculum.nodes.map((node) => {
@@ -508,8 +514,12 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         "A ready-for-review generation record requires an artifact gate snapshot."
       );
     }
-    const provenance = baseRecord.provenance ?? options.provider.provenance;
     const draft = "draft" in outcome ? outcome.draft : null;
+    // The draft carries the enriched provenance (pack version and allowed
+    // screen patterns) acceptance wrote; the record and attempt must expose
+    // that same provenance or preview falls back to matching-only.
+    const provenance =
+      draft?.provenance ?? baseRecord.provenance ?? options.provider.provenance;
     const record: LessonGenerationRecord = {
       ...baseRecord,
       state: outcome.state,
@@ -601,7 +611,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         requestId: baseRecord.requestId,
         provenance,
         structuralDiagnostics,
-        graphVersion: expectedGraphVersion ?? "",
+        ...(expectedGraphVersion && { graphVersion: expectedGraphVersion }),
       },
       options
     );

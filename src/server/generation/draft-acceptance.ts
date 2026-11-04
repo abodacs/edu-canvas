@@ -277,7 +277,11 @@ export const reviewDraftForAcceptance = async (
     requestId: string;
     provenance: ProviderProvenance;
     structuralDiagnostics: GenerationDiagnostic[];
-    graphVersion: string;
+    /**
+     * The graph version the caller expects. Omitted when the caller has no
+     * separate pin; acceptance then uses the resolved context's own version.
+     */
+    graphVersion?: string;
   },
   options: DraftAcceptanceOptions
 ): Promise<DraftAcceptanceResult> => {
@@ -314,7 +318,7 @@ export const reviewDraftForAcceptance = async (
     context,
     tenantId,
     input,
-    graphVersion
+    graphVersion ?? context.graphVersion
   );
   if (contextDiagnostic) {
     return {

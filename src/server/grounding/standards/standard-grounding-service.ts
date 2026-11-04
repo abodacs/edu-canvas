@@ -6,7 +6,9 @@ import {
   DEFAULT_RESOLUTION_DEADLINE_MS,
   GROUNDING_TEXT_LIMITS,
   StandardGroundingError,
+  currentIso,
   hashGroundingInput,
+  resolutionTimeout,
 } from "./types";
 
 import type { LearningCommonsAdapter } from "./learning-commons-rest";
@@ -47,8 +49,6 @@ export interface StandardGroundingServiceOptions {
   readonly deadlineMs?: number;
 }
 
-const CURRENT_ISO = (): string => new Date().toISOString();
-
 const invalidRequest = (message: string): StandardGroundingError => {
   return new StandardGroundingError(message, "invalid-request", {
     retryable: false,
@@ -74,14 +74,6 @@ const persistenceConflict = (cause?: unknown): StandardGroundingError => {
 
 const isNonEmpty = (value: unknown): value is string => {
   return typeof value === "string" && value.trim().length > 0;
-};
-
-const timeoutFailure = (): StandardGroundingError => {
-  return new StandardGroundingError(
-    "The Learning Commons retrieval exceeded its total deadline.",
-    "resolution-timeout",
-    { retryable: true, recovery: "retry" }
-  );
 };
 
 const isRetryableFailure = (error: unknown): boolean => {
@@ -110,7 +102,7 @@ const runWithOneRetry = async <T>(
     readonly attempts: 1 | 2;
   }> => {
     if (controller.signal.aborted) {
-      throw timeoutFailure();
+      throw resolutionTimeout();
     }
     try {
       const outcome = await Promise.race([
@@ -118,7 +110,7 @@ const runWithOneRetry = async <T>(
         once(controller.signal, "abort").then(() => aborted),
       ]);
       if (outcome === aborted) {
-        throw timeoutFailure();
+        throw resolutionTimeout();
       }
       return { value: outcome as T, attempts: attempt };
     } catch (error) {
@@ -241,7 +233,7 @@ export const createStandardGroundingService = (
   options: StandardGroundingServiceOptions
 ): StandardGroundingService => {
   const { persistence, adapter } = options;
-  const now = options.now ?? CURRENT_ISO;
+  const now = options.now ?? currentIso;
   const createGroundingId = options.createGroundingId ?? createId;
   const deadlineMs = options.deadlineMs ?? DEFAULT_RESOLUTION_DEADLINE_MS;
 

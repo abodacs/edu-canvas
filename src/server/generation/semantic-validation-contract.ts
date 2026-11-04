@@ -1,8 +1,7 @@
-import { standardsPackRegistry } from "@/server/curriculum/registry";
-import { syntheticSeed } from "@/server/seed-data";
 import type {
   AnswerRule,
   StandardsPack,
+  StandardsPackExample,
   StandardsPackPromptFrame,
   StandardsPackReference,
 } from "@/server/curriculum/standards-pack";
@@ -56,6 +55,12 @@ export interface VersionedCurriculumContext {
   always copies it.
   */
   promptFrame?: StandardsPackPromptFrame;
+  /**
+   * The pack's subject-correct relationships. Optional only for hand-built
+   * test contexts; every pack carries examples, and the deterministic fixture
+   * uses them instead of the seeded fraction pairs.
+   */
+  examples?: readonly StandardsPackExample[];
   reference?: StandardsPackReference;
 }
 
@@ -166,29 +171,9 @@ export const createCurriculumContextFromPack = (
     answerRules: pack.answerRules,
     allowedScreenPatterns: pack.allowedScreenPatterns,
     promptFrame: pack.promptFrame,
+    examples: pack.examples,
     ...(pack.reference && { reference: pack.reference }),
   };
-};
-
-/**
- * Test and fixture helper: resolve the registered pack for the requested
- * standard and fail loudly when none exists. Production resolves through
- * `resolveCurriculumContext` and returns `undefined` instead.
- */
-export const createSyntheticCurriculumContext = (
-  input: Pick<NormalizedGenerationRequest, "grade" | "language" | "standardId">,
-  tenantId: string = syntheticSeed.tenant.id
-): VersionedCurriculumContext => {
-  const pack = standardsPackRegistry.resolve({
-    tenantId,
-    standard: input.standardId,
-  });
-  if (!pack) {
-    throw new Error(
-      `No standards pack resolves standard ${input.standardId} for tenant ${tenantId}.`
-    );
-  }
-  return createCurriculumContextFromPack(pack, input, tenantId);
 };
 
 export {

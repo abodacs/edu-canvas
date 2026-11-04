@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 
+import { evaluateAnswerRule } from "@/server/curriculum/answer-rules";
 import {
   fractionEquivalencePack,
   multistepWordProblemsPack,
+  ri52MainIdeaPack,
+  ri52Passage,
 } from "@/server/curriculum/built-in-packs";
 
 import {
@@ -12,7 +15,7 @@ import {
   createMetaLessonDraftProvider,
   LessonProviderError,
 } from "./provider";
-import { createSyntheticCurriculumContext } from "./semantic-validation";
+import { createSyntheticCurriculumContext } from "./semantic-validation-fixtures";
 import { validateProviderDraft } from "./validation";
 import type {
   NormalizedGenerationRequest,
@@ -58,7 +61,9 @@ const packProviderContext = (
   return {
     correctionAttempt: false,
     diagnostics: [],
+    answerRules: curriculum.answerRules,
     ...(curriculum.promptFrame && { promptFrame: curriculum.promptFrame }),
+    ...(curriculum.examples && { examples: curriculum.examples }),
     curriculumContext: {
       nodes: curriculum.nodes.map((node) => {
         return { id: node.id, screenPurposeId: node.screenPurposeId };
@@ -434,12 +439,49 @@ describe("pack-framed provider prompt (#221)", () => {
     expect(prompt).toMatch(/fractions?/iu);
     expect(prompt).not.toMatch(/word problems?|equations?/iu);
   });
+
+  it("states every declared 4.OA.A.3 problem and asks for verbatim wording", () => {
+    const [rule] = multistepWordProblemsPack.answerRules;
+    if (rule?.kind !== "whole-number-expression") {
+      throw new Error("The 4.OA.A.3 pack must declare a whole-number rule.");
+    }
+    const prompt = buildLessonPrompt(
+      {
+        ...request,
+        prompt: "multistep word problems for grade 4",
+        standardId: multistepWordProblemsPack.standardId,
+      },
+      packProviderContext(multistepWordProblemsPack.standardId)
+    );
+
+    for (const problem of rule.problems) {
+      expect(prompt).toContain(problem.text);
+    }
+    expect(prompt).toContain("verbatim");
+    expect(prompt).not.toContain('"answer"');
+  });
+
+  it("states the RI.5.2 passage and requires every detail to come from it", () => {
+    const prompt = buildLessonPrompt(
+      {
+        ...request,
+        grade: 5,
+        prompt: "main ideas and key details for grade 5",
+        standardId: ri52MainIdeaPack.standardId,
+      },
+      packProviderContext(ri52MainIdeaPack.standardId)
+    );
+
+    expect(prompt).toContain(ri52Passage);
+    expect(prompt).toMatch(/every detail in the source items/iu);
+  });
 });
 
 describe("pack-framed deterministic fixture (#221)", () => {
   it.each([
     { label: "4.NF.A.1", pack: fractionEquivalencePack },
     { label: "4.OA.A.3", pack: multistepWordProblemsPack },
+    { label: "RI.5.2", pack: ri52MainIdeaPack },
   ])("builds the $label draft from the pack frame", async ({ pack }) => {
     const draft = await buildPackDraft(pack.standardId);
     const frame = pack.promptFrame;
@@ -501,4 +543,41 @@ describe("pack-framed deterministic fixture (#221)", () => {
     ).toStrictEqual(["2/4", "4/6", "6/8"]);
     expect(draft.variants[0]?.relationships).toHaveLength(3);
   });
+
+  it.each([
+    { label: "4.NF.A.1", pack: fractionEquivalencePack },
+    { label: "4.OA.A.3", pack: multistepWordProblemsPack },
+    { label: "RI.5.2", pack: ri52MainIdeaPack },
+  ])(
+    "builds every $label relationship from the pack's own answer rule",
+    async ({ pack }) => {
+      const draft = await buildPackDraft(pack.standardId);
+      const [primaryRule] = pack.answerRules;
+      if (!primaryRule) {
+        throw new Error(`${pack.standardCode} must declare an answer rule.`);
+      }
+
+      expect(
+        draft.variants.map((variant) => variant.sourceItems.length)
+      ).toStrictEqual([3, 5, 3, 5]);
+
+      for (const variant of draft.variants) {
+        for (const relationship of variant.relationships) {
+          const source = variant.sourceItems.find((item) => {
+            return item.id === relationship.sourceId;
+          })?.label;
+          const target = variant.targetItems.find((item) => {
+            return item.id === relationship.targetId;
+          })?.label;
+          expect(
+            evaluateAnswerRule(primaryRule, {
+              source: source ?? "",
+              target: target ?? "",
+            }),
+            `${pack.standardCode}: ${source ?? ""} -> ${target ?? ""}`
+          ).toStrictEqual({ status: "verified" });
+        }
+      }
+    }
+  );
 });

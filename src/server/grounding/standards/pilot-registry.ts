@@ -30,7 +30,6 @@ export interface StandardRegistryEntry {
   readonly frameworkId: string;
   readonly prerequisiteResolution: "direct" | "crosswalk";
   readonly provenance: RegistryProvenance;
-  readonly expectedGaps: readonly StandardGroundingGapCode[];
 }
 
 export interface RegistryEnvelope {
@@ -68,7 +67,6 @@ const pilotRow = (
     frameworkId,
     prerequisiteResolution,
     provenance: LEARNING_COMMONS_PROVENANCE,
-    expectedGaps: [],
   };
 };
 
@@ -110,37 +108,9 @@ export const PILOT_STANDARD_REGISTRY: PilotStandardRegistry = {
       frameworkId: "ccss-ela",
       prerequisiteResolution: "direct",
       provenance: LEARNING_COMMONS_PROVENANCE,
-      expectedGaps: ["prerequisites-unavailable"],
     },
   ],
 };
-
-export const PILOT_BOUNDARY_ENTRIES = [
-  {
-    id: "unsupported-jurisdiction",
-    jurisdiction: "Atlantis",
-    statementCode: "4.NF.A.1",
-    expectedGaps: ["unsupported-envelope"] as const,
-  },
-  {
-    id: "out-of-envelope-grade",
-    jurisdiction: "Multi-State",
-    statementCode: "9.ZZ.Z.9",
-    expectedGaps: ["unsupported-envelope"] as const,
-  },
-  {
-    id: "absent-code",
-    jurisdiction: "Multi-State",
-    statementCode: "4.NF.A.99",
-    expectedGaps: ["standard-absent"] as const,
-  },
-  {
-    id: "ela-progression",
-    jurisdiction: "Multi-State",
-    statementCode: "RI.5.2",
-    expectedGaps: ["prerequisites-unavailable"] as const,
-  },
-] as const;
 
 export type RegistryLookup =
   | { readonly ok: true; readonly entry: StandardRegistryEntry }
@@ -153,8 +123,13 @@ const gap = (
   return { code, message };
 };
 
-const gradeOf = (statementCode: string): number => {
-  const match = /^(?<grade>\d+)\./u.exec(statementCode);
+/**
+ * The grade a statement code names. A math code leads with it (`4.NF.A.1`); an
+ * ELA code puts it after the domain letters (`RI.5.2`). The first
+ * dot-delimited numeric segment is the grade in both shapes.
+ */
+export const gradeFromStatementCode = (statementCode: string): number => {
+  const match = /(?:^|[^\d])(?<grade>\d+)(?=\.)/u.exec(statementCode);
   return match?.groups?.grade === undefined
     ? Number.NaN
     : Math.trunc(Number(match.groups.grade));
@@ -194,7 +169,7 @@ export const findRegistryEntry = (
     return { ok: true, entry };
   }
 
-  const grade = gradeOf(input.statementCode);
+  const grade = gradeFromStatementCode(input.statementCode);
   if (!envelopeContains(registry, input.jurisdiction, grade)) {
     return {
       ok: false,

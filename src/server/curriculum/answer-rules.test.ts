@@ -25,6 +25,18 @@ const wholeNumberRule: AnswerRule = {
   unverifiedVerdict: "warning",
 };
 
+const remainderRule: AnswerRule = {
+  kind: "whole-number-expression",
+  problems: [
+    {
+      text: "A class of 27 students sits at tables of 4. How many tables are needed so everyone has a seat?",
+      answer: 7,
+      rounding: "up",
+    },
+  ],
+  unverifiedVerdict: "warning",
+};
+
 const evidenceRule: AnswerRule = {
   kind: "text-evidence",
   passage:
@@ -153,6 +165,26 @@ describe("whole-number-expression", () => {
         { source: "A problem the pack never declares.", target: "4 + 1 = p" }
       )
     ).toMatchObject({ status: "unverified", verdict: "hard_block" });
+  });
+
+  it("compares the rounded value the problem declares", () => {
+    const source = remainderRule.problems[0]?.text ?? "";
+
+    expect(
+      evaluateAnswerRule(remainderRule, { source, target: "27 ÷ 4 = 7" })
+    ).toStrictEqual({ status: "verified" });
+    expect(
+      evaluateAnswerRule(remainderRule, { source, target: "27 ÷ 4 = 6" })
+    ).toMatchObject({ status: "mismatch" });
+  });
+
+  it("keeps an unparseable remainder annotation at the rule's unverified verdict", () => {
+    expect(
+      evaluateAnswerRule(remainderRule, {
+        source: remainderRule.problems[0]?.text ?? "",
+        target: "27 ÷ 4 = t, round up",
+      })
+    ).toMatchObject({ status: "unverified", verdict: "warning" });
   });
 
   it("falls to the rule's unverified verdict for an unevaluable target", () => {

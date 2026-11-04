@@ -5,6 +5,8 @@ import { describe, expect, it } from "vitest";
 import { syntheticSeed } from "@/server/seed-data";
 import { A2UI_CATALOG_VERSION } from "@/shared/a2ui-contract";
 
+import { normalizeAnswerText } from "./answer-rules";
+
 import {
   builtInStandardsPacks,
   fractionEquivalencePack,
@@ -13,7 +15,11 @@ import {
   ri52Passage,
   ri52PrimaryText,
 } from "./built-in-packs";
-import { createStandardsPackRegistry, standardsPackRegistry } from "./registry";
+import {
+  createStandardsPackRegistry,
+  resolveSharedStandardPack,
+  standardsPackRegistry,
+} from "./registry";
 import { standardsPackSchema } from "./standards-pack";
 
 import type { StandardsPack } from "./standards-pack";
@@ -93,6 +99,43 @@ describe("standards pack schema", () => {
     expect(() => standardsPackSchema.parse(unknownKind)).toThrow(
       /invalid|unrecognized|must differ/iu
     );
+  });
+
+  it("rejects an asymmetric matching frame", () => {
+    const asymmetric = {
+      ...fractionEquivalencePack,
+      promptFrame: {
+        ...fractionEquivalencePack.promptFrame,
+        sourceItemCount: 3,
+        targetItemCount: 2,
+      },
+    };
+
+    // A matching draft needs one target per source, so an asymmetric frame
+    // could never produce an acceptable draft.
+    expect(() => standardsPackSchema.parse(asymmetric)).toThrow(
+      /equal source and target/iu
+    );
+  });
+
+  it("requires enough examples to fill the frame's source group", () => {
+    expect(() =>
+      standardsPackSchema.parse({
+        ...fractionEquivalencePack,
+        examples: fractionEquivalencePack.examples.slice(0, 2),
+      })
+    ).toThrow(/examples/iu);
+
+    expect(() =>
+      standardsPackSchema.parse({
+        ...fractionEquivalencePack,
+        promptFrame: {
+          ...fractionEquivalencePack.promptFrame,
+          sourceItemCount: 6,
+          targetItemCount: 6,
+        },
+      })
+    ).toThrow(/examples/iu);
   });
 
   it("keeps the prompt-frame item counts inside the matching draft caps", () => {
@@ -197,6 +240,28 @@ describe("built-in standards packs", () => {
     expect(
       builtInStandardsPacks.map((pack) => pack.standardCode)
     ).toStrictEqual(["4.NF.A.1", "4.OA.A.3", "RI.5.2"]);
+  });
+
+  it("gives every pack subject-correct examples for the fixture", () => {
+    for (const pack of builtInStandardsPacks) {
+      expect(pack.examples.length).toBeGreaterThanOrEqual(3);
+      expect(pack.examples.length).toBeGreaterThanOrEqual(
+        pack.promptFrame.sourceItemCount
+      );
+    }
+    expect(
+      fractionEquivalencePack.examples.map((example) => example.source)
+    ).toStrictEqual(["1/2", "2/3", "3/4", "1/3", "2/5"]);
+    expect(
+      multistepWordProblemsPack.examples.map((example) => example.target)
+    ).toContain("27 ÷ 4 = t");
+    expect(
+      ri52MainIdeaPack.examples.every((example) => {
+        return normalizeAnswerText(ri52Passage).includes(
+          normalizeAnswerText(example.source)
+        );
+      })
+    ).toBeTruthy();
   });
 });
 
@@ -315,6 +380,20 @@ describe("standards pack registry", () => {
         tenantId: "tenant_real_school",
         standard: "4.NF.A.1",
       })
+    ).toStrictEqual(fractionEquivalencePack);
+  });
+
+  it("never treats another tenant's private pack as shared support", () => {
+    const privatePack = withOverrides({ tenantId: "tenant_someone_else" });
+
+    expect(
+      resolveSharedStandardPack([privatePack], "4.NF.A.1")
+    ).toBeUndefined();
+    expect(
+      resolveSharedStandardPack(
+        [privatePack, fractionEquivalencePack],
+        "4.NF.A.1"
+      )
     ).toStrictEqual(fractionEquivalencePack);
   });
 

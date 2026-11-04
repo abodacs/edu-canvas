@@ -33,6 +33,7 @@ interface Fraction {
 const whitespacePattern = /\s/u;
 const wordTokenPattern = /[\p{L}\p{N}\p{M}]+/gu;
 const integerTokenPattern = /^\d$/u;
+const integerLiteralPattern = /^\d+$/u;
 const fractionPattern = /^(?<numerator>\d+)\s*\/\s*(?<denominator>\d+)$/u;
 const unknownSymbolPattern = /^\p{L}$/u;
 
@@ -102,7 +103,19 @@ type ExpressionToken =
 export type WholeNumberEquationEvaluation =
   | { status: "evaluated"; value: number }
   | { status: "non-integer" }
+  | { status: "contradiction" }
   | { status: "invalid" };
+
+export type RemainderRounding = "up" | "down" | "nearest";
+
+export interface WholeNumberEquationOptions {
+  /**
+  Apply this rounding rule to a division with a remainder. Without it, a
+  remainder stays a non-integer result, so a pack that never declared a
+  remainder interpretation can never read one as a whole-number answer.
+  */
+  readonly rounding?: RemainderRounding;
+}
 
 const isDigit = (character: string): boolean =>
   integerTokenPattern.test(character);
@@ -194,10 +207,33 @@ const safeResult = (value: number): WholeNumberEquationEvaluation => {
     : { status: "invalid" };
 };
 
+const roundedQuotient = (
+  left: number,
+  right: number,
+  rounding: RemainderRounding
+): number => {
+  switch (rounding) {
+    case "up": {
+      return Math.ceil(left / right);
+    }
+    case "down": {
+      return Math.floor(left / right);
+    }
+    case "nearest": {
+      return Math.round(left / right);
+    }
+    default: {
+      const exhaustive: never = rounding;
+      throw new Error(`Unhandled remainder rounding: ${exhaustive}`);
+    }
+  }
+};
+
 const applyOperator = (
   left: number,
   operator: Operator,
-  right: number
+  right: number,
+  options: WholeNumberEquationOptions
 ): WholeNumberEquationEvaluation => {
   switch (operator) {
     case "+": {
@@ -213,10 +249,12 @@ const applyOperator = (
       if (right === 0) {
         return { status: "invalid" };
       }
-      if (left % right !== 0) {
-        return { status: "non-integer" };
+      if (left % right === 0) {
+        return safeResult(left / right);
       }
-      return safeResult(left / right);
+      return options.rounding
+        ? safeResult(roundedQuotient(left, right, options.rounding))
+        : { status: "non-integer" };
     }
     default: {
       const exhaustive: never = operator;
@@ -298,7 +336,8 @@ const toPostfix = (
 };
 
 const evaluatePostfix = (
-  postfix: readonly ExpressionToken[]
+  postfix: readonly ExpressionToken[],
+  options: WholeNumberEquationOptions
 ): WholeNumberEquationEvaluation => {
   const values: number[] = [];
 
@@ -316,7 +355,7 @@ const evaluatePostfix = (
     if (left === undefined || right === undefined) {
       return { status: "invalid" };
     }
-    const result = applyOperator(left, token.value, right);
+    const result = applyOperator(left, token.value, right, options);
     if (result.status !== "evaluated") {
       return result;
     }
@@ -335,7 +374,8 @@ const evaluatePostfix = (
  * non-integer result, not a crash; it cannot equal a whole-number answer.
  */
 export const parseWholeNumberEquation = (
-  target: string
+  target: string,
+  options: WholeNumberEquationOptions = {}
 ): WholeNumberEquationEvaluation => {
   const normalized = target.normalize("NFKC");
   const equalsIndex = normalized.indexOf("=");
@@ -345,7 +385,14 @@ export const parseWholeNumberEquation = (
 
   const expression = normalized.slice(0, equalsIndex).trim();
   const symbol = normalized.slice(equalsIndex + 1).trim();
-  if (!expression || !symbol || !unknownSymbolPattern.test(symbol)) {
+  const claimedValue = integerLiteralPattern.test(symbol)
+    ? Number(symbol)
+    : undefined;
+  if (
+    !expression ||
+    !symbol ||
+    (claimedValue === undefined && !unknownSymbolPattern.test(symbol))
+  ) {
     return { status: "invalid" };
   }
 
@@ -355,7 +402,18 @@ export const parseWholeNumberEquation = (
   }
 
   const postfix = toPostfix(tokens);
-  return postfix ? evaluatePostfix(postfix) : { status: "invalid" };
+  const evaluation = postfix
+    ? evaluatePostfix(postfix, options)
+    : { status: "invalid" as const };
+  if (claimedValue === undefined || evaluation.status !== "evaluated") {
+    return evaluation;
+  }
+
+  // A numeric right-hand side is part of the claim: `27 ÷ 4 = 6` is false even
+  // when rounding makes the expression itself evaluate to 7.
+  return evaluation.value === claimedValue
+    ? evaluation
+    : { status: "contradiction" };
 };
 
 const evaluateFractionEquivalence = (
@@ -408,7 +466,10 @@ const evaluateWholeNumberExpression = (
     };
   }
 
-  const evaluation = parseWholeNumberEquation(pair.target);
+  const evaluation = parseWholeNumberEquation(
+    pair.target,
+    declared.rounding ? { rounding: declared.rounding } : {}
+  );
   switch (evaluation.status) {
     case "evaluated": {
       return evaluation.value === declared.answer
@@ -424,6 +485,13 @@ const evaluateWholeNumberExpression = (
         status: "mismatch",
         reason:
           "The target equation does not evaluate to the whole-number answer the pack declares.",
+      };
+    }
+    case "contradiction": {
+      return {
+        status: "mismatch",
+        reason:
+          "The target equation states a different value than the expression evaluates to.",
       };
     }
     case "invalid": {

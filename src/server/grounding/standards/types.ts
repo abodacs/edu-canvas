@@ -50,6 +50,9 @@ export interface StandardProvenance {
   readonly retrievedAt: string;
 }
 
+/** One clock reading for a retrieval, used by the adapter and the service. */
+export const currentIso = (): string => new Date().toISOString();
+
 /** One total provider-pipeline budget, shared by every stage of a retrieval. */
 export const DEFAULT_RESOLUTION_DEADLINE_MS = 10_000;
 
@@ -224,3 +227,12 @@ export class StandardGroundingError extends Error {
     this.recovery = options.recovery;
   }
 }
+
+/** The one deadline rejection shared by the adapter and the service. */
+export const resolutionTimeout = (): StandardGroundingError => {
+  return new StandardGroundingError(
+    "The Learning Commons retrieval exceeded its total deadline.",
+    "resolution-timeout",
+    { retryable: true, recovery: "retry" }
+  );
+};

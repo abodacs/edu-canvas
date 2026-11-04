@@ -105,6 +105,23 @@ const assertUniquePackVersions = (packs: readonly StandardsPack[]): void => {
   }
 };
 
+/**
+ * The support check for a request that names no tenant. Only a shared template
+ * may answer it; another tenant's private pack must never make a standard
+ * "supported" for everyone.
+ */
+export const resolveSharedStandardPack = (
+  packs: readonly StandardsPack[],
+  standard: string
+): StandardsPack | undefined => {
+  return packs.find((pack) => {
+    return (
+      pack.tenantId === sharedStandardsPackTenantId &&
+      (pack.standardId === standard || pack.standardCode === standard)
+    );
+  });
+};
+
 export const createStandardsPackRegistry = (
   packs: readonly StandardsPack[]
 ): StandardsPackRegistry => {

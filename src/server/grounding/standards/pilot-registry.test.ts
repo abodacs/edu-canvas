@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  PILOT_BOUNDARY_ENTRIES,
   PILOT_REGISTRY_VERSION,
   PILOT_STANDARD_REGISTRY,
   findRegistryEntry,
+  gradeFromStatementCode,
 } from "./pilot-registry";
 import {
   recordedColdRuns,
@@ -17,7 +17,40 @@ const pilotEntries = PILOT_STANDARD_REGISTRY.entries.filter((entry) => {
   return entry.kind === "pilot";
 });
 
+// The boundary matrix is a test expectation, not production registry data.
+const PILOT_BOUNDARY_ENTRIES = [
+  {
+    id: "unsupported-jurisdiction",
+    jurisdiction: "Atlantis",
+    statementCode: "4.NF.A.1",
+    expectedGaps: ["unsupported-envelope"] as const,
+  },
+  {
+    id: "out-of-envelope-grade",
+    jurisdiction: "Multi-State",
+    statementCode: "9.ZZ.Z.9",
+    expectedGaps: ["unsupported-envelope"] as const,
+  },
+  {
+    id: "absent-code",
+    jurisdiction: "Multi-State",
+    statementCode: "4.NF.A.99",
+    expectedGaps: ["standard-absent"] as const,
+  },
+  {
+    id: "ela-progression",
+    jurisdiction: "Multi-State",
+    statementCode: "RI.5.2",
+    expectedGaps: ["prerequisites-unavailable"] as const,
+  },
+] as const;
+
 describe("pilot standard registry (issue 218)", () => {
+  it("derives the grade from a math or ELA statement code", () => {
+    expect(gradeFromStatementCode("4.NF.A.1")).toBe(4);
+    expect(gradeFromStatementCode("RI.5.2")).toBe(5);
+  });
+
   it("pins a version and the eight supported pilot rows", () => {
     expect(PILOT_REGISTRY_VERSION).toMatch(/^pilot-registry-v\d+$/u);
     expect(pilotEntries).toHaveLength(8);
@@ -126,7 +159,6 @@ describe("pilot standard registry (issue 218)", () => {
             attribution: "Learning Commons Knowledge Graph",
             sourceLink: "https://www.learningcommons.org/",
           },
-          expectedGaps: [],
         },
       ],
     };

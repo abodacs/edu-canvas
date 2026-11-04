@@ -2,7 +2,11 @@ import { fractionEquivalencePack } from "@/server/curriculum/built-in-packs";
 
 import { validatorVersion } from "./validation";
 import type { LessonLanguage } from "@/shared/generation-contract";
-import type { StandardsPackPromptFrame } from "@/server/curriculum/standards-pack";
+import type {
+  AnswerRule,
+  StandardsPackExample,
+  StandardsPackPromptFrame,
+} from "@/server/curriculum/standards-pack";
 
 import type {
   GenerationDiagnostic,
@@ -60,6 +64,18 @@ export interface ProviderGenerationContext {
    * one keeps the fixture's seeded equivalent-fractions framing.
    */
   promptFrame?: ProviderPromptFrame;
+  /**
+   * The pack's subject-correct relationships. The deterministic fixture builds
+   * its draft from these, so an offline run obeys the pack's own answer rule
+   * instead of always emitting equivalent-fraction pairs.
+   */
+  examples?: readonly StandardsPackExample[];
+  /**
+   * The pack's answer rules. The prompt states the declared problems and the
+   * approved passage so a live provider call can satisfy the same rule the
+   * offline fixture and the validator apply.
+   */
+  answerRules?: readonly AnswerRule[];
   curriculumContext?: ProviderCurriculumContext;
   referenceContext?: ProviderReferenceContext;
 }
@@ -242,10 +258,11 @@ const fixtureHint: LocalizedCopy = {
 const createVariant = (
   request: NormalizedGenerationRequest,
   frame: ProviderPromptFrame,
-  plan: FixtureVariantPlan
+  plan: FixtureVariantPlan,
+  pairs: readonly StandardsPackExample[]
 ): ProviderVariant => {
   const { language } = request;
-  const sourceItems = fixturePairs
+  const sourceItems = pairs
     .slice(0, plan.sourceCount)
     .map((pair, itemIndex) => {
       return {
@@ -253,7 +270,7 @@ const createVariant = (
         label: pair.source,
       };
     });
-  const targetItems = fixturePairs
+  const targetItems = pairs
     .slice(0, plan.targetCount)
     .map((pair, itemIndex) => {
       return {
@@ -348,9 +365,9 @@ const createVariant = (
   };
 };
 
-/** A variant two pairs wider than the frame's base, capped at the draft cap. */
-const addPairs = (count: number): number => {
-  return Math.min(count + 2, maximumFixturePairs);
+/** A variant two pairs wider than the frame's base, capped by the pair list. */
+const addPairs = (count: number, maximum: number): number => {
+  return Math.min(count + 2, maximum);
 };
 
 export interface FixtureDraftOptions {
@@ -359,6 +376,11 @@ export interface FixtureDraftOptions {
    * equivalent-fractions frame.
    */
   readonly frame?: ProviderPromptFrame;
+  /**
+   * The pack's subject-correct relationships. Defaults to the seeded
+   * equivalent-fractions pairs.
+   */
+  readonly examples?: readonly StandardsPackExample[];
   /** The resolved pack graph the learning path must walk. */
   readonly curriculum?: ProviderCurriculumContext;
 }
@@ -368,79 +390,101 @@ export const createEquivalentFractionsDraft = (
   options: FixtureDraftOptions = {}
 ): ProviderLessonDraft => {
   const frame = options.frame ?? defaultFixtureFrame;
+  const pairs = options.examples ?? fixturePairs;
+  const maximumPairs = Math.min(pairs.length, maximumFixturePairs);
   // The studio asks a teacher to choose between the two standard cards, so the
   // fixture gives them different interaction structures, titles, and copy —
   // otherwise the draft notes correctly flag them as duplicates (#168 P1-3).
   // Item-count caps from the structural validator steer the shapes: a 3-item
   // set carries no decoys (floor(3/4) = 0) and an 8-item set may carry two.
-  const wideSourceCount = addPairs(frame.sourceItemCount);
-  const wideTargetCount = addPairs(frame.targetItemCount);
+  const wideSourceCount = addPairs(frame.sourceItemCount, maximumPairs);
+  const wideTargetCount = addPairs(frame.targetItemCount, maximumPairs);
   const widePairs = Math.min(wideSourceCount, wideTargetCount);
 
-  const practice = createVariant(request, frame, {
-    index: 1,
-    kind: "standard",
-    sourceCount: frame.sourceItemCount,
-    targetCount: frame.targetItemCount,
-    distractorCount: 1,
-  });
+  const practice = createVariant(
+    request,
+    frame,
+    {
+      index: 1,
+      kind: "standard",
+      sourceCount: frame.sourceItemCount,
+      targetCount: frame.targetItemCount,
+      distractorCount: 1,
+    },
+    pairs
+  );
 
-  const explore = createVariant(request, frame, {
-    index: 2,
-    kind: "standard",
-    sourceCount: wideSourceCount,
-    targetCount: wideTargetCount,
-    distractorCount: 2,
-    title: {
-      en: `Explore — ${frame.targetGroupLabel}`,
-      ar: "استكشاف الكسور المكافئة",
+  const explore = createVariant(
+    request,
+    frame,
+    {
+      index: 2,
+      kind: "standard",
+      sourceCount: wideSourceCount,
+      targetCount: wideTargetCount,
+      distractorCount: 2,
+      title: {
+        en: `Explore — ${frame.targetGroupLabel}`,
+        ar: "استكشاف الكسور المكافئة",
+      },
+      instructions: {
+        en: `Match all ${widePairs} pairs, and watch for decoys that look close but do not belong.`,
+        ar: "طابق كل الأزواج، وانتبه للأفخاخ التي تبدو قريبة لكنها لا تنتمي.",
+      },
     },
-    instructions: {
-      en: `Match all ${widePairs} pairs, and watch for decoys that look close but do not belong.`,
-      ar: "طابق كل الأزواج، وانتبه للأفخاخ التي تبدو قريبة لكنها لا تنتمي.",
-    },
-  });
+    pairs
+  );
 
   // The guided card carries the gentlest load: the frame's own pair count, no
   // decoys, and an extra support move, so its structure visibly differs from
   // practice.
-  const scaffold = createVariant(request, frame, {
-    index: 3,
-    kind: "scaffold",
-    sourceCount: frame.sourceItemCount,
-    targetCount: frame.targetItemCount,
-    distractorCount: 0,
-    instructions: {
-      en: "Work one pair at a time, with a hint before your first match.",
-      ar: "زوج واحد فقط في كل مرة، مع إرشاد قبل أول مطابقة.",
-    },
-    extraHints: [
-      {
-        en: "Take one pair at a time: read the left item fully before you choose.",
-        ar: "زوج واحد فقط في كل مرة: اقرأ العنصر كاملًا قبل أن تختار.",
+  const scaffold = createVariant(
+    request,
+    frame,
+    {
+      index: 3,
+      kind: "scaffold",
+      sourceCount: frame.sourceItemCount,
+      targetCount: frame.targetItemCount,
+      distractorCount: 0,
+      instructions: {
+        en: "Work one pair at a time, with a hint before your first match.",
+        ar: "زوج واحد فقط في كل مرة، مع إرشاد قبل أول مطابقة.",
       },
-    ],
-  });
+      extraHints: [
+        {
+          en: "Take one pair at a time: read the left item fully before you choose.",
+          ar: "زوج واحد فقط في كل مرة: اقرأ العنصر كاملًا قبل أن تختار.",
+        },
+      ],
+    },
+    pairs
+  );
 
   // The review card adds the reasoning demand: two decoys and an
-  // explain-the-decoy instruction, while the equivalent pairs stay canonical.
-  const review = createVariant(request, frame, {
-    index: 4,
-    kind: "challenge",
-    sourceCount: wideSourceCount,
-    targetCount: wideTargetCount,
-    distractorCount: 2,
-    instructions: {
-      en: `Match all ${widePairs} pairs, then explain why the close decoy does not belong.`,
-      ar: "طابق كل الأزواج، ثم اشرح لماذا الفخ القريب لا ينتمي.",
-    },
-    extraHints: [
-      {
-        en: "Before you match, say which group each item belongs to.",
-        ar: "قبل أن تطابق، قل إلى أي مجموعة ينتمي كل عنصر.",
+  // explain-the-decoy instruction, while the correct pairs stay canonical.
+  const review = createVariant(
+    request,
+    frame,
+    {
+      index: 4,
+      kind: "challenge",
+      sourceCount: wideSourceCount,
+      targetCount: wideTargetCount,
+      distractorCount: 2,
+      instructions: {
+        en: `Match all ${widePairs} pairs, then explain why the close decoy does not belong.`,
+        ar: "طابق كل الأزواج، ثم اشرح لماذا الفخ القريب لا ينتمي.",
       },
-    ],
-  });
+      extraHints: [
+        {
+          en: "Before you match, say which group each item belongs to.",
+          ar: "قبل أن تطابق، قل إلى أي مجموعة ينتمي كل عنصر.",
+        },
+      ],
+    },
+    pairs
+  );
 
   return {
     learningPath: createLearningPath(request, options.curriculum),
@@ -497,6 +541,7 @@ export const createDeterministicLessonDraftProvider = (
 
       const draft = createEquivalentFractionsDraft(request, {
         frame: resolveFixtureFrame(context),
+        ...(context.examples && { examples: context.examples }),
         ...(context.curriculumContext && {
           curriculum: context.curriculumContext,
         }),
@@ -512,11 +557,44 @@ export const createDeterministicLessonDraftProvider = (
   };
 };
 
+const findAnswerRule = <K extends AnswerRule["kind"]>(
+  rules: readonly AnswerRule[] | undefined,
+  kind: K
+): Extract<AnswerRule, { kind: K }> | undefined => {
+  return rules?.find((rule): rule is Extract<AnswerRule, { kind: K }> => {
+    return rule.kind === kind;
+  });
+};
+
+/**
+ * The prompt states the pack's declared problems and approved passage so a
+ * live provider call can produce relationships the pack's own answer rule can
+ * verify. Answers are never included: the rule owns them.
+ */
+const answerRuleInstruction = (
+  answerRules: readonly AnswerRule[] | undefined
+): string => {
+  const wholeNumber = findAnswerRule(answerRules, "whole-number-expression");
+  const evidence = findAnswerRule(answerRules, "text-evidence");
+  const lines = [
+    wholeNumber
+      ? `Use these problem statements verbatim as the source items, without changing their wording: ${wholeNumber.problems
+          .map((problem) => `"${problem.text}"`)
+          .join(" ")}. Do not include or reveal an answer key.`
+      : "",
+    evidence
+      ? `Every detail in the source items must come from this approved passage, quoted verbatim: "${evidence.passage}".`
+      : "",
+  ];
+  return lines.filter((line) => line.length > 0).join("\n");
+};
+
 /**
  * The provider prompt is framed by the standards pack (#221). The task line,
- * both group labels, the item counts and the curated reference all come from
- * the pack, so a 4.OA.A.3 lesson asks for word-problem → equation matching and
- * a 4.NF.A.1 lesson keeps its equivalent-fraction matching.
+ * both group labels, the item counts, the curator reference, and the answer
+ * rule's declared problems or passage all come from the pack, so a 4.OA.A.3
+ * lesson asks for word-problem → equation matching and a 4.NF.A.1 lesson keeps
+ * its equivalent-fraction matching.
  */
 export const buildLessonPrompt = (
   request: NormalizedGenerationRequest,
@@ -560,6 +638,7 @@ export const buildLessonPrompt = (
     `Teacher request: ${request.prompt}`,
     `Grade: ${request.grade}. Primary standard: ${request.standardId}. Language: ${request.language}. Difficulty: ${request.difficulty}.`,
     itemInstruction,
+    answerRuleInstruction(context.answerRules),
     approvedNodes
       ? `Approved curriculum nodes: ${approvedNodes}. Approved curriculum edges: ${approvedEdges}.`
       : "",

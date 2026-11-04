@@ -12,7 +12,7 @@ import { syntheticSeed } from "@/server/seed-data";
 
 import { reviewDraftForAcceptance } from "./draft-acceptance";
 import { GenerationRequestError } from "./generation-request-error";
-import { createSyntheticCurriculumContext } from "./semantic-validation";
+import { createSyntheticCurriculumContext } from "./semantic-validation-fixtures";
 import { createGenerationService, normalizeGenerationInput } from "./service";
 import { validateProviderDraft } from "./validation";
 
@@ -377,6 +377,22 @@ describe("standards generalization: 4.OA.A.3 word problem -> equation matching",
         allowedScreenPatterns: multistepWordProblemsPack.allowedScreenPatterns,
       },
     });
+  });
+
+  it("accepts when the caller pins no graph version and uses the pack's own", async () => {
+    const acceptance = await reviewDraftForAcceptance(
+      {
+        draft: buildDraft(wordProblemPairs, operationsSteps),
+        input: requestFor(operationsContext),
+        tenantId,
+        requestId: "draft_req_unpinned_graph",
+        provenance: fixtureProvenance,
+        structuralDiagnostics: [],
+      },
+      { curriculumContext: () => operationsContext }
+    );
+
+    expect(acceptance.state).toBe("ready-for-review");
   });
 
   it("B1: rejects an unknown standard without naming another lesson", () => {

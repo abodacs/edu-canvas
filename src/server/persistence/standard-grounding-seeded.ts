@@ -19,10 +19,9 @@ const clone = (value: StandardGroundingRecord): StandardGroundingRecord => {
   return structuredClone(value);
 };
 
-export const createSeededStandardGroundingStore =
-  (): SeededStandardGroundingStore => {
-    return { records: new Map() };
-  };
+const createSeededStandardGroundingStore = (): SeededStandardGroundingStore => {
+  return { records: new Map() };
+};
 
 /**
 In-memory test double for **Standard grounding**. It mirrors the append-only

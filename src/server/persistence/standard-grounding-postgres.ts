@@ -1,14 +1,13 @@
 import postgres from "postgres";
+import { z } from "zod";
 
+import {
+  PREREQUISITE_RESOLUTIONS,
+  STANDARD_GROUNDING_GAP_CODES,
+} from "../grounding/standards/types";
 import { StandardGroundingUniqueViolationError } from "./standard-grounding-port";
 
-import type {
-  GroundedComponent,
-  GroundedPrerequisite,
-  StandardGroundingGap,
-  StandardGroundingRecord,
-  StandardProvenance,
-} from "../grounding/standards/types";
+import type { StandardGroundingRecord } from "../grounding/standards/types";
 import type { StandardGroundingPersistence } from "./standard-grounding-port";
 
 type SqlClient = ReturnType<typeof postgres>;
@@ -27,7 +26,7 @@ const toIso = (value: StoredTimestamp): string => {
   return value instanceof Date ? value.toISOString() : value;
 };
 
-interface GroundingRow {
+export interface GroundingRow {
   id: string;
   tenant_id: string;
   request_key: string;
@@ -53,37 +52,81 @@ interface GroundingRow {
   created_at: StoredTimestamp;
 }
 
-const asArray = <T>(value: unknown): T[] => {
-  return Array.isArray(value) ? (value as T[]) : [];
+const storedComponentSchema = z
+  .object({ id: z.string(), text: z.string() })
+  .strict();
+
+const storedPrerequisiteSchema = z
+  .object({
+    statementCode: z.string(),
+    jurisdiction: z.string(),
+    matchType: z.string(),
+    alignmentScore: z.number(),
+  })
+  .strict();
+
+const storedGapSchema = z
+  .object({
+    code: z.enum(STANDARD_GROUNDING_GAP_CODES),
+    message: z.string(),
+  })
+  .strict();
+
+const storedProvenanceSchema = z
+  .object({
+    license: z.string(),
+    attribution: z.string(),
+    sourceLink: z.string(),
+    retrievedAt: z.string(),
+  })
+  .strict();
+
+const storedPrerequisiteResolutionSchema = z.enum(PREREQUISITE_RESOLUTIONS);
+
+const malformedRow = (): Error => {
+  return new Error("A stored standard grounding row is malformed.");
 };
 
-const hydrate = (row: GroundingRow): StandardGroundingRecord => {
-  return {
-    id: row.id,
-    tenantId: row.tenant_id,
-    requestKey: row.request_key,
-    inputHash: row.input_hash,
-    registryVersion: row.registry_version,
-    frameworkId: row.framework_id,
-    jurisdiction: row.jurisdiction,
-    statementCode: row.statement_code,
-    subject: row.subject,
-    grade: Number(row.grade),
-    standardId: row.standard_id,
-    description: row.description,
-    descriptionHash: row.description_hash,
-    components: asArray<GroundedComponent>(row.components),
-    prerequisites: asArray<GroundedPrerequisite>(row.prerequisites),
-    prerequisiteResolution: row.prerequisite_resolution as
-      "direct" | "crosswalk" | "unavailable",
-    gaps: asArray<StandardGroundingGap>(row.gaps),
-    provenance: row.provenance as StandardProvenance,
-    contentHash: row.content_hash,
-    retrievalAttempt: Number(row.retrieval_attempt) === 2 ? 2 : 1,
-    retrievedAt: toIso(row.retrieved_at),
-    predecessorGroundingId: row.predecessor_grounding_id,
-    createdAt: toIso(row.created_at),
-  };
+/**
+ * Decode one persisted row. The JSON columns are provider-derived data, so a
+ * corrupt or hand-edited row fails closed instead of being cast into a
+ * plausible-looking record. This is exported as the row-decoding seam for the
+ * malformed-row test; production calls it from every read path.
+ */
+export const hydrateStandardGroundingRow = (
+  row: GroundingRow
+): StandardGroundingRecord => {
+  try {
+    return {
+      id: row.id,
+      tenantId: row.tenant_id,
+      requestKey: row.request_key,
+      inputHash: row.input_hash,
+      registryVersion: row.registry_version,
+      frameworkId: row.framework_id,
+      jurisdiction: row.jurisdiction,
+      statementCode: row.statement_code,
+      subject: row.subject,
+      grade: Number(row.grade),
+      standardId: row.standard_id,
+      description: row.description,
+      descriptionHash: row.description_hash,
+      components: z.array(storedComponentSchema).parse(row.components),
+      prerequisites: z.array(storedPrerequisiteSchema).parse(row.prerequisites),
+      prerequisiteResolution: storedPrerequisiteResolutionSchema.parse(
+        row.prerequisite_resolution
+      ),
+      gaps: z.array(storedGapSchema).parse(row.gaps),
+      provenance: storedProvenanceSchema.parse(row.provenance),
+      contentHash: row.content_hash,
+      retrievalAttempt: Number(row.retrieval_attempt) === 2 ? 2 : 1,
+      retrievedAt: toIso(row.retrieved_at),
+      predecessorGroundingId: row.predecessor_grounding_id,
+      createdAt: toIso(row.created_at),
+    };
+  } catch {
+    throw malformedRow();
+  }
 };
 
 const setTenant = async (
@@ -140,7 +183,7 @@ export const createPostgresStandardGroundingPersistence = (
             and statement_code = ${standard.statementCode}
           order by created_at desc, id desc
         `;
-        return rows.map(hydrate);
+        return rows.map(hydrateStandardGroundingRow);
       });
     });
   };
@@ -205,7 +248,7 @@ export const createPostgresStandardGroundingPersistence = (
             where tenant_id = ${tenantId} and id = ${groundingId}
           `;
           const [row] = rows;
-          return row ? hydrate(row) : undefined;
+          return row ? hydrateStandardGroundingRow(row) : undefined;
         });
       });
     },
@@ -219,7 +262,7 @@ export const createPostgresStandardGroundingPersistence = (
             where tenant_id = ${tenantId} and request_key = ${requestKey}
           `;
           const [row] = rows;
-          return row ? hydrate(row) : undefined;
+          return row ? hydrateStandardGroundingRow(row) : undefined;
         });
       });
     },
