@@ -73,36 +73,10 @@
   line-height: 1.45;
 }
 
-.generation-status {
-  color: var(--muted-foreground);
-  font-size: 0.86rem;
-  min-block-size: 1.75rem;
-  padding-block-start: 0.75rem;
-}
-
-.generation-status p {
-  margin: 0;
-}
-
-.generation-error {
-  color: var(--destructive);
-  font-weight: 700;
-}
-
-/* Inline, in-form failure feedback (#168 P0-2): a tinted panel with the
-   message and the recovery action, not colored edge stripes. */
-.prompt-composer .generation-error {
-  display: grid;
-  padding: 0.9rem 1.05rem;
-  border: 1px solid color-mix(in oklch, var(--destructive) 38%, var(--border));
-  border-radius: 0.75rem;
-  background: color-mix(in oklch, var(--destructive) 7%, var(--card));
-  gap: 0.3rem;
-  margin-block-start: 0.85rem;
-}
-
+/* Inline, in-form failure feedback (#168 P0-2): the shared Notice carries the
+   message, and this hint names the next action under it. */
 .generation-error__hint {
-  color: color-mix(in oklch, var(--destructive) 62%, var(--teacher-ink));
+  color: var(--muted-foreground);
   font-size: 0.8rem;
   font-weight: 550;
 }

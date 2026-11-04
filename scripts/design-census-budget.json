@@ -1,7 +1,7 @@
 {
   "note": "Ratchet ceiling for scripts/verify-design-census.ts. Counts may only fall; regenerate with --update after a reduction.",
   "minPages": 25,
-  "maxAaFailures": 12,
+  "maxAaFailures": 6,
   "maxDistinct": {
     "fontSize": 51,
     "lineHeight": 77,

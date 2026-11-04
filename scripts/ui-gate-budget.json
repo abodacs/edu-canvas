@@ -2,19 +2,19 @@
   "note": "Ratchet ceiling for scripts/verify-ui.ts: blocking findings per view key and viewport. Counts may only fall; regenerate with --update after a reduction.",
   "routes": {
     "blocked-moderation@desktop": {
-      "axe": 1,
+      "axe": 0,
       "overflow": 0
     },
     "blocked-moderation@phone": {
-      "axe": 1,
+      "axe": 0,
       "overflow": 0
     },
     "blocked-validation@desktop": {
-      "axe": 1,
+      "axe": 0,
       "overflow": 0
     },
     "blocked-validation@phone": {
-      "axe": 1,
+      "axe": 0,
       "overflow": 0
     },
     "dashboard@desktop": {
@@ -82,11 +82,11 @@
       "overflow": 0
     },
     "workspace@desktop": {
-      "axe": 1,
+      "axe": 0,
       "overflow": 0
     },
     "workspace@phone": {
-      "axe": 1,
+      "axe": 0,
       "overflow": 0
     }
   }
