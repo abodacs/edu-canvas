@@ -5,12 +5,14 @@ import { createPostgresPackPersistence } from "./persistence/pack-postgres";
 import { createPostgresPersistence } from "./persistence/postgres";
 import { createRecordCommands } from "./persistence/records-commands";
 import { createPostgresRecordBackend } from "./persistence/records-postgres";
+import { createPostgresStandardGroundingPersistence } from "./persistence/standard-grounding-postgres";
 
 import type { ServerConfig } from "./config";
 import type { IdentityPersistence } from "./identity/persistence-port";
 import type { GenerationLimitStore } from "./limits/contract";
 import type { PackPersistence } from "./persistence/pack-port";
 import type { RecordPersistence } from "./persistence/records-commands";
+import type { StandardGroundingPersistence } from "./persistence/standard-grounding-port";
 import type {
   FoundationPersistence,
   FoundationPersistenceOptions,
@@ -108,6 +110,18 @@ export const createRecordPersistence = (
     createPostgresRecordBackend({
       databaseUrl: requireDatabaseUrl(config, "record"),
     })
+  );
+};
+
+/**
+The Learning Commons standard-grounding port (#218). It is append-only and
+tenant scoped; the in-memory double stays a test module.
+*/
+export const createStandardGroundingPersistence = (
+  config: ServerConfig
+): StandardGroundingPersistence => {
+  return createPostgresStandardGroundingPersistence(
+    requireDatabaseUrl(config, "standard grounding")
   );
 };
 
