@@ -19,9 +19,35 @@ import type {
 
 const NOW = "2026-11-04T12:00:00.000Z";
 
+// California is out of the shipped registry (product decision 2026-11-04). The
+// exact-crosswalk path stays tested as data: this registry adds California rows
+// beside the shipped Multi-State ones.
+const crosswalkRegistry = {
+  ...PILOT_STANDARD_REGISTRY,
+  envelopes: [
+    ...PILOT_STANDARD_REGISTRY.envelopes,
+    { jurisdiction: "California", subject: "Mathematics", grades: [3, 4] },
+  ],
+  entries: [
+    ...PILOT_STANDARD_REGISTRY.entries,
+    ...PILOT_STANDARD_REGISTRY.entries
+      .filter(
+        (entry) => entry.kind === "pilot" && entry.subject === "Mathematics"
+      )
+      .map((entry) => ({
+        ...entry,
+        id: `california-${entry.statementCode}`,
+        jurisdiction: "California",
+        frameworkId: "ca-ccss-math",
+        prerequisiteResolution: "crosswalk" as const,
+      })),
+  ],
+};
+
 const createAdapter = (transport: LearningCommonsTransport) => {
   return createLearningCommonsAdapter({
     transport,
+    registry: crosswalkRegistry,
     now: () => NOW,
   });
 };
