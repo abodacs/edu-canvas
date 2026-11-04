@@ -6,6 +6,7 @@ import {
   a2uiCatalogVersions,
 } from "@/shared/a2ui-contract";
 import { recoveryActionValues } from "@/shared/generation-contract";
+import { resolveScreenPattern } from "@/server/curriculum/screen-pattern";
 import { gateStoredArtifact } from "@/server/safety/artifact-enforcement";
 import { artifactGateFindingSchema } from "@/server/safety/artifact-gate-contract";
 
@@ -101,6 +102,7 @@ const buildPreviewResponse = async ({
   tenantId,
   actorId,
   requestedCatalog,
+  requestedScreenPattern,
   signal,
 }: {
   config: ServerConfig;
@@ -108,6 +110,7 @@ const buildPreviewResponse = async ({
   tenantId: string;
   actorId: string;
   requestedCatalog: A2UICatalogVersion;
+  requestedScreenPattern: string;
   signal: AbortSignal | null;
 }): Promise<Response> => {
   /* eslint-disable unicorn/single-line-block-comment-style -- Vite reads a dynamic import's chunkname only from a single-line block comment. */
@@ -151,6 +154,22 @@ const buildPreviewResponse = async ({
     return sseError(
       "UNSUPPORTED_CATALOG",
       `This preview is pinned to ${pinnedCatalog}.`,
+      406
+    );
+  }
+
+  // The pack's allowed screen patterns, recorded in the draft provenance, are
+  // the authority. A request for another pattern is a visible 406, never a
+  // silent fallback to matching. A record written before patterns were pinned
+  // keeps the old matching-only behavior.
+  const screenPattern = resolveScreenPattern(
+    record.provenance?.allowedScreenPatterns ?? ["matching"],
+    requestedScreenPattern
+  );
+  if (screenPattern.status === "refused") {
+    return sseError(
+      screenPattern.refusal.code,
+      screenPattern.refusal.message,
       406
     );
   }
@@ -229,6 +248,9 @@ export const handleLessonPreviewRequest = async (
     );
   }
 
+  const requestedScreenPattern =
+    url.searchParams.get("screenPattern") ?? "matching";
+
   const resolved = await resolveTeacherActor(request);
   if (!resolved.ok) {
     return sseError(
@@ -245,6 +267,7 @@ export const handleLessonPreviewRequest = async (
       tenantId: resolved.actor.tenantId,
       actorId: resolved.actor.actorId,
       requestedCatalog: requestedCatalog as A2UICatalogVersion,
+      requestedScreenPattern,
       signal: request.signal,
     });
   } catch (error) {
