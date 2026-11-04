@@ -1,4 +1,6 @@
+import { fractionEquivalencePack } from "@/server/curriculum/built-in-packs";
 import { syntheticSeed } from "@/server/seed-data";
+import type { AnswerRule } from "@/server/curriculum/standards-pack";
 import type {
   LessonLanguage,
   RecoveryAction,
@@ -36,10 +38,12 @@ export interface VersionedCurriculumContext {
   standardCode: string;
   grade: number;
   language: LessonLanguage;
+  packVersion: string;
   graphVersion: string;
   targetNodeId: string;
   nodes: readonly CurriculumNode[];
   edges: readonly CurriculumEdge[];
+  answerRules: readonly AnswerRule[];
 }
 
 export interface NormalizedReasoningPath {
@@ -138,13 +142,15 @@ export const createSyntheticCurriculumContext = (
   return {
     tenantId,
     standardId: input.standardId,
-    standardCode: syntheticSeed.standard.code,
+    standardCode: fractionEquivalencePack.standardCode,
     grade: input.grade,
     language: input.language,
-    graphVersion: syntheticSeed.activityVersion.graphVersion,
-    targetNodeId: "graph_node_equivalent_fractions",
-    nodes: syntheticSeed.graphNodes,
-    edges: syntheticSeed.graphEdges,
+    packVersion: fractionEquivalencePack.packVersion,
+    graphVersion: fractionEquivalencePack.graph.version,
+    targetNodeId: fractionEquivalencePack.graph.targetNodeId,
+    nodes: fractionEquivalencePack.graph.nodes,
+    edges: fractionEquivalencePack.graph.edges,
+    answerRules: fractionEquivalencePack.answerRules,
   };
 };
 
