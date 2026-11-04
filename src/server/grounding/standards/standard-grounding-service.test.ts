@@ -53,7 +53,7 @@ describe("standard grounding service (issue 218)", () => {
     expect(record).toMatchObject({
       tenantId: TENANT,
       requestKey: "request-1",
-      registryVersion: "pilot-registry-v1",
+      registryVersion: "pilot-registry-v2",
       jurisdiction: "Multi-State",
       statementCode: "4.NF.A.1",
       standardId: "6b9c09e2-d7cc-11e8-824f-0242ac160002",
