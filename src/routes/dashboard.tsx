@@ -4,6 +4,8 @@ import { useEffect, useReducer } from "react";
 
 import { useAuthSession } from "@/components/auth/use-auth-session";
 import { AppShell } from "@/components/ui/app-shell";
+import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import {
   initialsFor,
   teacherNavigation,
@@ -146,8 +148,9 @@ const DashboardBoard = ({
     <>
       <p className="progress-asof">
         Results as of {state.data.fetchedAt}.{" "}
-        <button
-          className="progress-refresh"
+        <Button
+          variant="secondary"
+          size="sm"
           type="button"
           disabled={state.checking}
           onClick={() => {
@@ -155,7 +158,7 @@ const DashboardBoard = ({
           }}
         >
           {state.checking ? "Checking for new results…" : "Refresh"}
-        </button>
+        </Button>
       </p>
       {state.stale ? <ProgressStale /> : null}
       {selectedRunId !== null && selected === null ? (
@@ -229,15 +232,17 @@ const DashboardPage = (): ReactElement => {
       width="wide"
     >
       <div id="dashboard-content" className="workspace-content">
-        <h1>Your lessons</h1>
-        <p className="progress-lede">
-          Start with what needs you. Everything else is below.
-        </p>
-        <nav className="progress-nav" aria-label="Workspace">
-          <Link className="text-link" to="/workspace">
+        <div className="progress-top">
+          <div>
+            <h1>Your lessons</h1>
+            <p className="progress-lede">
+              Start with what needs you. Everything else is below.
+            </p>
+          </div>
+          <Link className={buttonVariants()} to="/workspace">
             Open the lesson studio
           </Link>
-        </nav>
+        </div>
         <DashboardBoard
           selectedRunId={run}
           onOpenRun={(runId) => {

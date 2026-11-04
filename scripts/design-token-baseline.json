@@ -2,7 +2,6 @@
   "note": "Ratchet ceiling for scripts/verify-design-tokens.ts. Counts may only fall; regenerate with --update after a reduction.",
   "rules": {
     "raw-color": {
-      "src/styles/progress.css": 12,
       "src/styles/studio.css": 2
     },
     "literal-radius": {
@@ -11,7 +10,6 @@
       "src/styles/generation.css": 2,
       "src/styles/landing.css": 4,
       "src/styles/learn.css": 5,
-      "src/styles/progress.css": 7,
       "src/styles/source.css": 7,
       "src/styles/studio.css": 23,
       "src/styles/workspace.css": 2
@@ -22,7 +20,6 @@
       "src/styles/generation.css": 14,
       "src/styles/landing.css": 28,
       "src/styles/learn.css": 2,
-      "src/styles/progress.css": 5,
       "src/styles/source.css": 12,
       "src/styles/studio.css": 52,
       "src/styles/workspace.css": 2
@@ -40,12 +37,7 @@
       "src/styles/studio.css": 94,
       "src/styles/workspace.css": 2
     },
-    "undefined-token": {
-      "src/styles/progress.css  --surface": 1,
-      "src/styles/progress.css  --text": 1,
-      "src/styles/progress.css  --surface-muted": 1,
-      "src/styles/progress.css  --font-mono": 1
-    },
+    "undefined-token": {},
     "inline-style-literal": {},
     "literal-duration": {
       "src/styles/auth.css": 2,
