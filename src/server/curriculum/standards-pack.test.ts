@@ -88,6 +88,30 @@ describe("standards pack schema", () => {
       /invalid|unrecognized|must differ/iu
     );
   });
+
+  it("keeps the prompt-frame item counts inside the matching draft caps", () => {
+    const tooFewSources = {
+      ...fractionEquivalencePack,
+      promptFrame: {
+        ...fractionEquivalencePack.promptFrame,
+        sourceItemCount: 2,
+      },
+    };
+    const tooManyTargets = {
+      ...fractionEquivalencePack,
+      promptFrame: {
+        ...fractionEquivalencePack.promptFrame,
+        targetItemCount: 9,
+      },
+    };
+
+    expect(() => standardsPackSchema.parse(tooFewSources)).toThrow(
+      /promptFrame|item|sourceItemCount/iu
+    );
+    expect(() => standardsPackSchema.parse(tooManyTargets)).toThrow(
+      /promptFrame|item|targetItemCount/iu
+    );
+  });
 });
 
 describe("built-in standards packs", () => {

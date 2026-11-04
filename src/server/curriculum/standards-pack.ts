@@ -100,8 +100,14 @@ const standardsPackPromptFrameSchema = z.strictObject({
   taskLine: copySchema(500),
   sourceGroupLabel: copySchema(240),
   targetGroupLabel: copySchema(240),
-  sourceItemCount: z.number().int().min(1).max(100),
-  targetItemCount: z.number().int().min(1).max(100),
+  /**
+  The frame chooses the matching draft's item counts, so both numbers stay
+  inside the structural validator's caps (`matching` drafts carry 3–8 source
+  items and at most 8 target items). A pack asking for anything else could never
+  produce an acceptable draft.
+  */
+  sourceItemCount: z.number().int().min(3).max(8),
+  targetItemCount: z.number().int().min(1).max(8),
 });
 
 const standardsPackReferenceSchema = z.strictObject({
@@ -139,6 +145,9 @@ export type StandardsPack = z.infer<typeof standardsPackSchema>;
 export type StandardsPackSourceKind = (typeof standardsPackSourceKinds)[number];
 export type StandardsPackReference = z.infer<
   typeof standardsPackReferenceSchema
+>;
+export type StandardsPackPromptFrame = z.infer<
+  typeof standardsPackPromptFrameSchema
 >;
 export type AnswerRule = z.infer<typeof answerRuleSchema>;
 export type CurriculumNode = z.infer<typeof curriculumNodeSchema>;
