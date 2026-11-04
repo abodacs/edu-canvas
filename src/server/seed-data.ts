@@ -139,21 +139,6 @@ export const assertSeedIntegrity = (): void => {
   }
 };
 
-export const getSyntheticSeedCounts = (): SeedCounts => {
-  assertSeedIntegrity();
-
-  return {
-    tenants: 1,
-    identities: syntheticSeed.identities.length,
-    standards: 1,
-    graphNodes: syntheticSeed.graphNodes.length,
-    graphEdges: syntheticSeed.graphEdges.length,
-    activities: 1,
-    activityVersions: 1,
-    attempts: 1,
-  };
-};
-
 export const getSeedIdentity = (role: SeedRole) => {
   const identity = syntheticSeed.identities.find(
     (candidate) => candidate.role === role
