@@ -94,7 +94,7 @@ const SessionEnded = (): ReactElement => {
 
 const WorkspacePage = (): ReactElement => {
   const navigate = Route.useNavigate();
-  const { review: reviewRequestId } = Route.useSearch();
+  const { review: reviewRequestId, draft: draftRequestId } = Route.useSearch();
   const session = useAuthSession();
   const bannerReference = useRef<HTMLDivElement>(null);
   const contentReference = useRef<HTMLDivElement>(null);
@@ -252,6 +252,7 @@ const WorkspacePage = (): ReactElement => {
             csrf={csrf}
             generation={generation}
             reviewRequestId={reviewRequestId}
+            draftRequestId={draftRequestId}
             onOpenReview={(requestId) => {
               void navigate({ search: { review: requestId } });
             }}
@@ -272,9 +273,14 @@ const WorkspacePage = (): ReactElement => {
 };
 
 export const Route = createFileRoute("/workspace")({
-  validateSearch: (search: Record<string, unknown>): { review?: string } => {
-    return typeof search.review === "string" && search.review.length > 0
-      ? { review: search.review }
+  validateSearch: (
+    search: Record<string, unknown>
+  ): { review?: string; draft?: string } => {
+    if (typeof search.review === "string" && search.review.length > 0) {
+      return { review: search.review };
+    }
+    return typeof search.draft === "string" && search.draft.length > 0
+      ? { draft: search.draft }
       : {};
   },
   head: () => ({ meta: [{ title: "Teacher studio | Scholé" }] }),

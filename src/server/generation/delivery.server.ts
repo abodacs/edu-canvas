@@ -1,10 +1,14 @@
 import { z } from "zod";
 
-import { lessonGenerationInputSchema } from "@/shared/generation-contract";
+import {
+  lessonGenerationInputSchema,
+  storedGenerationResultSchema,
+} from "@/shared/generation-contract";
 
 import {
   identityErrorJson,
   resolveProtectedTeacher,
+  resolveTeacherActor,
 } from "../identity/api.server";
 import { IdentityError } from "../identity/errors";
 import { readJsonBody, noStoreJson } from "../http.server";
@@ -118,6 +122,42 @@ export const handleCancelGenerationRequest = async (
       requestId: parsedDraftId.data,
     });
     return noStoreJson(result.publicResult);
+  } catch (error) {
+    return mapGenerationError(error);
+  }
+};
+
+/**
+GET /api/lessons/:draftId — owning teacher, read-only. A read carries no
+mutation challenge, so it resolves the session without the forgery guard, the
+same way the review read does. Any draft outside the caller's scope, or one
+that does not exist, returns the same generic 403.
+*/
+export const handleReadGenerationRequest = async (
+  request: Request,
+  draftId: string
+): Promise<Response> => {
+  const resolved = await resolveTeacherActor(request);
+  if (!resolved.ok) {
+    return identityErrorJson(resolved.error);
+  }
+
+  const parsedDraftId = draftIdSchema.safeParse(draftId);
+  if (!parsedDraftId.success) {
+    return identityErrorJson(new IdentityError("INVALID_INPUT"));
+  }
+
+  try {
+    const result = await createService().read({
+      actor: resolved.actor,
+      requestId: parsedDraftId.data,
+    });
+    return noStoreJson(
+      storedGenerationResultSchema.parse({
+        result: result.publicResult,
+        prompt: result.record.input.prompt,
+      })
+    );
   } catch (error) {
     return mapGenerationError(error);
   }

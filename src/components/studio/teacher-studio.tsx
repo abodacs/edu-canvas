@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { ModerationRecoveryPanel } from "@/components/studio/moderation-recovery-panel";
 import { ReviewStudio } from "@/components/studio/review-studio";
 import { SourcePanel } from "@/components/studio/source-panel";
+import { useStoredDraft } from "@/components/studio/use-stored-draft";
 import { ValidationDiagnostics } from "@/components/studio/validation-diagnostics";
 import { csrfHeaderName } from "@/shared/identity-contract";
 import { publicGenerationResultSchema } from "@/shared/generation-contract";
@@ -44,6 +45,8 @@ interface TeacherStudioProperties {
   readonly csrf: string;
   readonly generation: string;
   readonly reviewRequestId?: string;
+  /** A persisted draft to open in the composer (`/workspace?draft=<id>`). */
+  readonly draftRequestId?: string;
   readonly onOpenReview: (requestId: string) => void;
   readonly onCloseReview: () => void;
   readonly onUnauthorized: () => void;
@@ -862,6 +865,7 @@ const GenerationResult = ({
 interface TeacherLessonComposerProperties {
   readonly csrf: string;
   readonly generation: string;
+  readonly draftRequestId?: string;
   readonly onOpenReview: (requestId: string) => void;
   readonly onUnauthorized: () => void;
   readonly standardId: string;
@@ -946,6 +950,7 @@ const TeacherComposerOutcome = ({
 const TeacherLessonComposer = ({
   csrf,
   generation,
+  draftRequestId,
   onOpenReview,
   onUnauthorized,
   standardId,
@@ -988,6 +993,20 @@ const TeacherLessonComposer = ({
   useEffect(() => {
     generationReference.current = generation;
   }, [generation]);
+
+  const isOpeningDraft = useStoredDraft(draftRequestId, {
+    onDraft: (stored) => {
+      setPrompt(stored.prompt);
+      if (stored.result.state === READY_FOR_REVIEW_STATE) {
+        setPriorDraft(stored.result);
+      }
+      setResult(stored.result);
+    },
+    onUnauthorized,
+    onUnavailable: (message) => {
+      setFailure({ kind: "error", message, code: null });
+    },
+  });
 
   const updateRequestKey = () => {
     requestKeyReference.current = "";
@@ -1159,6 +1178,11 @@ const TeacherLessonComposer = ({
           tabIndex={-1}
           ref={statusReference}
         >
+          {isOpeningDraft ? (
+            <p className="status-pulse">
+              <span aria-hidden="true" /> Opening the saved draft…
+            </p>
+          ) : null}
           {isGenerating ? (
             <p className="status-pulse">
               <span aria-hidden="true" /> Reading the idea, finding the cleanest
@@ -1232,6 +1256,7 @@ export const TeacherStudio = ({
   csrf,
   generation,
   reviewRequestId,
+  draftRequestId,
   onOpenReview,
   onCloseReview,
   onUnauthorized,
@@ -1251,6 +1276,7 @@ export const TeacherStudio = ({
     <TeacherLessonComposer
       csrf={csrf}
       generation={generation}
+      draftRequestId={draftRequestId}
       onOpenReview={onOpenReview}
       onUnauthorized={onUnauthorized}
       standardId={DEFAULT_STANDARD_ID}
