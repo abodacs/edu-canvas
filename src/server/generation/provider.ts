@@ -1,5 +1,8 @@
+import { fractionEquivalencePack } from "@/server/curriculum/built-in-packs";
+
 import { validatorVersion } from "./validation";
 import type { LessonLanguage } from "@/shared/generation-contract";
+import type { StandardsPackPromptFrame } from "@/server/curriculum/standards-pack";
 
 import type {
   GenerationDiagnostic,
@@ -22,7 +25,7 @@ const variantKindTitles: Record<
 };
 export const RATE_LIMIT_KIND = "rate-limit";
 
-export const promptTemplateVersion = "lesson-prompt-v1";
+export const promptTemplateVersion = "lesson-prompt-v2";
 export const defaultProviderTimeoutMs = 100_000;
 
 export interface ProviderCurriculumContext {
@@ -30,6 +33,14 @@ export interface ProviderCurriculumContext {
   edges: readonly { prerequisiteId: string; successorId: string }[];
   targetNodeId: string;
 }
+
+/**
+ * The task the standards pack asks for (#221): the line the lesson must ask the
+ * learner to perform, the two group labels the matching screen shows, and the
+ * item counts the draft should carry. The prompt is built from this, and the
+ * deterministic fixture builds its draft from the same values.
+ */
+export type ProviderPromptFrame = StandardsPackPromptFrame;
 
 export interface ProviderReferenceContext {
   id: string;
@@ -44,6 +55,11 @@ export interface ProviderReferenceContext {
 export interface ProviderGenerationContext {
   correctionAttempt: boolean;
   diagnostics: readonly GenerationDiagnostic[];
+  /**
+   * Present whenever the request resolves a standards pack. A context without
+   * one keeps the fixture's seeded equivalent-fractions framing.
+   */
+  promptFrame?: ProviderPromptFrame;
   curriculumContext?: ProviderCurriculumContext;
   referenceContext?: ProviderReferenceContext;
 }
@@ -98,9 +114,70 @@ const localizedText = (
   arabic: string
 ) => (language === "ar" ? arabic : english);
 
+/**
+The fixture's own item copy. It stays the seeded equivalent-fractions pairs so a
+deterministic run reproduces the published demo lesson. Everything that names
+the task — the task line, both group labels and the item counts — comes from the
+pack's prompt frame, so an offline run describes the same task as a live
+provider call (#221).
+*/
+const fixturePairs = [
+  { source: "1/2", target: "2/4" },
+  { source: "2/3", target: "4/6" },
+  { source: "3/4", target: "6/8" },
+  { source: "1/3", target: "2/6" },
+  { source: "2/5", target: "4/10" },
+  { source: "3/5", target: "6/10" },
+  { source: "1/6", target: "2/12" },
+  { source: "1/8", target: "2/16" },
+] as const;
+
+const fixtureDecoys = ["2/3", "3/8"] as const;
+
+/** The structural validator caps a matching draft at 8 source items. */
+const maximumFixturePairs = fixturePairs.length;
+
+/**
+The frame the fixture follows when no pack frame reaches it: the seeded
+equivalent-fractions pack. A resolved pack context always supplies its own.
+*/
+const defaultFixtureFrame: ProviderPromptFrame =
+  fractionEquivalencePack.promptFrame;
+
+const resolveFixtureFrame = (
+  context?: ProviderGenerationContext
+): ProviderPromptFrame => context?.promptFrame ?? defaultFixtureFrame;
+
+/**
+The seeded path is the equivalent-fractions lesson. A resolved pack brings its
+own graph, so the fixture walks that pack's nodes instead of the seed's.
+*/
 const createLearningPath = (
-  request: NormalizedGenerationRequest
+  request: NormalizedGenerationRequest,
+  curriculum?: ProviderCurriculumContext
 ): NonNullable<ProviderLessonDraft["learningPath"]> => {
+  if (curriculum) {
+    return {
+      direction: "forward",
+      steps: curriculum.nodes.map((node) => {
+        return {
+          nodeId: node.id,
+          screenPurposeId: node.screenPurposeId,
+        };
+      }),
+      rationale: localizedText(
+        request.language,
+        "Start with the prerequisite skill so the lesson reaches the matching target in one visible step.",
+        "نبدأ بالمهارة السابقة حتى يصل الدرس إلى الهدف المطابق في خطوة واضحة."
+      ),
+      nextScreenRationale: localizedText(
+        request.language,
+        "The matching screen shows the target skill before teacher review.",
+        "تعرض شاشة المطابقة المهارة المستهدفة قبل مراجعة المعلم."
+      ),
+    };
+  }
+
   return {
     direction: "forward",
     steps: [
@@ -126,67 +203,124 @@ const createLearningPath = (
   };
 };
 
+interface LocalizedCopy {
+  readonly en: string;
+  readonly ar: string;
+}
+
+interface FixtureVariantPlan {
+  readonly index: number;
+  readonly kind: VariantKind;
+  readonly sourceCount: number;
+  readonly targetCount: number;
+  /** The fixture clamps this to the structural distractor cap. */
+  readonly distractorCount: number;
+  readonly title?: LocalizedCopy;
+  readonly instructions?: LocalizedCopy;
+  readonly extraHints?: readonly LocalizedCopy[];
+}
+
+/**
+The pack frame carries one language: English. An Arabic request keeps the
+fixture's own Arabic copy, so the deterministic lesson stays fully Arabic.
+*/
+const arabicFixtureCopy = {
+  taskLine: "طابق كل كسر مع اسم آخر للجزء نفسه من الكل.",
+  instructions: "تعليمات لمطابقة الكسور المكافئة",
+  sourceGroupLabel: "الكسور المطلوب مطابقتها",
+  targetGroupLabel: "الكسور المكافئة المحتملة",
+  hint: "اقرأ كل عنصر قبل أن تختار ما ينتمي إليه.",
+  correct: "كل مطابقة تربط عنصرًا بما ينتمي إليه.",
+  incorrect: "مطابقة واحدة لا تنتمي بعد. راجع كل زوج مرة أخرى.",
+} as const;
+
+const fixtureHint: LocalizedCopy = {
+  en: "Read each item on the left before you choose its match.",
+  ar: arabicFixtureCopy.hint,
+};
+
 const createVariant = (
   request: NormalizedGenerationRequest,
-  kind: VariantKind,
-  index: number
+  frame: ProviderPromptFrame,
+  plan: FixtureVariantPlan
 ): ProviderVariant => {
-  const sourceLabels = ["1/2", "2/3", "3/4", "1/3", "2/5", "3/5"];
-  const targetLabels = ["2/4", "4/6", "6/8", "2/6", "4/10", "6/10"];
-  const sourceItems = sourceLabels.map((label, itemIndex) => {
-    return {
-      id: `source-${index}-${itemIndex + 1}`,
-      label,
-    };
-  });
-  const targetItems = targetLabels.map((label, itemIndex) => {
-    return {
-      id: `target-${index}-${itemIndex + 1}`,
-      label,
-    };
-  });
   const { language } = request;
+  const sourceItems = fixturePairs
+    .slice(0, plan.sourceCount)
+    .map((pair, itemIndex) => {
+      return {
+        id: `source-${plan.index}-${itemIndex + 1}`,
+        label: pair.source,
+      };
+    });
+  const targetItems = fixturePairs
+    .slice(0, plan.targetCount)
+    .map((pair, itemIndex) => {
+      return {
+        id: `target-${plan.index}-${itemIndex + 1}`,
+        label: pair.target,
+      };
+    });
+  const relationshipCount = Math.min(sourceItems.length, targetItems.length);
+  const distractorCount = Math.min(
+    plan.distractorCount,
+    Math.floor(sourceItems.length / 4)
+  );
+  const distractorItems = fixtureDecoys
+    .slice(0, distractorCount)
+    .map((label, itemIndex) => {
+      return {
+        id:
+          itemIndex === 0
+            ? `distractor-${plan.index}`
+            : `distractor-${plan.index}-near`,
+        label,
+      };
+    });
 
   return {
-    id: `variant-${index}`,
-    kind,
+    id: `variant-${plan.index}`,
+    kind: plan.kind,
     title: localizedText(
       language,
-      `${variantKindTitles[kind].en} equivalent fractions`,
-      variantKindTitles[kind].ar
+      plan.title?.en ??
+        `${variantKindTitles[plan.kind].en} — ${frame.targetGroupLabel}`,
+      plan.title?.ar ?? variantKindTitles[plan.kind].ar
     ),
     instructions: localizedText(
       language,
-      "Match each fraction with another name for the same part of a whole.",
-      "طابق كل كسر مع اسم آخر للجزء نفسه من الكل."
+      plan.instructions?.en ?? frame.taskLine,
+      plan.instructions?.ar ?? arabicFixtureCopy.taskLine
     ),
     sourceItems,
     targetItems,
-    distractorItems: [{ id: `distractor-${index}`, label: "2/3" }],
-    relationships: sourceItems.map((source, itemIndex) => {
-      return {
-        id: `relationship-${index}-${itemIndex + 1}`,
-        sourceId: source.id,
-        targetId: targetItems[itemIndex].id,
-      };
-    }),
+    distractorItems,
+    relationships: sourceItems
+      .slice(0, relationshipCount)
+      .map((source, itemIndex) => {
+        return {
+          id: `relationship-${plan.index}-${itemIndex + 1}`,
+          sourceId: source.id,
+          targetId: targetItems[itemIndex]?.id ?? "",
+        };
+      }),
     hints: [
-      localizedText(
-        language,
-        "Compare how many equal parts are shaded in each fraction.",
-        "قارن عدد الأجزاء المتساوية في كل كسر."
-      ),
-    ],
+      {
+        en: fixtureHint.en,
+        ar: fixtureHint.ar,
+      },
+      ...(plan.extraHints ?? []),
+    ].map((hint) => localizedText(language, hint.en, hint.ar)),
     feedback: {
       correct: localizedText(
         language,
-        "These fractions name the same part of a whole.",
-        "هذه الكسور تسمي الجزء نفسه من الكل."
+        "Every match pairs an item with the one that belongs with it.",
+        arabicFixtureCopy.correct
       ),
       incorrect: localizedText(
         language,
-        "Try comparing the equal parts in each fraction.",
-        "حاول مقارنة الأجزاء المتساوية في كل كسر."
+        "One match does not belong yet. Check each pair again.",
+        arabicFixtureCopy.incorrect
       ),
     },
     languageMetadata: {
@@ -197,159 +331,119 @@ const createVariant = (
     accessibilityMetadata: {
       instructions: localizedText(
         language,
-        "Instructions for matching equivalent fractions",
-        "تعليمات لمطابقة الكسور المكافئة"
+        frame.taskLine,
+        arabicFixtureCopy.instructions
       ),
       sourceGroupLabel: localizedText(
         language,
-        "Fractions to match",
-        "الكسور المطلوب مطابقتها"
+        frame.sourceGroupLabel,
+        arabicFixtureCopy.sourceGroupLabel
       ),
       targetGroupLabel: localizedText(
         language,
-        "Possible equivalent fractions",
-        "الكسور المكافئة المحتملة"
+        frame.targetGroupLabel,
+        arabicFixtureCopy.targetGroupLabel
       ),
     },
   };
 };
 
-export const createEquivalentFractionsDraft = (
-  request: NormalizedGenerationRequest
-): ProviderLessonDraft => {
-  const [practice, explore, scaffold, review] = [
-    createVariant(request, "standard", 1),
-    createVariant(request, "standard", 2),
-    createVariant(request, "scaffold", 3),
-    createVariant(request, "challenge", 4),
-  ];
+/** A variant two pairs wider than the frame's base, capped at the draft cap. */
+const addPairs = (count: number): number => {
+  return Math.min(count + 2, maximumFixturePairs);
+};
 
+export interface FixtureDraftOptions {
+  /**
+   * The pack frame the draft must follow. Defaults to the seeded
+   * equivalent-fractions frame.
+   */
+  readonly frame?: ProviderPromptFrame;
+  /** The resolved pack graph the learning path must walk. */
+  readonly curriculum?: ProviderCurriculumContext;
+}
+
+export const createEquivalentFractionsDraft = (
+  request: NormalizedGenerationRequest,
+  options: FixtureDraftOptions = {}
+): ProviderLessonDraft => {
+  const frame = options.frame ?? defaultFixtureFrame;
   // The studio asks a teacher to choose between the two standard cards, so the
-  // fixture must give them different interaction structures, titles, and copy —
+  // fixture gives them different interaction structures, titles, and copy —
   // otherwise the draft notes correctly flag them as duplicates (#168 P1-3).
   // Item-count caps from the structural validator steer the shapes: a 3-item
   // set carries no decoys (floor(3/4) = 0) and an 8-item set may carry two.
-  explore.title = localizedText(
-    request.language,
-    "Explore equivalent fractions",
-    "استكشاف الكسور المكافئة"
-  );
-  explore.instructions = localizedText(
-    request.language,
-    "Match the eight pairs, and watch for decoys whose numerators match but wholes differ.",
-    "طابق الأزواج الثمانية، وانتبه للأفخاخ التي الأعداد الأبْعَدها طابقية لكن الكلَّ مختلفة."
-  );
-  const exploreSources = ["1/6", "1/8"];
-  const exploreTargets = ["2/12", "2/16"];
-  explore.sourceItems = [
-    ...explore.sourceItems,
-    ...exploreSources.map((label, itemIndex) => {
-      return {
-        id: `source-2-${7 + itemIndex}`,
-        label,
-      };
-    }),
-  ];
-  explore.targetItems = [
-    ...explore.targetItems,
-    ...exploreTargets.map((label, itemIndex) => {
-      return {
-        id: `target-2-${7 + itemIndex}`,
-        label,
-      };
-    }),
-  ];
-  explore.distractorItems = [
-    { id: "distractor-2", label: "2/3" },
-    { id: "distractor-2-near", label: "3/8" },
-  ];
-  explore.relationships = explore.sourceItems.map((source, itemIndex) => {
-    return {
-      id: `relationship-2-${itemIndex + 1}`,
-      sourceId: source.id,
-      targetId: explore.targetItems[itemIndex].id,
-    };
+  const wideSourceCount = addPairs(frame.sourceItemCount);
+  const wideTargetCount = addPairs(frame.targetItemCount);
+  const widePairs = Math.min(wideSourceCount, wideTargetCount);
+
+  const practice = createVariant(request, frame, {
+    index: 1,
+    kind: "standard",
+    sourceCount: frame.sourceItemCount,
+    targetCount: frame.targetItemCount,
+    distractorCount: 1,
   });
 
-  // The guided card carries the gentlest load: three pairs, no decoys, and an
-  // extra support move, so its structure visibly differs from practice.
-  scaffold.title = localizedText(
-    request.language,
-    "Step up to equivalents",
-    "الخطوة إلى الكسور المكافئة"
-  );
-  scaffold.instructions = localizedText(
-    request.language,
-    "Three pairs at a time, with a hint before your first match.",
-    "ثلاثة أزواج في كل مرة، مع إرشاد قبل أول مطابقة."
-  );
-  scaffold.sourceItems = scaffold.sourceItems.slice(0, 3);
-  scaffold.targetItems = scaffold.targetItems.slice(0, 3);
-  scaffold.relationships = scaffold.relationships.slice(0, 3);
-  scaffold.distractorItems = [];
-  scaffold.hints = [
-    scaffold.hints[0],
-    localizedText(
-      request.language,
-      "Take one pair at a time: find the whole with the same number of equal parts first.",
-      "زوج واحد فقط في كل مرة: حدد الكل الذي يحمل العدد نفسه من الأجزاء المتساوية أولاً."
-    ),
-  ];
-
-  // The review card adds the reasoning demand: two decoys and a check-the-whole
-  // instruction, while the equivalent pairs stay canonical.
-  review.title = localizedText(
-    request.language,
-    "Reason with equivalents",
-    "استدلّ على الكسور المكافئة"
-  );
-  review.instructions = localizedText(
-    request.language,
-    "Match the eight pairs, then decide which decoy is close but not equal once you check the whole.",
-    "طابق الأزواج الثمانية، ثم قرر أي فخٍّ قريب من الصواب لكنه ليس متساويًا بعد فحص الكل."
-  );
-  const reviewSources = ["1/6", "1/8"];
-  const reviewTargets = ["2/12", "2/16"];
-  review.sourceItems = [
-    ...review.sourceItems,
-    ...reviewSources.map((label, itemIndex) => {
-      return {
-        id: `source-4-${7 + itemIndex}`,
-        label,
-      };
-    }),
-  ];
-  review.targetItems = [
-    ...review.targetItems,
-    ...reviewTargets.map((label, itemIndex) => {
-      return {
-        id: `target-4-${7 + itemIndex}`,
-        label,
-      };
-    }),
-  ];
-  review.distractorItems = [
-    { id: "distractor-4", label: "2/3" },
-    { id: "distractor-4-near", label: "3/8" },
-  ];
-  review.relationships = review.sourceItems.map((source, itemIndex) => {
-    return {
-      id: `relationship-4-${itemIndex + 1}`,
-      sourceId: source.id,
-      targetId: review.targetItems[itemIndex].id,
-    };
+  const explore = createVariant(request, frame, {
+    index: 2,
+    kind: "standard",
+    sourceCount: wideSourceCount,
+    targetCount: wideTargetCount,
+    distractorCount: 2,
+    title: {
+      en: `Explore — ${frame.targetGroupLabel}`,
+      ar: "استكشاف الكسور المكافئة",
+    },
+    instructions: {
+      en: `Match all ${widePairs} pairs, and watch for decoys that look close but do not belong.`,
+      ar: "طابق كل الأزواج، وانتبه للأفخاخ التي تبدو قريبة لكنها لا تنتمي.",
+    },
   });
-  review.hints = [
-    review.hints[0],
-    localizedText(
-      request.language,
-      "Before you match, say which whole each fraction belongs to.",
-      "قبل أن تطابق، قل إلى أي كلٍّ ينتمي كل كسر."
-    ),
-  ];
+
+  // The guided card carries the gentlest load: the frame's own pair count, no
+  // decoys, and an extra support move, so its structure visibly differs from
+  // practice.
+  const scaffold = createVariant(request, frame, {
+    index: 3,
+    kind: "scaffold",
+    sourceCount: frame.sourceItemCount,
+    targetCount: frame.targetItemCount,
+    distractorCount: 0,
+    instructions: {
+      en: "Work one pair at a time, with a hint before your first match.",
+      ar: "زوج واحد فقط في كل مرة، مع إرشاد قبل أول مطابقة.",
+    },
+    extraHints: [
+      {
+        en: "Take one pair at a time: read the left item fully before you choose.",
+        ar: "زوج واحد فقط في كل مرة: اقرأ العنصر كاملًا قبل أن تختار.",
+      },
+    ],
+  });
+
+  // The review card adds the reasoning demand: two decoys and an
+  // explain-the-decoy instruction, while the equivalent pairs stay canonical.
+  const review = createVariant(request, frame, {
+    index: 4,
+    kind: "challenge",
+    sourceCount: wideSourceCount,
+    targetCount: wideTargetCount,
+    distractorCount: 2,
+    instructions: {
+      en: `Match all ${widePairs} pairs, then explain why the close decoy does not belong.`,
+      ar: "طابق كل الأزواج، ثم اشرح لماذا الفخ القريب لا ينتمي.",
+    },
+    extraHints: [
+      {
+        en: "Before you match, say which group each item belongs to.",
+        ar: "قبل أن تطابق، قل إلى أي مجموعة ينتمي كل عنصر.",
+      },
+    ],
+  });
 
   return {
-    learningPath: createLearningPath(request),
+    learningPath: createLearningPath(request, options.curriculum),
     variants: [practice, explore, scaffold, review],
   };
 };
@@ -379,7 +473,7 @@ export const createDeterministicLessonDraftProvider = (
       return calls;
     },
 
-    generate(request) {
+    generate(request, context) {
       calls += 1;
 
       if (scenario === "timeout") {
@@ -401,7 +495,12 @@ export const createDeterministicLessonDraftProvider = (
         (scenario === "invalid-then-valid" && calls === 1) ||
         scenario === "invalid-then-invalid";
 
-      const draft = createEquivalentFractionsDraft(request);
+      const draft = createEquivalentFractionsDraft(request, {
+        frame: resolveFixtureFrame(context),
+        ...(context.curriculumContext && {
+          curriculum: context.curriculumContext,
+        }),
+      });
       if (shouldBeInvalid) {
         draft.variants[0].relationships[0].targetId = "missing-target";
       }
@@ -413,10 +512,17 @@ export const createDeterministicLessonDraftProvider = (
   };
 };
 
-const buildPrompt = (
+/**
+ * The provider prompt is framed by the standards pack (#221). The task line,
+ * both group labels, the item counts and the curated reference all come from
+ * the pack, so a 4.OA.A.3 lesson asks for word-problem → equation matching and
+ * a 4.NF.A.1 lesson keeps its equivalent-fraction matching.
+ */
+export const buildLessonPrompt = (
   request: NormalizedGenerationRequest,
   context: ProviderGenerationContext
 ): string => {
+  const frame = context.promptFrame;
   const curriculum = context.curriculumContext;
   const reference = context.referenceContext;
   const approvedNodes = curriculum?.nodes
@@ -425,6 +531,12 @@ const buildPrompt = (
   const approvedEdges = curriculum?.edges
     .map((edge) => `${edge.prerequisiteId} -> ${edge.successorId}`)
     .join(", ");
+  const frameInstruction = frame
+    ? `Task: ${frame.taskLine}`
+    : "Task: match each item with the one it belongs with, following the teacher request.";
+  const itemInstruction = frame
+    ? `Create exactly two standard variants, one scaffold variant, and one challenge variant. Each variant needs exactly ${frame.sourceItemCount} source items from "${frame.sourceGroupLabel}", ${frame.targetItemCount} matching target items from "${frame.targetGroupLabel}", zero distractor items, stable ids, one hint, deterministic feedback, language metadata, and accessibility metadata.`
+    : "Create exactly two standard variants, one scaffold variant, and one challenge variant. Each variant needs at least 3 source items, at least one matching target item, stable ids, one hint, deterministic feedback, language metadata, and accessibility metadata.";
   const pathInstruction = curriculum
     ? `Include one forward learningPath with exactly ${curriculum.nodes.length} steps in this order: ${curriculum.nodes
         .map((node) => `${node.id} with ${node.screenPurposeId}`)
@@ -442,11 +554,12 @@ const buildPrompt = (
     : "";
 
   return [
-    "Create a structured lesson draft for Scholé equivalent-fractions matching.",
+    "Create a structured lesson draft for a Scholé matching lesson.",
+    frameInstruction,
     "Return only the canonical JSON contract. Never return HTML, CSS, JavaScript, A2UI, URLs, or executable content.",
     `Teacher request: ${request.prompt}`,
     `Grade: ${request.grade}. Primary standard: ${request.standardId}. Language: ${request.language}. Difficulty: ${request.difficulty}.`,
-    "Create exactly two standard variants, one scaffold variant, and one challenge variant. Each variant needs exactly 3 source items, 3 matching target items, zero distractor items, stable ids, one hint, deterministic feedback, language metadata, and accessibility metadata.",
+    itemInstruction,
     approvedNodes
       ? `Approved curriculum nodes: ${approvedNodes}. Approved curriculum edges: ${approvedEdges}.`
       : "",
@@ -665,7 +778,7 @@ export const createMetaLessonDraftProvider = (
             },
             body: JSON.stringify({
               model: options.model,
-              input: buildPrompt(request, context),
+              input: buildLessonPrompt(request, context),
               text: {
                 format: {
                   type: "json_schema",
