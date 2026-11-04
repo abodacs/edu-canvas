@@ -2,10 +2,14 @@ import { Link, Navigate, createFileRoute } from "@tanstack/react-router";
 import { ArrowRight, ShieldAlert } from "lucide-react";
 import { useEffect, useRef } from "react";
 
-import { AccountHeader } from "@/components/auth/account-header";
 import { SessionExpiryBanner } from "@/components/auth/session-expiry-banner";
 import { useAuthSession } from "@/components/auth/use-auth-session";
 import { useSessionExpiry } from "@/components/auth/use-session-expiry";
+import { AppShell } from "@/components/ui/app-shell";
+import {
+  initialsFor,
+  teacherNavigation,
+} from "@/components/ui/app-shell-navigation";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utilities";
@@ -26,69 +30,66 @@ const WorkspaceStatus = ({
   readonly onRetry?: () => void;
 }): ReactElement => {
   return (
-    <main
-      className="app-shell app-shell--teacher"
-      aria-labelledby="workspace-status-heading"
-    >
-      <div className="page-frame page-frame--teacher">
-        <div className="workspace-status">
-          <span className="workspace-status__mark" aria-hidden="true">
-            S
-          </span>
-          <h1 id="workspace-status-heading" className="auth-heading">
-            {title}
-          </h1>
-          <output className="auth-lede">{message}</output>
-          {onRetry ? (
-            <div className="auth-actions">
-              <Button type="button" className="auth-submit" onClick={onRetry}>
-                Try again
-              </Button>
-              <Link className="text-link" to="/login">
-                Sign in again
-              </Link>
-            </div>
-          ) : null}
-        </div>
-      </div>
-    </main>
+    <AppShell width="wide">
+      <section
+        className="workspace-status"
+        aria-labelledby="workspace-status-heading"
+      >
+        <span className="workspace-status__mark" aria-hidden="true">
+          S
+        </span>
+        <h1 id="workspace-status-heading" className="auth-heading">
+          {title}
+        </h1>
+        <output className="auth-lede">{message}</output>
+        {onRetry ? (
+          <div className="auth-actions">
+            <Button type="button" className="auth-submit" onClick={onRetry}>
+              Try again
+            </Button>
+            <Link className="text-link" to="/login">
+              Sign in again
+            </Link>
+          </div>
+        ) : null}
+      </section>
+    </AppShell>
   );
 };
 
 const SessionEnded = (): ReactElement => {
   return (
-    <main
-      className="app-shell app-shell--teacher"
-      aria-labelledby="session-ended-heading"
-    >
-      <div className="page-frame page-frame--teacher">
-        <div className="workspace-status" role="alert">
-          <span className="workspace-status__mark" aria-hidden="true">
-            <ShieldAlert />
-          </span>
-          <h1 id="session-ended-heading" className="auth-heading">
-            Your session ended
-          </h1>
-          <p className="auth-lede">
-            Private content is hidden now. Anything that was unsent has been
-            cleared, and nothing was submitted twice.
-          </p>
-          <div className="auth-actions">
-            <Link
-              className={cn(
-                buttonVariants({ size: "lg" }),
-                "cta-primary min-h-11"
-              )}
-              to="/login"
-              replace
-            >
-              Sign in again
-              <ArrowRight aria-hidden="true" />
-            </Link>
-          </div>
+    <AppShell width="wide">
+      <section
+        className="workspace-status"
+        role="alert"
+        aria-labelledby="session-ended-heading"
+      >
+        <span className="workspace-status__mark" aria-hidden="true">
+          <ShieldAlert />
+        </span>
+        <h1 id="session-ended-heading" className="auth-heading">
+          Your session ended
+        </h1>
+        <p className="auth-lede">
+          Private content is hidden now. Anything that was unsent has been
+          cleared, and nothing was submitted twice.
+        </p>
+        <div className="auth-actions">
+          <Link
+            className={cn(
+              buttonVariants({ size: "lg" }),
+              "cta-primary min-h-11"
+            )}
+            to="/login"
+            replace
+          >
+            Sign in again
+            <ArrowRight aria-hidden="true" />
+          </Link>
         </div>
-      </div>
-    </main>
+      </section>
+    </AppShell>
   );
 };
 
@@ -184,90 +185,76 @@ const WorkspacePage = (): ReactElement => {
     session.markExpired();
   };
 
-  const header = (
-    <AccountHeader
-      displayName={projection.actor.displayName}
-      tenantName={projection.actor.tenantName}
-      roleLabel={projection.actor.role === "teacher" ? "Teacher" : "Student"}
-      isSigningOut={session.isSigningOut}
-      onSignOut={handleSignOut}
-    />
-  );
+  const isTeacher = projection.actor.role === "teacher";
+  const shellChrome = {
+    identity: {
+      displayName: projection.actor.displayName,
+      context: `${projection.actor.tenantName} · ${isTeacher ? "Teacher" : "Student"}`,
+      initials: initialsFor(projection.actor.displayName),
+    },
+    isSigningOut: session.isSigningOut,
+    onSignOut: () => {
+      void handleSignOut();
+    },
+  };
 
-  if (projection.actor.role !== "teacher") {
+  if (!isTeacher) {
     return (
-      <main
-        className="app-shell app-shell--teacher"
-        aria-labelledby="learner-heading"
-      >
-        <div className="page-frame page-frame--teacher">
-          {header}
-          <div className="workspace-status">
-            <h1 id="learner-heading" className="auth-heading">
-              Your lessons open from a teacher invitation
-            </h1>
-            <p className="auth-lede">
-              This account is a learner account, so the lesson studio is not
-              part of it yet. Your teacher shares lessons with you directly.
-            </p>
-          </div>
-        </div>
-      </main>
+      <AppShell {...shellChrome} width="wide">
+        <section className="workspace-status" aria-labelledby="learner-heading">
+          <h1 id="learner-heading" className="auth-heading">
+            Your lessons open from a teacher invitation
+          </h1>
+          <p className="auth-lede">
+            This account is a learner account, so the lesson studio is not part
+            of it yet. Your teacher shares lessons with you directly.
+          </p>
+        </section>
+      </AppShell>
     );
   }
 
   return (
-    <main className="app-shell app-shell--teacher">
-      <a className="skip-link" href="#workspace-content">
-        Skip to content
-      </a>
-      <div className="page-frame page-frame--teacher">
-        {header}
-        <nav className="workspace-page-nav" aria-label="Workspace pages">
-          <Link className="text-link" to="/dashboard">
-            Lesson results
-          </Link>
-        </nav>
-        {isWarningVisible ? (
-          <SessionExpiryBanner
-            bannerRef={bannerReference}
-            isContinuing={expiry.isContinuing}
-            error={expiry.continueError}
-            onContinue={handleContinue}
-            onDismiss={handleDismissWarning}
-          />
-        ) : null}
-        <div
-          id="workspace-content"
-          ref={contentReference}
-          className="workspace-content"
-          // Hidden from assistive tech and inert while the server re-confirms the
-          // session, so a stale view can never be read or acted on.
-          inert={session.isRevalidating}
-          aria-hidden={session.isRevalidating}
-          tabIndex={-1}
-        >
-          <TeacherStudio
-            key={generation}
-            csrf={csrf}
-            generation={generation}
-            reviewRequestId={reviewRequestId}
-            onOpenReview={(requestId) => {
-              void navigate({ search: { review: requestId } });
-            }}
-            onCloseReview={() => {
-              void navigate({ search: {} });
-            }}
-            onUnauthorized={handleUnauthorized}
-          />
-        </div>
-        {session.isRevalidating ? (
-          <output className="workspace-revalidating">
-            Checking your session…
-          </output>
-        ) : null}
+    <AppShell {...shellChrome} nav={teacherNavigation} width="wide">
+      {isWarningVisible ? (
+        <SessionExpiryBanner
+          bannerRef={bannerReference}
+          isContinuing={expiry.isContinuing}
+          error={expiry.continueError}
+          onContinue={handleContinue}
+          onDismiss={handleDismissWarning}
+        />
+      ) : null}
+      <div
+        id="workspace-content"
+        ref={contentReference}
+        className="workspace-content"
+        // Hidden from assistive tech and inert while the server re-confirms the
+        // session, so a stale view can never be read or acted on.
+        inert={session.isRevalidating}
+        aria-hidden={session.isRevalidating}
+        tabIndex={-1}
+      >
+        <TeacherStudio
+          key={generation}
+          csrf={csrf}
+          generation={generation}
+          reviewRequestId={reviewRequestId}
+          onOpenReview={(requestId) => {
+            void navigate({ search: { review: requestId } });
+          }}
+          onCloseReview={() => {
+            void navigate({ search: {} });
+          }}
+          onUnauthorized={handleUnauthorized}
+        />
       </div>
-    </main>
+      {session.isRevalidating ? (
+        <output className="workspace-revalidating">
+          Checking your session…
+        </output>
+      ) : null}
+    </AppShell>
   );
 };
 

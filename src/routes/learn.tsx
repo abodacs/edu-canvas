@@ -3,6 +3,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
 import { useAuthSession } from "@/components/auth/use-auth-session";
+import { AppShell } from "@/components/ui/app-shell";
+import { initialsFor } from "@/components/ui/app-shell-navigation";
 import { BidiText } from "@/components/learn/bidi-text";
 import {
   BoardActions,
@@ -425,35 +427,55 @@ const LearnBoard = ({
 
 const LearnPage = () => {
   const { assignment, variant } = Route.useSearch();
-  const { projection, csrf, phase } = useAuthSession();
+  const navigate = Route.useNavigate();
+  const session = useAuthSession();
+  const { projection, csrf, phase } = session;
 
   if (phase === "loading") {
-    return <p className="learn-status">Checking your session…</p>;
+    return (
+      <AppShell>
+        <p className="learn-status">Checking your session…</p>
+      </AppShell>
+    );
   }
   if (!projection || projection.actor.role !== "student") {
     return (
-      <main className="app-shell">
+      <AppShell>
         <p className="learn-status">
           Your lessons open from a teacher invitation.{" "}
           <Link to="/login">Sign in</Link>
         </p>
-      </main>
-    );
-  }
-  if (!assignment || !variant || !csrf) {
-    return (
-      <main className="app-shell">
-        <p className="learn-status">
-          Open the link your teacher shared to start this activity.
-        </p>
-      </main>
+      </AppShell>
     );
   }
 
+  const handleSignOut = async (): Promise<void> => {
+    if (await session.signOut()) {
+      await navigate({ to: "/", replace: true, search: { signedOut: true } });
+    }
+  };
+  const identity = {
+    displayName: projection.actor.displayName,
+    context: `${projection.actor.tenantName} · Student`,
+    initials: initialsFor(projection.actor.displayName),
+  };
+
   return (
-    <main className="app-shell">
-      <LearnBoard assignment={assignment} variant={variant} csrf={csrf} />
-    </main>
+    <AppShell
+      identity={identity}
+      isSigningOut={session.isSigningOut}
+      onSignOut={() => {
+        void handleSignOut();
+      }}
+    >
+      {assignment && variant && csrf ? (
+        <LearnBoard assignment={assignment} variant={variant} csrf={csrf} />
+      ) : (
+        <p className="learn-status">
+          Open the link your teacher shared to start this activity.
+        </p>
+      )}
+    </AppShell>
   );
 };
 

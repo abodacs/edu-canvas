@@ -1,32 +1,5 @@
 /* Teacher studio: a calm, asymmetric authoring surface built around one
    sentence and one meaningful next step. */
-.app-shell--teacher {
-  background:
-    radial-gradient(
-      55% 40% at 93% 0%,
-      color-mix(in oklch, var(--teacher-butter) 70%, transparent),
-      transparent 100%
-    ),
-    var(--teacher-paper);
-  padding-block: clamp(1rem, 3vw, 2.5rem) clamp(4rem, 9vw, 8rem);
-}
-
-.page-frame--teacher {
-  inline-size: min(100%, 88rem);
-}
-
-.studio-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-block-end: clamp(2rem, 5vw, 4.5rem);
-}
-
-.studio-brand,
-.studio-nav__actions,
-.studio-nav__state,
-.studio-nav__exit,
 .teacher-trust-line,
 .teacher-guidance__signal,
 .teacher-result__footer,
@@ -43,22 +16,6 @@
   align-items: center;
 }
 
-.studio-brand {
-  gap: 0.7rem;
-}
-
-.studio-nav__actions {
-  gap: clamp(0.75rem, 2vw, 1.5rem);
-}
-
-.studio-nav__state {
-  color: color-mix(in oklch, var(--teacher-ink) 68%, transparent);
-  font-size: 0.78rem;
-  font-weight: 700;
-  gap: 0.5rem;
-}
-
-.studio-nav__dot,
 .teacher-guidance__signal-dot,
 .result-state > span,
 .status-pulse > span {
@@ -67,32 +24,6 @@
   background: var(--primary);
   block-size: 0.45rem;
   inline-size: 0.45rem;
-}
-
-.studio-nav__dot {
-  box-shadow: 0 0 0 0.24rem color-mix(in oklch, var(--primary) 14%, transparent);
-}
-
-.studio-nav__exit {
-  color: var(--teacher-ink);
-  font-size: 0.78rem;
-  font-weight: 750;
-  gap: 0.3rem;
-  text-decoration: underline;
-  text-decoration-color: color-mix(
-    in oklch,
-    var(--teacher-ink) 25%,
-    transparent
-  );
-  text-underline-offset: 0.3em;
-  transition:
-    color 180ms ease,
-    text-decoration-color 180ms ease;
-}
-
-.studio-nav__exit svg {
-  block-size: 0.9rem;
-  inline-size: 0.9rem;
 }
 
 .teacher-studio {
@@ -1255,11 +1186,6 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .studio-nav__exit:hover {
-    color: var(--primary);
-    text-decoration-color: currentcolor;
-  }
-
   .prompt-composer__submit:hover {
     background: color-mix(
       in oklch,
@@ -1355,14 +1281,6 @@
 }
 
 @media (width <= 38rem) {
-  .app-shell--teacher {
-    padding-inline: 1rem;
-  }
-
-  .studio-nav__state {
-    display: none;
-  }
-
   .teacher-hero h1 {
     font-size: clamp(3.1rem, 16vw, 5.5rem);
   }
@@ -1429,7 +1347,6 @@
     animation: none;
   }
 
-  .studio-nav__exit,
   .prompt-composer__submit,
   .insight-card,
   .guidance-panel,

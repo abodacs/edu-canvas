@@ -1,125 +1,5 @@
-/* Workspace chrome: a reachable header, a persistent expiry dialog, and the
-   neutral states that never reveal private content. */
-.skip-link {
-  position: absolute;
-  z-index: 30;
-  border-radius: 0.5rem;
-  background: var(--teacher-forest);
-  color: var(--teacher-paper);
-  font-size: 0.82rem;
-  font-weight: 750;
-  inset-block-start: 0.75rem;
-  inset-inline-start: 0.75rem;
-  padding-block: 0.55rem;
-  padding-inline: 0.9rem;
-  transform: translateY(-150%);
-}
-
-.skip-link:focus-visible {
-  transform: translateY(0);
-}
-
-.account-identity {
-  display: grid;
-  gap: 0.1rem;
-  text-align: end;
-}
-
-.account-identity__name {
-  color: var(--teacher-ink);
-  font-size: 0.86rem;
-  font-weight: 750;
-}
-
-.account-identity__meta {
-  color: color-mix(in oklch, var(--teacher-ink) 62%, transparent);
-  font-size: 0.74rem;
-}
-
-.account-signout {
-  color: var(--teacher-ink);
-  font-size: 0.78rem;
-  font-weight: 750;
-  gap: 0.35rem;
-}
-
-.account-signout svg {
-  block-size: 0.95rem;
-  inline-size: 0.95rem;
-}
-
-.session-banner {
-  position: sticky;
-  z-index: 20;
-  display: grid;
-  align-items: center;
-  border: 1px solid color-mix(in oklch, var(--teacher-clay) 45%, var(--border));
-  border-radius: 1.1rem;
-  background: color-mix(in oklch, var(--teacher-butter) 78%, var(--card));
-  box-shadow: 0 1rem 2.5rem
-    color-mix(in oklch, var(--teacher-forest) 12%, transparent);
-  gap: 0.75rem 1.25rem;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  inset-block-start: 0.75rem;
-  margin-block-end: 1.25rem;
-  padding-block: 0.9rem;
-  padding-inline: 1.1rem;
-}
-
-.session-banner:focus-visible {
-  outline: 3px solid var(--ring);
-  outline-offset: 3px;
-}
-
-.session-banner__icon {
-  display: grid;
-  border-radius: 50%;
-  background: color-mix(in oklch, var(--teacher-clay) 34%, var(--card));
-  block-size: 2.1rem;
-  inline-size: 2.1rem;
-  place-items: center;
-}
-
-.session-banner__icon svg {
-  block-size: 1.1rem;
-  inline-size: 1.1rem;
-}
-
-.session-banner__copy {
-  display: grid;
-  gap: 0.2rem;
-}
-
-.session-banner__copy strong {
-  color: var(--teacher-ink);
-  font-size: 0.92rem;
-}
-
-.session-banner__copy p {
-  margin: 0;
-  color: color-mix(in oklch, var(--teacher-ink) 72%, transparent);
-  font-size: 0.82rem;
-  line-height: 1.5;
-  max-inline-size: 62ch;
-}
-
-.session-banner__error {
-  color: var(--destructive) !important;
-  font-weight: 700;
-}
-
-.session-banner__actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.session-banner__continue {
-  border-radius: 0.7rem;
-  font-weight: 750;
-  min-block-size: 2.4rem;
-}
-
+/* Workspace states that never reveal private content. The shell chrome and
+   the expiry banner live in base.css (foundation). */
 .workspace-content[aria-hidden="true"] {
   opacity: 0.35;
 }
@@ -171,43 +51,6 @@
 }
 
 @media (width <= 38rem) {
-  .session-banner {
-    grid-template-columns: auto minmax(0, 1fr);
-  }
-
-  .session-banner__actions {
-    grid-column: 1 / -1;
-  }
-
-  /* #168 P2-2: at 390 px the header splits into a brand row with the identity
-     and sign-out on their own full row, so nothing competes in one 70 px line. */
-  .studio-nav {
-    flex-wrap: wrap;
-    row-gap: 0.3rem;
-  }
-
-  .studio-nav__actions {
-    flex: 1 1 100%;
-    justify-content: space-between;
-    gap: 0.75rem;
-    min-block-size: 2.2rem;
-  }
-
-  .account-identity {
-    min-inline-size: 0;
-    text-align: start;
-  }
-
-  .account-identity__meta {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .studio-brand {
-    flex: 0 0 auto;
-  }
-
   /* #168 P2-3: preview tabs share the width without a native scrollbar and
      snap in units when they do overflow. */
   .a2ui-tabs {
@@ -236,9 +79,5 @@
 @media (hover: hover) and (pointer: fine) {
   .membership-option:hover {
     border-color: color-mix(in oklch, var(--primary) 38%, var(--border));
-  }
-
-  .account-signout:hover {
-    background: color-mix(in oklch, var(--teacher-ink) 8%, transparent);
   }
 }
