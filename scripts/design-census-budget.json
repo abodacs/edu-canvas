@@ -1,15 +1,34 @@
 {
   "note": "Ratchet ceiling for scripts/verify-design-census.ts. Counts may only fall; regenerate with --update after a reduction.",
   "minPages": 25,
-  "maxAaFailures": 8,
+  "maxAaFailures": 12,
   "maxDistinct": {
-    "fontSize": 43,
-    "lineHeight": 59,
+    "fontSize": 51,
+    "lineHeight": 77,
     "fontWeight": 7,
-    "fontFamily": 2,
-    "radius": 17,
-    "boxShadow": 4,
-    "background": 20,
-    "borderColor": 15
+    "fontFamily": 3,
+    "radius": 21,
+    "boxShadow": 5,
+    "background": 31,
+    "borderColor": 27
+  },
+  "coverageRebaseline": {
+    "date": "2026-11-04",
+    "issue": "#197",
+    "reason": "PR A adds ten seeded pages (review, publish, published, blocked-validation, blocked-moderation; desktop and phone) that the census never measured. The added values already ship in the review, publish and composer UI; PR A adds no style. The ceilings were raised once to the measured counts. From here they only fall: the Review, Publish and Studio slices remap these views onto the existing ladder.",
+    "before": {
+      "minPages": 15,
+      "maxAaFailures": 8,
+      "maxDistinct": {
+        "fontSize": 43,
+        "lineHeight": 59,
+        "fontWeight": 7,
+        "fontFamily": 2,
+        "radius": 17,
+        "boxShadow": 4,
+        "background": 20,
+        "borderColor": 15
+      }
+    }
   }
 }

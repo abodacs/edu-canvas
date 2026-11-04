@@ -52,6 +52,8 @@ interface Budget {
   readonly minPages: number;
   readonly maxAaFailures: number;
   readonly maxDistinct: Record<string, number>;
+  /** A one-time, reviewed raise recorded when coverage grew; kept across updates. */
+  readonly coverageRebaseline?: unknown;
 }
 
 const KEYS = [
@@ -229,6 +231,9 @@ const writeBudget = async (result: {
         return [key, Math.min(seen, ceiling)];
       })
     ),
+    ...(previous?.coverageRebaseline === undefined
+      ? {}
+      : { coverageRebaseline: previous.coverageRebaseline }),
   };
   await writeFile(BUDGET_PATH, `${JSON.stringify(next, null, 2)}\n`, "utf-8");
   console.log(`Updated ${relative(projectRoot, BUDGET_PATH)}`);
