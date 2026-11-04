@@ -6,11 +6,9 @@ import {
   a2uiCatalogs,
 } from "@/shared/a2ui-contract";
 
-import {
-  assertSeedIntegrity,
-  syntheticSeed,
-  getSyntheticSeedCounts,
-} from "./seed-data";
+import { builtInStandardsPacks } from "./curriculum/built-in-packs";
+import { getSyntheticSeedCounts } from "./persistence/seed-catalog";
+import { assertSeedIntegrity, syntheticSeed } from "./seed-data";
 
 describe("synthetic seed", () => {
   it("has stable unique identifiers and expected fixture counts", () => {
@@ -18,7 +16,7 @@ describe("synthetic seed", () => {
     expect(getSyntheticSeedCounts()).toStrictEqual({
       tenants: 1,
       identities: 2,
-      standards: 1,
+      standards: builtInStandardsPacks.length,
       graphNodes: 2,
       graphEdges: 1,
       activities: 1,
