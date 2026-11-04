@@ -55,7 +55,7 @@ const PrimaryNav = ({
           return (
             <li key={item.to}>
               <Link
-                className="text-link app-bar__link"
+                className="app-bar__link"
                 to={item.to}
                 activeOptions={{ includeSearch: false }}
               >
@@ -88,7 +88,7 @@ const Crumbs = ({
                 </span>
               ) : (
                 <Link
-                  className="text-link"
+                  className="app-crumbs__link"
                   to={crumb.to}
                   // Exact, search included: an ancestor crumb on the same path
                   // is never announced as the current page.
@@ -121,8 +121,8 @@ export const AppShell = ({
 }: AppShellProps): ReactElement => {
   return (
     <div className="app-shell app-frame">
-      <div className={cn("page-frame", "app-frame__page")} data-width={width}>
-        <header className="app-bar">
+      <header className="app-bar">
+        <div className="app-bar__inner" data-width={width}>
           <BrandMark className="app-bar__brand" />
           {nav.length > 0 ? <PrimaryNav items={nav} /> : null}
           {identity ? (
@@ -151,7 +151,9 @@ export const AppShell = ({
               ) : null}
             </div>
           ) : null}
-        </header>
+        </div>
+      </header>
+      <div className={cn("page-frame", "app-frame__page")} data-width={width}>
         {crumbs.length > 0 ? <Crumbs crumbs={crumbs} /> : null}
         <main id="main" className="app-frame__main" tabIndex={-1}>
           {children}

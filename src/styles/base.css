@@ -218,34 +218,447 @@ h2 {
 }
 
 /* -- primitives (foundation) --
- * Rules for src/components/ui primitives. Every value is a token; state is a
- * data attribute so no slice invents a modifier class. Button keeps today's
- * look through its utility classes; only its busy state lives here.
+ * Rules for src/components/ui primitives, ported from the approved mocks
+ * (.impeccable/mocks/screens/base.css). Every value is a token; state is a data
+ * attribute so no slice invents a modifier class.
+ *
+ * Layered as components: a caller's utility class (Tailwind's utilities layer)
+ * and every slice stylesheet (unlayered) still override a primitive without
+ * !important. Motion follows one rule: presses and hovers are feedback, so
+ * they use the fast duration and the enter ease; nothing keyboard-initiated
+ * animates.
  */
 
-.btn[data-busy] {
-  position: relative;
-}
+@layer components {
+  .btn {
+    position: relative;
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: var(--radius-field);
+    background: var(--primary);
+    color: var(--primary-foreground);
+    font: inherit;
+    font-size: var(--type-body);
+    font-weight: 600;
+    gap: var(--space-2);
+    line-height: 1.25rem;
+    min-block-size: 2.75rem;
+    padding-block: var(--space-2);
+    padding-inline: var(--space-4);
+    text-align: center;
+    text-decoration: none;
+    transition:
+      background-color var(--duration-fast) var(--ease-enter),
+      border-color var(--duration-fast) var(--ease-enter),
+      transform var(--duration-fast) var(--ease-enter);
+    user-select: none;
+    white-space: nowrap;
+  }
 
-/* The label stays mounted so the width holds; the spinner covers it. */
-.btn__label {
-  display: contents;
-}
+  .btn svg {
+    flex: none;
+    block-size: 1rem;
+    inline-size: 1rem;
+    pointer-events: none;
+  }
 
-.btn[data-busy] .btn__label {
-  visibility: hidden;
-}
+  /* Press feedback: a subtle scale confirms the interface heard the click. */
+  .btn:active:not(:disabled, [aria-disabled="true"], [data-busy]) {
+    transform: scale(0.97);
+  }
 
-.btn__spinner {
-  position: absolute;
-  border: 2px solid currentcolor;
-  border-radius: var(--radius-pill);
-  margin: auto;
-  animation: btn-spin calc(var(--duration-slow) * 2) linear infinite;
-  block-size: 1em;
-  border-inline-end-color: transparent;
-  inline-size: 1em;
-  inset: 0;
+  .btn:disabled,
+  .btn[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  /* Busy keeps focus (spec §3.1) but takes no second click. */
+  .btn[data-busy] {
+    cursor: progress;
+    pointer-events: none;
+  }
+
+  .btn.ink {
+    background: var(--foreground);
+    color: var(--background);
+  }
+
+  .btn.secondary {
+    border-color: var(--line-control);
+    background: var(--card);
+    color: var(--foreground);
+  }
+
+  .btn.ghost {
+    border-color: var(--line-control);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--foreground);
+    font-size: var(--type-secondary);
+    font-weight: 500;
+    padding-inline: var(--space-3);
+  }
+
+  .btn.link {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--primary);
+    min-block-size: auto;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in oklch, var(--primary), transparent 55%);
+    text-underline-offset: 0.2em;
+    white-space: normal;
+  }
+
+  .btn.sm {
+    font-size: var(--type-secondary);
+    min-block-size: 2.25rem;
+    padding-block: var(--space-1);
+    padding-inline: var(--space-3);
+  }
+
+  .btn.lg {
+    min-block-size: 3rem;
+    padding-inline: var(--space-5);
+  }
+
+  .btn.icon {
+    padding: 0;
+    inline-size: 2.75rem;
+  }
+
+  .btn.icon.sm {
+    inline-size: 2.25rem;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .btn:hover:not(:disabled, [aria-disabled="true"]) {
+      background: var(--primary-deep);
+    }
+
+    .btn.ink:hover:not(:disabled, [aria-disabled="true"]) {
+      background: color-mix(in oklch, var(--foreground) 85%, var(--background));
+    }
+
+    .btn:is(.secondary, .ghost):hover:not(:disabled, [aria-disabled="true"]) {
+      background: color-mix(in oklch, var(--foreground) 8%, transparent);
+    }
+
+    .btn.link:hover:not(:disabled, [aria-disabled="true"]) {
+      background: transparent;
+      text-decoration-color: currentcolor;
+    }
+  }
+
+  /* The label stays mounted so the width holds; the spinner covers it. */
+  .btn__label {
+    display: contents;
+  }
+
+  .btn[data-busy] .btn__label {
+    visibility: hidden;
+  }
+
+  .btn__spinner {
+    position: absolute;
+    border: 2px solid currentcolor;
+    border-radius: var(--radius-pill);
+    margin: auto;
+    animation: btn-spin calc(var(--duration-slow) * 2) linear infinite;
+    block-size: 1em;
+    border-inline-end-color: transparent;
+    inline-size: 1em;
+    inset: 0;
+  }
+
+  .card {
+    padding: var(--space-5);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    background: var(--card);
+    color: var(--card-foreground);
+    min-inline-size: 0;
+  }
+
+  .card.lift {
+    box-shadow: var(--shadow-lift);
+  }
+
+  /* Status: colour always travels with a word, never alone. */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--radius-pill);
+    background: var(--surface-sunk);
+    color: var(--muted-foreground);
+    font-size: var(--type-micro);
+    font-weight: 600;
+    gap: var(--space-1);
+    inline-size: fit-content;
+    line-height: 1.5;
+    padding-block: 2px;
+    padding-inline: var(--space-2);
+    white-space: nowrap;
+  }
+
+  .pill[data-tone="ok"] {
+    background: var(--status-ok-soft);
+    color: var(--status-ok);
+  }
+
+  .pill[data-tone="warn"] {
+    background: var(--status-warn-soft);
+    color: var(--status-warn);
+  }
+
+  .pill[data-tone="stop"] {
+    background: var(--status-stop-soft);
+    color: var(--status-stop);
+  }
+
+  /* Scoped to the primitive so the sign-in slice's own .field rules are untouched. */
+  .field[data-slot="field"] {
+    display: grid;
+    gap: var(--space-2);
+    min-inline-size: 0;
+  }
+
+  .field[data-slot="field"] .field__label {
+    color: var(--foreground);
+    font-size: var(--type-label);
+    font-weight: 600;
+  }
+
+  .field[data-slot="field"] .field__required {
+    color: var(--status-stop);
+    margin-inline-start: var(--space-1);
+  }
+
+  .field[data-slot="field"] .field__hint {
+    margin: 0;
+    color: var(--muted-foreground);
+    font-size: var(--type-meta);
+  }
+
+  .field[data-slot="field"] .field__error {
+    margin: 0;
+    color: var(--status-stop);
+    font-size: var(--type-meta);
+    font-weight: 500;
+  }
+
+  /* 16px text so iOS never zooms a focused control. */
+  .field[data-slot="field"] :is(input, textarea, select) {
+    border: 1px solid var(--line-control);
+    border-radius: var(--radius-field);
+    background: var(--card);
+    color: var(--foreground);
+    font: inherit;
+    font-size: var(--type-body);
+    inline-size: 100%;
+    min-block-size: 2.75rem;
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
+    transition: border-color var(--duration-fast) var(--ease-enter);
+  }
+
+  /* Keep a real outline: a soft halo cannot carry focus on its own. */
+  .field[data-slot="field"] :is(input, textarea, select):focus-visible {
+    border-color: var(--focus-ring-color);
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: 2px;
+  }
+
+  .field[data-slot="field"][data-invalid] :is(input, textarea, select) {
+    border-color: var(--status-stop);
+    box-shadow: inset 0 0 0 1px var(--status-stop);
+  }
+
+  .notice {
+    display: grid;
+    align-items: start;
+    border-radius: var(--radius-field);
+    background: var(--surface-sunk);
+    color: var(--foreground);
+    font-size: var(--type-secondary);
+    gap: var(--space-1) var(--space-4);
+    grid-template-columns: minmax(0, 1fr) auto;
+    line-height: 1.5;
+    padding-block: var(--space-3);
+    padding-inline: var(--space-4);
+  }
+
+  .notice[data-tone="warn"] {
+    background: var(--status-warn-soft);
+    color: var(--status-warn);
+  }
+
+  .notice[data-tone="stop"] {
+    background: var(--status-stop-soft);
+    color: var(--status-stop);
+  }
+
+  .notice > :not(.notice__action) {
+    grid-column: 1;
+  }
+
+  .notice__title {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .notice__body > :first-child {
+    margin-block-start: 0;
+  }
+
+  .notice__body > :last-child {
+    margin-block-end: 0;
+  }
+
+  .notice__action {
+    align-self: center;
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0;
+    border: 0;
+    margin: 0;
+    gap: var(--space-2);
+    min-inline-size: 0;
+  }
+
+  .chips__legend {
+    padding: 0;
+    color: var(--foreground);
+    font-size: var(--type-label);
+    font-weight: 600;
+    margin-block-end: var(--space-2);
+  }
+
+  .chip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--line-control);
+    border-radius: var(--radius-pill);
+    background: var(--card);
+    color: var(--foreground);
+    font: inherit;
+    font-size: var(--type-secondary);
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    gap: var(--space-2);
+    min-block-size: 2.75rem;
+    min-inline-size: 2.25rem;
+    padding-block: var(--space-1);
+    padding-inline: var(--space-3);
+    transition:
+      background-color var(--duration-fast) var(--ease-enter),
+      border-color var(--duration-fast) var(--ease-enter);
+  }
+
+  .chip[data-checked],
+  .chip[data-pressed] {
+    border-color: var(--foreground);
+    background: var(--surface-sunk-strong);
+    font-weight: 600;
+  }
+
+  .chip:disabled,
+  .chip:has(.chip__input:disabled) {
+    border-style: dashed;
+    background: var(--background);
+    color: var(--muted-foreground);
+    cursor: not-allowed;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .chip:hover:not(:disabled, :has(.chip__input:disabled)) {
+      border-color: var(--muted-foreground);
+    }
+  }
+
+  /* The native radio stays in the tree for keyboard and SR; the label is the target. */
+  .chip__input {
+    position: absolute;
+    margin: 0;
+    inset: 0;
+    opacity: 0;
+  }
+
+  .chip:has(.chip__input:focus-visible) {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  .steps {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+    color: var(--muted-foreground);
+    font-size: var(--type-secondary);
+    gap: var(--space-2) var(--space-3);
+    list-style: none;
+  }
+
+  .steps__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  /* A short rule between steps; logical margin keeps it on the reading side. */
+  .steps__item + .steps__item::before {
+    background: var(--line-control);
+    block-size: 1px;
+    content: "";
+    inline-size: 1.125rem;
+    margin-inline-end: var(--space-1);
+  }
+
+  .steps__number {
+    display: grid;
+    border: 1.5px solid var(--line-control);
+    border-radius: var(--radius-pill);
+    block-size: 1.375rem;
+    font-size: var(--type-micro);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    inline-size: 1.375rem;
+    place-items: center;
+  }
+
+  .steps__item[data-state="done"] {
+    color: var(--foreground);
+  }
+
+  .steps__item[data-state="done"] .steps__number {
+    border-color: var(--foreground);
+    background: var(--surface-sunk-strong);
+  }
+
+  .steps__item[aria-current="step"] {
+    color: var(--foreground);
+    font-weight: 600;
+  }
+
+  .steps__item[aria-current="step"] .steps__number {
+    border-color: var(--foreground);
+    background: var(--foreground);
+    color: var(--background);
+  }
 }
 
 @keyframes btn-spin {
@@ -258,225 +671,35 @@ h2 {
   .btn__spinner {
     animation: none;
   }
-}
 
-.card {
-  padding: var(--space-5);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-card);
-  background: var(--card);
-  color: var(--card-foreground);
-}
-
-.card.lift {
-  box-shadow: var(--shadow-lift);
-}
-
-.pill {
-  display: inline-flex;
-  align-items: center;
-  border-radius: var(--radius-pill);
-  background: var(--muted);
-  color: var(--muted-foreground);
-  font-size: var(--type-micro);
-  font-weight: 650;
-  gap: var(--space-1);
-  inline-size: fit-content;
-  padding-block: 2px;
-  padding-inline: var(--space-2);
-  white-space: nowrap;
-}
-
-.pill[data-tone="ok"] {
-  background: var(--secondary);
-  color: var(--secondary-foreground);
-}
-
-.pill[data-tone="warn"] {
-  background: var(--accent);
-  color: var(--accent-foreground);
-}
-
-.pill[data-tone="stop"] {
-  background: color-mix(in oklch, var(--destructive) 12%, var(--card));
-  color: var(--destructive);
-}
-
-/* Scoped to the primitive so the sign-in slice's own .field rules are untouched. */
-.field[data-slot="field"] {
-  display: grid;
-  gap: var(--space-2);
-}
-
-.field[data-slot="field"] .field__label {
-  color: var(--foreground);
-  font-size: var(--type-label);
-  font-weight: 700;
-}
-
-.field[data-slot="field"] .field__hint {
-  margin: 0;
-  color: var(--muted-foreground);
-  font-size: var(--type-meta);
-}
-
-.field[data-slot="field"] .field__error {
-  margin: 0;
-  color: var(--destructive);
-  font-size: var(--type-meta);
-  font-weight: 650;
-}
-
-.field[data-slot="field"] :is(input, textarea, select) {
-  border: 1px solid var(--line-control);
-  border-radius: var(--radius-field);
-  background: var(--background);
-  color: var(--foreground);
-  font: inherit;
-  inline-size: 100%;
-  padding-block: var(--space-2);
-  padding-inline: var(--space-3);
-}
-
-.field[data-slot="field"][data-invalid] :is(input, textarea, select) {
-  border-color: var(--destructive);
-}
-
-.notice {
-  display: grid;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-card);
-  background: var(--card);
-  border-inline-start-width: 4px;
-  color: var(--foreground);
-  gap: var(--space-2);
-  padding-block: var(--space-3);
-  padding-inline: var(--space-4);
-}
-
-.notice[data-tone="warn"] {
-  border-inline-start-color: var(--accent-foreground);
-}
-
-.notice[data-tone="stop"] {
-  border-inline-start-color: var(--destructive);
-}
-
-.notice__title {
-  margin: 0;
-  font-size: var(--type-body);
-  font-weight: 700;
-}
-
-.notice__body > :first-child {
-  margin-block-start: 0;
-}
-
-.notice__body > :last-child {
-  margin-block-end: 0;
-}
-
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  padding: 0;
-  border: 0;
-  margin: 0;
-  gap: var(--space-2);
-  min-inline-size: 0;
-}
-
-.chips__legend {
-  padding: 0;
-  font-size: var(--type-label);
-  font-weight: 700;
-  margin-block-end: var(--space-2);
-}
-
-.chip {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid var(--line-control);
-  border-radius: var(--radius-pill);
-  background: var(--card);
-  color: var(--foreground);
-  font: inherit;
-  font-size: var(--type-secondary);
-  gap: var(--space-1);
-  min-block-size: 2.25rem;
-  padding-inline: var(--space-3);
-}
-
-.chip[data-checked],
-.chip[data-pressed] {
-  border-color: var(--foreground);
-  background: var(--foreground);
-  color: var(--background);
-}
-
-.chip:disabled,
-.chip:has(.chip__input:disabled) {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-/* The native radio stays in the tree for keyboard and SR; the label is the target. */
-.chip__input {
-  position: absolute;
-  margin: 0;
-  inset: 0;
-  opacity: 0;
-}
-
-.chip:has(.chip__input:focus-visible) {
-  outline: var(--focus-ring-width) solid var(--focus-ring-color);
-  outline-offset: var(--focus-ring-offset);
-}
-
-.steps {
-  display: flex;
-  flex-wrap: wrap;
-  padding: 0;
-  margin: 0;
-  gap: var(--space-2) var(--space-4);
-  list-style: none;
-}
-
-.steps__item {
-  color: var(--muted-foreground);
-  font-size: var(--type-secondary);
-}
-
-.steps__item[data-state="current"] {
-  color: var(--foreground);
-  font-weight: 700;
-}
-
-.steps__item[data-state="done"] {
-  color: var(--foreground);
+  .btn:active {
+    transform: none;
+  }
 }
 
 /* -- app shell (foundation) --
    AppShell, SkipLink and SyntheticDataMarker (src/components/ui). Slices read
-   these classes; only the foundation changes them. */
+   these classes; only the foundation changes them. The bar spans the window;
+   the page under it keeps the reading width. */
+
+/* Keyboard-initiated, so it appears at once: no transition (emil-design-eng). */
 .skip-link {
   position: absolute;
   z-index: 30;
-  border-radius: 0.5rem;
-  background: var(--teacher-forest);
-  color: var(--teacher-paper);
-  font-size: 0.82rem;
-  font-weight: 750;
-  inset-block-start: 0.75rem;
-  inset-inline-start: 0.75rem;
-  padding-block: 0.55rem;
-  padding-inline: 0.9rem;
-  transform: translateY(-150%);
+  border-radius: var(--radius-md);
+  background: var(--foreground);
+  color: var(--background);
+  font-size: var(--type-secondary);
+  font-weight: 600;
+  inset-block-start: var(--space-2);
+  inset-inline-start: var(--space-4);
+  padding-block: var(--space-2);
+  padding-inline: var(--space-3);
+  transform: translateY(-200%);
 }
 
 .skip-link:focus-visible {
-  transform: translateY(0);
+  transform: none;
 }
 
 /* The skip-link target takes focus programmatically; it is not a control. */
@@ -485,30 +708,42 @@ h2 {
 }
 
 .app-frame {
-  background:
-    radial-gradient(
-      55% 40% at 93% 0%,
-      color-mix(in oklch, var(--teacher-butter) 70%, transparent),
-      transparent 100%
-    ),
-    var(--teacher-paper);
-  padding-block: clamp(1rem, 3vw, 2.5rem) clamp(4rem, 9vw, 8rem);
+  padding: 0;
+  background: var(--background);
 }
 
+.app-bar {
+  background: var(--background);
+  border-block-end: 1px solid var(--line);
+}
+
+.app-bar__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-6);
+  inline-size: min(100%, 76rem);
+  margin-inline: auto;
+  min-block-size: 3.5rem;
+  padding-block: var(--space-2);
+  padding-inline: clamp(var(--space-4), 5vw, var(--space-8));
+}
+
+.app-bar__inner[data-width="wide"],
 .app-frame__page[data-width="wide"] {
   inline-size: min(100%, 90rem);
 }
 
-.app-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-3) var(--space-4);
-  margin-block-end: clamp(2rem, 5vw, 4.5rem);
-}
-
+/* The lockup shrinks to a bar mark; the landing keeps its full size. */
 .app-bar__brand {
   flex: 0 0 auto;
+  gap: var(--space-2);
+}
+
+.app-bar__brand .brand-mark {
+  border-radius: var(--radius-md);
+  block-size: 1.75rem;
+  inline-size: 1.75rem;
 }
 
 .app-bar__nav ul {
@@ -516,69 +751,100 @@ h2 {
   flex-wrap: wrap;
   padding: 0;
   margin: 0;
-  gap: var(--space-2) var(--space-4);
+  gap: var(--space-1);
   list-style: none;
 }
 
+.app-bar__link {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-md);
+  color: var(--muted-foreground);
+  font-weight: 500;
+  line-height: 1.25rem;
+  min-block-size: 2.75rem;
+  padding-block: var(--space-1);
+  padding-inline: var(--space-3);
+  transition:
+    background-color var(--duration-fast) var(--ease-enter),
+    color var(--duration-fast) var(--ease-enter);
+}
+
 .app-bar__link[aria-current="page"] {
+  background: color-mix(in oklch, var(--foreground) 8%, transparent);
   color: var(--foreground);
-  text-decoration-color: currentcolor;
+  font-weight: 600;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .app-bar__link:hover {
+    background: color-mix(in oklch, var(--foreground) 8%, transparent);
+    color: var(--foreground);
+  }
 }
 
 .app-bar__account {
   display: flex;
   align-items: center;
-  gap: clamp(0.75rem, 2vw, 1.5rem);
+  gap: var(--space-4);
   margin-inline-start: auto;
+  min-inline-size: 0;
 }
 
 .who {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   min-inline-size: 0;
 }
 
+/* Decorative; the name beside it is the accessible text. */
 .who__avatar {
   display: grid;
   flex: none;
-  border-radius: var(--radius-pill);
-  background: var(--primary-deep);
-  block-size: 2rem;
-  color: var(--primary-foreground);
+  border-radius: 50%;
+  background: color-mix(in oklch, var(--foreground) 8%, transparent);
+  block-size: 1.75rem;
+  color: var(--foreground);
   font-size: var(--type-micro);
   font-weight: 700;
-  inline-size: 2rem;
+  inline-size: 1.75rem;
   place-items: center;
 }
 
 .who__text {
   display: grid;
-  gap: 0.1rem;
-  text-align: end;
+  min-inline-size: 0;
+  text-align: start;
 }
 
 .who__name {
-  color: var(--teacher-ink);
-  font-size: 0.86rem;
-  font-weight: 750;
+  overflow: hidden;
+  color: var(--foreground);
+  font-size: var(--type-secondary);
+  font-weight: 600;
+  line-height: 1.25rem;
+  max-inline-size: 36ch;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .who__context {
-  color: color-mix(in oklch, var(--teacher-ink) 62%, transparent);
-  font-size: 0.74rem;
+  overflow: hidden;
+  color: var(--muted-foreground);
+  font-size: var(--type-micro);
+  line-height: 1rem;
+  max-inline-size: 36ch;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.app-bar__signout {
-  color: var(--teacher-ink);
-  font-size: 0.78rem;
-  font-weight: 750;
-  gap: 0.35rem;
-}
-
-.app-bar__signout svg {
-  block-size: 0.95rem;
-  inline-size: 0.95rem;
+.app-frame__page {
+  inline-size: min(100%, 76rem);
+  margin-inline: auto;
+  padding-block: clamp(var(--space-5), 5vw, var(--space-7))
+    clamp(var(--space-7), 8vw, 6rem);
+  padding-inline: clamp(var(--space-4), 5vw, var(--space-8));
 }
 
 .app-crumbs ol {
@@ -597,89 +863,92 @@ h2 {
   margin-inline-end: var(--space-2);
 }
 
+.app-crumbs__link {
+  color: inherit;
+}
+
+.app-crumbs__link:hover {
+  text-decoration: underline;
+}
+
+.app-crumbs [aria-current="page"] {
+  color: var(--foreground);
+}
+
 .app-frame__caption {
   margin: var(--space-7) 0 0;
   color: var(--muted-foreground);
   font-size: var(--type-micro);
 }
 
+/* The expiry warning reads as a warn notice that stays in view: the soft warn
+   ground carries the tone, so no side rule is needed. */
 .session-banner {
   position: sticky;
   z-index: 20;
   display: grid;
   align-items: center;
-  border: 1px solid color-mix(in oklch, var(--teacher-clay) 45%, var(--border));
-  border-radius: 1.1rem;
-  background: color-mix(in oklch, var(--teacher-butter) 78%, var(--card));
-  box-shadow: 0 1rem 2.5rem
-    color-mix(in oklch, var(--teacher-forest) 12%, transparent);
-  gap: 0.75rem 1.25rem;
+  border-radius: var(--radius-card);
+  background: var(--status-warn-soft);
+  box-shadow: var(--shadow-lift);
+  gap: var(--space-3) var(--space-5);
   grid-template-columns: auto minmax(0, 1fr) auto;
-  inset-block-start: 0.75rem;
-  margin-block-end: 1.25rem;
-  padding-block: 0.9rem;
-  padding-inline: 1.1rem;
+  inset-block-start: var(--space-3);
+  margin-block-end: var(--space-5);
+  padding-block: var(--space-3);
+  padding-inline: var(--space-4);
 }
 
 .session-banner:focus-visible {
-  outline: 3px solid var(--ring);
-  outline-offset: 3px;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .session-banner__icon {
   display: grid;
   border-radius: 50%;
-  background: color-mix(in oklch, var(--teacher-clay) 34%, var(--card));
-  block-size: 2.1rem;
-  inline-size: 2.1rem;
+  background: var(--card);
+  block-size: 2.25rem;
+  color: var(--status-warn);
+  inline-size: 2.25rem;
   place-items: center;
 }
 
 .session-banner__icon svg {
-  block-size: 1.1rem;
-  inline-size: 1.1rem;
+  block-size: 1.125rem;
+  inline-size: 1.125rem;
 }
 
 .session-banner__copy {
   display: grid;
-  gap: 0.2rem;
+  gap: var(--space-1);
 }
 
 .session-banner__copy strong {
-  color: var(--teacher-ink);
-  font-size: 0.92rem;
+  color: var(--foreground);
+  font-size: var(--type-body);
 }
 
 .session-banner__copy p {
   margin: 0;
-  color: color-mix(in oklch, var(--teacher-ink) 72%, transparent);
-  font-size: 0.82rem;
+  color: var(--muted-foreground);
+  font-size: var(--type-secondary);
   line-height: 1.5;
   max-inline-size: 62ch;
 }
 
 .session-banner__error {
-  color: var(--destructive) !important;
-  font-weight: 700;
+  color: var(--status-stop) !important;
+  font-weight: 600;
 }
 
 .session-banner__actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-}
-
-.session-banner__continue {
-  border-radius: 0.7rem;
-  font-weight: 750;
-  min-block-size: 2.4rem;
+  gap: var(--space-2);
 }
 
 @media (width <= 38rem) {
-  .app-frame {
-    padding-inline: 1rem;
-  }
-
   .session-banner {
     grid-template-columns: auto minmax(0, 1fr);
   }
@@ -688,29 +957,27 @@ h2 {
     grid-column: 1 / -1;
   }
 
-  /* #168 P2-2: at 390 px the identity and sign-out take their own full row,
-     so nothing competes with the brand and nav in one line. */
+  /* At 390 px the identity and sign-out take their own full row, so nothing
+     competes with the brand and nav in one line (#168 P2-2). */
   .app-bar__account {
     flex: 1 1 100%;
     justify-content: space-between;
-    gap: 0.75rem;
-    min-block-size: 2.2rem;
-  }
-
-  .who__text {
-    min-inline-size: 0;
-    text-align: start;
-  }
-
-  .who__context {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    gap: var(--space-3);
+    margin-inline-start: 0;
   }
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .app-bar__signout:hover {
-    background: color-mix(in oklch, var(--teacher-ink) 8%, transparent);
+/* Forced colours drop backgrounds, so a selected state that is only a tint
+   would vanish; an underline and an outline carry it instead. */
+@media (forced-colors: active) {
+  .app-bar__link[aria-current="page"] {
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+  }
+
+  .chip[data-checked],
+  .chip[data-pressed] {
+    outline: 2px solid CanvasText;
+    outline-offset: -4px;
   }
 }

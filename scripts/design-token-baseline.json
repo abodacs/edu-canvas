@@ -2,13 +2,13 @@
   "note": "Ratchet ceiling for scripts/verify-design-tokens.ts. Counts may only fall; regenerate with --update after a reduction.",
   "rules": {
     "raw-color": {
-      "src/styles/progress.css": 19,
+      "src/styles/progress.css": 12,
       "src/styles/studio.css": 2
     },
     "literal-radius": {
       "src/styles/a2ui.css": 17,
       "src/styles/auth.css": 6,
-      "src/styles/base.css": 5,
+      "src/styles/base.css": 3,
       "src/styles/generation.css": 3,
       "src/styles/landing.css": 4,
       "src/styles/learn.css": 5,
@@ -22,7 +22,7 @@
     "literal-font-size": {
       "src/styles/a2ui.css": 32,
       "src/styles/auth.css": 15,
-      "src/styles/base.css": 15,
+      "src/styles/base.css": 9,
       "src/styles/generation.css": 15,
       "src/styles/landing.css": 28,
       "src/styles/learn.css": 2,
@@ -38,12 +38,10 @@
     },
     "literal-shadow": {
       "src/styles/auth.css": 1,
-      "src/styles/base.css": 1,
       "src/styles/studio.css": 3
     },
     "teacher-alias": {
       "src/styles/auth.css": 11,
-      "src/styles/base.css": 14,
       "src/styles/generation.css": 1,
       "src/styles/publish.css": 2,
       "src/styles/review.css": 4,

@@ -150,6 +150,19 @@
   --line-strong: #d6cfc3;
   --line-control: #938c80;
 
+  /* Sunk grounds for quiet and selected states (mock --sunk, --sunk-2). */
+  --surface-sunk: #f2efe9;
+  --surface-sunk-strong: #eae5dc;
+
+  /* Status (mock base.css). Colour always travels with a word; every pair
+     passes AA for text on its soft ground. */
+  --status-ok: #2f6b4a;
+  --status-ok-soft: #e3efe7;
+  --status-warn: #8a5a0b;
+  --status-warn-soft: #f8edd6;
+  --status-stop: #a8322a;
+  --status-stop-soft: #f7e1de;
+
   /* One raised shadow. */
   --shadow-lift:
     0 1px 2px rgb(31 29 26 / 4%), 0 8px 24px -12px rgb(31 29 26 / 10%);

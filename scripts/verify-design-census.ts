@@ -27,6 +27,7 @@ const DEFAULT_CENSUS = join(projectRoot, "scripts", "design-census.json");
 
 interface TextBlock {
   readonly color: string;
+  /** Fills from the text's own element outward to the first opaque one, `;`-joined. */
   readonly background: string;
   readonly size: string;
   readonly weight: string;
@@ -157,9 +158,39 @@ const requiredContrast = (block: TextBlock): number => {
   return isLarge ? 3 : 4.5;
 };
 
+/**
+The colour a reader sees behind the text: translucent fills are composited
+over the fills beneath them, over white when none is opaque. A tint read as its
+raw colour would compare the text with itself.
+*/
+const effectiveBackground = (
+  block: TextBlock
+): { r: number; g: number; b: number; a: number } | null => {
+  const stack = block.background.split(";").filter((fill) => fill.length > 0);
+  if (stack.length === 0) {
+    return parseColour("rgba(0, 0, 0, 0)");
+  }
+  if (stack.length === 1) {
+    return parseColour(stack[0] ?? "");
+  }
+  let composite = { r: 1, g: 1, b: 1 };
+  for (const fill of stack.toReversed()) {
+    const colour = parseColour(fill);
+    if (!colour) {
+      return null;
+    }
+    composite = {
+      r: colour.a * colour.r + (1 - colour.a) * composite.r,
+      g: colour.a * colour.g + (1 - colour.a) * composite.g,
+      b: colour.a * colour.b + (1 - colour.a) * composite.b,
+    };
+  }
+  return { ...composite, a: 1 };
+};
+
 const contrastFailure = (page: Page, block: TextBlock): string | null => {
   const foreground = parseColour(block.color);
-  const background = parseColour(block.background);
+  const background = effectiveBackground(block);
   if (!foreground || !background || foreground.a < 0.95) {
     return null;
   }

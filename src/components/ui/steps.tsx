@@ -23,6 +23,9 @@ const Steps = ({ label, items }: StepsProps): ReactElement => {
           data-state={item.state}
           aria-current={index === currentIndex ? "step" : undefined}
         >
+          <span className="steps__number" aria-hidden="true">
+            {index + 1}
+          </span>
           {item.state === "done" ? (
             <span className="sr-only">Completed: </span>
           ) : null}
