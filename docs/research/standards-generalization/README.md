@@ -1,6 +1,6 @@
 # Standards generalization: grounding and lesson validation beyond 4.NF.A.1 (#113, #30)
 
-Status: **research record, finished 2026-11-04 except two blocked steps.** All file:line citations were re-checked against `main` at `211e30f`. The fixture step that had not run now runs as a vitest characterization test, and its measured result is in [§2a](#2a-measured-fixture-outcomes). Step 7 (model role) is **not run: pending META key**. California primary text is **blocked (WAF)**. No production code under `src/` changed. No GitHub issue was created or edited.
+Status: **research record, finished 2026-11-04 except the measured model rows.** All file:line citations were re-checked against `main` at `211e30f`. The fixture step that had not run now runs as a vitest characterization test, and its measured result is in [§2a](#2a-measured-fixture-outcomes). Step 7 (model role) is **not run in this record: pending META key**. California is **out of scope by product decision (2026-11-04)**: Multi-State is the only shipped jurisdiction, so the CDE wording check is not required. No production code under `src/` changed in this record.
 
 This record started as a local brief whose live evidence is not in the repository. Claims resting only on that evidence are marked **(uncommitted evidence)**:
 
@@ -48,7 +48,7 @@ Primary texts, verbatim, from thecorestandards.org (an unofficial mirror; the of
 - **4.OA.A.3:** "Solve multistep word problems posed with whole numbers and having whole-number answers using the four operations, including problems in which remainders must be interpreted. Represent these problems using equations with a letter standing for the unknown quantity. Assess the reasonableness of answers using mental computation and estimation strategies including rounding."
 - **RI.5.2:** "Determine two or more main ideas of a text and explain how they are supported by key details; summarize the text."
 
-**California: blocked (WAF).** The CDE PDFs returned HTTP 303 to a WAF page, so California wording is **not verified from the primary source**. Learning Commons California records exist for the math rows. For `4.NF.A.1`, the wording differs only in typesetting **(uncommitted evidence)**.
+**California: out of scope (product decision 2026-11-04).** The pilot ships **Multi-State only**; California is not a supported jurisdiction and no California pack is planned. The CDE PDFs redirect to a WAF page, but that no longer blocks anything: the wording check is **not required**. If California is ever sold, download the two CDE PDFs in a browser and compare them to the Multi-State text before authoring a California pack version.
 
 Consequence for #113: under the #113 rule R-04, RI.5.2 yields `skills-missing` and blocks generation. That rule is in an uncommitted note, `.scratch/tasks/113-source-grounding/113-source-grounding.md:103`. A non-math standards pack therefore cannot take its skills from Learning Commons today. Its skills must be written by hand from the primary text and labeled as a different kind of source.
 
@@ -159,7 +159,7 @@ What committed evidence already shows:
 | Wrong 4.OA.A.3 or RI.5.2 answers reached students: unverifiable pairs were only warnings (B6, measured: a wrong pair's diagnostics are identical to a correct set's), and a teacher acknowledged the warning code once per screen without checking each pair | known gap |
 | Grounding said "pack exists" for every standard (B2), so teachers were sent to generation that then failed (B1) | known gap |
 | Non-math standards packs had no Learning Commons skills; hand-written skills drifted from the primary text with no hash check | known gap |
-| California wording diverged from CCSS and was never checked (CDE blocked) | unknown |
+| California is never supported; a teacher there has no pack | accepted (out of scope) |
 | The inline advisory reviewer timed out and blocked everything | known (now) |
 | Matching-only lessons felt trivial for RI.5.2, and teachers did not adopt them | blind spot (needs #118) |
 | A standards-pack upgrade silently changed grading for published lessons | known gap (`packVersion` not pinned) |
@@ -186,7 +186,7 @@ Checks still to come, and not claimed here: #106 (eval set) and #118 (teacher re
 ## 10. Decisions for Abdullah (each with a default)
 
 1. Merge, epic, or separate? **Default: epic with children** (#113, #30, and a new pack-driven-generation child).
-2. Non-math subject and pilot jurisdictions? **Default: ELA RI.5.2, Multi-State only** (California unverified).
+2. Non-math subject and pilot jurisdictions? **Decided 2026-11-04: ELA RI.5.2, Multi-State only. California is not needed and no California pack ships.**
 3. What verdict for unverifiable relationships under a machine rule? The options are warning, silent pass, or hard_block. **Default: warning plus a required teacher acknowledgment per screen.** Never a silent pass. The per-screen acknowledgment already exists (#5, `publication/service.ts:484-498`). It works per warning _code_, though, so one acknowledgment covers every unverified pair on the screen. §2a shows the warning alone cannot tell a wrong pair from a right one. Proposed refinement, also defaulted: S3 adds machine rules, so 4.OA.A.3 pairs stop being "unverifiable", and acknowledgment stays per code.
 4. Before or after the day-3 deferral in #108? **Default: after**, except S1 and S5, which can start now.
 5. Pull #29 into scope? **Default: keep it as a dependency**, and ship matching-only standards packs with a visible pattern diagnostic.
@@ -197,7 +197,7 @@ Checks still to come, and not claimed here: #106 (eval set) and #118 (teacher re
 ## Steps not run: blockers and unblock commands
 
 - **Step 7 (all model rows): not run, pending META key.** Unblock: see §7.
-- **California primary text: blocked (WAF).** The CDE PDFs redirect to a WAF page. Unblock: download them manually in a browser and add them to the local evidence folder.
+- **California: not needed.** Product decision 2026-11-04: Multi-State only. Do not download the CDE PDFs unless a California sale is on the table; then verify the wording before authoring a California pack version.
 - **Project map final update:** not done. Unblock: run the project-map skill (UPDATE) and add the §10 decisions 1–8.
 
 The fixture acceptance step **ran**; see §2a. Reproduce it with:
