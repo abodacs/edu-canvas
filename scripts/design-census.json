@@ -1,7 +1,7 @@
 [
   {
     "page": "landing-signedout",
-    "url": "http://localhost:36157/",
+    "url": "http://localhost:39063/",
     "viewport": "1440x900",
     "elements": 123,
     "textBlocks": 44,
@@ -624,7 +624,7 @@
   },
   {
     "page": "landing-phone",
-    "url": "http://localhost:36157/",
+    "url": "http://localhost:39063/",
     "viewport": "390x844",
     "elements": 123,
     "textBlocks": 44,
@@ -1247,7 +1247,7 @@
   },
   {
     "page": "landing-signedin",
-    "url": "http://localhost:36157/",
+    "url": "http://localhost:39063/",
     "viewport": "1440x900",
     "elements": 118,
     "textBlocks": 43,
@@ -1855,7 +1855,7 @@
   },
   {
     "page": "login",
-    "url": "http://localhost:36157/login",
+    "url": "http://localhost:39063/login",
     "viewport": "1440x900",
     "elements": 53,
     "textBlocks": 13,
@@ -2181,7 +2181,7 @@
   },
   {
     "page": "login-phone",
-    "url": "http://localhost:36157/login",
+    "url": "http://localhost:39063/login",
     "viewport": "390x844",
     "elements": 53,
     "textBlocks": 13,
@@ -2507,7 +2507,7 @@
   },
   {
     "page": "signup",
-    "url": "http://localhost:36157/sign-up",
+    "url": "http://localhost:39063/sign-up",
     "viewport": "1440x900",
     "elements": 44,
     "textBlocks": 11,
@@ -2815,7 +2815,7 @@
   },
   {
     "page": "signup-phone",
-    "url": "http://localhost:36157/sign-up",
+    "url": "http://localhost:39063/sign-up",
     "viewport": "390x844",
     "elements": 44,
     "textBlocks": 11,
@@ -3123,30 +3123,30 @@
   },
   {
     "page": "studio-composer",
-    "url": "http://localhost:36157/workspace",
+    "url": "http://localhost:39063/workspace",
     "viewport": "1440x900",
     "elements": 198,
     "textBlocks": 64,
     "color": {
       "oklch(0.235 0.028 65)": {
-        "count": 77,
+        "count": 78,
         "sample": "div.app-shell.app-frame"
       },
       "rgb(166, 75, 42)": {
-        "count": 42,
+        "count": 43,
         "sample": "a.text-link.app-bar__link"
       },
       "oklch(0.965 0.018 86)": {
         "count": 25,
         "sample": "a.skip-link"
       },
-      "oklch(0.235 0.028 65 / 0.62)": {
-        "count": 16,
-        "sample": "span.who__context"
+      "oklch(0.48 0.035 68)": {
+        "count": 25,
+        "sample": "p.teacher-hero__description"
       },
-      "oklch(0.235 0.028 65 / 0.58)": {
-        "count": 8,
-        "sample": "div.teacher-trust-line"
+      "oklch(0.235 0.028 65 / 0.62)": {
+        "count": 11,
+        "sample": "span.who__context"
       },
       "oklch(0.235 0.028 65 / 0.55)": {
         "count": 7,
@@ -3156,25 +3156,9 @@
         "count": 4,
         "sample": "svg.lucide.lucide-layers"
       },
-      "oklch(0.48 0.035 68)": {
-        "count": 3,
-        "sample": "output.generation-status.teacher-generation-status"
-      },
-      "oklch(0.235 0.028 65 / 0.65)": {
-        "count": 3,
-        "sample": "p"
-      },
       "oklch(0.965 0.018 86 / 0.82)": {
         "count": 3,
         "sample": "span"
-      },
-      "oklch(0.235 0.028 65 / 0.61)": {
-        "count": 3,
-        "sample": "span.guidance-panel__copy"
-      },
-      "oklch(0.235 0.028 65 / 0.68)": {
-        "count": 2,
-        "sample": "p.teacher-hero__description"
       },
       "rgb(255, 255, 255)": {
         "count": 1,
@@ -3183,18 +3167,6 @@
       "oklch(0.965 0.018 86 / 0.75)": {
         "count": 1,
         "sample": "div.teacher-hero__art-note"
-      },
-      "oklch(0.235 0.028 65 / 0.48)": {
-        "count": 1,
-        "sample": "span"
-      },
-      "oklch(0.235 0.028 65 / 0.63)": {
-        "count": 1,
-        "sample": "p"
-      },
-      "oklch(0.78 0.095 40)": {
-        "count": 1,
-        "sample": "span.insight-card__mark"
       }
     },
     "background": {
@@ -3371,7 +3343,7 @@
     },
     "fontSize": {
       "16px": {
-        "count": 69,
+        "count": 70,
         "sample": "div.app-shell.app-frame"
       },
       "12px": {
@@ -3386,10 +3358,6 @@
         "count": 22,
         "sample": "div.insight-card__topline"
       },
-      "13.76px": {
-        "count": 8,
-        "sample": "a.text-link.app-bar__link"
-      },
       "32px": {
         "count": 8,
         "sample": "div.fraction-orbit.fraction-orbit--one"
@@ -3397,6 +3365,10 @@
       "11.2px": {
         "count": 8,
         "sample": "span"
+      },
+      "13.76px": {
+        "count": 7,
+        "sample": "a.text-link.app-bar__link"
       },
       "11.52px": {
         "count": 7,
@@ -3499,7 +3471,7 @@
     },
     "lineHeight": {
       "24px": {
-        "count": 69,
+        "count": 70,
         "sample": "div.app-shell.app-frame"
       },
       "18px": {
@@ -3550,10 +3522,6 @@
         "count": 2,
         "sample": "a.text-link.app-bar__link"
       },
-      "20.64px": {
-        "count": 2,
-        "sample": "span.who__name"
-      },
       "17.28px": {
         "count": 2,
         "sample": "div.teacher-hero__art-note"
@@ -3573,6 +3541,10 @@
       "19.68px": {
         "count": 1,
         "sample": "a.skip-link"
+      },
+      "20.64px": {
+        "count": 1,
+        "sample": "span.who__name"
       },
       "17.76px": {
         "count": 1,
@@ -3705,7 +3677,7 @@
       },
       {
         "text": "Describe the learning moment in your own words. We will shape a clear first draf",
-        "color": "oklch(0.235 0.028 65 / 0.68)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "19.2px",
         "weight": "400"
@@ -3754,7 +3726,7 @@
       },
       {
         "text": "32 /500",
-        "color": "oklch(0.235 0.028 65 / 0.48)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "11.52px",
         "weight": "400"
@@ -3775,21 +3747,21 @@
       },
       {
         "text": "Grade  4",
-        "color": "oklch(0.235 0.028 65 / 0.62)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "12px",
         "weight": "400"
       },
       {
         "text": "4.NF.A.1",
-        "color": "oklch(0.235 0.028 65 / 0.62)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "12px",
         "weight": "400"
       },
       {
         "text": "English / LTR",
-        "color": "oklch(0.235 0.028 65 / 0.62)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "12px",
         "weight": "400"
@@ -3831,7 +3803,7 @@
       },
       {
         "text": "Private draft first. You approve every version before students see it.",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "12.48px",
         "weight": "400"
@@ -3852,7 +3824,7 @@
       },
       {
         "text": "As you write, Scholé looks for the small details that help a visual lesson feel ",
-        "color": "oklch(0.235 0.028 65 / 0.63)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "15.2px",
         "weight": "400"
@@ -3866,14 +3838,14 @@
       },
       {
         "text": "/",
-        "color": "oklch(0.78 0.095 40)",
+        "color": "rgb(166, 75, 42)",
         "background": "oklch(0.9751 0.0137266 78.4875)",
         "size": "17.6px",
         "weight": "800"
       },
       {
         "text": "What we heard",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9751 0.0137266 78.4875)",
         "size": "10.88px",
         "weight": "800"
@@ -3887,14 +3859,14 @@
       },
       {
         "text": "The first draft will keep this idea at the center instead of asking you to trans",
-        "color": "oklch(0.235 0.028 65 / 0.65)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9751 0.0137266 78.4875)",
         "size": "13.76px",
         "weight": "400"
       },
       {
         "text": "Learning target",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9418 0.05016 79.52)",
         "size": "10.88px",
         "weight": "800"
@@ -3908,14 +3880,14 @@
       },
       {
         "text": "Equivalent fractions, made visible.",
-        "color": "oklch(0.235 0.028 65 / 0.65)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9418 0.05016 79.52)",
         "size": "13.76px",
         "weight": "400"
       },
       {
         "text": "Language",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9442 0.03104 182.56)",
         "size": "10.88px",
         "weight": "800"
@@ -3929,7 +3901,7 @@
       },
       {
         "text": "We will keep the lesson readable in the language you use.",
-        "color": "oklch(0.235 0.028 65 / 0.65)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9442 0.03104 182.56)",
         "size": "13.76px",
         "weight": "400"
@@ -3985,7 +3957,7 @@
       },
       {
         "text": "We will start with the clearest learning target we can find.",
-        "color": "oklch(0.235 0.028 65 / 0.61)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.952825 0.0176113 61.5842)",
         "size": "12.48px",
         "weight": "400"
@@ -3999,7 +3971,7 @@
       },
       {
         "text": "Make room for every learner",
-        "color": "oklch(0.235 0.028 65 / 0.61)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "12.48px",
         "weight": "400"
@@ -4013,7 +3985,7 @@
       },
       {
         "text": "You decide what goes live",
-        "color": "oklch(0.235 0.028 65 / 0.61)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "12.48px",
         "weight": "400"
@@ -4055,7 +4027,7 @@
       },
       {
         "text": "One sentence is enough to start a useful conversation.",
-        "color": "oklch(0.235 0.028 65 / 0.68)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "14.4px",
         "weight": "400"
@@ -4078,30 +4050,30 @@
   },
   {
     "page": "phone-studio",
-    "url": "http://localhost:36157/workspace",
+    "url": "http://localhost:39063/workspace",
     "viewport": "390x844",
     "elements": 198,
     "textBlocks": 64,
     "color": {
       "oklch(0.235 0.028 65)": {
-        "count": 77,
+        "count": 78,
         "sample": "div.app-shell.app-frame"
       },
       "rgb(166, 75, 42)": {
-        "count": 42,
+        "count": 43,
         "sample": "a.text-link.app-bar__link"
       },
       "oklch(0.965 0.018 86)": {
         "count": 25,
         "sample": "a.skip-link"
       },
-      "oklch(0.235 0.028 65 / 0.62)": {
-        "count": 16,
-        "sample": "span.who__context"
+      "oklch(0.48 0.035 68)": {
+        "count": 25,
+        "sample": "p.teacher-hero__description"
       },
-      "oklch(0.235 0.028 65 / 0.58)": {
-        "count": 8,
-        "sample": "div.teacher-trust-line"
+      "oklch(0.235 0.028 65 / 0.62)": {
+        "count": 11,
+        "sample": "span.who__context"
       },
       "oklch(0.235 0.028 65 / 0.55)": {
         "count": 7,
@@ -4111,25 +4083,9 @@
         "count": 4,
         "sample": "svg.lucide.lucide-layers"
       },
-      "oklch(0.48 0.035 68)": {
-        "count": 3,
-        "sample": "output.generation-status.teacher-generation-status"
-      },
-      "oklch(0.235 0.028 65 / 0.65)": {
-        "count": 3,
-        "sample": "p"
-      },
       "oklch(0.965 0.018 86 / 0.82)": {
         "count": 3,
         "sample": "span"
-      },
-      "oklch(0.235 0.028 65 / 0.61)": {
-        "count": 3,
-        "sample": "span.guidance-panel__copy"
-      },
-      "oklch(0.235 0.028 65 / 0.68)": {
-        "count": 2,
-        "sample": "p.teacher-hero__description"
       },
       "rgb(255, 255, 255)": {
         "count": 1,
@@ -4138,18 +4094,6 @@
       "oklch(0.965 0.018 86 / 0.75)": {
         "count": 1,
         "sample": "div.teacher-hero__art-note"
-      },
-      "oklch(0.235 0.028 65 / 0.48)": {
-        "count": 1,
-        "sample": "span"
-      },
-      "oklch(0.235 0.028 65 / 0.63)": {
-        "count": 1,
-        "sample": "p"
-      },
-      "oklch(0.78 0.095 40)": {
-        "count": 1,
-        "sample": "span.insight-card__mark"
       }
     },
     "background": {
@@ -4326,7 +4270,7 @@
     },
     "fontSize": {
       "16px": {
-        "count": 71,
+        "count": 72,
         "sample": "div.app-shell.app-frame"
       },
       "12px": {
@@ -4345,13 +4289,13 @@
         "count": 9,
         "sample": "div.fraction-orbit.fraction-orbit--one"
       },
-      "13.76px": {
-        "count": 8,
-        "sample": "a.text-link.app-bar__link"
-      },
       "11.2px": {
         "count": 8,
         "sample": "span"
+      },
+      "13.76px": {
+        "count": 7,
+        "sample": "a.text-link.app-bar__link"
       },
       "11.52px": {
         "count": 7,
@@ -4442,7 +4386,7 @@
     },
     "lineHeight": {
       "24px": {
-        "count": 71,
+        "count": 72,
         "sample": "div.app-shell.app-frame"
       },
       "18px": {
@@ -4493,10 +4437,6 @@
         "count": 2,
         "sample": "a.text-link.app-bar__link"
       },
-      "20.64px": {
-        "count": 2,
-        "sample": "span.who__name"
-      },
       "26.4px": {
         "count": 2,
         "sample": "p.teacher-hero__description"
@@ -4520,6 +4460,10 @@
       "19.68px": {
         "count": 1,
         "sample": "a.skip-link"
+      },
+      "20.64px": {
+        "count": 1,
+        "sample": "span.who__name"
       },
       "17.76px": {
         "count": 1,
@@ -4636,7 +4580,7 @@
       },
       {
         "text": "Describe the learning moment in your own words. We will shape a clear first draf",
-        "color": "oklch(0.235 0.028 65 / 0.68)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "16px",
         "weight": "400"
@@ -4685,7 +4629,7 @@
       },
       {
         "text": "32 /500",
-        "color": "oklch(0.235 0.028 65 / 0.48)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "11.52px",
         "weight": "400"
@@ -4706,21 +4650,21 @@
       },
       {
         "text": "Grade  4",
-        "color": "oklch(0.235 0.028 65 / 0.62)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "12px",
         "weight": "400"
       },
       {
         "text": "4.NF.A.1",
-        "color": "oklch(0.235 0.028 65 / 0.62)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "12px",
         "weight": "400"
       },
       {
         "text": "English / LTR",
-        "color": "oklch(0.235 0.028 65 / 0.62)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "12px",
         "weight": "400"
@@ -4762,7 +4706,7 @@
       },
       {
         "text": "Private draft first. You approve every version before students see it.",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "12.48px",
         "weight": "400"
@@ -4783,7 +4727,7 @@
       },
       {
         "text": "As you write, Scholé looks for the small details that help a visual lesson feel ",
-        "color": "oklch(0.235 0.028 65 / 0.63)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "15.2px",
         "weight": "400"
@@ -4797,14 +4741,14 @@
       },
       {
         "text": "/",
-        "color": "oklch(0.78 0.095 40)",
+        "color": "rgb(166, 75, 42)",
         "background": "oklch(0.9751 0.0137266 78.4875)",
         "size": "17.6px",
         "weight": "800"
       },
       {
         "text": "What we heard",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9751 0.0137266 78.4875)",
         "size": "10.88px",
         "weight": "800"
@@ -4818,14 +4762,14 @@
       },
       {
         "text": "The first draft will keep this idea at the center instead of asking you to trans",
-        "color": "oklch(0.235 0.028 65 / 0.65)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9751 0.0137266 78.4875)",
         "size": "13.76px",
         "weight": "400"
       },
       {
         "text": "Learning target",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9418 0.05016 79.52)",
         "size": "10.88px",
         "weight": "800"
@@ -4839,14 +4783,14 @@
       },
       {
         "text": "Equivalent fractions, made visible.",
-        "color": "oklch(0.235 0.028 65 / 0.65)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9418 0.05016 79.52)",
         "size": "13.76px",
         "weight": "400"
       },
       {
         "text": "Language",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9442 0.03104 182.56)",
         "size": "10.88px",
         "weight": "800"
@@ -4860,7 +4804,7 @@
       },
       {
         "text": "We will keep the lesson readable in the language you use.",
-        "color": "oklch(0.235 0.028 65 / 0.65)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9442 0.03104 182.56)",
         "size": "13.76px",
         "weight": "400"
@@ -4916,7 +4860,7 @@
       },
       {
         "text": "We will start with the clearest learning target we can find.",
-        "color": "oklch(0.235 0.028 65 / 0.61)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.952825 0.0176113 61.5842)",
         "size": "12.48px",
         "weight": "400"
@@ -4930,7 +4874,7 @@
       },
       {
         "text": "Make room for every learner",
-        "color": "oklch(0.235 0.028 65 / 0.61)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "12.48px",
         "weight": "400"
@@ -4944,7 +4888,7 @@
       },
       {
         "text": "You decide what goes live",
-        "color": "oklch(0.235 0.028 65 / 0.61)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "12.48px",
         "weight": "400"
@@ -4986,7 +4930,7 @@
       },
       {
         "text": "One sentence is enough to start a useful conversation.",
-        "color": "oklch(0.235 0.028 65 / 0.68)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "14.4px",
         "weight": "400"
@@ -5009,7 +4953,7 @@
   },
   {
     "page": "dashboard",
-    "url": "http://localhost:36157/dashboard",
+    "url": "http://localhost:39063/dashboard",
     "viewport": "1440x900",
     "elements": 42,
     "textBlocks": 15,
@@ -5266,7 +5210,7 @@
         "weight": "700"
       },
       {
-        "text": "Results as of  2026-11-04T12:32:27.614Z .",
+        "text": "Results as of  2026-11-04T14:21:35.502Z .",
         "color": "oklch(0.925 0.026 86)",
         "background": "oklch(0.965 0.018 86)",
         "size": "16px",
@@ -5304,7 +5248,7 @@
   },
   {
     "page": "dashboard-phone",
-    "url": "http://localhost:36157/dashboard",
+    "url": "http://localhost:39063/dashboard",
     "viewport": "390x844",
     "elements": 42,
     "textBlocks": 15,
@@ -5561,7 +5505,7 @@
         "weight": "700"
       },
       {
-        "text": "Results as of  2026-11-04T12:32:30.247Z .",
+        "text": "Results as of  2026-11-04T14:21:37.702Z .",
         "color": "oklch(0.925 0.026 86)",
         "background": "oklch(0.965 0.018 86)",
         "size": "16px",
@@ -5599,13 +5543,13 @@
   },
   {
     "page": "learn-board",
-    "url": "http://localhost:36157/learn?assignment=01a1a68b-70d6-75ec-9257-79f535edc6e9&variant=variant-1",
+    "url": "http://localhost:39063/learn?assignment=01a1a6ef-4cea-7ee2-9f63-961c806ebad9&variant=variant-1",
     "viewport": "1440x900",
-    "elements": 67,
-    "textBlocks": 26,
+    "elements": 53,
+    "textBlocks": 19,
     "color": {
       "oklch(0.235 0.028 65)": {
-        "count": 53,
+        "count": 39,
         "sample": "div.app-shell.app-frame"
       },
       "oklch(0.965 0.018 86)": {
@@ -5627,11 +5571,11 @@
     },
     "background": {
       "rgba(0, 0, 0, 0)": {
-        "count": 49,
+        "count": 42,
         "sample": "div.page-frame.app-frame__page"
       },
       "oklch(0.985 0.012 86)": {
-        "count": 13,
+        "count": 6,
         "sample": "button.learn-item"
       },
       "rgb(143, 63, 34)": {
@@ -5653,7 +5597,7 @@
     },
     "borderColor": {
       "rgb(230, 225, 216)": {
-        "count": 14,
+        "count": 7,
         "sample": "button.learn-item"
       },
       "rgba(0, 0, 0, 0)": {
@@ -5663,11 +5607,11 @@
     },
     "radius": {
       "0px": {
-        "count": 48,
+        "count": 41,
         "sample": "div.app-shell.app-frame"
       },
       "8px": {
-        "count": 17,
+        "count": 10,
         "sample": "a.skip-link"
       },
       "14.4px": {
@@ -5681,7 +5625,7 @@
     },
     "fontFamily": {
       "Figtree, \"Trebuchet MS\", \"Segoe UI\", system-ui, sans-serif": {
-        "count": 64,
+        "count": 50,
         "sample": "a.skip-link"
       },
       "\"Source Serif 4\", ui-serif, georgia, \"Times New Roman\", serif": {
@@ -5691,7 +5635,7 @@
     },
     "fontSize": {
       "16px": {
-        "count": 50,
+        "count": 36,
         "sample": "div.app-shell.app-frame"
       },
       "12.48px": {
@@ -5721,7 +5665,7 @@
     },
     "fontWeight": {
       "400": {
-        "count": 49,
+        "count": 35,
         "sample": "div.app-shell.app-frame"
       },
       "500": {
@@ -5743,7 +5687,7 @@
     },
     "lineHeight": {
       "24px": {
-        "count": 48,
+        "count": 34,
         "sample": "div.app-shell.app-frame"
       },
       "18.72px": {
@@ -5813,7 +5757,7 @@
         "weight": "400"
       },
       {
-        "text": "Practice equivalent fractions",
+        "text": "Practice — Possible equivalent fractions",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.965 0.018 86)",
         "size": "100.8px",
@@ -5855,27 +5799,6 @@
         "weight": "400"
       },
       {
-        "text": "1/3",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "16px",
-        "weight": "400"
-      },
-      {
-        "text": "2/5",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "16px",
-        "weight": "400"
-      },
-      {
-        "text": "3/5",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "16px",
-        "weight": "400"
-      },
-      {
         "text": "Possible equivalent fractions",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.965 0.018 86)",
@@ -5904,35 +5827,7 @@
         "weight": "400"
       },
       {
-        "text": "2/6",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "16px",
-        "weight": "400"
-      },
-      {
-        "text": "4/10",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "16px",
-        "weight": "400"
-      },
-      {
-        "text": "6/10",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "16px",
-        "weight": "400"
-      },
-      {
-        "text": "2/3",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "16px",
-        "weight": "400"
-      },
-      {
-        "text": "0 of 6 matched.",
+        "text": "0 of 3 matched.",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "16px",
@@ -5963,13 +5858,13 @@
   },
   {
     "page": "learn-phone",
-    "url": "http://localhost:36157/learn?assignment=01a1a68b-70d6-75ec-9257-79f535edc6e9&variant=variant-1",
+    "url": "http://localhost:39063/learn?assignment=01a1a6ef-4cea-7ee2-9f63-961c806ebad9&variant=variant-1",
     "viewport": "390x844",
-    "elements": 67,
-    "textBlocks": 26,
+    "elements": 53,
+    "textBlocks": 19,
     "color": {
       "oklch(0.235 0.028 65)": {
-        "count": 53,
+        "count": 39,
         "sample": "div.app-shell.app-frame"
       },
       "oklch(0.965 0.018 86)": {
@@ -5991,11 +5886,11 @@
     },
     "background": {
       "rgba(0, 0, 0, 0)": {
-        "count": 49,
+        "count": 42,
         "sample": "div.page-frame.app-frame__page"
       },
       "oklch(0.985 0.012 86)": {
-        "count": 13,
+        "count": 6,
         "sample": "button.learn-item"
       },
       "rgb(143, 63, 34)": {
@@ -6017,7 +5912,7 @@
     },
     "borderColor": {
       "rgb(230, 225, 216)": {
-        "count": 14,
+        "count": 7,
         "sample": "button.learn-item"
       },
       "rgba(0, 0, 0, 0)": {
@@ -6027,11 +5922,11 @@
     },
     "radius": {
       "0px": {
-        "count": 48,
+        "count": 41,
         "sample": "div.app-shell.app-frame"
       },
       "8px": {
-        "count": 17,
+        "count": 10,
         "sample": "a.skip-link"
       },
       "14.4px": {
@@ -6045,7 +5940,7 @@
     },
     "fontFamily": {
       "Figtree, \"Trebuchet MS\", \"Segoe UI\", system-ui, sans-serif": {
-        "count": 64,
+        "count": 50,
         "sample": "a.skip-link"
       },
       "\"Source Serif 4\", ui-serif, georgia, \"Times New Roman\", serif": {
@@ -6055,7 +5950,7 @@
     },
     "fontSize": {
       "16px": {
-        "count": 50,
+        "count": 36,
         "sample": "div.app-shell.app-frame"
       },
       "12.48px": {
@@ -6085,7 +5980,7 @@
     },
     "fontWeight": {
       "400": {
-        "count": 49,
+        "count": 35,
         "sample": "div.app-shell.app-frame"
       },
       "500": {
@@ -6107,7 +6002,7 @@
     },
     "lineHeight": {
       "24px": {
-        "count": 48,
+        "count": 34,
         "sample": "div.app-shell.app-frame"
       },
       "18.72px": {
@@ -6177,7 +6072,7 @@
         "weight": "400"
       },
       {
-        "text": "Practice equivalent fractions",
+        "text": "Practice — Possible equivalent fractions",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.965 0.018 86)",
         "size": "58.5px",
@@ -6219,27 +6114,6 @@
         "weight": "400"
       },
       {
-        "text": "1/3",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "16px",
-        "weight": "400"
-      },
-      {
-        "text": "2/5",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "16px",
-        "weight": "400"
-      },
-      {
-        "text": "3/5",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "16px",
-        "weight": "400"
-      },
-      {
         "text": "Possible equivalent fractions",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.965 0.018 86)",
@@ -6268,35 +6142,7 @@
         "weight": "400"
       },
       {
-        "text": "2/6",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "16px",
-        "weight": "400"
-      },
-      {
-        "text": "4/10",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "16px",
-        "weight": "400"
-      },
-      {
-        "text": "6/10",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "16px",
-        "weight": "400"
-      },
-      {
-        "text": "2/3",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "16px",
-        "weight": "400"
-      },
-      {
-        "text": "0 of 6 matched.",
+        "text": "0 of 3 matched.",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "16px",
@@ -6327,7 +6173,7 @@
   },
   {
     "page": "learn-missing-params",
-    "url": "http://localhost:36157/learn",
+    "url": "http://localhost:39063/learn",
     "viewport": "1440x900",
     "elements": 27,
     "textBlocks": 7,
@@ -6526,7 +6372,7 @@
   },
   {
     "page": "learn-signedout",
-    "url": "http://localhost:36157/learn?assignment=01a1a68b-70d6-75ec-9257-79f535edc6e9&variant=variant-1",
+    "url": "http://localhost:39063/learn?assignment=01a1a6ef-4cea-7ee2-9f63-961c806ebad9&variant=variant-1",
     "viewport": "1440x900",
     "elements": 18,
     "textBlocks": 5,
@@ -6678,17 +6524,17 @@
   },
   {
     "page": "review",
-    "url": "http://localhost:36157/workspace?review=01a1a68b-7f18-7545-8f34-e23de7b5b324",
+    "url": "http://localhost:39063/workspace?review=01a1a6ef-6732-7d1e-b744-4684df1403d1",
     "viewport": "1440x900",
-    "elements": 344,
-    "textBlocks": 191,
+    "elements": 316,
+    "textBlocks": 170,
     "color": {
       "oklch(0.235 0.028 65)": {
-        "count": 218,
+        "count": 197,
         "sample": "div.app-shell.app-frame"
       },
       "oklch(0.48 0.035 68)": {
-        "count": 100,
+        "count": 93,
         "sample": "span.review-studio__lock"
       },
       "rgb(255, 255, 255)": {
@@ -6718,11 +6564,11 @@
     },
     "background": {
       "rgba(0, 0, 0, 0)": {
-        "count": 301,
+        "count": 280,
         "sample": "div.page-frame.app-frame__page"
       },
       "oklch(0.965 0.018 86)": {
-        "count": 20,
+        "count": 13,
         "sample": "div.app-shell.app-frame"
       },
       "oklch(0.985 0.012 86)": {
@@ -6776,16 +6622,16 @@
     },
     "borderColor": {
       "rgb(230, 225, 216)": {
-        "count": 40,
+        "count": 36,
         "sample": "button.btn.group/button"
-      },
-      "oklch(0.802727 0.0457205 39.7767)": {
-        "count": 6,
-        "sample": "button.a2ui-match-card.a2ui-match-card--source"
       },
       "rgba(0, 0, 0, 0)": {
         "count": 3,
         "sample": "button.btn.group/button"
+      },
+      "oklch(0.802727 0.0457205 39.7767)": {
+        "count": 3,
+        "sample": "button.a2ui-match-card.a2ui-match-card--source"
       },
       "oklch(0.763996 0.0573003 39.7767)": {
         "count": 1,
@@ -6818,20 +6664,20 @@
     },
     "radius": {
       "0px": {
-        "count": 288,
+        "count": 267,
         "sample": "div.app-shell.app-frame"
       },
       "10px": {
         "count": 14,
         "sample": "button.btn.group/button"
       },
-      "9.6px": {
-        "count": 14,
-        "sample": "button.a2ui-match-card.a2ui-match-card--source"
-      },
       "999px": {
         "count": 12,
         "sample": "span.who__avatar"
+      },
+      "9.6px": {
+        "count": 7,
+        "sample": "button.a2ui-match-card.a2ui-match-card--source"
       },
       "10.4px": {
         "count": 4,
@@ -6864,7 +6710,7 @@
     },
     "fontFamily": {
       "Figtree, \"Trebuchet MS\", \"Segoe UI\", system-ui, sans-serif": {
-        "count": 339,
+        "count": 311,
         "sample": "a.skip-link"
       },
       "\"Source Serif 4\", ui-serif, georgia, \"Times New Roman\", serif": {
@@ -6874,7 +6720,7 @@
     },
     "fontSize": {
       "16px": {
-        "count": 139,
+        "count": 118,
         "sample": "div.app-shell.app-frame"
       },
       "13.6px": {
@@ -6897,10 +6743,6 @@
         "count": 13,
         "sample": "p.kicker"
       },
-      "10.72px": {
-        "count": 13,
-        "sample": "small"
-      },
       "11.84px": {
         "count": 9,
         "sample": "span.who__context"
@@ -6912,6 +6754,10 @@
       "12.8px": {
         "count": 6,
         "sample": "span.a2ui-learning-path__number"
+      },
+      "10.72px": {
+        "count": 6,
+        "sample": "small"
       },
       "13.28px": {
         "count": 4,
@@ -6968,7 +6814,7 @@
     },
     "fontWeight": {
       "400": {
-        "count": 208,
+        "count": 194,
         "sample": "div.app-shell.app-frame"
       },
       "500": {
@@ -6984,7 +6830,7 @@
         "sample": "span.brand-name"
       },
       "750": {
-        "count": 40,
+        "count": 26,
         "sample": "a.skip-link"
       },
       "800": {
@@ -6994,7 +6840,7 @@
     },
     "lineHeight": {
       "24px": {
-        "count": 128,
+        "count": 107,
         "sample": "div.app-shell.app-frame"
       },
       "20.4px": {
@@ -7008,10 +6854,6 @@
       "20px": {
         "count": 22,
         "sample": "button.btn.group/button"
-      },
-      "16.08px": {
-        "count": 13,
-        "sample": "small"
       },
       "17.28px": {
         "count": 12,
@@ -7036,6 +6878,10 @@
       "19.2px": {
         "count": 6,
         "sample": "span.a2ui-learning-path__number"
+      },
+      "16.08px": {
+        "count": 6,
+        "sample": "small"
       },
       "19.92px": {
         "count": 4,
@@ -7231,7 +7077,7 @@
         "weight": "400"
       },
       {
-        "text": "01a1a68b-7f18-7545-8f34-e23de7b5b324",
+        "text": "01a1a6ef-6732-7d1e-b744-4684df1403d1",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "11.52px",
@@ -7315,7 +7161,7 @@
         "weight": "400"
       },
       {
-        "text": "Practice equivalent fractions",
+        "text": "Practice — Possible equivalent fractions",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.9814 0.01308 86)",
         "size": "35.2px",
@@ -7336,7 +7182,7 @@
         "weight": "800"
       },
       {
-        "text": "Instructions for matching equivalent fractions",
+        "text": "Match each fraction with another name for the same part of a whole.",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9814 0.01308 86)",
         "size": "16px",
@@ -7427,7 +7273,7 @@
         "weight": "700"
       },
       {
-        "text": "Start with equal parts so the lesson can connect the same whole to different fra",
+        "text": "Start with the prerequisite skill so the lesson reaches the matching target in o",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.961943 0.0178547 83.6888)",
         "size": "12.8px",
@@ -7441,7 +7287,7 @@
         "weight": "700"
       },
       {
-        "text": "The matching screen makes that connection visible before teacher review.",
+        "text": "The matching screen shows the target skill before teacher review.",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.961943 0.0178547 83.6888)",
         "size": "12.8px",
@@ -7462,7 +7308,7 @@
         "weight": "800"
       },
       {
-        "text": "01a1a68b-7f18-7545-8f34-e23de7b5b324",
+        "text": "01a1a6ef-6732-7d1e-b744-4684df1403d1",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.961943 0.0178547 83.6888)",
         "size": "11.52px",
@@ -7560,7 +7406,7 @@
         "weight": "800"
       },
       {
-        "text": "the lesson can connect the same whole to different fraction names.",
+        "text": "the lesson reaches the matching target in one visible step.",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9814 0.01308 86)",
         "size": "16px",
@@ -7595,7 +7441,7 @@
         "weight": "400"
       },
       {
-        "text": "Next: The matching screen makes that connection visible before teacher review.",
+        "text": "Next: The matching screen shows the target skill before teacher review.",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9814 0.01308 86)",
         "size": "16px",
@@ -7652,69 +7498,6 @@
       },
       {
         "text": "3/4",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "Source",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "10.72px",
-        "weight": "400"
-      },
-      {
-        "text": "Fractions to match",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "1/3",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "Source",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "10.72px",
-        "weight": "400"
-      },
-      {
-        "text": "Fractions to match",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "2/5",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "Source",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "10.72px",
-        "weight": "400"
-      },
-      {
-        "text": "Fractions to match",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "3/5",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.965 0.018 86)",
         "size": "16px",
@@ -7805,90 +7588,6 @@
         "weight": "750"
       },
       {
-        "text": "2/6",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "Candidate",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "10.72px",
-        "weight": "400"
-      },
-      {
-        "text": "Possible equivalent fractions",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "4/10",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "Candidate",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "10.72px",
-        "weight": "400"
-      },
-      {
-        "text": "Possible equivalent fractions",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "6/10",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "Candidate",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "10.72px",
-        "weight": "400"
-      },
-      {
-        "text": "Possible equivalent fractions",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "2/3",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "Candidate",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "10.72px",
-        "weight": "400"
-      },
-      {
-        "text": "Possible equivalent fractions",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
         "text": "Clear selection",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9814 0.01308 86)",
@@ -7924,7 +7623,7 @@
         "weight": "800"
       },
       {
-        "text": "Practice equivalent fractions",
+        "text": "Practice — Possible equivalent fractions",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "17.6px",
@@ -7959,7 +7658,7 @@
         "weight": "400"
       },
       {
-        "text": "6  →   6",
+        "text": "3  →   3",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "13.6px",
@@ -8015,7 +7714,7 @@
         "weight": "600"
       },
       {
-        "text": "screen Practice equivalent fractions",
+        "text": "screen Practice — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "12.48px",
@@ -8029,14 +7728,14 @@
         "weight": "800"
       },
       {
-        "text": "Explore equivalent fractions",
+        "text": "Explore — Possible equivalent fractions",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "17.6px",
         "weight": "400"
       },
       {
-        "text": "Match the eight pairs, and watch for decoys whose numerators match but wholes di",
+        "text": "Match all 5 pairs, and watch for decoys that look close but do not belong.",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "14.4px",
@@ -8064,7 +7763,7 @@
         "weight": "400"
       },
       {
-        "text": "8  →   8",
+        "text": "5  →   5",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "13.6px",
@@ -8120,7 +7819,7 @@
         "weight": "600"
       },
       {
-        "text": "screen Explore equivalent fractions",
+        "text": "screen Explore — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "12.48px",
@@ -8134,14 +7833,14 @@
         "weight": "800"
       },
       {
-        "text": "Step up to equivalents",
+        "text": "Guided — Possible equivalent fractions",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "17.6px",
         "weight": "400"
       },
       {
-        "text": "Three pairs at a time, with a hint before your first match.",
+        "text": "Work one pair at a time, with a hint before your first match.",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "14.4px",
@@ -8225,7 +7924,7 @@
         "weight": "600"
       },
       {
-        "text": "screen Step up to equivalents",
+        "text": "screen Guided — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "12.48px",
@@ -8239,14 +7938,14 @@
         "weight": "800"
       },
       {
-        "text": "Reason with equivalents",
+        "text": "Review — Possible equivalent fractions",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "17.6px",
         "weight": "400"
       },
       {
-        "text": "Match the eight pairs, then decide which decoy is close but not equal once you c",
+        "text": "Match all 5 pairs, then explain why the close decoy does not belong.",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "14.4px",
@@ -8274,7 +7973,7 @@
         "weight": "400"
       },
       {
-        "text": "8  →   8",
+        "text": "5  →   5",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "13.6px",
@@ -8330,7 +8029,7 @@
         "weight": "600"
       },
       {
-        "text": "screen Reason with equivalents",
+        "text": "screen Review — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "12.48px",
@@ -8344,7 +8043,7 @@
         "weight": "400"
       },
       {
-        "text": "Start with equal parts so the lesson can connect the same whole to different fra",
+        "text": "Start with the prerequisite skill so the lesson reaches the matching target in o",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "16px",
@@ -8466,17 +8165,17 @@
   },
   {
     "page": "review-phone",
-    "url": "http://localhost:36157/workspace?review=01a1a68b-7f18-7545-8f34-e23de7b5b324",
+    "url": "http://localhost:39063/workspace?review=01a1a6ef-6732-7d1e-b744-4684df1403d1",
     "viewport": "390x844",
-    "elements": 344,
-    "textBlocks": 191,
+    "elements": 316,
+    "textBlocks": 170,
     "color": {
       "oklch(0.235 0.028 65)": {
-        "count": 218,
+        "count": 197,
         "sample": "div.app-shell.app-frame"
       },
       "oklch(0.48 0.035 68)": {
-        "count": 100,
+        "count": 93,
         "sample": "span.review-studio__lock"
       },
       "rgb(255, 255, 255)": {
@@ -8506,11 +8205,11 @@
     },
     "background": {
       "rgba(0, 0, 0, 0)": {
-        "count": 301,
+        "count": 280,
         "sample": "div.page-frame.app-frame__page"
       },
       "oklch(0.965 0.018 86)": {
-        "count": 20,
+        "count": 13,
         "sample": "div.app-shell.app-frame"
       },
       "oklch(0.985 0.012 86)": {
@@ -8564,16 +8263,16 @@
     },
     "borderColor": {
       "rgb(230, 225, 216)": {
-        "count": 40,
+        "count": 36,
         "sample": "button.btn.group/button"
-      },
-      "oklch(0.802727 0.0457205 39.7767)": {
-        "count": 6,
-        "sample": "button.a2ui-match-card.a2ui-match-card--source"
       },
       "rgba(0, 0, 0, 0)": {
         "count": 3,
         "sample": "button.btn.group/button"
+      },
+      "oklch(0.802727 0.0457205 39.7767)": {
+        "count": 3,
+        "sample": "button.a2ui-match-card.a2ui-match-card--source"
       },
       "oklch(0.763996 0.0573003 39.7767)": {
         "count": 1,
@@ -8606,20 +8305,20 @@
     },
     "radius": {
       "0px": {
-        "count": 288,
+        "count": 267,
         "sample": "div.app-shell.app-frame"
       },
       "10px": {
         "count": 14,
         "sample": "button.btn.group/button"
       },
-      "9.6px": {
-        "count": 14,
-        "sample": "button.a2ui-match-card.a2ui-match-card--source"
-      },
       "999px": {
         "count": 12,
         "sample": "span.who__avatar"
+      },
+      "9.6px": {
+        "count": 7,
+        "sample": "button.a2ui-match-card.a2ui-match-card--source"
       },
       "10.4px": {
         "count": 4,
@@ -8652,7 +8351,7 @@
     },
     "fontFamily": {
       "Figtree, \"Trebuchet MS\", \"Segoe UI\", system-ui, sans-serif": {
-        "count": 339,
+        "count": 311,
         "sample": "a.skip-link"
       },
       "\"Source Serif 4\", ui-serif, georgia, \"Times New Roman\", serif": {
@@ -8662,7 +8361,7 @@
     },
     "fontSize": {
       "16px": {
-        "count": 139,
+        "count": 118,
         "sample": "div.app-shell.app-frame"
       },
       "13.6px": {
@@ -8685,10 +8384,6 @@
         "count": 13,
         "sample": "p.kicker"
       },
-      "10.72px": {
-        "count": 13,
-        "sample": "small"
-      },
       "11.84px": {
         "count": 9,
         "sample": "span.who__context"
@@ -8700,6 +8395,10 @@
       "12.8px": {
         "count": 6,
         "sample": "span.a2ui-learning-path__number"
+      },
+      "10.72px": {
+        "count": 6,
+        "sample": "small"
       },
       "13.28px": {
         "count": 4,
@@ -8752,7 +8451,7 @@
     },
     "fontWeight": {
       "400": {
-        "count": 208,
+        "count": 194,
         "sample": "div.app-shell.app-frame"
       },
       "500": {
@@ -8768,7 +8467,7 @@
         "sample": "span.brand-name"
       },
       "750": {
-        "count": 40,
+        "count": 26,
         "sample": "a.skip-link"
       },
       "800": {
@@ -8778,7 +8477,7 @@
     },
     "lineHeight": {
       "24px": {
-        "count": 128,
+        "count": 107,
         "sample": "div.app-shell.app-frame"
       },
       "20.4px": {
@@ -8792,10 +8491,6 @@
       "20px": {
         "count": 22,
         "sample": "button.btn.group/button"
-      },
-      "16.08px": {
-        "count": 13,
-        "sample": "small"
       },
       "17.28px": {
         "count": 12,
@@ -8820,6 +8515,10 @@
       "19.2px": {
         "count": 6,
         "sample": "span.a2ui-learning-path__number"
+      },
+      "16.08px": {
+        "count": 6,
+        "sample": "small"
       },
       "19.92px": {
         "count": 4,
@@ -9011,7 +8710,7 @@
         "weight": "400"
       },
       {
-        "text": "01a1a68b-7f18-7545-8f34-e23de7b5b324",
+        "text": "01a1a6ef-6732-7d1e-b744-4684df1403d1",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "11.52px",
@@ -9095,7 +8794,7 @@
         "weight": "400"
       },
       {
-        "text": "Practice equivalent fractions",
+        "text": "Practice — Possible equivalent fractions",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.9814 0.01308 86)",
         "size": "21.6px",
@@ -9116,7 +8815,7 @@
         "weight": "800"
       },
       {
-        "text": "Instructions for matching equivalent fractions",
+        "text": "Match each fraction with another name for the same part of a whole.",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9814 0.01308 86)",
         "size": "16px",
@@ -9207,7 +8906,7 @@
         "weight": "700"
       },
       {
-        "text": "Start with equal parts so the lesson can connect the same whole to different fra",
+        "text": "Start with the prerequisite skill so the lesson reaches the matching target in o",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.961943 0.0178547 83.6888)",
         "size": "12.8px",
@@ -9221,7 +8920,7 @@
         "weight": "700"
       },
       {
-        "text": "The matching screen makes that connection visible before teacher review.",
+        "text": "The matching screen shows the target skill before teacher review.",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.961943 0.0178547 83.6888)",
         "size": "12.8px",
@@ -9242,7 +8941,7 @@
         "weight": "800"
       },
       {
-        "text": "01a1a68b-7f18-7545-8f34-e23de7b5b324",
+        "text": "01a1a6ef-6732-7d1e-b744-4684df1403d1",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.961943 0.0178547 83.6888)",
         "size": "11.52px",
@@ -9340,7 +9039,7 @@
         "weight": "800"
       },
       {
-        "text": "the lesson can connect the same whole to different fraction names.",
+        "text": "the lesson reaches the matching target in one visible step.",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9814 0.01308 86)",
         "size": "16px",
@@ -9375,7 +9074,7 @@
         "weight": "400"
       },
       {
-        "text": "Next: The matching screen makes that connection visible before teacher review.",
+        "text": "Next: The matching screen shows the target skill before teacher review.",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9814 0.01308 86)",
         "size": "16px",
@@ -9432,69 +9131,6 @@
       },
       {
         "text": "3/4",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "Source",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "10.72px",
-        "weight": "400"
-      },
-      {
-        "text": "Fractions to match",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "1/3",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "Source",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "10.72px",
-        "weight": "400"
-      },
-      {
-        "text": "Fractions to match",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "2/5",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "Source",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "10.72px",
-        "weight": "400"
-      },
-      {
-        "text": "Fractions to match",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "3/5",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.965 0.018 86)",
         "size": "16px",
@@ -9585,90 +9221,6 @@
         "weight": "750"
       },
       {
-        "text": "2/6",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "Candidate",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "10.72px",
-        "weight": "400"
-      },
-      {
-        "text": "Possible equivalent fractions",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "4/10",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "Candidate",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "10.72px",
-        "weight": "400"
-      },
-      {
-        "text": "Possible equivalent fractions",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "6/10",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "Candidate",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "10.72px",
-        "weight": "400"
-      },
-      {
-        "text": "Possible equivalent fractions",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "2/3",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
-        "text": "Candidate",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "10.72px",
-        "weight": "400"
-      },
-      {
-        "text": "Possible equivalent fractions",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "750"
-      },
-      {
         "text": "Clear selection",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9814 0.01308 86)",
@@ -9704,7 +9256,7 @@
         "weight": "800"
       },
       {
-        "text": "Practice equivalent fractions",
+        "text": "Practice — Possible equivalent fractions",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "17.6px",
@@ -9739,7 +9291,7 @@
         "weight": "400"
       },
       {
-        "text": "6  →   6",
+        "text": "3  →   3",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "13.6px",
@@ -9795,7 +9347,7 @@
         "weight": "600"
       },
       {
-        "text": "screen Practice equivalent fractions",
+        "text": "screen Practice — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "12.48px",
@@ -9809,14 +9361,14 @@
         "weight": "800"
       },
       {
-        "text": "Explore equivalent fractions",
+        "text": "Explore — Possible equivalent fractions",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "17.6px",
         "weight": "400"
       },
       {
-        "text": "Match the eight pairs, and watch for decoys whose numerators match but wholes di",
+        "text": "Match all 5 pairs, and watch for decoys that look close but do not belong.",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "14.4px",
@@ -9844,7 +9396,7 @@
         "weight": "400"
       },
       {
-        "text": "8  →   8",
+        "text": "5  →   5",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "13.6px",
@@ -9900,7 +9452,7 @@
         "weight": "600"
       },
       {
-        "text": "screen Explore equivalent fractions",
+        "text": "screen Explore — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "12.48px",
@@ -9914,14 +9466,14 @@
         "weight": "800"
       },
       {
-        "text": "Step up to equivalents",
+        "text": "Guided — Possible equivalent fractions",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "17.6px",
         "weight": "400"
       },
       {
-        "text": "Three pairs at a time, with a hint before your first match.",
+        "text": "Work one pair at a time, with a hint before your first match.",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "14.4px",
@@ -10005,7 +9557,7 @@
         "weight": "600"
       },
       {
-        "text": "screen Step up to equivalents",
+        "text": "screen Guided — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "12.48px",
@@ -10019,14 +9571,14 @@
         "weight": "800"
       },
       {
-        "text": "Reason with equivalents",
+        "text": "Review — Possible equivalent fractions",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "17.6px",
         "weight": "400"
       },
       {
-        "text": "Match the eight pairs, then decide which decoy is close but not equal once you c",
+        "text": "Match all 5 pairs, then explain why the close decoy does not belong.",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "14.4px",
@@ -10054,7 +9606,7 @@
         "weight": "400"
       },
       {
-        "text": "8  →   8",
+        "text": "5  →   5",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "13.6px",
@@ -10110,7 +9662,7 @@
         "weight": "600"
       },
       {
-        "text": "screen Reason with equivalents",
+        "text": "screen Review — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "12.48px",
@@ -10124,7 +9676,7 @@
         "weight": "400"
       },
       {
-        "text": "Start with equal parts so the lesson can connect the same whole to different fra",
+        "text": "Start with the prerequisite skill so the lesson reaches the matching target in o",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "16px",
@@ -10246,7 +9798,7 @@
   },
   {
     "page": "publish",
-    "url": "http://localhost:36157/workspace?review=01a1a68b-8014-7c67-84f8-4d88b5db2935",
+    "url": "http://localhost:39063/workspace?review=01a1a6ef-684c-7176-bed0-d5f29191378c",
     "viewport": "1440x900",
     "elements": 84,
     "textBlocks": 31,
@@ -10566,7 +10118,7 @@
         "weight": "400"
       },
       {
-        "text": "8111d7ef01db",
+        "text": "11bc71f64f7f",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "16px",
@@ -10587,7 +10139,7 @@
         "weight": "700"
       },
       {
-        "text": "Practice equivalent fractions",
+        "text": "Practice — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "14.4px",
@@ -10608,7 +10160,7 @@
         "weight": "700"
       },
       {
-        "text": "Explore equivalent fractions",
+        "text": "Explore — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "14.4px",
@@ -10629,7 +10181,7 @@
         "weight": "700"
       },
       {
-        "text": "Step up to equivalents",
+        "text": "Guided — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "14.4px",
@@ -10650,7 +10202,7 @@
         "weight": "700"
       },
       {
-        "text": "Reason with equivalents",
+        "text": "Review — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "14.4px",
@@ -10671,7 +10223,7 @@
         "weight": "700"
       },
       {
-        "text": "Start with equal parts so the lesson can connect the same whole to different fra",
+        "text": "Start with the prerequisite skill so the lesson reaches the matching target in o",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "14.4px",
@@ -10709,7 +10261,7 @@
   },
   {
     "page": "publish-phone",
-    "url": "http://localhost:36157/workspace?review=01a1a68b-8014-7c67-84f8-4d88b5db2935",
+    "url": "http://localhost:39063/workspace?review=01a1a6ef-684c-7176-bed0-d5f29191378c",
     "viewport": "390x844",
     "elements": 84,
     "textBlocks": 31,
@@ -11029,7 +10581,7 @@
         "weight": "400"
       },
       {
-        "text": "8111d7ef01db",
+        "text": "11bc71f64f7f",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "16px",
@@ -11050,7 +10602,7 @@
         "weight": "700"
       },
       {
-        "text": "Practice equivalent fractions",
+        "text": "Practice — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "14.4px",
@@ -11071,7 +10623,7 @@
         "weight": "700"
       },
       {
-        "text": "Explore equivalent fractions",
+        "text": "Explore — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "14.4px",
@@ -11092,7 +10644,7 @@
         "weight": "700"
       },
       {
-        "text": "Step up to equivalents",
+        "text": "Guided — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "14.4px",
@@ -11113,7 +10665,7 @@
         "weight": "700"
       },
       {
-        "text": "Reason with equivalents",
+        "text": "Review — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "14.4px",
@@ -11134,7 +10686,7 @@
         "weight": "700"
       },
       {
-        "text": "Start with equal parts so the lesson can connect the same whole to different fra",
+        "text": "Start with the prerequisite skill so the lesson reaches the matching target in o",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "14.4px",
@@ -11172,7 +10724,7 @@
   },
   {
     "page": "published",
-    "url": "http://localhost:36157/workspace?review=01a1a68b-838a-7059-8844-6d067ba99460",
+    "url": "http://localhost:39063/workspace?review=01a1a6ef-6b5d-7b42-b61f-34b47647a17f",
     "viewport": "1440x900",
     "elements": 65,
     "textBlocks": 19,
@@ -11484,7 +11036,7 @@
         "weight": "400"
       },
       {
-        "text": "01a1a68c-4467-79a7-8c12-526707114aa5",
+        "text": "01a1a6f0-2e02-702a-aacd-c94392f02c8f",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "13.6px",
@@ -11498,7 +11050,7 @@
         "weight": "400"
       },
       {
-        "text": "01a1a68c-4484-7f5b-894a-afc4afa79841",
+        "text": "01a1a6f0-2e22-7c46-9b49-dfc10ca78040",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "13.6px",
@@ -11543,7 +11095,7 @@
   },
   {
     "page": "published-phone",
-    "url": "http://localhost:36157/workspace?review=01a1a68b-8765-7928-8539-1b14344b58a2",
+    "url": "http://localhost:39063/workspace?review=01a1a6ef-6e92-71ac-8c08-16551f4d80cb",
     "viewport": "390x844",
     "elements": 65,
     "textBlocks": 19,
@@ -11855,7 +11407,7 @@
         "weight": "400"
       },
       {
-        "text": "01a1a68c-5164-7f90-9935-6acf853b5bd6",
+        "text": "01a1a6f0-3b9c-754d-9f00-33a22cb97498",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "13.6px",
@@ -11869,7 +11421,7 @@
         "weight": "400"
       },
       {
-        "text": "01a1a68c-5186-70bd-a875-ba9c9e2b8dad",
+        "text": "01a1a6f0-3bb4-7a38-a30b-2694aed7f444",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "13.6px",
@@ -11914,54 +11466,42 @@
   },
   {
     "page": "blocked-validation",
-    "url": "http://localhost:36157/workspace?draft=01a1a68b-8a68-78ff-848f-b7857a24fa13",
+    "url": "http://localhost:39063/workspace?draft=01a1a6ef-7167-7916-9246-df3c62c891b8",
     "viewport": "1440x900",
     "elements": 220,
     "textBlocks": 75,
     "color": {
       "oklch(0.235 0.028 65)": {
-        "count": 97,
+        "count": 98,
         "sample": "div.app-shell.app-frame"
       },
       "rgb(166, 75, 42)": {
-        "count": 40,
+        "count": 41,
         "sample": "a.text-link.app-bar__link"
+      },
+      "oklch(0.48 0.035 68)": {
+        "count": 26,
+        "sample": "p.teacher-hero__description"
       },
       "oklch(0.965 0.018 86)": {
         "count": 25,
         "sample": "a.skip-link"
       },
       "oklch(0.235 0.028 65 / 0.62)": {
-        "count": 16,
+        "count": 11,
         "sample": "span.who__context"
-      },
-      "oklch(0.235 0.028 65 / 0.58)": {
-        "count": 8,
-        "sample": "div.teacher-trust-line"
       },
       "oklch(0.235 0.028 65 / 0.55)": {
         "count": 7,
         "sample": "svg.lucide.lucide-book-open"
       },
-      "oklch(0.48 0.035 68)": {
-        "count": 5,
-        "sample": "output.generation-status.teacher-generation-status"
-      },
       "oklch(0.925 0.065 77)": {
         "count": 4,
         "sample": "svg.lucide.lucide-layers"
       },
-      "oklch(0.235 0.028 65 / 0.65)": {
-        "count": 3,
-        "sample": "p"
-      },
       "oklch(0.965 0.018 86 / 0.82)": {
         "count": 3,
         "sample": "span"
-      },
-      "oklch(0.235 0.028 65 / 0.61)": {
-        "count": 3,
-        "sample": "span.guidance-panel__copy"
       },
       "oklch(0.55 0.18 28)": {
         "count": 2,
@@ -11971,25 +11511,9 @@
         "count": 1,
         "sample": "span.who__avatar"
       },
-      "oklch(0.235 0.028 65 / 0.68)": {
-        "count": 1,
-        "sample": "p.teacher-hero__description"
-      },
       "oklch(0.965 0.018 86 / 0.75)": {
         "count": 1,
         "sample": "div.teacher-hero__art-note"
-      },
-      "oklch(0.235 0.028 65 / 0.48)": {
-        "count": 1,
-        "sample": "span"
-      },
-      "oklch(0.235 0.028 65 / 0.63)": {
-        "count": 1,
-        "sample": "p"
-      },
-      "oklch(0.78 0.095 40)": {
-        "count": 1,
-        "sample": "span.insight-card__mark"
       },
       "oklch(0.235 0.028 65 / 0.64)": {
         "count": 1,
@@ -12202,7 +11726,7 @@
     },
     "fontSize": {
       "16px": {
-        "count": 82,
+        "count": 83,
         "sample": "div.app-shell.app-frame"
       },
       "10.88px": {
@@ -12221,10 +11745,6 @@
         "count": 10,
         "sample": "p.kicker"
       },
-      "13.76px": {
-        "count": 8,
-        "sample": "a.text-link.app-bar__link"
-      },
       "32px": {
         "count": 8,
         "sample": "div.fraction-orbit.fraction-orbit--one"
@@ -12232,6 +11752,10 @@
       "11.2px": {
         "count": 8,
         "sample": "span"
+      },
+      "13.76px": {
+        "count": 7,
+        "sample": "a.text-link.app-bar__link"
       },
       "15.2px": {
         "count": 7,
@@ -12346,7 +11870,7 @@
     },
     "lineHeight": {
       "24px": {
-        "count": 82,
+        "count": 83,
         "sample": "div.app-shell.app-frame"
       },
       "16.32px": {
@@ -12405,10 +11929,6 @@
         "count": 2,
         "sample": "a.text-link.app-bar__link"
       },
-      "20.64px": {
-        "count": 2,
-        "sample": "span.who__name"
-      },
       "21.84px": {
         "count": 2,
         "sample": "h3"
@@ -12428,6 +11948,10 @@
       "19.68px": {
         "count": 1,
         "sample": "a.skip-link"
+      },
+      "20.64px": {
+        "count": 1,
+        "sample": "span.who__name"
       },
       "17.76px": {
         "count": 1,
@@ -12568,7 +12092,7 @@
       },
       {
         "text": "Describe the learning moment in your own words. We will shape a clear first draf",
-        "color": "oklch(0.235 0.028 65 / 0.68)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "19.2px",
         "weight": "400"
@@ -12617,7 +12141,7 @@
       },
       {
         "text": "32 /500",
-        "color": "oklch(0.235 0.028 65 / 0.48)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "11.52px",
         "weight": "400"
@@ -12638,21 +12162,21 @@
       },
       {
         "text": "Grade  4",
-        "color": "oklch(0.235 0.028 65 / 0.62)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "12px",
         "weight": "400"
       },
       {
         "text": "4.NF.A.1",
-        "color": "oklch(0.235 0.028 65 / 0.62)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "12px",
         "weight": "400"
       },
       {
         "text": "English / LTR",
-        "color": "oklch(0.235 0.028 65 / 0.62)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "12px",
         "weight": "400"
@@ -12694,7 +12218,7 @@
       },
       {
         "text": "Private draft first. You approve every version before students see it.",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "12.48px",
         "weight": "400"
@@ -12715,7 +12239,7 @@
       },
       {
         "text": "As you write, Scholé looks for the small details that help a visual lesson feel ",
-        "color": "oklch(0.235 0.028 65 / 0.63)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "15.2px",
         "weight": "400"
@@ -12729,14 +12253,14 @@
       },
       {
         "text": "/",
-        "color": "oklch(0.78 0.095 40)",
+        "color": "rgb(166, 75, 42)",
         "background": "oklch(0.9751 0.0137266 78.4875)",
         "size": "17.6px",
         "weight": "800"
       },
       {
         "text": "What we heard",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9751 0.0137266 78.4875)",
         "size": "10.88px",
         "weight": "800"
@@ -12750,14 +12274,14 @@
       },
       {
         "text": "The first draft will keep this idea at the center instead of asking you to trans",
-        "color": "oklch(0.235 0.028 65 / 0.65)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9751 0.0137266 78.4875)",
         "size": "13.76px",
         "weight": "400"
       },
       {
         "text": "Learning target",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9418 0.05016 79.52)",
         "size": "10.88px",
         "weight": "800"
@@ -12771,14 +12295,14 @@
       },
       {
         "text": "Equivalent fractions, made visible.",
-        "color": "oklch(0.235 0.028 65 / 0.65)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9418 0.05016 79.52)",
         "size": "13.76px",
         "weight": "400"
       },
       {
         "text": "Language",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9442 0.03104 182.56)",
         "size": "10.88px",
         "weight": "800"
@@ -12792,7 +12316,7 @@
       },
       {
         "text": "We will keep the lesson readable in the language you use.",
-        "color": "oklch(0.235 0.028 65 / 0.65)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9442 0.03104 182.56)",
         "size": "13.76px",
         "weight": "400"
@@ -12848,7 +12372,7 @@
       },
       {
         "text": "We will start with the clearest learning target we can find.",
-        "color": "oklch(0.235 0.028 65 / 0.61)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.952825 0.0176113 61.5842)",
         "size": "12.48px",
         "weight": "400"
@@ -12862,7 +12386,7 @@
       },
       {
         "text": "Make room for every learner",
-        "color": "oklch(0.235 0.028 65 / 0.61)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "12.48px",
         "weight": "400"
@@ -12876,7 +12400,7 @@
       },
       {
         "text": "You decide what goes live",
-        "color": "oklch(0.235 0.028 65 / 0.61)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "12.48px",
         "weight": "400"
@@ -13018,54 +12542,42 @@
   },
   {
     "page": "blocked-validation-phone",
-    "url": "http://localhost:36157/workspace?draft=01a1a68b-8a68-78ff-848f-b7857a24fa13",
+    "url": "http://localhost:39063/workspace?draft=01a1a6ef-7167-7916-9246-df3c62c891b8",
     "viewport": "390x844",
     "elements": 220,
     "textBlocks": 75,
     "color": {
       "oklch(0.235 0.028 65)": {
-        "count": 97,
+        "count": 98,
         "sample": "div.app-shell.app-frame"
       },
       "rgb(166, 75, 42)": {
-        "count": 40,
+        "count": 41,
         "sample": "a.text-link.app-bar__link"
+      },
+      "oklch(0.48 0.035 68)": {
+        "count": 26,
+        "sample": "p.teacher-hero__description"
       },
       "oklch(0.965 0.018 86)": {
         "count": 25,
         "sample": "a.skip-link"
       },
       "oklch(0.235 0.028 65 / 0.62)": {
-        "count": 16,
+        "count": 11,
         "sample": "span.who__context"
-      },
-      "oklch(0.235 0.028 65 / 0.58)": {
-        "count": 8,
-        "sample": "div.teacher-trust-line"
       },
       "oklch(0.235 0.028 65 / 0.55)": {
         "count": 7,
         "sample": "svg.lucide.lucide-book-open"
       },
-      "oklch(0.48 0.035 68)": {
-        "count": 5,
-        "sample": "output.generation-status.teacher-generation-status"
-      },
       "oklch(0.925 0.065 77)": {
         "count": 4,
         "sample": "svg.lucide.lucide-layers"
       },
-      "oklch(0.235 0.028 65 / 0.65)": {
-        "count": 3,
-        "sample": "p"
-      },
       "oklch(0.965 0.018 86 / 0.82)": {
         "count": 3,
         "sample": "span"
-      },
-      "oklch(0.235 0.028 65 / 0.61)": {
-        "count": 3,
-        "sample": "span.guidance-panel__copy"
       },
       "oklch(0.55 0.18 28)": {
         "count": 2,
@@ -13075,25 +12587,9 @@
         "count": 1,
         "sample": "span.who__avatar"
       },
-      "oklch(0.235 0.028 65 / 0.68)": {
-        "count": 1,
-        "sample": "p.teacher-hero__description"
-      },
       "oklch(0.965 0.018 86 / 0.75)": {
         "count": 1,
         "sample": "div.teacher-hero__art-note"
-      },
-      "oklch(0.235 0.028 65 / 0.48)": {
-        "count": 1,
-        "sample": "span"
-      },
-      "oklch(0.235 0.028 65 / 0.63)": {
-        "count": 1,
-        "sample": "p"
-      },
-      "oklch(0.78 0.095 40)": {
-        "count": 1,
-        "sample": "span.insight-card__mark"
       },
       "oklch(0.235 0.028 65 / 0.64)": {
         "count": 1,
@@ -13306,7 +12802,7 @@
     },
     "fontSize": {
       "16px": {
-        "count": 84,
+        "count": 85,
         "sample": "div.app-shell.app-frame"
       },
       "10.88px": {
@@ -13329,13 +12825,13 @@
         "count": 10,
         "sample": "div.fraction-orbit.fraction-orbit--one"
       },
-      "13.76px": {
-        "count": 8,
-        "sample": "a.text-link.app-bar__link"
-      },
       "11.2px": {
         "count": 8,
         "sample": "span"
+      },
+      "13.76px": {
+        "count": 7,
+        "sample": "a.text-link.app-bar__link"
       },
       "15.2px": {
         "count": 7,
@@ -13430,7 +12926,7 @@
     },
     "lineHeight": {
       "24px": {
-        "count": 84,
+        "count": 85,
         "sample": "div.app-shell.app-frame"
       },
       "16.32px": {
@@ -13489,10 +12985,6 @@
         "count": 2,
         "sample": "a.text-link.app-bar__link"
       },
-      "20.64px": {
-        "count": 2,
-        "sample": "span.who__name"
-      },
       "26.4px": {
         "count": 2,
         "sample": "p.teacher-hero__description"
@@ -13516,6 +13008,10 @@
       "19.68px": {
         "count": 1,
         "sample": "a.skip-link"
+      },
+      "20.64px": {
+        "count": 1,
+        "sample": "span.who__name"
       },
       "17.76px": {
         "count": 1,
@@ -13640,7 +13136,7 @@
       },
       {
         "text": "Describe the learning moment in your own words. We will shape a clear first draf",
-        "color": "oklch(0.235 0.028 65 / 0.68)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "16px",
         "weight": "400"
@@ -13689,7 +13185,7 @@
       },
       {
         "text": "32 /500",
-        "color": "oklch(0.235 0.028 65 / 0.48)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "11.52px",
         "weight": "400"
@@ -13710,21 +13206,21 @@
       },
       {
         "text": "Grade  4",
-        "color": "oklch(0.235 0.028 65 / 0.62)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "12px",
         "weight": "400"
       },
       {
         "text": "4.NF.A.1",
-        "color": "oklch(0.235 0.028 65 / 0.62)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "12px",
         "weight": "400"
       },
       {
         "text": "English / LTR",
-        "color": "oklch(0.235 0.028 65 / 0.62)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "12px",
         "weight": "400"
@@ -13766,7 +13262,7 @@
       },
       {
         "text": "Private draft first. You approve every version before students see it.",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "12.48px",
         "weight": "400"
@@ -13787,7 +13283,7 @@
       },
       {
         "text": "As you write, Scholé looks for the small details that help a visual lesson feel ",
-        "color": "oklch(0.235 0.028 65 / 0.63)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "15.2px",
         "weight": "400"
@@ -13801,14 +13297,14 @@
       },
       {
         "text": "/",
-        "color": "oklch(0.78 0.095 40)",
+        "color": "rgb(166, 75, 42)",
         "background": "oklch(0.9751 0.0137266 78.4875)",
         "size": "17.6px",
         "weight": "800"
       },
       {
         "text": "What we heard",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9751 0.0137266 78.4875)",
         "size": "10.88px",
         "weight": "800"
@@ -13822,14 +13318,14 @@
       },
       {
         "text": "The first draft will keep this idea at the center instead of asking you to trans",
-        "color": "oklch(0.235 0.028 65 / 0.65)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9751 0.0137266 78.4875)",
         "size": "13.76px",
         "weight": "400"
       },
       {
         "text": "Learning target",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9418 0.05016 79.52)",
         "size": "10.88px",
         "weight": "800"
@@ -13843,14 +13339,14 @@
       },
       {
         "text": "Equivalent fractions, made visible.",
-        "color": "oklch(0.235 0.028 65 / 0.65)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9418 0.05016 79.52)",
         "size": "13.76px",
         "weight": "400"
       },
       {
         "text": "Language",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9442 0.03104 182.56)",
         "size": "10.88px",
         "weight": "800"
@@ -13864,7 +13360,7 @@
       },
       {
         "text": "We will keep the lesson readable in the language you use.",
-        "color": "oklch(0.235 0.028 65 / 0.65)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9442 0.03104 182.56)",
         "size": "13.76px",
         "weight": "400"
@@ -13920,7 +13416,7 @@
       },
       {
         "text": "We will start with the clearest learning target we can find.",
-        "color": "oklch(0.235 0.028 65 / 0.61)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.952825 0.0176113 61.5842)",
         "size": "12.48px",
         "weight": "400"
@@ -13934,7 +13430,7 @@
       },
       {
         "text": "Make room for every learner",
-        "color": "oklch(0.235 0.028 65 / 0.61)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "12.48px",
         "weight": "400"
@@ -13948,7 +13444,7 @@
       },
       {
         "text": "You decide what goes live",
-        "color": "oklch(0.235 0.028 65 / 0.61)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "12.48px",
         "weight": "400"
@@ -14090,78 +13586,50 @@
   },
   {
     "page": "blocked-moderation",
-    "url": "http://localhost:36157/workspace?draft=01a1a68b-8af4-72f5-9cfd-0203f7e1b67b",
+    "url": "http://localhost:39063/workspace?draft=01a1a6ef-71f0-77ed-8847-c26961fb0b6b",
     "viewport": "1440x900",
     "elements": 199,
     "textBlocks": 66,
     "color": {
       "oklch(0.235 0.028 65)": {
-        "count": 81,
+        "count": 82,
         "sample": "div.app-shell.app-frame"
       },
       "rgb(166, 75, 42)": {
-        "count": 38,
+        "count": 39,
         "sample": "a.text-link.app-bar__link"
       },
       "oklch(0.965 0.018 86)": {
         "count": 25,
         "sample": "a.skip-link"
       },
-      "oklch(0.235 0.028 65 / 0.62)": {
-        "count": 16,
-        "sample": "span.who__context"
+      "oklch(0.48 0.035 68)": {
+        "count": 25,
+        "sample": "p.teacher-hero__description"
       },
-      "oklch(0.235 0.028 65 / 0.58)": {
-        "count": 8,
-        "sample": "div.teacher-trust-line"
+      "oklch(0.235 0.028 65 / 0.62)": {
+        "count": 11,
+        "sample": "span.who__context"
       },
       "oklch(0.235 0.028 65 / 0.55)": {
         "count": 7,
         "sample": "svg.lucide.lucide-book-open"
       },
-      "oklch(0.48 0.035 68)": {
-        "count": 4,
-        "sample": "output.generation-status.teacher-generation-status"
-      },
       "oklch(0.925 0.065 77)": {
         "count": 4,
         "sample": "svg.lucide.lucide-layers"
-      },
-      "oklch(0.235 0.028 65 / 0.65)": {
-        "count": 3,
-        "sample": "p"
       },
       "oklch(0.965 0.018 86 / 0.82)": {
         "count": 3,
         "sample": "span"
       },
-      "oklch(0.235 0.028 65 / 0.61)": {
-        "count": 3,
-        "sample": "span.guidance-panel__copy"
-      },
       "rgb(255, 255, 255)": {
         "count": 2,
         "sample": "span.who__avatar"
       },
-      "oklch(0.235 0.028 65 / 0.68)": {
-        "count": 1,
-        "sample": "p.teacher-hero__description"
-      },
       "oklch(0.965 0.018 86 / 0.75)": {
         "count": 1,
         "sample": "div.teacher-hero__art-note"
-      },
-      "oklch(0.235 0.028 65 / 0.48)": {
-        "count": 1,
-        "sample": "span"
-      },
-      "oklch(0.235 0.028 65 / 0.63)": {
-        "count": 1,
-        "sample": "p"
-      },
-      "oklch(0.78 0.095 40)": {
-        "count": 1,
-        "sample": "span.insight-card__mark"
       }
     },
     "background": {
@@ -14346,7 +13814,7 @@
     },
     "fontSize": {
       "16px": {
-        "count": 71,
+        "count": 72,
         "sample": "div.app-shell.app-frame"
       },
       "12.48px": {
@@ -14361,10 +13829,6 @@
         "count": 21,
         "sample": "span.who__avatar"
       },
-      "13.76px": {
-        "count": 8,
-        "sample": "a.text-link.app-bar__link"
-      },
       "32px": {
         "count": 8,
         "sample": "div.fraction-orbit.fraction-orbit--one"
@@ -14376,6 +13840,10 @@
       "11.2px": {
         "count": 8,
         "sample": "span"
+      },
+      "13.76px": {
+        "count": 7,
+        "sample": "a.text-link.app-bar__link"
       },
       "11.52px": {
         "count": 6,
@@ -14478,7 +13946,7 @@
     },
     "lineHeight": {
       "24px": {
-        "count": 71,
+        "count": 72,
         "sample": "div.app-shell.app-frame"
       },
       "16.32px": {
@@ -14529,10 +13997,6 @@
         "count": 2,
         "sample": "a.text-link.app-bar__link"
       },
-      "20.64px": {
-        "count": 2,
-        "sample": "span.who__name"
-      },
       "17.28px": {
         "count": 2,
         "sample": "div.teacher-hero__art-note"
@@ -14552,6 +14016,10 @@
       "19.68px": {
         "count": 1,
         "sample": "a.skip-link"
+      },
+      "20.64px": {
+        "count": 1,
+        "sample": "span.who__name"
       },
       "17.76px": {
         "count": 1,
@@ -14692,7 +14160,7 @@
       },
       {
         "text": "Describe the learning moment in your own words. We will shape a clear first draf",
-        "color": "oklch(0.235 0.028 65 / 0.68)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "19.2px",
         "weight": "400"
@@ -14741,7 +14209,7 @@
       },
       {
         "text": "69 /500",
-        "color": "oklch(0.235 0.028 65 / 0.48)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "11.52px",
         "weight": "400"
@@ -14762,21 +14230,21 @@
       },
       {
         "text": "Grade  4",
-        "color": "oklch(0.235 0.028 65 / 0.62)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "12px",
         "weight": "400"
       },
       {
         "text": "4.NF.A.1",
-        "color": "oklch(0.235 0.028 65 / 0.62)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "12px",
         "weight": "400"
       },
       {
         "text": "English / LTR",
-        "color": "oklch(0.235 0.028 65 / 0.62)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "12px",
         "weight": "400"
@@ -14818,7 +14286,7 @@
       },
       {
         "text": "Private draft first. You approve every version before students see it.",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "12.48px",
         "weight": "400"
@@ -14839,7 +14307,7 @@
       },
       {
         "text": "As you write, Scholé looks for the small details that help a visual lesson feel ",
-        "color": "oklch(0.235 0.028 65 / 0.63)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "15.2px",
         "weight": "400"
@@ -14853,14 +14321,14 @@
       },
       {
         "text": "/",
-        "color": "oklch(0.78 0.095 40)",
+        "color": "rgb(166, 75, 42)",
         "background": "oklch(0.9751 0.0137266 78.4875)",
         "size": "17.6px",
         "weight": "800"
       },
       {
         "text": "What we heard",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9751 0.0137266 78.4875)",
         "size": "10.88px",
         "weight": "800"
@@ -14874,14 +14342,14 @@
       },
       {
         "text": "The first draft will keep this idea at the center instead of asking you to trans",
-        "color": "oklch(0.235 0.028 65 / 0.65)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9751 0.0137266 78.4875)",
         "size": "13.76px",
         "weight": "400"
       },
       {
         "text": "Learning target",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9418 0.05016 79.52)",
         "size": "10.88px",
         "weight": "800"
@@ -14895,14 +14363,14 @@
       },
       {
         "text": "Equivalent fractions, made visible.",
-        "color": "oklch(0.235 0.028 65 / 0.65)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9418 0.05016 79.52)",
         "size": "13.76px",
         "weight": "400"
       },
       {
         "text": "Language",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9442 0.03104 182.56)",
         "size": "10.88px",
         "weight": "800"
@@ -14916,7 +14384,7 @@
       },
       {
         "text": "We will keep the lesson readable in the language you use.",
-        "color": "oklch(0.235 0.028 65 / 0.65)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9442 0.03104 182.56)",
         "size": "13.76px",
         "weight": "400"
@@ -14972,7 +14440,7 @@
       },
       {
         "text": "We will start with the clearest learning target we can find.",
-        "color": "oklch(0.235 0.028 65 / 0.61)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.952825 0.0176113 61.5842)",
         "size": "12.48px",
         "weight": "400"
@@ -14986,7 +14454,7 @@
       },
       {
         "text": "Make room for every learner",
-        "color": "oklch(0.235 0.028 65 / 0.61)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "12.48px",
         "weight": "400"
@@ -15000,7 +14468,7 @@
       },
       {
         "text": "You decide what goes live",
-        "color": "oklch(0.235 0.028 65 / 0.61)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "12.48px",
         "weight": "400"
@@ -15062,7 +14530,7 @@
         "weight": "400"
       },
       {
-        "text": "Request 01a1a68b-8af4-72f5-9cfd-0203f7e1b67b.   Category: Instructions aimed at ",
+        "text": "Request 01a1a6ef-71f0-77ed-8847-c26961fb0b6b.   Category: Instructions aimed at ",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.966555 0.0166838 84.1511)",
         "size": "12.48px",
@@ -15079,78 +14547,50 @@
   },
   {
     "page": "blocked-moderation-phone",
-    "url": "http://localhost:36157/workspace?draft=01a1a68b-8af4-72f5-9cfd-0203f7e1b67b",
+    "url": "http://localhost:39063/workspace?draft=01a1a6ef-71f0-77ed-8847-c26961fb0b6b",
     "viewport": "390x844",
     "elements": 199,
     "textBlocks": 66,
     "color": {
       "oklch(0.235 0.028 65)": {
-        "count": 81,
+        "count": 82,
         "sample": "div.app-shell.app-frame"
       },
       "rgb(166, 75, 42)": {
-        "count": 38,
+        "count": 39,
         "sample": "a.text-link.app-bar__link"
       },
       "oklch(0.965 0.018 86)": {
         "count": 25,
         "sample": "a.skip-link"
       },
-      "oklch(0.235 0.028 65 / 0.62)": {
-        "count": 16,
-        "sample": "span.who__context"
+      "oklch(0.48 0.035 68)": {
+        "count": 25,
+        "sample": "p.teacher-hero__description"
       },
-      "oklch(0.235 0.028 65 / 0.58)": {
-        "count": 8,
-        "sample": "div.teacher-trust-line"
+      "oklch(0.235 0.028 65 / 0.62)": {
+        "count": 11,
+        "sample": "span.who__context"
       },
       "oklch(0.235 0.028 65 / 0.55)": {
         "count": 7,
         "sample": "svg.lucide.lucide-book-open"
       },
-      "oklch(0.48 0.035 68)": {
-        "count": 4,
-        "sample": "output.generation-status.teacher-generation-status"
-      },
       "oklch(0.925 0.065 77)": {
         "count": 4,
         "sample": "svg.lucide.lucide-layers"
-      },
-      "oklch(0.235 0.028 65 / 0.65)": {
-        "count": 3,
-        "sample": "p"
       },
       "oklch(0.965 0.018 86 / 0.82)": {
         "count": 3,
         "sample": "span"
       },
-      "oklch(0.235 0.028 65 / 0.61)": {
-        "count": 3,
-        "sample": "span.guidance-panel__copy"
-      },
       "rgb(255, 255, 255)": {
         "count": 2,
         "sample": "span.who__avatar"
       },
-      "oklch(0.235 0.028 65 / 0.68)": {
-        "count": 1,
-        "sample": "p.teacher-hero__description"
-      },
       "oklch(0.965 0.018 86 / 0.75)": {
         "count": 1,
         "sample": "div.teacher-hero__art-note"
-      },
-      "oklch(0.235 0.028 65 / 0.48)": {
-        "count": 1,
-        "sample": "span"
-      },
-      "oklch(0.235 0.028 65 / 0.63)": {
-        "count": 1,
-        "sample": "p"
-      },
-      "oklch(0.78 0.095 40)": {
-        "count": 1,
-        "sample": "span.insight-card__mark"
       }
     },
     "background": {
@@ -15335,7 +14775,7 @@
     },
     "fontSize": {
       "16px": {
-        "count": 73,
+        "count": 74,
         "sample": "div.app-shell.app-frame"
       },
       "12.48px": {
@@ -15354,10 +14794,6 @@
         "count": 9,
         "sample": "div.fraction-orbit.fraction-orbit--one"
       },
-      "13.76px": {
-        "count": 8,
-        "sample": "a.text-link.app-bar__link"
-      },
       "15.2px": {
         "count": 8,
         "sample": "button.btn.group/button"
@@ -15365,6 +14801,10 @@
       "11.2px": {
         "count": 8,
         "sample": "span"
+      },
+      "13.76px": {
+        "count": 7,
+        "sample": "a.text-link.app-bar__link"
       },
       "11.52px": {
         "count": 6,
@@ -15455,7 +14895,7 @@
     },
     "lineHeight": {
       "24px": {
-        "count": 73,
+        "count": 74,
         "sample": "div.app-shell.app-frame"
       },
       "16.32px": {
@@ -15506,10 +14946,6 @@
         "count": 2,
         "sample": "a.text-link.app-bar__link"
       },
-      "20.64px": {
-        "count": 2,
-        "sample": "span.who__name"
-      },
       "26.4px": {
         "count": 2,
         "sample": "p.teacher-hero__description"
@@ -15533,6 +14969,10 @@
       "19.68px": {
         "count": 1,
         "sample": "a.skip-link"
+      },
+      "20.64px": {
+        "count": 1,
+        "sample": "span.who__name"
       },
       "17.76px": {
         "count": 1,
@@ -15657,7 +15097,7 @@
       },
       {
         "text": "Describe the learning moment in your own words. We will shape a clear first draf",
-        "color": "oklch(0.235 0.028 65 / 0.68)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "16px",
         "weight": "400"
@@ -15706,7 +15146,7 @@
       },
       {
         "text": "69 /500",
-        "color": "oklch(0.235 0.028 65 / 0.48)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "11.52px",
         "weight": "400"
@@ -15727,21 +15167,21 @@
       },
       {
         "text": "Grade  4",
-        "color": "oklch(0.235 0.028 65 / 0.62)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "12px",
         "weight": "400"
       },
       {
         "text": "4.NF.A.1",
-        "color": "oklch(0.235 0.028 65 / 0.62)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "12px",
         "weight": "400"
       },
       {
         "text": "English / LTR",
-        "color": "oklch(0.235 0.028 65 / 0.62)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.97609 0.0135539 79.2387)",
         "size": "12px",
         "weight": "400"
@@ -15783,7 +15223,7 @@
       },
       {
         "text": "Private draft first. You approve every version before students see it.",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "12.48px",
         "weight": "400"
@@ -15804,7 +15244,7 @@
       },
       {
         "text": "As you write, Scholé looks for the small details that help a visual lesson feel ",
-        "color": "oklch(0.235 0.028 65 / 0.63)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "15.2px",
         "weight": "400"
@@ -15818,14 +15258,14 @@
       },
       {
         "text": "/",
-        "color": "oklch(0.78 0.095 40)",
+        "color": "rgb(166, 75, 42)",
         "background": "oklch(0.9751 0.0137266 78.4875)",
         "size": "17.6px",
         "weight": "800"
       },
       {
         "text": "What we heard",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9751 0.0137266 78.4875)",
         "size": "10.88px",
         "weight": "800"
@@ -15839,14 +15279,14 @@
       },
       {
         "text": "The first draft will keep this idea at the center instead of asking you to trans",
-        "color": "oklch(0.235 0.028 65 / 0.65)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9751 0.0137266 78.4875)",
         "size": "13.76px",
         "weight": "400"
       },
       {
         "text": "Learning target",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9418 0.05016 79.52)",
         "size": "10.88px",
         "weight": "800"
@@ -15860,14 +15300,14 @@
       },
       {
         "text": "Equivalent fractions, made visible.",
-        "color": "oklch(0.235 0.028 65 / 0.65)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9418 0.05016 79.52)",
         "size": "13.76px",
         "weight": "400"
       },
       {
         "text": "Language",
-        "color": "oklch(0.235 0.028 65 / 0.58)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9442 0.03104 182.56)",
         "size": "10.88px",
         "weight": "800"
@@ -15881,7 +15321,7 @@
       },
       {
         "text": "We will keep the lesson readable in the language you use.",
-        "color": "oklch(0.235 0.028 65 / 0.65)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.9442 0.03104 182.56)",
         "size": "13.76px",
         "weight": "400"
@@ -15937,7 +15377,7 @@
       },
       {
         "text": "We will start with the clearest learning target we can find.",
-        "color": "oklch(0.235 0.028 65 / 0.61)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.952825 0.0176113 61.5842)",
         "size": "12.48px",
         "weight": "400"
@@ -15951,7 +15391,7 @@
       },
       {
         "text": "Make room for every learner",
-        "color": "oklch(0.235 0.028 65 / 0.61)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "12.48px",
         "weight": "400"
@@ -15965,7 +15405,7 @@
       },
       {
         "text": "You decide what goes live",
-        "color": "oklch(0.235 0.028 65 / 0.61)",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "12.48px",
         "weight": "400"
@@ -16027,7 +15467,7 @@
         "weight": "400"
       },
       {
-        "text": "Request 01a1a68b-8af4-72f5-9cfd-0203f7e1b67b.   Category: Instructions aimed at ",
+        "text": "Request 01a1a6ef-71f0-77ed-8847-c26961fb0b6b.   Category: Instructions aimed at ",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.966555 0.0166838 84.1511)",
         "size": "12.48px",

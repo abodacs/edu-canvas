@@ -223,7 +223,7 @@ const SignUpPage = (): ReactElement => {
               <div className="auth-actions">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   className="auth-submit"
                   disabled={isPending || cooldown > 0}
                   onClick={() => {

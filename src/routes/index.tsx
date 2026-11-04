@@ -81,7 +81,7 @@ const TeacherHome = () => {
               </Link>
               <Link
                 className={cn(
-                  buttonVariants({ variant: "outline", size: "sm" })
+                  buttonVariants({ variant: "secondary", size: "sm" })
                 )}
                 to="/sign-up"
               >
@@ -127,7 +127,7 @@ const TeacherHome = () => {
                   </Link>
                   <Link
                     className={cn(
-                      buttonVariants({ variant: "outline", size: "lg" }),
+                      buttonVariants({ variant: "secondary", size: "lg" }),
                       "min-h-12"
                     )}
                     to="/sign-up"

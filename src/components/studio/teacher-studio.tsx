@@ -847,7 +847,7 @@ const GenerationResult = ({
 
       {result.retry.available ? (
         <form onSubmit={onRetry}>
-          <Button type="submit" variant="outline" className="retry-button">
+          <Button type="submit" variant="secondary" className="retry-button">
             Try that again <ArrowRight aria-hidden="true" />
           </Button>
         </form>
@@ -950,9 +950,24 @@ const TeacherComposerOutcome = ({
   );
 };
 
+const composerBusyMessage = (
+  isOpeningDraft: boolean,
+  isGenerating: boolean
+): string | null => {
+  if (isOpeningDraft) {
+    return "Opening the saved draft…";
+  }
+  if (isGenerating) {
+    return "Reading the idea, finding the cleanest path…";
+  }
+  return null;
+};
+
 /**
 The status line beside Create lesson: opening a saved draft, generating, or
-the failure the teacher can fix. It receives focus on failure (#168 P0-2).
+the failure the teacher can fix. Both tones come from the shared Notice, so
+they look and announce like every other in-page message. The wrapper receives
+focus on failure (#168 P0-2) so the cause lands in view.
 */
 const ComposerStatus = ({
   statusRef,
@@ -960,38 +975,31 @@ const ComposerStatus = ({
   isGenerating,
   requestError,
 }: {
-  readonly statusRef: RefObject<HTMLOutputElement | null>;
+  readonly statusRef: RefObject<HTMLDivElement | null>;
   readonly isOpeningDraft: boolean;
   readonly isGenerating: boolean;
   readonly requestError: string | null;
 }) => {
+  const busyMessage = composerBusyMessage(isOpeningDraft, isGenerating);
+
   return (
-    <output
-      className="generation-status teacher-generation-status"
-      aria-live="polite"
-      tabIndex={-1}
-      ref={statusRef}
-    >
-      {isOpeningDraft ? (
-        <p className="status-pulse">
-          <span aria-hidden="true" /> Opening the saved draft…
-        </p>
-      ) : null}
-      {isGenerating ? (
-        <p className="status-pulse">
-          <span aria-hidden="true" /> Reading the idea, finding the cleanest
-          path…
-        </p>
+    <div className="teacher-generation-status" tabIndex={-1} ref={statusRef}>
+      {busyMessage ? (
+        <Notice tone="info">
+          <p className="status-pulse">
+            <span aria-hidden="true" /> {busyMessage}
+          </p>
+        </Notice>
       ) : null}
       {requestError ? (
-        <p className="generation-error">
-          {requestError}
-          <span className="generation-error__hint">
+        <Notice tone="stop">
+          <p>{requestError}</p>
+          <p className="generation-error__hint">
             Fix the objective or the source, then press Create lesson again.
-          </span>
-        </p>
+          </p>
+        </Notice>
       ) : null}
-    </output>
+    </div>
   );
 };
 
@@ -1104,7 +1112,7 @@ const TeacherLessonComposer = ({
   // #168 P0-2: on failure the inline status next to Create lesson receives
   // focus, so the cause lands in view and in the screen reader's mouth. The
   // moderation panel owns focus for its own path.
-  const statusReference = useRef<HTMLOutputElement>(null);
+  const statusReference = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (requestError && !hasModerationFailure) {
       statusReference.current?.focus();
