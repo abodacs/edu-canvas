@@ -1,15 +1,4 @@
-/* Teacher lesson generation (issue #3). The shared section/fragment
-   selectors above pair this surface with the seeded-fixture proof it lands
-   into. */
-.generation-section {
-  border-block-start: 1px solid var(--border);
-  padding-block-start: clamp(2rem, 5vw, 4rem);
-}
-
-.generation-section .section-heading {
-  align-items: flex-start;
-}
-
+/* Teacher lesson generation (issue #3). */
 .section-description {
   color: var(--muted-foreground);
   font-size: 0.95rem;
@@ -252,4 +241,20 @@
   color: var(--muted-foreground);
   font-size: 0.82rem;
   overflow-wrap: anywhere;
+}
+
+@media (width <= 38rem) {
+  .generation-form__actions,
+  .generation-form__actions > * {
+    inline-size: 100%;
+  }
+
+  .generation-result__header,
+  .variant-preview__heading {
+    flex-direction: column;
+  }
+
+  .variant-preview__items {
+    grid-template-columns: 1fr;
+  }
 }

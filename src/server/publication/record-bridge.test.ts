@@ -8,7 +8,9 @@ import {
   fixtureSnapshotId,
   fixtureStandardId,
 } from "@/server/persistence/records-fixtures";
-import { bridgePublishedPack } from "./record-bridge";
+import { recordError } from "@/server/records/errors";
+import { PublicationError } from "./errors";
+import { bridgePublishedPack, learnerLinkFailure } from "./record-bridge";
 import type { PackBridgeSource } from "./record-bridge";
 
 const makeVariant = (
@@ -315,5 +317,34 @@ describe(bridgePublishedPack, () => {
     expect(rendered).toContain('"role":"source"');
     expect(rendered).toContain('"role":"target"');
     expect(rendered).toContain("2/4");
+  });
+});
+
+describe(learnerLinkFailure, () => {
+  it("names a records refusal instead of reporting an outage", () => {
+    const failure = learnerLinkFailure(recordError("FORBIDDEN"));
+
+    expect(failure).toBeInstanceOf(PublicationError);
+    expect((failure as PublicationError).code).toBe("LEARNER_LINK_REFUSED");
+    expect((failure as PublicationError).status).toBe(409);
+    expect((failure as PublicationError).detail).toBe("FORBIDDEN");
+  });
+
+  it.each([
+    "PERSISTENCE_UNAVAILABLE",
+    "STALE_VERSION",
+    "INVALID_INPUT",
+    "IDEMPOTENCY_CONFLICT",
+    "NOT_FOUND",
+  ] as const)("leaves %s on its existing path", (code) => {
+    const error = recordError(code);
+
+    expect(learnerLinkFailure(error)).toBe(error);
+  });
+
+  it("leaves an unknown failure for the 503 path", () => {
+    const unknown = new Error("socket closed");
+
+    expect(learnerLinkFailure(unknown)).toBe(unknown);
   });
 });

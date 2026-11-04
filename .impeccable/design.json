@@ -134,19 +134,47 @@
         "scene-bark": "#4b3c2b"
       }
     },
+    "fontFamilies": [
+      {
+        "name": "Source Serif 4",
+        "role": "display",
+        "token": "--font-display",
+        "stack": "\"Source Serif 4\", ui-serif, georgia, \"Times New Roman\", serif",
+        "source": "self-hosted variable (wght 200-900, opsz 8-60), scripts/fonts-subset.py",
+        "preload": false,
+        "purpose": "h1-h3: page titles, section and card headings."
+      },
+      {
+        "name": "Figtree",
+        "role": "body",
+        "token": "--font-sans",
+        "stack": "\"Figtree\", \"Trebuchet MS\", \"Segoe UI\", system-ui, sans-serif",
+        "source": "self-hosted variable (wght 300-900), scripts/fonts-subset.py",
+        "preload": true,
+        "purpose": "Everything you read or act on."
+      },
+      {
+        "name": "fallback rule",
+        "role": "fallback",
+        "purpose": "Arabic and characters outside the kept ranges render in the system fonts already in each stack. No third hosted family."
+      }
+    ],
     "typographyMeta": {
       "display": {
         "displayName": "Display",
-        "purpose": "The page's single h1. System serif until Source Serif 4 is self-hosted."
+        "purpose": "The page's single h1, in self-hosted Source Serif 4."
       },
-      "headline": { "displayName": "Headline", "purpose": "Section h2." },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section h2."
+      },
       "title": {
         "displayName": "Title",
         "purpose": "h3 and card-level names (declared --type-title)."
       },
       "body": {
         "displayName": "Body",
-        "purpose": "Paragraphs and lede copy, max 65ch. Hanken Grotesk shipped; mocks use Figtree."
+        "purpose": "Paragraphs and lede copy, max 65ch, in self-hosted Figtree. Arabic falls back to the system sans in the stack."
       },
       "label": {
         "displayName": "Label",
@@ -194,25 +222,64 @@
     },
     "motion": [
       {
-        "name": "ease-out",
+        "name": "duration-instant",
+        "value": "80ms",
+        "purpose": "Press feedback and toggles."
+      },
+      {
+        "name": "duration-fast",
+        "value": "140ms",
+        "purpose": "Button colour, border, shadow, opacity and press transitions."
+      },
+      {
+        "name": "duration-base",
+        "value": "220ms",
+        "purpose": "Panels and content entering."
+      },
+      {
+        "name": "duration-slow",
+        "value": "360ms",
+        "purpose": "Large surface movement; use sparingly."
+      },
+      {
+        "name": "ease-enter",
         "value": "cubic-bezier(0.23, 1, 0.32, 1)",
-        "purpose": "Default easing for entering and state changes."
+        "purpose": "Entering and state changes."
+      },
+      {
+        "name": "ease-exit",
+        "value": "cubic-bezier(0.4, 0, 1, 1)",
+        "purpose": "Leaving the screen."
+      },
+      {
+        "name": "ease-out",
+        "value": "var(--ease-enter)",
+        "purpose": "Deprecated alias of ease-enter, kept for one release."
       },
       {
         "name": "ease-in-out",
         "value": "cubic-bezier(0.77, 0, 0.175, 1)",
-        "purpose": "On-screen movement between two positions."
+        "purpose": "On-screen movement between two positions; kept for one release."
       },
       {
-        "name": "duration-state",
-        "value": "150ms",
-        "purpose": "Button colour, border, shadow, opacity and press transitions."
+        "name": "reduced motion",
+        "value": "1ms",
+        "purpose": "prefers-reduced-motion: reduce collapses every --duration-* token (base.css). A literal duration escapes it; verify:design-tokens ratchets literal-duration."
       }
     ],
     "breakpoints": [
-      { "name": "narrow", "value": "38rem" },
-      { "name": "mid", "value": "48rem" },
-      { "name": "wide", "value": "60rem" }
+      {
+        "name": "narrow",
+        "value": "38rem"
+      },
+      {
+        "name": "mid",
+        "value": "48rem"
+      },
+      {
+        "name": "wide",
+        "value": "60rem"
+      }
     ]
   },
   "components": [
@@ -329,7 +396,7 @@
       "Do read colour, radius, type and shadow from the token layer; components reach shadcn semantics (`--primary`, `--border`, `--ring`), never `--scene-*` or new `--teacher-*` names.",
       "Do use clay (`primary`) for every non-destructive action and keep everything else neutral.",
       "Do border every control with `line-control`; keep `line` for decoration.",
-      "Do set h1–h3 in the serif at 500 with -0.02em tracking, and everything interactive in Hanken Grotesk.",
+      "Do set h1–h3 in the serif at 500 with -0.02em tracking, and everything interactive in Figtree.",
       "Do take new sizes from the `--type-*` roles and new gaps from `--space-*`.",
       "Do use logical properties and keep every page free of sideways scroll at 390px.",
       "Do run `pnpm verify:design-tokens`, `pnpm verify:ui <route>`, and `pnpm census:capture` + `pnpm verify:design-census` on every UI slice, together with the /modern-web-guidance, /emil-design-eng (motion) and /impeccable audits.",

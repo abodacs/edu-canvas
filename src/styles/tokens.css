@@ -1,30 +1,53 @@
 /*
- * Hanken Grotesk Variable, split into a preloaded core face (ASCII + the
- * punctuation most pages use) and an extended face (Latin-1 + Latin
- * Extended-A) that only downloads when a page renders one of its characters.
- * Regenerate with scripts/fonts-subset.py; ranges must match
- * public/fonts/manifest.json. font-display and the fallback stack are
- * unchanged from the previous single-file setup.
+ * Self-hosted families (AgDR-0016): Source Serif 4 for display, Figtree for
+ * body. Each is split into a core face (ASCII + the punctuation most pages
+ * use) and an extended face (Latin-1, Latin Extended-A, the maths symbols the
+ * lesson copy uses) that only downloads when a page renders one of its
+ * characters. Regenerate with scripts/fonts-subset.py; its --check fails when
+ * a unicode-range here differs from public/fonts/manifest.json. Arabic and
+ * every uncovered block fall back to the system fonts in each stack.
  */
 @font-face {
   font-display: swap;
-  font-family: "Hanken Grotesk Variable";
+  font-family: "Source Serif 4";
   font-style: normal;
-  font-weight: 100 900;
-  src: url("/fonts/hanken-grotesk-variable-core.woff2")
-    format("woff2-variations");
+  font-weight: 200 900;
+  src: url("/fonts/source-serif-4-core.woff2") format("woff2-variations");
   unicode-range:
     U+0020-007E, U+00B7, U+2013-2014, U+2018-2019, U+201C-201D, U+2026;
 }
 
 @font-face {
   font-display: swap;
-  font-family: "Hanken Grotesk Variable";
+  font-family: "Source Serif 4";
   font-style: normal;
-  font-weight: 100 900;
-  src: url("/fonts/hanken-grotesk-variable-extended.woff2")
-    format("woff2-variations");
-  unicode-range: U+00A0-00B6, U+00B8-017E;
+  font-weight: 200 900;
+  src: url("/fonts/source-serif-4-extended.woff2") format("woff2-variations");
+  unicode-range:
+    U+00A0-00B6, U+00B8-012B, U+012E-0131, U+0134-0165, U+0168-017F, U+2192,
+    U+2212, U+2248, U+2260, U+2264-2265;
+}
+
+@font-face {
+  font-display: swap;
+  font-family: Figtree;
+  font-style: normal;
+  font-weight: 300 900;
+  src: url("/fonts/figtree-core.woff2") format("woff2-variations");
+  unicode-range:
+    U+0020-007E, U+00B7, U+2013-2014, U+2018-2019, U+201C-201D, U+2026;
+}
+
+@font-face {
+  font-display: swap;
+  font-family: Figtree;
+  font-style: normal;
+  font-weight: 300 900;
+  src: url("/fonts/figtree-extended.woff2") format("woff2-variations");
+  unicode-range:
+    U+00A0-00AC, U+00AE-00B6, U+00B8-0113, U+0116-0127, U+012A-012B,
+    U+012E-0137, U+0139-013E, U+0141-0148, U+014A-014D, U+0150-0161,
+    U+0164-0165, U+016A-017E, U+2192, U+2212, U+2260, U+2264-2265;
 }
 
 @custom-variant dark (&:is(.dark *));
@@ -68,7 +91,21 @@
   --teacher-butter: oklch(92.5% 0.065 77deg);
   --teacher-sky: oklch(92.5% 0.04 228deg);
   --teacher-clay: oklch(78% 0.095 40deg);
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+
+  /* Motion (AgDR-0016). New transitions and animations read a duration
+     and an ease token; base.css collapses the durations under
+     prefers-reduced-motion. Older surface rules still use literal
+     durations, which escape that collapse; verify:design-tokens ratchets
+     their count (literal-duration) so it can only fall. */
+  --duration-instant: 80ms;
+  --duration-fast: 140ms;
+  --duration-base: 220ms;
+  --duration-slow: 360ms;
+  --ease-enter: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Aliases kept for one release; new rules use --ease-enter/--ease-exit. */
+  --ease-out: var(--ease-enter);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 
   /*
@@ -79,7 +116,7 @@
 
   /* Type roles. Serif carries display, section and title; sans carries
      everything you act on or read. */
-  --font-display: ui-serif, georgia, "Times New Roman", serif;
+  --font-display: "Source Serif 4", ui-serif, georgia, "Times New Roman", serif;
   --type-display: clamp(2.25rem, 1.6rem + 2.4vw, 3.25rem);
   --type-page: clamp(2rem, 1.5rem + 1.8vw, 3.25rem);
   --type-section: 1.625rem;
@@ -162,8 +199,7 @@
   --radius-md: calc(var(--radius) - 0.125rem);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 0.25rem);
-  --font-sans:
-    "Hanken Grotesk Variable", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --font-sans: "Figtree", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
 }
 
 * {

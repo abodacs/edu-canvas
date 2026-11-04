@@ -10,7 +10,7 @@ Complete IC1 before extending the interface. Use #117, the focused slice of #115
 
 The current teacher page already has a composer, variant summaries, diagnostics, and an interactive semantic preview. Its student page still shows foundation information. Approval, learner grading, and teacher decisions need application behavior behind their controls.
 
-Reuse the current paper background, green accent, Hanken Grotesk type, buttons, and cards. Current CSS is the visual reference. The older `.impeccable.md` mentions a blue accent and needs reconciliation before it guides new design.
+Reuse the current paper background, green accent, the previous Hanken Grotesk type (since replaced by Source Serif 4 and Figtree, see `DESIGN.md`), buttons, and cards. Current CSS is the visual reference. The older `.impeccable.md` mentions a blue accent and needs reconciliation before it guides new design.
 
 ## Use three workspaces
 

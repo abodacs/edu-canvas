@@ -22,33 +22,33 @@ colors:
   focus-ring: "#1f1d1a"
 typography:
   display:
-    fontFamily: 'ui-serif, georgia, "Times New Roman", serif'
+    fontFamily: '"Source Serif 4", ui-serif, georgia, "Times New Roman", serif'
     fontSize: "clamp(2.9rem, 7vw, 6.3rem)"
     fontWeight: 500
     lineHeight: 0.94
     letterSpacing: "-0.02em"
   headline:
-    fontFamily: 'ui-serif, georgia, "Times New Roman", serif'
+    fontFamily: '"Source Serif 4", ui-serif, georgia, "Times New Roman", serif'
     fontSize: "clamp(1.75rem, 3vw, 2.7rem)"
     fontWeight: 500
     lineHeight: 1
     letterSpacing: "-0.02em"
   title:
-    fontFamily: 'ui-serif, georgia, "Times New Roman", serif'
+    fontFamily: '"Source Serif 4", ui-serif, georgia, "Times New Roman", serif'
     fontSize: "1.375rem"
     fontWeight: 500
     letterSpacing: "-0.02em"
   body:
-    fontFamily: '"Hanken Grotesk Variable", "Trebuchet MS", "Segoe UI", system-ui, sans-serif'
+    fontFamily: '"Figtree", "Trebuchet MS", "Segoe UI", system-ui, sans-serif'
     fontSize: "1rem"
     fontWeight: 400
     lineHeight: 1.65
   label:
-    fontFamily: '"Hanken Grotesk Variable", "Trebuchet MS", "Segoe UI", system-ui, sans-serif'
+    fontFamily: '"Figtree", "Trebuchet MS", "Segoe UI", system-ui, sans-serif'
     fontSize: "0.875rem"
     fontWeight: 500
   eyebrow:
-    fontFamily: '"Hanken Grotesk Variable", "Trebuchet MS", "Segoe UI", system-ui, sans-serif'
+    fontFamily: '"Figtree", "Trebuchet MS", "Segoe UI", system-ui, sans-serif'
     fontSize: "0.72rem"
     fontWeight: 800
     lineHeight: 1.3
@@ -182,11 +182,11 @@ One warm accent on a field of warm neutrals; everything that is not an action st
 
 ## Typography
 
-**Display Font:** system serif (`ui-serif`, with Georgia and Times New Roman fallback) **Body Font:** Hanken Grotesk Variable (self-hosted, subset into a core and an extended face; with Trebuchet MS, Segoe UI, system-ui fallback)
+**Display Font:** Source Serif 4 (self-hosted variable, `wght` 200–900 and `opsz` 8–60; with `ui-serif`, Georgia, Times New Roman fallback) **Body Font:** Figtree (self-hosted variable, `wght` 300–900; with Trebuchet MS, Segoe UI, system-ui fallback)
 
 **Character:** A bookish serif at medium weight names the page and its sections; a neutral, slightly humanist grotesque carries every control and every paragraph. The serif speaks once per region; the sans does the work.
 
-Shipped versus planned: the mocks set Source Serif 4 and Figtree. AgDR-0016 still plans to self-host both; AgDR-0017 shipped the system serif stack for display until Source Serif 4 is self-hosted before public release, and Hanken Grotesk stays the body face (PRODUCT.md: in use, not binding). The census allows two families on screen; a third is a failure.
+Both families are self-hosted through `scripts/fonts-subset.py` (AgDR-0016), each split into a core face and an extended face; `public/fonts/manifest.json` records origin, version, licence and hashes. Only the Figtree core face is preloaded; the display faces load with `font-display: swap`. The serif keeps its `opsz` axis with `font-optical-sizing: auto`, so large headings draw with the display optical size and small ones with the text size; that is an intended change from the single-cut system serif. **The Fallback Rule:** Arabic, and any character outside the kept ranges, renders in the system fonts already in each stack; no third hosted family is added for it. The census allows two families on screen; a third is a failure.
 
 ### Hierarchy
 
@@ -285,7 +285,7 @@ The landing mock draws its world in inline SVG: dot `<pattern>` fills (circles 1
 - **Do** read colour, radius, type and shadow from the token layer; components reach shadcn semantics (`--primary`, `--border`, `--ring`), never `--scene-*` or new `--teacher-*` names.
 - **Do** use clay (`primary`) for every non-destructive action and keep everything else neutral.
 - **Do** border every control with `line-control`; keep `line` for decoration.
-- **Do** set h1–h3 in the serif at 500 with -0.02em tracking, and everything interactive in Hanken Grotesk.
+- **Do** set h1–h3 in the serif at 500 with -0.02em tracking, and everything interactive in Figtree.
 - **Do** take new sizes from the `--type-*` roles and new gaps from `--space-*`.
 - **Do** use logical properties and keep every page free of sideways scroll at 390px.
 - **Do** run `pnpm verify:design-tokens`, `pnpm verify:ui <route>`, and `pnpm census:capture` + `pnpm verify:design-census` on every UI slice, together with the /modern-web-guidance, /emil-design-eng (motion) and /impeccable audits.
