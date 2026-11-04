@@ -355,6 +355,30 @@ const validateRelationships = (
   }
 };
 
+/**
+ * Labels in one group must be distinct. A group of identical labels, such as
+ * every source reading "Word problems", carries no lesson and no answer, yet
+ * every other structural rule passes it.
+ */
+const validateDistinctLabels = (
+  items: readonly { label: string }[],
+  field: "sourceItems" | "targetItems",
+  variantId: string,
+  diagnostics: GenerationDiagnostic[]
+): void => {
+  const labels = items.map((item) => item.label.trim().toLowerCase());
+  if (new Set(labels).size === labels.length) {
+    return;
+  }
+  addDiagnostic(diagnostics, {
+    severity: "error",
+    code: "DUPLICATE_ITEM_LABEL",
+    message: "Items in one group must have different labels.",
+    variantId,
+    field,
+  });
+};
+
 const validateVariantCopy = (
   variant: ProviderVariant,
   expectedLanguage: LessonLanguage | undefined,
@@ -428,6 +452,18 @@ const validateVariant = (
     "targetItems",
     variant.id,
     allIds,
+    diagnostics
+  );
+  validateDistinctLabels(
+    variant.sourceItems,
+    "sourceItems",
+    variant.id,
+    diagnostics
+  );
+  validateDistinctLabels(
+    variant.targetItems,
+    "targetItems",
+    variant.id,
     diagnostics
   );
   registerItemIds(

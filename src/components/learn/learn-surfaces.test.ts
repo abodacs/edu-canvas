@@ -11,6 +11,7 @@ import {
   RevealReport,
 } from "./learn-surfaces";
 import { BidiText } from "./bidi-text";
+import { MatchingColumns } from "./learn-board";
 import { learnerCopyFor } from "./learner-copy";
 import type { LearnerAttemptResponse } from "@/shared/learner-contract";
 
@@ -183,6 +184,84 @@ describe("Arabic learner surfaces", () => {
   });
 });
 
+const boardItem = (id: string, label: string, role: "source" | "target") => ({
+  id,
+  label,
+  role,
+});
+const ignoreSelection = (): void => {
+  // The static render never clicks.
+};
+
+const board = (input: {
+  readonly pairs: Readonly<Record<string, string>>;
+  readonly activeSource: string | null;
+  readonly language?: "en" | "ar";
+}): string =>
+  render(
+    createElement(MatchingColumns, {
+      copy: learnerCopyFor(input.language ?? "en"),
+      sourceHeading: "Fractions",
+      targetHeading: "Same amount",
+      sources: [
+        boardItem("half", "1/2", "source"),
+        boardItem("third", "1/3", "source"),
+      ],
+      targets: [
+        boardItem("two-quarters", "2/4", "target"),
+        boardItem("two-sixths", "2/6", "target"),
+      ],
+      pairs: input.pairs,
+      activeSource: input.activeSource,
+      isLocked: false,
+      onSelectSource: ignoreSelection,
+      onSelectTarget: ignoreSelection,
+    })
+  );
+
+describe(MatchingColumns, () => {
+  it("numbers a formed pair on both of its cards, in the order formed", () => {
+    const markup = board({
+      pairs: { third: "two-sixths", half: "two-quarters" },
+      activeSource: null,
+    });
+
+    expect(markup.match(/Pair 1/gu)).toHaveLength(2);
+    expect(markup.match(/Pair 2/gu)).toHaveLength(2);
+    expect(markup.indexOf("1/3")).toBeLessThan(markup.indexOf("Pair 1"));
+    expect(markup).not.toContain("matched");
+  });
+
+  it("marks only paired cards and keeps the tick out of the name", () => {
+    const markup = board({
+      pairs: { half: "two-quarters" },
+      activeSource: null,
+    });
+
+    expect(markup.match(/data-paired="true"/gu)).toHaveLength(2);
+    expect(markup.match(/data-paired="false"/gu)).toHaveLength(2);
+    expect(markup).toContain('<svg aria-hidden="true"');
+  });
+
+  it("presses the waiting source and locks nothing while the board is open", () => {
+    const markup = board({ pairs: {}, activeSource: "half" });
+
+    expect(markup.match(/aria-pressed="true"/gu)).toHaveLength(1);
+    expect(markup).not.toContain("data-locked");
+  });
+
+  it("speaks the pair label in the pack language", () => {
+    const markup = board({
+      pairs: { half: "two-quarters" },
+      activeSource: null,
+      language: "ar",
+    });
+
+    expect(markup).toContain("الزوج 1");
+    expect(markup).not.toContain("Pair 1");
+  });
+});
+
 describe(BidiText, () => {
   it("leaves a sentence period with the Arabic text", () => {
     const markup = render(
@@ -191,6 +270,19 @@ describe(BidiText, () => {
 
     expect(markup).toBe(
       'تمت مطابقة <bdi dir="ltr">3</bdi> من <bdi dir="ltr">6</bdi>.'
+    );
+  });
+
+  it("isolates an all-Latin sentence once on a right-to-left page", () => {
+    const markup = render(
+      createElement(BidiText, {
+        text: "The learner needs another supported example.",
+        direction: "rtl",
+      })
+    );
+
+    expect(markup).toBe(
+      '<bdi dir="ltr">The learner needs another supported example.</bdi>'
     );
   });
 
