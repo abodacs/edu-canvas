@@ -30,6 +30,10 @@ import { loadEnvironmentFile, withScratchApp } from "./ui-gate/app";
 import { gateSeedScripts, readSeedOutputs } from "./ui-gate/seed-output";
 import { signedInState } from "./ui-gate/session";
 import {
+  assertOnPath,
+  dashboardReady,
+  learnBoardReady,
+  loginFormReady,
   reachState,
   readyTimeoutMs,
   seededViews,
@@ -47,49 +51,106 @@ interface CensusPage {
   readonly path: string;
   readonly audience: Audience;
   readonly phone?: boolean;
-  /** Selector that proves the page reached its state; defaults to `main`. */
-  readonly ready?: string;
+  /** Selector that proves the page reached its state; never a bare `main`. */
+  readonly ready: string;
   /** A seeded view whose clicks and `ready` selector reach the state. */
   readonly view?: ViewSpec;
 }
 
+const landingReady = "#page-title.hero-headline";
+const signUpReady = "main:has(#sign-up-heading) form.auth-form";
+const studioReady = "#lesson-prompt";
+const learnMissingParamsReady =
+  "main .learn-status:has-text('Open the link your teacher shared')";
+const learnSignedOutReady = "main .learn-status a[href='/login']";
+
 const ROUTE_PAGES: readonly CensusPage[] = [
-  { name: "landing-signedout", path: "/", audience: "public" },
-  { name: "landing-phone", path: "/", audience: "public", phone: true },
-  { name: "landing-signedin", path: "/", audience: "teacher" },
-  { name: "login", path: "/login", audience: "public" },
-  { name: "login-phone", path: "/login", audience: "public", phone: true },
-  { name: "signup", path: "/sign-up", audience: "public" },
-  { name: "signup-phone", path: "/sign-up", audience: "public", phone: true },
+  {
+    name: "landing-signedout",
+    path: "/",
+    audience: "public",
+    ready: landingReady,
+  },
+  {
+    name: "landing-phone",
+    path: "/",
+    audience: "public",
+    phone: true,
+    ready: landingReady,
+  },
+  {
+    name: "landing-signedin",
+    path: "/",
+    audience: "teacher",
+    ready: landingReady,
+  },
+  { name: "login", path: "/login", audience: "public", ready: loginFormReady },
+  {
+    name: "login-phone",
+    path: "/login",
+    audience: "public",
+    phone: true,
+    ready: loginFormReady,
+  },
+  { name: "signup", path: "/sign-up", audience: "public", ready: signUpReady },
+  {
+    name: "signup-phone",
+    path: "/sign-up",
+    audience: "public",
+    phone: true,
+    ready: signUpReady,
+  },
   {
     name: "studio-composer",
     path: "/workspace",
     audience: "teacher",
-    ready: "#lesson-prompt",
+    ready: studioReady,
   },
   {
     name: "phone-studio",
     path: "/workspace",
     audience: "teacher",
     phone: true,
-    ready: "#lesson-prompt",
+    ready: studioReady,
   },
-  { name: "dashboard", path: "/dashboard", audience: "teacher" },
+  {
+    name: "dashboard",
+    path: "/dashboard",
+    audience: "teacher",
+    ready: dashboardReady,
+  },
   {
     name: "dashboard-phone",
     path: "/dashboard",
     audience: "teacher",
     phone: true,
+    ready: dashboardReady,
   },
-  { name: "learn-board", path: "/learn?{learner}", audience: "student" },
+  {
+    name: "learn-board",
+    path: "/learn?{learner}",
+    audience: "student",
+    ready: learnBoardReady,
+  },
   {
     name: "learn-phone",
     path: "/learn?{learner}",
     audience: "student",
     phone: true,
+    ready: learnBoardReady,
   },
-  { name: "learn-missing-params", path: "/learn", audience: "student" },
-  { name: "learn-signedout", path: "/learn?{learner}", audience: "public" },
+  {
+    name: "learn-missing-params",
+    path: "/learn",
+    audience: "student",
+    ready: learnMissingParamsReady,
+  },
+  {
+    name: "learn-signedout",
+    path: "/learn?{learner}",
+    audience: "public",
+    ready: learnSignedOutReady,
+  },
 ];
 
 /**
@@ -104,6 +165,7 @@ const censusPages = (seed: SeedOutputs): CensusPage[] => {
       path: viewUrl("", view, { seed, viewport }),
       audience: view.audience,
       phone: viewport === "phone",
+      ready: view.ready,
       view,
     }))
   );
@@ -237,12 +299,17 @@ const capture = async (
     const url = `${baseUrl}${page.path}`;
     try {
       await tab.goto(url, { waitUntil: "load" });
-      await (page.view
-        ? reachState(tab, page.view)
-        : tab
-            .locator(page.ready ?? "main")
-            .first()
-            .waitFor({ state: "visible", timeout: readyTimeoutMs }));
+      if (page.view) {
+        await reachState(tab, page.view);
+      } else {
+        await tab
+          .locator(page.ready)
+          .first()
+          .waitFor({ state: "visible", timeout: readyTimeoutMs });
+        // A redirect (a lost session sending a page to /login) is a wrong
+        // state even when the new page renders cleanly.
+        assertOnPath(tab, new URL(url).pathname);
+      }
       await tab.waitForTimeout(settleMs);
       records.push({
         page: page.name,
