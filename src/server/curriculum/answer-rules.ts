@@ -35,7 +35,8 @@ const wordTokenPattern = /[\p{L}\p{N}\p{M}]+/gu;
 const integerTokenPattern = /^\d$/u;
 const integerLiteralPattern = /^\d+$/u;
 const fractionPattern = /^(?<numerator>\d+)\s*\/\s*(?<denominator>\d+)$/u;
-const unknownSymbolPattern = /^\p{L}$/u;
+// One letter, a blank box (□) or a question mark: how a teacher writes the unknown.
+const unknownSymbolPattern = /^(?:\p{L}|□|\?)$/u;
 
 /**
  * The comparison form for text a rule checks literally: case, whitespace, and
