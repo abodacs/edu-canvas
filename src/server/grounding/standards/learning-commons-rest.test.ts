@@ -516,6 +516,44 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
     expect(resolution.gaps.map((gap) => gap.code)).toContain("standard-absent");
   });
 
+  it("keeps a raw provider payload out of the provider error", async () => {
+    const secret = "raw-provider-payload-secret";
+    const transport: LearningCommonsTransport = {
+      findStandard: () => Promise.resolve(response({ secret }, 503)),
+      findComponents: () => Promise.resolve(response({ secret }, 200)),
+      findProgression: () => Promise.resolve(response({ secret }, 200)),
+    };
+
+    let caught: unknown;
+    try {
+      await createAdapter(transport).resolve({
+        jurisdiction: "Multi-State",
+        statementCode: "4.NF.A.1",
+      });
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught).toBeInstanceOf(Error);
+    expect((caught as Error).message).toContain("503");
+    expect((caught as Error).cause).toBeUndefined();
+    expect(JSON.stringify(caught)).not.toContain(secret);
+  });
+
+  it("does not borrow another envelope's facts for an unsupported jurisdiction", async () => {
+    const resolution = await createAdapter({
+      findStandard: () => Promise.resolve(response({ standards: [] })),
+      findComponents: () => Promise.resolve(response({ standards: [] })),
+      findProgression: () => Promise.resolve(response({ standards: [] })),
+    }).resolve({ jurisdiction: "Atlantis", statementCode: "4.NF.A.1" });
+
+    expect(resolution.subject).toBe("Unknown");
+    expect(resolution.grade).toBe(4);
+    expect(resolution.gaps.map((gap) => gap.code)).toStrictEqual([
+      "unsupported-envelope",
+    ]);
+  });
+
   it("builds fixed REST requests and refuses an arbitrary origin", async () => {
     const calls: { url: string; apiKey: string | null }[] = [];
     const fetchImpl: typeof fetch = (input, init) => {

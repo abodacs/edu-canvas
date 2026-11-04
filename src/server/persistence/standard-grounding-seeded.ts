@@ -19,7 +19,7 @@ const clone = (value: StandardGroundingRecord): StandardGroundingRecord => {
   return structuredClone(value);
 };
 
-export const createSeededStandardGroundingStore =
+const createSeededStandardGroundingStore =
   (): SeededStandardGroundingStore => {
     return { records: new Map() };
   };

@@ -4,12 +4,15 @@ import {
   LEARNING_COMMONS_PROVENANCE,
   PILOT_STANDARD_REGISTRY,
   findRegistryEntry,
+  gradeFromStatementCode,
 } from "./pilot-registry";
 import {
   GROUNDING_TEXT_LIMITS,
   StandardGroundingError,
   boundText,
+  currentIso,
   hashStandardGrounding,
+  resolutionTimeout,
   safeSourceLink,
   sha256Hex,
 } from "./types";
@@ -192,27 +195,24 @@ export interface LearningCommonsAdapterOptions {
   readonly now?: () => string;
 }
 
-const CURRENT_ISO = (): string => new Date().toISOString();
-
-const providerUnavailable = (cause?: unknown): StandardGroundingError => {
+/**
+ * A provider failure keeps only the HTTP status, never the raw response body.
+ * A payload can carry a standard's text, a token echo, or unrelated tenant data;
+ * the error goes to logs and recovery.
+ */
+const providerUnavailable = (status?: number): StandardGroundingError => {
   return new StandardGroundingError(
-    "The Learning Commons provider is unavailable. Retry the retrieval.",
+    status === undefined
+      ? "The Learning Commons provider is unavailable. Retry the retrieval."
+      : `The Learning Commons provider is unavailable (HTTP ${status}). Retry the retrieval.`,
     "provider-unavailable",
-    { retryable: true, recovery: "retry", cause }
-  );
-};
-
-const timeout = (cause?: unknown): StandardGroundingError => {
-  return new StandardGroundingError(
-    "The Learning Commons retrieval exceeded its total deadline.",
-    "resolution-timeout",
-    { retryable: true, recovery: "retry", cause }
+    { retryable: true, recovery: "retry" }
   );
 };
 
 const assertNotAborted = (signal: AbortSignal | undefined): void => {
   if (signal?.aborted) {
-    throw timeout();
+    throw resolutionTimeout();
   }
 };
 
@@ -487,21 +487,22 @@ const entryForEnvelopeMiss = (
   registry: PilotStandardRegistry,
   input: ResolveStandardInput
 ): StandardRegistryEntry => {
-  const envelope =
-    registry.envelopes.find((candidate) => {
-      return candidate.jurisdiction === input.jurisdiction;
-    }) ?? registry.envelopes[0];
+  const envelope = registry.envelopes.find((candidate) => {
+    return candidate.jurisdiction === input.jurisdiction;
+  });
+  const grade = gradeFromStatementCode(input.statementCode);
   return {
     id: `${input.jurisdiction}-${input.statementCode}`,
     kind: "boundary",
     jurisdiction: input.jurisdiction,
     statementCode: input.statementCode,
+    // Never borrow another envelope's subject. An unsupported jurisdiction has
+    // no registered facts, so the record says so.
     subject: envelope?.subject ?? "Unknown",
-    grade: Math.trunc(Number(input.statementCode)) || 0,
+    grade: Number.isNaN(grade) ? 0 : grade,
     frameworkId: "unregistered",
     prerequisiteResolution: "direct",
     provenance: LEARNING_COMMONS_PROVENANCE,
-    expectedGaps: [],
   };
 };
 
@@ -514,7 +515,7 @@ export const createLearningCommonsAdapter = (
   options: LearningCommonsAdapterOptions
 ): LearningCommonsAdapter => {
   const registry = options.registry ?? PILOT_STANDARD_REGISTRY;
-  const now = options.now ?? CURRENT_ISO;
+  const now = options.now ?? currentIso;
 
   return {
     async resolve(input, context = {}) {
@@ -534,10 +535,10 @@ export const createLearningCommonsAdapter = (
       const statementResponse = await options.transport
         .findStandard(input, context)
         .catch((error: unknown) => {
-          throw providerUnavailable(error);
+          throw providerUnavailable();
         });
       if (isServerFailure(statementResponse)) {
-        throw providerUnavailable(statementResponse);
+        throw providerUnavailable(statementResponse.status);
       }
       if (isClientFailure(statementResponse)) {
         return unresolved(
@@ -607,10 +608,10 @@ export const createLearningCommonsAdapter = (
           context
         )
         .catch((error: unknown) => {
-          throw providerUnavailable(error);
+          throw providerUnavailable();
         });
       if (isServerFailure(componentResponse)) {
-        throw providerUnavailable(componentResponse);
+        throw providerUnavailable(componentResponse.status);
       }
       const components = isClientFailure(componentResponse)
         ? []
@@ -632,10 +633,10 @@ export const createLearningCommonsAdapter = (
           context
         )
         .catch((error: unknown) => {
-          throw providerUnavailable(error);
+          throw providerUnavailable();
         });
       if (isServerFailure(progressionResponse)) {
-        throw providerUnavailable(progressionResponse);
+        throw providerUnavailable(progressionResponse.status);
       }
       let prerequisiteOutcome: {
         readonly prerequisites: readonly GroundedPrerequisite[];
