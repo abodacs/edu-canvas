@@ -537,7 +537,7 @@ describe("AT-01 to AT-04: credential verification", () => {
     expect(response.status).toBe(200);
     expect(body).toMatchObject({
       status: "active",
-      actor: { role: "student", displayName: "Lina Farouk" },
+      actor: { role: "student", displayName: "Lily Parker" },
     });
     expect(resolved.status).toBe(200);
     expect(resolvedBody).toMatchObject({

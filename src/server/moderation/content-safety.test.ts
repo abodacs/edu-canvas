@@ -74,7 +74,7 @@ describe(createDefaultContentSafety, () => {
     ],
     [
       "a synthetic roster name",
-      "Omar Nabil wrote 2/3 = 3/4. What misconception does that show?",
+      "Daniel Ross wrote 2/3 = 3/4. What misconception does that show?",
     ],
   ])("blocks %s as personal data", (_label, prompt) => {
     const result = safety.checkPrompt(prompt);

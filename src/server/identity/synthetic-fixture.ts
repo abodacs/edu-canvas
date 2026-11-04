@@ -97,14 +97,14 @@ const fixture = {
     },
   },
   actors: [
-    { id: "actor_teacher_amira", displayName: "Amira Haddad" },
-    { id: "actor_teacher_bilal", displayName: "Bilal Nasser" },
-    { id: "actor_learner_lina", displayName: "Lina Farouk" },
-    { id: "actor_learner_yusuf", displayName: "Yusuf Karim" },
-    { id: "actor_learner_omar", displayName: "Omar Nabil" },
-    { id: "actor_learner_maya", displayName: "Maya Rahman" },
-    { id: "actor_learner_samir", displayName: "Samir Haddad" },
-    { id: "actor_learner_noor", displayName: "Noor Salah" },
+    { id: "actor_teacher_amira", displayName: "Emily Carter" },
+    { id: "actor_teacher_bilal", displayName: "Michael Brooks" },
+    { id: "actor_learner_lina", displayName: "Lily Parker" },
+    { id: "actor_learner_yusuf", displayName: "Jacob Reed" },
+    { id: "actor_learner_omar", displayName: "Ethan Cole" },
+    { id: "actor_learner_maya", displayName: "Ava Turner" },
+    { id: "actor_learner_samir", displayName: "Noah Bennett" },
+    { id: "actor_learner_noor", displayName: "Grace Hall" },
   ],
   memberships: [
     {
@@ -144,7 +144,7 @@ const fixture = {
       role: "student" as const,
       learner: {
         id: "learner_lina",
-        displayName: "Lina Farouk",
+        displayName: "Lily Parker",
         demoHandle: "lina.demo",
       },
     },
@@ -155,7 +155,7 @@ const fixture = {
       role: "student" as const,
       learner: {
         id: "learner_yusuf",
-        displayName: "Yusuf Karim",
+        displayName: "Jacob Reed",
         demoHandle: "yusuf.demo",
       },
     },
@@ -166,7 +166,7 @@ const fixture = {
       role: "student" as const,
       learner: {
         id: "learner_omar",
-        displayName: "Omar Nabil",
+        displayName: "Ethan Cole",
         demoHandle: "omar.demo",
       },
     },
@@ -177,7 +177,7 @@ const fixture = {
       role: "student" as const,
       learner: {
         id: "learner_maya",
-        displayName: "Maya Rahman",
+        displayName: "Ava Turner",
         demoHandle: "maya.demo",
       },
     },
@@ -188,7 +188,7 @@ const fixture = {
       role: "student" as const,
       learner: {
         id: "learner_samir",
-        displayName: "Samir Haddad",
+        displayName: "Noah Bennett",
         demoHandle: "samir.demo",
       },
     },
@@ -199,7 +199,7 @@ const fixture = {
       role: "student" as const,
       learner: {
         id: "learner_noor",
-        displayName: "Noor Salah",
+        displayName: "Grace Hall",
         demoHandle: "noor.demo",
       },
     },

@@ -54,7 +54,7 @@ const openReview = async (): Promise<ReviewPack> => {
   const store = createSeededPackStore([
     {
       id: "learner_omar",
-      displayName: "Omar Nabil",
+      displayName: "Ethan Cole",
       tenantId: syntheticSeed.tenant.id,
     },
   ]);
@@ -140,7 +140,7 @@ describe("review surfaces", () => {
     expect(markup).toContain(review.version.artifactHash.slice(0, 12));
     expect(markup).toContain("Assign to learner");
     expect(markup).toContain("Publish and assign");
-    expect(markup).toContain("Omar Nabil");
+    expect(markup).toContain("Ethan Cole");
   });
 
   it("names the published outcome the system actually produced", async () => {
@@ -163,13 +163,13 @@ describe("review surfaces", () => {
 
     const assigned = render({
       ...ids,
-      learnerName: "Omar Nabil",
+      learnerName: "Ethan Cole",
       learnerAssignmentId: "assignment_1",
       learnerVariantId: "variant_1",
     });
     const packOnly = render({
       ...ids,
-      learnerName: "Omar Nabil",
+      learnerName: "Ethan Cole",
       learnerAssignmentId: null,
       learnerVariantId: null,
     });

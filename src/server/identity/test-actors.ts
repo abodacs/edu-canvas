@@ -15,7 +15,7 @@ import type { LearnerActor, TeacherActor } from "./types";
  */
 const defaultTeacherActor: TeacherActor = {
   actorId: parseActorId("actor_teacher_amira"),
-  displayName: "Amira Haddad",
+  displayName: "Emily Carter",
   tenantId: parseTenantId("tenant_school_north"),
   tenantName: "Grade 4A · Equivalent Fractions",
   membershipId: parseMembershipId("membership_amira_north"),
@@ -28,7 +28,7 @@ const defaultTeacherActor: TeacherActor = {
 
 const defaultLearnerActor: LearnerActor = {
   actorId: parseActorId("actor_learner_lina"),
-  displayName: "Lina Farouk",
+  displayName: "Lily Parker",
   tenantId: parseTenantId("tenant_school_north"),
   tenantName: "Grade 4A · Equivalent Fractions",
   membershipId: parseMembershipId("membership_lina_north"),

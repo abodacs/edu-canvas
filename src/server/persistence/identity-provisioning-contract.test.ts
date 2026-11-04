@@ -280,7 +280,7 @@ describe.skipIf(!isRunDatabaseTests)(
           role: "student",
           learner: {
             id: learnerId,
-            displayName: "Lina Farouk",
+            displayName: "Lily Parker",
             demoHandle: `lina.demo-${runId}`,
           },
         })
@@ -295,7 +295,7 @@ describe.skipIf(!isRunDatabaseTests)(
         id: learnerId,
         tenant_id: learnerTenantId,
         role: "student",
-        display_name: "Lina Farouk",
+        display_name: "Lily Parker",
         demo_handle: `lina.demo-${runId}`,
         is_active: true,
       });
@@ -314,7 +314,7 @@ describe.skipIf(!isRunDatabaseTests)(
           role: "student",
           learner: {
             id: learnerId,
-            displayName: "Lina Farouk",
+            displayName: "Lily Parker",
             demoHandle: `lina.demo-${runId}`,
           },
         })

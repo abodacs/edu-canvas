@@ -36,7 +36,7 @@ describe("trusted provisioning", () => {
       providerIssuer: "deterministic-local",
       providerSubject: "subject_teacher_amira",
       actorId: parseActorId("actor_teacher_amira"),
-      displayName: "Amira Haddad",
+      displayName: "Emily Carter",
       ...principal,
     });
 

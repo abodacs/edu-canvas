@@ -7,6 +7,7 @@ import {
 } from "@/shared/a2ui-contract";
 
 import { builtInStandardsPacks } from "./curriculum/built-in-packs";
+import { syntheticLearnerDirectory } from "./identity/synthetic-fixture";
 import { getSyntheticSeedCounts } from "./persistence/seed-catalog";
 import { assertSeedIntegrity, syntheticSeed } from "./seed-data";
 
@@ -44,5 +45,27 @@ describe("synthetic seed", () => {
     expect(
       Object.keys(publicContent).toSorted((a, b) => a.localeCompare(b))
     ).toStrictEqual(["prompt", "source", "targets"]);
+  });
+
+  // Two seeded students once shared one display name, so the publish picker
+  // bound the identity without a membership and the film captured the wrong
+  // learner. Every student a teacher can see in one class has its own name.
+  it("gives every seeded student in a class a distinct display name", () => {
+    const students = [
+      ...syntheticSeed.identities
+        .filter((identity) => identity.role === "student")
+        .map((identity) => {
+          return {
+            tenantId: syntheticSeed.tenant.id,
+            displayName: identity.displayName,
+          };
+        }),
+      ...syntheticLearnerDirectory,
+    ];
+    const keys = students.map(
+      (student) => `${student.tenantId}:${student.displayName}`
+    );
+
+    expect(new Set(keys).size).toBe(keys.length);
   });
 });

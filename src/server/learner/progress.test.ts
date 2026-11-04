@@ -335,7 +335,7 @@ describe("progress read boundaries (issue #8 AC3)", () => {
 
     expect(progress.runs).toHaveLength(1);
     expect(progress.runs[0]?.learnerId).toBe(fixtureLearnerId);
-    expect(progress.runs[0]?.learnerDisplayName).toBe("Lina Farouk");
+    expect(progress.runs[0]?.learnerDisplayName).toBe("Lily Parker");
   });
 
   it("never carries an answer key or private relationship", async () => {
