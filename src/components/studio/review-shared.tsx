@@ -1,5 +1,6 @@
 import { Check, X } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 import type { PublicationClientError } from "@/lib/publication-client";
@@ -59,17 +60,11 @@ export const ApprovalState = ({
   readonly label: string;
 }) => {
   return (
-    <span
-      className={
-        approved
-          ? "review-approval review-approval--approved"
-          : "review-approval"
-      }
-    >
+    <Badge tone={approved ? "ok" : "idle"}>
       {approved ? <Check aria-hidden="true" /> : null}
       {approved ? "Approved" : "Not approved"}
       <span className="sr-only"> {label}</span>
-    </span>
+    </Badge>
   );
 };
 
