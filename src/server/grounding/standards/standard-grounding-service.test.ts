@@ -139,34 +139,36 @@ describe("standard grounding service (issue 218)", () => {
 
   it("retries a retryable provider failure once and records two attempts", async () => {
     const recorded = createRecordedLearningCommonsTransport();
-    let standardAttempts = 0;
+    let frameworkAttempts = 0;
     const flakyTransport: LearningCommonsTransport = {
       ...recorded,
-      findStandard: (input, context) => {
-        standardAttempts += 1;
-        if (standardAttempts === 1) {
+      findFrameworks: (input, context) => {
+        frameworkAttempts += 1;
+        if (frameworkAttempts === 1) {
           return Promise.reject(new Error("connection reset"));
         }
-        return recorded.findStandard(input, context);
+        return recorded.findFrameworks(input, context);
       },
     };
     const service = createService(flakyTransport);
 
     const record = await service.resolve(command());
 
-    expect(standardAttempts).toBe(2);
+    expect(frameworkAttempts).toBe(2);
     expect(record.retrievalAttempt).toBe(2);
   });
 
   it("stops at two attempts and surfaces the final provider failure", async () => {
-    let standardAttempts = 0;
+    let frameworkAttempts = 0;
     const failingTransport: LearningCommonsTransport = {
-      findStandard: () => {
-        standardAttempts += 1;
+      findFrameworks: () => {
+        frameworkAttempts += 1;
         return Promise.reject(new Error("provider down"));
       },
-      findComponents: () => Promise.race([]),
-      findProgression: () => Promise.race([]),
+      findStandardsPage: () => Promise.race([]),
+      findComponentsPage: () => Promise.race([]),
+      findPrerequisitesPage: () => Promise.race([]),
+      findCrosswalks: () => Promise.race([]),
     };
     const service = createService(failingTransport);
 
@@ -174,20 +176,26 @@ describe("standard grounding service (issue 218)", () => {
       code: "provider-unavailable",
       retryable: true,
     });
-    expect(standardAttempts).toBe(2);
+    expect(frameworkAttempts).toBe(2);
   });
 
   it("persists the final gap from the retry instead of hiding it", async () => {
     const recorded = createRecordedLearningCommonsTransport();
-    let standardAttempts = 0;
+    let frameworkAttempts = 0;
     const flakyTransport: LearningCommonsTransport = {
       ...recorded,
-      findStandard: () => {
-        standardAttempts += 1;
-        if (standardAttempts === 1) {
+      findFrameworks: () => {
+        frameworkAttempts += 1;
+        if (frameworkAttempts === 1) {
           return Promise.reject(new Error("connection reset"));
         }
-        return Promise.resolve({ status: 200, body: { standards: [] } });
+        return Promise.resolve({
+          status: 200,
+          body: {
+            data: [],
+            pagination: { hasMore: false, nextCursor: null },
+          },
+        });
       },
     };
     const service = createService(flakyTransport);
@@ -202,9 +210,11 @@ describe("standard grounding service (issue 218)", () => {
 
   it("bounds the whole pipeline with the ten-second deadline", async () => {
     const hangingTransport: LearningCommonsTransport = {
-      findStandard: () => Promise.race([]),
-      findComponents: () => Promise.race([]),
-      findProgression: () => Promise.race([]),
+      findFrameworks: () => Promise.race([]),
+      findStandardsPage: () => Promise.race([]),
+      findComponentsPage: () => Promise.race([]),
+      findPrerequisitesPage: () => Promise.race([]),
+      findCrosswalks: () => Promise.race([]),
     };
     const service = createService(hangingTransport, { deadlineMs: 10 });
 
@@ -229,9 +239,11 @@ describe("standard grounding service (issue 218)", () => {
 
   it("maps a provider server failure to a retryable provider-unavailable error", async () => {
     const failingTransport: LearningCommonsTransport = {
-      findStandard: () => Promise.resolve({ status: 503, body: null }),
-      findComponents: () => Promise.resolve({ status: 503, body: null }),
-      findProgression: () => Promise.resolve({ status: 503, body: null }),
+      findFrameworks: () => Promise.resolve({ status: 503, body: null }),
+      findStandardsPage: () => Promise.resolve({ status: 503, body: null }),
+      findComponentsPage: () => Promise.resolve({ status: 503, body: null }),
+      findPrerequisitesPage: () => Promise.resolve({ status: 503, body: null }),
+      findCrosswalks: () => Promise.resolve({ status: 503, body: null }),
     };
     const service = createService(failingTransport);
 
