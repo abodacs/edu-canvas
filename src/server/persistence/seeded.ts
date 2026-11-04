@@ -191,5 +191,20 @@ export const createSeededPersistence = (
       const record = generationStore.get(`${tenantId}:${requestId}`);
       return Promise.resolve(record ? structuredClone(record) : undefined);
     },
+
+    writeAdvisoryReview(tenantId, requestId, review) {
+      const key = `${tenantId}:${requestId}`;
+      const existing = generationStore.get(key);
+      if (!existing || existing.state !== "ready-for-review") {
+        return Promise.resolve(false);
+      }
+      // #223: additive only. The draft, state, diagnostics and gate stay as
+      // they were; the advisory result rides in its own field.
+      generationStore.set(
+        key,
+        structuredClone({ ...existing, advisoryReview: review })
+      );
+      return Promise.resolve(true);
+    },
   };
 };

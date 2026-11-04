@@ -60,7 +60,12 @@ export const recordJsonColumns: Partial<
   learner_attempts: ["selected_pairs", "assistance_event_ids"],
   teacher_decisions: ["proposal"],
   operation_receipts: ["result_ids"],
-  lesson_draft_requests: ["diagnostics", "draft", "provenance"],
+  lesson_draft_requests: [
+    "diagnostics",
+    "draft",
+    "provenance",
+    "advisory_review",
+  ],
 };
 
 export interface UniqueConstraint {

@@ -141,6 +141,13 @@
       "when": 1793797511552,
       "tag": "0019_tearful_white_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1793799850613,
+      "tag": "0020_pretty_radioactive_man",
+      "breakpoints": true
     }
   ]
 }

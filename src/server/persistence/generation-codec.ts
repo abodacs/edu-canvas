@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import {
+  advisoryReviewSchema,
   difficultyValues,
   generationStateValues,
   languageValues,
@@ -100,6 +101,8 @@ export interface StoredGenerationRequestRow {
   provenance: unknown;
   sourceSnapshotId: string | null;
   revisesRequestId?: string | null;
+  /** #223: absent (null) on every row written before the advisory reviewer. */
+  advisoryReview?: unknown;
   createdAt: string | Date;
   updatedAt: string | Date;
 }
@@ -247,6 +250,11 @@ export const hydrateGenerationRecord = (
     ...(row.revisesRequestId && { revisesRequestId: row.revisesRequestId }),
   });
   const state = stateSchema.parse(row.state);
+  const advisoryReview = parseStoredJson(
+    row.advisoryReview,
+    advisoryReviewSchema,
+    "advisory review"
+  );
 
   return {
     requestId: row.requestId,
@@ -260,6 +268,7 @@ export const hydrateGenerationRecord = (
     ...(fractionDraft && { fractionDraft }),
     ...(gate && { gate }),
     ...(provenance && { provenance }),
+    ...(advisoryReview && { advisoryReview }),
     attempts: attempts.map<GenerationAttemptRecord>((attempt) => {
       const attemptProvenance = parseStoredJson<ProviderProvenance>(
         attempt.provenance,

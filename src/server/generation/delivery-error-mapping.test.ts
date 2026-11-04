@@ -4,7 +4,8 @@ import { generationRequestErrorStatusByCode } from "@/shared/generation-contract
 
 import { IdentityError } from "../identity/errors";
 import { GenerationLimitError } from "../limits/errors";
-import { mapGenerationError } from "./delivery.server";
+import { mapAdvisoryReviewError, mapGenerationError } from "./delivery.server";
+import { AdvisoryReviewError } from "./advisory-review";
 import {
   GenerationRequestError,
   GENERATION_INPUT_INVALID_MESSAGE,
@@ -129,6 +130,56 @@ describe("generation delivery error mapping", () => {
       retryAfterSeconds: 42,
       message:
         "Too many generation requests right now. Try again in 42 seconds.",
+    });
+  });
+});
+
+describe("advisory review delivery error mapping", () => {
+  it.each([
+    ["ADVISORY_REVIEW_FORBIDDEN", 403],
+    ["ADVISORY_REVIEW_NOT_READY", 409],
+    ["ADVISORY_REVIEW_STALE", 409],
+  ] as const)("%s keeps its typed status", async (code, status) => {
+    const response = mapAdvisoryReviewError(
+      new AdvisoryReviewError(code, `advisory review refused: ${code}`)
+    );
+
+    expect({
+      status: response.status,
+      ...(await errorBodyOf(response)),
+    }).toStrictEqual({
+      status,
+      code,
+      message: `advisory review refused: ${code}`,
+    });
+  });
+
+  it("maps an unavailable provider to a 503 without leaking the cause", async () => {
+    const response = mapAdvisoryReviewError(
+      new Error("connect ECONNREFUSED 127.0.0.1")
+    );
+
+    expect({
+      status: response.status,
+      ...(await errorBodyOf(response)),
+    }).toStrictEqual({
+      status: 503,
+      code: "ADVISORY_REVIEW_UNAVAILABLE",
+      message:
+        "The advisory review is temporarily unavailable. Try again later.",
+    });
+  });
+
+  it("keeps the identity guard rejection as a 403", async () => {
+    const response = mapAdvisoryReviewError(new IdentityError("FORBIDDEN"));
+
+    expect({
+      status: response.status,
+      ...(await errorBodyOf(response)),
+    }).toStrictEqual({
+      status: 403,
+      code: "FORBIDDEN",
+      message: "You do not have access to this resource.",
     });
   });
 });
