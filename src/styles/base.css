@@ -1,3 +1,32 @@
+/*
+ * The one reduced-motion rule (AgDR-0016). Collapsing the duration tokens
+ * stops every transition and finite animation that reads them; an infinite
+ * animation would still loop at 1ms, so its iteration count drops to one
+ * (it settles on its last frame). A literal duration escapes the collapse,
+ * which is why verify:design-tokens ratchets literal-duration.
+ *
+ * a2ui.css still carries an older universal reduced-motion block that forces
+ * every literal duration to 0.01ms and sets the same iteration count. It
+ * overlaps this rule on purpose until the review slice tokenises its
+ * transitions and deletes that block; the two agree, so neither wins.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 1ms;
+    --duration-fast: 1ms;
+    --duration-base: 1ms;
+    --duration-slow: 1ms;
+  }
+
+  /* !important because a component's animation shorthand resets the
+     iteration count at a higher specificity than any selector here. */
+  *,
+  ::before,
+  ::after {
+    animation-iteration-count: 1 !important;
+  }
+}
+
 /* Ambient warmth: a soft, fixed wash behind the canvas. Subtle on purpose. */
 body::before {
   position: fixed;
@@ -188,7 +217,7 @@ h2 {
   }
 }
 
-/* ── primitives (foundation) ──
+/* -- primitives (foundation) --
  * Rules for src/components/ui primitives. Every value is a token; state is a
  * data attribute so no slice invents a modifier class. Button keeps today's
  * look through its utility classes; only its busy state lives here.
@@ -212,7 +241,7 @@ h2 {
   border: 2px solid currentcolor;
   border-radius: var(--radius-pill);
   margin: auto;
-  animation: btn-spin 0.8s linear infinite;
+  animation: btn-spin calc(var(--duration-slow) * 2) linear infinite;
   block-size: 1em;
   border-inline-end-color: transparent;
   inline-size: 1em;
@@ -428,7 +457,7 @@ h2 {
   color: var(--foreground);
 }
 
-/* ── app shell (foundation) ──
+/* -- app shell (foundation) --
    AppShell, SkipLink and SyntheticDataMarker (src/components/ui). Slices read
    these classes; only the foundation changes them. */
 .skip-link {
