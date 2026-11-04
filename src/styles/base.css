@@ -268,3 +268,243 @@ h2 {
   gap: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
 }
+
+/* ── primitives (foundation) ──
+ * Rules for src/components/ui primitives. Every value is a token; state is a
+ * data attribute so no slice invents a modifier class. Button keeps today's
+ * look through its utility classes; only its busy state lives here.
+ */
+
+.btn[data-busy] {
+  position: relative;
+}
+
+/* The label stays mounted so the width holds; the spinner covers it. */
+.btn__label {
+  display: contents;
+}
+
+.btn[data-busy] .btn__label {
+  visibility: hidden;
+}
+
+.btn__spinner {
+  position: absolute;
+  border: 2px solid currentcolor;
+  border-radius: var(--radius-pill);
+  margin: auto;
+  animation: btn-spin 0.8s linear infinite;
+  block-size: 1em;
+  border-inline-end-color: transparent;
+  inline-size: 1em;
+  inset: 0;
+}
+
+@keyframes btn-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn__spinner {
+    animation: none;
+  }
+}
+
+.card {
+  padding: var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  color: var(--card-foreground);
+}
+
+.card.lift {
+  box-shadow: var(--shadow-lift);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-size: var(--type-micro);
+  font-weight: 650;
+  gap: var(--space-1);
+  inline-size: fit-content;
+  padding-block: 2px;
+  padding-inline: var(--space-2);
+  white-space: nowrap;
+}
+
+.pill[data-tone="ok"] {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+.pill[data-tone="warn"] {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.pill[data-tone="stop"] {
+  background: color-mix(in oklch, var(--destructive) 12%, var(--card));
+  color: var(--destructive);
+}
+
+/* Scoped to the primitive so the sign-in slice's own .field rules are untouched. */
+.field[data-slot="field"] {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.field[data-slot="field"] .field__label {
+  color: var(--foreground);
+  font-size: var(--type-label);
+  font-weight: 700;
+}
+
+.field[data-slot="field"] .field__hint {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: var(--type-meta);
+}
+
+.field[data-slot="field"] .field__error {
+  margin: 0;
+  color: var(--destructive);
+  font-size: var(--type-meta);
+  font-weight: 650;
+}
+
+.field[data-slot="field"] :is(input, textarea, select) {
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-field);
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+  inline-size: 100%;
+  padding-block: var(--space-2);
+  padding-inline: var(--space-3);
+}
+
+.field[data-slot="field"][data-invalid] :is(input, textarea, select) {
+  border-color: var(--destructive);
+}
+
+.notice {
+  display: grid;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  border-inline-start-width: 4px;
+  color: var(--foreground);
+  gap: var(--space-2);
+  padding-block: var(--space-3);
+  padding-inline: var(--space-4);
+}
+
+.notice[data-tone="warn"] {
+  border-inline-start-color: var(--accent-foreground);
+}
+
+.notice[data-tone="stop"] {
+  border-inline-start-color: var(--destructive);
+}
+
+.notice__title {
+  margin: 0;
+  font-size: var(--type-body);
+  font-weight: 700;
+}
+
+.notice__body > :first-child {
+  margin-block-start: 0;
+}
+
+.notice__body > :last-child {
+  margin-block-end: 0;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+  border: 0;
+  margin: 0;
+  gap: var(--space-2);
+  min-inline-size: 0;
+}
+
+.chips__legend {
+  padding: 0;
+  font-size: var(--type-label);
+  font-weight: 700;
+  margin-block-end: var(--space-2);
+}
+
+.chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  color: var(--foreground);
+  font: inherit;
+  font-size: var(--type-secondary);
+  gap: var(--space-1);
+  min-block-size: 2.25rem;
+  padding-inline: var(--space-3);
+}
+
+.chip[data-checked],
+.chip[data-pressed] {
+  border-color: var(--foreground);
+  background: var(--foreground);
+  color: var(--background);
+}
+
+.chip:disabled,
+.chip:has(.chip__input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* The native radio stays in the tree for keyboard and SR; the label is the target. */
+.chip__input {
+  position: absolute;
+  margin: 0;
+  inset: 0;
+  opacity: 0;
+}
+
+.chip:has(.chip__input:focus-visible) {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+  margin: 0;
+  gap: var(--space-2) var(--space-4);
+  list-style: none;
+}
+
+.steps__item {
+  color: var(--muted-foreground);
+  font-size: var(--type-secondary);
+}
+
+.steps__item[data-state="current"] {
+  color: var(--foreground);
+  font-weight: 700;
+}
+
+.steps__item[data-state="done"] {
+  color: var(--foreground);
+}
