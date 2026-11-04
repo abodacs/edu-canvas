@@ -369,6 +369,8 @@ const buildProviderContext = (
     correctionAttempt: isCorrectionAttempt,
     diagnostics,
     ...(curriculum?.promptFrame && { promptFrame: curriculum.promptFrame }),
+    ...(curriculum?.examples && { examples: curriculum.examples }),
+    ...(curriculum?.answerRules && { answerRules: curriculum.answerRules }),
     ...(curriculum && {
       curriculumContext: {
         nodes: curriculum.nodes.map((node) => {

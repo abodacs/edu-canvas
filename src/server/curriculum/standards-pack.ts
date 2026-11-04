@@ -117,6 +117,17 @@ const standardsPackPromptFrameSchema = z.strictObject({
   targetItemCount: z.number().int().min(1).max(8),
 });
 
+/**
+ * One subject-correct relationship the deterministic fixture may build its
+ * matching draft from. A source is what the learner matches; a target is the
+ * item it belongs with. Keeping examples on the pack means the offline draft
+ * obeys the same answer rule the pack declares, for every subject.
+ */
+const standardsPackExampleSchema = z.strictObject({
+  source: copySchema(2000),
+  target: copySchema(2000),
+});
+
 const standardsPackReferenceSchema = z.strictObject({
   id: identifierSchema,
   version: identifierSchema,
@@ -137,6 +148,7 @@ export const standardsPackSchema = z
     source: standardsPackSourceSchema,
     graph: standardsPackGraphSchema,
     components: z.array(standardsPackComponentSchema).min(1),
+    examples: z.array(standardsPackExampleSchema).min(3),
     answerRules: z.array(answerRuleSchema).min(1),
     allowedScreenPatterns: z.array(z.literal("matching")).min(1),
     allowedCatalogs: z.array(identifierSchema).min(1),
@@ -146,13 +158,36 @@ export const standardsPackSchema = z
   .refine((pack) => pack.packVersion !== pack.graph.version, {
     message: "A standards pack version must differ from its graph version.",
     path: ["packVersion"],
-  });
+  })
+  /**
+   * A matching draft validates only when every source has exactly one target
+   * and every target is used (see `validateRelationships`). Unequal counts
+   * could never produce an acceptable draft, so a pack may not ask for them.
+   */
+  .refine(
+    (pack) =>
+      pack.promptFrame.sourceItemCount === pack.promptFrame.targetItemCount,
+    {
+      message:
+        "A matching prompt frame must carry equal source and target item counts.",
+      path: ["promptFrame", "targetItemCount"],
+    }
+  )
+  .refine(
+    (pack) => pack.examples.length >= pack.promptFrame.sourceItemCount,
+    {
+      message:
+        "A standards pack needs at least as many examples as its frame's source items.",
+      path: ["examples"],
+    }
+  );
 
 export type StandardsPack = z.infer<typeof standardsPackSchema>;
 export type StandardsPackSourceKind = (typeof standardsPackSourceKinds)[number];
 export type StandardsPackReference = z.infer<
   typeof standardsPackReferenceSchema
 >;
+export type StandardsPackExample = z.infer<typeof standardsPackExampleSchema>;
 export type StandardsPackPromptFrame = z.infer<
   typeof standardsPackPromptFrameSchema
 >;

@@ -3,6 +3,7 @@ import { syntheticSeed } from "@/server/seed-data";
 import type {
   AnswerRule,
   StandardsPack,
+  StandardsPackExample,
   StandardsPackPromptFrame,
   StandardsPackReference,
 } from "@/server/curriculum/standards-pack";
@@ -56,6 +57,12 @@ export interface VersionedCurriculumContext {
   always copies it.
   */
   promptFrame?: StandardsPackPromptFrame;
+  /**
+   * The pack's subject-correct relationships. Optional only for hand-built
+   * test contexts; every pack carries examples, and the deterministic fixture
+   * uses them instead of the seeded fraction pairs.
+   */
+  examples?: readonly StandardsPackExample[];
   reference?: StandardsPackReference;
 }
 
@@ -166,6 +173,7 @@ export const createCurriculumContextFromPack = (
     answerRules: pack.answerRules,
     allowedScreenPatterns: pack.allowedScreenPatterns,
     promptFrame: pack.promptFrame,
+    examples: pack.examples,
     ...(pack.reference && { reference: pack.reference }),
   };
 };

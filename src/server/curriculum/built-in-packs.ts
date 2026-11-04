@@ -55,6 +55,13 @@ export const fractionEquivalencePack: StandardsPack = standardsPackSchema.parse(
         text: "Recognise two different fraction names for the same part of a whole.",
       },
     ],
+    examples: [
+      { source: "1/2", target: "2/4" },
+      { source: "2/3", target: "4/6" },
+      { source: "3/4", target: "6/8" },
+      { source: "1/3", target: "2/6" },
+      { source: "2/5", target: "4/10" },
+    ],
     answerRules: [
       { kind: "fraction-equivalence", unverifiedVerdict: "warning" },
     ],
@@ -140,6 +147,33 @@ export const multistepWordProblemsPack: StandardsPack =
         text: "Represent a multistep problem with an equation and a letter for the unknown quantity.",
       },
     ],
+    examples: [
+      {
+        source:
+          "Sam has 4 boxes with 6 pencils in each box. He gives away 5 pencils. How many pencils are left?",
+        target: "4 × 6 − 5 = p",
+      },
+      {
+        source:
+          "A class of 27 students sits at tables of 4. How many tables are needed so everyone has a seat?",
+        target: "27 ÷ 4 = t",
+      },
+      {
+        source:
+          "Mia buys 3 packs of 8 stickers and gets 7 more from a friend. How many stickers does she have?",
+        target: "3 × 8 + 7 = s",
+      },
+      {
+        source:
+          "A baker has 5 trays with 12 rolls on each tray. He sells 9 rolls. How many rolls are left?",
+        target: "5 × 12 − 9 = r",
+      },
+      {
+        source:
+          "There are 46 books packed into boxes of 8. How many boxes are needed for all the books?",
+        target: "46 ÷ 8 = b",
+      },
+    ],
     answerRules: [
       {
         kind: "whole-number-expression",
@@ -156,6 +190,15 @@ export const multistepWordProblemsPack: StandardsPack =
           {
             text: "Mia buys 3 packs of 8 stickers and gets 7 more from a friend. How many stickers does she have?",
             answer: 31,
+          },
+          {
+            text: "A baker has 5 trays with 12 rolls on each tray. He sells 9 rolls. How many rolls are left?",
+            answer: 51,
+          },
+          {
+            text: "There are 46 books packed into boxes of 8. How many boxes are needed for all the books?",
+            answer: 6,
+            rounding: "up",
           },
         ],
         unverifiedVerdict: "warning",
@@ -253,6 +296,28 @@ export const ri52MainIdeaPack: StandardsPack = standardsPackSchema.parse({
       id: "component_multiple_main_ideas",
       kind: "concept",
       text: "A text can develop more than one main idea.",
+    },
+  ],
+  examples: [
+    {
+      source: "Bees carry pollen from one flower to the next.",
+      target: "Bees help plants make seeds.",
+    },
+    {
+      source: "Farmers rent hives so their orchards produce more fruit.",
+      target: "People depend on bees for food.",
+    },
+    {
+      source: "Fewer wildflowers means bees have less to eat.",
+      target: "Bees face threats to their survival.",
+    },
+    {
+      source: "Bees help plants make seeds.",
+      target: "Bees matter to plants.",
+    },
+    {
+      source: "People depend on bees for food.",
+      target: "People need bees.",
     },
   ],
   answerRules: [
