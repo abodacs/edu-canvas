@@ -3,7 +3,7 @@ import postgres from "postgres";
 import { syntheticSeed } from "../seed-data";
 
 import { withFoundationBootstrapLock } from "./bootstrap-lock.mjs";
-import { seededStandardRows } from "./seed-catalog";
+import { syncSeededStandardRows } from "./seed-catalog";
 
 export const seedFoundationDatabase = async (
   databaseUrl: string
@@ -50,26 +50,7 @@ export const seedFoundationDatabase = async (
           })
         );
 
-        await Promise.all(
-          seededStandardRows.map((standard) => {
-            return transaction`
-              insert into standards (id, tenant_id, code, name, subject, grade_band)
-              values (
-                ${standard.id},
-                ${syntheticSeed.tenant.id},
-                ${standard.code},
-                ${standard.name},
-                ${standard.subject},
-                ${standard.gradeBand}
-              )
-              on conflict (id) do update set
-                code = excluded.code,
-                name = excluded.name,
-                subject = excluded.subject,
-                grade_band = excluded.grade_band
-            `;
-          })
-        );
+        await syncSeededStandardRows(transaction, syntheticSeed.tenant.id);
 
         await Promise.all(
           syntheticSeed.graphNodes.map((node) => {
