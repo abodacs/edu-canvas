@@ -1,11 +1,16 @@
 import { builtInStandardsPacks } from "./built-in-packs";
-import { standardsPackSchema } from "./standards-pack";
+import {
+  sharedStandardsPackTenantId,
+  standardsPackSchema,
+} from "./standards-pack";
 
 import type { StandardsPack } from "./standards-pack";
 
 /**
  * A standards pack is resolved by tenant and standard, never by a global
- * fallback. The registry holds parsed packs, rejects an ambiguous
+ * fallback. A pack is visible when it belongs to the tenant or when it is a
+ * shared template; another tenant's private pack is never visible. The
+ * registry holds parsed packs, rejects an ambiguous
  * `(tenant, standard, version)` pair, and returns one exact version: the
  * requested one, or the highest version when the caller does not pin one.
  */
@@ -110,17 +115,24 @@ export const createStandardsPackRegistry = (
   const resolve = (lookup: StandardsPackLookup): StandardsPack | undefined => {
     const matches = ordered.filter((pack) => {
       return (
-        pack.tenantId === lookup.tenantId &&
+        (pack.tenantId === lookup.tenantId ||
+          pack.tenantId === sharedStandardsPackTenantId) &&
         (pack.standardId === lookup.standard ||
           pack.standardCode === lookup.standard)
       );
     });
 
+    // A tenant-owned pack overrides the shared template for its standard. The
+    // template is a starting point, never a second opinion beside the tenant's
+    // own curriculum data.
+    const owned = matches.filter((pack) => pack.tenantId === lookup.tenantId);
+    const candidates = owned.length > 0 ? owned : matches;
+
     if (lookup.packVersion !== undefined) {
-      return matches.find((pack) => pack.packVersion === lookup.packVersion);
+      return candidates.find((pack) => pack.packVersion === lookup.packVersion);
     }
 
-    return matches.at(-1);
+    return candidates.at(-1);
   };
 
   return { packs: ordered, resolve };

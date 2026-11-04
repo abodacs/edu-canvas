@@ -198,11 +198,58 @@ describe("standards pack registry", () => {
     expect(first).toBe(second);
   });
 
-  it("does not resolve another tenant's pack", () => {
+  it("resolves a shared template for any signed-in tenant", () => {
     expect(
       standardsPackRegistry.resolve({
+        tenantId: "tenant_real_school",
+        standard: "4.NF.A.1",
+      })
+    ).toStrictEqual(fractionEquivalencePack);
+  });
+
+  it("never resolves another tenant's private pack", () => {
+    const privatePack = withOverrides({ tenantId: "tenant_someone_else" });
+    const registry = createStandardsPackRegistry([
+      fractionEquivalencePack,
+      privatePack,
+    ]);
+
+    expect(
+      registry.resolve({
+        tenantId: "tenant_real_school",
+        standard: "4.NF.A.1",
+      })
+    ).toStrictEqual(fractionEquivalencePack);
+    expect(
+      registry.resolve({
         tenantId: "tenant_someone_else",
         standard: "4.NF.A.1",
+      })
+    ).toStrictEqual(privatePack);
+  });
+
+  it("prefers a tenant-owned pack over the shared template", () => {
+    const tenantPack = withOverrides({
+      id: "pack_ccss_4_nf_a_01_tenant",
+      tenantId: "tenant_real_school",
+      packVersion: "4.NF.A.1-tenant-v1",
+    });
+    const registry = createStandardsPackRegistry([
+      fractionEquivalencePack,
+      tenantPack,
+    ]);
+
+    expect(
+      registry.resolve({
+        tenantId: "tenant_real_school",
+        standard: "4.NF.A.1",
+      })
+    ).toStrictEqual(tenantPack);
+    expect(
+      registry.resolve({
+        tenantId: "tenant_real_school",
+        standard: "4.NF.A.1",
+        packVersion: "4.NF.A.1-v1",
       })
     ).toBeUndefined();
   });

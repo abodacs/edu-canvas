@@ -7,6 +7,14 @@ The curated default copy for a rejected generation input; a caller rejects a spe
 */
 export const GENERATION_INPUT_INVALID_MESSAGE = "Generation input is invalid.";
 
+/**
+ * Rejected when no standards pack resolves the requested standard. The copy is
+ * deliberately generic: naming a different lesson would send the teacher to
+ * work the product does not think they asked for.
+ */
+export const GENERATION_STANDARD_UNSUPPORTED_MESSAGE =
+  "This learning objective is not supported. Choose a supported standard.";
+
 export interface GenerationRequestErrorOptions extends ErrorOptions {
   code: GenerationRequestErrorCode;
   /**

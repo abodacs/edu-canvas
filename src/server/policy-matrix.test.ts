@@ -1691,7 +1691,7 @@ describe("protected domain policy matrix", () => {
         status: 422,
         code: "GENERATION_INPUT_INVALID",
         message:
-          "This learning objective is not supported. Use Grade 4 equivalent fractions (4.NF.A.1).",
+          "This learning objective is not supported. Choose a supported standard.",
         hasRow: false,
       });
     });
