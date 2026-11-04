@@ -25,7 +25,7 @@ export const ErrorPanel = ({
         </div>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           aria-label="Dismiss the error"
           onClick={onDismiss}
         >

@@ -660,7 +660,7 @@ const SnapshotResult = ({
       {isRepairable && state.repairDraft === null ? (
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={onRepairOpened}
         >

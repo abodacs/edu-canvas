@@ -847,7 +847,7 @@ const GenerationResult = ({
 
       {result.retry.available ? (
         <form onSubmit={onRetry}>
-          <Button type="submit" variant="outline" className="retry-button">
+          <Button type="submit" variant="secondary" className="retry-button">
             Try that again <ArrowRight aria-hidden="true" />
           </Button>
         </form>

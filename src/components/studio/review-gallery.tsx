@@ -178,7 +178,7 @@ export const ReviewGallery = ({
                   />
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="secondary"
                     onClick={() => onOpenVariant(variant.id)}
                   >
                     Review screen <ArrowRight aria-hidden="true" />

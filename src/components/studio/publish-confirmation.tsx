@@ -103,7 +103,7 @@ export const PublishConfirmation = ({
   return (
     <section className="review-confirm" aria-labelledby="confirm-heading">
       <div className="publish-variant__topline">
-        <Button type="button" variant="outline" onClick={onBack}>
+        <Button type="button" variant="secondary" onClick={onBack}>
           <ArrowLeft aria-hidden="true" /> Back to the gallery
         </Button>
       </div>
