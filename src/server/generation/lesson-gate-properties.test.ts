@@ -8,7 +8,7 @@ import {
   jsonValue,
   property,
 } from "fast-check";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { buildStoryPlan, StoryPlanBuildError } from "@/shared/story-plan";
 import {
@@ -40,7 +40,9 @@ import type { LessonLanguage } from "@/shared/generation-contract";
 // Property checks for the Validation & Safety gate. Run directly with
 // `pnpm verify:lesson-gate`; the operating skill lives in
 // .agents/skills/verify-lesson-gate. Break fixtures and expected verdicts
-// live in ./artifact-corpus.ts.
+// live in ./artifact-corpus.ts. The generators run thousands of cases, so the
+// default 5s test timeout is too tight when another worker is compiling.
+vi.setConfig({ testTimeout: 20_000 });
 
 const propertyOptions = () => {
   return {

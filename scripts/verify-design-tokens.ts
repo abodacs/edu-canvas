@@ -181,7 +181,13 @@ const scanLine = (text: string, state: ScanState): void => {
   }
   const colon = text.indexOf(":");
   if (text.startsWith("--") && colon > 2) {
-    state.declared.add(text.slice(0, colon).trim());
+    const name = text.slice(0, colon).trim();
+    state.declared.add(name);
+    // The closing step deletes the palette, not just its uses. A redeclared
+    // `--teacher-*` name is the same regression as a new `var(--teacher-*)`.
+    if (name.startsWith("--teacher-")) {
+      incrementFor(state.counts, "teacher-alias", state.file);
+    }
   } else {
     const declaration = parseDeclaration(text);
     // Counted per layer, so tokenising one layer of a multi-layer

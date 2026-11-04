@@ -1895,6 +1895,21 @@ export const createRecordCommands = <TTransaction>(
         attempts.push(attempt);
         attemptsByRun.set(attempt.runId, attempts);
       }
+      const learnerNames = new Map<string, string>();
+      for (const run of runs) {
+        if (learnerNames.has(run.learnerId)) {
+          continue;
+        }
+        // eslint-disable-next-line no-await-in-loop -- one identity load per distinct learner, sequential inside the read transaction.
+        const identity = await findOne(transaction, "identities", {
+          tenant_id: actor.tenantId,
+          id: run.learnerId,
+        });
+        learnerNames.set(
+          run.learnerId,
+          identity ? String(identity.display_name) : run.learnerId
+        );
+      }
       const versionsByPublication = new Map<string, LessonVersion>();
       for (const run of runs) {
         if (versionsByPublication.has(run.publicationId)) {
@@ -1924,6 +1939,8 @@ export const createRecordCommands = <TTransaction>(
             run,
             attempts: attemptsByRun.get(run.id) ?? [],
             version: versionsByPublication.get(run.publicationId) ?? null,
+            learnerDisplayName:
+              learnerNames.get(run.learnerId) ?? run.learnerId,
           };
         }),
       });

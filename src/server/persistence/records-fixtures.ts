@@ -308,6 +308,8 @@ export const createRecordFixture = (): RecordFixture => {
         id: fixtureLearnerId,
         tenant_id: fixtureTenantId,
         role: "student",
+        display_name: "Lina Farouk",
+        demo_handle: "lina.policy",
         is_active: true,
         created_at: fixtureCreatedAt,
       },

@@ -128,10 +128,11 @@ FAMILIES: tuple[Family, ...] = (
 WEIGHT_MIN, WEIGHT_MAX = 400, 800
 # tnum backs the two font-variant-numeric: tabular-nums rules.
 KEEP_FEATURES = ("ccmp", "kern", "liga", "locl", "mark", "mkmk", "tnum")
-# font-variant* / font-style: italic rule counts --check accepts. Raising
-# either means revisiting KEEP_FEATURES or shipping an italic face. The one
-# italic rule (progress.css provisional note) renders a synthesised oblique.
-VARIANT_RULES_BASELINE = 2
+# font-variant values KEEP_FEATURES can satisfy. Today every rule is
+# `tabular-nums` (tnum keeps the aligned digits); a new value means a feature
+# review before the subset changes, not a raised count. The one italic rule
+# (progress.css provisional note) renders a synthesised oblique.
+ALLOWED_FONT_VARIANT_VALUES = frozenset({"tabular-nums"})
 ITALIC_RULES_BASELINE = 1
 
 # Core: ASCII printable + curly quotes, dashes, ellipsis + the middle dot
@@ -157,12 +158,19 @@ EXTENDED_RANGES: tuple[tuple[int, int], ...] = (
     (0x2264, 0x2265),  # less/greater-than or equal to
 )
 
-# Characters allowed to fall back without flagging drift: Arabic UI copy, the
-# ⇒ sign (absent upstream), and two code-only characters that never render
-# (byte-order mark, replacement character).
+# Characters allowed to fall back without flagging drift: every right-to-left
+# block the app can render (Arabic and its presentation forms, plus the Hebrew
+# range boundary the bidi detector names), the ⇒ sign (absent upstream), the
+# white square the answer-rules glyph set accepts, and two code-only characters
+# that never render (byte-order mark, replacement character). The bidi
+# detector's regex range endpoints are themselves scanned as characters, so the
+# Arabic blocks have to be listed here even when no source string uses them.
 FALLBACK_RANGES: tuple[tuple[int, int], ...] = (
-    (0x600, 0x6FF),
+    (0x590, 0x8FF),
+    (0xFB1D, 0xFDFF),
+    (0xFE70, 0xFEFF),
     (0x21D2, 0x21D2),
+    (0x25A1, 0x25A1),
     (0xFEFF, 0xFEFF),
     (0xFFFD, 0xFFFD),
 )
@@ -297,7 +305,7 @@ def scan_source() -> tuple[dict, list[str]]:
     """Collect rendered-source facts for the drift check."""
     chars: set[int] = set()
     weights: set[int] = set()
-    variant_lines = 0
+    font_variants: set[str] = set()
     italic_uses = 0
     files = [
         p
@@ -315,9 +323,15 @@ def scan_source() -> tuple[dict, list[str]]:
             # (e.g. "100 900"), not a usage weight; drop those blocks first.
             text_no_ff = re.sub(r"@font-face\s*\{[^}]*\}", "", text)
             weights |= {int(v) for v in re.findall(r"font-weight:\s*(\d+)", text_no_ff)}
-            variant_lines += len(re.findall(r"font-variant", text))
+            for value in re.findall(r"font-variant[\w-]*:\s*([^;]+);", text_no_ff):
+                font_variants.add(" ".join(value.split()))
             italic_uses += len(re.findall(r"font-style:\s*italic", text))
-    return {"chars": chars, "weights": weights, "variantLines": variant_lines, "italicUses": italic_uses}, [
+    return {
+        "chars": chars,
+        "weights": weights,
+        "fontVariants": font_variants,
+        "italicUses": italic_uses,
+    }, [
         str(p.relative_to(ROOT)) for p in files
     ]
 
@@ -479,9 +493,13 @@ def check() -> int:
             f"(baseline {ITALIC_RULES_BASELINE}); no italic face is shipped"
         )
         code = 5
-    if facts["variantLines"] != VARIANT_RULES_BASELINE:
-        print(f"CHECK NOTE: font-variant* rule count is {facts['variantLines']} "
-              f"(baseline {VARIANT_RULES_BASELINE}); confirm KEEP_FEATURES still matches usage")
+    unexpected_variants = facts["fontVariants"] - ALLOWED_FONT_VARIANT_VALUES
+    if unexpected_variants:
+        print(
+            "CHECK FAIL: font-variant values outside KEEP_FEATURES: "
+            + ", ".join(sorted(unexpected_variants))
+        )
+        print("  keep the value only after adding its OpenType feature to KEEP_FEATURES.")
         code = max(code, 6)
     if code == 0:
         families = ", ".join(f.css_family for f in FAMILIES)

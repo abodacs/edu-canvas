@@ -416,6 +416,7 @@ export const projectTeacherProgress = (input: {
     readonly run: LearnerRun;
     readonly attempts: readonly LearnerAttempt[];
     readonly version: LessonVersion | null;
+    readonly learnerDisplayName: string;
   }[];
 }): z.infer<typeof teacherProgressResponseSchema> => {
   const ordered = input.runs.toSorted((left, right) => {
@@ -424,11 +425,12 @@ export const projectTeacherProgress = (input: {
   });
   return teacherProgressResponseSchema.parse({
     fetchedAt: input.fetchedAt,
-    runs: ordered.map(({ run, attempts, version }) => {
+    runs: ordered.map(({ run, attempts, version, learnerDisplayName }) => {
       return progressRunSchema.parse({
         runId: run.id,
         assignmentId: run.assignmentId,
         learnerId: run.learnerId,
+        learnerDisplayName,
         publicationId: run.publicationId,
         assignedVariantId: run.assignedVariantId,
         stage: run.stage,

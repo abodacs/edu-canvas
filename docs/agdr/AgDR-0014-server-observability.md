@@ -1,5 +1,7 @@
 # AgDR-0014 — Server-only observability with scrubbed Sentry delivery
 
+> Identifier note: this record was renamed from `AgDR-0003-server-observability.md` so the three records that shared `AgDR-0003` each have one identifier (#111). The identifier changed; the decision did not.
+
 > In the context of diagnosing server failures without exposing children’s data or deployment secrets, facing the risk that error context becomes a second data-leak path, I decided to put structured logging and an environment-gated Sentry reporter behind one server-only seam with scrubbing before delivery, to achieve actionable failure visibility with a safe fallback, accepting that this slice does not provide metrics, dashboards, or product analytics.
 
 ## Context

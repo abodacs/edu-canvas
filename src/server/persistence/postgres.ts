@@ -574,7 +574,7 @@ export const createPostgresPersistence = (
             return transaction`
               select
                 (select count(*)::int from tenants where id = ${syntheticSeed.tenant.id}) as tenants,
-                (select count(*)::int from identities where tenant_id = ${syntheticSeed.tenant.id}) as identities,
+                (select count(*)::int from identities where tenant_id = ${syntheticSeed.tenant.id} and id = any(${syntheticSeed.identities.map((identity) => identity.id)}::text[])) as identities,
                 (select count(*)::int from standards where tenant_id = ${syntheticSeed.tenant.id}) as standards,
                 (select count(*)::int from prerequisite_nodes where tenant_id = ${syntheticSeed.tenant.id}) as "graphNodes",
                 (select count(*)::int from prerequisite_edges where tenant_id = ${syntheticSeed.tenant.id}) as "graphEdges",

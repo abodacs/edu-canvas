@@ -81,17 +81,6 @@
   /* Field radius; the @theme ladder derives sm 6, md 8, lg 10, xl 14 (card). */
   --radius: var(--radius-field);
 
-  /* Teacher studio palette. */
-  --teacher-paper: oklch(96.5% 0.018 86deg);
-  --teacher-ink: oklch(23.5% 0.028 65deg);
-
-  /* Aliased to clay until the studio slice removes the palette (AgDR-0016). */
-  --teacher-forest: var(--primary-deep);
-  --teacher-mint: var(--primary-soft);
-  --teacher-butter: oklch(92.5% 0.065 77deg);
-  --teacher-sky: oklch(92.5% 0.04 228deg);
-  --teacher-clay: oklch(78% 0.095 40deg);
-
   /* Motion (AgDR-0016). New transitions and animations read a duration
      and an ease token; base.css collapses the durations under
      prefers-reduced-motion. Older surface rules still use literal

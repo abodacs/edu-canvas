@@ -13,7 +13,7 @@ The first foundation (`feat/ux-foundation`, #196) is merged. It delivered:
 - **`BrandMark`** in `src/components/ui/brand-mark.tsx`. It is the only brand lockup.
 - **The gate.** `pnpm verify:ui [routes]` and `pnpm census:capture` run on the shared boot in `scripts/ui-gate/`. CI runs both.
 
-The #197 foundation adds the file ownership map below, the typed primitives and app shell, the `publish.css` split, and the seeded review, publish and blocked views in the gate. Slices start when its contracts PR merges.
+The #197 foundation delivered the file ownership map below, the typed primitives and app shell, the `publish.css` split, and the seeded review, publish and blocked views in the gate. All seven screen slices have merged; the ownership map remains the contract for follow-up PRs.
 
 ### Foundation-only files
 
@@ -72,7 +72,7 @@ The ten seeded gate pages (review, publish, published, blocked-validation, block
 | --- | --- | --- | --- | --- |
 | Landing | `0-landing.html` | see [File ownership](#file-ownership) | `/` | Halftone scene and Studio window live here (one consumer). Pricing in the mock is a placeholder; do not ship it. No app shell (decision 3). |
 | Sign-in | `5-sign-in.html` | see [File ownership](#file-ownership) | `/login`, `/sign-up` |  |
-| Studio | `1-studio.html`, `6-errors.html` | see [File ownership](#file-ownership) | `/workspace`, `blocked-validation`, `blocked-moderation` | Removes the `--teacher-*` palette (AgDR-0016) and the three low-contrast labels in today's budget. Status tones come from `Badge`. |
+| Studio | `1-studio.html`, `6-errors.html` | see [File ownership](#file-ownership) | `/workspace`, `blocked-validation`, `blocked-moderation` | The `--teacher-*` palette is retired; `verify:design-tokens` holds the reference ceiling at zero (AgDR-0016). Status tones come from `Badge`. |
 | Review | `2-review.html` | see [File ownership](#file-ownership) | `review` |  |
 | Publish | `3-publish.html` | see [File ownership](#file-ownership) | `publish`, `published` | Owns `publish.css`, so it runs in parallel with Review. |
 | Dashboard | `4-dashboard.html` | see [File ownership](#file-ownership) | `/dashboard` |  |
