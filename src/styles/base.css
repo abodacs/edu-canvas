@@ -42,39 +42,10 @@ a {
   margin-inline: auto;
 }
 
-.site-header,
-.site-footer,
-.section-heading,
-.hero-actions,
 .brand-lockup,
-.text-link,
-.security-note,
-.supporting-note {
+.text-link {
   display: flex;
   align-items: center;
-}
-
-.site-header {
-  justify-content: space-between;
-  gap: 1rem;
-  margin-block-end: clamp(2.5rem, 7vw, 5.5rem);
-}
-
-.site-header__identity {
-  color: var(--muted-foreground);
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.sign-out-banner {
-  padding: 0.8rem 1rem;
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  background: color-mix(in oklch, var(--card) 85%, var(--accent));
-  color: var(--foreground);
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-block-end: clamp(1.5rem, 4vw, 2.5rem);
 }
 
 .brand-lockup {
@@ -121,20 +92,6 @@ a {
   margin-block-start: 0.1rem;
 }
 
-.page-grid {
-  display: grid;
-  gap: clamp(1.25rem, 3vw, 2rem);
-}
-
-.page-grid--hero {
-  align-items: end;
-  grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
-}
-
-.hero-copy {
-  max-inline-size: 48rem;
-}
-
 .eyebrow {
   margin: 0 0 0.75rem;
   color: var(--foreground);
@@ -143,6 +100,27 @@ a {
   letter-spacing: 0.13em;
   line-height: 1.3;
   text-transform: uppercase;
+}
+
+/* The section kicker every surface shares; the line is an optional lead rule. */
+.kicker {
+  display: flex;
+  align-items: center;
+  margin: 0 0 1rem;
+  color: var(--primary);
+  font-size: 0.72rem;
+  font-weight: 800;
+  gap: 0.7rem;
+  letter-spacing: 0.12em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.kicker__line {
+  display: inline-block;
+  background: currentcolor;
+  block-size: 1px;
+  inline-size: 2.2rem;
 }
 
 h1,
@@ -172,68 +150,10 @@ h2 {
   max-inline-size: 23ch;
 }
 
-.hero-description {
-  color: var(--muted-foreground);
-  font-size: clamp(1rem, 1.5vw, 1.18rem);
-  line-height: 1.65;
-  margin-block-start: 1.5rem;
-  max-inline-size: 65ch;
-}
-
-.hero-actions {
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-block-start: 2rem;
-}
-
-.supporting-note {
-  color: var(--muted-foreground);
-  font-size: 0.82rem;
-  gap: 0.5rem;
-  line-height: 1.5;
-  margin-block-start: 1rem;
-}
-
-.supporting-note svg,
-.security-note svg,
 .text-link svg {
   flex: none;
   block-size: 1rem;
   inline-size: 1rem;
-}
-
-/* Shared with the authenticated workspace studio. */
-.capability-list {
-  display: grid;
-  padding: 0;
-  margin: 0;
-  gap: 1rem;
-  list-style: none;
-}
-
-.capability-list li {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-}
-
-.capability-list svg {
-  flex: none;
-  block-size: 1.15rem;
-  color: var(--primary);
-  inline-size: 1.15rem;
-  margin-block-start: 0.1rem;
-}
-
-.fixture-section,
-.generation-section {
-  margin-block-start: clamp(4rem, 10vw, 8rem);
-}
-
-.section-heading {
-  justify-content: space-between;
-  gap: 1.5rem;
-  margin-block-end: 1.5rem;
 }
 
 .text-link {
@@ -262,9 +182,506 @@ h2 {
   }
 }
 
-.fixture-grid,
-.variant-list {
+@media (width <= 38rem) {
+  h1 {
+    font-size: clamp(2.8rem, 15vw, 4.6rem);
+  }
+}
+
+/* ── primitives (foundation) ──
+ * Rules for src/components/ui primitives. Every value is a token; state is a
+ * data attribute so no slice invents a modifier class. Button keeps today's
+ * look through its utility classes; only its busy state lives here.
+ */
+
+.btn[data-busy] {
+  position: relative;
+}
+
+/* The label stays mounted so the width holds; the spinner covers it. */
+.btn__label {
+  display: contents;
+}
+
+.btn[data-busy] .btn__label {
+  visibility: hidden;
+}
+
+.btn__spinner {
+  position: absolute;
+  border: 2px solid currentcolor;
+  border-radius: var(--radius-pill);
+  margin: auto;
+  animation: btn-spin 0.8s linear infinite;
+  block-size: 1em;
+  border-inline-end-color: transparent;
+  inline-size: 1em;
+  inset: 0;
+}
+
+@keyframes btn-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn__spinner {
+    animation: none;
+  }
+}
+
+.card {
+  padding: var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  color: var(--card-foreground);
+}
+
+.card.lift {
+  box-shadow: var(--shadow-lift);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-size: var(--type-micro);
+  font-weight: 650;
+  gap: var(--space-1);
+  inline-size: fit-content;
+  padding-block: 2px;
+  padding-inline: var(--space-2);
+  white-space: nowrap;
+}
+
+.pill[data-tone="ok"] {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+.pill[data-tone="warn"] {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.pill[data-tone="stop"] {
+  background: color-mix(in oklch, var(--destructive) 12%, var(--card));
+  color: var(--destructive);
+}
+
+/* Scoped to the primitive so the sign-in slice's own .field rules are untouched. */
+.field[data-slot="field"] {
   display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: var(--space-2);
+}
+
+.field[data-slot="field"] .field__label {
+  color: var(--foreground);
+  font-size: var(--type-label);
+  font-weight: 700;
+}
+
+.field[data-slot="field"] .field__hint {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: var(--type-meta);
+}
+
+.field[data-slot="field"] .field__error {
+  margin: 0;
+  color: var(--destructive);
+  font-size: var(--type-meta);
+  font-weight: 650;
+}
+
+.field[data-slot="field"] :is(input, textarea, select) {
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-field);
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+  inline-size: 100%;
+  padding-block: var(--space-2);
+  padding-inline: var(--space-3);
+}
+
+.field[data-slot="field"][data-invalid] :is(input, textarea, select) {
+  border-color: var(--destructive);
+}
+
+.notice {
+  display: grid;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  border-inline-start-width: 4px;
+  color: var(--foreground);
+  gap: var(--space-2);
+  padding-block: var(--space-3);
+  padding-inline: var(--space-4);
+}
+
+.notice[data-tone="warn"] {
+  border-inline-start-color: var(--accent-foreground);
+}
+
+.notice[data-tone="stop"] {
+  border-inline-start-color: var(--destructive);
+}
+
+.notice__title {
+  margin: 0;
+  font-size: var(--type-body);
+  font-weight: 700;
+}
+
+.notice__body > :first-child {
+  margin-block-start: 0;
+}
+
+.notice__body > :last-child {
+  margin-block-end: 0;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+  border: 0;
+  margin: 0;
+  gap: var(--space-2);
+  min-inline-size: 0;
+}
+
+.chips__legend {
+  padding: 0;
+  font-size: var(--type-label);
+  font-weight: 700;
+  margin-block-end: var(--space-2);
+}
+
+.chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  color: var(--foreground);
+  font: inherit;
+  font-size: var(--type-secondary);
+  gap: var(--space-1);
+  min-block-size: 2.25rem;
+  padding-inline: var(--space-3);
+}
+
+.chip[data-checked],
+.chip[data-pressed] {
+  border-color: var(--foreground);
+  background: var(--foreground);
+  color: var(--background);
+}
+
+.chip:disabled,
+.chip:has(.chip__input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* The native radio stays in the tree for keyboard and SR; the label is the target. */
+.chip__input {
+  position: absolute;
+  margin: 0;
+  inset: 0;
+  opacity: 0;
+}
+
+.chip:has(.chip__input:focus-visible) {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+  margin: 0;
+  gap: var(--space-2) var(--space-4);
+  list-style: none;
+}
+
+.steps__item {
+  color: var(--muted-foreground);
+  font-size: var(--type-secondary);
+}
+
+.steps__item[data-state="current"] {
+  color: var(--foreground);
+  font-weight: 700;
+}
+
+.steps__item[data-state="done"] {
+  color: var(--foreground);
+}
+
+/* ── app shell (foundation) ──
+   AppShell, SkipLink and SyntheticDataMarker (src/components/ui). Slices read
+   these classes; only the foundation changes them. */
+.skip-link {
+  position: absolute;
+  z-index: 30;
+  border-radius: 0.5rem;
+  background: var(--teacher-forest);
+  color: var(--teacher-paper);
+  font-size: 0.82rem;
+  font-weight: 750;
+  inset-block-start: 0.75rem;
+  inset-inline-start: 0.75rem;
+  padding-block: 0.55rem;
+  padding-inline: 0.9rem;
+  transform: translateY(-150%);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+/* The skip-link target takes focus programmatically; it is not a control. */
+#main:focus {
+  outline: none;
+}
+
+.app-frame {
+  background:
+    radial-gradient(
+      55% 40% at 93% 0%,
+      color-mix(in oklch, var(--teacher-butter) 70%, transparent),
+      transparent 100%
+    ),
+    var(--teacher-paper);
+  padding-block: clamp(1rem, 3vw, 2.5rem) clamp(4rem, 9vw, 8rem);
+}
+
+.app-frame__page[data-width="wide"] {
+  inline-size: min(100%, 90rem);
+}
+
+.app-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  margin-block-end: clamp(2rem, 5vw, 4.5rem);
+}
+
+.app-bar__brand {
+  flex: 0 0 auto;
+}
+
+.app-bar__nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+  margin: 0;
+  gap: var(--space-2) var(--space-4);
+  list-style: none;
+}
+
+.app-bar__link[aria-current="page"] {
+  color: var(--foreground);
+  text-decoration-color: currentcolor;
+}
+
+.app-bar__account {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  margin-inline-start: auto;
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-inline-size: 0;
+}
+
+.who__avatar {
+  display: grid;
+  flex: none;
+  border-radius: var(--radius-pill);
+  background: var(--primary-deep);
+  block-size: 2rem;
+  color: var(--primary-foreground);
+  font-size: var(--type-micro);
+  font-weight: 700;
+  inline-size: 2rem;
+  place-items: center;
+}
+
+.who__text {
+  display: grid;
+  gap: 0.1rem;
+  text-align: end;
+}
+
+.who__name {
+  color: var(--teacher-ink);
+  font-size: 0.86rem;
+  font-weight: 750;
+}
+
+.who__context {
+  color: color-mix(in oklch, var(--teacher-ink) 62%, transparent);
+  font-size: 0.74rem;
+}
+
+.app-bar__signout {
+  color: var(--teacher-ink);
+  font-size: 0.78rem;
+  font-weight: 750;
+  gap: 0.35rem;
+}
+
+.app-bar__signout svg {
+  block-size: 0.95rem;
+  inline-size: 0.95rem;
+}
+
+.app-crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+  margin: 0 0 var(--space-5);
+  color: var(--muted-foreground);
+  font-size: var(--type-meta);
+  gap: var(--space-2);
+  list-style: none;
+}
+
+.app-crumbs li + li::before {
+  content: "/";
+  margin-inline-end: var(--space-2);
+}
+
+.app-frame__caption {
+  margin: var(--space-7) 0 0;
+  color: var(--muted-foreground);
+  font-size: var(--type-micro);
+}
+
+.session-banner {
+  position: sticky;
+  z-index: 20;
+  display: grid;
+  align-items: center;
+  border: 1px solid color-mix(in oklch, var(--teacher-clay) 45%, var(--border));
+  border-radius: 1.1rem;
+  background: color-mix(in oklch, var(--teacher-butter) 78%, var(--card));
+  box-shadow: 0 1rem 2.5rem
+    color-mix(in oklch, var(--teacher-forest) 12%, transparent);
+  gap: 0.75rem 1.25rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  inset-block-start: 0.75rem;
+  margin-block-end: 1.25rem;
+  padding-block: 0.9rem;
+  padding-inline: 1.1rem;
+}
+
+.session-banner:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 3px;
+}
+
+.session-banner__icon {
+  display: grid;
+  border-radius: 50%;
+  background: color-mix(in oklch, var(--teacher-clay) 34%, var(--card));
+  block-size: 2.1rem;
+  inline-size: 2.1rem;
+  place-items: center;
+}
+
+.session-banner__icon svg {
+  block-size: 1.1rem;
+  inline-size: 1.1rem;
+}
+
+.session-banner__copy {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.session-banner__copy strong {
+  color: var(--teacher-ink);
+  font-size: 0.92rem;
+}
+
+.session-banner__copy p {
+  margin: 0;
+  color: color-mix(in oklch, var(--teacher-ink) 72%, transparent);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  max-inline-size: 62ch;
+}
+
+.session-banner__error {
+  color: var(--destructive) !important;
+  font-weight: 700;
+}
+
+.session-banner__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.session-banner__continue {
+  border-radius: 0.7rem;
+  font-weight: 750;
+  min-block-size: 2.4rem;
+}
+
+@media (width <= 38rem) {
+  .app-frame {
+    padding-inline: 1rem;
+  }
+
+  .session-banner {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .session-banner__actions {
+    grid-column: 1 / -1;
+  }
+
+  /* #168 P2-2: at 390 px the identity and sign-out take their own full row,
+     so nothing competes with the brand and nav in one line. */
+  .app-bar__account {
+    flex: 1 1 100%;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-block-size: 2.2rem;
+  }
+
+  .who__text {
+    min-inline-size: 0;
+    text-align: start;
+  }
+
+  .who__context {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .app-bar__signout:hover {
+    background: color-mix(in oklch, var(--teacher-ink) 8%, transparent);
+  }
 }

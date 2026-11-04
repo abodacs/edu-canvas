@@ -1,106 +1,27 @@
 import { cn } from "@/lib/utilities";
 
-import type { ComponentProps } from "react";
+import type { ComponentProps, ElementType, ReactElement } from "react";
+
+interface CardProps extends ComponentProps<"div"> {
+  readonly variant?: "default" | "lift";
+  /** The rendered element; a card is a container, so it carries no role. */
+  readonly as?: ElementType;
+}
 
 const Card = ({
   className,
-  size = "default",
+  variant = "default",
+  as: Element = "div",
   ...properties
-}: ComponentProps<"div"> & { readonly size?: "default" | "sm" }) => {
+}: CardProps): ReactElement => {
   return (
-    <div
+    <Element
       data-slot="card"
-      data-size={size}
-      className={cn(
-        "group/card bg-card text-card-foreground ring-foreground/10 flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl py-(--card-spacing) text-sm ring-1 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
-        className
-      )}
+      className={cn("card", variant === "lift" && "lift", className)}
       {...properties}
     />
   );
 };
 
-const CardHeader = ({ className, ...properties }: ComponentProps<"div">) => {
-  return (
-    <div
-      data-slot="card-header"
-      className={cn(
-        "group/card-header @container/card-header grid auto-rows-min items-start gap-1 rounded-t-xl px-(--card-spacing) has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-(--card-spacing)",
-        className
-      )}
-      {...properties}
-    />
-  );
-};
-
-const CardTitle = ({ className, ...properties }: ComponentProps<"div">) => {
-  return (
-    <div
-      data-slot="card-title"
-      className={cn(
-        "text-base leading-snug font-medium group-data-[size=sm]/card:text-sm",
-        className
-      )}
-      {...properties}
-    />
-  );
-};
-
-const CardDescription = ({
-  className,
-  ...properties
-}: ComponentProps<"div">) => {
-  return (
-    <div
-      data-slot="card-description"
-      className={cn("text-muted-foreground text-sm", className)}
-      {...properties}
-    />
-  );
-};
-
-const CardAction = ({ className, ...properties }: ComponentProps<"div">) => {
-  return (
-    <div
-      data-slot="card-action"
-      className={cn(
-        "col-start-2 row-span-2 row-start-1 self-start justify-self-end",
-        className
-      )}
-      {...properties}
-    />
-  );
-};
-
-const CardContent = ({ className, ...properties }: ComponentProps<"div">) => {
-  return (
-    <div
-      data-slot="card-content"
-      className={cn("px-(--card-spacing)", className)}
-      {...properties}
-    />
-  );
-};
-
-const CardFooter = ({ className, ...properties }: ComponentProps<"div">) => {
-  return (
-    <div
-      data-slot="card-footer"
-      className={cn(
-        "bg-muted/50 flex items-center rounded-b-xl border-t p-(--card-spacing)",
-        className
-      )}
-      {...properties}
-    />
-  );
-};
-
-export {
-  Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
-  CardAction,
-  CardDescription,
-  CardContent,
-};
+export { Card };
+export type { CardProps };

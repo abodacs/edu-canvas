@@ -172,13 +172,18 @@ const MatchCard = ({
       })}
       type="button"
       aria-pressed={isSelected}
-      aria-label={`${component.label}. ${component.description ?? ""}`.trim()}
       onClick={() =>
         onAction(surfaceId, component.action.event.name, component.itemId)
       }
     >
+      {/* The accessible name is the visible text plus the description, in
+          reading order, so speech-input users can say what they see (WCAG
+          2.5.3, axe label-content-name-mismatch). */}
       <span>{component.label}</span>
       <small>{component.group === "source" ? "Source" : "Candidate"}</small>
+      {component.description ? (
+        <span className="sr-only">{component.description}</span>
+      ) : null}
     </button>
   );
 };

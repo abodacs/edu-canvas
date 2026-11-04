@@ -110,7 +110,12 @@ const MembershipPage = (): ReactElement => {
 
   if (handoff.phase === "expired") {
     return (
-      <main className="auth-shell" aria-labelledby="membership-heading">
+      <main
+        id="main"
+        tabIndex={-1}
+        className="auth-shell"
+        aria-labelledby="membership-heading"
+      >
         <div className="auth-frame">
           <BrandMark withTagline className="auth-card__brand" />
           <section className="auth-card">
@@ -158,7 +163,12 @@ const MembershipPage = (): ReactElement => {
   };
 
   return (
-    <main className="auth-shell" aria-labelledby="membership-heading">
+    <main
+      id="main"
+      tabIndex={-1}
+      className="auth-shell"
+      aria-labelledby="membership-heading"
+    >
       <div className="auth-frame">
         <BrandMark withTagline className="auth-card__brand" />
         <section className="auth-card">

@@ -1,22 +1,4 @@
-/* Review and publish (#5). */
-.teacher-result__cta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  padding: 1rem 1.25rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  margin-top: 1.25rem;
-  background: color-mix(in oklch, var(--card) 82%, var(--accent));
-  gap: 0.75rem 1.25rem;
-}
-
-.teacher-result__cta p {
-  margin: 0;
-  color: var(--muted-foreground);
-  font-size: 0.9rem;
-}
-
+/* Review gallery and variant editor (#5). Publish rules live in publish.css. */
 .review-studio {
   display: grid;
   gap: 1.5rem;
@@ -97,16 +79,13 @@
 }
 
 .review-gallery__header h2,
-.review-variant h2,
-.review-confirm h2,
-.review-published h2 {
+.review-variant h2 {
   margin: 0.25rem 0 0.5rem;
   font-size: clamp(1.6rem, 2.4vw, 2.2rem);
   line-height: 1.15;
 }
 
-.review-gallery__header p,
-.review-confirm header p {
+.review-gallery__header p {
   margin: 0;
   color: var(--muted-foreground);
 }
@@ -190,9 +169,7 @@
 }
 
 .review-reverse,
-.review-confirm,
-.review-variant,
-.review-published {
+.review-variant {
   display: grid;
   padding: 1.25rem;
   border: 1px solid var(--border);
@@ -382,71 +359,4 @@
 .review-variant__actions {
   display: flex;
   justify-content: flex-start;
-}
-
-.review-confirm__sequence {
-  display: grid;
-  padding-left: 1.25rem;
-  margin: 0;
-  gap: 0.6rem;
-}
-
-.review-confirm__sequence li {
-  display: grid;
-  gap: 0.1rem;
-}
-
-.review-confirm__sequence span {
-  color: var(--muted-foreground);
-  font-size: 0.9rem;
-}
-
-.review-confirm__actions {
-  display: grid;
-  gap: 0.5rem;
-  justify-items: start;
-}
-
-.review-confirm__actions p {
-  margin: 0;
-  color: var(--muted-foreground);
-  font-size: 0.85rem;
-}
-
-.review-published {
-  justify-items: start;
-}
-
-.review-published__mark {
-  width: 2.5rem;
-  height: 2.5rem;
-  padding: 0.5rem;
-  border-radius: 999px;
-  background: color-mix(in oklch, var(--teacher-forest) 12%, var(--card));
-  color: var(--teacher-forest);
-}
-
-.review-published dl {
-  display: grid;
-  margin: 0;
-  gap: 0.5rem;
-}
-
-.review-published dl div {
-  display: grid;
-  gap: 0.15rem;
-}
-
-.review-published dt {
-  color: var(--muted-foreground);
-  font-size: 0.8rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.review-published dd {
-  margin: 0;
-  font-family: var(--font-mono, monospace);
-  font-size: 0.85rem;
-  overflow-wrap: anywhere;
 }

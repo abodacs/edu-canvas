@@ -1,8 +1,4 @@
 /* #8 teacher progress dashboard. */
-.workspace-page-nav {
-  margin-block-start: 0.75rem;
-}
-
 .progress-lede {
   color: var(--muted, #4a5568);
 }

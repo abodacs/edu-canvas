@@ -1,0 +1,86 @@
+{
+  "note": "One owner per path (docs/product/ux-redesign-stack.md). pnpm verify:ux-ownership fails when a tracked file matches two owners, a pattern is listed twice, a pattern matches no tracked file (unless listed in pending), or a deleted path is still tracked. pnpm verify:ux-ownership --diff <base> --slice <name> fails when the branch changes a file another owner claims. Files no owner claims are allowed and reported.",
+  "owners": {
+    "foundation": [
+      "src/styles.css",
+      "src/styles/tokens.css",
+      "src/styles/base.css",
+      "src/components/ui/**",
+      "src/components/a2ui/**",
+      "src/components/auth/use-auth-session.ts",
+      "src/components/auth/use-session-expiry.ts",
+      "src/components/auth/session-expiry-banner.tsx",
+      "src/routes/__root.tsx",
+      "src/server/seed-data.ts",
+      "src/server/persistence/**",
+      "scripts/ui-gate/**",
+      "scripts/student-probe/**",
+      "scripts/verify-ui.ts",
+      "scripts/design-census-capture.ts",
+      "scripts/*budget*.json",
+      "scripts/design-token-baseline.json",
+      "scripts/ux-ownership.json",
+      "scripts/ux-ownership.ts",
+      "scripts/ux-ownership.test.ts",
+      "scripts/verify-ux-ownership.ts",
+      "docs/product/ux-redesign-stack.md"
+    ],
+    "landing": [
+      "src/routes/index.tsx",
+      "src/styles/landing.css",
+      "src/components/landing/**"
+    ],
+    "sign-in": [
+      "src/routes/login.tsx",
+      "src/routes/sign-up.tsx",
+      "src/routes/login/**",
+      "src/components/auth/auth-client.ts",
+      "src/components/auth/auth-status.tsx",
+      "src/components/auth/membership-copy.ts",
+      "src/components/auth/membership-copy.test.ts",
+      "src/components/auth/membership-radio.tsx",
+      "src/components/auth/password-field.tsx",
+      "src/components/auth/use-auth-challenge.ts",
+      "src/components/auth/use-auth-notice.ts",
+      "src/styles/auth.css"
+    ],
+    "studio": [
+      "src/routes/workspace.tsx",
+      "src/components/studio/teacher-studio.tsx",
+      "src/components/studio/source-panel.tsx",
+      "src/components/studio/validation-diagnostics*",
+      "src/components/studio/moderation-recovery*",
+      "src/styles/studio.css",
+      "src/styles/generation.css",
+      "src/styles/source.css",
+      "src/styles/workspace.css"
+    ],
+    "review": [
+      "src/components/studio/review-studio.tsx",
+      "src/components/studio/review-gallery.tsx",
+      "src/components/studio/review-shared.tsx",
+      "src/components/studio/review-utilities.ts",
+      "src/components/studio/variant-editor.tsx",
+      "src/styles/review.css",
+      "src/styles/a2ui.css"
+    ],
+    "publish": [
+      "src/components/studio/publish-confirmation.tsx",
+      "src/styles/publish.css"
+    ],
+    "dashboard": [
+      "src/routes/dashboard.tsx",
+      "src/components/dashboard/**",
+      "src/styles/progress.css"
+    ],
+    "learn": [
+      "src/routes/learn.tsx",
+      "src/components/learn/**",
+      "src/styles/learn.css"
+    ]
+  },
+  "pending": {
+    "src/components/landing/**": "The Landing slice creates this directory; remove this entry when it lands."
+  },
+  "deleted": ["src/components/auth/account-header.tsx"]
+}
