@@ -1,11 +1,12 @@
 # Standards generalization: grounding and lesson validation beyond 4.NF.A.1 (#113, #30)
 
-Status: **research record, finished 2026-11-04 except the measured model rows.** All file:line citations were re-checked against `main` at `211e30f`. The fixture step that had not run now runs as a vitest characterization test, and its measured result is in [§2a](#2a-measured-fixture-outcomes). Step 7 (model role) is **not run in this record: pending META key**. California is **out of scope by product decision (2026-11-04)**: Multi-State is the only shipped jurisdiction, so the CDE wording check is not required. No production code under `src/` changed in this record.
+Status: **research record, finished 2026-11-04, with one remaining gap (see Remaining gaps).** All file:line citations were re-checked against `main` at `211e30f`. The fixture step that had not run now runs as a vitest characterization test, and its measured result is in [§2a](#2a-measured-fixture-outcomes). Step 7 (model role) **ran live** on 2026-11-04 (8 of M=9 calls, §7). California is **out of scope by product decision (2026-11-04)**: Multi-State is the only shipped jurisdiction, so the CDE wording check is not required. No production code under `src/` changed in this record.
 
-This record started as a local brief whose live evidence is not in the repository. Claims resting only on that evidence are marked **(uncommitted evidence)**:
+This record started as a local brief. Its live evidence is now committed in [`evidence/`](evidence/), and claims resting on it are marked **(local evidence)**:
 
-- `lc-probe-out/*.json` and `lc-probe-log.json`: 5 of N=6 live Learning Commons calls, all HTTP 200, captured 2026-11-04.
-- `db-readonly.out`: a read-only snapshot of a local `edu_canvas` database.
+- [`evidence/lc-probe-out/`](evidence/lc-probe-out/) and [`lc-probe-log.json`](evidence/lc-probe-log.json): all 6 of N=6 live Learning Commons calls, HTTP 200, captured 2026-11-04. Scripts: [`lc-probe.py`](evidence/lc-probe.py) and [`lc-probe-ca.py`](evidence/lc-probe-ca.py).
+- [`evidence/db-readonly.out`](evidence/db-readonly.out): a read-only snapshot of a local `edu_canvas` development database (synthetic data), from [`db-readonly.sh`](evidence/db-readonly.sh).
+- [`evidence/meta-probe.out.json`](evidence/meta-probe.out.json) and [`meta-pack-author-proposal.txt`](evidence/meta-pack-author-proposal.txt): the live model-role run, from [`meta-probe.ts`](evidence/meta-probe.ts). The script was lint-cleaned after the run (loop shape, braces, encoding name) and was not rerun, so no calls were spent.
 
 Committed evidence that this record cites:
 
@@ -26,9 +27,9 @@ Committed evidence that this record cites:
 | Advisory clamp | `semantic-validation.ts:263` | `:263-269` (`boundedAgentOptions`; the 5000 ms clamp is on `:265`; the default is 250 ms) |
 | Advisory warning only | `semantic-validation.ts:136-158` | `:136-163` (`verdict: "warning"` on `:146`) |
 | Unknown catalog fails closed | `a2ui-contract.ts:21-22` | The comment is on `:22`; the check is `hasUnknownCatalog` at `:460` |
-| B11 seed catalog | DB stores `edu-canvas-matching-v0` (#110 open) | In the repository, the seed now pins `A2UI_CATALOG_VERSION` (`seed-data.ts:89`, fixed by `1b65da8`, PR #188). The DB value is from a local database seeded before that fix **(uncommitted evidence)**. #110 is still open on GitHub |
+| B11 seed catalog | DB stores `edu-canvas-matching-v0` (#110 open) | In the repository, the seed now pins `A2UI_CATALOG_VERSION` (`seed-data.ts:89`, fixed by `1b65da8`, PR #188). The DB value is from a local database seeded before that fix **(local evidence)**. #110 is still open on GitHub |
 | Pre-mortem: "REST top-1 picked RI.4.2 over RI.5.2" | `free-text.md` | **Wrong.** Row `adv-ela-main-idea` ("teach students to identify the main idea of a text") has no expected code. REST returned `RI.3.2, RI.4.2, RI.1.2, RI.5.2, RI.2.2`; top-1 is **RI.3.2** (0.805), and RI.5.2 is rank 4 (`free-text-evidence.json:3056-3061`). The 43% exact hit@1 is correct (`free-text.md:13`) |
-| §1 CA crosswalk "Jaccard=1" | evidence.json | Committed evidence records `matchType: "exact"` and `alignmentScore: 1` with `hasJaccard: false`. The Jaccard figure exists only in uncommitted evidence |
+| §1 CA crosswalk "Jaccard=1" | evidence.json | Committed evidence records `matchType: "exact"` and `alignmentScore: 1` with `hasJaccard: false`. The Jaccard figure appears only in the #113 evaluation comment, not in committed evidence |
 | §9 S2 "sequence after #115 lands" | #115 open | #115 was closed (completed) on 2026-10-31, so S2 is no longer sequenced behind it |
 | §10 Q3 default "teacher acknowledgment per screen" | proposed | **Already implemented** by #5 (PR #167). Approving a screen requires acknowledging each of its warning codes (`publication/service.ts:484-498`, `WARNINGS_UNACKNOWLEDGED`), and publication lists unacknowledged codes as blockers (`:169-176`). Acknowledgment works per code per screen, deduplicated (`shared/publication-contract.ts:90-110`). So one acknowledgment covers all three unverified pairs on a screen |
 | B7 one-node RI.5.2 path | blocked by `PATH_TOO_SHORT` | It is blocked **earlier**, by the structural gate (`INVALID_CONTRACT` at `learningPath.steps`, `validation.ts:55`). `PATH_TOO_SHORT` is reached only when the structural gate is bypassed. See §2a |
@@ -41,7 +42,7 @@ All other citations in §2 matched `211e30f` exactly.
 | --- | --- | --- |
 | `4.NF.A.1` (Multi-State and CA) | Full: 5 components; prerequisites `4.OA.A.2` and `3.NF.A.3`; CA matches exactly (`alignmentScore` 1) | `evidence.json` runs `multi-state-4.NF.A.1`, `california-4.NF.A.1` |
 | `4.OA.A.3` (non-fraction math from the #113 pilot registry) | Full: 18 components; prerequisites `4.NBT.A.3`, `4.NBT.B.6`, `3.OA.D.8`; CA 3 of 3 exact | `evidence.json` runs `multi-state-4.OA.A.3`, `california-4.OA.A.3` |
-| `RI.5.2` (non-math, ELA) | **Partial.** MCP progression refuses non-math ("Progressions are only available for Common Core State Standard - Mathematics …"), with 0 progression rows. The REST search resolves it (top-1, score 0.926, CC BY 4.0) with **0 learning components and 0 prerequisites** **(uncommitted evidence)** | `evidence.json` `elaBoundary` (`:4259`); `lc-probe-out/01..03` |
+| `RI.5.2` (non-math, ELA) | **Partial.** MCP progression refuses non-math ("Progressions are only available for Common Core State Standard - Mathematics …"), with 0 progression rows. The REST search resolves it (top-1, score 0.926, CC BY 4.0) with **0 learning components and 0 prerequisites** **(local evidence)** | `evidence.json` `elaBoundary` (`:4259`); `lc-probe-out/01..03` |
 
 Primary texts, verbatim, from thecorestandards.org (an unofficial mirror; the official PDFs were not fetched):
 
@@ -49,6 +50,8 @@ Primary texts, verbatim, from thecorestandards.org (an unofficial mirror; the of
 - **RI.5.2:** "Determine two or more main ideas of a text and explain how they are supported by key details; summarize the text."
 
 **California: out of scope (product decision 2026-11-04).** The pilot ships **Multi-State only**; California is not a supported jurisdiction and no California pack is planned. The CDE PDFs redirect to a WAF page, but that no longer blocks anything: the wording check is **not required**. If California is ever sold, download the two CDE PDFs in a browser and compare them to the Multi-State text before authoring a California pack version.
+
+The one California call already made is kept as context, not as support: California RI.5.2 matches Multi-State word for word ([`06-search-ri-5-2-california.json`](evidence/lc-probe-out/06-search-ri-5-2-california.json)).
 
 Consequence for #113: under the #113 rule R-04, RI.5.2 yields `skills-missing` and blocks generation. That rule is in an uncommitted note, `.scratch/tasks/113-source-grounding/113-source-grounding.md:103`. A non-math standards pack therefore cannot take its skills from Learning Commons today. Its skills must be written by hand from the primary text and labeled as a different kind of source.
 
@@ -68,9 +71,9 @@ The path is: teacher input → grounding → generation → validation → A2UI 
 | B8 | `validation.ts:123-128` (`providerDraftSchema`): exactly 4 matching variants, each with source items, target items and relationships | fits | fits only as word-problem → equation matching | fits only as detail → main-idea matching; cannot express a summary |
 | B9 | `a2ui-contract.ts:16,27`: the only catalogs are `matching-v1` and `fractions-v2`. `fractions-contract.ts:27-28` allows denominators up to 12 only | ok | matching only | matching only |
 | B10 | `learner/grading.ts:7-105`: `matching-grader-v1` checks exact pairs and knows no subject | ok | ok | no free-text grading |
-| B11 | `seed-data.ts:47-53,54-79`: one standard, a 2-node graph, fraction content. All 17 stored drafts in the local DB use `standard_ccss_4_nf_a_01` **(uncommitted evidence)** | — | — | — |
+| B11 | `seed-data.ts:47-53,54-79`: one standard, a 2-node graph, fraction content. All 17 stored drafts in the local DB use `standard_ccss_4_nf_a_01` **(local evidence)** | — | — | — |
 
-Stored evidence of B6 **(uncommitted evidence)**: draft `draft_req_6c99492c…` (model `meta/muse-spark-1.1`) used number-line text as targets. All 12 of its relationships drew `ANSWER_RELATIONSHIP_UNVERIFIED` warnings, and the draft reached `ready-for-review`.
+Stored evidence of B6 **(local evidence)**: draft `draft_req_6c99492c…` (model `meta/muse-spark-1.1`) used number-line text as targets. All 12 of its relationships drew `ANSWER_RELATIONSHIP_UNVERIFIED` warnings, and the draft reached `ready-for-review`.
 
 ### 2a. Measured fixture outcomes
 
@@ -138,19 +141,45 @@ Gap: the standards-pack version is not yet a pin. Add `packVersion` beside `grap
 
 **Verdict:** this does not block #30. A matching-only pilot is honest if each standards pack declares `allowedScreenPatterns: ["matching"]` and shows a visible diagnostic for an unsupported pattern (a #30 acceptance criterion). Richer lessons belong in #29, which stays a dependency.
 
-## 7. Model role: NOT RUN (pending META key)
+## 7. Model role (live, `muse-spark-1.2-contributor`, 8 of M=9 calls)
 
-`META_API_KEY` is absent from this environment, as it was from the local shell and `.env`. Only the names were checked; no values were printed. No model calls were made (0 of M=9). Every model row is **pending META key**. The runtime reads `META_API_KEY`, `META_MODEL` (default `muse-spark-1.2-contributor`) and `META_BASE_URL` (`src/server/config.ts:255-259`).
+Only the key is required: `META_MODEL` and `META_BASE_URL` have defaults (`src/server/config.ts:255-259`). The script reads `META_API_KEY` and falls back to `OPENAI_API_KEY`. Run: `node --env-file=.env --import tsx docs/research/standards-generalization/evidence/meta-probe.ts`. The script refuses any other model. Results are labeled **provisional, not teacher evidence, not #106**.
 
-What committed evidence already shows:
+| Role | Result | Latency |
+| --- | --- | --- |
+| Draft generator (4.OA.A.3 graph in the prompt, adapter called directly) | 3 of 3 drafts fit `providerDraftSchema` and passed `validateProviderDraft`; correction rate 0 of 3 | 14.8, 15.1, 16.2 s |
+| Advisory reviewer (K=12 provisional cases, 3 per call) | agreed 12 of 12 (6 math, 6 RI.5.2 main idea and detail) | 2.8–4.6 s per call |
+| Offline pack author (18 4.OA.A.3 components → 4 screen purposes) | 4 groups (3, 8, 5, 2); 18 of 18 IDs covered, 0 unknown, 0 duplicated. Still a proposal: a person reviews it before it is stored | 8.3 s |
 
-- V3 latency: 33.467 s with one correction (`evidence/ic1-2026-10-27/README.md:66,76`) and 15.97 s with none (`ic1-2026-10-30/README.md:33`). AgDR-0006 states about 20–47 s per draft (`:25`). Local DB runs **(uncommitted evidence)**: 33.5 s (ready) and 41.7 s (blocked). One of the two committed V3 runs needed a correction, which is a small sample.
-- **An inline advisory reviewer is infeasible.** `semantic-validation.ts:265` clamps the agent timeout to at most 5000 ms (default 250 ms). A timeout becomes `hard_block` `VALIDATION_TIMEOUT` (`:202-220`), and the report becomes `retryable` (`:298-300`). A Meta reviewer taking 15–47 s would turn every draft into `failed-retryable`. Generation alone may use 200 s (AgDR-0006 `:22`), so an inline review on top of it exceeds the budget. The reviewer must run **asynchronously, after `ready-for-review`**, and write only warnings. Production also passes no `recommendationAgents`: the only consumer is `semantic-validation.ts:283`, and `draft-acceptance.ts:302-306` calls `semanticValidation` with no options.
+### Live S4 check on #213's pack prompt (4 calls; M raised from 9 to 12)
+
+Script: [`meta-s4-live.ts`](evidence/meta-s4-live.ts), which mirrors `buildProviderContext` and runs the real gate. Outputs: [`meta-s4-live.out.json`](evidence/meta-s4-live.out.json) and the saved drafts in [`meta-s4-live.drafts.json`](evidence/meta-s4-live.drafts.json). The cap ran out before the RI.5.2 probe.
+
+| Draft | Content | State | Gate findings | Correction | Latency |
+| --- | --- | --- | --- | --- | --- |
+| 4.OA.A.3 #1 | Real word problems matched to equations. One source label leaks model scratch text: `"… How many pencils are left? 31 chars/d=OK approx 85"` | `ready-for-review` | all 12 relationships `ANSWER_RELATIONSHIP_UNVERIFIED` (warning), plus 5 quality warnings | yes | 59.6 s |
+| 4.OA.A.3 #2 | **Placeholders only.** Every source is `"Word problems"` and every target is `"Equations"`, in all 4 variants | **`ready-for-review`** | the same 12 unverified warnings, plus 5 quality warnings | yes | 44.3 s |
+
+Findings:
+
+1. **S4 works.** The pack frame makes the model write the right subject: word problems and equations, not fractions.
+2. **S3 does not hold on live output.** The whole-number rule verified **0 of 24** model-written pairs. The model writes `□` for the unknown, `6 R3 → 7 tables needed` and `⌈27 ÷ 4⌉ = 7`, and none of these parse, so every pair drops to the `warning` path. The rule blocks only the pack's own fixture notation.
+3. **The gate accepts empty content.** Identical placeholder labels, repeated across all 12 items of every variant, pass both structural and semantic validation and reach teacher review with warnings only.
+4. **Correction rate 2 of 2,** against 0 of 3 under the old fraction prompt. Latency is 44–60 s with one correction, still inside AgDR-0006's 200 s budget.
+
+Limits on these results:
+
+- **Generator content was not inspected.** The run recorded schema fit only and did not save the drafts. Because of B5, whether the items were word problems or fractions is **unverified**. A rerun must save the drafts, and only 1 call remains under M=9.
+- The 12 reviewer cases are easy and hand-labeled, so 12 of 12 does not establish reviewer quality; #106 must.
+- **Latency against AgDR-0006 (200 s):** generation takes 15–16 s with no correction, or about 32 s with one. Reviewing a draft's 12–32 pairs takes 4–11 calls, about 12–50 s in sequence. Together that is about 30–85 s, within budget.
+
+Earlier evidence and code facts:
+
+- V3 latency: 33.467 s with one correction (`evidence/ic1-2026-10-27/README.md:66,76`) and 15.97 s with none (`ic1-2026-10-30/README.md:33`). AgDR-0006 states about 20–47 s per draft (`:25`). Local DB runs **(local evidence)**: 33.5 s (ready) and 41.7 s (blocked). One of the two committed V3 runs needed a correction, which is a small sample.
+- **An inline advisory reviewer is fragile.** `semantic-validation.ts:265` clamps the agent timeout to at most 5000 ms (default 250 ms). A timeout becomes `hard_block` `VALIDATION_TIMEOUT` (`:202-220`), and the report becomes `retryable` (`:298-300`). The measured reviewer takes 2.8–4.6 s per call (below), which leaves under 0.4 s of margin, so one slow call would turn a good draft into `failed-retryable`. The reviewer must run **asynchronously, after `ready-for-review`**, and write only warnings. Production also passes no `recommendationAgents`: the only consumer is `semantic-validation.ts:283`, and `draft-acceptance.ts:302-306` calls `semanticValidation` with no options.
 - Draft generator: the adapter (`provider.ts:636`) can be called directly with a `ProviderGenerationContext` built from a standards pack. But the prompt framing at `provider.ts:445` (B5) biases the output toward fractions, so standards-pack framing must replace that line.
 - Offline pack author: a model would propose component → screen-purpose mappings, for example the 18 `4.OA.A.3` components → 4 screen purposes. A person reviews each proposal before it is stored as a versioned standards-pack record. The model stays out of grounding, `hard_block` decisions, grading and answer keys.
-- Other models in the local DB (`meta/muse-spark-1.1`, `meta/muse-spark-1.3`, `deepseek/deepseek-v4.1-flash`) are **unproven**: none has V1/V3 records. **(uncommitted evidence)**: muse-spark-1.3 took 85.8 s and was blocked; deepseek took 77.4 s and failed.
-
-**Unblock:** add `META_API_KEY`, `META_MODEL=muse-spark-1.2-contributor` and `META_BASE_URL=https://api.meta.ai/v1` to `.env`. Then write a scratch `meta-probe.ts` (not yet written) that calls `createMetaLessonDraftProvider` with a standards-pack context and the §2a fixtures, and run it with `node --import tsx .scratch/tasks/standards-generalization/meta-probe.ts`.
+- Other models in the local DB (`meta/muse-spark-1.1`, `meta/muse-spark-1.3`, `deepseek/deepseek-v4.1-flash`) are **unproven**: none has V1/V3 records. **(local evidence)**: muse-spark-1.3 took 85.8 s and was blocked; deepseek took 77.4 s and failed.
 
 ## 8. Pre-mortem: it shipped and failed
 
@@ -194,11 +223,10 @@ Checks still to come, and not claimed here: #106 (eval set) and #118 (teacher re
 7. Look into a second Meta model? **Default: no**, until V1/V3 evidence exists. The local DB shows 1.1, 1.3 and deepseek runs with no records.
 8. Caps: **Defaults N=6 (5 used), M=9 (0 used), K=12 (0 used).**
 
-## Steps not run: blockers and unblock commands
+## Remaining gaps
 
-- **Step 7 (all model rows): not run, pending META key.** Unblock: see §7.
+- **Generator content unverified:** the drafts were not saved, and only 1 call is left under M=9. Unblock: save `draft` in `meta-probe.ts` role A, raise M by at least 3, and rerun it.
 - **California: not needed.** Product decision 2026-11-04: Multi-State only. Do not download the CDE PDFs unless a California sale is on the table; then verify the wording before authoring a California pack version.
-- **Project map final update:** not done. Unblock: run the project-map skill (UPDATE) and add the §10 decisions 1–8.
 
 The fixture acceptance step **ran**; see §2a. Reproduce it with:
 
