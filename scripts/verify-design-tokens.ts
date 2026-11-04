@@ -2,7 +2,11 @@ import { readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { clampCeiling, totalOf } from "./design-token-ratchet.ts";
+import {
+  clampCeiling,
+  hasLiteralDuration,
+  totalOf,
+} from "./design-token-ratchet.ts";
 import type { Counts } from "./design-token-ratchet.ts";
 
 // Design-token gate for the UX revamp.
@@ -47,6 +51,7 @@ const RULES = [
   "teacher-alias",
   "undefined-token",
   "inline-style-literal",
+  "literal-duration",
 ] as const;
 
 type RuleId = (typeof RULES)[number];
@@ -59,6 +64,8 @@ interface ScanState {
   readonly declared: Set<string>;
   readonly referenced: Map<string, string>;
   file: string;
+  /** Inside an @font-face block, whose font-family is a descriptor, not usage. */
+  isFontFace: boolean;
 }
 
 const COLOUR_PATTERNS = [
@@ -128,6 +135,9 @@ const parseDeclaration = (
 };
 
 const classify = (property: string, value: string): RuleId | null => {
+  if (hasLiteralDuration(property, value)) {
+    return "literal-duration";
+  }
   const hasVariable = value.includes("var(");
   if (!hasVariable && property === "font-size" && LENGTH_LITERAL.test(value)) {
     return "literal-font-size";
@@ -161,6 +171,15 @@ const incrementFor = (
 };
 
 const scanLine = (text: string, state: ScanState): void => {
+  if (text.startsWith("@font-face")) {
+    state.isFontFace = true;
+  }
+  if (state.isFontFace) {
+    if (text.includes("}")) {
+      state.isFontFace = false;
+    }
+    return;
+  }
   const colon = text.indexOf(":");
   if (text.startsWith("--") && colon > 2) {
     state.declared.add(text.slice(0, colon).trim());
@@ -211,6 +230,7 @@ const scanStylesheets = async (): Promise<{
     declared: new Set<string>(),
     referenced: new Map<string, string>(),
     file: "",
+    isFontFace: false,
   };
 
   for (const [index, file] of files.entries()) {

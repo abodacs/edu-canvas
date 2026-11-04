@@ -43,7 +43,7 @@ export const Route = createRootRoute({
         { rel: "stylesheet", href: appCss },
         {
           rel: "preload",
-          href: "/fonts/hanken-grotesk-variable-core.woff2",
+          href: "/fonts/figtree-core.woff2",
           as: "font",
           type: "font/woff2",
           crossOrigin: "anonymous",

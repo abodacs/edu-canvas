@@ -35,3 +35,13 @@ export const clampCeiling = (
   }
   return { rules, refused };
 };
+
+// A literal time in a transition or animation escapes the reduced-motion
+// collapse in base.css, which only rewrites the --duration-* tokens. Delays
+// are not counted: a stagger offset is not a motion length.
+const DURATION_PROPERTIES =
+  /^(?:transition|transition-duration|animation|animation-duration)$/u;
+const TIME_LITERAL = /(?:^|[\s,(])\d*\.?\d+m?s\b/u;
+
+export const hasLiteralDuration = (property: string, value: string): boolean =>
+  DURATION_PROPERTIES.test(property) && TIME_LITERAL.test(value);

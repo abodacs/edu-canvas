@@ -34,8 +34,7 @@
       "src/styles/workspace.css": 8
     },
     "literal-font-family": {
-      "src/styles/source.css": 1,
-      "src/styles/tokens.css": 2
+      "src/styles/source.css": 1
     },
     "literal-shadow": {
       "src/styles/auth.css": 1,
@@ -57,6 +56,10 @@
       "src/styles/progress.css  --surface-muted": 1,
       "src/styles/progress.css  --font-mono": 1
     },
-    "inline-style-literal": {}
+    "inline-style-literal": {},
+    "literal-duration": {
+      "src/styles/a2ui.css": 5,
+      "src/styles/studio.css": 3
+    }
   }
 }
