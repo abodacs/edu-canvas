@@ -1,0 +1,40 @@
+[
+  {
+    "screenPurpose": "worked example",
+    "componentIds": [
+      "140c9070-138f-59f7-a1a1-ad3f1815b981",
+      "7e561083-58c0-554a-8cb0-ff5621464fad",
+      "44a2143c-250e-5d19-b1b2-60ffd670ea61"
+    ]
+  },
+  {
+    "screenPurpose": "guided practice",
+    "componentIds": [
+      "432f50a0-0a69-5fb5-8b2b-9c8559351876",
+      "7c9d2f64-fe77-5775-9a43-153d0868138a",
+      "8457dbae-9bad-575b-812c-b1702cc2512c",
+      "d26c9161-0fe1-5093-8752-dfef974cfa55",
+      "6f0d3e89-5fb1-5741-92ed-e0a8961e230c",
+      "24e4f997-25cb-5d38-86f6-0964ce3fa3b9",
+      "3b7082f5-67b7-55bd-b45d-7ba4f5c441f2",
+      "cbea54a9-0ad7-50d7-a388-50e121b49c85"
+    ]
+  },
+  {
+    "screenPurpose": "independent check",
+    "componentIds": [
+      "e1589f99-6dd3-56a0-b387-32ceadb75cc3",
+      "165bed09-31f6-5e0f-be23-146fd2513912",
+      "4eaabd84-4ab1-522b-bd2f-38f9f001af0f",
+      "b17b134d-49ab-5fd3-8687-1391da262bb5",
+      "ec3925a3-b5bc-5c83-8d3e-36eb617c2aa0"
+    ]
+  },
+  {
+    "screenPurpose": "follow-up",
+    "componentIds": [
+      "29217307-4316-548a-a5be-e031b7036b38",
+      "f81ccf8a-6c9f-5076-abf8-17ce9c902acd"
+    ]
+  }
+]

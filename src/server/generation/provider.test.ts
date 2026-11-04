@@ -461,6 +461,20 @@ describe("pack-framed provider prompt (#221)", () => {
     expect(prompt).not.toContain('"answer"');
   });
 
+  it("tells the model how to write each equation so the pack rule can read it", () => {
+    const prompt = buildLessonPrompt(
+      {
+        ...request,
+        prompt: "multistep word problems for grade 4",
+        standardId: multistepWordProblemsPack.standardId,
+      },
+      packProviderContext(multistepWordProblemsPack.standardId)
+    );
+
+    expect(prompt).toMatch(/one letter/iu);
+    expect(prompt).toMatch(/no words, remainders, or rounding symbols/iu);
+  });
+
   it("states the RI.5.2 passage and requires every detail to come from it", () => {
     const prompt = buildLessonPrompt(
       {

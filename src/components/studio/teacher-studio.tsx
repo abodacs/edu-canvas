@@ -1,15 +1,6 @@
-import {
-  ArrowRight,
-  BookOpen,
-  Check,
-  Globe2,
-  Layers3,
-  ShieldCheck,
-  Sparkles,
-  WandSparkles,
-  FileText,
-} from "lucide-react";
+import { ArrowRight, CircleAlert, CircleX, FileText, Lock } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 
 import { readResponseJson } from "@/lib/http";
 import {
@@ -18,16 +9,34 @@ import {
 } from "@/lib/generation-failures";
 import { cn } from "@/lib/utilities";
 import { LessonPreview } from "@/components/a2ui/lesson-preview";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
+import { Steps } from "@/components/ui/steps";
 import { ModerationRecoveryPanel } from "@/components/studio/moderation-recovery-panel";
 import { ReviewStudio } from "@/components/studio/review-studio";
 import { SourcePanel } from "@/components/studio/source-panel";
 import { useStoredDraft } from "@/components/studio/use-stored-draft";
+import {
+  boardHeading,
+  groupDiagnostics,
+  readyCountLine,
+  isTeacherReviewDiagnostic,
+  variantLetter,
+  variantStatus,
+} from "@/components/studio/teacher-studio-board";
 import { ValidationDiagnostics } from "@/components/studio/validation-diagnostics";
+import type {
+  GroupedDiagnostic,
+  VariantStatus,
+} from "@/components/studio/teacher-studio-board";
 import { csrfHeaderName } from "@/shared/identity-contract";
 import { publicGenerationResultSchema } from "@/shared/generation-contract";
-import { displayStandardCode } from "@/shared/standard-display";
+import {
+  displayStandardCode,
+  displayStandardTopic,
+} from "@/shared/standard-display";
 import type { GenerationFailure } from "@/lib/generation-failures";
 import type { BoundSource } from "@/components/studio/source-panel";
 import type {
@@ -39,6 +48,7 @@ import type {
 
 import type {
   KeyboardEvent as ReactKeyboardEvent,
+  ReactNode,
   RefObject,
   SyntheticEvent,
 } from "react";
@@ -59,7 +69,13 @@ The seeded synthetic curriculum every draft is generated against. The identity s
 */
 const DEFAULT_STANDARD_ID = "standard_ccss_4_nf_a_01";
 
+/** The page names the standard's topic; an unknown pin reads "New lesson". */
+const topicFor = (standardId: string): string =>
+  displayStandardTopic(standardId) ?? "New lesson";
+
 const GENERATE_ENDPOINT = "/api/lessons/generate";
+
+const PROMPT_MAX_LENGTH = 500;
 
 const GRADES = ["3", "4", "5", "6"] as const;
 
@@ -75,29 +91,7 @@ const variantLabels = {
   challenge: "Stretch it",
 } as const;
 
-const guidancePanels = [
-  {
-    key: "target",
-    title: "Target",
-    short: "Keep the goal precise",
-    detail: "We will start with the clearest learning target we can find.",
-    Icon: BookOpen,
-  },
-  {
-    key: "support",
-    title: "Support",
-    short: "Make room for every learner",
-    detail: "The draft includes a gentler path and a way to stretch the idea.",
-    Icon: Layers3,
-  },
-  {
-    key: "review",
-    title: "Review",
-    short: "You decide what goes live",
-    detail: "Every version stays private until you approve it for students.",
-    Icon: ShieldCheck,
-  },
-] as const;
+const languageNames = { en: "English", ar: "Arabic" } as const;
 
 const DIFFICULTY_SIGNALS: readonly [string, PromptContext["difficulty"]][] = [
   ["challenge", "stretch"],
@@ -143,19 +137,17 @@ const moderationCategoryOf = (
   );
 };
 
-const getResultTitle = (state: PublicGenerationResult["state"]) => {
+/** The heading of a result that has no variants to show. */
+const getResultTitle = (state: PublicGenerationResult["state"]): string => {
   switch (state) {
-    case READY_FOR_REVIEW_STATE: {
-      return "Choose the version that fits the room.";
-    }
     case "generating": {
-      return "Your idea is taking shape.";
+      return "This draft is still being written.";
     }
     case "blocked-by-validation": {
-      return "This draft needs a little more care.";
+      return "This draft can’t go to students yet.";
     }
     case "blocked-by-moderation": {
-      return "Let’s reshape that request.";
+      return "This objective can’t be drafted for students.";
     }
     case "failed-retryable": {
       return "The first pass missed a beat.";
@@ -169,23 +161,25 @@ const getResultTitle = (state: PublicGenerationResult["state"]) => {
   }
 };
 
-const TEACHER_REVIEW_DIAGNOSTIC_CODES: ReadonlySet<string> = new Set([
-  "PREREQUISITE_PACK_MISSING",
-  "PREREQUISITE_PATH_MISSING",
-  "LEARNING_PATH_BLOCKED",
-  "CURRICULUM_TENANT_MISMATCH",
-  "CURRICULUM_CONTEXT_MISMATCH",
-  "CURRICULUM_GRAPH_VERSION_UNSUPPORTED",
-]);
-
-const isTeacherReviewDiagnostic = (code: string): boolean =>
-  TEACHER_REVIEW_DIAGNOSTIC_CODES.has(code);
+/** The short line above a result heading: what kind of state this is. */
+const getResultMeta = (state: PublicGenerationResult["state"]): string => {
+  switch (state) {
+    case "generating": {
+      return "In progress";
+    }
+    case "blocked-by-validation": {
+      return "Blocked by validation · not shown to students";
+    }
+    default: {
+      return "Draft not finished · nothing was shared";
+    }
+  }
+};
 
 const STATUS_ANNOUNCEMENTS: Partial<
   Record<PublicGenerationResult["state"], string>
 > = {
-  [READY_FOR_REVIEW_STATE]:
-    "Four lesson variants are ready for teacher review.",
+  [READY_FOR_REVIEW_STATE]: "Lesson variants are ready for teacher review.",
   generating: "A duplicate request is still being completed.",
 };
 
@@ -198,98 +192,23 @@ const getStatusAnnouncement = (
   );
 };
 
-const RESULT_DESCRIPTIONS: Partial<
-  Record<PublicGenerationResult["state"], string>
-> = {
-  [READY_FOR_REVIEW_STATE]:
-    "Look for the version that sounds like your classroom. You can review every one before anything moves forward.",
-};
-
 const getResultDescription = (
   result: PublicGenerationResult,
   requiresTeacherReview: boolean
 ): string => {
-  return requiresTeacherReview
-    ? "The approved prerequisite context is unavailable, so nothing has been prepared for students."
-    : (RESULT_DESCRIPTIONS[result.state] ??
-        "The draft remains private while we finish the safe, reviewable handoff.");
-};
-
-const getStateLabel = (state: PublicGenerationResult["state"]): string => {
-  switch (state) {
-    case READY_FOR_REVIEW_STATE: {
-      return "Ready to review";
-    }
-    case "generating": {
-      return "In progress";
-    }
-    default: {
-      return "Needs a look";
-    }
+  if (requiresTeacherReview) {
+    return "The approved prerequisite context is unavailable, so nothing has been prepared for students.";
   }
-};
-
-const DIAGNOSTIC_SEVERITY_LABELS: Record<
-  PublicGenerationResult["diagnostics"][number]["severity"],
-  string
-> = {
-  error: "Review this",
-  warning: "Worth noticing",
-};
-
-const getDiagnosticLabel = (
-  diagnostic: PublicGenerationResult["diagnostics"][number]
-): string => {
-  return TEACHER_REVIEW_DIAGNOSTIC_CODES.has(diagnostic.code)
-    ? "Teacher review"
-    : DIAGNOSTIC_SEVERITY_LABELS[diagnostic.severity];
+  if (result.state === BLOCKED_BY_VALIDATION_STATE) {
+    return "The server checks found problems in the draft. Nothing was shown to students. Fix each one below, or draft again.";
+  }
+  return "The draft stays private. Nothing was shown to students.";
 };
 
 const getVariantNoteName = (variant: {
   readonly kind: keyof typeof variantLabels;
   readonly title: string;
 }): string => `${variant.title} (${variantLabels[variant.kind]})`;
-
-interface GroupedDiagnostic {
-  readonly key: string;
-  readonly label: string;
-  readonly variantNames: string[];
-  readonly message: string;
-}
-
-/**
- * Identical findings across variants collapse into one note that names the
- * variants it describes, so a draft with structurally repeated variants never
- * prints the same sentence twice (#168 P1-1).
- */
-const groupDiagnostics = (
-  diagnostics: PublicGenerationResult["diagnostics"],
-  variantNameById: ReadonlyMap<string, string>
-): GroupedDiagnostic[] => {
-  const byKey = new Map<string, GroupedDiagnostic>();
-  const groups: GroupedDiagnostic[] = [];
-  for (const diagnostic of diagnostics) {
-    const key = `${diagnostic.code}:${diagnostic.message}`;
-    const variantName = diagnostic.variantId
-      ? variantNameById.get(diagnostic.variantId)
-      : undefined;
-    let group = byKey.get(key);
-    if (!group) {
-      group = {
-        key,
-        label: getDiagnosticLabel(diagnostic),
-        variantNames: [],
-        message: diagnostic.message,
-      };
-      byKey.set(key, group);
-      groups.push(group);
-    }
-    if (variantName && !group.variantNames.includes(variantName)) {
-      group.variantNames.push(variantName);
-    }
-  }
-  return groups;
-};
 
 /**
  * The edit recovery action returns the teacher to the objective field. The field keeps its current text and the caret moves to the logical end, so an edit never replaces what the teacher already wrote.
@@ -372,161 +291,89 @@ const postGenerationRequest = async (
       };
 };
 
-const PromptSignals = ({
-  context,
-  standardId,
-}: {
-  readonly context: PromptContext;
-  readonly standardId: string;
-}) => {
+/** The page header: where the teacher is in the flow, and what the page is. */
+const StudioHeader = ({ standardId }: { readonly standardId: string }) => {
   return (
-    <div className="prompt-signals" aria-live="polite">
-      <span className="prompt-signals__label">
-        <Sparkles aria-hidden="true" /> We will quietly pick up
-      </span>
-      <span className="prompt-signal">
-        <BookOpen aria-hidden="true" /> Grade {context.grade}
-      </span>
-      <span className="prompt-signal">
-        <span className="prompt-signal__mark" aria-hidden="true" />
-        {displayStandardCode(standardId)}
-      </span>
-      <span className="prompt-signal">
-        <Globe2 aria-hidden="true" />
-        {context.language === "ar" ? "Arabic / RTL" : "English / LTR"}
-      </span>
-    </div>
+    <header className="studio-head">
+      <Steps
+        label="Lesson steps"
+        items={[
+          { label: "Draft", state: "current" },
+          { label: "Review", state: "upcoming" },
+          { label: "Publish", state: "upcoming" },
+        ]}
+      />
+      <h1 id="generation-heading">{topicFor(standardId)}</h1>
+      <p className="studio-lede">
+        One learning objective in, several ways to teach it out. Nothing reaches
+        a student until you approve it.
+      </p>
+    </header>
   );
 };
 
-const TeacherGuidance = ({
-  context,
+const StandardCode = ({ standardId }: { readonly standardId: string }) => (
+  <span className="studio-code">{displayStandardCode(standardId)}</span>
+);
+
+/**
+ * Once a draft exists the composer collapses to one line: the objective as
+ * sent, what it was matched to, and the two ways to change it.
+ */
+const ObjectiveSummary = ({
   prompt,
+  context,
   standardId,
+  isBusy,
+  status,
+  onEdit,
+  onDraftAgain,
 }: {
-  readonly context: PromptContext;
   readonly prompt: string;
+  readonly context: PromptContext;
   readonly standardId: string;
+  readonly isBusy: boolean;
+  readonly status: ReactNode;
+  readonly onEdit: () => void;
+  readonly onDraftAgain: () => void;
 }) => {
-  const [activePanel, setActivePanel] = useState("target");
-  const safePrompt = prompt.trim() || "your learning idea";
-
   return (
-    <section className="teacher-guidance" aria-labelledby="guidance-heading">
-      <div className="teacher-guidance__rail">
-        <p className="kicker">A little help, quietly</p>
-        <h2 id="guidance-heading">Good prompts carry more than a topic.</h2>
-        <p>
-          As you write, Scholé looks for the small details that help a visual
-          lesson feel fair, focused, and ready to review.
-        </p>
-        <div className="teacher-guidance__signal">
-          <span className="teacher-guidance__signal-dot" aria-hidden="true" />
-          <span>Context is forming around your brief</span>
+    <>
+      <Card
+        as="section"
+        className="objective-summary"
+        aria-label="Lesson objective"
+      >
+        <div>
+          <p className="objective-summary__text">{prompt}</p>
+          <p className="objective-summary__meta">
+            <StandardCode standardId={standardId} />
+            <span>
+              Grade {context.grade} · {languageNames[context.language]}
+            </span>
+          </p>
         </div>
-      </div>
-
-      <div className="teacher-guidance__content">
-        <div className="insight-grid">
-          <article className="insight-card insight-card--wide">
-            <div className="insight-card__topline">
-              <span className="insight-card__mark" aria-hidden="true">
-                /
-              </span>
-              <span>What we heard</span>
-            </div>
-            <h3>{safePrompt}</h3>
-            <p>
-              The first draft will keep this idea at the center instead of
-              asking you to translate it into a form.
-            </p>
-          </article>
-
-          <article className="insight-card insight-card--warm">
-            <div className="insight-card__topline">
-              <BookOpen aria-hidden="true" />
-              <span>Learning target</span>
-            </div>
-            <strong>{displayStandardCode(standardId)}</strong>
-            <p>Equivalent fractions, made visible.</p>
-          </article>
-
-          <article className="insight-card insight-card--cool">
-            <div className="insight-card__topline">
-              <Globe2 aria-hidden="true" />
-              <span>Language</span>
-            </div>
-            <strong>
-              {context.language === "ar" ? "Arabic / RTL" : "English / LTR"}
-            </strong>
-            <p>We will keep the lesson readable in the language you use.</p>
-          </article>
-
-          <article className="insight-card insight-card--wide insight-card--dark">
-            <div>
-              <div className="insight-card__topline">
-                <Layers3 aria-hidden="true" />
-                <span>Room for difference</span>
-              </div>
-              <h3>One idea, three ways in.</h3>
-              <p>
-                A clear core path, a scaffold for learners who need a little
-                more support, and a stretch for those ready to go further.
-              </p>
-            </div>
-            <div className="insight-card__levels">
-              <span>Core</span>
-              <span>Support</span>
-              <span>Stretch</span>
-            </div>
-          </article>
+        <div className="objective-summary__actions">
+          <Button type="button" variant="secondary" onClick={onEdit}>
+            Edit objective
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            busy={isBusy}
+            onClick={onDraftAgain}
+            aria-describedby="draft-again-hint"
+          >
+            Draft again
+          </Button>
         </div>
-
-        <div className="guidance-accordion">
-          {guidancePanels.map((panel) => {
-            const { Icon } = panel;
-            const isActive = activePanel === panel.key;
-
-            return (
-              <button
-                className={cn("guidance-panel", { "is-active": isActive })}
-                type="button"
-                key={panel.key}
-                aria-expanded={isActive}
-                onClick={() => setActivePanel(panel.key)}
-              >
-                <span className="guidance-panel__icon">
-                  <Icon aria-hidden="true" />
-                </span>{" "}
-                <span className="guidance-panel__title">{panel.title}</span>{" "}
-                <span className="guidance-panel__copy">
-                  {isActive ? panel.detail : panel.short}
-                </span>
-                <ArrowRight aria-hidden="true" />
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="teacher-marquee" aria-hidden="true">
-          <div className="teacher-marquee__track">
-            {[
-              "clear target",
-              "visible support",
-              "teacher approval",
-              "a reason to continue",
-            ].map((item) => {
-              return (
-                <span key={item}>
-                  {item}
-                  <i aria-hidden="true" />
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    </section>
+      </Card>
+      {status}
+      <p className="studio-hint" id="draft-again-hint">
+        “Draft again” writes a new draft from the same objective. Nothing is
+        shared until you approve it.
+      </p>
+    </>
   );
 };
 
@@ -553,104 +400,117 @@ const moveChosenVariant = (
   return next?.value ?? null;
 };
 
+const VariantCard = ({
+  variant,
+  index,
+  isChosen,
+  status,
+  onChoose,
+}: {
+  readonly variant: DraftVariant;
+  readonly index: number;
+  readonly isChosen: boolean;
+  readonly status: VariantStatus;
+  readonly onChoose: (variantId: string) => void;
+}) => {
+  const tag = `${variantLetter(index)} · ${variantLabels[variant.kind]}`;
+  const radioId = `variant-choice-${variant.id}`;
+  const detailsId = `variant-details-${variant.id}`;
+  // A label holds phrasing content only, so it wraps the title alone and
+  // stretches over the card (studio.css) to keep the whole card clickable.
+  return (
+    <div className={cn("variant-card", isChosen && "variant-card--chosen")}>
+      <span className="variant-card__tag">{tag}</span>
+      <h3>
+        <input
+          type="radio"
+          id={radioId}
+          name="chosen-variant"
+          className="variant-card__radio"
+          value={variant.id}
+          aria-describedby={detailsId}
+          checked={isChosen}
+          onChange={() => {
+            onChoose(variant.id);
+          }}
+          onKeyDown={(event) => {
+            // Keyboard selection is set explicitly: the hidden radio's change
+            // event alone does not reach React state reliably (the membership
+            // screen ships the same explicit pattern).
+            if (event.key === " " || event.key === "Enter") {
+              event.preventDefault();
+              onChoose(variant.id);
+              return;
+            }
+            if (!event.key.startsWith("Arrow")) {
+              return;
+            }
+            event.preventDefault();
+            const next = moveChosenVariant(event);
+            if (next) {
+              onChoose(next);
+            }
+          }}
+        />
+        <label htmlFor={radioId} className="variant-card__label">
+          <span className="sr-only">{tag}: </span>
+          {variant.title}
+        </label>
+      </h3>
+      <div id={detailsId} className="variant-card__details">
+        <p>{variant.instructions}</p>
+        <p className="variant-card__gets">
+          Students get: matching, {variant.sourceItems.length}{" "}
+          {variant.accessibilityMetadata.sourceGroupLabel.toLowerCase()} to{" "}
+          {variant.targetItems.length}{" "}
+          {variant.accessibilityMetadata.targetGroupLabel.toLowerCase()}
+        </p>
+      </div>
+      <span className="variant-card__foot">
+        <Badge tone={status.tone}>{status.label}</Badge>
+        {isChosen ? (
+          <span className="variant-card__chosen">Selected</span>
+        ) : null}
+      </span>
+    </div>
+  );
+};
+
 /**
- * The four variant cards are the chooser (#168 P0-1): a native radio group
- * whose keyboard story follows the membership screen's explicit-key pattern,
- * one primary action, and a note that keeps the publish promise honest.
+ * The variant cards are the chooser (#168 P0-1): a native radio group whose
+ * keyboard story follows the membership screen's explicit-key pattern, and
+ * one action that opens the chosen card in the preview.
  */
 const VariantChooser = ({
   variants,
+  diagnostics,
   chosenVariantId,
   onChoose,
   onPreview,
 }: {
   readonly variants: readonly DraftVariant[];
+  readonly diagnostics: PublicGenerationResult["diagnostics"];
   readonly chosenVariantId: string | null;
   readonly onChoose: (variantId: string) => void;
   readonly onPreview: (variantId: string) => void;
 }) => {
   return (
-    <section className="variant-stack" aria-label="Generated lesson variants">
+    <div className="variant-stack">
       <fieldset className="variant-picker">
         <legend className="sr-only">
-          Choose the version to open in the preview
+          Choose the variant to open in the preview
         </legend>
-        <div className="variant-picker__cards">
-          {variants.map((variant) => {
-            const isChosen = chosenVariantId === variant.id;
+        <div className="variant-board">
+          {variants.map((variant, index) => {
             return (
-              <label
-                className={cn(
-                  "variant-card",
-                  isChosen && "variant-card--chosen"
-                )}
+              <VariantCard
                 key={variant.id}
-              >
-                <input
-                  type="radio"
-                  name="chosen-variant"
-                  className="variant-card__radio"
-                  value={variant.id}
-                  aria-label={`${variantLabels[variant.kind]}, ${variant.title}`}
-                  checked={isChosen}
-                  onChange={() => {
-                    onChoose(variant.id);
-                  }}
-                  onKeyDown={(event) => {
-                    // Keyboard selection is set explicitly: the hidden
-                    // radio's change event alone does not reach React state
-                    // reliably (the membership screen ships the same explicit
-                    // pattern).
-                    if (event.key === " " || event.key === "Enter") {
-                      event.preventDefault();
-                      onChoose(variant.id);
-                      return;
-                    }
-                    if (!event.key.startsWith("Arrow")) {
-                      return;
-                    }
-                    event.preventDefault();
-                    const next = moveChosenVariant(event);
-                    if (next) {
-                      onChoose(next);
-                    }
-                  }}
-                />
-                <span
-                  className={
-                    isChosen
-                      ? "variant-card__pick variant-card__pick--on"
-                      : "variant-card__pick"
-                  }
-                  aria-hidden="true"
-                >
-                  <Check aria-hidden="true" />
-                </span>
-                <span className="variant-card__heading">
-                  <span
-                    className={`variant-kind variant-kind--${variant.kind}`}
-                  >
-                    {variantLabels[variant.kind]}
-                  </span>
-                  <span>{variant.sourceItems.length} matching pieces</span>
-                </span>
-                <h3>{variant.title}</h3>
-                <p>{variant.instructions}</p>
-                <div className="variant-card__items">
-                  <div>
-                    <span>
-                      {variant.accessibilityMetadata.sourceGroupLabel}
-                    </span>
-                    <strong>{variant.sourceItems.length} choices</strong>
-                  </div>
-                  <div>
-                    <span>
-                      {variant.accessibilityMetadata.targetGroupLabel}
-                    </span>
-                    <strong>{variant.targetItems.length} connections</strong>
-                  </div>
-                </div>
-              </label>
+                variant={variant}
+                index={index}
+                isChosen={chosenVariantId === variant.id}
+                status={variantStatus(variant.id, diagnostics)}
+                onChoose={onChoose}
+              />
             );
           })}
         </div>
@@ -659,17 +519,44 @@ const VariantChooser = ({
         <div className="variant-picker__action">
           <Button
             type="button"
+            variant="secondary"
             onClick={() => {
               onPreview(chosenVariantId);
             }}
           >
-            Open the preview for this version
-            <ArrowRight aria-hidden="true" />
+            Open the preview for this variant
+            <ArrowRight aria-hidden="true" className="studio-flip" />
           </Button>
-          <span>You choose what students see next; nothing is shared yet.</span>
+          <span>Nothing is shared yet.</span>
         </div>
       ) : null}
-    </section>
+    </div>
+  );
+};
+
+const DraftNotes = ({
+  groups,
+}: {
+  readonly groups: readonly GroupedDiagnostic[];
+}) => {
+  return (
+    <Notice tone="warn" title="Notes from the checks">
+      <ul className="draft-notes" aria-label="Draft notes">
+        {groups.map((group) => {
+          return (
+            <li key={group.key}>
+              <strong>
+                {group.label}
+                {group.variantNames.length > 0
+                  ? ` · ${group.variantNames.join(", ")}`
+                  : ""}
+              </strong>{" "}
+              <span>{group.message}</span>
+            </li>
+          );
+        })}
+      </ul>
+    </Notice>
   );
 };
 
@@ -679,6 +566,148 @@ interface GenerationResultProperties {
   readonly onRecover: (action: RecoveryAction, variantId?: string) => void;
   readonly onOpenReview: (requestId: string) => void;
 }
+
+/** The ready board: heading, count, notes, the cards, and the preview. */
+const VariantBoard = ({
+  result,
+  draft,
+  diagnosticGroups,
+  onOpenReview,
+}: {
+  readonly result: PublicGenerationResult;
+  readonly draft: NonNullable<PublicGenerationResult["draft"]>;
+  readonly diagnosticGroups: readonly GroupedDiagnostic[];
+  readonly onOpenReview: (requestId: string) => void;
+}) => {
+  // #168 P0-1: the variant cards are the chooser. Selection is in-page state
+  // for now; the decision endpoint belongs to the teacher-decisions seam (#8).
+  const [chosenVariantId, setChosenVariantId] = useState<string | null>(null);
+  const [previewVariantId, setPreviewVariantId] = useState<string | null>(null);
+  const { variants } = draft;
+  const isReady = result.state === READY_FOR_REVIEW_STATE;
+
+  return (
+    <section
+      className="variant-section"
+      aria-labelledby="variant-board-heading"
+    >
+      <div className="board-head">
+        <h2 id="variant-board-heading">{boardHeading(variants.length)}</h2>
+        <p className="board-head__count">
+          {isReady
+            ? readyCountLine(variants, result.diagnostics)
+            : "Not ready yet"}{" "}
+          · Grade {draft.grade}
+        </p>
+        {isReady ? (
+          <Button type="button" onClick={() => onOpenReview(result.requestId)}>
+            Review variants
+            <ArrowRight aria-hidden="true" className="studio-flip" />
+          </Button>
+        ) : null}
+      </div>
+      <p className="board-why">
+        Different ways into the same objective. Approve only the ones you’d use;
+        when you publish, each learner gets one.
+      </p>
+      {diagnosticGroups.length > 0 ? (
+        <DraftNotes groups={diagnosticGroups} />
+      ) : null}
+      <VariantChooser
+        variants={variants}
+        diagnostics={result.diagnostics}
+        chosenVariantId={chosenVariantId}
+        onChoose={setChosenVariantId}
+        onPreview={setPreviewVariantId}
+      />
+      {isReady ? (
+        <LessonPreview
+          key={result.requestId}
+          requestId={result.requestId}
+          catalogVersion={result.provenance?.catalogVersion}
+          focusVariantId={previewVariantId}
+        />
+      ) : null}
+    </section>
+  );
+};
+
+/**
+ * A result with nothing to choose: blocked, failed, still generating, or
+ * waiting on teacher review. It renders as one state card in the 6-errors
+ * shape: what happened, what is safe, and the one thing to do next.
+ */
+const ResultStateCard = ({
+  result,
+  requiresTeacherReview,
+  diagnosticGroups,
+  onRetry,
+  onRecover,
+}: {
+  readonly result: PublicGenerationResult;
+  readonly requiresTeacherReview: boolean;
+  readonly diagnosticGroups: readonly GroupedDiagnostic[];
+  readonly onRetry: (event: SyntheticEvent<HTMLFormElement>) => void;
+  readonly onRecover: (action: RecoveryAction, variantId?: string) => void;
+}) => {
+  const direction = directionForLanguage(result.language);
+  const isBlockedByValidation = result.state === BLOCKED_BY_VALIDATION_STATE;
+  const hasValidationFindings =
+    result.diagnosticsRollup.screens.length > 0 ||
+    result.diagnosticsRollup.flow.length > 0;
+  const hasValidationPanel = isBlockedByValidation && hasValidationFindings;
+  const MetaIcon = isBlockedByValidation ? CircleX : CircleAlert;
+
+  return (
+    <Card
+      as="section"
+      className="result-card"
+      data-state={result.state}
+      aria-labelledby="result-card-heading"
+    >
+      <p className="result-card__meta">
+        <MetaIcon aria-hidden="true" />
+        {getResultMeta(result.state)}
+      </p>
+      <h2 id="result-card-heading">{getResultTitle(result.state)}</h2>
+      <p className="result-card__body">
+        {getResultDescription(result, requiresTeacherReview)}
+      </p>
+
+      {hasValidationPanel ? (
+        <ValidationDiagnostics
+          rollup={result.diagnosticsRollup}
+          requestId={result.requestId}
+          direction={direction}
+          language={result.language}
+          onRecover={onRecover}
+        />
+      ) : null}
+
+      {!hasValidationPanel && diagnosticGroups.length > 0 ? (
+        <DraftNotes groups={diagnosticGroups} />
+      ) : null}
+
+      {requiresTeacherReview ? (
+        <Notice tone="stop" title="Teacher review required before continuing">
+          <p>
+            Check that the approved prerequisite pack is available, then try the
+            draft again. No unreviewed student content was created.
+          </p>
+        </Notice>
+      ) : null}
+
+      {result.retry.available ? (
+        <form onSubmit={onRetry} className="result-card__actions">
+          <Button type="submit" className="retry-button">
+            Try that again
+            <ArrowRight aria-hidden="true" className="studio-flip" />
+          </Button>
+        </form>
+      ) : null}
+    </Card>
+  );
+};
 
 const GenerationResult = ({
   result,
@@ -693,16 +722,6 @@ const GenerationResult = ({
     isTeacherReviewDiagnostic(diagnostic.code)
   );
   const isBlockedByValidation = result.state === BLOCKED_BY_VALIDATION_STATE;
-  const hasValidationFindings =
-    result.diagnosticsRollup.screens.length > 0 ||
-    result.diagnosticsRollup.flow.length > 0;
-  const hasVisibleValidationPanel =
-    isBlockedByValidation && hasValidationFindings;
-
-  // #168 P0-1: the variant cards are the chooser. Selection is in-page state
-  // for now; the decision endpoint belongs to the teacher-decisions seam (#8).
-  const [chosenVariantId, setChosenVariantId] = useState<string | null>(null);
-  const [previewVariantId, setPreviewVariantId] = useState<string | null>(null);
   const variants = result.draft?.variants ?? [];
   const variantNameById = new Map(
     variants.map((variant) => [variant.id, getVariantNoteName(variant)])
@@ -711,156 +730,31 @@ const GenerationResult = ({
     result.diagnostics,
     variantNameById
   );
+  const showsBoard = result.draft !== null && !requiresTeacherReview;
 
   return (
-    <div
-      className="generation-result teacher-result"
-      dir={direction}
-      lang={result.language}
-    >
+    <div className="generation-result" dir={direction} lang={result.language}>
       {isBlockedByValidation ? null : (
         <output className="sr-only">
           {getStatusAnnouncement(result.state)}
         </output>
       )}
-      <div className="generation-result__header teacher-result__header">
-        <div>
-          <p className="kicker">Your first pass</p>
-          <h2>{getResultTitle(result.state)}</h2>
-          <p className="teacher-result__description">
-            {getResultDescription(result, requiresTeacherReview)}
-          </p>
-        </div>
-        <span className={`result-state result-state--${result.state}`}>
-          <span aria-hidden="true" />
-          {getStateLabel(result.state)}
-        </span>
-      </div>
-
-      {hasVisibleValidationPanel ? (
-        <ValidationDiagnostics
-          rollup={result.diagnosticsRollup}
-          requestId={result.requestId}
-          direction={direction}
-          language={result.language}
+      {showsBoard && result.draft ? (
+        <VariantBoard
+          result={result}
+          draft={result.draft}
+          diagnosticGroups={diagnosticGroups}
+          onOpenReview={onOpenReview}
+        />
+      ) : (
+        <ResultStateCard
+          result={result}
+          requiresTeacherReview={requiresTeacherReview}
+          diagnosticGroups={diagnosticGroups}
+          onRetry={onRetry}
           onRecover={onRecover}
         />
-      ) : null}
-
-      {!hasVisibleValidationPanel && result.diagnostics.length > 0 ? (
-        <ul
-          className="diagnostic-list teacher-diagnostics"
-          aria-label="Draft notes"
-        >
-          {diagnosticGroups.map((group) => {
-            return (
-              <li key={group.key}>
-                <strong>
-                  {group.label}
-                  {group.variantNames.length > 0
-                    ? ` · ${group.variantNames.join(", ")}`
-                    : ""}
-                </strong>
-                <span>{group.message}</span>
-              </li>
-            );
-          })}
-        </ul>
-      ) : null}
-
-      {requiresTeacherReview ? (
-        <section
-          className="teacher-review-state"
-          aria-label="Teacher review required"
-        >
-          <strong>Teacher review required before continuing</strong>
-          <p>
-            Check that the approved prerequisite pack is available, then try the
-            draft again. No unreviewed student content was created.
-          </p>
-        </section>
-      ) : null}
-
-      {result.draft ? (
-        <>
-          <div className="teacher-review-layout">
-            <aside
-              className="teacher-evidence-card"
-              aria-label="Lesson context"
-            >
-              <div className="teacher-evidence-card__topline">
-                <span>Keep this in sight</span>
-                <ShieldCheck aria-hidden="true" />
-              </div>
-              <strong>{displayStandardCode(result.draft.standardId)}</strong>
-              <p>Equivalent fractions for Grade {result.draft.grade}.</p>
-              <dl>
-                <div>
-                  <dt>Paths ready</dt>
-                  <dd>{result.draft.variants.length}</dd>
-                </div>
-                <div>
-                  <dt>Next step</dt>
-                  <dd>Your review</dd>
-                </div>
-              </dl>
-              <p className="teacher-evidence-card__note">
-                The learning target stays visible while you choose what belongs
-                in the room.
-              </p>
-            </aside>
-
-            <VariantChooser
-              variants={variants}
-              chosenVariantId={chosenVariantId}
-              onChoose={setChosenVariantId}
-              onPreview={setPreviewVariantId}
-            />
-          </div>
-
-          {result.state === READY_FOR_REVIEW_STATE ? (
-            <>
-              <LessonPreview
-                key={result.requestId}
-                requestId={result.requestId}
-                catalogVersion={result.provenance?.catalogVersion}
-                focusVariantId={previewVariantId}
-              />
-              <div className="teacher-result__cta">
-                <Button
-                  type="button"
-                  onClick={() => onOpenReview(result.requestId)}
-                >
-                  <ShieldCheck aria-hidden="true" />
-                  Review and publish this pack
-                  <ArrowRight aria-hidden="true" />
-                </Button>
-                <p>
-                  Approve every screen and the reverse path. Nothing reaches
-                  students until you publish.
-                </p>
-              </div>
-            </>
-          ) : null}
-        </>
-      ) : null}
-
-      {result.retry.available ? (
-        <form onSubmit={onRetry}>
-          <Button type="submit" variant="secondary" className="retry-button">
-            Try that again <ArrowRight aria-hidden="true" />
-          </Button>
-        </form>
-      ) : null}
-
-      {result.draft ? (
-        <div className="teacher-result__footer">
-          <span>
-            <Check aria-hidden="true" /> You choose what students see next.
-          </span>
-          <span>Draft stays private until approved.</span>
-        </div>
-      ) : null}
+      )}
     </div>
   );
 };
@@ -876,9 +770,10 @@ interface TeacherLessonComposerProperties {
 
 interface TeacherComposerOutcomeProperties {
   readonly prompt: string;
-  readonly result: PublicGenerationResult | null;
-  readonly priorDraft: PublicGenerationResult | null;
-  readonly hasModerationFailure: boolean;
+  readonly visibleResult: PublicGenerationResult | null;
+  readonly blockedResult: PublicGenerationResult | null;
+  readonly hasModerationPanel: boolean;
+  readonly hasEarlierDraft: boolean;
   readonly onOpenReview: (requestId: string) => void;
   readonly onRetry: (
     event: SyntheticEvent<HTMLFormElement>,
@@ -890,30 +785,37 @@ interface TeacherComposerOutcomeProperties {
 
 /**
 The composer's result area. A moderation block replaces the result with the
-recovery panel; an earlier ready draft stays mounted above it, unchanged (#119
+recovery panel; an earlier ready draft stays mounted below it, unchanged (#119
 variant B). The panel's focus and live region live in the panel itself.
 */
 const TeacherComposerOutcome = ({
   prompt,
-  result,
-  priorDraft,
-  hasModerationFailure,
+  visibleResult,
+  blockedResult,
+  hasModerationPanel,
+  hasEarlierDraft,
   onOpenReview,
   onRetry,
   onRecover,
   onRevise,
 }: TeacherComposerOutcomeProperties) => {
-  const isModerationBlocked =
-    result !== null && result.state === BLOCKED_BY_MODERATION_STATE;
-  const hasModerationPanel = isModerationBlocked || hasModerationFailure;
-  const blockedRequestId = isModerationBlocked ? result.requestId : null;
-  const blockedCategory = isModerationBlocked
-    ? moderationCategoryOf(result)
+  const blockedRequestId = blockedResult?.requestId ?? null;
+  const blockedCategory = blockedResult
+    ? moderationCategoryOf(blockedResult)
     : null;
-  const visibleResult = isModerationBlocked ? priorDraft : result;
 
   return (
     <>
+      {hasModerationPanel ? (
+        <ModerationRecoveryPanel
+          objective={prompt}
+          requestId={blockedRequestId}
+          category={blockedCategory}
+          hasEarlierDraft={hasEarlierDraft}
+          onRevise={() => onRevise(blockedRequestId)}
+        />
+      ) : null}
+
       {visibleResult ? (
         <GenerationResult
           key={visibleResult.requestId}
@@ -923,29 +825,6 @@ const TeacherComposerOutcome = ({
           onRecover={(action) => onRecover(action, visibleResult.requestId)}
         />
       ) : null}
-
-      {hasModerationPanel ? (
-        <ModerationRecoveryPanel
-          objective={prompt}
-          requestId={blockedRequestId}
-          category={blockedCategory}
-          hasEarlierDraft={priorDraft !== null}
-          onRevise={() => onRevise(blockedRequestId)}
-        />
-      ) : null}
-
-      {visibleResult || hasModerationPanel ? null : (
-        <div className="teacher-action-band">
-          <div>
-            <p className="kicker">Ready when you are</p>
-            <p>One sentence is enough to start a useful conversation.</p>
-          </div>
-          <span>
-            <Check aria-hidden="true" />
-            Nothing publishes automatically
-          </span>
-        </div>
-      )}
     </>
   );
 };
@@ -958,7 +837,7 @@ const composerBusyMessage = (
     return "Opening the saved draft…";
   }
   if (isGenerating) {
-    return "Reading the idea, finding the cleanest path…";
+    return "Drafting the variants and checking them on the server…";
   }
   return null;
 };
@@ -983,7 +862,7 @@ const ComposerStatus = ({
   const busyMessage = composerBusyMessage(isOpeningDraft, isGenerating);
 
   return (
-    <div className="teacher-generation-status" tabIndex={-1} ref={statusRef}>
+    <div className="composer-status" tabIndex={-1} ref={statusRef}>
       {busyMessage ? (
         <Notice tone="info">
           <p className="status-pulse">
@@ -1000,6 +879,151 @@ const ComposerStatus = ({
         </Notice>
       ) : null}
     </div>
+  );
+};
+
+/**
+The facts the next draft is built on. They are read from the objective, not
+chosen, so they render as a description list and change as the teacher types.
+*/
+const ComposerFacts = ({
+  context,
+  standardId,
+}: {
+  readonly context: PromptContext;
+  readonly standardId: string;
+}) => {
+  return (
+    <div className="composer__facts">
+      <dl>
+        <div>
+          <dt>Grade</dt>
+          <dd>Grade {context.grade}</dd>
+        </div>
+        <div>
+          <dt>Language</dt>
+          <dd>{languageNames[context.language]}</dd>
+        </div>
+        <div className="composer__fact--wide">
+          <dt>Matched standard</dt>
+          <dd className="composer__standard">
+            <StandardCode standardId={standardId} />
+            <span>{topicFor(standardId)}</span>
+          </dd>
+        </div>
+      </dl>
+      <p className="studio-hint">
+        Read from your objective. Name a grade or write in Arabic to change
+        them.
+      </p>
+    </div>
+  );
+};
+
+/**
+The open composer card (1-studio mock): the objective form, the source attach
+row, the facts the draft reads, and a footer where Create lesson and its status
+sit together. Create lesson submits the form through its `form` attribute, so
+the source panel's own forms never nest inside it.
+*/
+const OpenComposer = ({
+  csrf,
+  prompt,
+  context,
+  standardId,
+  boundSource,
+  isBusy,
+  status,
+  onPromptChange,
+  onSubmit,
+  onBoundSourceChange,
+  onUnauthorized,
+}: {
+  readonly csrf: string;
+  readonly prompt: string;
+  readonly context: PromptContext;
+  readonly standardId: string;
+  readonly boundSource: BoundSource | null;
+  readonly isBusy: boolean;
+  readonly status: ReactNode;
+  readonly onPromptChange: (value: string) => void;
+  readonly onSubmit: (event: SyntheticEvent<HTMLFormElement>) => void;
+  readonly onBoundSourceChange: (source: BoundSource | null) => void;
+  readonly onUnauthorized: () => void;
+}) => {
+  return (
+    <Card
+      as="section"
+      variant="lift"
+      className="composer"
+      aria-label="New lesson"
+    >
+      <form
+        id="lesson-composer"
+        className="prompt-composer"
+        onSubmit={onSubmit}
+      >
+        <label htmlFor="lesson-prompt" id="lesson-prompt-label">
+          What should students practice?
+        </label>
+        <textarea
+          id="lesson-prompt"
+          name="prompt"
+          aria-labelledby="lesson-prompt-label"
+          aria-describedby="lesson-prompt-count"
+          required
+          maxLength={PROMPT_MAX_LENGTH}
+          rows={2}
+          value={prompt}
+          placeholder="e.g. equivalent fractions for grade 4"
+          onChange={(event) => {
+            onPromptChange(event.target.value);
+          }}
+        />
+        <p className="prompt-composer__count" id="lesson-prompt-count">
+          {prompt.length} of {PROMPT_MAX_LENGTH} characters
+        </p>
+      </form>
+
+      <SourcePanel
+        csrf={csrf}
+        onUnauthorized={onUnauthorized}
+        boundSource={boundSource}
+        onBoundSnapshotChange={onBoundSourceChange}
+      />
+
+      <ComposerFacts context={context} standardId={standardId} />
+
+      <div className="composer__foot">
+        {/* #168 P0-2: progress and failure feedback sit with the submit
+            button, where a teacher looks for it. */}
+        {status}
+        <div className="composer__submit-row">
+          <span className="composer__private">
+            <Lock aria-hidden="true" />
+            Drafts stay private until you approve them
+          </span>
+          {boundSource ? (
+            <span className="prompt-composer__source-chip">
+              <FileText aria-hidden="true" />
+              <span>
+                Source: <strong>{boundSource.fileName}</strong>
+              </span>
+            </span>
+          ) : null}
+          <Button
+            type="submit"
+            form="lesson-composer"
+            size="lg"
+            className="prompt-composer__submit"
+            busy={isBusy}
+          >
+            Create lesson
+            <ArrowRight aria-hidden="true" className="studio-flip" />
+          </Button>
+        </div>
+      </div>
+    </Card>
   );
 };
 
@@ -1106,6 +1130,9 @@ const TeacherLessonComposer = ({
   );
   const [isGenerating, setIsGenerating] = useState(false);
   const [failure, setFailure] = useState<GenerationFailure | null>(null);
+  // The composer collapses to its summary once a draft has variants; Edit
+  // objective (or any recovery that needs the field) opens it again.
+  const [isEditing, setIsEditing] = useState(false);
   const requestError = failure?.kind === "error" ? failure.message : null;
   const hasModerationFailure =
     failure?.kind === "error" && failure.code === REVISION_REQUIRED_CODE;
@@ -1145,6 +1172,23 @@ const TeacherLessonComposer = ({
   });
   const { isOpening: isOpeningDraft, pendingDraftId } = reopened;
   const handleCheckDraftAgain = reopened.reload;
+
+  const isModerationBlocked =
+    result !== null && result.state === BLOCKED_BY_MODERATION_STATE;
+  const hasModerationPanel = isModerationBlocked || hasModerationFailure;
+  const visibleResult = isModerationBlocked ? priorDraft : result;
+  const isCollapsed =
+    !isEditing &&
+    visibleResult?.state === READY_FOR_REVIEW_STATE &&
+    visibleResult.draft !== null;
+
+  const openComposer = (): void => {
+    // The field must exist before it can take focus, so the open commits now.
+    flushSync(() => {
+      setIsEditing(true);
+    });
+    focusLessonPrompt();
+  };
 
   const updateRequestKey = () => {
     requestKeyReference.current = "";
@@ -1213,6 +1257,7 @@ const TeacherLessonComposer = ({
       case "result": {
         if (attempt.result.state === READY_FOR_REVIEW_STATE) {
           setPriorDraft(attempt.result);
+          setIsEditing(false);
         }
         setResult(attempt.result);
         break;
@@ -1223,122 +1268,65 @@ const TeacherLessonComposer = ({
         break;
       }
       default: {
-        setResult(null);
+        // A failed "Draft again" keeps the ready board on screen; the failure
+        // renders under the objective summary that started it.
+        setResult((current) =>
+          current?.state === READY_FOR_REVIEW_STATE ? current : null
+        );
         setFailure(attempt);
       }
     }
   };
 
+  const draftAgain = (): void => {
+    // A fresh operation key makes this a new request, not a replay of the
+    // one already shown.
+    requestKeyReference.current = "";
+    void submitGeneration(undefined);
+  };
+
+  const isBusy = isGenerating || isOpeningDraft;
+  const composerStatus = (
+    <ComposerStatus
+      statusRef={statusReference}
+      isOpeningDraft={isOpeningDraft}
+      isGenerating={isGenerating}
+      requestError={hasModerationFailure ? null : requestError}
+    />
+  );
+
   return (
     <section className="teacher-studio" aria-labelledby="generation-heading">
-      <div className="teacher-hero">
-        <div className="teacher-hero__copy">
-          <p className="kicker">
-            <span className="kicker__line" aria-hidden="true" />A calmer way to
-            begin
-          </p>
-          <h1 id="generation-heading">
-            Make the idea{" "}
-            <span className="inline-fraction-art" aria-hidden="true">
-              <span>1</span>
-              <i />
-              <span>2</span>
-            </span>{" "}
-            click.
-          </h1>
-          <p className="teacher-hero__description">
-            Describe the learning moment in your own words. We will shape a
-            clear first draft, then you decide what is worth sharing.
-          </p>
-        </div>
-        <div className="teacher-hero__art" aria-hidden="true">
-          <div className="teacher-hero__art-image" />
-          <div className="fraction-orbit fraction-orbit--one">
-            <span>1</span>
-            <i />
-            <span>2</span>
-          </div>
-          <div className="fraction-orbit fraction-orbit--two">
-            <span>2</span>
-            <i />
-            <span>4</span>
-          </div>
-          <div className="teacher-hero__art-note">same whole, new view</div>
-        </div>
-      </div>
+      <StudioHeader standardId={standardId} />
 
-      <form className="prompt-composer" onSubmit={submitGeneration}>
-        <div className="prompt-composer__heading">
-          <label htmlFor="lesson-prompt" id="lesson-prompt-label">
-            What should students practice?
-          </label>
-          <span>{prompt.length}/500</span>
-        </div>
-        <textarea
-          id="lesson-prompt"
-          name="prompt"
-          aria-labelledby="lesson-prompt-label"
-          required
-          maxLength={500}
-          rows={1}
-          value={prompt}
-          placeholder="e.g. equivalent fractions for grade 4"
-          onChange={(event) => {
-            setPrompt(event.target.value);
+      {isCollapsed ? (
+        <ObjectiveSummary
+          prompt={prompt}
+          context={context}
+          standardId={standardId}
+          isBusy={isBusy}
+          status={composerStatus}
+          onEdit={openComposer}
+          onDraftAgain={draftAgain}
+        />
+      ) : (
+        <OpenComposer
+          csrf={csrf}
+          prompt={prompt}
+          context={context}
+          standardId={standardId}
+          boundSource={boundSource}
+          isBusy={isBusy}
+          status={composerStatus}
+          onPromptChange={(value) => {
+            setPrompt(value);
             updateRequestKey();
           }}
+          onSubmit={submitGeneration}
+          onBoundSourceChange={setBoundSource}
+          onUnauthorized={onUnauthorized}
         />
-        <div className="prompt-composer__bottom">
-          <PromptSignals context={context} standardId={standardId} />
-          {boundSource ? (
-            <span className="prompt-composer__source-chip">
-              <FileText aria-hidden="true" />
-              <span>
-                Source: <strong>{boundSource.fileName}</strong>
-              </span>
-            </span>
-          ) : null}
-          <Button
-            type="submit"
-            size="lg"
-            className="prompt-composer__submit"
-            disabled={isGenerating || isOpeningDraft}
-          >
-            <WandSparkles aria-hidden="true" />
-            {isGenerating ? "Shaping the draft…" : "Create lesson"}
-            {isGenerating ? null : <ArrowRight aria-hidden="true" />}
-          </Button>
-        </div>
-        {/* #168 P0-2: progress and failure feedback sit with the submit
-            button, in the form, where a teacher looks for it — the guidance
-            rail never stands between them. */}
-        <ComposerStatus
-          statusRef={statusReference}
-          isOpeningDraft={isOpeningDraft}
-          isGenerating={isGenerating}
-          requestError={hasModerationFailure ? null : requestError}
-        />
-      </form>
-
-      <SourcePanel
-        csrf={csrf}
-        onUnauthorized={onUnauthorized}
-        boundSource={boundSource}
-        onBoundSnapshotChange={setBoundSource}
-      />
-
-      <div className="teacher-trust-line">
-        <ShieldCheck aria-hidden="true" />
-        <span>
-          Private draft first. You approve every version before students see it.
-        </span>
-      </div>
-
-      <TeacherGuidance
-        context={context}
-        prompt={prompt}
-        standardId={standardId}
-      />
+      )}
 
       {pendingDraftId ? (
         <StoredDraftPending
@@ -1349,16 +1337,17 @@ const TeacherLessonComposer = ({
 
       <TeacherComposerOutcome
         prompt={prompt}
-        result={result}
-        priorDraft={priorDraft}
-        hasModerationFailure={hasModerationFailure}
+        visibleResult={visibleResult}
+        blockedResult={isModerationBlocked ? result : null}
+        hasModerationPanel={hasModerationPanel}
+        hasEarlierDraft={priorDraft !== null}
         onOpenReview={onOpenReview}
         onRetry={(event, requestId) => {
           void submitGeneration(event, requestId);
         }}
         onRecover={(action, requestId) => {
           if (recoveryEffect(action) === "focus-objective") {
-            focusLessonPrompt();
+            openComposer();
             return;
           }
           void submitGeneration(undefined, requestId);
@@ -1367,7 +1356,7 @@ const TeacherLessonComposer = ({
           if (requestId) {
             revisionTargetReference.current = requestId;
           }
-          focusLessonPrompt();
+          openComposer();
         }}
       />
     </section>

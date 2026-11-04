@@ -1,21 +1,51 @@
-/* #6 learner matching surface. */
+/* The learner matching board (#6, #7, #9), styled to the 7-learn mock (#207).
+   Reads the slice 1a scale only. Every rule uses logical properties so the
+   Arabic page mirrors, and nothing here moves: a pairing board is tapped many
+   times a minute, so state changes land at once. */
+
+/* The page column. No card chrome: the task is the page. */
 .learn-card {
-  padding: 1.5rem;
-  margin-block: 2rem;
+  margin-block: var(--space-6) var(--space-7);
   margin-inline: auto;
-  max-inline-size: 48rem;
+  max-inline-size: 47.5rem;
+}
+
+.learn-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--type-section);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  max-inline-size: 24ch;
+  text-wrap: balance;
+}
+
+.learn-body {
+  color: var(--muted-foreground);
+  font-size: var(--type-body-lg);
+  line-height: 1.55;
+  margin-block: var(--space-3) 0;
+  margin-inline: 0;
+  max-inline-size: 52ch;
 }
 
 .learn-board {
   display: grid;
-  gap: 1.5rem;
+  gap: var(--space-5);
   grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-  margin-block-start: 1.5rem;
+  margin-block-start: var(--space-6);
 }
 
+/* Column labels are wayfinding, not headings to read first: the sans face at
+   body size keeps them below the task in the hierarchy. */
 .learn-column-heading {
-  font-size: 1rem;
-  margin-block: 0 0.75rem;
+  color: var(--muted-foreground);
+  font-family: var(--font-sans);
+  font-size: var(--type-body);
+  font-weight: 600;
+  line-height: 1.4;
+  margin-block: 0 var(--space-3);
   margin-inline: 0;
 }
 
@@ -23,143 +53,229 @@
   display: grid;
   padding: 0;
   margin: 0;
-  gap: 0.5rem;
+  gap: var(--space-3);
   list-style: none;
 }
 
 .learn-item {
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-field);
   background: var(--card);
+  color: var(--foreground);
   cursor: pointer;
+  font-size: var(--type-lead);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  gap: var(--space-3);
   inline-size: 100%;
-  min-block-size: 2.75rem;
-  overflow-wrap: anywhere;
-  padding-block: 0.5rem;
-  padding-inline: 0.75rem;
+  line-height: 1.3;
+  min-block-size: 4rem;
+  padding-block: var(--space-3);
+  padding-inline: var(--space-4);
   text-align: start;
 }
 
-.learn-item[aria-pressed="true"] {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px var(--primary);
+.learn-item__label {
+  flex: 1;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
 }
 
+/* Press feedback confirms the tap was heard; it applies at once. */
+.learn-item:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .learn-item:hover:not(:disabled, [aria-pressed="true"]) {
+    border-color: var(--foreground);
+  }
+}
+
+/* A formed pair: a heavier ink edge and a numbered label, never a tick of
+   approval. Nothing is graded until Done. */
+.learn-item[data-paired="true"] {
+  border-color: var(--foreground);
+  box-shadow: inset 0 0 0 1px var(--foreground);
+}
+
+/* The source waiting for its partner: a pressed toggle in the clay ground. */
+.learn-item[aria-pressed="true"] {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+/* Targets wait for a source; they stay legible and simply take no tap. */
 .learn-item:disabled {
+  cursor: default;
+}
+
+/* While a check is saving or after it is graded the whole board is read-only. */
+.learn-board[data-locked="true"] .learn-item {
   cursor: not-allowed;
   opacity: 0.6;
 }
 
-.learn-body,
-.learn-status {
-  color: var(--muted-foreground);
+.learn-item__pair {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  background: var(--foreground);
+  color: var(--background);
+  font-size: var(--type-micro);
+  font-weight: 700;
+  gap: var(--space-1);
+  line-height: 1.5;
+  padding-block: 2px;
+  padding-inline: var(--space-2);
+  white-space: nowrap;
 }
 
-.learn-result {
-  font-weight: 600;
+.learn-item__tick {
+  flex: none;
+  block-size: 0.75rem;
+  inline-size: 0.75rem;
 }
 
+/* The finish row: Done, the progress line, and Clear at the far end. */
 .learn-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  align-items: center;
+  border-block-start: 1px solid var(--line);
+  gap: var(--space-3) var(--space-4);
+  margin-block-start: var(--space-6);
+  padding-block-start: var(--space-5);
 }
 
 .learn-submit {
-  border: 0;
-  border-radius: 0.5rem;
-  background: var(--primary);
-  color: var(--primary-foreground);
-  cursor: pointer;
-  min-block-size: 2.75rem;
-  padding-block: 0.5rem;
-  padding-inline: 1.25rem;
+  padding-inline: var(--space-6);
 }
 
+/* Before the first pair, Done reads as a quiet grey slab, not a faded clay
+   button: the clay is saved for the moment it can act. */
 .learn-submit:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
+  background: var(--surface-sunk-strong);
+  color: var(--muted-foreground);
+  opacity: 1;
 }
 
-/* #7 reveal report and next-activity card. */
+.learn-status {
+  color: var(--muted-foreground);
+  font-size: var(--type-body);
+  margin-block: var(--space-6);
+  margin-inline: 0;
+}
+
+.learn-actions .learn-status {
+  margin: 0;
+}
+
+.learn-clear {
+  margin-inline-start: auto;
+}
+
+.learn-error {
+  border-radius: var(--radius-field);
+  background: var(--status-stop-soft);
+  color: var(--status-stop);
+  font-weight: 600;
+  padding-block: var(--space-3);
+  padding-inline: var(--space-4);
+}
+
+.learn-repeat {
+  border-radius: var(--radius-field);
+  background: var(--surface-sunk);
+  color: var(--muted-foreground);
+  font-size: var(--type-secondary);
+  margin-block: var(--space-4) 0;
+  margin-inline: 0;
+  padding-block: var(--space-3);
+  padding-inline: var(--space-4);
+}
+
+/* After Done: one card holding the grade, the reveal, and what comes next. */
 .learn-result-panel {
   display: grid;
-  gap: 1.25rem;
-  margin-block-start: 1.5rem;
+  gap: var(--space-4);
+  margin-block-start: var(--space-6);
 }
 
-.learn-reveal,
-.learn-next {
-  padding: 1rem;
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  background: var(--card);
+.learn-result {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--type-title);
+  font-weight: 500;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.learn-outcome {
+  margin: 0;
+  color: var(--muted-foreground);
+  overflow-wrap: anywhere;
+}
+
+.learn-outcome[data-correctness="correct"] {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.learn-reveal {
+  display: grid;
+  padding: var(--space-4);
+  border-radius: var(--radius-field);
+  background: var(--surface-sunk);
+  gap: var(--space-3);
 }
 
 .learn-reveal h2,
 .learn-next h2 {
-  font-size: 1rem;
-  margin-block: 0 0.75rem;
-  margin-inline: 0;
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--type-body);
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .learn-pairs {
   display: grid;
   padding: 0;
-  gap: 0.5rem;
+  margin: 0;
+  gap: var(--space-2);
   list-style: none;
-  margin-block: 0 0.75rem;
-  margin-inline: 0;
 }
 
+/* Rows divided by a rule, not boxed: the reveal is already one panel inside
+   the result card, and a third level of boxes would read as nesting. */
 .learn-pair {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
-  border-radius: 0.5rem;
-  background: var(--muted);
-  gap: 0.25rem 0.75rem;
+  border-block-end: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+  gap: var(--space-1) var(--space-3);
   overflow-wrap: anywhere;
-  padding-block: 0.5rem;
-  padding-inline: 0.65rem;
+  padding-block: var(--space-2);
 }
 
-.learn-pair-state {
-  font-weight: 600;
-}
-
-.learn-pair[data-correct="true"] .learn-pair-state {
-  color: var(--primary);
-}
-
-.learn-pair[data-correct="false"] .learn-pair-state {
-  color: var(--destructive);
-}
-
-.learn-retry {
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  background: transparent;
-  color: var(--foreground);
-  cursor: pointer;
-  min-block-size: 2.75rem;
-  padding-block: 0.5rem;
-  padding-inline: 1.25rem;
-}
-
-.learn-retry:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
+.learn-pair:last-child {
+  border-block-end: 0;
 }
 
 .learn-unresolved,
 .learn-feedback,
 .learn-connection,
-.learn-next p,
-.learn-repeat {
+.learn-next p {
+  margin: 0;
   color: var(--muted-foreground);
-  margin-block: 0.5rem 0;
-  margin-inline: 0;
   overflow-wrap: anywhere;
 }
 
@@ -168,14 +284,33 @@
   font-weight: 600;
 }
 
-.learn-outcome {
-  color: var(--muted-foreground);
-  margin-block: 0.5rem 0;
-  margin-inline: 0;
-  overflow-wrap: anywhere;
+.learn-next {
+  display: grid;
+  border-block-start: 1px solid var(--line);
+  gap: var(--space-2);
+  padding-block-start: var(--space-4);
 }
 
-.learn-outcome[data-correctness="correct"] {
-  color: var(--foreground);
-  font-weight: 600;
+/* Outside the result card the next-activity note keeps the same rule line. */
+.learn-actions ~ .learn-next {
+  margin-block-start: var(--space-5);
+}
+
+.learn-result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+@media (width <= 35rem) {
+  .learn-board {
+    gap: var(--space-4);
+  }
+
+  .learn-item {
+    min-block-size: 3.625rem;
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
+  }
 }

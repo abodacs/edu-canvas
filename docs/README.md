@@ -6,7 +6,7 @@ Scholé is a production product; these documents define and verify one trustwort
 
 | Document | Owns |
 | --- | --- |
-| [Root README](../README.md) | Repository overview, stack, quick start, and safety boundaries |
+| [Root README](../README.md) | Repository overview, quick start, and safety boundaries |
 | [Architecture](../ARCHITECTURE.md) | Stack, folder ownership, runtime flows, invariants, change recipes, and the enforcement map |
 | [Architecture rationale](engineering/architecture-rationale.md) | Why the architecture document has its shape; candidate synthesis and accepted tradeoffs |
 | [ROADMAP.md](../ROADMAP.md) | Product outcomes, release boundaries, lifecycle gates, and deferred commitments |

@@ -1,0 +1,59 @@
+{
+  "label": "provisional, not teacher evidence, not #106",
+  "model": "muse-spark-1.2-contributor",
+  "calls": 8,
+  "cap": 9,
+  "reviewerAgreement": "12/12",
+  "log": [
+    {
+      "role": "generator",
+      "ok": true,
+      "corrected": null,
+      "codes": [],
+      "latencyMs": 16155
+    },
+    {
+      "role": "generator",
+      "ok": true,
+      "corrected": null,
+      "codes": [],
+      "latencyMs": 15050
+    },
+    {
+      "role": "generator",
+      "ok": true,
+      "corrected": null,
+      "codes": [],
+      "latencyMs": 14837
+    },
+    {
+      "role": "reviewer",
+      "latencyMs": 2784,
+      "verdicts": ["pass", "warning", "pass"],
+      "labels": ["pass", "warning", "pass"]
+    },
+    {
+      "role": "reviewer",
+      "latencyMs": 4384,
+      "verdicts": ["warning", "pass", "warning"],
+      "labels": ["warning", "pass", "warning"]
+    },
+    {
+      "role": "reviewer",
+      "latencyMs": 3825,
+      "verdicts": ["pass", "warning", "pass"],
+      "labels": ["pass", "warning", "pass"]
+    },
+    {
+      "role": "reviewer",
+      "latencyMs": 4599,
+      "verdicts": ["warning", "pass", "warning"],
+      "labels": ["warning", "pass", "warning"]
+    },
+    {
+      "role": "pack-author",
+      "latencyMs": 8281,
+      "status": "proposal — needs human review"
+    }
+  ]
+}

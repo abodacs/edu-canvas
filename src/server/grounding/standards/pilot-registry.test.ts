@@ -51,15 +51,15 @@ describe("pilot standard registry (issue 218)", () => {
     expect(gradeFromStatementCode("RI.5.2")).toBe(5);
   });
 
-  it("pins a version and the eight supported pilot rows", () => {
+  it("pins a version and the four supported pilot rows", () => {
     expect(PILOT_REGISTRY_VERSION).toMatch(/^pilot-registry-v\d+$/u);
-    expect(pilotEntries).toHaveLength(8);
-    expect(new Set(pilotEntries.map((entry) => entry.id)).size).toBe(8);
+    expect(pilotEntries).toHaveLength(4);
+    expect(new Set(pilotEntries.map((entry) => entry.id)).size).toBe(4);
 
     const combinations = pilotEntries.map((entry) => {
       return `${entry.jurisdiction}\0${entry.statementCode}`;
     });
-    expect(new Set(combinations).size).toBe(8);
+    expect(new Set(combinations).size).toBe(4);
   });
 
   it("matches every pilot row to a recorded cold run", () => {
@@ -76,14 +76,22 @@ describe("pilot standard registry (issue 218)", () => {
     }
   });
 
-  it("covers both jurisdictions for the four fraction and operations codes", () => {
+  it("covers the four fraction and operations codes in Multi-State only", () => {
     const codes = new Set(pilotEntries.map((entry) => entry.statementCode));
     expect(codes).toStrictEqual(
       new Set(["4.NF.A.1", "4.NF.A.2", "3.NF.A.3", "4.OA.A.3"])
     );
+    // Product decision 2026-11-04: the pilot ships Multi-State only.
     expect(
       new Set(pilotEntries.map((entry) => entry.jurisdiction))
-    ).toStrictEqual(new Set(["Multi-State", "California"]));
+    ).toStrictEqual(new Set(["Multi-State"]));
+    expect(
+      new Set(
+        PILOT_STANDARD_REGISTRY.envelopes.map(
+          (envelope) => envelope.jurisdiction
+        )
+      )
+    ).toStrictEqual(new Set(["Multi-State"]));
   });
 
   it.each(PILOT_BOUNDARY_ENTRIES)(

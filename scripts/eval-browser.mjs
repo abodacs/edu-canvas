@@ -262,9 +262,9 @@ const main = async () => {
       .click({ timeout: STEP_WAIT_MS });
 
     log("step 8: wait for ready-for-review (live provider call)");
-    const readyIndicator = page.getByText(
-      "Choose the version that fits the room."
-    );
+    const readyIndicator = page.getByRole("heading", {
+      name: /variants? to review$/u,
+    });
     const failureIndicator = page
       .getByText(/missed a beat|could not be finished/iu)
       .first();
@@ -336,7 +336,7 @@ const main = async () => {
 
     log("step 10: open review");
     await page
-      .getByRole("button", { name: "Review and publish this pack" })
+      .getByRole("button", { name: "Review variants" })
       .click({ timeout: STEP_WAIT_MS });
     await page
       .getByRole("heading", {
