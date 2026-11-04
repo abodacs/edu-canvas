@@ -23,10 +23,8 @@ import {
 } from "./provider";
 import { createGenerationService, normalizeGenerationInput } from "./service";
 import { GENERATION_STANDARD_UNSUPPORTED_MESSAGE } from "./generation-request-error";
-import {
-  createSyntheticCurriculumContext,
-  validateSemanticLesson,
-} from "./semantic-validation";
+import { validateSemanticLesson } from "./semantic-validation";
+import { createSyntheticCurriculumContext } from "./semantic-validation-fixtures";
 import { createGenerationRequestHash } from "./types";
 import type { LessonGenerationInput } from "@/shared/generation-contract";
 import type { LessonGenerationRecord } from "./types";

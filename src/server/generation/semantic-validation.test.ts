@@ -5,10 +5,8 @@ import { describe, expect, it } from "vitest";
 import { syntheticSeed } from "@/server/seed-data";
 
 import { createEquivalentFractionsDraft } from "./provider";
-import {
-  createSyntheticCurriculumContext,
-  validateSemanticLesson,
-} from "./semantic-validation";
+import { validateSemanticLesson } from "./semantic-validation";
+import { createSyntheticCurriculumContext } from "./semantic-validation-fixtures";
 
 const expectPrivateOutputScrubbed = (result: unknown) => {
   const serialized = JSON.stringify(result);

@@ -6,7 +6,7 @@ import {
 } from "@/server/curriculum/built-in-packs";
 import { createEquivalentFractionsDraft } from "@/server/generation/provider";
 import { buildValidatedLearningPath } from "@/server/generation/learning-path";
-import { createSyntheticCurriculumContext } from "@/server/generation/semantic-validation";
+import { createSyntheticCurriculumContext } from "@/server/generation/semantic-validation-fixtures";
 import { gateArtifact } from "@/server/safety/artifact-gate";
 
 import { validateA2UIMessage } from "@/shared/a2ui-contract";

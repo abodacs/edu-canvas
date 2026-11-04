@@ -15,7 +15,7 @@ import {
   createMetaLessonDraftProvider,
   LessonProviderError,
 } from "./provider";
-import { createSyntheticCurriculumContext } from "./semantic-validation";
+import { createSyntheticCurriculumContext } from "./semantic-validation-fixtures";
 import { validateProviderDraft } from "./validation";
 import type {
   NormalizedGenerationRequest,

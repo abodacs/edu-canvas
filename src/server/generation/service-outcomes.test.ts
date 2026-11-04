@@ -15,7 +15,7 @@ import {
   createEquivalentFractionsDraft,
 } from "./provider";
 import { createGenerationService } from "./service";
-import { createSyntheticCurriculumContext } from "./semantic-validation";
+import { createSyntheticCurriculumContext } from "./semantic-validation-fixtures";
 import type { LessonGenerationInput } from "@/shared/generation-contract";
 
 const teacherActor = syntheticTeacherActor({

@@ -12,7 +12,7 @@ import { syntheticSeed } from "@/server/seed-data";
 
 import { reviewDraftForAcceptance } from "./draft-acceptance";
 import { GenerationRequestError } from "./generation-request-error";
-import { createSyntheticCurriculumContext } from "./semantic-validation";
+import { createSyntheticCurriculumContext } from "./semantic-validation-fixtures";
 import { createGenerationService, normalizeGenerationInput } from "./service";
 import { validateProviderDraft } from "./validation";
 

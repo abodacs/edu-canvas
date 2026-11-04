@@ -21,7 +21,6 @@ import type {
 
 export {
   createCurriculumContextFromPack,
-  createSyntheticCurriculumContext,
   curriculumValidatorVersion,
   learningQualityValidatorVersion,
   semanticValidationRunnerVersion,
