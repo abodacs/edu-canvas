@@ -351,6 +351,10 @@ export const lessonDraftRequests = pgTable(
     // like sourceSnapshotId: the link is readable lineage, not an FK contract,
     // and a referent that is missing or foreign is refused in the service.
     revisesRequestId: text("revises_request_id"),
+    // #223: the warning-only advisory review requested after the draft reaches
+    // ready-for-review. Nullable and separate from `diagnostics`, so the
+    // reviewer can never change the record's state or gate evidence.
+    advisoryReview: jsonb("advisory_review"),
     createdAt: timestamp("created_at", {
       withTimezone: true,
       mode: "string",

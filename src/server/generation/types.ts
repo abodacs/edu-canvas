@@ -1,6 +1,7 @@
 import type { TeacherActor } from "@/server/identity/types";
 import type { ArtifactGateSnapshot } from "@/server/safety/artifact-gate-contract";
 import type {
+  AdvisoryReview,
   generationStateValues,
   LessonDifficulty,
   LessonLanguage,
@@ -207,6 +208,12 @@ export interface LessonGenerationRecord {
    * missing snapshot refuses preview and Share. Persisted beside the draft.
    */
   gate?: ArtifactGateSnapshot | null;
+  /**
+   * #223: the warning-only advisory review a teacher requested after the draft
+   * reached `ready-for-review`. It is additive and separate from `diagnostics`:
+   * the reviewer cannot change the state, the diagnostics, or the gate.
+   */
+  advisoryReview?: AdvisoryReview;
   attempts: GenerationAttemptRecord[];
   createdAt: string;
   updatedAt: string;
@@ -330,6 +337,16 @@ export interface GenerationPersistence {
     tenantId: string,
     requestId: string
   ) => Promise<LessonGenerationRecord | undefined>;
+  /**
+   * #223: store a warning-only advisory review without touching the draft,
+   * state, diagnostics, or gate. Returns false when the record is no longer
+   * `ready-for-review`, so a concurrent change cannot receive a stale result.
+   */
+  writeAdvisoryReview: (
+    tenantId: string,
+    requestId: string,
+    review: AdvisoryReview
+  ) => Promise<boolean>;
 }
 
 export interface GenerationCommand {

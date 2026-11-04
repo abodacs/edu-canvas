@@ -62,6 +62,10 @@ The teacher's examination of a draft before approval: the question, the answer k
 
 A finding the drafting or validation step records about a draft: its severity, a code, a message, and the field or variant it concerns. A diagnostic is shown to the teacher; it is not a logged error.
 
+### Advisory review
+
+A second, optional review a teacher requests **after** a draft reaches `ready-for-review`. It runs outside the generation deadline, reads the pack-derived context and the sanitized draft, and may only add warnings. It is not a diagnostic: it cannot change the draft's state, its diagnostics, its gate snapshot, or an answer key, and a slow or failed review leaves the record untouched.
+
 ### Correction
 
 The second provider call made after a draft fails structural validation, carrying the first diagnostics. A correction is not a retry: a retry reuses the request, a correction continues it.
