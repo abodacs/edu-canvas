@@ -66,6 +66,9 @@ describe("whole-number equation parsing", () => {
     ["8 / 2 = q", 4],
     ["6 - 2 = a", 4],
     ["3 = x", 3],
+    // A blank box or a question mark is how a teacher writes an unknown.
+    ["4 × 6 − 5 = □", 19],
+    ["4 × 6 − 5 = ?", 19],
   ])("evaluates %s to %i", (target, expected) => {
     expect(parseWholeNumberEquation(target)).toStrictEqual({
       status: "evaluated",
@@ -80,6 +83,9 @@ describe("whole-number equation parsing", () => {
     "5 ÷ 0 = a",
     "2.5 + 1 = a",
     "4 × 6 − 5 = p q",
+    // Words, remainder text and rounding marks are not an unknown symbol.
+    "27 ÷ 4 = 6 R3 → 7 tables needed",
+    "⌈27 ÷ 4⌉ = 7",
   ])("rejects the malformed target %s", (target) => {
     expect(parseWholeNumberEquation(target)).toStrictEqual({
       status: "invalid",

@@ -314,7 +314,7 @@ const LearnBoard = ({
       <>
         {liveRegion}
         <p
-          className="learn-status"
+          className="learn-status learn-error"
           ref={errorReference}
           role="alert"
           tabIndex={-1}
@@ -363,7 +363,7 @@ const LearnBoard = ({
       ref={boardReference}
     >
       {liveRegion}
-      <h1 id="learn-heading">
+      <h1 className="learn-title" id="learn-heading">
         <BidiText
           text={section?.title ?? copy.headingFallback}
           direction={direction}
@@ -388,8 +388,6 @@ const LearnBoard = ({
         onSelectTarget={pairWith}
       />
 
-      <p className="learn-status">{copy.progress(pairCount, sources.length)}</p>
-
       {phase === "ready" && run.lesson.firstResponseStatus === "submitted" ? (
         <RepeatEvaluationNotice copy={copy} />
       ) : null}
@@ -406,6 +404,7 @@ const LearnBoard = ({
       ) : (
         <BoardActions
           copy={copy}
+          progress={copy.progress(pairCount, sources.length)}
           isSaving={phase === "saving"}
           hasPairs={pairCount > 0}
           onSubmit={() => {
