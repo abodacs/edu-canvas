@@ -20,7 +20,7 @@ The original single slice was split after review: "43 tokens into `@theme` with 
 | --- | --- | --- | --- |
 | 1a | Structural scale as new semantic properties (type roles, 4px spacing, two radii, three-tier dividers, one shadow, focus ring). Rewire nothing. | none | **approved** |
 | 1b | Repoint `--primary` to clay, `--border` to the divider ladder, headings to the serif, radii to the ladder; delete the unreachable `.dark` block | large, expected — reviewed as a before/after census | **approved** |
-| 2 | Sign-in / sign-up | moderate | on hold |
+| 2 | Sign-in / sign-up | moderate | **approved** |
 | 3 | Studio compose + variants (adopts [#168](https://github.com/abodacs/edu-canvas/issues/168)) | large | on hold |
 | 4 | Review | large | on hold |
 | 5 | Publish | moderate | on hold |
@@ -31,6 +31,8 @@ The original single slice was split after review: "43 tokens into `@theme` with 
 Slices 2–8 run in parallel on the [UX redesign stack](ux-redesign-stack.md), which names each slice's mock, owned files, gate routes, and definition of done.
 
 Row 7 scope, 2026-11-04: Abdullah approved the landing slice implementation in chat ("add them and start now"), branching from main now that the foundation (#197) is merged. Skills supplied and read: implement-spec, checklist-design, principle-never-block-on-the-human, principle-experience-first. Staging notes from the inspiration pass are recorded on [#208](https://github.com/abodacs/edu-canvas/issues/208).
+
+Row 2 scope, 2026-11-04: Abdullah approved the sign-in slice implementation in chat ("Approve and start now"), branching `feat/ux-sign-in` from main now that the #197 contracts (ownership map, primitives, app shell) are merged. Skills supplied and read: `impeccable`, `better-accessibility`. The slice covers the three routes the `5-sign-in` mock draws: `/sign-up`, `/login` and `/login/membership`.
 
 Verification ownership, per category. Each owner has to be able to observe the change; a check that cannot fail is not coverage.
 

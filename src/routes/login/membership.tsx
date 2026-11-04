@@ -1,5 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Users } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 
 import {
@@ -7,11 +6,11 @@ import {
   readPendingMembershipHandoff,
   submitMembership,
 } from "@/components/auth/auth-client";
-import { BrandMark } from "@/components/ui/brand-mark";
 import { AuthStatus } from "@/components/auth/auth-status";
 import { membershipCopy } from "@/components/auth/membership-copy";
 import { MembershipRadio } from "@/components/auth/membership-radio";
 import { useAuthNotice } from "@/components/auth/use-auth-notice";
+import { AppShell } from "@/components/ui/app-shell";
 import { Button } from "@/components/ui/button";
 
 import type {
@@ -72,7 +71,15 @@ const MembershipPage = (): ReactElement => {
       memberships: stored.memberships,
     };
   });
-  const [selected, setSelected] = useState<string | null>(null);
+  // The first class is the choice the teacher came in with until they pick
+  // another; preselecting it keeps the submit enabled and matches the picker
+  // they were shown. A pending choice with no classes still needs a selection.
+  const [selected, setSelected] = useState<string | null>(() => {
+    if (handoff.phase !== "ready") {
+      return null;
+    }
+    return handoff.memberships.at(0)?.membershipId ?? null;
+  });
   const [isPending, setIsPending] = useState(false);
 
   useEffect(() => {
@@ -80,6 +87,13 @@ const MembershipPage = (): ReactElement => {
       clearPendingMembershipHandoff();
     }
   }, [handoff.phase]);
+
+  // This screen is a client-side step after the sign-in form, so the browser
+  // has removed the trigger and left focus on the body. Move it to the page so
+  // the next Tab continues from here; `#main` already has the focus style.
+  useEffect(() => {
+    document.querySelector<HTMLElement>("#main")?.focus();
+  }, []);
 
   const expire = useCallback((): void => {
     clearPendingMembershipHandoff();
@@ -110,34 +124,27 @@ const MembershipPage = (): ReactElement => {
 
   if (handoff.phase === "expired") {
     return (
-      <main
-        id="main"
-        tabIndex={-1}
-        className="auth-shell"
-        aria-labelledby="membership-heading"
-      >
-        <div className="auth-frame">
-          <BrandMark withTagline className="auth-card__brand" />
-          <section className="auth-card">
-            <h1 id="membership-heading" className="auth-heading">
+      <AppShell>
+        <div className="auth-page">
+          <section className="auth-card" aria-labelledby="membership-heading">
+            <h1 id="membership-heading" className="auth-card__heading">
               {membershipCopy.expiredHeading}
             </h1>
-            <p className="auth-lede">{membershipCopy.expiredLede}</p>
+            <p className="auth-card__lede">{membershipCopy.expiredLede}</p>
             <div className="auth-actions">
               <Button
                 type="button"
-                className="auth-submit"
+                className="auth-form__submit"
                 onClick={() => {
                   void navigate({ to: "/login" });
                 }}
               >
                 {membershipCopy.signInAgain}
-                <ArrowRight aria-hidden="true" />
               </Button>
             </div>
           </section>
         </div>
-      </main>
+      </AppShell>
     );
   }
 
@@ -163,23 +170,14 @@ const MembershipPage = (): ReactElement => {
   };
 
   return (
-    <main
-      id="main"
-      tabIndex={-1}
-      className="auth-shell"
-      aria-labelledby="membership-heading"
-    >
-      <div className="auth-frame">
-        <BrandMark withTagline className="auth-card__brand" />
-        <section className="auth-card">
+    <AppShell>
+      <div className="auth-page">
+        <section className="auth-card" aria-labelledby="membership-heading">
           <header className="auth-card__header">
-            <p className="eyebrow auth-eyebrow">
-              <Users aria-hidden="true" /> {membershipCopy.eyebrow}
-            </p>
-            <h1 id="membership-heading" className="auth-heading">
+            <h1 id="membership-heading" className="auth-card__heading">
               {membershipCopy.heading}
             </h1>
-            <p className="auth-lede">{membershipCopy.lede}</p>
+            <p className="auth-card__lede">{membershipCopy.lede}</p>
           </header>
 
           <form
@@ -192,7 +190,9 @@ const MembershipPage = (): ReactElement => {
             <AuthStatus notice={notice} noticeRef={statusReference} />
 
             <fieldset className="membership-fieldset">
-              <legend className="field__label">{membershipCopy.legend}</legend>
+              <legend className="membership-fieldset__legend">
+                {membershipCopy.legend}
+              </legend>
               <div className="membership-options">
                 {handoff.memberships.map((membership) => {
                   return (
@@ -212,42 +212,30 @@ const MembershipPage = (): ReactElement => {
               </div>
             </fieldset>
 
-            <div className="auth-actions">
-              <Button
-                type="submit"
-                className="auth-submit"
-                disabled={isPending || selected === null}
-              >
-                Continue
-                <ArrowRight aria-hidden="true" />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                className="text-link"
-                disabled={isPending}
-                onClick={cancel}
-              >
-                Cancel
-              </Button>
-            </div>
+            <Button
+              type="submit"
+              className="auth-form__submit"
+              disabled={isPending || selected === null}
+            >
+              Open workspace
+            </Button>
+            <Button
+              type="button"
+              variant="link"
+              className="auth-form__cancel"
+              disabled={isPending}
+              onClick={cancel}
+            >
+              Cancel
+            </Button>
           </form>
 
           <p className="auth-note">
             <span>{membershipCopy.note}</span>
           </p>
-
-          <p className="auth-links">
-            <span>
-              Need a different account?{" "}
-              <Link className="text-link" to="/login">
-                Sign in again
-              </Link>
-            </span>
-          </p>
         </section>
       </div>
-    </main>
+    </AppShell>
   );
 };
 

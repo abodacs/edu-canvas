@@ -39,6 +39,8 @@ export const useAuthChallenge = (
     const result = await fetchAuthChallenge();
     if (result.ok) {
       setCsrf(result.data.csrf);
+      // A retry that succeeds replaces the failure it was recovering from.
+      announce(null);
       return;
     }
 

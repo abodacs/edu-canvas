@@ -5,19 +5,21 @@ import {
   useNavigate,
   useRouterState,
 } from "@tanstack/react-router";
-import { Info, LogIn, ShieldCheck, UserPlus } from "lucide-react";
-import { useId, useState } from "react";
+import { Info, LogIn, ShieldCheck } from "lucide-react";
+import { useRef, useState } from "react";
 
 import {
   clearPendingMembershipHandoff,
   submitSignIn,
   writePendingMembershipHandoff,
 } from "@/components/auth/auth-client";
-import { BrandMark } from "@/components/ui/brand-mark";
 import { AuthStatus } from "@/components/auth/auth-status";
 import { PasswordField } from "@/components/auth/password-field";
 import { useAuthChallenge } from "@/components/auth/use-auth-challenge";
+import { useFocusAfterRender } from "@/components/auth/use-auth-notice";
+import { AppShell } from "@/components/ui/app-shell";
 import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
 
 import type { AuthApiFailure } from "@/components/auth/auth-client";
 import type { AuthNotice } from "@/components/auth/auth-status";
@@ -30,6 +32,19 @@ const GENERIC_CREDENTIAL_MESSAGE =
   "Check your email address and password, then try again.";
 
 const SIGN_IN_FAILURE_TITLE = "Sign-in could not be completed";
+
+const INVALID_EMAIL_MESSAGE =
+  "Enter a full email address, like name@school.org.";
+
+const describeEmailError = (
+  value: string,
+  input: HTMLInputElement | null
+): string | null => {
+  if (value === "") {
+    return "Enter your email address.";
+  }
+  return input?.validity.typeMismatch ? INVALID_EMAIL_MESSAGE : null;
+};
 
 const describeSignInFailure = (failure: AuthApiFailure): AuthNotice => {
   switch (failure.code) {
@@ -92,23 +107,16 @@ const LoginPage = (): ReactElement => {
   const isMembershipRoute = useRouterState({
     select: (state) => state.location.pathname === "/login/membership",
   });
-  const emailId = useId();
-  const emailHintId = useId();
-  const emailErrorId = useId();
-  const passwordErrorId = useId();
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const { focusAfterRender } = useFocusAfterRender();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
-  const {
-    csrf,
-    unavailable: challengeUnavailable,
-    notice,
-    statusReference,
-    announce,
-  } = useAuthChallenge({
+  const { csrf, notice, statusReference, announce } = useAuthChallenge({
     enabled: !isMembershipRoute,
     unavailableNotice: {
       tone: "error",
@@ -132,19 +140,14 @@ const LoginPage = (): ReactElement => {
     }
 
     const trimmedEmail = email.trim();
-    const nextEmailError =
-      trimmedEmail === "" ? "Enter your email address." : null;
+    const nextEmailError = describeEmailError(trimmedEmail, emailRef.current);
     const nextPasswordError = password === "" ? "Enter your password." : null;
     setEmailError(nextEmailError);
     setPasswordError(nextPasswordError);
     if (nextEmailError || nextPasswordError) {
-      const firstInvalid = nextEmailError ? emailId : undefined;
-      if (firstInvalid) {
-        const invalidField = document.querySelector<HTMLElement>(
-          `#${firstInvalid}`
-        );
-        invalidField?.focus();
-      }
+      // Focus waits for the commit that marks the field invalid, so the screen
+      // reader reads the error with the control instead of before it.
+      focusAfterRender(nextEmailError ? emailRef : passwordRef);
       return;
     }
 
@@ -206,41 +209,28 @@ const LoginPage = (): ReactElement => {
   };
 
   return (
-    <main
-      id="main"
-      tabIndex={-1}
-      className="auth-shell"
-      aria-labelledby="login-heading"
-    >
-      <div className="auth-frame">
-        <BrandMark withTagline className="auth-card__brand" />
-        <section className="auth-card">
+    <AppShell>
+      <div className="auth-page">
+        <section className="auth-card" aria-labelledby="login-heading">
           <header className="auth-card__header">
-            <h1 id="login-heading" className="auth-heading">
-              Sign in to Scholé
+            <h1 id="login-heading" className="auth-card__heading">
+              Welcome back
             </h1>
-            <p className="auth-lede">
+            <p className="auth-card__lede">
               Use the email address and password your school set up for you.
             </p>
           </header>
 
-          {challengeUnavailable ? (
-            <p className="field__hint">
-              You can still read this page; signing in will resume once the
-              service is reachable.
-            </p>
-          ) : null}
+          <AuthStatus notice={notice} noticeRef={statusReference} />
 
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
-            <AuthStatus notice={notice} noticeRef={statusReference} />
-
-            <div className="field">
-              <label className="field__label" htmlFor={emailId}>
-                Email address
-              </label>
+            <Field
+              label="Email address"
+              help="Learner accounts come from a teacher invitation."
+              error={emailError ?? undefined}
+            >
               <input
-                id={emailId}
-                className="field__input"
+                ref={emailRef}
                 name="email"
                 type="email"
                 inputMode="email"
@@ -248,61 +238,42 @@ const LoginPage = (): ReactElement => {
                 autoCapitalize="none"
                 spellCheck={false}
                 value={email}
-                aria-label="Email address"
-                aria-invalid={emailError !== null}
-                aria-describedby={`${emailHintId}${
-                  emailError ? ` ${emailErrorId}` : ""
-                }`}
                 required
                 disabled={isPending}
                 onChange={(event) => {
                   setEmail(event.target.value);
                 }}
               />
-              <p className="field__hint" id={emailHintId}>
-                Learner accounts come from a teacher invitation.
-              </p>
-              {emailError ? (
-                <p className="field__error" id={emailErrorId}>
-                  {emailError}
-                </p>
-              ) : null}
-            </div>
+            </Field>
 
             <PasswordField
               label="Password"
               name="password"
               value={password}
               autoComplete="current-password"
-              invalid={passwordError !== null}
-              describedBy={passwordError ? passwordErrorId : undefined}
+              error={passwordError}
               disabled={isPending}
+              inputRef={passwordRef}
               onValueChange={setPassword}
+              action={
+                <button
+                  type="button"
+                  className="text-link"
+                  onClick={showForgotPassword}
+                >
+                  Forgot password?
+                </button>
+              }
             />
-            {passwordError ? (
-              <p className="field__error" id={passwordErrorId}>
-                {passwordError}
-              </p>
-            ) : null}
 
-            <div className="auth-actions">
-              <Button
-                type="submit"
-                className="auth-submit"
-                disabled={isSubmitDisabled}
-              >
-                <LogIn aria-hidden="true" />
-                {isPending ? "Signing in…" : "Sign in"}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                className="text-link"
-                onClick={showForgotPassword}
-              >
-                Forgot password?
-              </Button>
-            </div>
+            <Button
+              type="submit"
+              className="auth-form__submit"
+              disabled={isSubmitDisabled}
+            >
+              <LogIn aria-hidden="true" />
+              {isPending ? "Signing in…" : "Sign in"}
+            </Button>
           </form>
 
           <p className="auth-links">
@@ -311,10 +282,6 @@ const LoginPage = (): ReactElement => {
               <Link className="text-link" to="/sign-up">
                 Create a teacher account
               </Link>
-            </span>
-            <span className="auth-links__aside">
-              <UserPlus aria-hidden="true" />
-              Teacher accounts only
             </span>
           </p>
 
@@ -335,7 +302,7 @@ const LoginPage = (): ReactElement => {
           </p>
         </section>
       </div>
-    </main>
+    </AppShell>
   );
 };
 

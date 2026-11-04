@@ -36,3 +36,35 @@ export const useAuthNotice = (): AuthNoticeState => {
 
   return { notice, statusReference, announce };
 };
+
+/**
+ * Focus a form control after the commit that revealed its error. The effect
+ * waits for React to mark the control invalid and attach its error text, so a
+ * screen reader reads the state that is already on screen. Nothing is focused
+ * on mount; only a submit names a target.
+ */
+export const useFocusAfterRender = (): {
+  readonly focusAfterRender: (target: RefObject<HTMLElement | null>) => void;
+} => {
+  const pending = useRef<RefObject<HTMLElement | null> | null>(null);
+  // A repeated submit can leave the error text unchanged, so the caller's
+  // state update alone may bail out and never commit. The request counter
+  // guarantees the render that carries the focus move.
+  const [request, setRequest] = useState(0);
+
+  useEffect(() => {
+    const target = pending.current;
+    pending.current = null;
+    target?.current?.focus();
+  }, [request]);
+
+  const focusAfterRender = useCallback(
+    (target: RefObject<HTMLElement | null>): void => {
+      pending.current = target;
+      setRequest((previous) => previous + 1);
+    },
+    []
+  );
+
+  return { focusAfterRender };
+};
