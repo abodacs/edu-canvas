@@ -1,5 +1,5 @@
 {
-  "family": "Hanken Grotesk Variable",
+  "manifestVersion": 2,
   "weightRange": [
     400,
     800
@@ -10,56 +10,149 @@
     "liga",
     "locl",
     "mark",
-    "mkmk"
+    "mkmk",
+    "tnum"
   ],
-  "vendor": {
-    "file": "scripts/fonts/vendor/HankenGrotesk-wght.ttf",
-    "sha256": "813b3f8fa0965405669a89b38e51bbefd95eef6b8e20d1cb2d8c10cce062662f",
-    "fontsourceReferenceVersion": "absent"
-  },
   "tools": {
     "python": "3.13.5",
     "fonttools": "4.68.0",
     "brotli": "1.2.1"
   },
-  "outputs": {
-    "hanken-grotesk-variable-core.woff2": {
-      "bytes": 21536,
-      "sha256": "e885d20751a657141a97ce053f01abc4b2cbdfaa68f944349f0a297409897637",
-      "glyphs": 118,
+  "families": [
+    {
+      "family": "Source Serif 4",
+      "role": "display: page titles, section and card headings (h1-h3)",
+      "internalName": "Schole Display Serif",
+      "version": "4.005",
+      "licence": "OFL-1.1 (Reserved Font Name: Source)",
+      "licenceFile": "scripts/fonts/vendor/SourceSerif4-OFL.md",
+      "origin": "https://github.com/adobe-fonts/source-serif/blob/2823e993c53fca27c5c8749f529b56a5a7c77b6b/VAR/SourceSerif4Variable-Roman.ttf",
+      "vendor": {
+        "file": "scripts/fonts/vendor/SourceSerif4Variable-Roman.ttf",
+        "sha256": "14d360ee1b76655da9276628b229e11671bc1f5d1083636144db6677d452cf55"
+      },
       "axes": [
         [
           "wght",
-          100.0,
+          200.0,
           900.0
+        ],
+        [
+          "opsz",
+          8.0,
+          60.0
         ]
       ],
-      "features": [
-        "ccmp",
-        "kern",
-        "liga",
-        "locl"
-      ],
-      "unicodeRange": "U+0020-007E, U+00B7, U+2013-2014, U+2018-2019, U+201C-201D, U+2026",
-      "codepoints": 103
+      "preload": false,
+      "outputs": {
+        "source-serif-4-core.woff2": {
+          "bytes": 68356,
+          "sha256": "586e1af3bc385aae5417601d184b5f875382090e867bfeb4ed3c71ed3223c542",
+          "glyphs": 128,
+          "axes": [
+            [
+              "wght",
+              200.0,
+              900.0
+            ],
+            [
+              "opsz",
+              8.0,
+              60.0
+            ]
+          ],
+          "features": [
+            "kern",
+            "liga",
+            "locl"
+          ],
+          "unicodeRange": "U+0020-007E, U+00B7, U+2013-2014, U+2018-2019, U+201C-201D, U+2026",
+          "codepoints": 103
+        },
+        "source-serif-4-extended.woff2": {
+          "bytes": 76472,
+          "sha256": "ae21d66aa8e1fc3984b007131076d898dc5c3f614ab9ccf39f00484f7779b9b4",
+          "glyphs": 305,
+          "axes": [
+            [
+              "wght",
+              200.0,
+              900.0
+            ],
+            [
+              "opsz",
+              8.0,
+              60.0
+            ]
+          ],
+          "features": [
+            "ccmp",
+            "kern"
+          ],
+          "unicodeRange": "U+00A0-00B6, U+00B8-012B, U+012E-0131, U+0134-0165, U+0168-017F, U+2192, U+2212, U+2248, U+2260, U+2264-2265",
+          "codepoints": 223
+        }
+      }
     },
-    "hanken-grotesk-variable-extended.woff2": {
-      "bytes": 20180,
-      "sha256": "dc21cfadcc22eee5fe6dce4c09374a88b0c67399b9caf64239f4f7ad2ae1f4b1",
-      "glyphs": 302,
+    {
+      "family": "Figtree",
+      "role": "body: everything you read or act on",
+      "internalName": "Figtree",
+      "version": "2.002",
+      "licence": "OFL-1.1 (no Reserved Font Name)",
+      "licenceFile": "scripts/fonts/vendor/Figtree-OFL.txt",
+      "origin": "https://github.com/google/fonts/blob/a60a77e14f28abd4ef243a1b5dfc48df0cec5205/ofl/figtree/Figtree%5Bwght%5D.ttf",
+      "vendor": {
+        "file": "scripts/fonts/vendor/Figtree-wght.ttf",
+        "sha256": "26ad3db9b31ff7dde67a91ff515d022d2f495cd506590699cf264f0bfe6fb714"
+      },
       "axes": [
         [
           "wght",
-          100.0,
+          300.0,
           900.0
         ]
       ],
-      "features": [
-        "kern",
-        "locl"
-      ],
-      "unicodeRange": "U+00A0-00B6, U+00B8-017E",
-      "codepoints": 222
+      "preload": true,
+      "outputs": {
+        "figtree-core.woff2": {
+          "bytes": 10560,
+          "sha256": "e30cd55653b6f7d1ca3b376fa891d58252a186b7dcba8732ae65aeb01bb2b707",
+          "glyphs": 120,
+          "axes": [
+            [
+              "wght",
+              300.0,
+              900.0
+            ]
+          ],
+          "features": [
+            "kern",
+            "locl",
+            "tnum"
+          ],
+          "unicodeRange": "U+0020-007E, U+00B7, U+2013-2014, U+2018-2019, U+201C-201D, U+2026",
+          "codepoints": 103
+        },
+        "figtree-extended.woff2": {
+          "bytes": 13016,
+          "sha256": "b3dc149157aff25c054d2e7544627972b0f33c64a2e0bdce6e10b461273f4505",
+          "glyphs": 272,
+          "axes": [
+            [
+              "wght",
+              300.0,
+              900.0
+            ]
+          ],
+          "features": [
+            "kern",
+            "locl"
+          ],
+          "unicodeRange": "U+00A0-00AC, U+00AE-00B6, U+00B8-0113, U+0116-0127, U+012A-012B, U+012E-0137, U+0139-013E, U+0141-0148, U+014A-014D, U+0150-0161, U+0164-0165, U+016A-017E, U+2192, U+2212, U+2260, U+2264-2265",
+          "codepoints": 208
+        }
+      }
     }
-  }
+  ]
 }

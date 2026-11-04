@@ -59,6 +59,8 @@ interface ScanState {
   readonly declared: Set<string>;
   readonly referenced: Map<string, string>;
   file: string;
+  /** Inside an @font-face block, whose font-family is a descriptor, not usage. */
+  isFontFace: boolean;
 }
 
 const COLOUR_PATTERNS = [
@@ -161,6 +163,15 @@ const incrementFor = (
 };
 
 const scanLine = (text: string, state: ScanState): void => {
+  if (text.startsWith("@font-face")) {
+    state.isFontFace = true;
+  }
+  if (state.isFontFace) {
+    if (text.includes("}")) {
+      state.isFontFace = false;
+    }
+    return;
+  }
   const colon = text.indexOf(":");
   if (text.startsWith("--") && colon > 2) {
     state.declared.add(text.slice(0, colon).trim());
@@ -211,6 +222,7 @@ const scanStylesheets = async (): Promise<{
     declared: new Set<string>(),
     referenced: new Map<string, string>(),
     file: "",
+    isFontFace: false,
   };
 
   for (const [index, file] of files.entries()) {

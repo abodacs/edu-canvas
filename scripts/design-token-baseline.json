@@ -32,8 +32,7 @@
       "src/styles/workspace.css": 8
     },
     "literal-font-family": {
-      "src/styles/source.css": 1,
-      "src/styles/tokens.css": 2
+      "src/styles/source.css": 1
     },
     "literal-shadow": {
       "src/styles/auth.css": 1,
