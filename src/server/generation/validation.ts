@@ -78,6 +78,7 @@ export const validatedLearningPathSchema = z
       .object({
         draftId: z.string().trim().min(1).max(120),
         graphVersion: z.string().trim().min(1).max(120),
+        packVersion: z.string().trim().min(1).max(120).optional(),
         catalogVersion: z.string().trim().min(1).max(120),
         modelVersion: z.string().trim().min(1).max(120),
         validatorVersion: z.string().trim().min(1).max(120),

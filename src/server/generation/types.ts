@@ -104,6 +104,7 @@ export interface ValidatedLearningPathStep {
 export interface LearningPathVersionPins {
   draftId: string;
   graphVersion: string;
+  packVersion?: string;
   catalogVersion: string;
   modelVersion: string;
   validatorVersion: string;

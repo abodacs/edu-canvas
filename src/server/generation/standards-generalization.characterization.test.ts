@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { multistepWordProblemsPack } from "@/server/curriculum/built-in-packs";
 import { parseTenantId } from "@/server/identity/identifiers";
 import { syntheticTeacherActor } from "@/server/identity/test-actors";
 import { createSeededGenerationLimitStore } from "@/server/persistence/limits-seeded";
@@ -153,6 +154,7 @@ const operationsContext: VersionedCurriculumContext = {
   standardCode: "4.OA.A.3",
   grade: 4,
   language: "en",
+  packVersion: multistepWordProblemsPack.packVersion,
   graphVersion: operationsGraphVersion,
   targetNodeId: "graph_node_multistep_word_problems",
   nodes: [
@@ -177,6 +179,7 @@ const operationsContext: VersionedCurriculumContext = {
       successorId: "graph_node_multistep_word_problems",
     },
   ],
+  answerRules: multistepWordProblemsPack.answerRules,
 };
 
 const operationsSteps = [
@@ -197,6 +200,7 @@ const readingContext: VersionedCurriculumContext = {
   standardCode: "RI.5.2",
   grade: 5,
   language: "en",
+  packVersion: "RI.5.2-v1",
   graphVersion: readingGraphVersion,
   targetNodeId: "graph_node_main_ideas",
   nodes: [
@@ -209,6 +213,7 @@ const readingContext: VersionedCurriculumContext = {
     },
   ],
   edges: [],
+  answerRules: [{ kind: "teacher-review", unverifiedVerdict: "warning" }],
 };
 
 const readingSteps = [
