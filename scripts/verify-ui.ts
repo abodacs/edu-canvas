@@ -1,9 +1,10 @@
 /**
 Per-route UI gate (`pnpm verify:ui [route ...]`).
 
-One command every UI change runs before review. For each route it opens the
-built app at a desktop (1440) and a phone (390) viewport, signed in as the
-route's audience, and reports:
+One command every UI change runs before review. For each named view
+(scripts/ui-gate/views.ts) it opens the built app at a desktop (1440) and a
+phone (390) viewport, signed in as the view's audience, reaches the view's
+state through real clicks, waits for its `ready` selector, and reports:
 
 - axe-core serious and critical findings (colour contrast included),
 - sideways scrolling,
@@ -12,14 +13,18 @@ route's audience, and reports:
   against an earlier run (use it to prove a refactor is zero-diff).
 
 It is a ratchet like the token and census checks: the committed budget
-(scripts/ui-gate-budget.json) records findings per route and viewport, and
+(scripts/ui-gate-budget.json) records findings per view key and viewport, and
 the run fails when any count grows. `--update` lowers the budget, never raises
-it. Routes default to every page the redesign touches.
+it. A view that does not reach its state is a fatal `state` finding: it is
+never skipped, measured, or ratcheted.
+
+Selection: `--view <key>` (repeatable) runs one view; a bare path such as
+`/workspace` runs every view under it; no selector runs every view.
 
 Skip-safe like the student probe: no Chromium or no PostgreSQL prints one SKIP
 line and exits 0. UI_GATE_REQUIRED=true turns a skip into a failure.
 */
-/* eslint-disable no-await-in-loop -- routes share one signed-in browser and run one at a time so screenshots stay deterministic. */
+/* eslint-disable no-await-in-loop -- views share one signed-in browser and run one at a time so screenshots stay deterministic. */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
@@ -27,30 +32,23 @@ import { chromium } from "playwright-core";
 
 import { axeProblems, overflowProblems } from "./student-probe/checks";
 import { loadEnvironmentFile, withScratchApp } from "./ui-gate/app";
+import { gateSeedScripts, readSeedOutputs } from "./ui-gate/seed-output";
+import { signedInState } from "./ui-gate/session";
 import {
-  learnerQuery as learnerQueryFrom,
-  signedInState,
-} from "./ui-gate/session";
+  allViews,
+  assertUniqueKeys,
+  findingKey,
+  reachState,
+  screenshotName,
+  selectViews,
+  viewUrl,
+} from "./ui-gate/views";
 
+import type { SeedOutputs } from "./ui-gate/seed-output";
 import type { Audience, StorageState } from "./ui-gate/session";
+import type { ViewSpec } from "./ui-gate/views";
 
 import type { Browser, BrowserContext, Page } from "playwright-core";
-
-interface RouteSpec {
-  readonly path: string;
-  readonly audience: Audience;
-  /** The approved mock this route is redesigned against. */
-  readonly mock?: string;
-}
-
-const ROUTES: readonly RouteSpec[] = [
-  { path: "/", audience: "public", mock: "0-landing" },
-  { path: "/login", audience: "public", mock: "5-sign-in" },
-  { path: "/sign-up", audience: "public", mock: "5-sign-in" },
-  { path: "/workspace", audience: "teacher", mock: "1-studio" },
-  { path: "/dashboard", audience: "teacher", mock: "4-dashboard" },
-  { path: "/learn", audience: "student", mock: "7-learn" },
-];
 
 const VIEWPORTS = [
   { name: "desktop", width: 1440, height: 900 },
@@ -59,12 +57,12 @@ const VIEWPORTS = [
 
 const gateName = "verify:ui";
 const budgetPath = path.join("scripts", "ui-gate-budget.json");
-// Load, then let hydration and the first data fetch settle. Not networkidle:
-// signed-in pages keep a session poll open.
+// After the state is reached, let fonts and the last paint settle before the
+// screenshot. Not networkidle: signed-in pages keep a session poll open.
 const settleMs = 1500;
 interface Finding {
   readonly key: string;
-  readonly route: string;
+  readonly view: string;
   readonly viewport: string;
   readonly axe: readonly string[];
   readonly overflow: readonly string[];
@@ -72,6 +70,8 @@ interface Finding {
   readonly radii: number;
   readonly screenshot: string;
   readonly changed?: string;
+  /** The view never reached its state: always fatal, never ratcheted. */
+  readonly state?: string;
 }
 
 interface Budget {
@@ -91,46 +91,41 @@ const skip = (reason: string): never => {
   process.exit(0);
 };
 
-const parseArguments = (): {
-  routes: RouteSpec[];
+const parseArguments = (
+  args: readonly string[]
+): {
+  views: ViewSpec[];
   compare?: string;
   update: boolean;
   out: string;
 } => {
-  const args = process.argv.slice(2);
   const valueOf = (flag: string): string | undefined => {
     const index = args.indexOf(flag);
     return index === -1 ? undefined : args[index + 1];
   };
+  const keys = args.flatMap((arg, index) =>
+    arg === "--view" && args[index + 1] ? [args[index + 1] ?? ""] : []
+  );
   const flagValues = new Set(
     ["--compare", "--out"].map((flag) => valueOf(flag))
   );
-  const asked = args.filter(
+  const paths = args.filter(
     (arg) => arg.startsWith("/") && !flagValues.has(arg)
   );
-  const unknown = asked.filter(
-    (arg) => !ROUTES.some((route) => route.path === arg)
-  );
-  if (unknown.length > 0) {
-    console.error(
-      `${gateName}: unknown route ${unknown.join(", ")}. Known: ${ROUTES.map((route) => route.path).join(" ")}`
+  const selected = selectViews(allViews, { keys, paths });
+  if (selected.unknown.length > 0) {
+    throw new Error(
+      `unknown view or route ${selected.unknown.join(", ")}. Known views: ${allViews.map((view) => view.key).join(" ")}`
     );
-    process.exit(1);
   }
   const stamp = new Date().toISOString().replaceAll(/[:.]/gu, "-");
   return {
-    routes:
-      asked.length === 0
-        ? [...ROUTES]
-        : ROUTES.filter((route) => asked.includes(route.path)),
+    views: selected.views,
     compare: valueOf("--compare"),
     update: args.includes("--update"),
     out: valueOf("--out") ?? path.join(".scratch", "ui-gate", stamp),
   };
 };
-
-const slug = (route: string): string =>
-  route === "/" ? "home" : route.replaceAll("/", "-").replace(/^-/u, "");
 
 const distinctValues = (
   page: Page
@@ -225,21 +220,80 @@ const changedShare = async (
   return share < 0 ? "size changed" : `${(share * 100).toFixed(3)}%`;
 };
 
-const routeUrl = (
-  baseUrl: string,
-  route: RouteSpec,
-  learnerQuery: string
-): string =>
-  route.path === "/learn"
-    ? `${baseUrl}/learn?${learnerQuery}`
-    : `${baseUrl}${route.path}`;
+const inspectView = async (
+  browser: Browser,
+  view: ViewSpec,
+  viewport: (typeof VIEWPORTS)[number],
+  options: {
+    readonly baseUrl: string;
+    readonly seed: SeedOutputs;
+    readonly out: string;
+    readonly compare?: string;
+    readonly storageState?: StorageState;
+  }
+): Promise<Finding> => {
+  const context = await browser.newContext({
+    viewport,
+    reducedMotion: "reduce",
+    storageState: options.storageState,
+  });
+  const file = screenshotName(view, viewport.name);
+  const screenshot = path.join(options.out, file);
+  const base = {
+    key: findingKey(view, viewport.name),
+    view: view.key,
+    viewport: viewport.name,
+    screenshot,
+  };
+  try {
+    const page = await context.newPage();
+    await page.goto(
+      viewUrl(options.baseUrl, view, {
+        seed: options.seed,
+        viewport: viewport.name,
+      }),
+      { waitUntil: "load" }
+    );
+    try {
+      await reachState(page, view);
+    } catch (error) {
+      // Keep the evidence of the wrong screen, but never measure it.
+      await page.screenshot({ path: screenshot, fullPage: true });
+      return {
+        ...base,
+        axe: [],
+        overflow: [],
+        fontSizes: 0,
+        radii: 0,
+        state: error instanceof Error ? error.message : String(error),
+      };
+    }
+    await page.waitForTimeout(settleMs);
+    await page.screenshot({ path: screenshot, fullPage: true });
+    const previous = options.compare
+      ? path.join(options.compare, file)
+      : undefined;
+    return {
+      ...base,
+      axe: await axeProblems(page),
+      overflow: await overflowProblems(page),
+      ...(await distinctValues(page)),
+      changed:
+        previous && existsSync(previous)
+          ? await changedShare(context, previous, screenshot)
+          : undefined,
+    };
+  } finally {
+    await context.close();
+  }
+};
 
 const inspect = async (
   browser: Browser,
   options: {
     readonly baseUrl: string;
-    readonly learnerQuery: string;
-    readonly routes: readonly RouteSpec[];
+    readonly seed: SeedOutputs;
+    readonly views: readonly ViewSpec[];
     readonly out: string;
     readonly compare?: string;
   }
@@ -248,7 +302,7 @@ const inspect = async (
   const findings: Finding[] = [];
   const states = new Map<Audience, StorageState>();
   for (const audience of ["teacher", "student"] as const) {
-    if (options.routes.some((route) => route.audience === audience)) {
+    if (options.views.some((view) => view.audience === audience)) {
       states.set(
         audience,
         await signedInState(browser, options.baseUrl, audience)
@@ -256,39 +310,14 @@ const inspect = async (
     }
   }
 
-  for (const route of options.routes) {
+  for (const view of options.views) {
     for (const viewport of VIEWPORTS) {
-      const context = await browser.newContext({
-        viewport,
-        reducedMotion: "reduce",
-        storageState: states.get(route.audience),
-      });
-      const page = await context.newPage();
-      await page.goto(routeUrl(options.baseUrl, route, options.learnerQuery), {
-        waitUntil: "load",
-      });
-      await page.locator("main").first().waitFor();
-      await page.waitForTimeout(settleMs);
-      const file = `${slug(route.path)}-${viewport.name}.png`;
-      const screenshot = path.join(options.out, file);
-      await page.screenshot({ path: screenshot, fullPage: true });
-      const previous = options.compare
-        ? path.join(options.compare, file)
-        : undefined;
-      findings.push({
-        key: `${route.path}@${viewport.name}`,
-        route: route.path,
-        viewport: viewport.name,
-        axe: await axeProblems(page),
-        overflow: await overflowProblems(page),
-        ...(await distinctValues(page)),
-        screenshot,
-        changed:
-          previous && existsSync(previous)
-            ? await changedShare(context, previous, screenshot)
-            : undefined,
-      });
-      await context.close();
+      findings.push(
+        await inspectView(browser, view, viewport, {
+          ...options,
+          storageState: states.get(view.audience),
+        })
+      );
     }
   }
   return findings;
@@ -303,6 +332,9 @@ const writeBudget = (findings: readonly Finding[]): void => {
   const previous = readBudget()?.routes ?? {};
   const routes = { ...previous };
   for (const finding of findings) {
+    if (finding.state !== undefined) {
+      continue;
+    }
     const before = previous[finding.key];
     routes[finding.key] = {
       axe: Math.min(finding.axe.length, before?.axe ?? Number.MAX_SAFE_INTEGER),
@@ -313,7 +345,7 @@ const writeBudget = (findings: readonly Finding[]): void => {
     };
   }
   const next: Budget = {
-    note: "Ratchet ceiling for scripts/verify-ui.ts: blocking findings per route and viewport. Counts may only fall; regenerate with --update after a reduction.",
+    note: "Ratchet ceiling for scripts/verify-ui.ts: blocking findings per view key and viewport. Counts may only fall; regenerate with --update after a reduction.",
     routes: Object.fromEntries(
       Object.entries(routes).toSorted(([a], [b]) => a.localeCompare(b))
     ),
@@ -326,9 +358,15 @@ const report = (findings: readonly Finding[], out: string): number => {
   const budget = readBudget()?.routes ?? {};
   let failed = 0;
   console.log(
-    `${"route".padEnd(22)} ${"axe".padStart(4)} ${"x-scroll".padStart(8)} ${"sizes".padStart(5)} ${"radii".padStart(5)}  changed`
+    `${"view".padEnd(28)} ${"axe".padStart(4)} ${"x-scroll".padStart(8)} ${"sizes".padStart(5)} ${"radii".padStart(5)}  changed`
   );
   for (const finding of findings) {
+    if (finding.state !== undefined) {
+      failed += 1;
+      console.log(`${finding.key.padEnd(28)} FAIL (state)`);
+      console.log(`    ${finding.state}`);
+      continue;
+    }
     const ceiling = budget[finding.key] ?? { axe: 0, overflow: 0 };
     const grew =
       finding.axe.length > ceiling.axe ||
@@ -337,33 +375,44 @@ const report = (findings: readonly Finding[], out: string): number => {
       failed += 1;
     }
     console.log(
-      `${finding.key.padEnd(22)} ${String(finding.axe.length).padStart(4)} ${String(finding.overflow.length).padStart(8)} ${String(finding.fontSizes).padStart(5)} ${String(finding.radii).padStart(5)}  ${finding.changed ?? "-"}${grew ? "  FAIL (over budget)" : ""}`
+      `${finding.key.padEnd(28)} ${String(finding.axe.length).padStart(4)} ${String(finding.overflow.length).padStart(8)} ${String(finding.fontSizes).padStart(5)} ${String(finding.radii).padStart(5)}  ${finding.changed ?? "-"}${grew ? "  FAIL (over budget)" : ""}`
     );
     for (const problem of [...finding.axe, ...finding.overflow]) {
       console.log(`    ${problem}`);
     }
   }
-  const mocks = ROUTES.filter(
-    (route) =>
-      route.mock && findings.some((finding) => finding.route === route.path)
-  ).map(
-    (route) =>
-      `  ${route.path.padEnd(11)} .impeccable/mocks/screens/${route.mock ?? ""}.html`
-  );
+  const mocks = allViews
+    .filter(
+      (view) =>
+        view.mock && findings.some((finding) => finding.view === view.key)
+    )
+    .map(
+      (view) =>
+        `  ${view.key.padEnd(19)} .impeccable/mocks/screens/${view.mock ?? ""}.html`
+    );
   console.log(
     `\nScreenshots: ${out}\nCompare against the approved mocks:\n${mocks.join("\n")}`
   );
   console.log(
     failed === 0
-      ? `\n${gateName}: ${findings.length} route views within budget.`
-      : `\n${gateName}: ${failed} route views over budget.`
+      ? `\n${gateName}: ${findings.length} views within budget.`
+      : `\n${gateName}: ${failed} of ${findings.length} views failed.`
   );
   return failed === 0 ? 0 : 1;
 };
 
 const main = async (): Promise<number> => {
   loadEnvironmentFile();
-  const options = parseArguments();
+  assertUniqueKeys(allViews);
+  let options: ReturnType<typeof parseArguments>;
+  try {
+    options = parseArguments(process.argv.slice(2));
+  } catch (error) {
+    console.error(
+      `${gateName}: ${error instanceof Error ? error.message : String(error)}`
+    );
+    return 1;
+  }
   const chromiumPath =
     process.env.UI_GATE_CHROMIUM ?? chromium.executablePath();
   if (!existsSync(chromiumPath)) {
@@ -375,15 +424,16 @@ const main = async (): Promise<number> => {
   const outcome = await withScratchApp(
     {
       prefix: "edu_canvas_ui_gate",
-      seedScripts: ["scripts/student-probe/seed.ts"],
+      seedScripts: gateSeedScripts,
     },
     async ({ baseUrl, seedOutputs }) => {
+      const seed = readSeedOutputs(seedOutputs);
       const browser = await chromium.launch({ executablePath: chromiumPath });
       try {
         const findings = await inspect(browser, {
           baseUrl,
-          learnerQuery: learnerQueryFrom(seedOutputs[0]),
-          routes: options.routes,
+          seed,
+          views: options.views,
           out: options.out,
           compare: options.compare,
         });
