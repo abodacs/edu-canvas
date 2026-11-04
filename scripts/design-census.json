@@ -1,302 +1,290 @@
 [
   {
     "page": "landing-signedout",
-    "url": "http://localhost:37899/",
+    "url": "http://localhost:41509/",
     "viewport": "1440x900",
-    "elements": 123,
-    "textBlocks": 44,
+    "elements": 319,
+    "textBlocks": 94,
     "color": {
       "oklch(0.235 0.028 65)": {
-        "count": 57,
-        "sample": "main.app-shell"
+        "count": 219,
+        "sample": "main.app-shell.landing"
       },
       "oklch(0.48 0.035 68)": {
-        "count": 25,
+        "count": 44,
         "sample": "span.brand-subtitle"
       },
       "oklch(0.965 0.018 86)": {
-        "count": 15,
+        "count": 20,
         "sample": "a.skip-link"
       },
-      "rgb(255, 255, 255)": {
-        "count": 10,
-        "sample": "a.btn.sm"
-      },
       "rgb(166, 75, 42)": {
-        "count": 10,
-        "sample": "svg.lucide.lucide-check"
+        "count": 13,
+        "sample": "a.text-link"
       },
-      "oklch(0.393875 0.083602 51.1272)": {
+      "rgb(255, 255, 255)": {
+        "count": 8,
+        "sample": "a.btn.lg"
+      },
+      "rgb(47, 107, 74)": {
         "count": 6,
-        "sample": "li.reveal__target.is-correct"
+        "sample": "span.pill"
+      },
+      "rgb(168, 50, 42)": {
+        "count": 4,
+        "sample": "span.pill"
+      },
+      "rgb(138, 90, 11)": {
+        "count": 3,
+        "sample": "span.pill"
+      },
+      "rgb(143, 63, 34)": {
+        "count": 2,
+        "sample": "span.who-does"
       }
     },
     "background": {
       "rgba(0, 0, 0, 0)": {
-        "count": 106,
-        "sample": "main.app-shell"
+        "count": 296,
+        "sample": "main.app-shell.landing"
+      },
+      "oklch(0.235 0.028 65)": {
+        "count": 4,
+        "sample": "a.skip-link"
       },
       "rgb(166, 75, 42)": {
         "count": 4,
-        "sample": "a.btn.sm"
+        "sample": "a.btn.lg"
       },
-      "oklch(0.235 0.028 65)": {
-        "count": 3,
-        "sample": "a.skip-link"
+      "oklch(0.965 0.018 86)": {
+        "count": 4,
+        "sample": "div.studio-bar"
       },
       "oklch(0.985 0.012 86)": {
         "count": 3,
         "sample": "a.btn.secondary"
       },
-      "oklch(0.920886 0.0291095 81.3777)": {
-        "count": 3,
-        "sample": "li.reveal__target.is-correct"
+      "rgb(242, 239, 233)": {
+        "count": 2,
+        "sample": "span.synthetic-marker.pill"
       },
-      "oklch(0.965 0.018 86)": {
-        "count": 1,
-        "sample": "li.reveal__target.is-distractor"
+      "rgb(227, 239, 231)": {
+        "count": 2,
+        "sample": "span.pill"
       },
-      "oklch(0.235 0.028 65 / 0.08)": {
-        "count": 1,
-        "sample": "div.reveal__equal-bar"
+      "rgb(247, 225, 222)": {
+        "count": 2,
+        "sample": "li.blocked"
       },
-      "oklch(0.9625 0.0279 83.3)": {
+      "rgb(248, 237, 214)": {
         "count": 1,
-        "sample": "section.metric"
+        "sample": "span.pill"
       },
-      "oklch(0.95272 0.0201966 82.7644)": {
+      "rgb(61, 74, 44)": {
         "count": 1,
-        "sample": "div.cta-final__inner"
+        "sample": "footer.site-foot"
       }
     },
     "borderColor": {
       "rgb(230, 225, 216)": {
-        "count": 8,
-        "sample": "figure.reveal"
+        "count": 7,
+        "sample": "figure.card.lift"
       },
-      "rgba(0, 0, 0, 0)": {
-        "count": 3,
-        "sample": "a.btn.sm"
-      },
-      "oklch(0.75625 0.0596162 39.7767)": {
-        "count": 3,
-        "sample": "li.reveal__target.is-correct"
+      "rgb(214, 207, 195)": {
+        "count": 7,
+        "sample": "ul.proof"
       },
       "rgb(147, 140, 128)": {
-        "count": 2,
+        "count": 3,
         "sample": "a.btn.secondary"
       },
-      "oklch(0.814347 0.0422466 39.7767)": {
-        "count": 1,
-        "sample": "div.cta-final__inner"
+      "rgba(0, 0, 0, 0)": {
+        "count": 2,
+        "sample": "a.btn.lg"
+      },
+      "rgb(166, 75, 42)": {
+        "count": 2,
+        "sample": "span.node"
       }
     },
     "radius": {
       "0px": {
-        "count": 106,
-        "sample": "main.app-shell"
-      },
-      "10px": {
-        "count": 7,
-        "sample": "a.btn.sm"
+        "count": 297,
+        "sample": "main.app-shell.landing"
       },
       "999px": {
-        "count": 6,
-        "sample": "li.reveal__target.is-correct"
+        "count": 10,
+        "sample": "span.synthetic-marker.pill"
       },
-      "14.4px": {
+      "10px": {
+        "count": 8,
+        "sample": "a"
+      },
+      "14px": {
         "count": 2,
-        "sample": "span.brand-mark"
+        "sample": "figure.card.lift"
       },
       "8px": {
         "count": 1,
         "sample": "a.skip-link"
       },
-      "14px": {
+      "14.4px": {
         "count": 1,
-        "sample": "div.cta-final__inner"
+        "sample": "span.brand-mark"
       }
     },
     "fontFamily": {
       "Figtree, \"Trebuchet MS\", \"Segoe UI\", system-ui, sans-serif": {
-        "count": 120,
+        "count": 274,
         "sample": "a.skip-link"
       },
       "\"Source Serif 4\", ui-serif, georgia, \"Times New Roman\", serif": {
-        "count": 3,
+        "count": 45,
         "sample": "h1.hero-headline"
       }
     },
     "fontSize": {
       "16px": {
-        "count": 68,
-        "sample": "main.app-shell"
-      },
-      "12.48px": {
-        "count": 18,
-        "sample": "span.brand-mark"
-      },
-      "11.52px": {
-        "count": 8,
-        "sample": "p.eyebrow"
-      },
-      "15.2px": {
-        "count": 7,
-        "sample": "p.reveal__why"
+        "count": 193,
+        "sample": "main.app-shell.landing"
       },
       "14px": {
-        "count": 6,
+        "count": 37,
         "sample": "a.skip-link"
       },
-      "11.84px": {
-        "count": 3,
-        "sample": "span.reveal__std"
+      "20px": {
+        "count": 35,
+        "sample": "p.lede"
       },
-      "11.2px": {
-        "count": 2,
-        "sample": "span.brand-subtitle"
+      "13px": {
+        "count": 18,
+        "sample": "p.fine"
       },
-      "12.8px": {
-        "count": 2,
-        "sample": "span.reveal__tag"
+      "12px": {
+        "count": 14,
+        "sample": "span.synthetic-marker.pill"
       },
-      "35.2px": {
-        "count": 2,
-        "sample": "strong.metric__cell-value"
+      "12.48px": {
+        "count": 7,
+        "sample": "span.brand-mark"
       },
       "43.2px": {
-        "count": 2,
-        "sample": "h2"
+        "count": 5,
+        "sample": "h2.sr-only"
+      },
+      "17px": {
+        "count": 4,
+        "sample": "h3"
+      },
+      "13.76px": {
+        "count": 3,
+        "sample": "a.text-link"
       },
       "52px": {
-        "count": 1,
+        "count": 2,
         "sample": "h1.hero-headline"
       },
-      "18.88px": {
+      "11.2px": {
         "count": 1,
-        "sample": "p.hero-description"
-      },
-      "14.72px": {
-        "count": 1,
-        "sample": "p.reveal__prompt"
-      },
-      "24px": {
-        "count": 1,
-        "sample": "span.reveal__source"
-      },
-      "12.16px": {
-        "count": 1,
-        "sample": "p.metric__note"
+        "sample": "span.brand-subtitle"
       }
     },
     "fontWeight": {
       "400": {
-        "count": 63,
-        "sample": "main.app-shell"
+        "count": 238,
+        "sample": "main.app-shell.landing"
       },
       "500": {
-        "count": 3,
-        "sample": "h1.hero-headline"
+        "count": 49,
+        "sample": "a"
       },
       "600": {
-        "count": 31,
+        "count": 21,
         "sample": "a.skip-link"
       },
       "700": {
-        "count": 11,
+        "count": 4,
         "sample": "span.brand-name"
       },
       "800": {
-        "count": 15,
+        "count": 7,
         "sample": "span.brand-mark"
       }
     },
     "lineHeight": {
       "24px": {
-        "count": 57,
-        "sample": "main.app-shell"
-      },
-      "18.72px": {
-        "count": 18,
-        "sample": "span.brand-mark"
-      },
-      "20px": {
-        "count": 15,
-        "sample": "a.btn.sm"
-      },
-      "17.28px": {
-        "count": 7,
-        "sample": "div.reveal__equal-labels"
-      },
-      "23.56px": {
-        "count": 6,
-        "sample": "span"
-      },
-      "17.76px": {
-        "count": 3,
-        "sample": "span.reveal__std"
-      },
-      "16.8px": {
-        "count": 2,
-        "sample": "span.brand-subtitle"
-      },
-      "19.2px": {
-        "count": 2,
-        "sample": "span.reveal__tag"
-      },
-      "52.8px": {
-        "count": 2,
-        "sample": "strong.metric__cell-value"
+        "count": 191,
+        "sample": "main.app-shell.landing"
       },
       "21px": {
-        "count": 1,
+        "count": 36,
         "sample": "a.skip-link"
       },
-      "14.976px": {
-        "count": 1,
-        "sample": "p.eyebrow"
+      "26px": {
+        "count": 19,
+        "sample": "q"
       },
-      "53.56px": {
-        "count": 1,
+      "19.5px": {
+        "count": 17,
+        "sample": "p.fine"
+      },
+      "18px": {
+        "count": 14,
+        "sample": "span.synthetic-marker.pill"
+      },
+      "20px": {
+        "count": 10,
+        "sample": "a.btn.secondary"
+      },
+      "25px": {
+        "count": 8,
+        "sample": "b"
+      },
+      "18.72px": {
+        "count": 7,
+        "sample": "span.brand-mark"
+      },
+      "22.1px": {
+        "count": 4,
+        "sample": "h3"
+      },
+      "19.264px": {
+        "count": 3,
+        "sample": "a.text-link"
+      },
+      "47.52px": {
+        "count": 3,
+        "sample": "h2"
+      },
+      "54.6px": {
+        "count": 2,
         "sample": "h1.hero-headline"
       },
-      "31.152px": {
+      "16.8px": {
         "count": 1,
-        "sample": "p.hero-description"
+        "sample": "span.brand-subtitle"
       },
-      "22.08px": {
+      "32px": {
         "count": 1,
-        "sample": "p.reveal__prompt"
-      },
-      "36px": {
-        "count": 1,
-        "sample": "span.reveal__source"
-      },
-      "22.8px": {
-        "count": 1,
-        "sample": "p.reveal__why"
-      },
-      "18.24px": {
-        "count": 1,
-        "sample": "p.metric__note"
+        "sample": "p.lede"
       },
       "43.2px": {
         "count": 1,
-        "sample": "h2"
+        "sample": "h2.sr-only"
+      },
+      "13px": {
+        "count": 1,
+        "sample": "span.std-code"
       },
       "45.36px": {
         "count": 1,
         "sample": "h2"
-      },
-      "25.6px": {
-        "count": 1,
-        "sample": "p.cta-final__sub"
       }
     },
     "boxShadow": {
-      "oklch(0.235 0.028 65 / 0.06) 0px 1px 0px 0px": {
-        "count": 1,
-        "sample": "figure.reveal"
+      "rgba(31, 29, 26, 0.04) 0px 1px 2px 0px, rgba(31, 29, 26, 0.1) 0px 8px 24px -12px": {
+        "count": 2,
+        "sample": "figure.card.lift"
       }
     },
     "text": [
@@ -322,592 +310,930 @@
         "weight": "400"
       },
       {
-        "text": "Sign in",
-        "color": "rgb(255, 255, 255)",
-        "background": "rgb(166, 75, 42)",
+        "text": "How it works",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
         "size": "14px",
-        "weight": "600"
+        "weight": "500"
       },
       {
-        "text": "Create account",
+        "text": "What’s checked",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "500"
+      },
+      {
+        "text": "Questions",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "500"
+      },
+      {
+        "text": "Sign in",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "14px",
-        "weight": "600"
+        "weight": "500"
       },
       {
-        "text": "Built for teachers",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "11.52px",
-        "weight": "800"
-      },
-      {
-        "text": "Turn one sentence into a lesson your students understand.",
+        "text": "Turn one learning objective into a lesson your students   .",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.965 0.018 86)",
         "size": "52px",
         "weight": "500"
       },
       {
-        "text": "Type a learning objective in English or Arabic. Approve four variants on one scr",
+        "text": "understand",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "52px",
+        "weight": "500"
+      },
+      {
+        "text": "For Grades 3–6 teachers. Write one objective, get four lesson variants checked a",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "400"
+      },
+      {
+        "text": "Create a teacher account",
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(166, 75, 42)",
+        "size": "16px",
+        "weight": "600"
+      },
+      {
+        "text": "See how it works",
+        "color": "rgb(166, 75, 42)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "13.76px",
+        "weight": "700"
+      },
+      {
+        "text": "Grade 4 equivalent fractions today · English",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
-        "size": "18.88px",
+        "size": "13px",
+        "weight": "400"
+      },
+      {
+        "text": "Studio illustration",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "43.2px",
+        "weight": "500"
+      },
+      {
+        "text": "Studio",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "13px",
+        "weight": "600"
+      },
+      {
+        "text": "· New lesson",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "13px",
+        "weight": "400"
+      },
+      {
+        "text": "Illustration · synthetic data",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "rgb(242, 239, 233)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Your objective",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "13px",
+        "weight": "600"
+      },
+      {
+        "text": "Students explain why 2/4 and 1/2 name the same amount using fraction models.",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "4.NF.A.1",
+        "color": "oklch(0.965 0.018 86)",
+        "background": "oklch(0.235 0.028 65)",
+        "size": "13px",
+        "weight": "600"
+      },
+      {
+        "text": "Grounded in Learning Commons",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "13px",
+        "weight": "400"
+      },
+      {
+        "text": "A · Worked example",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Same bar, cut two ways",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "17px",
+        "weight": "500"
+      },
+      {
+        "text": "Ready to review",
+        "color": "rgb(47, 107, 74)",
+        "background": "rgb(227, 239, 231)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "B · Guided activity",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Slide to make an equal share",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "17px",
+        "weight": "500"
+      },
+      {
+        "text": "Ready · 1 warning",
+        "color": "rgb(138, 90, 11)",
+        "background": "rgb(248, 237, 214)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "C · Independent check",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "rgb(247, 225, 222)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Answer key didn’t match the diagram",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "rgb(247, 225, 222)",
+        "size": "17px",
+        "weight": "500"
+      },
+      {
+        "text": "Not shown to students",
+        "color": "rgb(168, 50, 42)",
+        "background": "rgb(247, 225, 222)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "D · Matching",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Pair each fraction with its twin",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "17px",
+        "weight": "500"
+      },
+      {
+        "text": "Ready to review",
+        "color": "rgb(47, 107, 74)",
+        "background": "rgb(227, 239, 231)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "3 ready to review · 1 warning to acknowledge · 1 blocked before you saw it",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Open review",
+        "color": "oklch(0.965 0.018 86)",
+        "background": "oklch(0.235 0.028 65)",
+        "size": "14px",
+        "weight": "600"
+      },
+      {
+        "text": "Every draft is matched to the standard it claims.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Common Core 4.NF.A.1",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Each generation stores the source it used. CC BY 4.0.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Learning Commons sources",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Unsafe drafts are blocked before you preview them.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "A safety gate, not a promise",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Students can't see the key or submit their own score.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Answers stay on the server",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "One loop, and you decide at every turn.",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "43.2px",
+        "weight": "500"
+      },
+      {
+        "text": "You write the objective",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Plain words and a grade. Add your own source file if you want.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Your call",
+        "color": "rgb(143, 63, 34)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Scholé drafts and checks",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Four variants, checked for structure, curriculum fit and safety before you see t",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Automatic",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "You review and approve",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Edit one section at a time. An approved version never changes.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Your call",
+        "color": "rgb(143, 63, 34)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Your student practises",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "One focused activity, graded on the server, with a reason for what comes next.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "After you publish",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Less time drafting. Every decision explained.",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "43.2px",
+        "weight": "500"
+      },
+      {
+        "text": "Your evening back",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Start from four checked drafts instead of a blank page. We're aiming for about t",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "A reason for every step",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Each lesson shows what comes before it, what comes next, and why, so you can exp",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Nothing slips past you",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Warnings stay visible until you acknowledge them. Students only ever see a versi",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Checks on variant C",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Illustration",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "rgb(242, 239, 233)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Structure fits the lesson format",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Every section present and in order",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "13px",
+        "weight": "400"
+      },
+      {
+        "text": "Matches 4.NF.A.1",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Source: Learning Commons snapshot",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "13px",
+        "weight": "400"
+      },
+      {
+        "text": "Prerequisite gap: unit fractions",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Shown to you, not hidden",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "13px",
+        "weight": "400"
+      },
+      {
+        "text": "Answer key didn't match the diagram",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Blocked. This draft will never reach a student.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "13px",
+        "weight": "400"
+      },
+      {
+        "text": "Questions teachers ask first",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "43.2px",
+        "weight": "500"
+      },
+      {
+        "text": "What can I teach with it today?",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Grade 4 equivalent fractions (Common Core 4.NF.A.1), in English. We'd rather do ",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "16px",
+        "weight": "400"
+      },
+      {
+        "text": "Can I change what it writes?",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Yes. Edit any section, or reject a variant entirely. Each edit makes a new versi",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "16px",
+        "weight": "400"
+      },
+      {
+        "text": "What if a draft is wrong?",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Drafts that fail a check are blocked before you preview them. Anything less seri",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "16px",
+        "weight": "400"
+      },
+      {
+        "text": "Does student data go to the AI?",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "No student names or images reach the model. For now Scholé runs on synthetic dat",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "16px",
+        "weight": "400"
+      },
+      {
+        "text": "What does it cost?",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Pricing isn't decided yet. When it is, it will be published here before launch.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "16px",
+        "weight": "400"
+      },
+      {
+        "text": "Do my students need an account?",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "A student opens the link you assign and does one focused activity. The answers a",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "16px",
+        "weight": "400"
+      },
+      {
+        "text": "Bring tomorrow’s objective.",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "43.2px",
+        "weight": "500"
+      },
+      {
+        "text": "One sentence is enough. You review four checked variants, and nothing reaches a ",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "16px",
+        "weight": "400"
+      },
+      {
+        "text": "Create a teacher account",
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(166, 75, 42)",
+        "size": "16px",
+        "weight": "600"
+      },
+      {
+        "text": "Already have one?",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "13px",
         "weight": "400"
       },
       {
         "text": "Sign in",
-        "color": "rgb(255, 255, 255)",
-        "background": "rgb(166, 75, 42)",
-        "size": "16px",
-        "weight": "600"
-      },
-      {
-        "text": "Create a teacher account",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "16px",
-        "weight": "600"
-      },
-      {
-        "text": "Equivalent fractions",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "12.8px",
-        "weight": "700"
-      },
-      {
-        "text": "Grade 4 · 4.NF.A.1",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "11.84px",
-        "weight": "400"
-      },
-      {
-        "text": "Choose every fraction that names the same part of a whole.",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "14.72px",
-        "weight": "400"
-      },
-      {
-        "text": "Source",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "11.2px",
-        "weight": "700"
-      },
-      {
-        "text": "1/2",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "24px",
-        "weight": "700"
-      },
-      {
-        "text": "2/4",
-        "color": "oklch(0.393875 0.083602 51.1272)",
-        "background": "oklch(0.920886 0.0291095 81.3777)",
-        "size": "16px",
-        "weight": "600"
-      },
-      {
-        "text": "3/6",
-        "color": "oklch(0.393875 0.083602 51.1272)",
-        "background": "oklch(0.920886 0.0291095 81.3777)",
-        "size": "16px",
-        "weight": "600"
-      },
-      {
-        "text": "4/8",
-        "color": "oklch(0.393875 0.083602 51.1272)",
-        "background": "oklch(0.920886 0.0291095 81.3777)",
-        "size": "16px",
-        "weight": "600"
-      },
-      {
-        "text": "2/3",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "600"
-      },
-      {
-        "text": "1/2",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "11.52px",
+        "size": "13px",
         "weight": "400"
-      },
-      {
-        "text": "2/4",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "11.52px",
-        "weight": "400"
-      },
-      {
-        "text": "3/6",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "11.52px",
-        "weight": "400"
-      },
-      {
-        "text": "4/8",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "11.52px",
-        "weight": "400"
-      },
-      {
-        "text": "Same portion of the whole",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "11.52px",
-        "weight": "400"
-      },
-      {
-        "text": "Different names, same amount.",
-        "color": "rgb(166, 75, 42)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "15.2px",
-        "weight": "600"
-      },
-      {
-        "text": "Illustration of the seeded curriculum. Synthetic data only.",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "11.52px",
-        "weight": "400"
-      },
-      {
-        "text": "Less prep. More teaching.",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.9625 0.0279 83.3)",
-        "size": "12.8px",
-        "weight": "700"
-      },
-      {
-        "text": "Today",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.9625 0.0279 83.3)",
-        "size": "11.84px",
-        "weight": "400"
-      },
-      {
-        "text": "≈ 30 min",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.9625 0.0279 83.3)",
-        "size": "35.2px",
-        "weight": "700"
-      },
-      {
-        "text": "With Scholé",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.9625 0.0279 83.3)",
-        "size": "11.84px",
-        "weight": "400"
-      },
-      {
-        "text": "≈ 3 min",
-        "color": "rgb(166, 75, 42)",
-        "background": "oklch(0.9625 0.0279 83.3)",
-        "size": "35.2px",
-        "weight": "700"
-      },
-      {
-        "text": "Target metric. Median time, prompt to approved pack.",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.9625 0.0279 83.3)",
-        "size": "12.16px",
-        "weight": "400"
-      },
-      {
-        "text": "You stay in charge.",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "43.2px",
-        "weight": "500"
-      },
-      {
-        "text": "before any student sees it.",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "15.2px",
-        "weight": "400"
-      },
-      {
-        "text": "You approve every variant",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "15.2px",
-        "weight": "700"
-      },
-      {
-        "text": "Students can’t submit a score.",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "15.2px",
-        "weight": "400"
-      },
-      {
-        "text": "The answer key stays on the server.",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "15.2px",
-        "weight": "700"
-      },
-      {
-        "text": "reach the model.",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "15.2px",
-        "weight": "400"
-      },
-      {
-        "text": "No student images or names",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "15.2px",
-        "weight": "700"
-      },
-      {
-        "text": "Draft your first lesson in minutes.",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.95272 0.0201966 82.7644)",
-        "size": "43.2px",
-        "weight": "500"
-      },
-      {
-        "text": "One prompt. Four variants you approve. A student gets the idea.",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.95272 0.0201966 82.7644)",
-        "size": "16px",
-        "weight": "400"
-      },
-      {
-        "text": "Create a teacher account",
-        "color": "rgb(255, 255, 255)",
-        "background": "rgb(166, 75, 42)",
-        "size": "16px",
-        "weight": "600"
       },
       {
         "text": "Scholé",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "700"
+        "color": "oklch(0.965 0.018 86)",
+        "background": "rgb(61, 74, 44)",
+        "size": "20px",
+        "weight": "500"
       },
       {
-        "text": "Synthetic fixture data only. Lesson drafts by Meta Muse Spark.",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "12.48px",
+        "text": "Grades 3–6 · Grade 4 equivalent fractions today",
+        "color": "oklch(0.965 0.018 86)",
+        "background": "rgb(61, 74, 44)",
+        "size": "13px",
+        "weight": "400"
+      },
+      {
+        "text": "Standards from Learning Commons (CC BY 4.0) · Synthetic data only",
+        "color": "oklch(0.965 0.018 86)",
+        "background": "rgb(61, 74, 44)",
+        "size": "13px",
         "weight": "400"
       }
     ]
   },
   {
     "page": "landing-phone",
-    "url": "http://localhost:37899/",
+    "url": "http://localhost:41509/",
     "viewport": "390x844",
-    "elements": 123,
-    "textBlocks": 44,
+    "elements": 294,
+    "textBlocks": 90,
     "color": {
       "oklch(0.235 0.028 65)": {
-        "count": 57,
-        "sample": "main.app-shell"
+        "count": 194,
+        "sample": "main.app-shell.landing"
       },
       "oklch(0.48 0.035 68)": {
-        "count": 25,
+        "count": 44,
         "sample": "span.brand-subtitle"
       },
       "oklch(0.965 0.018 86)": {
-        "count": 15,
+        "count": 20,
         "sample": "a.skip-link"
       },
-      "rgb(255, 255, 255)": {
-        "count": 10,
-        "sample": "a.btn.sm"
-      },
       "rgb(166, 75, 42)": {
-        "count": 10,
-        "sample": "svg.lucide.lucide-check"
+        "count": 13,
+        "sample": "a.text-link"
       },
-      "oklch(0.393875 0.083602 51.1272)": {
+      "rgb(255, 255, 255)": {
+        "count": 8,
+        "sample": "a.btn.lg"
+      },
+      "rgb(47, 107, 74)": {
         "count": 6,
-        "sample": "li.reveal__target.is-correct"
+        "sample": "span.pill"
+      },
+      "rgb(168, 50, 42)": {
+        "count": 4,
+        "sample": "span.pill"
+      },
+      "rgb(138, 90, 11)": {
+        "count": 3,
+        "sample": "span.pill"
+      },
+      "rgb(143, 63, 34)": {
+        "count": 2,
+        "sample": "span.who-does"
       }
     },
     "background": {
       "rgba(0, 0, 0, 0)": {
-        "count": 106,
-        "sample": "main.app-shell"
+        "count": 271,
+        "sample": "main.app-shell.landing"
+      },
+      "oklch(0.235 0.028 65)": {
+        "count": 4,
+        "sample": "a.skip-link"
       },
       "rgb(166, 75, 42)": {
         "count": 4,
-        "sample": "a.btn.sm"
+        "sample": "a.btn.lg"
       },
-      "oklch(0.235 0.028 65)": {
-        "count": 3,
-        "sample": "a.skip-link"
+      "oklch(0.965 0.018 86)": {
+        "count": 4,
+        "sample": "div.studio-bar"
       },
       "oklch(0.985 0.012 86)": {
         "count": 3,
         "sample": "a.btn.secondary"
       },
-      "oklch(0.920886 0.0291095 81.3777)": {
-        "count": 3,
-        "sample": "li.reveal__target.is-correct"
+      "rgb(242, 239, 233)": {
+        "count": 2,
+        "sample": "span.synthetic-marker.pill"
       },
-      "oklch(0.965 0.018 86)": {
-        "count": 1,
-        "sample": "li.reveal__target.is-distractor"
+      "rgb(227, 239, 231)": {
+        "count": 2,
+        "sample": "span.pill"
       },
-      "oklch(0.235 0.028 65 / 0.08)": {
-        "count": 1,
-        "sample": "div.reveal__equal-bar"
+      "rgb(247, 225, 222)": {
+        "count": 2,
+        "sample": "li.blocked"
       },
-      "oklch(0.9625 0.0279 83.3)": {
+      "rgb(248, 237, 214)": {
         "count": 1,
-        "sample": "section.metric"
+        "sample": "span.pill"
       },
-      "oklch(0.95272 0.0201966 82.7644)": {
+      "rgb(61, 74, 44)": {
         "count": 1,
-        "sample": "div.cta-final__inner"
+        "sample": "footer.site-foot"
       }
     },
     "borderColor": {
       "rgb(230, 225, 216)": {
-        "count": 8,
-        "sample": "figure.reveal"
+        "count": 13,
+        "sample": "figure.card.lift"
       },
-      "rgba(0, 0, 0, 0)": {
-        "count": 3,
-        "sample": "a.btn.sm"
-      },
-      "oklch(0.75625 0.0596162 39.7767)": {
-        "count": 3,
-        "sample": "li.reveal__target.is-correct"
+      "rgb(214, 207, 195)": {
+        "count": 7,
+        "sample": "ul.proof"
       },
       "rgb(147, 140, 128)": {
-        "count": 2,
+        "count": 3,
         "sample": "a.btn.secondary"
       },
-      "oklch(0.814347 0.0422466 39.7767)": {
-        "count": 1,
-        "sample": "div.cta-final__inner"
+      "rgba(0, 0, 0, 0)": {
+        "count": 2,
+        "sample": "a.btn.lg"
+      },
+      "rgb(166, 75, 42)": {
+        "count": 2,
+        "sample": "span.node"
       }
     },
     "radius": {
       "0px": {
-        "count": 106,
-        "sample": "main.app-shell"
-      },
-      "10px": {
-        "count": 7,
-        "sample": "a.btn.sm"
+        "count": 275,
+        "sample": "main.app-shell.landing"
       },
       "999px": {
-        "count": 6,
-        "sample": "li.reveal__target.is-correct"
+        "count": 10,
+        "sample": "span.synthetic-marker.pill"
       },
-      "14.4px": {
+      "10px": {
+        "count": 5,
+        "sample": "a.btn.secondary"
+      },
+      "14px": {
         "count": 2,
-        "sample": "span.brand-mark"
+        "sample": "figure.card.lift"
       },
       "8px": {
         "count": 1,
         "sample": "a.skip-link"
       },
-      "14px": {
+      "14.4px": {
         "count": 1,
-        "sample": "div.cta-final__inner"
+        "sample": "span.brand-mark"
       }
     },
     "fontFamily": {
       "Figtree, \"Trebuchet MS\", \"Segoe UI\", system-ui, sans-serif": {
-        "count": 120,
+        "count": 249,
         "sample": "a.skip-link"
       },
       "\"Source Serif 4\", ui-serif, georgia, \"Times New Roman\", serif": {
-        "count": 3,
+        "count": 45,
         "sample": "h1.hero-headline"
       }
     },
     "fontSize": {
       "16px": {
-        "count": 69,
-        "sample": "main.app-shell"
+        "count": 172,
+        "sample": "main.app-shell.landing"
       },
-      "12.48px": {
-        "count": 18,
-        "sample": "span.brand-mark"
-      },
-      "11.52px": {
-        "count": 8,
-        "sample": "p.eyebrow"
-      },
-      "15.2px": {
-        "count": 7,
-        "sample": "p.reveal__why"
+      "20px": {
+        "count": 35,
+        "sample": "p.lede"
       },
       "14px": {
-        "count": 6,
+        "count": 34,
         "sample": "a.skip-link"
       },
-      "11.84px": {
-        "count": 3,
-        "sample": "span.reveal__std"
+      "13px": {
+        "count": 17,
+        "sample": "p.fine"
       },
-      "11.2px": {
-        "count": 2,
-        "sample": "span.brand-subtitle"
+      "12px": {
+        "count": 14,
+        "sample": "span.synthetic-marker.pill"
       },
-      "12.8px": {
-        "count": 2,
-        "sample": "span.reveal__tag"
-      },
-      "25.6px": {
-        "count": 2,
-        "sample": "strong.metric__cell-value"
-      },
-      "32px": {
-        "count": 1,
-        "sample": "h1.hero-headline"
-      },
-      "14.72px": {
-        "count": 1,
-        "sample": "p.reveal__prompt"
-      },
-      "24px": {
-        "count": 1,
-        "sample": "span.reveal__source"
-      },
-      "12.16px": {
-        "count": 1,
-        "sample": "p.metric__note"
+      "12.48px": {
+        "count": 7,
+        "sample": "span.brand-mark"
       },
       "28px": {
-        "count": 1,
-        "sample": "h2"
+        "count": 5,
+        "sample": "h2.sr-only"
       },
-      "28.8px": {
+      "17px": {
+        "count": 4,
+        "sample": "h3"
+      },
+      "13.76px": {
+        "count": 3,
+        "sample": "a.text-link"
+      },
+      "36px": {
+        "count": 2,
+        "sample": "h1.hero-headline"
+      },
+      "11.2px": {
         "count": 1,
-        "sample": "h2"
+        "sample": "span.brand-subtitle"
       }
     },
     "fontWeight": {
       "400": {
-        "count": 63,
-        "sample": "main.app-shell"
+        "count": 216,
+        "sample": "main.app-shell.landing"
       },
       "500": {
-        "count": 3,
-        "sample": "h1.hero-headline"
+        "count": 46,
+        "sample": "a.btn.secondary"
       },
       "600": {
-        "count": 31,
+        "count": 21,
         "sample": "a.skip-link"
       },
       "700": {
-        "count": 11,
+        "count": 4,
         "sample": "span.brand-name"
       },
       "800": {
-        "count": 15,
+        "count": 7,
         "sample": "span.brand-mark"
       }
     },
     "lineHeight": {
       "24px": {
-        "count": 57,
-        "sample": "main.app-shell"
-      },
-      "18.72px": {
-        "count": 18,
-        "sample": "span.brand-mark"
-      },
-      "20px": {
-        "count": 15,
-        "sample": "a.btn.sm"
-      },
-      "17.28px": {
-        "count": 7,
-        "sample": "div.reveal__equal-labels"
-      },
-      "23.56px": {
-        "count": 6,
-        "sample": "span"
-      },
-      "17.76px": {
-        "count": 3,
-        "sample": "span.reveal__std"
-      },
-      "16.8px": {
-        "count": 2,
-        "sample": "span.brand-subtitle"
-      },
-      "19.2px": {
-        "count": 2,
-        "sample": "span.reveal__tag"
-      },
-      "38.4px": {
-        "count": 2,
-        "sample": "strong.metric__cell-value"
+        "count": 170,
+        "sample": "main.app-shell.landing"
       },
       "21px": {
-        "count": 1,
+        "count": 33,
         "sample": "a.skip-link"
       },
-      "14.976px": {
-        "count": 1,
-        "sample": "p.eyebrow"
+      "26px": {
+        "count": 19,
+        "sample": "q"
       },
-      "32.96px": {
-        "count": 1,
+      "19.5px": {
+        "count": 16,
+        "sample": "p.fine"
+      },
+      "18px": {
+        "count": 14,
+        "sample": "span.synthetic-marker.pill"
+      },
+      "20px": {
+        "count": 10,
+        "sample": "a.btn.secondary"
+      },
+      "25px": {
+        "count": 8,
+        "sample": "b"
+      },
+      "18.72px": {
+        "count": 7,
+        "sample": "span.brand-mark"
+      },
+      "22.1px": {
+        "count": 4,
+        "sample": "h3"
+      },
+      "19.264px": {
+        "count": 3,
+        "sample": "a.text-link"
+      },
+      "30.8px": {
+        "count": 3,
+        "sample": "h2"
+      },
+      "37.8px": {
+        "count": 2,
         "sample": "h1.hero-headline"
       },
-      "26.4px": {
+      "16.8px": {
         "count": 1,
-        "sample": "p.hero-description"
+        "sample": "span.brand-subtitle"
       },
-      "22.08px": {
+      "32px": {
         "count": 1,
-        "sample": "p.reveal__prompt"
-      },
-      "36px": {
-        "count": 1,
-        "sample": "span.reveal__source"
-      },
-      "22.8px": {
-        "count": 1,
-        "sample": "p.reveal__why"
-      },
-      "18.24px": {
-        "count": 1,
-        "sample": "p.metric__note"
+        "sample": "p.lede"
       },
       "28px": {
         "count": 1,
-        "sample": "h2"
+        "sample": "h2.sr-only"
       },
-      "30.24px": {
+      "13px": {
+        "count": 1,
+        "sample": "span.std-code"
+      },
+      "29.4px": {
         "count": 1,
         "sample": "h2"
-      },
-      "25.6px": {
-        "count": 1,
-        "sample": "p.cta-final__sub"
       }
     },
     "boxShadow": {
-      "oklch(0.235 0.028 65 / 0.06) 0px 1px 0px 0px": {
-        "count": 1,
-        "sample": "figure.reveal"
+      "rgba(31, 29, 26, 0.04) 0px 1px 2px 0px, rgba(31, 29, 26, 0.1) 0px 8px 24px -12px": {
+        "count": 2,
+        "sample": "figure.card.lift"
       }
     },
     "text": [
@@ -934,267 +1260,568 @@
       },
       {
         "text": "Sign in",
-        "color": "rgb(255, 255, 255)",
-        "background": "rgb(166, 75, 42)",
-        "size": "14px",
-        "weight": "600"
-      },
-      {
-        "text": "Create account",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "14px",
-        "weight": "600"
-      },
-      {
-        "text": "Built for teachers",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "11.52px",
-        "weight": "800"
-      },
-      {
-        "text": "Turn one sentence into a lesson your students understand.",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "32px",
         "weight": "500"
       },
       {
-        "text": "Type a learning objective in English or Arabic. Approve four variants on one scr",
-        "color": "oklch(0.48 0.035 68)",
+        "text": "Turn one learning objective into a lesson your students   .",
+        "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
+        "size": "36px",
+        "weight": "500"
+      },
+      {
+        "text": "understand",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "36px",
+        "weight": "500"
+      },
+      {
+        "text": "For Grades 3–6 teachers. Write one objective, get four lesson variants checked a",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
         "weight": "400"
       },
       {
-        "text": "Sign in",
+        "text": "Create a teacher account",
         "color": "rgb(255, 255, 255)",
         "background": "rgb(166, 75, 42)",
         "size": "16px",
         "weight": "600"
       },
       {
-        "text": "Create a teacher account",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "16px",
-        "weight": "600"
-      },
-      {
-        "text": "Equivalent fractions",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "12.8px",
+        "text": "See how it works",
+        "color": "rgb(166, 75, 42)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "13.76px",
         "weight": "700"
       },
       {
-        "text": "Grade 4 · 4.NF.A.1",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "11.84px",
-        "weight": "400"
-      },
-      {
-        "text": "Choose every fraction that names the same part of a whole.",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "14.72px",
-        "weight": "400"
-      },
-      {
-        "text": "Source",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "11.2px",
-        "weight": "700"
-      },
-      {
-        "text": "1/2",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "24px",
-        "weight": "700"
-      },
-      {
-        "text": "2/4",
-        "color": "oklch(0.393875 0.083602 51.1272)",
-        "background": "oklch(0.920886 0.0291095 81.3777)",
-        "size": "16px",
-        "weight": "600"
-      },
-      {
-        "text": "3/6",
-        "color": "oklch(0.393875 0.083602 51.1272)",
-        "background": "oklch(0.920886 0.0291095 81.3777)",
-        "size": "16px",
-        "weight": "600"
-      },
-      {
-        "text": "4/8",
-        "color": "oklch(0.393875 0.083602 51.1272)",
-        "background": "oklch(0.920886 0.0291095 81.3777)",
-        "size": "16px",
-        "weight": "600"
-      },
-      {
-        "text": "2/3",
+        "text": "Grade 4 equivalent fractions today · English",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
+        "size": "13px",
+        "weight": "400"
+      },
+      {
+        "text": "Studio illustration",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "28px",
+        "weight": "500"
+      },
+      {
+        "text": "Studio",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "13px",
         "weight": "600"
       },
       {
-        "text": "1/2",
+        "text": "Illustration · synthetic data",
         "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "11.52px",
-        "weight": "400"
-      },
-      {
-        "text": "2/4",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "11.52px",
-        "weight": "400"
-      },
-      {
-        "text": "3/6",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "11.52px",
-        "weight": "400"
-      },
-      {
-        "text": "4/8",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "11.52px",
-        "weight": "400"
-      },
-      {
-        "text": "Same portion of the whole",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "11.52px",
-        "weight": "400"
-      },
-      {
-        "text": "Different names, same amount.",
-        "color": "rgb(166, 75, 42)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "15.2px",
+        "background": "rgb(242, 239, 233)",
+        "size": "12px",
         "weight": "600"
       },
       {
-        "text": "Illustration of the seeded curriculum. Synthetic data only.",
+        "text": "Your objective",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "11.52px",
-        "weight": "400"
+        "size": "13px",
+        "weight": "600"
       },
       {
-        "text": "Less prep. More teaching.",
+        "text": "Students explain why 2/4 and 1/2 name the same amount using fraction models.",
         "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.9625 0.0279 83.3)",
-        "size": "12.8px",
-        "weight": "700"
+        "background": "oklch(0.985 0.012 86)",
+        "size": "20px",
+        "weight": "500"
       },
       {
-        "text": "Today",
+        "text": "4.NF.A.1",
+        "color": "oklch(0.965 0.018 86)",
+        "background": "oklch(0.235 0.028 65)",
+        "size": "13px",
+        "weight": "600"
+      },
+      {
+        "text": "Grounded in Learning Commons",
         "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.9625 0.0279 83.3)",
-        "size": "11.84px",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "13px",
         "weight": "400"
       },
       {
-        "text": "≈ 30 min",
+        "text": "A · Worked example",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Same bar, cut two ways",
         "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.9625 0.0279 83.3)",
-        "size": "25.6px",
-        "weight": "700"
+        "background": "oklch(0.985 0.012 86)",
+        "size": "17px",
+        "weight": "500"
       },
       {
-        "text": "With Scholé",
+        "text": "Ready to review",
+        "color": "rgb(47, 107, 74)",
+        "background": "rgb(227, 239, 231)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "B · Guided activity",
         "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.9625 0.0279 83.3)",
-        "size": "11.84px",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Slide to make an equal share",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "17px",
+        "weight": "500"
+      },
+      {
+        "text": "Ready · 1 warning",
+        "color": "rgb(138, 90, 11)",
+        "background": "rgb(248, 237, 214)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "C · Independent check",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "rgb(247, 225, 222)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Answer key didn’t match the diagram",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "rgb(247, 225, 222)",
+        "size": "17px",
+        "weight": "500"
+      },
+      {
+        "text": "Not shown to students",
+        "color": "rgb(168, 50, 42)",
+        "background": "rgb(247, 225, 222)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "D · Matching",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Pair each fraction with its twin",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "17px",
+        "weight": "500"
+      },
+      {
+        "text": "Ready to review",
+        "color": "rgb(47, 107, 74)",
+        "background": "rgb(227, 239, 231)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "3 ready to review · 1 warning to acknowledge · 1 blocked before you saw it",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
         "weight": "400"
       },
       {
-        "text": "≈ 3 min",
-        "color": "rgb(166, 75, 42)",
-        "background": "oklch(0.9625 0.0279 83.3)",
-        "size": "25.6px",
-        "weight": "700"
+        "text": "Open review",
+        "color": "oklch(0.965 0.018 86)",
+        "background": "oklch(0.235 0.028 65)",
+        "size": "14px",
+        "weight": "600"
       },
       {
-        "text": "Target metric. Median time, prompt to approved pack.",
+        "text": "Every draft is matched to the standard it claims.",
         "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.9625 0.0279 83.3)",
-        "size": "12.16px",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
         "weight": "400"
       },
       {
-        "text": "You stay in charge.",
+        "text": "Common Core 4.NF.A.1",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Each generation stores the source it used. CC BY 4.0.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Learning Commons sources",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Unsafe drafts are blocked before you preview them.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "A safety gate, not a promise",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Students can't see the key or submit their own score.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Answers stay on the server",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "One loop, and you decide at every turn.",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.965 0.018 86)",
         "size": "28px",
         "weight": "500"
       },
       {
-        "text": "before any student sees it.",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "15.2px",
-        "weight": "400"
-      },
-      {
-        "text": "You approve every variant",
+        "text": "You write the objective",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.965 0.018 86)",
-        "size": "15.2px",
-        "weight": "700"
-      },
-      {
-        "text": "Students can’t submit a score.",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "15.2px",
-        "weight": "400"
-      },
-      {
-        "text": "The answer key stays on the server.",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "15.2px",
-        "weight": "700"
-      },
-      {
-        "text": "reach the model.",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "15.2px",
-        "weight": "400"
-      },
-      {
-        "text": "No student images or names",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "15.2px",
-        "weight": "700"
-      },
-      {
-        "text": "Draft your first lesson in minutes.",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.95272 0.0201966 82.7644)",
-        "size": "28.8px",
+        "size": "20px",
         "weight": "500"
       },
       {
-        "text": "One prompt. Four variants you approve. A student gets the idea.",
+        "text": "Plain words and a grade. Add your own source file if you want.",
         "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.95272 0.0201966 82.7644)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Your call",
+        "color": "rgb(143, 63, 34)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Scholé drafts and checks",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Four variants, checked for structure, curriculum fit and safety before you see t",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Automatic",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "You review and approve",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Edit one section at a time. An approved version never changes.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Your call",
+        "color": "rgb(143, 63, 34)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Your student practises",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "One focused activity, graded on the server, with a reason for what comes next.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "After you publish",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Less time drafting. Every decision explained.",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "28px",
+        "weight": "500"
+      },
+      {
+        "text": "Your evening back",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Start from four checked drafts instead of a blank page. We're aiming for about t",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "A reason for every step",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Each lesson shows what comes before it, what comes next, and why, so you can exp",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Nothing slips past you",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Warnings stay visible until you acknowledge them. Students only ever see a versi",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Checks on variant C",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Illustration",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "rgb(242, 239, 233)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Structure fits the lesson format",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Every section present and in order",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "13px",
+        "weight": "400"
+      },
+      {
+        "text": "Matches 4.NF.A.1",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Source: Learning Commons snapshot",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "13px",
+        "weight": "400"
+      },
+      {
+        "text": "Prerequisite gap: unit fractions",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Shown to you, not hidden",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "13px",
+        "weight": "400"
+      },
+      {
+        "text": "Answer key didn't match the diagram",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Blocked. This draft will never reach a student.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "13px",
+        "weight": "400"
+      },
+      {
+        "text": "Questions teachers ask first",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "28px",
+        "weight": "500"
+      },
+      {
+        "text": "What can I teach with it today?",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Grade 4 equivalent fractions (Common Core 4.NF.A.1), in English. We'd rather do ",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "16px",
+        "weight": "400"
+      },
+      {
+        "text": "Can I change what it writes?",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Yes. Edit any section, or reject a variant entirely. Each edit makes a new versi",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "16px",
+        "weight": "400"
+      },
+      {
+        "text": "What if a draft is wrong?",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Drafts that fail a check are blocked before you preview them. Anything less seri",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "16px",
+        "weight": "400"
+      },
+      {
+        "text": "Does student data go to the AI?",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "No student names or images reach the model. For now Scholé runs on synthetic dat",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "16px",
+        "weight": "400"
+      },
+      {
+        "text": "What does it cost?",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Pricing isn't decided yet. When it is, it will be published here before launch.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "16px",
+        "weight": "400"
+      },
+      {
+        "text": "Do my students need an account?",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "A student opens the link you assign and does one focused activity. The answers a",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "16px",
+        "weight": "400"
+      },
+      {
+        "text": "Bring tomorrow’s objective.",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "28px",
+        "weight": "500"
+      },
+      {
+        "text": "One sentence is enough. You review four checked variants, and nothing reaches a ",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
         "size": "16px",
         "weight": "400"
       },
@@ -1206,315 +1833,328 @@
         "weight": "600"
       },
       {
-        "text": "Scholé",
+        "text": "Already have one?",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "700"
+        "size": "13px",
+        "weight": "400"
       },
       {
-        "text": "Synthetic fixture data only. Lesson drafts by Meta Muse Spark.",
+        "text": "Sign in",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
-        "size": "12.48px",
+        "size": "13px",
+        "weight": "400"
+      },
+      {
+        "text": "Scholé",
+        "color": "oklch(0.965 0.018 86)",
+        "background": "rgb(61, 74, 44)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Grades 3–6 · Grade 4 equivalent fractions today",
+        "color": "oklch(0.965 0.018 86)",
+        "background": "rgb(61, 74, 44)",
+        "size": "13px",
+        "weight": "400"
+      },
+      {
+        "text": "Standards from Learning Commons (CC BY 4.0) · Synthetic data only",
+        "color": "oklch(0.965 0.018 86)",
+        "background": "rgb(61, 74, 44)",
+        "size": "13px",
         "weight": "400"
       }
     ]
   },
   {
     "page": "landing-signedin",
-    "url": "http://localhost:37899/",
+    "url": "http://localhost:41509/",
     "viewport": "1440x900",
-    "elements": 118,
-    "textBlocks": 43,
+    "elements": 321,
+    "textBlocks": 92,
     "color": {
       "oklch(0.235 0.028 65)": {
-        "count": 52,
-        "sample": "main.app-shell"
+        "count": 219,
+        "sample": "main.app-shell.landing"
       },
       "oklch(0.48 0.035 68)": {
-        "count": 26,
+        "count": 42,
         "sample": "span.brand-subtitle"
       },
       "oklch(0.965 0.018 86)": {
-        "count": 15,
+        "count": 20,
         "sample": "a.skip-link"
       },
       "rgb(166, 75, 42)": {
-        "count": 10,
-        "sample": "svg.lucide.lucide-check"
+        "count": 13,
+        "sample": "a.text-link"
       },
       "rgb(255, 255, 255)": {
-        "count": 9,
-        "sample": "a.btn.sm"
+        "count": 12,
+        "sample": "a.btn.lg"
       },
-      "oklch(0.393875 0.083602 51.1272)": {
+      "rgb(47, 107, 74)": {
         "count": 6,
-        "sample": "li.reveal__target.is-correct"
+        "sample": "span.pill"
+      },
+      "rgb(168, 50, 42)": {
+        "count": 4,
+        "sample": "span.pill"
+      },
+      "rgb(138, 90, 11)": {
+        "count": 3,
+        "sample": "span.pill"
+      },
+      "rgb(143, 63, 34)": {
+        "count": 2,
+        "sample": "span.who-does"
       }
     },
     "background": {
       "rgba(0, 0, 0, 0)": {
-        "count": 103,
-        "sample": "main.app-shell"
+        "count": 298,
+        "sample": "main.app-shell.landing"
+      },
+      "oklch(0.235 0.028 65)": {
+        "count": 4,
+        "sample": "a.skip-link"
       },
       "rgb(166, 75, 42)": {
         "count": 4,
-        "sample": "a.btn.sm"
-      },
-      "oklch(0.235 0.028 65)": {
-        "count": 3,
-        "sample": "a.skip-link"
-      },
-      "oklch(0.920886 0.0291095 81.3777)": {
-        "count": 3,
-        "sample": "li.reveal__target.is-correct"
-      },
-      "oklch(0.985 0.012 86)": {
-        "count": 1,
-        "sample": "figure.reveal"
+        "sample": "a.btn.lg"
       },
       "oklch(0.965 0.018 86)": {
-        "count": 1,
-        "sample": "li.reveal__target.is-distractor"
+        "count": 4,
+        "sample": "div.studio-bar"
       },
-      "oklch(0.235 0.028 65 / 0.08)": {
-        "count": 1,
-        "sample": "div.reveal__equal-bar"
+      "oklch(0.985 0.012 86)": {
+        "count": 3,
+        "sample": "a.btn.secondary"
       },
-      "oklch(0.9625 0.0279 83.3)": {
-        "count": 1,
-        "sample": "section.metric"
+      "rgb(242, 239, 233)": {
+        "count": 2,
+        "sample": "span.synthetic-marker.pill"
       },
-      "oklch(0.95272 0.0201966 82.7644)": {
+      "rgb(227, 239, 231)": {
+        "count": 2,
+        "sample": "span.pill"
+      },
+      "rgb(247, 225, 222)": {
+        "count": 2,
+        "sample": "li.blocked"
+      },
+      "rgb(248, 237, 214)": {
         "count": 1,
-        "sample": "div.cta-final__inner"
+        "sample": "span.pill"
+      },
+      "rgb(61, 74, 44)": {
+        "count": 1,
+        "sample": "footer.site-foot"
       }
     },
     "borderColor": {
       "rgb(230, 225, 216)": {
-        "count": 8,
-        "sample": "figure.reveal"
+        "count": 7,
+        "sample": "figure.card.lift"
+      },
+      "rgb(214, 207, 195)": {
+        "count": 7,
+        "sample": "ul.proof"
+      },
+      "rgb(147, 140, 128)": {
+        "count": 3,
+        "sample": "a.btn.secondary"
       },
       "rgba(0, 0, 0, 0)": {
-        "count": 3,
-        "sample": "a.btn.sm"
+        "count": 2,
+        "sample": "a.btn.lg"
       },
-      "oklch(0.75625 0.0596162 39.7767)": {
-        "count": 3,
-        "sample": "li.reveal__target.is-correct"
-      },
-      "oklch(0.814347 0.0422466 39.7767)": {
-        "count": 1,
-        "sample": "div.cta-final__inner"
+      "rgb(166, 75, 42)": {
+        "count": 2,
+        "sample": "span.node"
       }
     },
     "radius": {
       "0px": {
-        "count": 103,
-        "sample": "main.app-shell"
+        "count": 299,
+        "sample": "main.app-shell.landing"
       },
       "999px": {
-        "count": 6,
-        "sample": "li.reveal__target.is-correct"
+        "count": 10,
+        "sample": "span.synthetic-marker.pill"
       },
       "10px": {
-        "count": 5,
-        "sample": "a.btn.sm"
+        "count": 8,
+        "sample": "a"
       },
-      "14.4px": {
+      "14px": {
         "count": 2,
-        "sample": "span.brand-mark"
+        "sample": "figure.card.lift"
       },
       "8px": {
         "count": 1,
         "sample": "a.skip-link"
       },
-      "14px": {
+      "14.4px": {
         "count": 1,
-        "sample": "div.cta-final__inner"
+        "sample": "span.brand-mark"
       }
     },
     "fontFamily": {
       "Figtree, \"Trebuchet MS\", \"Segoe UI\", system-ui, sans-serif": {
-        "count": 115,
+        "count": 276,
         "sample": "a.skip-link"
       },
       "\"Source Serif 4\", ui-serif, georgia, \"Times New Roman\", serif": {
-        "count": 3,
+        "count": 45,
         "sample": "h1.hero-headline"
       }
     },
     "fontSize": {
       "16px": {
-        "count": 64,
-        "sample": "main.app-shell"
-      },
-      "12.48px": {
-        "count": 18,
-        "sample": "span.brand-mark"
-      },
-      "11.52px": {
-        "count": 8,
-        "sample": "p.eyebrow"
-      },
-      "15.2px": {
-        "count": 7,
-        "sample": "p.reveal__why"
+        "count": 197,
+        "sample": "main.app-shell.landing"
       },
       "14px": {
-        "count": 4,
+        "count": 37,
         "sample": "a.skip-link"
       },
-      "12.8px": {
-        "count": 3,
-        "sample": "span.site-header__identity"
+      "20px": {
+        "count": 35,
+        "sample": "p.lede"
       },
-      "11.84px": {
-        "count": 3,
-        "sample": "span.reveal__std"
+      "13px": {
+        "count": 16,
+        "sample": "p.fine"
       },
-      "11.2px": {
-        "count": 2,
-        "sample": "span.brand-subtitle"
+      "12px": {
+        "count": 14,
+        "sample": "span.synthetic-marker.pill"
       },
-      "35.2px": {
-        "count": 2,
-        "sample": "strong.metric__cell-value"
+      "12.48px": {
+        "count": 7,
+        "sample": "span.brand-mark"
       },
       "43.2px": {
-        "count": 2,
-        "sample": "h2"
+        "count": 5,
+        "sample": "h2.sr-only"
+      },
+      "17px": {
+        "count": 4,
+        "sample": "h3"
+      },
+      "13.76px": {
+        "count": 3,
+        "sample": "a.text-link"
       },
       "52px": {
-        "count": 1,
+        "count": 2,
         "sample": "h1.hero-headline"
       },
-      "18.88px": {
+      "11.2px": {
         "count": 1,
-        "sample": "p.hero-description"
-      },
-      "14.72px": {
-        "count": 1,
-        "sample": "p.reveal__prompt"
-      },
-      "24px": {
-        "count": 1,
-        "sample": "span.reveal__source"
-      },
-      "12.16px": {
-        "count": 1,
-        "sample": "p.metric__note"
+        "sample": "span.brand-subtitle"
       }
     },
     "fontWeight": {
       "400": {
-        "count": 63,
-        "sample": "main.app-shell"
+        "count": 236,
+        "sample": "main.app-shell.landing"
       },
       "500": {
-        "count": 3,
-        "sample": "h1.hero-headline"
+        "count": 49,
+        "sample": "a"
       },
       "600": {
-        "count": 26,
+        "count": 25,
         "sample": "a.skip-link"
       },
       "700": {
-        "count": 11,
+        "count": 4,
         "sample": "span.brand-name"
       },
       "800": {
-        "count": 15,
+        "count": 7,
         "sample": "span.brand-mark"
       }
     },
     "lineHeight": {
       "24px": {
-        "count": 57,
-        "sample": "main.app-shell"
-      },
-      "18.72px": {
-        "count": 18,
-        "sample": "span.brand-mark"
-      },
-      "20px": {
-        "count": 9,
-        "sample": "a.btn.sm"
-      },
-      "17.28px": {
-        "count": 7,
-        "sample": "div.reveal__equal-labels"
-      },
-      "23.56px": {
-        "count": 6,
-        "sample": "span"
-      },
-      "19.2px": {
-        "count": 3,
-        "sample": "span.site-header__identity"
-      },
-      "17.76px": {
-        "count": 3,
-        "sample": "span.reveal__std"
-      },
-      "16.8px": {
-        "count": 2,
-        "sample": "span.brand-subtitle"
-      },
-      "52.8px": {
-        "count": 2,
-        "sample": "strong.metric__cell-value"
+        "count": 191,
+        "sample": "main.app-shell.landing"
       },
       "21px": {
-        "count": 1,
+        "count": 36,
         "sample": "a.skip-link"
       },
-      "14.976px": {
-        "count": 1,
-        "sample": "p.eyebrow"
+      "26px": {
+        "count": 19,
+        "sample": "q"
       },
-      "53.56px": {
-        "count": 1,
+      "19.5px": {
+        "count": 15,
+        "sample": "p.fine"
+      },
+      "20px": {
+        "count": 14,
+        "sample": "a.btn.secondary"
+      },
+      "18px": {
+        "count": 14,
+        "sample": "span.synthetic-marker.pill"
+      },
+      "25px": {
+        "count": 8,
+        "sample": "b"
+      },
+      "18.72px": {
+        "count": 7,
+        "sample": "span.brand-mark"
+      },
+      "22.1px": {
+        "count": 4,
+        "sample": "h3"
+      },
+      "19.264px": {
+        "count": 3,
+        "sample": "a.text-link"
+      },
+      "47.52px": {
+        "count": 3,
+        "sample": "h2"
+      },
+      "54.6px": {
+        "count": 2,
         "sample": "h1.hero-headline"
       },
-      "31.152px": {
+      "16.8px": {
         "count": 1,
-        "sample": "p.hero-description"
+        "sample": "span.brand-subtitle"
       },
-      "22.08px": {
+      "32px": {
         "count": 1,
-        "sample": "p.reveal__prompt"
-      },
-      "36px": {
-        "count": 1,
-        "sample": "span.reveal__source"
-      },
-      "22.8px": {
-        "count": 1,
-        "sample": "p.reveal__why"
-      },
-      "18.24px": {
-        "count": 1,
-        "sample": "p.metric__note"
+        "sample": "p.lede"
       },
       "43.2px": {
         "count": 1,
-        "sample": "h2"
+        "sample": "h2.sr-only"
+      },
+      "13px": {
+        "count": 1,
+        "sample": "span.std-code"
       },
       "45.36px": {
         "count": 1,
         "sample": "h2"
-      },
-      "25.6px": {
-        "count": 1,
-        "sample": "p.cta-final__sub"
       }
     },
     "boxShadow": {
-      "oklch(0.235 0.028 65 / 0.06) 0px 1px 0px 0px": {
-        "count": 1,
-        "sample": "figure.reveal"
+      "rgba(31, 29, 26, 0.04) 0px 1px 2px 0px, rgba(31, 29, 26, 0.1) 0px 8px 24px -12px": {
+        "count": 2,
+        "sample": "figure.card.lift"
       }
     },
     "text": [
@@ -1540,38 +2180,52 @@
         "weight": "400"
       },
       {
-        "text": "Signed in as  Amira Haddad",
-        "color": "oklch(0.48 0.035 68)",
+        "text": "How it works",
+        "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.965 0.018 86)",
-        "size": "12.8px",
-        "weight": "600"
+        "size": "14px",
+        "weight": "500"
+      },
+      {
+        "text": "What’s checked",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "500"
+      },
+      {
+        "text": "Questions",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "500"
       },
       {
         "text": "Open workspace",
-        "color": "rgb(255, 255, 255)",
-        "background": "rgb(166, 75, 42)",
-        "size": "14px",
-        "weight": "600"
-      },
-      {
-        "text": "Built for teachers",
         "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "11.52px",
-        "weight": "800"
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14px",
+        "weight": "500"
       },
       {
-        "text": "Turn one sentence into a lesson your students understand.",
+        "text": "Turn one learning objective into a lesson your students   .",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.965 0.018 86)",
         "size": "52px",
         "weight": "500"
       },
       {
-        "text": "Type a learning objective in English or Arabic. Approve four variants on one scr",
-        "color": "oklch(0.48 0.035 68)",
+        "text": "understand",
+        "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.965 0.018 86)",
-        "size": "18.88px",
+        "size": "52px",
+        "weight": "500"
+      },
+      {
+        "text": "For Grades 3–6 teachers. Write one objective, get four lesson variants checked a",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
         "weight": "400"
       },
       {
@@ -1582,224 +2236,546 @@
         "weight": "600"
       },
       {
-        "text": "Equivalent fractions",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "12.8px",
+        "text": "See how it works",
+        "color": "rgb(166, 75, 42)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "13.76px",
         "weight": "700"
       },
       {
-        "text": "Grade 4 · 4.NF.A.1",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "11.84px",
-        "weight": "400"
-      },
-      {
-        "text": "Choose every fraction that names the same part of a whole.",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "14.72px",
-        "weight": "400"
-      },
-      {
-        "text": "Source",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "11.2px",
-        "weight": "700"
-      },
-      {
-        "text": "1/2",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "24px",
-        "weight": "700"
-      },
-      {
-        "text": "2/4",
-        "color": "oklch(0.393875 0.083602 51.1272)",
-        "background": "oklch(0.920886 0.0291095 81.3777)",
-        "size": "16px",
-        "weight": "600"
-      },
-      {
-        "text": "3/6",
-        "color": "oklch(0.393875 0.083602 51.1272)",
-        "background": "oklch(0.920886 0.0291095 81.3777)",
-        "size": "16px",
-        "weight": "600"
-      },
-      {
-        "text": "4/8",
-        "color": "oklch(0.393875 0.083602 51.1272)",
-        "background": "oklch(0.920886 0.0291095 81.3777)",
-        "size": "16px",
-        "weight": "600"
-      },
-      {
-        "text": "2/3",
+        "text": "Grade 4 equivalent fractions today · English",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
+        "size": "13px",
+        "weight": "400"
+      },
+      {
+        "text": "Studio illustration",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "43.2px",
+        "weight": "500"
+      },
+      {
+        "text": "Studio",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "13px",
         "weight": "600"
       },
       {
-        "text": "1/2",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "11.52px",
+        "text": "· New lesson",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "13px",
         "weight": "400"
       },
       {
-        "text": "2/4",
+        "text": "Illustration · synthetic data",
         "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "11.52px",
-        "weight": "400"
-      },
-      {
-        "text": "3/6",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "11.52px",
-        "weight": "400"
-      },
-      {
-        "text": "4/8",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "11.52px",
-        "weight": "400"
-      },
-      {
-        "text": "Same portion of the whole",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "11.52px",
-        "weight": "400"
-      },
-      {
-        "text": "Different names, same amount.",
-        "color": "rgb(166, 75, 42)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "15.2px",
+        "background": "rgb(242, 239, 233)",
+        "size": "12px",
         "weight": "600"
       },
       {
-        "text": "Illustration of the seeded curriculum. Synthetic data only.",
+        "text": "Your objective",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "11.52px",
-        "weight": "400"
+        "size": "13px",
+        "weight": "600"
       },
       {
-        "text": "Less prep. More teaching.",
+        "text": "Students explain why 2/4 and 1/2 name the same amount using fraction models.",
         "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.9625 0.0279 83.3)",
-        "size": "12.8px",
-        "weight": "700"
+        "background": "oklch(0.985 0.012 86)",
+        "size": "20px",
+        "weight": "500"
       },
       {
-        "text": "Today",
+        "text": "4.NF.A.1",
+        "color": "oklch(0.965 0.018 86)",
+        "background": "oklch(0.235 0.028 65)",
+        "size": "13px",
+        "weight": "600"
+      },
+      {
+        "text": "Grounded in Learning Commons",
         "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.9625 0.0279 83.3)",
-        "size": "11.84px",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "13px",
         "weight": "400"
       },
       {
-        "text": "≈ 30 min",
+        "text": "A · Worked example",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Same bar, cut two ways",
         "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.9625 0.0279 83.3)",
-        "size": "35.2px",
-        "weight": "700"
+        "background": "oklch(0.985 0.012 86)",
+        "size": "17px",
+        "weight": "500"
       },
       {
-        "text": "With Scholé",
+        "text": "Ready to review",
+        "color": "rgb(47, 107, 74)",
+        "background": "rgb(227, 239, 231)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "B · Guided activity",
         "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.9625 0.0279 83.3)",
-        "size": "11.84px",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Slide to make an equal share",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "17px",
+        "weight": "500"
+      },
+      {
+        "text": "Ready · 1 warning",
+        "color": "rgb(138, 90, 11)",
+        "background": "rgb(248, 237, 214)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "C · Independent check",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "rgb(247, 225, 222)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Answer key didn’t match the diagram",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "rgb(247, 225, 222)",
+        "size": "17px",
+        "weight": "500"
+      },
+      {
+        "text": "Not shown to students",
+        "color": "rgb(168, 50, 42)",
+        "background": "rgb(247, 225, 222)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "D · Matching",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Pair each fraction with its twin",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "17px",
+        "weight": "500"
+      },
+      {
+        "text": "Ready to review",
+        "color": "rgb(47, 107, 74)",
+        "background": "rgb(227, 239, 231)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "3 ready to review · 1 warning to acknowledge · 1 blocked before you saw it",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
         "weight": "400"
       },
       {
-        "text": "≈ 3 min",
-        "color": "rgb(166, 75, 42)",
-        "background": "oklch(0.9625 0.0279 83.3)",
-        "size": "35.2px",
-        "weight": "700"
+        "text": "Open review",
+        "color": "oklch(0.965 0.018 86)",
+        "background": "oklch(0.235 0.028 65)",
+        "size": "14px",
+        "weight": "600"
       },
       {
-        "text": "Target metric. Median time, prompt to approved pack.",
+        "text": "Every draft is matched to the standard it claims.",
         "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.9625 0.0279 83.3)",
-        "size": "12.16px",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
         "weight": "400"
       },
       {
-        "text": "You stay in charge.",
+        "text": "Common Core 4.NF.A.1",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Each generation stores the source it used. CC BY 4.0.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Learning Commons sources",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Unsafe drafts are blocked before you preview them.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "A safety gate, not a promise",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Students can't see the key or submit their own score.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Answers stay on the server",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "One loop, and you decide at every turn.",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.965 0.018 86)",
         "size": "43.2px",
         "weight": "500"
       },
       {
-        "text": "before any student sees it.",
+        "text": "You write the objective",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Plain words and a grade. Add your own source file if you want.",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
-        "size": "15.2px",
+        "size": "14px",
         "weight": "400"
       },
       {
-        "text": "You approve every variant",
-        "color": "oklch(0.235 0.028 65)",
+        "text": "Your call",
+        "color": "rgb(143, 63, 34)",
         "background": "oklch(0.965 0.018 86)",
-        "size": "15.2px",
-        "weight": "700"
+        "size": "12px",
+        "weight": "600"
       },
       {
-        "text": "Students can’t submit a score.",
+        "text": "Scholé drafts and checks",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Four variants, checked for structure, curriculum fit and safety before you see t",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
-        "size": "15.2px",
+        "size": "14px",
         "weight": "400"
       },
       {
-        "text": "The answer key stays on the server.",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "15.2px",
-        "weight": "700"
-      },
-      {
-        "text": "reach the model.",
+        "text": "Automatic",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
-        "size": "15.2px",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "You review and approve",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Edit one section at a time. An approved version never changes.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
         "weight": "400"
       },
       {
-        "text": "No student images or names",
-        "color": "oklch(0.235 0.028 65)",
+        "text": "Your call",
+        "color": "rgb(143, 63, 34)",
         "background": "oklch(0.965 0.018 86)",
-        "size": "15.2px",
-        "weight": "700"
+        "size": "12px",
+        "weight": "600"
       },
       {
-        "text": "Draft your first lesson in minutes.",
+        "text": "Your student practises",
         "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.95272 0.0201966 82.7644)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "One focused activity, graded on the server, with a reason for what comes next.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "After you publish",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Less time drafting. Every decision explained.",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
         "size": "43.2px",
         "weight": "500"
       },
       {
-        "text": "One prompt. Four variants you approve. A student gets the idea.",
+        "text": "Your evening back",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Start from four checked drafts instead of a blank page. We're aiming for about t",
         "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.95272 0.0201966 82.7644)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "A reason for every step",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Each lesson shows what comes before it, what comes next, and why, so you can exp",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Nothing slips past you",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Warnings stay visible until you acknowledge them. Students only ever see a versi",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Checks on variant C",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Illustration",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "rgb(242, 239, 233)",
+        "size": "12px",
+        "weight": "600"
+      },
+      {
+        "text": "Structure fits the lesson format",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Every section present and in order",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "13px",
+        "weight": "400"
+      },
+      {
+        "text": "Matches 4.NF.A.1",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Source: Learning Commons snapshot",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "13px",
+        "weight": "400"
+      },
+      {
+        "text": "Prerequisite gap: unit fractions",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Shown to you, not hidden",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "13px",
+        "weight": "400"
+      },
+      {
+        "text": "Answer key didn't match the diagram",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14px",
+        "weight": "400"
+      },
+      {
+        "text": "Blocked. This draft will never reach a student.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "13px",
+        "weight": "400"
+      },
+      {
+        "text": "Questions teachers ask first",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "43.2px",
+        "weight": "500"
+      },
+      {
+        "text": "What can I teach with it today?",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Grade 4 equivalent fractions (Common Core 4.NF.A.1), in English. We'd rather do ",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
         "size": "16px",
         "weight": "400"
       },
       {
-        "text": "Create a teacher account",
+        "text": "Can I change what it writes?",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Yes. Edit any section, or reject a variant entirely. Each edit makes a new versi",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "16px",
+        "weight": "400"
+      },
+      {
+        "text": "What if a draft is wrong?",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Drafts that fail a check are blocked before you preview them. Anything less seri",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "16px",
+        "weight": "400"
+      },
+      {
+        "text": "Does student data go to the AI?",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "No student names or images reach the model. For now Scholé runs on synthetic dat",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "16px",
+        "weight": "400"
+      },
+      {
+        "text": "What does it cost?",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "Pricing isn't decided yet. When it is, it will be published here before launch.",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "16px",
+        "weight": "400"
+      },
+      {
+        "text": "Do my students need an account?",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "20px",
+        "weight": "500"
+      },
+      {
+        "text": "A student opens the link you assign and does one focused activity. The answers a",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "16px",
+        "weight": "400"
+      },
+      {
+        "text": "Bring tomorrow’s objective.",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "43.2px",
+        "weight": "500"
+      },
+      {
+        "text": "One sentence is enough. You review four checked variants, and nothing reaches a ",
+        "color": "oklch(0.235 0.028 65)",
+        "background": "oklch(0.965 0.018 86)",
+        "size": "16px",
+        "weight": "400"
+      },
+      {
+        "text": "Open your workspace",
         "color": "rgb(255, 255, 255)",
         "background": "rgb(166, 75, 42)",
         "size": "16px",
@@ -1807,23 +2783,30 @@
       },
       {
         "text": "Scholé",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "700"
+        "color": "oklch(0.965 0.018 86)",
+        "background": "rgb(61, 74, 44)",
+        "size": "20px",
+        "weight": "500"
       },
       {
-        "text": "Synthetic fixture data only. Lesson drafts by Meta Muse Spark.",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "12.48px",
+        "text": "Grades 3–6 · Grade 4 equivalent fractions today",
+        "color": "oklch(0.965 0.018 86)",
+        "background": "rgb(61, 74, 44)",
+        "size": "13px",
+        "weight": "400"
+      },
+      {
+        "text": "Standards from Learning Commons (CC BY 4.0) · Synthetic data only",
+        "color": "oklch(0.965 0.018 86)",
+        "background": "rgb(61, 74, 44)",
+        "size": "13px",
         "weight": "400"
       }
     ]
   },
   {
     "page": "login",
-    "url": "http://localhost:37899/login",
+    "url": "http://localhost:41509/login",
     "viewport": "1440x900",
     "elements": 53,
     "textBlocks": 13,
@@ -2153,7 +3136,7 @@
   },
   {
     "page": "login-phone",
-    "url": "http://localhost:37899/login",
+    "url": "http://localhost:41509/login",
     "viewport": "390x844",
     "elements": 53,
     "textBlocks": 13,
@@ -2483,7 +3466,7 @@
   },
   {
     "page": "signup",
-    "url": "http://localhost:37899/sign-up",
+    "url": "http://localhost:41509/sign-up",
     "viewport": "1440x900",
     "elements": 44,
     "textBlocks": 11,
@@ -2799,7 +3782,7 @@
   },
   {
     "page": "signup-phone",
-    "url": "http://localhost:37899/sign-up",
+    "url": "http://localhost:41509/sign-up",
     "viewport": "390x844",
     "elements": 44,
     "textBlocks": 11,
@@ -3115,7 +4098,7 @@
   },
   {
     "page": "studio-composer",
-    "url": "http://localhost:37899/workspace",
+    "url": "http://localhost:41509/workspace",
     "viewport": "1440x900",
     "elements": 199,
     "textBlocks": 64,
@@ -4030,7 +5013,7 @@
   },
   {
     "page": "phone-studio",
-    "url": "http://localhost:37899/workspace",
+    "url": "http://localhost:41509/workspace",
     "viewport": "390x844",
     "elements": 199,
     "textBlocks": 64,
@@ -4917,7 +5900,7 @@
   },
   {
     "page": "dashboard",
-    "url": "http://localhost:37899/dashboard",
+    "url": "http://localhost:41509/dashboard",
     "viewport": "1440x900",
     "elements": 43,
     "textBlocks": 15,
@@ -5158,7 +6141,7 @@
         "weight": "700"
       },
       {
-        "text": "Results as of  2026-11-04T16:05:59.352Z .",
+        "text": "Results as of  2026-11-04T16:22:44.354Z .",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "16px",
@@ -5196,7 +6179,7 @@
   },
   {
     "page": "dashboard-phone",
-    "url": "http://localhost:37899/dashboard",
+    "url": "http://localhost:41509/dashboard",
     "viewport": "390x844",
     "elements": 43,
     "textBlocks": 15,
@@ -5437,7 +6420,7 @@
         "weight": "700"
       },
       {
-        "text": "Results as of  2026-11-04T16:06:02.350Z .",
+        "text": "Results as of  2026-11-04T16:22:46.483Z .",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "16px",
@@ -5475,7 +6458,7 @@
   },
   {
     "page": "learn-board",
-    "url": "http://localhost:37899/learn?assignment=01a1a74e-cff9-7a97-9c3e-4a5f9524f6df&variant=variant-1",
+    "url": "http://localhost:41509/learn?assignment=01a1a75e-4726-7883-8d15-b16c4f892c5c&variant=variant-1",
     "viewport": "1440x900",
     "elements": 54,
     "textBlocks": 19,
@@ -5774,7 +6757,7 @@
   },
   {
     "page": "learn-phone",
-    "url": "http://localhost:37899/learn?assignment=01a1a74e-cff9-7a97-9c3e-4a5f9524f6df&variant=variant-1",
+    "url": "http://localhost:41509/learn?assignment=01a1a75e-4726-7883-8d15-b16c4f892c5c&variant=variant-1",
     "viewport": "390x844",
     "elements": 54,
     "textBlocks": 19,
@@ -6073,7 +7056,7 @@
   },
   {
     "page": "learn-missing-params",
-    "url": "http://localhost:37899/learn",
+    "url": "http://localhost:41509/learn",
     "viewport": "1440x900",
     "elements": 28,
     "textBlocks": 7,
@@ -6260,7 +7243,7 @@
   },
   {
     "page": "learn-signedout",
-    "url": "http://localhost:37899/learn?assignment=01a1a74e-cff9-7a97-9c3e-4a5f9524f6df&variant=variant-1",
+    "url": "http://localhost:41509/learn?assignment=01a1a75e-4726-7883-8d15-b16c4f892c5c&variant=variant-1",
     "viewport": "1440x900",
     "elements": 19,
     "textBlocks": 5,
@@ -6404,7 +7387,7 @@
   },
   {
     "page": "review",
-    "url": "http://localhost:37899/workspace?review=01a1a74e-e5f0-76b1-a257-d202840fc120",
+    "url": "http://localhost:41509/workspace?review=01a1a75e-553b-7081-a865-49ba66d34654",
     "viewport": "1440x900",
     "elements": 317,
     "textBlocks": 170,
@@ -6941,7 +7924,7 @@
         "weight": "400"
       },
       {
-        "text": "01a1a74e-e5f0-76b1-a257-d202840fc120",
+        "text": "01a1a75e-553b-7081-a865-49ba66d34654",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "11.52px",
@@ -7172,7 +8155,7 @@
         "weight": "800"
       },
       {
-        "text": "01a1a74e-e5f0-76b1-a257-d202840fc120",
+        "text": "01a1a75e-553b-7081-a865-49ba66d34654",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.961943 0.0178547 83.6888)",
         "size": "11.52px",
@@ -8029,7 +9012,7 @@
   },
   {
     "page": "review-phone",
-    "url": "http://localhost:37899/workspace?review=01a1a74e-e5f0-76b1-a257-d202840fc120",
+    "url": "http://localhost:41509/workspace?review=01a1a75e-553b-7081-a865-49ba66d34654",
     "viewport": "390x844",
     "elements": 317,
     "textBlocks": 170,
@@ -8558,7 +9541,7 @@
         "weight": "400"
       },
       {
-        "text": "01a1a74e-e5f0-76b1-a257-d202840fc120",
+        "text": "01a1a75e-553b-7081-a865-49ba66d34654",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "11.52px",
@@ -8789,7 +9772,7 @@
         "weight": "800"
       },
       {
-        "text": "01a1a74e-e5f0-76b1-a257-d202840fc120",
+        "text": "01a1a75e-553b-7081-a865-49ba66d34654",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.961943 0.0178547 83.6888)",
         "size": "11.52px",
@@ -9646,17 +10629,17 @@
   },
   {
     "page": "publish",
-    "url": "http://localhost:37899/workspace?review=01a1a74e-e768-7810-be20-4e1186b3fe07",
+    "url": "http://localhost:41509/workspace?review=01a1a75e-5634-72f0-8152-59364639b23b",
     "viewport": "1440x900",
-    "elements": 87,
-    "textBlocks": 27,
+    "elements": 85,
+    "textBlocks": 31,
     "color": {
       "oklch(0.235 0.028 65)": {
-        "count": 59,
+        "count": 51,
         "sample": "div.app-shell.app-frame"
       },
       "oklch(0.48 0.035 68)": {
-        "count": 15,
+        "count": 21,
         "sample": "a.app-bar__link"
       },
       "oklch(0.965 0.018 86)": {
@@ -9678,11 +10661,11 @@
         "sample": "div.app-bar__inner"
       },
       "oklch(0.965 0.018 86)": {
-        "count": 4,
+        "count": 3,
         "sample": "div.app-shell.app-frame"
       },
       "oklch(0.985 0.012 86)": {
-        "count": 4,
+        "count": 3,
         "sample": "button.btn.secondary"
       },
       "oklch(0.235 0.028 65)": {
@@ -9693,19 +10676,19 @@
         "count": 2,
         "sample": "a.app-bar__link.active"
       },
-      "rgb(143, 63, 34)": {
+      "rgb(166, 75, 42)": {
         "count": 1,
         "sample": "button.btn"
       }
     },
     "borderColor": {
-      "rgb(230, 225, 216)": {
-        "count": 9,
-        "sample": "section.publish-confirm"
-      },
       "rgb(147, 140, 128)": {
         "count": 4,
         "sample": "button.btn.ghost"
+      },
+      "rgb(230, 225, 216)": {
+        "count": 1,
+        "sample": "section.review-confirm"
       },
       "rgba(0, 0, 0, 0)": {
         "count": 1,
@@ -9714,7 +10697,7 @@
     },
     "radius": {
       "0px": {
-        "count": 76,
+        "count": 74,
         "sample": "div.app-shell.app-frame"
       },
       "8px": {
@@ -9733,54 +10716,62 @@
         "count": 1,
         "sample": "button.btn.ghost"
       },
-      "14px": {
+      "6px": {
         "count": 1,
-        "sample": "section.publish-confirm"
+        "sample": "select"
       }
     },
     "fontFamily": {
       "Figtree, \"Trebuchet MS\", \"Segoe UI\", system-ui, sans-serif": {
-        "count": 85,
+        "count": 82,
         "sample": "a.skip-link"
       },
       "\"Source Serif 4\", ui-serif, georgia, \"Times New Roman\", serif": {
         "count": 2,
         "sample": "h2"
+      },
+      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace": {
+        "count": 1,
+        "sample": "code"
       }
     },
     "fontSize": {
       "16px": {
-        "count": 55,
+        "count": 48,
         "sample": "div.app-shell.app-frame"
       },
-      "14px": {
-        "count": 16,
-        "sample": "a.skip-link"
+      "14.4px": {
+        "count": 11,
+        "sample": "output.review-notice"
+      },
+      "13.6px": {
+        "count": 8,
+        "sample": "span.review-studio__lock"
       },
       "12.48px": {
         "count": 7,
         "sample": "span.brand-mark"
       },
-      "13.6px": {
-        "count": 4,
-        "sample": "span.review-studio__lock"
+      "14px": {
+        "count": 6,
+        "sample": "a.skip-link"
       },
       "12px": {
         "count": 3,
         "sample": "span.who__avatar"
       },
-      "14.4px": {
+      "11.52px": {
         "count": 1,
-        "sample": "output.review-notice"
+        "sample": "p.kicker"
       },
-      "20px": {
+      "34.56px": {
         "count": 1,
         "sample": "h2"
       }
     },
     "fontWeight": {
       "400": {
-        "count": 49,
+        "count": 48,
         "sample": "div.app-shell.app-frame"
       },
       "500": {
@@ -9788,33 +10779,37 @@
         "sample": "a.app-bar__link"
       },
       "600": {
-        "count": 20,
+        "count": 16,
         "sample": "a.skip-link"
       },
       "700": {
-        "count": 5,
+        "count": 7,
         "sample": "span.brand-name"
       },
       "800": {
-        "count": 7,
+        "count": 8,
         "sample": "span.brand-mark"
       }
     },
     "lineHeight": {
       "24px": {
-        "count": 43,
+        "count": 36,
         "sample": "div.app-shell.app-frame"
       },
       "20px": {
-        "count": 27,
+        "count": 17,
         "sample": "a.app-bar__link.active"
+      },
+      "21.6px": {
+        "count": 11,
+        "sample": "output.review-notice"
       },
       "18.72px": {
         "count": 7,
         "sample": "span.brand-mark"
       },
       "20.4px": {
-        "count": 4,
+        "count": 7,
         "sample": "span.review-studio__lock"
       },
       "18px": {
@@ -9829,9 +10824,13 @@
         "count": 1,
         "sample": "span.who__context"
       },
-      "21.6px": {
+      "16.128px": {
         "count": 1,
-        "sample": "output.review-notice"
+        "sample": "p.kicker"
+      },
+      "39.744px": {
+        "count": 1,
+        "sample": "h2"
       },
       "normal": {
         "count": 1,
@@ -9897,45 +10896,59 @@
         "weight": "400"
       },
       {
+        "text": "Publish confirmation",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "11.52px",
+        "weight": "800"
+      },
+      {
         "text": "Publish this exact revision",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "20px",
+        "size": "34.56px",
         "weight": "500"
       },
       {
-        "text": "Revision  1  · artifact     · validation  pass",
+        "text": "Revision  1  · artifact    · validation   pass",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
+        "size": "16px",
         "weight": "400"
       },
       {
-        "text": "94ea4c646687",
-        "color": "oklch(0.235 0.028 65)",
+        "text": "b36903d8d7cb",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
-        "weight": "600"
+        "size": "16px",
+        "weight": "400"
       },
       {
         "text": "Approved screen sequence",
-        "color": "oklch(0.48 0.035 68)",
+        "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
-        "weight": "700"
+        "size": "16px",
+        "weight": "400"
       },
       {
         "text": "Teach the model",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "16px",
-        "weight": "600"
+        "weight": "700"
       },
       {
-        "text": "Practice — Possible equivalent fractions  ·  Core matching  ·   3  →  3   pieces",
+        "text": "Practice — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
+        "size": "14.4px",
+        "weight": "400"
+      },
+      {
+        "text": "Core matching",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14.4px",
         "weight": "400"
       },
       {
@@ -9943,13 +10956,20 @@
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "16px",
-        "weight": "600"
+        "weight": "700"
       },
       {
-        "text": "Explore — Possible equivalent fractions  ·  Core matching  ·   5  →  5   pieces",
+        "text": "Explore — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
+        "size": "14.4px",
+        "weight": "400"
+      },
+      {
+        "text": "Core matching",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14.4px",
         "weight": "400"
       },
       {
@@ -9957,13 +10977,20 @@
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "16px",
-        "weight": "600"
+        "weight": "700"
       },
       {
-        "text": "Guided — Possible equivalent fractions  ·  Guided support  ·   3  →  3   pieces",
+        "text": "Guided — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
+        "size": "14.4px",
+        "weight": "400"
+      },
+      {
+        "text": "Guided support",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14.4px",
         "weight": "400"
       },
       {
@@ -9971,13 +10998,20 @@
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "16px",
-        "weight": "600"
+        "weight": "700"
       },
       {
-        "text": "Review — Possible equivalent fractions  ·  Higher demand  ·   5  →  5   pieces",
+        "text": "Review — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
+        "size": "14.4px",
+        "weight": "400"
+      },
+      {
+        "text": "Higher demand",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14.4px",
         "weight": "400"
       },
       {
@@ -9985,41 +11019,34 @@
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "16px",
-        "weight": "600"
+        "weight": "700"
       },
       {
         "text": "Start with the prerequisite skill so the lesson reaches the matching target in o",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
+        "size": "14.4px",
+        "weight": "400"
+      },
+      {
+        "text": "2  steps",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14.4px",
         "weight": "400"
       },
       {
         "text": "Assign to learner",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
-        "weight": "700"
-      },
-      {
-        "text": "They open   Teach the model · Practice — Possible equivalent fractions   as thei",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "400"
-      },
-      {
-        "text": "You're about to publish revision  1  to   Omar Nabil .",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "700"
+        "size": "13.6px",
+        "weight": "600"
       },
       {
         "text": "Publishing writes one immutable publication and one assignment. A second click r",
         "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "14px",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "13.6px",
         "weight": "400"
       },
       {
@@ -10033,17 +11060,17 @@
   },
   {
     "page": "publish-phone",
-    "url": "http://localhost:37899/workspace?review=01a1a74e-e768-7810-be20-4e1186b3fe07",
+    "url": "http://localhost:41509/workspace?review=01a1a75e-5634-72f0-8152-59364639b23b",
     "viewport": "390x844",
-    "elements": 87,
-    "textBlocks": 27,
+    "elements": 85,
+    "textBlocks": 31,
     "color": {
       "oklch(0.235 0.028 65)": {
-        "count": 59,
+        "count": 51,
         "sample": "div.app-shell.app-frame"
       },
       "oklch(0.48 0.035 68)": {
-        "count": 15,
+        "count": 21,
         "sample": "a.app-bar__link"
       },
       "oklch(0.965 0.018 86)": {
@@ -10065,11 +11092,11 @@
         "sample": "div.app-bar__inner"
       },
       "oklch(0.965 0.018 86)": {
-        "count": 4,
+        "count": 3,
         "sample": "div.app-shell.app-frame"
       },
       "oklch(0.985 0.012 86)": {
-        "count": 4,
+        "count": 3,
         "sample": "button.btn.secondary"
       },
       "oklch(0.235 0.028 65)": {
@@ -10086,13 +11113,13 @@
       }
     },
     "borderColor": {
-      "rgb(230, 225, 216)": {
-        "count": 9,
-        "sample": "section.publish-confirm"
-      },
       "rgb(147, 140, 128)": {
         "count": 4,
         "sample": "button.btn.ghost"
+      },
+      "rgb(230, 225, 216)": {
+        "count": 1,
+        "sample": "section.review-confirm"
       },
       "rgba(0, 0, 0, 0)": {
         "count": 1,
@@ -10101,7 +11128,7 @@
     },
     "radius": {
       "0px": {
-        "count": 76,
+        "count": 74,
         "sample": "div.app-shell.app-frame"
       },
       "8px": {
@@ -10120,54 +11147,62 @@
         "count": 1,
         "sample": "button.btn.ghost"
       },
-      "14px": {
+      "6px": {
         "count": 1,
-        "sample": "section.publish-confirm"
+        "sample": "select"
       }
     },
     "fontFamily": {
       "Figtree, \"Trebuchet MS\", \"Segoe UI\", system-ui, sans-serif": {
-        "count": 85,
+        "count": 82,
         "sample": "a.skip-link"
       },
       "\"Source Serif 4\", ui-serif, georgia, \"Times New Roman\", serif": {
         "count": 2,
         "sample": "h2"
+      },
+      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace": {
+        "count": 1,
+        "sample": "code"
       }
     },
     "fontSize": {
       "16px": {
-        "count": 55,
+        "count": 48,
         "sample": "div.app-shell.app-frame"
       },
-      "14px": {
-        "count": 16,
-        "sample": "a.skip-link"
+      "14.4px": {
+        "count": 11,
+        "sample": "output.review-notice"
+      },
+      "13.6px": {
+        "count": 8,
+        "sample": "span.review-studio__lock"
       },
       "12.48px": {
         "count": 7,
         "sample": "span.brand-mark"
       },
-      "13.6px": {
-        "count": 4,
-        "sample": "span.review-studio__lock"
+      "14px": {
+        "count": 6,
+        "sample": "a.skip-link"
       },
       "12px": {
         "count": 3,
         "sample": "span.who__avatar"
       },
-      "14.4px": {
+      "11.52px": {
         "count": 1,
-        "sample": "output.review-notice"
+        "sample": "p.kicker"
       },
-      "20px": {
+      "25.6px": {
         "count": 1,
         "sample": "h2"
       }
     },
     "fontWeight": {
       "400": {
-        "count": 49,
+        "count": 48,
         "sample": "div.app-shell.app-frame"
       },
       "500": {
@@ -10175,33 +11210,37 @@
         "sample": "a.app-bar__link"
       },
       "600": {
-        "count": 20,
+        "count": 16,
         "sample": "a.skip-link"
       },
       "700": {
-        "count": 5,
+        "count": 7,
         "sample": "span.brand-name"
       },
       "800": {
-        "count": 7,
+        "count": 8,
         "sample": "span.brand-mark"
       }
     },
     "lineHeight": {
       "24px": {
-        "count": 43,
+        "count": 36,
         "sample": "div.app-shell.app-frame"
       },
       "20px": {
-        "count": 27,
+        "count": 17,
         "sample": "a.app-bar__link.active"
+      },
+      "21.6px": {
+        "count": 11,
+        "sample": "output.review-notice"
       },
       "18.72px": {
         "count": 7,
         "sample": "span.brand-mark"
       },
       "20.4px": {
-        "count": 4,
+        "count": 7,
         "sample": "span.review-studio__lock"
       },
       "18px": {
@@ -10216,9 +11255,13 @@
         "count": 1,
         "sample": "span.who__context"
       },
-      "21.6px": {
+      "16.128px": {
         "count": 1,
-        "sample": "output.review-notice"
+        "sample": "p.kicker"
+      },
+      "29.44px": {
+        "count": 1,
+        "sample": "h2"
       },
       "normal": {
         "count": 1,
@@ -10284,45 +11327,59 @@
         "weight": "400"
       },
       {
+        "text": "Publish confirmation",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "11.52px",
+        "weight": "800"
+      },
+      {
         "text": "Publish this exact revision",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "20px",
+        "size": "25.6px",
         "weight": "500"
       },
       {
-        "text": "Revision  1  · artifact     · validation  pass",
+        "text": "Revision  1  · artifact    · validation   pass",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
+        "size": "16px",
         "weight": "400"
       },
       {
-        "text": "94ea4c646687",
-        "color": "oklch(0.235 0.028 65)",
+        "text": "b36903d8d7cb",
+        "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
-        "weight": "600"
+        "size": "16px",
+        "weight": "400"
       },
       {
         "text": "Approved screen sequence",
-        "color": "oklch(0.48 0.035 68)",
+        "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
-        "weight": "700"
+        "size": "16px",
+        "weight": "400"
       },
       {
         "text": "Teach the model",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "16px",
-        "weight": "600"
+        "weight": "700"
       },
       {
-        "text": "Practice — Possible equivalent fractions  ·  Core matching  ·   3  →  3   pieces",
+        "text": "Practice — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
+        "size": "14.4px",
+        "weight": "400"
+      },
+      {
+        "text": "Core matching",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14.4px",
         "weight": "400"
       },
       {
@@ -10330,13 +11387,20 @@
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "16px",
-        "weight": "600"
+        "weight": "700"
       },
       {
-        "text": "Explore — Possible equivalent fractions  ·  Core matching  ·   5  →  5   pieces",
+        "text": "Explore — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
+        "size": "14.4px",
+        "weight": "400"
+      },
+      {
+        "text": "Core matching",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14.4px",
         "weight": "400"
       },
       {
@@ -10344,13 +11408,20 @@
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "16px",
-        "weight": "600"
+        "weight": "700"
       },
       {
-        "text": "Guided — Possible equivalent fractions  ·  Guided support  ·   3  →  3   pieces",
+        "text": "Guided — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
+        "size": "14.4px",
+        "weight": "400"
+      },
+      {
+        "text": "Guided support",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14.4px",
         "weight": "400"
       },
       {
@@ -10358,13 +11429,20 @@
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "16px",
-        "weight": "600"
+        "weight": "700"
       },
       {
-        "text": "Review — Possible equivalent fractions  ·  Higher demand  ·   5  →  5   pieces",
+        "text": "Review — Possible equivalent fractions",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
+        "size": "14.4px",
+        "weight": "400"
+      },
+      {
+        "text": "Higher demand",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14.4px",
         "weight": "400"
       },
       {
@@ -10372,41 +11450,34 @@
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "16px",
-        "weight": "600"
+        "weight": "700"
       },
       {
         "text": "Start with the prerequisite skill so the lesson reaches the matching target in o",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
+        "size": "14.4px",
+        "weight": "400"
+      },
+      {
+        "text": "2  steps",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "14.4px",
         "weight": "400"
       },
       {
         "text": "Assign to learner",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
-        "weight": "700"
-      },
-      {
-        "text": "They open   Teach the model · Practice — Possible equivalent fractions   as thei",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "400"
-      },
-      {
-        "text": "You're about to publish revision  1  to   Omar Nabil .",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "700"
+        "size": "13.6px",
+        "weight": "600"
       },
       {
         "text": "Publishing writes one immutable publication and one assignment. A second click r",
         "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "14px",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "13.6px",
         "weight": "400"
       },
       {
@@ -10420,75 +11491,79 @@
   },
   {
     "page": "published",
-    "url": "http://localhost:37899/workspace?review=01a1a74e-ed81-7d65-9e7e-08dcc085d056",
+    "url": "http://localhost:41509/workspace?review=01a1a75e-5950-7390-a90a-f0a1b73cf1cd",
     "viewport": "1440x900",
-    "elements": 68,
-    "textBlocks": 22,
+    "elements": 66,
+    "textBlocks": 19,
     "color": {
       "oklch(0.235 0.028 65)": {
         "count": 41,
         "sample": "div.app-shell.app-frame"
       },
       "oklch(0.48 0.035 68)": {
-        "count": 14,
+        "count": 11,
         "sample": "a.app-bar__link"
       },
       "oklch(0.965 0.018 86)": {
         "count": 8,
         "sample": "a.skip-link"
       },
-      "rgb(166, 75, 42)": {
-        "count": 3,
-        "sample": "a.text-link"
-      },
       "rgb(143, 63, 34)": {
-        "count": 1,
+        "count": 3,
         "sample": "output.review-notice"
       },
-      "rgb(47, 107, 74)": {
-        "count": 1,
-        "sample": "span.pill"
+      "rgb(255, 255, 255)": {
+        "count": 3,
+        "sample": "button.btn"
       }
     },
     "background": {
       "rgba(0, 0, 0, 0)": {
-        "count": 57,
+        "count": 56,
         "sample": "div.app-bar__inner"
-      },
-      "oklch(0.965 0.018 86)": {
-        "count": 3,
-        "sample": "div.app-shell.app-frame"
-      },
-      "oklch(0.985 0.012 86)": {
-        "count": 3,
-        "sample": "button.btn.secondary"
       },
       "oklch(0.235 0.028 65)": {
         "count": 2,
         "sample": "a.skip-link"
       },
+      "oklch(0.965 0.018 86)": {
+        "count": 2,
+        "sample": "div.app-shell.app-frame"
+      },
       "oklch(0.235 0.028 65 / 0.08)": {
         "count": 2,
         "sample": "a.app-bar__link.active"
       },
-      "rgb(227, 239, 231)": {
+      "oklch(0.985 0.012 86)": {
+        "count": 2,
+        "sample": "button.btn.secondary"
+      },
+      "oklch(0.923022 0.0245507 80.4472)": {
         "count": 1,
-        "sample": "span.pill"
+        "sample": "svg.lucide.lucide-check"
+      },
+      "rgb(166, 75, 42)": {
+        "count": 1,
+        "sample": "button.btn"
       }
     },
     "borderColor": {
       "rgb(147, 140, 128)": {
-        "count": 3,
+        "count": 2,
         "sample": "button.btn.ghost"
       },
       "rgb(230, 225, 216)": {
         "count": 1,
-        "sample": "section.publish-published"
+        "sample": "section.review-published"
+      },
+      "rgba(0, 0, 0, 0)": {
+        "count": 1,
+        "sample": "button.btn"
       }
     },
     "radius": {
       "0px": {
-        "count": 57,
+        "count": 56,
         "sample": "div.app-shell.app-frame"
       },
       "8px": {
@@ -10506,16 +11581,16 @@
       "50%": {
         "count": 1,
         "sample": "span.who__avatar"
-      },
-      "14px": {
-        "count": 1,
-        "sample": "section.publish-published"
       }
     },
     "fontFamily": {
       "Figtree, \"Trebuchet MS\", \"Segoe UI\", system-ui, sans-serif": {
-        "count": 67,
+        "count": 60,
         "sample": "a.skip-link"
+      },
+      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace": {
+        "count": 5,
+        "sample": "dd"
       },
       "\"Source Serif 4\", ui-serif, georgia, \"Times New Roman\", serif": {
         "count": 1,
@@ -10524,41 +11599,41 @@
     },
     "fontSize": {
       "16px": {
-        "count": 33,
+        "count": 35,
         "sample": "div.app-shell.app-frame"
       },
-      "14px": {
-        "count": 12,
-        "sample": "a.skip-link"
+      "13.6px": {
+        "count": 9,
+        "sample": "span.review-studio__lock"
       },
       "12.48px": {
         "count": 7,
         "sample": "span.brand-mark"
       },
-      "12px": {
-        "count": 7,
-        "sample": "span.who__avatar"
+      "14px": {
+        "count": 6,
+        "sample": "a.skip-link"
       },
-      "13.6px": {
+      "12.8px": {
         "count": 4,
-        "sample": "span.review-studio__lock"
+        "sample": "dt"
       },
-      "13.76px": {
+      "12px": {
         "count": 3,
-        "sample": "a.text-link"
+        "sample": "span.who__avatar"
       },
       "14.4px": {
         "count": 1,
         "sample": "output.review-notice"
       },
-      "20px": {
+      "34.56px": {
         "count": 1,
         "sample": "h2"
       }
     },
     "fontWeight": {
       "400": {
-        "count": 37,
+        "count": 41,
         "sample": "div.app-shell.app-frame"
       },
       "500": {
@@ -10566,11 +11641,11 @@
         "sample": "a.app-bar__link"
       },
       "600": {
-        "count": 12,
+        "count": 10,
         "sample": "a.skip-link"
       },
       "700": {
-        "count": 6,
+        "count": 2,
         "sample": "span.brand-name"
       },
       "800": {
@@ -10584,24 +11659,24 @@
         "sample": "div.app-shell.app-frame"
       },
       "20px": {
-        "count": 17,
+        "count": 13,
         "sample": "a.app-bar__link.active"
+      },
+      "20.4px": {
+        "count": 9,
+        "sample": "span.review-studio__lock"
       },
       "18.72px": {
         "count": 7,
         "sample": "span.brand-mark"
       },
-      "18px": {
-        "count": 6,
-        "sample": "span.who__avatar"
-      },
-      "20.4px": {
+      "19.2px": {
         "count": 4,
-        "sample": "span.review-studio__lock"
+        "sample": "dt"
       },
-      "19.264px": {
-        "count": 3,
-        "sample": "a.text-link"
+      "18px": {
+        "count": 2,
+        "sample": "span.who__avatar"
       },
       "21px": {
         "count": 1,
@@ -10615,9 +11690,9 @@
         "count": 1,
         "sample": "output.review-notice"
       },
-      "26.4px": {
+      "39.744px": {
         "count": 1,
-        "sample": "p.publish-published__lede"
+        "sample": "h2"
       }
     },
     "boxShadow": {},
@@ -10679,94 +11754,73 @@
         "weight": "400"
       },
       {
-        "text": "Published and assigned",
-        "color": "rgb(47, 107, 74)",
-        "background": "rgb(227, 239, 231)",
-        "size": "12px",
-        "weight": "600"
-      },
-      {
         "text": "The pack is published and assigned",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "20px",
+        "size": "34.56px",
         "weight": "500"
       },
       {
         "text": "Omar Nabil  now has the reviewed pack. The published version cannot change; a la",
-        "color": "oklch(0.48 0.035 68)",
+        "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "16px",
-        "weight": "400"
-      },
-      {
-        "text": "Teach the model  ·   Practice — Possible equivalent fractions",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "700"
-      },
-      {
-        "text": "Omar Nabil",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "14px",
         "weight": "400"
       },
       {
         "text": "Publication",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "12px",
-        "weight": "600"
+        "size": "12.8px",
+        "weight": "400"
       },
       {
-        "text": "01a1a74f-d3bf-7d2a-b2ef-df0401ec8693",
+        "text": "01a1a75f-14e2-714c-ab6b-9295b18179dd",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
+        "size": "13.6px",
         "weight": "400"
       },
       {
         "text": "Pack assignment",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "12px",
-        "weight": "600"
+        "size": "12.8px",
+        "weight": "400"
       },
       {
-        "text": "01a1a74f-d3fb-7dcd-b256-b52630d91ce8",
+        "text": "01a1a75f-14ff-7c68-b945-a3bcdd631dfa",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
+        "size": "13.6px",
         "weight": "400"
       },
       {
         "text": "Revision",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "12px",
-        "weight": "600"
+        "size": "12.8px",
+        "weight": "400"
       },
       {
         "text": "1",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
+        "size": "13.6px",
+        "weight": "400"
+      },
+      {
+        "text": "Learner link",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "12.8px",
         "weight": "400"
       },
       {
         "text": "Open the learner activity",
-        "color": "rgb(166, 75, 42)",
+        "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "13.76px",
-        "weight": "700"
-      },
-      {
-        "text": "The published version cannot change; a later edit starts a new revision.",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
+        "size": "13.6px",
         "weight": "400"
       },
       {
@@ -10780,75 +11834,79 @@
   },
   {
     "page": "published-phone",
-    "url": "http://localhost:37899/workspace?review=01a1a74e-f400-7eff-8629-be77b7a83ffa",
+    "url": "http://localhost:41509/workspace?review=01a1a75e-5c75-721f-afd2-bc2ed2043cbc",
     "viewport": "390x844",
-    "elements": 68,
-    "textBlocks": 22,
+    "elements": 66,
+    "textBlocks": 19,
     "color": {
       "oklch(0.235 0.028 65)": {
         "count": 41,
         "sample": "div.app-shell.app-frame"
       },
       "oklch(0.48 0.035 68)": {
-        "count": 14,
+        "count": 11,
         "sample": "a.app-bar__link"
       },
       "oklch(0.965 0.018 86)": {
         "count": 8,
         "sample": "a.skip-link"
       },
-      "rgb(166, 75, 42)": {
-        "count": 3,
-        "sample": "a.text-link"
-      },
       "rgb(143, 63, 34)": {
-        "count": 1,
+        "count": 3,
         "sample": "output.review-notice"
       },
-      "rgb(47, 107, 74)": {
-        "count": 1,
-        "sample": "span.pill"
+      "rgb(255, 255, 255)": {
+        "count": 3,
+        "sample": "button.btn"
       }
     },
     "background": {
       "rgba(0, 0, 0, 0)": {
-        "count": 57,
+        "count": 56,
         "sample": "div.app-bar__inner"
-      },
-      "oklch(0.965 0.018 86)": {
-        "count": 3,
-        "sample": "div.app-shell.app-frame"
-      },
-      "oklch(0.985 0.012 86)": {
-        "count": 3,
-        "sample": "button.btn.secondary"
       },
       "oklch(0.235 0.028 65)": {
         "count": 2,
         "sample": "a.skip-link"
       },
+      "oklch(0.965 0.018 86)": {
+        "count": 2,
+        "sample": "div.app-shell.app-frame"
+      },
       "oklch(0.235 0.028 65 / 0.08)": {
         "count": 2,
         "sample": "a.app-bar__link.active"
       },
-      "rgb(227, 239, 231)": {
+      "oklch(0.985 0.012 86)": {
+        "count": 2,
+        "sample": "button.btn.secondary"
+      },
+      "oklch(0.923022 0.0245507 80.4472)": {
         "count": 1,
-        "sample": "span.pill"
+        "sample": "svg.lucide.lucide-check"
+      },
+      "rgb(166, 75, 42)": {
+        "count": 1,
+        "sample": "button.btn"
       }
     },
     "borderColor": {
       "rgb(147, 140, 128)": {
-        "count": 3,
+        "count": 2,
         "sample": "button.btn.ghost"
       },
       "rgb(230, 225, 216)": {
         "count": 1,
-        "sample": "section.publish-published"
+        "sample": "section.review-published"
+      },
+      "rgba(0, 0, 0, 0)": {
+        "count": 1,
+        "sample": "button.btn"
       }
     },
     "radius": {
       "0px": {
-        "count": 57,
+        "count": 56,
         "sample": "div.app-shell.app-frame"
       },
       "8px": {
@@ -10866,16 +11924,16 @@
       "50%": {
         "count": 1,
         "sample": "span.who__avatar"
-      },
-      "14px": {
-        "count": 1,
-        "sample": "section.publish-published"
       }
     },
     "fontFamily": {
       "Figtree, \"Trebuchet MS\", \"Segoe UI\", system-ui, sans-serif": {
-        "count": 67,
+        "count": 60,
         "sample": "a.skip-link"
+      },
+      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace": {
+        "count": 5,
+        "sample": "dd"
       },
       "\"Source Serif 4\", ui-serif, georgia, \"Times New Roman\", serif": {
         "count": 1,
@@ -10884,41 +11942,41 @@
     },
     "fontSize": {
       "16px": {
-        "count": 33,
+        "count": 35,
         "sample": "div.app-shell.app-frame"
       },
-      "14px": {
-        "count": 12,
-        "sample": "a.skip-link"
+      "13.6px": {
+        "count": 9,
+        "sample": "span.review-studio__lock"
       },
       "12.48px": {
         "count": 7,
         "sample": "span.brand-mark"
       },
-      "12px": {
-        "count": 7,
-        "sample": "span.who__avatar"
+      "14px": {
+        "count": 6,
+        "sample": "a.skip-link"
       },
-      "13.6px": {
+      "12.8px": {
         "count": 4,
-        "sample": "span.review-studio__lock"
+        "sample": "dt"
       },
-      "13.76px": {
+      "12px": {
         "count": 3,
-        "sample": "a.text-link"
+        "sample": "span.who__avatar"
       },
       "14.4px": {
         "count": 1,
         "sample": "output.review-notice"
       },
-      "20px": {
+      "25.6px": {
         "count": 1,
         "sample": "h2"
       }
     },
     "fontWeight": {
       "400": {
-        "count": 37,
+        "count": 41,
         "sample": "div.app-shell.app-frame"
       },
       "500": {
@@ -10926,11 +11984,11 @@
         "sample": "a.app-bar__link"
       },
       "600": {
-        "count": 12,
+        "count": 10,
         "sample": "a.skip-link"
       },
       "700": {
-        "count": 6,
+        "count": 2,
         "sample": "span.brand-name"
       },
       "800": {
@@ -10944,24 +12002,24 @@
         "sample": "div.app-shell.app-frame"
       },
       "20px": {
-        "count": 17,
+        "count": 13,
         "sample": "a.app-bar__link.active"
+      },
+      "20.4px": {
+        "count": 9,
+        "sample": "span.review-studio__lock"
       },
       "18.72px": {
         "count": 7,
         "sample": "span.brand-mark"
       },
-      "18px": {
-        "count": 6,
-        "sample": "span.who__avatar"
-      },
-      "20.4px": {
+      "19.2px": {
         "count": 4,
-        "sample": "span.review-studio__lock"
+        "sample": "dt"
       },
-      "19.264px": {
-        "count": 3,
-        "sample": "a.text-link"
+      "18px": {
+        "count": 2,
+        "sample": "span.who__avatar"
       },
       "21px": {
         "count": 1,
@@ -10975,9 +12033,9 @@
         "count": 1,
         "sample": "output.review-notice"
       },
-      "26.4px": {
+      "29.44px": {
         "count": 1,
-        "sample": "p.publish-published__lede"
+        "sample": "h2"
       }
     },
     "boxShadow": {},
@@ -11039,94 +12097,73 @@
         "weight": "400"
       },
       {
-        "text": "Published and assigned",
-        "color": "rgb(47, 107, 74)",
-        "background": "rgb(227, 239, 231)",
-        "size": "12px",
-        "weight": "600"
-      },
-      {
         "text": "The pack is published and assigned",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "20px",
+        "size": "25.6px",
         "weight": "500"
       },
       {
         "text": "Omar Nabil  now has the reviewed pack. The published version cannot change; a la",
-        "color": "oklch(0.48 0.035 68)",
+        "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "16px",
-        "weight": "400"
-      },
-      {
-        "text": "Teach the model  ·   Practice — Possible equivalent fractions",
-        "color": "oklch(0.235 0.028 65)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "16px",
-        "weight": "700"
-      },
-      {
-        "text": "Omar Nabil",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.965 0.018 86)",
-        "size": "14px",
         "weight": "400"
       },
       {
         "text": "Publication",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "12px",
-        "weight": "600"
+        "size": "12.8px",
+        "weight": "400"
       },
       {
-        "text": "01a1a74f-e38a-7e70-b3ea-55342ea7bb46",
+        "text": "01a1a75f-21a0-7138-9702-7c5e359b71be",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
+        "size": "13.6px",
         "weight": "400"
       },
       {
         "text": "Pack assignment",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "12px",
-        "weight": "600"
+        "size": "12.8px",
+        "weight": "400"
       },
       {
-        "text": "01a1a74f-e3b6-7dc3-9f21-f7ed757fed66",
+        "text": "01a1a75f-21bd-7ada-87ed-0dc64cca0919",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
+        "size": "13.6px",
         "weight": "400"
       },
       {
         "text": "Revision",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "12px",
-        "weight": "600"
+        "size": "12.8px",
+        "weight": "400"
       },
       {
         "text": "1",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
+        "size": "13.6px",
+        "weight": "400"
+      },
+      {
+        "text": "Learner link",
+        "color": "oklch(0.48 0.035 68)",
+        "background": "oklch(0.985 0.012 86)",
+        "size": "12.8px",
         "weight": "400"
       },
       {
         "text": "Open the learner activity",
-        "color": "rgb(166, 75, 42)",
+        "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
-        "size": "13.76px",
-        "weight": "700"
-      },
-      {
-        "text": "The published version cannot change; a later edit starts a new revision.",
-        "color": "oklch(0.48 0.035 68)",
-        "background": "oklch(0.985 0.012 86)",
-        "size": "14px",
+        "size": "13.6px",
         "weight": "400"
       },
       {
@@ -11140,7 +12177,7 @@
   },
   {
     "page": "blocked-validation",
-    "url": "http://localhost:37899/workspace?draft=01a1a74e-f8aa-7de8-84fa-fc41632bb44a",
+    "url": "http://localhost:41509/workspace?draft=01a1a75e-5f34-757c-8159-51449a190c34",
     "viewport": "1440x900",
     "elements": 221,
     "textBlocks": 75,
@@ -12200,7 +13237,7 @@
   },
   {
     "page": "blocked-validation-phone",
-    "url": "http://localhost:37899/workspace?draft=01a1a74e-f8aa-7de8-84fa-fc41632bb44a",
+    "url": "http://localhost:41509/workspace?draft=01a1a75e-5f34-757c-8159-51449a190c34",
     "viewport": "390x844",
     "elements": 221,
     "textBlocks": 75,
@@ -13224,7 +14261,7 @@
   },
   {
     "page": "blocked-moderation",
-    "url": "http://localhost:37899/workspace?draft=01a1a74e-f97f-7a96-9ddc-f3ebb771b202",
+    "url": "http://localhost:41509/workspace?draft=01a1a75e-5fb8-7944-a37e-35fa20dbc3be",
     "viewport": "1440x900",
     "elements": 200,
     "textBlocks": 66,
@@ -14156,7 +15193,7 @@
         "weight": "400"
       },
       {
-        "text": "Request 01a1a74e-f97f-7a96-9ddc-f3ebb771b202.   Category: Instructions aimed at ",
+        "text": "Request 01a1a75e-5fb8-7944-a37e-35fa20dbc3be.   Category: Instructions aimed at ",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.966555 0.0166838 84.1511)",
         "size": "12.48px",
@@ -14173,7 +15210,7 @@
   },
   {
     "page": "blocked-moderation-phone",
-    "url": "http://localhost:37899/workspace?draft=01a1a74e-f97f-7a96-9ddc-f3ebb771b202",
+    "url": "http://localhost:41509/workspace?draft=01a1a75e-5fb8-7944-a37e-35fa20dbc3be",
     "viewport": "390x844",
     "elements": 200,
     "textBlocks": 66,
@@ -15077,7 +16114,7 @@
         "weight": "400"
       },
       {
-        "text": "Request 01a1a74e-f97f-7a96-9ddc-f3ebb771b202.   Category: Instructions aimed at ",
+        "text": "Request 01a1a75e-5fb8-7944-a37e-35fa20dbc3be.   Category: Instructions aimed at ",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.966555 0.0166838 84.1511)",
         "size": "12.48px",
