@@ -1,7 +1,7 @@
 [
   {
     "page": "landing-signedout",
-    "url": "http://localhost:40665/",
+    "url": "http://localhost:39063/",
     "viewport": "1440x900",
     "elements": 123,
     "textBlocks": 44,
@@ -624,7 +624,7 @@
   },
   {
     "page": "landing-phone",
-    "url": "http://localhost:40665/",
+    "url": "http://localhost:39063/",
     "viewport": "390x844",
     "elements": 123,
     "textBlocks": 44,
@@ -1247,7 +1247,7 @@
   },
   {
     "page": "landing-signedin",
-    "url": "http://localhost:40665/",
+    "url": "http://localhost:39063/",
     "viewport": "1440x900",
     "elements": 118,
     "textBlocks": 43,
@@ -1855,7 +1855,7 @@
   },
   {
     "page": "login",
-    "url": "http://localhost:40665/login",
+    "url": "http://localhost:39063/login",
     "viewport": "1440x900",
     "elements": 53,
     "textBlocks": 13,
@@ -2181,7 +2181,7 @@
   },
   {
     "page": "login-phone",
-    "url": "http://localhost:40665/login",
+    "url": "http://localhost:39063/login",
     "viewport": "390x844",
     "elements": 53,
     "textBlocks": 13,
@@ -2507,7 +2507,7 @@
   },
   {
     "page": "signup",
-    "url": "http://localhost:40665/sign-up",
+    "url": "http://localhost:39063/sign-up",
     "viewport": "1440x900",
     "elements": 44,
     "textBlocks": 11,
@@ -2815,7 +2815,7 @@
   },
   {
     "page": "signup-phone",
-    "url": "http://localhost:40665/sign-up",
+    "url": "http://localhost:39063/sign-up",
     "viewport": "390x844",
     "elements": 44,
     "textBlocks": 11,
@@ -3123,7 +3123,7 @@
   },
   {
     "page": "studio-composer",
-    "url": "http://localhost:40665/workspace",
+    "url": "http://localhost:39063/workspace",
     "viewport": "1440x900",
     "elements": 198,
     "textBlocks": 64,
@@ -3137,7 +3137,7 @@
         "sample": "a.text-link.app-bar__link"
       },
       "oklch(0.965 0.018 86)": {
-        "count": 26,
+        "count": 25,
         "sample": "a.skip-link"
       },
       "oklch(0.48 0.035 68)": {
@@ -3163,6 +3163,10 @@
       "rgb(255, 255, 255)": {
         "count": 1,
         "sample": "span.who__avatar"
+      },
+      "oklch(0.965 0.018 86 / 0.75)": {
+        "count": 1,
+        "sample": "div.teacher-hero__art-note"
       }
     },
     "background": {
@@ -3708,7 +3712,7 @@
       },
       {
         "text": "same whole, new view",
-        "color": "oklch(0.965 0.018 86)",
+        "color": "oklch(0.965 0.018 86 / 0.75)",
         "background": "rgb(143, 63, 34)",
         "size": "11.52px",
         "weight": "400"
@@ -4046,7 +4050,7 @@
   },
   {
     "page": "phone-studio",
-    "url": "http://localhost:40665/workspace",
+    "url": "http://localhost:39063/workspace",
     "viewport": "390x844",
     "elements": 198,
     "textBlocks": 64,
@@ -4060,7 +4064,7 @@
         "sample": "a.text-link.app-bar__link"
       },
       "oklch(0.965 0.018 86)": {
-        "count": 26,
+        "count": 25,
         "sample": "a.skip-link"
       },
       "oklch(0.48 0.035 68)": {
@@ -4086,6 +4090,10 @@
       "rgb(255, 255, 255)": {
         "count": 1,
         "sample": "span.who__avatar"
+      },
+      "oklch(0.965 0.018 86 / 0.75)": {
+        "count": 1,
+        "sample": "div.teacher-hero__art-note"
       }
     },
     "background": {
@@ -4607,7 +4615,7 @@
       },
       {
         "text": "same whole, new view",
-        "color": "oklch(0.965 0.018 86)",
+        "color": "oklch(0.965 0.018 86 / 0.75)",
         "background": "rgb(143, 63, 34)",
         "size": "11.52px",
         "weight": "400"
@@ -4945,7 +4953,7 @@
   },
   {
     "page": "dashboard",
-    "url": "http://localhost:40665/dashboard",
+    "url": "http://localhost:39063/dashboard",
     "viewport": "1440x900",
     "elements": 42,
     "textBlocks": 15,
@@ -5202,7 +5210,7 @@
         "weight": "700"
       },
       {
-        "text": "Results as of  2026-11-04T13:29:57.924Z .",
+        "text": "Results as of  2026-11-04T14:21:35.502Z .",
         "color": "oklch(0.925 0.026 86)",
         "background": "oklch(0.965 0.018 86)",
         "size": "16px",
@@ -5240,7 +5248,7 @@
   },
   {
     "page": "dashboard-phone",
-    "url": "http://localhost:40665/dashboard",
+    "url": "http://localhost:39063/dashboard",
     "viewport": "390x844",
     "elements": 42,
     "textBlocks": 15,
@@ -5497,7 +5505,7 @@
         "weight": "700"
       },
       {
-        "text": "Results as of  2026-11-04T13:30:00.080Z .",
+        "text": "Results as of  2026-11-04T14:21:37.702Z .",
         "color": "oklch(0.925 0.026 86)",
         "background": "oklch(0.965 0.018 86)",
         "size": "16px",
@@ -5535,7 +5543,7 @@
   },
   {
     "page": "learn-board",
-    "url": "http://localhost:40665/learn?assignment=01a1a6c0-10c4-7bf9-859e-feb538640970&variant=variant-1",
+    "url": "http://localhost:39063/learn?assignment=01a1a6ef-4cea-7ee2-9f63-961c806ebad9&variant=variant-1",
     "viewport": "1440x900",
     "elements": 53,
     "textBlocks": 19,
@@ -5850,7 +5858,7 @@
   },
   {
     "page": "learn-phone",
-    "url": "http://localhost:40665/learn?assignment=01a1a6c0-10c4-7bf9-859e-feb538640970&variant=variant-1",
+    "url": "http://localhost:39063/learn?assignment=01a1a6ef-4cea-7ee2-9f63-961c806ebad9&variant=variant-1",
     "viewport": "390x844",
     "elements": 53,
     "textBlocks": 19,
@@ -6165,7 +6173,7 @@
   },
   {
     "page": "learn-missing-params",
-    "url": "http://localhost:40665/learn",
+    "url": "http://localhost:39063/learn",
     "viewport": "1440x900",
     "elements": 27,
     "textBlocks": 7,
@@ -6364,7 +6372,7 @@
   },
   {
     "page": "learn-signedout",
-    "url": "http://localhost:40665/learn?assignment=01a1a6c0-10c4-7bf9-859e-feb538640970&variant=variant-1",
+    "url": "http://localhost:39063/learn?assignment=01a1a6ef-4cea-7ee2-9f63-961c806ebad9&variant=variant-1",
     "viewport": "1440x900",
     "elements": 18,
     "textBlocks": 5,
@@ -6516,7 +6524,7 @@
   },
   {
     "page": "review",
-    "url": "http://localhost:40665/workspace?review=01a1a6c0-21f1-771a-a112-01cc1b75d893",
+    "url": "http://localhost:39063/workspace?review=01a1a6ef-6732-7d1e-b744-4684df1403d1",
     "viewport": "1440x900",
     "elements": 316,
     "textBlocks": 170,
@@ -7069,7 +7077,7 @@
         "weight": "400"
       },
       {
-        "text": "01a1a6c0-21f1-771a-a112-01cc1b75d893",
+        "text": "01a1a6ef-6732-7d1e-b744-4684df1403d1",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "11.52px",
@@ -7300,7 +7308,7 @@
         "weight": "800"
       },
       {
-        "text": "01a1a6c0-21f1-771a-a112-01cc1b75d893",
+        "text": "01a1a6ef-6732-7d1e-b744-4684df1403d1",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.961943 0.0178547 83.6888)",
         "size": "11.52px",
@@ -8157,7 +8165,7 @@
   },
   {
     "page": "review-phone",
-    "url": "http://localhost:40665/workspace?review=01a1a6c0-21f1-771a-a112-01cc1b75d893",
+    "url": "http://localhost:39063/workspace?review=01a1a6ef-6732-7d1e-b744-4684df1403d1",
     "viewport": "390x844",
     "elements": 316,
     "textBlocks": 170,
@@ -8702,7 +8710,7 @@
         "weight": "400"
       },
       {
-        "text": "01a1a6c0-21f1-771a-a112-01cc1b75d893",
+        "text": "01a1a6ef-6732-7d1e-b744-4684df1403d1",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "11.52px",
@@ -8933,7 +8941,7 @@
         "weight": "800"
       },
       {
-        "text": "01a1a6c0-21f1-771a-a112-01cc1b75d893",
+        "text": "01a1a6ef-6732-7d1e-b744-4684df1403d1",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.961943 0.0178547 83.6888)",
         "size": "11.52px",
@@ -9790,7 +9798,7 @@
   },
   {
     "page": "publish",
-    "url": "http://localhost:40665/workspace?review=01a1a6c0-230d-7f75-9f38-e0cc76c0acf9",
+    "url": "http://localhost:39063/workspace?review=01a1a6ef-684c-7176-bed0-d5f29191378c",
     "viewport": "1440x900",
     "elements": 84,
     "textBlocks": 31,
@@ -10110,7 +10118,7 @@
         "weight": "400"
       },
       {
-        "text": "820c09a2e59a",
+        "text": "11bc71f64f7f",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "16px",
@@ -10253,7 +10261,7 @@
   },
   {
     "page": "publish-phone",
-    "url": "http://localhost:40665/workspace?review=01a1a6c0-230d-7f75-9f38-e0cc76c0acf9",
+    "url": "http://localhost:39063/workspace?review=01a1a6ef-684c-7176-bed0-d5f29191378c",
     "viewport": "390x844",
     "elements": 84,
     "textBlocks": 31,
@@ -10573,7 +10581,7 @@
         "weight": "400"
       },
       {
-        "text": "820c09a2e59a",
+        "text": "11bc71f64f7f",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "16px",
@@ -10716,7 +10724,7 @@
   },
   {
     "page": "published",
-    "url": "http://localhost:40665/workspace?review=01a1a6c0-271f-7b60-af08-2feb176f44fd",
+    "url": "http://localhost:39063/workspace?review=01a1a6ef-6b5d-7b42-b61f-34b47647a17f",
     "viewport": "1440x900",
     "elements": 65,
     "textBlocks": 19,
@@ -11028,7 +11036,7 @@
         "weight": "400"
       },
       {
-        "text": "01a1a6c0-eba0-73f9-bf81-e52e59c42bfd",
+        "text": "01a1a6f0-2e02-702a-aacd-c94392f02c8f",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "13.6px",
@@ -11042,7 +11050,7 @@
         "weight": "400"
       },
       {
-        "text": "01a1a6c0-ebc1-75ab-bef9-0c108414a707",
+        "text": "01a1a6f0-2e22-7c46-9b49-dfc10ca78040",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "13.6px",
@@ -11087,7 +11095,7 @@
   },
   {
     "page": "published-phone",
-    "url": "http://localhost:40665/workspace?review=01a1a6c0-2b1b-7d9c-a500-0682ff5defa4",
+    "url": "http://localhost:39063/workspace?review=01a1a6ef-6e92-71ac-8c08-16551f4d80cb",
     "viewport": "390x844",
     "elements": 65,
     "textBlocks": 19,
@@ -11399,7 +11407,7 @@
         "weight": "400"
       },
       {
-        "text": "01a1a6c0-f8da-7402-8c0e-8042a7589a99",
+        "text": "01a1a6f0-3b9c-754d-9f00-33a22cb97498",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "13.6px",
@@ -11413,7 +11421,7 @@
         "weight": "400"
       },
       {
-        "text": "01a1a6c0-f8fa-7d0a-ae30-bd248f5fb425",
+        "text": "01a1a6f0-3bb4-7a38-a30b-2694aed7f444",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "13.6px",
@@ -11458,7 +11466,7 @@
   },
   {
     "page": "blocked-validation",
-    "url": "http://localhost:40665/workspace?draft=01a1a6c0-2e45-7e8e-a13c-ba339a441d3d",
+    "url": "http://localhost:39063/workspace?draft=01a1a6ef-7167-7916-9246-df3c62c891b8",
     "viewport": "1440x900",
     "elements": 220,
     "textBlocks": 75,
@@ -11471,13 +11479,13 @@
         "count": 41,
         "sample": "a.text-link.app-bar__link"
       },
-      "oklch(0.965 0.018 86)": {
-        "count": 26,
-        "sample": "a.skip-link"
-      },
       "oklch(0.48 0.035 68)": {
         "count": 26,
         "sample": "p.teacher-hero__description"
+      },
+      "oklch(0.965 0.018 86)": {
+        "count": 25,
+        "sample": "a.skip-link"
       },
       "oklch(0.235 0.028 65 / 0.62)": {
         "count": 11,
@@ -11502,6 +11510,10 @@
       "rgb(255, 255, 255)": {
         "count": 1,
         "sample": "span.who__avatar"
+      },
+      "oklch(0.965 0.018 86 / 0.75)": {
+        "count": 1,
+        "sample": "div.teacher-hero__art-note"
       },
       "oklch(0.235 0.028 65 / 0.64)": {
         "count": 1,
@@ -12115,7 +12127,7 @@
       },
       {
         "text": "same whole, new view",
-        "color": "oklch(0.965 0.018 86)",
+        "color": "oklch(0.965 0.018 86 / 0.75)",
         "background": "rgb(143, 63, 34)",
         "size": "11.52px",
         "weight": "400"
@@ -12530,7 +12542,7 @@
   },
   {
     "page": "blocked-validation-phone",
-    "url": "http://localhost:40665/workspace?draft=01a1a6c0-2e45-7e8e-a13c-ba339a441d3d",
+    "url": "http://localhost:39063/workspace?draft=01a1a6ef-7167-7916-9246-df3c62c891b8",
     "viewport": "390x844",
     "elements": 220,
     "textBlocks": 75,
@@ -12543,13 +12555,13 @@
         "count": 41,
         "sample": "a.text-link.app-bar__link"
       },
-      "oklch(0.965 0.018 86)": {
-        "count": 26,
-        "sample": "a.skip-link"
-      },
       "oklch(0.48 0.035 68)": {
         "count": 26,
         "sample": "p.teacher-hero__description"
+      },
+      "oklch(0.965 0.018 86)": {
+        "count": 25,
+        "sample": "a.skip-link"
       },
       "oklch(0.235 0.028 65 / 0.62)": {
         "count": 11,
@@ -12574,6 +12586,10 @@
       "rgb(255, 255, 255)": {
         "count": 1,
         "sample": "span.who__avatar"
+      },
+      "oklch(0.965 0.018 86 / 0.75)": {
+        "count": 1,
+        "sample": "div.teacher-hero__art-note"
       },
       "oklch(0.235 0.028 65 / 0.64)": {
         "count": 1,
@@ -13155,7 +13171,7 @@
       },
       {
         "text": "same whole, new view",
-        "color": "oklch(0.965 0.018 86)",
+        "color": "oklch(0.965 0.018 86 / 0.75)",
         "background": "rgb(143, 63, 34)",
         "size": "11.52px",
         "weight": "400"
@@ -13570,7 +13586,7 @@
   },
   {
     "page": "blocked-moderation",
-    "url": "http://localhost:40665/workspace?draft=01a1a6c0-2ed3-7604-b385-f207cee297f5",
+    "url": "http://localhost:39063/workspace?draft=01a1a6ef-71f0-77ed-8847-c26961fb0b6b",
     "viewport": "1440x900",
     "elements": 199,
     "textBlocks": 66,
@@ -13584,7 +13600,7 @@
         "sample": "a.text-link.app-bar__link"
       },
       "oklch(0.965 0.018 86)": {
-        "count": 26,
+        "count": 25,
         "sample": "a.skip-link"
       },
       "oklch(0.48 0.035 68)": {
@@ -13610,6 +13626,10 @@
       "rgb(255, 255, 255)": {
         "count": 2,
         "sample": "span.who__avatar"
+      },
+      "oklch(0.965 0.018 86 / 0.75)": {
+        "count": 1,
+        "sample": "div.teacher-hero__art-note"
       }
     },
     "background": {
@@ -14175,7 +14195,7 @@
       },
       {
         "text": "same whole, new view",
-        "color": "oklch(0.965 0.018 86)",
+        "color": "oklch(0.965 0.018 86 / 0.75)",
         "background": "rgb(143, 63, 34)",
         "size": "11.52px",
         "weight": "400"
@@ -14510,7 +14530,7 @@
         "weight": "400"
       },
       {
-        "text": "Request 01a1a6c0-2ed3-7604-b385-f207cee297f5.   Category: Instructions aimed at ",
+        "text": "Request 01a1a6ef-71f0-77ed-8847-c26961fb0b6b.   Category: Instructions aimed at ",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.966555 0.0166838 84.1511)",
         "size": "12.48px",
@@ -14527,7 +14547,7 @@
   },
   {
     "page": "blocked-moderation-phone",
-    "url": "http://localhost:40665/workspace?draft=01a1a6c0-2ed3-7604-b385-f207cee297f5",
+    "url": "http://localhost:39063/workspace?draft=01a1a6ef-71f0-77ed-8847-c26961fb0b6b",
     "viewport": "390x844",
     "elements": 199,
     "textBlocks": 66,
@@ -14541,7 +14561,7 @@
         "sample": "a.text-link.app-bar__link"
       },
       "oklch(0.965 0.018 86)": {
-        "count": 26,
+        "count": 25,
         "sample": "a.skip-link"
       },
       "oklch(0.48 0.035 68)": {
@@ -14567,6 +14587,10 @@
       "rgb(255, 255, 255)": {
         "count": 2,
         "sample": "span.who__avatar"
+      },
+      "oklch(0.965 0.018 86 / 0.75)": {
+        "count": 1,
+        "sample": "div.teacher-hero__art-note"
       }
     },
     "background": {
@@ -15108,7 +15132,7 @@
       },
       {
         "text": "same whole, new view",
-        "color": "oklch(0.965 0.018 86)",
+        "color": "oklch(0.965 0.018 86 / 0.75)",
         "background": "rgb(143, 63, 34)",
         "size": "11.52px",
         "weight": "400"
@@ -15443,7 +15467,7 @@
         "weight": "400"
       },
       {
-        "text": "Request 01a1a6c0-2ed3-7604-b385-f207cee297f5.   Category: Instructions aimed at ",
+        "text": "Request 01a1a6ef-71f0-77ed-8847-c26961fb0b6b.   Category: Instructions aimed at ",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.966555 0.0166838 84.1511)",
         "size": "12.48px",
