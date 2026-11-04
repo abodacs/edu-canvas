@@ -167,6 +167,31 @@ describe("lesson draft validation", () => {
     ]);
   });
 
+  it.each(["sourceItems", "targetItems"] as const)(
+    "blocks a variant whose %s share one label",
+    (group) => {
+      const draft = structuredClone(createValidProviderDraft());
+      const [firstVariant] = draft.variants;
+      for (const item of firstVariant[group]) {
+        item.label = "Word problems";
+      }
+
+      const result = validateProviderDraft(draft);
+
+      expect(result.ok).toBeFalsy();
+      expect(result.diagnostics).toStrictEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            severity: "error",
+            code: "DUPLICATE_ITEM_LABEL",
+            variantId: firstVariant.id,
+            field: group,
+          }),
+        ])
+      );
+    }
+  );
+
   it("blocks a relationship that reuses a target for another source", () => {
     const draft = structuredClone(createValidProviderDraft());
     const [firstVariant] = draft.variants;
