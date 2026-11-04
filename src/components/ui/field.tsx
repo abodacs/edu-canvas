@@ -30,8 +30,9 @@ const joinIds = (ids: readonly (string | undefined)[]): string | undefined => {
 A labelled control with optional help and error text.
 
 The control keeps an id it already has; otherwise `useId` supplies one.
-`aria-describedby` lists the help id and then the error id, and
-`aria-invalid`/`data-invalid` appear only while an error is shown.
+`aria-describedby` lists the help id and then the error id. A shown error
+sets `aria-invalid` and `data-invalid`; without one, a caller-supplied
+`aria-invalid` is kept and `data-invalid` is absent.
 */
 const Field = ({
   label,
@@ -76,7 +77,9 @@ const Field = ({
           helpId,
           errorId,
         ]),
-        "aria-invalid": hasError ? true : undefined,
+        // A shown error always marks the control invalid; without one the
+        // caller's own aria-invalid (for example a server-side state) stays.
+        "aria-invalid": hasError ? true : control.props["aria-invalid"],
         "aria-required": required ? true : control.props["aria-required"],
       })}
       {error ? (
