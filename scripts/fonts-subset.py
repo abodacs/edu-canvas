@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the Hanken Grotesk Variable web-font subsets used by the site.
+"""Build the self-hosted web-font subsets used by the site.
 
 Run by hand (needs: pip install fonttools brotli):
 
@@ -11,15 +11,21 @@ in the build. Rerun when --check reports drift: a font package bump, characters
 used outside the kept ranges, font-weight values outside the axis range, or new
 OpenType feature usage. See scripts/fonts/README.md.
 
-Splits the variable font into two faces of one CSS family:
+Each family in FAMILIES (Source Serif 4 for display, Figtree for body) is split
+into two faces of one CSS family:
 - core:     ASCII + the punctuation most pages use (curly quotes, dashes,
-            ellipsis). Preloaded from src/routes/__root.tsx.
-- extended: Latin-1 Supplement + Latin Extended-A. Loaded only when a page
-            renders one of its characters (unicode-range).
+            ellipsis). The Figtree core face is preloaded from
+            src/routes/__root.tsx; the display core face is not.
+- extended: Latin-1 Supplement + Latin Extended-A + the few maths symbols
+            the lesson copy uses. Loaded only when a page renders one of
+            its characters (unicode-range).
 
-Deliberately NOT covered (they fall back to the next font in the stack, the
-same as today): Arabic, U+2248 (≈), combining marks, and every block outside
-the two kept ranges.
+The @font-face rules live in src/styles/tokens.css and are maintained by hand;
+this script never rewrites a stylesheet. --check compares the unicode-range
+each face declares there against the generated subsets.
+
+Deliberately NOT covered (they fall back to the next font in the stack): Arabic,
+U+21D2 (⇒), combining marks, and every block outside the kept ranges.
 """
 
 from __future__ import annotations
@@ -29,6 +35,7 @@ import io
 import json
 import re
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 from brotli import __version__ as brotli_version
@@ -37,20 +44,95 @@ from fontTools.subset import Subsetter, Options
 from fontTools.ttLib import TTFont
 
 ROOT = Path(__file__).resolve().parents[1]
-VENDOR_TTF = ROOT / "scripts" / "fonts" / "vendor" / "HankenGrotesk-wght.ttf"
-FONTSSOURCE_PKG = ROOT / "node_modules" / "@fontsource-variable" / "hanken-grotesk"
+VENDOR_DIR = ROOT / "scripts" / "fonts" / "vendor"
 OUT_DIR = ROOT / "public" / "fonts"
-CSS_FILE = ROOT / "src" / "styles.css"
+TOKENS_CSS = ROOT / "src" / "styles" / "tokens.css"
 
-FONT_FAMILY = "Hanken Grotesk Variable"
+
+@dataclass(frozen=True)
+class Family:
+    """One self-hosted family. `css_family` is the name stylesheets use;
+    `internal_family` is written into the subset's name table. They differ
+    when the upstream licence reserves a font name: the OFL forbids a
+    modified font (a subset is one) from carrying a Reserved Font Name."""
+
+    key: str
+    role: str
+    css_family: str
+    internal_family: str
+    postscript_prefix: str
+    vendor_file: str
+    licence_file: str
+    licence: str
+    version: str
+    origin: str
+    output_prefix: str
+    preload: bool
+    # Licence copy served next to the woff2 files (public/fonts/).
+    public_licence: str
+    # nameID 0 written into the subset. None keeps the upstream notice.
+    copyright: str | None = None
+    # Codepoints inside the kept ranges that this family's upstream lacks and
+    # that the site renders anyway; they fall back to the next font in the
+    # stack. --check fails on any other kept codepoint the family cannot draw.
+    fallback: tuple[int, ...] = ()
+
+
+FAMILIES: tuple[Family, ...] = (
+    Family(
+        key="display",
+        role="display: page titles, section and card headings (h1-h3)",
+        css_family="Source Serif 4",
+        # Adobe reserves the font name "Source"; the subset is renamed.
+        internal_family="Schole Display Serif",
+        postscript_prefix="ScholeDisplaySerif",
+        vendor_file="SourceSerif4Variable-Roman.ttf",
+        licence_file="SourceSerif4-OFL.md",
+        licence="OFL-1.1 (Reserved Font Name: Source)",
+        version="4.005",
+        origin="https://github.com/adobe-fonts/source-serif/blob/2823e993c53fca27c5c8749f529b56a5a7c77b6b/VAR/SourceSerif4Variable-Roman.ttf",
+        output_prefix="source-serif-4",
+        preload=False,
+        public_licence="OFL-SourceSerif4.md",
+        # Upstream's notice names the reserved font name; the subset keeps the
+        # copyright and licence but not the reserved name (see rename()).
+        copyright="Copyright 2014 - 2023 Adobe (http://www.adobe.com/). "
+        "Licensed under the SIL Open Font License, Version 1.1.",
+    ),
+    Family(
+        key="sans",
+        role="body: everything you read or act on",
+        css_family="Figtree",
+        internal_family="Figtree",
+        postscript_prefix="Figtree",
+        vendor_file="Figtree-wght.ttf",
+        licence_file="Figtree-OFL.txt",
+        licence="OFL-1.1 (no Reserved Font Name)",
+        version="2.002",
+        origin="https://github.com/google/fonts/blob/a60a77e14f28abd4ef243a1b5dfc48df0cec5205/ofl/figtree/Figtree%5Bwght%5D.ttf",
+        output_prefix="figtree",
+        preload=True,
+        public_licence="OFL-Figtree.txt",
+        # Figtree 2.002 has no ≈; body copy renders it in the stack's next
+        # font (Trebuchet MS / Segoe UI / system-ui).
+        fallback=(0x2248,),
+    ),
+)
+
 # Usage spans 400 (body default) to 800; WEIGHT_MIN/MAX describe the range of
 # font-weight values the site may request, used by --check drift scanning.
 # The wght axis itself is deliberately NOT instanced to this range: fontTools
 # partial instancing re-derives gvar/HVAR deltas and shifts sub-pixel advances
-# at intermediate weights (measured ±0.2px per ~340px run at 650/700/750),
-# which reads as a visual regression. Keep the full 100-900 axis.
+# at intermediate weights (measured ±0.2px per ~340px run at 650/700/750 on the
+# previous family), which reads as a visual regression. Keep the full axes.
 WEIGHT_MIN, WEIGHT_MAX = 400, 800
-KEEP_FEATURES = ("ccmp", "kern", "liga", "locl", "mark", "mkmk")
+# tnum backs the two font-variant-numeric: tabular-nums rules.
+KEEP_FEATURES = ("ccmp", "kern", "liga", "locl", "mark", "mkmk", "tnum")
+# font-variant* / font-style: italic rule counts --check accepts. Raising
+# either means revisiting KEEP_FEATURES or shipping an italic face. The one
+# italic rule (progress.css provisional note) renders a synthesised oblique.
+VARIANT_RULES_BASELINE = 2
+ITALIC_RULES_BASELINE = 1
 
 # Core: ASCII printable + curly quotes, dashes, ellipsis + the middle dot
 # separator used by the landing page, the studio header, and the preview
@@ -63,18 +145,31 @@ CORE_RANGES: tuple[tuple[int, int], ...] = (
     (0x201C, 0x201D),  # left/right double quotes
     (0x2026, 0x2026),  # ellipsis
 )
-# Extended: Latin-1 Supplement + Latin Extended-A (unicode-range face).
+# Extended: Latin-1 Supplement + Latin Extended-A + maths symbols the lesson
+# and review copy render (unicode-range face).
 EXTENDED_RANGES: tuple[tuple[int, int], ...] = (
     (0xA0, 0xFF),
     (0x100, 0x17F),
+    (0x2192, 0x2192),  # rightwards arrow
+    (0x2212, 0x2212),  # minus sign
+    (0x2248, 0x2248),  # almost equal to
+    (0x2260, 0x2260),  # not equal to
+    (0x2264, 0x2265),  # less/greater-than or equal to
 )
 
-# Characters allowed to fall back without flagging drift (they already render
-# via the fallback stack today: Arabic UI copy, the ≈ sign).
-FALLBACK_RANGES: tuple[tuple[int, int], ...] = ((0x600, 0x6FF), (0x2248, 0x2248))
+# Characters allowed to fall back without flagging drift: Arabic UI copy, the
+# ⇒ sign (absent upstream), and two code-only characters that never render
+# (byte-order mark, replacement character).
+FALLBACK_RANGES: tuple[tuple[int, int], ...] = (
+    (0x600, 0x6FF),
+    (0x21D2, 0x21D2),
+    (0xFEFF, 0xFEFF),
+    (0xFFFD, 0xFFFD),
+)
 
-CORE_FILE = "hanken-grotesk-variable-core.woff2"
-EXTENDED_FILE = "hanken-grotesk-variable-extended.woff2"
+
+def output_name(family: Family, face: str) -> str:
+    return f"{family.output_prefix}-{face}.woff2"
 
 
 def expand(ranges: tuple[tuple[int, int], ...]) -> set[int]:
@@ -96,17 +191,42 @@ def unicode_range_str(cps: set[int]) -> str:
     return ", ".join(parts)
 
 
-def rename(font: TTFont, style: str) -> None:
-    """Set internal names. 'Hanken Grotesk' carries no OFL Reserved Font Name
-    (verified in the upstream OFL.txt copyright line), so derived names are
-    permitted; keep family aligned with the CSS family for tooling clarity."""
-    ps = f"HankenGroteskVariable-{style}"
-    for name_id, value in ((1, FONT_FAMILY), (4, f"{FONT_FAMILY} {style}"), (6, ps)):
-        font["name"].setName(value, name_id, 3, 1, 0x409)
-        font["name"].setName(value, name_id, 1, 0, 0)
+def rename(font: TTFont, family: Family, style: str) -> None:
+    """Set internal names to the family's non-reserved internal name and keep
+    the copyright notice and licence the OFL requires a Modified Version to
+    carry."""
+    ps = f"{family.postscript_prefix}-{style}"
+    name_table = font["name"]
+    copyright_notice = family.copyright or name_table.getDebugName(0) or ""
+    licence_text = name_table.getDebugName(13) or (
+        "This Font Software is licensed under the SIL Open Font License, Version 1.1."
+    )
+    # Drop every localized and variation-instance name so no reserved name
+    # survives in another language record; then write the ones we need.
+    keep = {0, 1, 2, 4, 6, 13, 14}
+    name_table.names = [n for n in name_table.names if n.nameID in keep]
+    for name_id, value in (
+        (0, copyright_notice),
+        (1, family.internal_family),
+        (2, "Regular"),
+        (4, f"{family.internal_family} {style}"),
+        (6, ps),
+        (13, licence_text),
+        (14, "https://openfontlicense.org"),
+    ):
+        name_table.removeNames(nameID=name_id)
+        name_table.setName(value, name_id, 3, 1, 0x409)
+        name_table.setName(value, name_id, 1, 0, 0)
+    # fvar/STAT instance names point at removed name IDs; drop named instances
+    # (the CSS addresses the axes directly) and STAT, which only labels them.
+    if "fvar" in font:
+        font["fvar"].instances = []
+    if "STAT" in font:
+        del font["STAT"]
 
 
 def subset_woff2(
+    family: Family,
     ranges: tuple[tuple[int, int], ...],
     style: str,
     exclude: set[int] | None = None,
@@ -114,12 +234,12 @@ def subset_woff2(
     wanted = expand(ranges) - (exclude or set())
     # recalcTimestamp=False keeps head.modified stable so outputs are
     # byte-deterministic across runs (required by --check).
-    font = TTFont(VENDOR_TTF, recalcTimestamp=False)
+    font = TTFont(VENDOR_DIR / family.vendor_file, recalcTimestamp=False)
     cmap = font.getBestCmap()
     kept = {cp for cp in wanted if cp in cmap}
     missing = wanted - kept
     if missing:
-        print(f"  note: {style}: {len(missing)} requested codepoints absent upstream, excluded: "
+        print(f"  note: {family.css_family} {style}: {len(missing)} requested codepoints absent upstream, excluded: "
               + ", ".join(f"U+{cp:04X}" for cp in sorted(missing)))
 
     opts = Options()
@@ -127,12 +247,14 @@ def subset_woff2(
     opts.hinting = False  # drop prep/fpgm/cvt + TrueType instructions
     opts.name_IDs = "*"
     opts.name_languages = "*"
+    # Subsetting invalidates any digital signature.
+    opts.drop_tables = [*opts.drop_tables, "DSIG"]
     subsetter = Subsetter(options=opts)
     subsetter.populate(unicodes=sorted(kept))
     subsetter.subset(font)
-    # The wght axis is intentionally left at its full 100-900 range; see the
+    # Axes are intentionally left at their full upstream range; see the
     # WEIGHT_MIN/MAX note above for why partial instancing is not used.
-    rename(font, style)
+    rename(font, family, style)
 
     font.flavor = "woff2"
     buf = io.BytesIO()
@@ -144,7 +266,7 @@ def subset_woff2(
     got = set(out_font.getBestCmap())
     if got != kept:
         raise SystemExit(
-            f"{style}: generated cmap mismatch: extra={sorted(got - kept)[:8]} "
+            f"{family.css_family} {style}: generated cmap mismatch: extra={sorted(got - kept)[:8]} "
             f"missing={sorted(kept - got)[:8]}"
         )
     axes = [(a.axisTag, a.minValue, a.maxValue) for a in out_font["fvar"].axes]
@@ -154,9 +276,12 @@ def subset_woff2(
         if tbl in out_font:
             feats |= {r.FeatureTag for r in out_font[tbl].table.FeatureList.FeatureRecord}
     tables = set(out_font.keys())
-    for probe in ("fpgm", "prep", "cvt "):
+    for probe in ("fpgm", "prep", "cvt ", "DSIG"):
         if probe in tables:
-            raise SystemExit(f"{style}: hinting table {probe!r} survived subsetting")
+            raise SystemExit(f"{family.css_family} {style}: table {probe!r} survived subsetting")
+    names = " ".join(str(n) for n in out_font["name"].names)
+    if family.internal_family != family.css_family and "Source" in names:
+        raise SystemExit(f"{family.css_family} {style}: reserved name survived in the name table")
     return data, {
         "bytes": len(data),
         "sha256": sha256(data),
@@ -197,34 +322,58 @@ def scan_source() -> tuple[dict, list[str]]:
     ]
 
 
-def build_all() -> tuple[dict[str, tuple[bytes, dict]], dict]:
-    vendor_sha = sha256(VENDOR_TTF.read_bytes())
-    fontsource_version = "absent"
-    if FONTSSOURCE_PKG.exists():
-        fontsource_version = json.loads((FONTSSOURCE_PKG / "package.json").read_text())["version"]
-    core_data, core_info = subset_woff2(CORE_RANGES, "Core")
+def build_family(family: Family) -> tuple[dict[str, tuple[bytes, dict]], dict]:
+    vendor_bytes = (VENDOR_DIR / family.vendor_file).read_bytes()
+    core_data, core_info = subset_woff2(family, CORE_RANGES, "Core")
     # Extended excludes anything the core face already covers: unicode-ranges
     # of one family must stay disjoint, or the later-declared face wins and
     # defeats the split (measured: the browser fetched the extended file for
     # U+00B7 while core also declared it).
-    ext_data, ext_info = subset_woff2(EXTENDED_RANGES, "Extended", exclude=expand(CORE_RANGES))
+    ext_data, ext_info = subset_woff2(
+        family, EXTENDED_RANGES, "Extended", exclude=expand(CORE_RANGES)
+    )
+    core_file, ext_file = output_name(family, "core"), output_name(family, "extended")
+    source = TTFont(VENDOR_DIR / family.vendor_file, lazy=True)
+    entry = {
+        "family": family.css_family,
+        "role": family.role,
+        "internalName": family.internal_family,
+        "version": family.version,
+        "licence": family.licence,
+        "licenceFile": f"scripts/fonts/vendor/{family.licence_file}",
+        "origin": family.origin,
+        "vendor": {
+            "file": f"scripts/fonts/vendor/{family.vendor_file}",
+            "sha256": sha256(vendor_bytes),
+        },
+        "axes": [[a.axisTag, a.minValue, a.maxValue] for a in source["fvar"].axes],
+        "preload": family.preload,
+        "publicLicence": f"public/fonts/{family.public_licence}",
+        "fallbackCodepoints": [f"U+{cp:04X}" for cp in family.fallback],
+        "outputs": {core_file: core_info, ext_file: ext_info},
+    }
+    return {core_file: (core_data, core_info), ext_file: (ext_data, ext_info)}, entry
+
+
+def build_all() -> tuple[dict[str, tuple[bytes, dict]], dict]:
+    results: dict[str, tuple[bytes, dict]] = {}
+    families = []
+    for family in FAMILIES:
+        files, entry = build_family(family)
+        results.update(files)
+        families.append(entry)
     manifest = {
-        "family": FONT_FAMILY,
+        "manifestVersion": 2,
         "weightRange": [WEIGHT_MIN, WEIGHT_MAX],
         "featuresKept": list(KEEP_FEATURES),
-        "vendor": {
-            "file": "scripts/fonts/vendor/HankenGrotesk-wght.ttf",
-            "sha256": vendor_sha,
-            "fontsourceReferenceVersion": fontsource_version,
-        },
         "tools": {
             "python": sys.version.split()[0],
             "fonttools": fonttools_version,
             "brotli": brotli_version,
         },
-        "outputs": {CORE_FILE: core_info, EXTENDED_FILE: ext_info},
+        "families": families,
     }
-    return {CORE_FILE: (core_data, core_info), EXTENDED_FILE: (ext_data, ext_info)}, manifest
+    return results, manifest
 
 
 def write_outputs() -> None:
@@ -235,8 +384,23 @@ def write_outputs() -> None:
         print(f"{name}: {info['bytes']} bytes, {info['glyphs']} glyphs, axes={info['axes']}")
         print(f"  features={info['features']}")
         print(f"  unicode-range: {info['unicodeRange']}")
+    for family in FAMILIES:
+        licence = (VENDOR_DIR / family.licence_file).read_bytes()
+        (OUT_DIR / family.public_licence).write_bytes(licence)
     (OUT_DIR / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
-    print(f"wrote {OUT_DIR / 'manifest.json'}")
+    print(f"wrote {OUT_DIR / 'manifest.json'} and the licence copies")
+
+
+def declared_ranges() -> dict[str, str]:
+    """Map each @font-face src file in tokens.css to its unicode-range."""
+    css = TOKENS_CSS.read_text()
+    found: dict[str, str] = {}
+    for block in re.findall(r"@font-face\s*\{([^}]*)\}", css):
+        src = re.search(r'url\("/fonts/([^"]+)"\)', block)
+        rng = re.search(r"unicode-range:\s*([^;]+);", block)
+        if src and rng:
+            found[src.group(1)] = " ".join(rng.group(1).split())
+    return found
 
 
 def check() -> int:
@@ -248,14 +412,56 @@ def check() -> int:
     except FileNotFoundError:
         print("CHECK FAIL: public/fonts/manifest.json missing; run scripts/fonts-subset.py")
         return 2
-    for name, (_, info) in current.items():
-        old_info = old.get("outputs", {}).get(name)
+    old_outputs = {
+        name: info
+        for entry in old.get("families", [])
+        for name, info in entry.get("outputs", {}).items()
+    }
+    declared = declared_ranges()
+    for name, (data, info) in current.items():
+        old_info = old_outputs.get(name)
         if old_info is None or old_info["sha256"] != info["sha256"]:
-            print(f"CHECK FAIL: {name} differs from committed output; rerun scripts/fonts-subset.py")
+            print(f"CHECK FAIL: {name} differs from committed manifest; rerun scripts/fonts-subset.py")
             code = 2
+        on_disk = OUT_DIR / name
+        if not on_disk.exists() or sha256(on_disk.read_bytes()) != info["sha256"]:
+            print(f"CHECK FAIL: public/fonts/{name} differs from a fresh build; rerun scripts/fonts-subset.py")
+            code = 2
+        if declared.get(name) != info["unicodeRange"]:
+            print(
+                f"CHECK FAIL: tokens.css unicode-range for {name} is {declared.get(name)!r}; "
+                f"expected {info['unicodeRange']!r}"
+            )
+            code = 2
+    for stale in sorted(set(declared) - set(current)):
+        print(f"CHECK FAIL: tokens.css declares {stale}, which no family builds")
+        code = 2
     kept = expand(CORE_RANGES) | expand(EXTENDED_RANGES)
     allowed = kept | expand(FALLBACK_RANGES) | {c for c in range(0x80, 0xA0)}
     stray = {cp for cp in facts["chars"] if cp not in allowed}
+    for family in FAMILIES:
+        drawable = set(TTFont(VENDOR_DIR / family.vendor_file, lazy=True).getBestCmap())
+        wanted = {cp for cp in facts["chars"] if cp in kept}
+        undrawn = wanted - drawable - set(family.fallback)
+        if undrawn:
+            print(
+                f"CHECK FAIL: {family.css_family} cannot draw characters used in src: "
+                + ", ".join(f"U+{cp:04X} {chr(cp)!r}" for cp in sorted(undrawn))
+            )
+            print("  add them to the family's fallback tuple on purpose, or pick a family that has them.")
+            code = 3
+        stale = {cp for cp in family.fallback if cp in drawable}
+        if stale:
+            print(
+                f"CHECK FAIL: {family.css_family} fallback lists characters the font draws: "
+                + ", ".join(f"U+{cp:04X}" for cp in sorted(stale))
+            )
+            code = 3
+        public = OUT_DIR / family.public_licence
+        vendor = VENDOR_DIR / family.licence_file
+        if not public.exists() or public.read_bytes() != vendor.read_bytes():
+            print(f"CHECK FAIL: public/fonts/{family.public_licence} must equal {vendor.relative_to(ROOT)}")
+            code = 2
     if stray:
         print(
             "CHECK FAIL: characters outside kept ranges found in src: "
@@ -267,15 +473,22 @@ def check() -> int:
     if bad_weights:
         print(f"CHECK FAIL: font-weight values outside {WEIGHT_MIN}-{WEIGHT_MAX}: {sorted(bad_weights)}")
         code = 4
-    if facts["italicUses"]:
-        print(f"CHECK FAIL: font-style: italic found ({facts['italicUses']}); no italic face is shipped")
+    if facts["italicUses"] > ITALIC_RULES_BASELINE:
+        print(
+            f"CHECK FAIL: font-style: italic rule count is {facts['italicUses']} "
+            f"(baseline {ITALIC_RULES_BASELINE}); no italic face is shipped"
+        )
         code = 5
-    if facts["variantLines"] != 1:
-        print(f"CHECK NOTE: font-variant* rule count is {facts['variantLines']} (baseline 1); "
-              "confirm KEEP_FEATURES still matches usage")
+    if facts["variantLines"] != VARIANT_RULES_BASELINE:
+        print(f"CHECK NOTE: font-variant* rule count is {facts['variantLines']} "
+              f"(baseline {VARIANT_RULES_BASELINE}); confirm KEEP_FEATURES still matches usage")
         code = max(code, 6)
     if code == 0:
-        print(f"CHECK OK: {len(files)} source files, outputs match manifest, no drift")
+        families = ", ".join(f.css_family for f in FAMILIES)
+        print(
+            f"CHECK OK: {families}; {len(current)} faces match manifest and tokens.css; "
+            f"{len(files)} source files, no drift"
+        )
     return code
 
 

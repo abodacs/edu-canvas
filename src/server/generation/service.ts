@@ -113,6 +113,9 @@ export interface GenerationCancellationCommand {
   requestId: string;
 }
 
+/** The owning teacher and the persisted request a draft read names. */
+export type GenerationReadCommand = GenerationCancellationCommand;
+
 interface NormalizedCommandInput extends NormalizedGenerationRequest {
   idempotencyKey: string;
   requestHash: string;
@@ -1248,6 +1251,25 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         updatedAt: timestamp,
       };
       return runAttemptWithSourceUsage(record, input, command.actor.sessionId);
+    },
+
+    /**
+    Read one persisted draft for its owning teacher. A missing request, another
+    teacher's request, and another tenant's request are one indistinguishable
+    refusal, so the read never reveals whether a draft exists (PT-19).
+    */
+    async read(
+      command: GenerationReadCommand
+    ): Promise<GenerationServiceResult> {
+      assertTeacherCanGenerate(command.actor);
+      const record = await options.persistence.readGeneration(
+        command.actor.tenantId,
+        command.requestId
+      );
+      if (!record || record.teacherId !== command.actor.actorId) {
+        throw new IdentityError("FORBIDDEN");
+      }
+      return resultFor(record);
     },
 
     async cancel(

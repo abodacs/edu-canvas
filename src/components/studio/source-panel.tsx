@@ -891,7 +891,7 @@ const SourcePanelHeader = ({
   return (
     <>
       <div className="source-panel__heading">
-        <p className="studio-kicker">A real source, bounded</p>
+        <p className="kicker">A real source, bounded</p>
         <h3 id="source-panel-heading">
           {}
           <span tabIndex={-1} ref={focusTargetReference}>

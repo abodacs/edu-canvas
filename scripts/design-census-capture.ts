@@ -14,10 +14,11 @@ shadow, plus every text block with its effective background for the AA check.
 Default output is .scratch/ui-gate/census.json; `--write` replaces
 scripts/design-census.json, the input the budget check reads.
 
-Known gap: the 2026-11-02 census also listed review and blocked-generation
-states, but its captures of them were error screens (28 elements each). Those
-states need a generated draft owned by a signed-in teacher; they join this set
-when the seed provides one.
+The page list is built after the seeds run (`censusPages`), so the seeded
+review, publish, published, and blocked states (scripts/ui-gate/seed.ts,
+scripts/ui-gate/views.ts) carry real request ids. Every page waits for its
+`ready` selector; a page that lands on an error screen fails the capture
+instead of contributing a near-empty record.
 */
 /* eslint-disable no-await-in-loop -- pages are captured one at a time so each starts from a settled render. */
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -26,50 +27,156 @@ import path from "node:path";
 import { chromium } from "playwright-core";
 
 import { loadEnvironmentFile, withScratchApp } from "./ui-gate/app";
-import { learnerQuery, signedInState } from "./ui-gate/session";
+import { gateSeedScripts, readSeedOutputs } from "./ui-gate/seed-output";
+import { signedInState } from "./ui-gate/session";
+import {
+  assertOnPath,
+  dashboardReady,
+  learnBoardReady,
+  loginFormReady,
+  reachState,
+  readyTimeoutMs,
+  seededViews,
+  viewUrl,
+} from "./ui-gate/views";
 
+import type { SeedOutputs } from "./ui-gate/seed-output";
 import type { Audience, StorageState } from "./ui-gate/session";
+import type { ViewSpec } from "./ui-gate/views";
 import type { Browser } from "playwright-core";
 
 interface CensusPage {
+  /** The census record name the budget counts. */
   readonly name: string;
   readonly path: string;
   readonly audience: Audience;
   readonly phone?: boolean;
+  /** Selector that proves the page reached its state; never a bare `main`. */
+  readonly ready: string;
+  /** A seeded view whose clicks and `ready` selector reach the state. */
+  readonly view?: ViewSpec;
 }
 
-const PAGES: readonly CensusPage[] = [
-  { name: "landing-signedout", path: "/", audience: "public" },
-  { name: "landing-phone", path: "/", audience: "public", phone: true },
-  { name: "landing-signedin", path: "/", audience: "teacher" },
-  { name: "login", path: "/login", audience: "public" },
-  { name: "login-phone", path: "/login", audience: "public", phone: true },
-  { name: "signup", path: "/sign-up", audience: "public" },
-  { name: "signup-phone", path: "/sign-up", audience: "public", phone: true },
-  { name: "studio-composer", path: "/workspace", audience: "teacher" },
+const landingReady = "#page-title.hero-headline";
+const signUpReady = "main:has(#sign-up-heading) form.auth-form";
+const studioReady = "#lesson-prompt";
+const learnMissingParamsReady =
+  "main .learn-status:has-text('Open the link your teacher shared')";
+const learnSignedOutReady = "main .learn-status a[href='/login']";
+
+const ROUTE_PAGES: readonly CensusPage[] = [
+  {
+    name: "landing-signedout",
+    path: "/",
+    audience: "public",
+    ready: landingReady,
+  },
+  {
+    name: "landing-phone",
+    path: "/",
+    audience: "public",
+    phone: true,
+    ready: landingReady,
+  },
+  {
+    name: "landing-signedin",
+    path: "/",
+    audience: "teacher",
+    ready: landingReady,
+  },
+  { name: "login", path: "/login", audience: "public", ready: loginFormReady },
+  {
+    name: "login-phone",
+    path: "/login",
+    audience: "public",
+    phone: true,
+    ready: loginFormReady,
+  },
+  { name: "signup", path: "/sign-up", audience: "public", ready: signUpReady },
+  {
+    name: "signup-phone",
+    path: "/sign-up",
+    audience: "public",
+    phone: true,
+    ready: signUpReady,
+  },
+  {
+    name: "studio-composer",
+    path: "/workspace",
+    audience: "teacher",
+    ready: studioReady,
+  },
   {
     name: "phone-studio",
     path: "/workspace",
     audience: "teacher",
     phone: true,
+    ready: studioReady,
   },
-  { name: "dashboard", path: "/dashboard", audience: "teacher" },
+  {
+    name: "dashboard",
+    path: "/dashboard",
+    audience: "teacher",
+    ready: dashboardReady,
+  },
   {
     name: "dashboard-phone",
     path: "/dashboard",
     audience: "teacher",
     phone: true,
+    ready: dashboardReady,
   },
-  { name: "learn-board", path: "/learn?{learner}", audience: "student" },
+  {
+    name: "learn-board",
+    path: "/learn?{learner}",
+    audience: "student",
+    ready: learnBoardReady,
+  },
   {
     name: "learn-phone",
     path: "/learn?{learner}",
     audience: "student",
     phone: true,
+    ready: learnBoardReady,
   },
-  { name: "learn-missing-params", path: "/learn", audience: "student" },
-  { name: "learn-signedout", path: "/learn?{learner}", audience: "public" },
+  {
+    name: "learn-missing-params",
+    path: "/learn",
+    audience: "student",
+    ready: learnMissingParamsReady,
+  },
+  {
+    name: "learn-signedout",
+    path: "/learn?{learner}",
+    audience: "public",
+    ready: learnSignedOutReady,
+  },
 ];
+
+/**
+Every census page for one run: the route pages plus each seeded view at
+desktop and phone (`review`, `review-phone`, …), resolved against this run's
+seed output.
+*/
+const censusPages = (seed: SeedOutputs): CensusPage[] => {
+  const seeded = seededViews.flatMap((view) =>
+    (["desktop", "phone"] as const).map((viewport) => ({
+      name: viewport === "phone" ? `${view.key}-phone` : view.key,
+      path: viewUrl("", view, { seed, viewport }),
+      audience: view.audience,
+      phone: viewport === "phone",
+      ready: view.ready,
+      view,
+    }))
+  );
+  return [
+    ...ROUTE_PAGES.map((page) => ({
+      ...page,
+      path: page.path.replace("{learner}", seed.learnerQuery),
+    })),
+    ...seeded,
+  ];
+};
 
 const desktop = { width: 1440, height: 900 };
 const phone = { width: 390, height: 844 };
@@ -174,14 +281,14 @@ const collect = (): Record<string, unknown> => {
 const capture = async (
   browser: Browser,
   baseUrl: string,
-  learner: string
+  pages: readonly CensusPage[]
 ): Promise<Record<string, unknown>[]> => {
   const states = new Map<Audience, StorageState>([
     ["teacher", await signedInState(browser, baseUrl, "teacher")],
     ["student", await signedInState(browser, baseUrl, "student")],
   ]);
   const records: Record<string, unknown>[] = [];
-  for (const page of PAGES) {
+  for (const page of pages) {
     const viewport = page.phone ? phone : desktop;
     const context = await browser.newContext({
       viewport,
@@ -189,9 +296,20 @@ const capture = async (
       storageState: states.get(page.audience),
     });
     const tab = await context.newPage();
-    const url = `${baseUrl}${page.path.replace("{learner}", learner)}`;
+    const url = `${baseUrl}${page.path}`;
     try {
       await tab.goto(url, { waitUntil: "load" });
+      if (page.view) {
+        await reachState(tab, page.view);
+      } else {
+        await tab
+          .locator(page.ready)
+          .first()
+          .waitFor({ state: "visible", timeout: readyTimeoutMs });
+        // A redirect (a lost session sending a page to /login) is a wrong
+        // state even when the new page renders cleanly.
+        assertOnPath(tab, new URL(url).pathname);
+      }
       await tab.waitForTimeout(settleMs);
       records.push({
         page: page.name,
@@ -220,16 +338,13 @@ const main = async (): Promise<number> => {
   const outcome = await withScratchApp(
     {
       prefix: "edu_canvas_census",
-      seedScripts: ["scripts/student-probe/seed.ts"],
+      seedScripts: gateSeedScripts,
     },
     async ({ baseUrl, seedOutputs }) => {
+      const pages = censusPages(readSeedOutputs(seedOutputs));
       const browser = await chromium.launch({ executablePath: chromiumPath });
       try {
-        const records = await capture(
-          browser,
-          baseUrl,
-          learnerQuery(seedOutputs[0])
-        );
+        const records = await capture(browser, baseUrl, pages);
         mkdirSync(path.dirname(out), { recursive: true });
         writeFileSync(out, `${JSON.stringify(records, null, 2)}\n`);
         const failed = records.filter((record) => "error" in record);

@@ -245,6 +245,23 @@ export const publicGenerationResultSchema = z
   })
   .strict();
 
+/**
+GET /api/lessons/:draftId — one persisted draft for its owning teacher. The
+public result is the same projection a fresh generation returns; `prompt` is
+the teacher's own objective, so a reopened draft can be retried or revised
+with the request it was generated from.
+*/
+export const storedGenerationResultSchema = z
+  .object({
+    result: publicGenerationResultSchema,
+    prompt: z.string(),
+  })
+  .strict();
+
+export type StoredGenerationResult = z.infer<
+  typeof storedGenerationResultSchema
+>;
+
 export type PublicLessonDraft = z.infer<typeof publicLessonDraftSchema>;
 export type PublicGenerationDiagnostic = z.infer<
   typeof publicGenerationDiagnosticSchema

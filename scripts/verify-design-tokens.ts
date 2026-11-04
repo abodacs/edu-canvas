@@ -2,7 +2,12 @@ import { readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { clampCeiling, totalOf } from "./design-token-ratchet.ts";
+import {
+  clampCeiling,
+  joinDurationDeclarations,
+  literalDurationCount,
+  totalOf,
+} from "./design-token-ratchet.ts";
 import type { Counts } from "./design-token-ratchet.ts";
 
 // Design-token gate for the UX revamp.
@@ -47,6 +52,7 @@ const RULES = [
   "teacher-alias",
   "undefined-token",
   "inline-style-literal",
+  "literal-duration",
 ] as const;
 
 type RuleId = (typeof RULES)[number];
@@ -59,6 +65,8 @@ interface ScanState {
   readonly declared: Set<string>;
   readonly referenced: Map<string, string>;
   file: string;
+  /** Inside an @font-face block, whose font-family is a descriptor, not usage. */
+  isFontFace: boolean;
 }
 
 const COLOUR_PATTERNS = [
@@ -153,23 +161,40 @@ const classify = (property: string, value: string): RuleId | null => {
 const incrementFor = (
   counts: Record<string, Counts>,
   rule: RuleId,
-  file: string
+  file: string,
+  by = 1
 ): void => {
   const perFile = counts[rule] ?? {};
-  perFile[file] = (perFile[file] ?? 0) + 1;
+  perFile[file] = (perFile[file] ?? 0) + by;
   counts[rule] = perFile;
 };
 
 const scanLine = (text: string, state: ScanState): void => {
+  if (text.startsWith("@font-face")) {
+    state.isFontFace = true;
+  }
+  if (state.isFontFace) {
+    if (text.includes("}")) {
+      state.isFontFace = false;
+    }
+    return;
+  }
   const colon = text.indexOf(":");
   if (text.startsWith("--") && colon > 2) {
     state.declared.add(text.slice(0, colon).trim());
   } else {
     const declaration = parseDeclaration(text);
+    // Counted per layer, so tokenising one layer of a multi-layer
+    // transition lowers the count.
+    const durations = declaration
+      ? literalDurationCount(declaration.property, declaration.value)
+      : 0;
     const rule = declaration
       ? classify(declaration.property, declaration.value)
       : null;
-    if (rule) {
+    if (durations > 0) {
+      incrementFor(state.counts, "literal-duration", state.file, durations);
+    } else if (rule) {
       incrementFor(state.counts, rule, state.file);
     }
   }
@@ -211,11 +236,15 @@ const scanStylesheets = async (): Promise<{
     declared: new Set<string>(),
     referenced: new Map<string, string>(),
     file: "",
+    isFontFace: false,
   };
 
   for (const [index, file] of files.entries()) {
     state.file = relative(projectRoot, file);
-    for (const text of stripComments(sources[index] ?? "")) {
+    const lines = joinDurationDeclarations(
+      stripComments(sources[index] ?? "").filter((text) => text.length > 0)
+    );
+    for (const text of lines) {
       if (text.length > 0) {
         scanLine(text, state);
       }

@@ -460,12 +460,18 @@ export const createPostgresPackPersistence = (
     listLearners: (tenantId) => {
       return withTenant(databaseUrl, tenantId, async (transaction) => {
         const rows = await transaction<PackRow[]>`
-          select id, display_name
+          select identities.id, identities.display_name
           from identities
-          where tenant_id = ${tenantId}
-            and role = 'student'
-            and is_active = true
-          order by display_name asc
+          where identities.tenant_id = ${tenantId}
+            and identities.role = 'student'
+            and identities.is_active = true
+            and exists (
+              select 1 from memberships
+              where memberships.tenant_id = identities.tenant_id
+                and memberships.learner_id = identities.id
+                and memberships.status = 'active'
+            )
+          order by identities.display_name asc
         `;
         return rows.map(mapLearner);
       });
@@ -474,12 +480,18 @@ export const createPostgresPackPersistence = (
     readLearner: (tenantId, learnerId) => {
       return withTenant(databaseUrl, tenantId, async (transaction) => {
         const rows = await transaction<PackRow[]>`
-          select id, display_name
+          select identities.id, identities.display_name
           from identities
-          where tenant_id = ${tenantId}
-            and id = ${learnerId}
-            and role = 'student'
-            and is_active = true
+          where identities.tenant_id = ${tenantId}
+            and identities.id = ${learnerId}
+            and identities.role = 'student'
+            and identities.is_active = true
+            and exists (
+              select 1 from memberships
+              where memberships.tenant_id = identities.tenant_id
+                and memberships.learner_id = identities.id
+                and memberships.status = 'active'
+            )
           limit 1
         `;
         return rows.length > 0 ? mapLearner(rows[0]) : undefined;

@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { clampCeiling } from "./design-token-ratchet.ts";
+import {
+  clampCeiling,
+  hasLiteralDuration,
+  joinDurationDeclarations,
+  literalDurationCount,
+} from "./design-token-ratchet.ts";
 
 const RULES = ["raw-color", "literal-radius"] as const;
 
@@ -49,5 +54,94 @@ describe(clampCeiling, () => {
       "raw-color": { "a.css": 9 },
       "literal-radius": {},
     });
+  });
+});
+
+describe(hasLiteralDuration, () => {
+  it("flags a literal time in a transition or animation", () => {
+    expect(
+      hasLiteralDuration("transition", "border-color 150ms ease")
+    ).toBeTruthy();
+    expect(
+      hasLiteralDuration("animation", "pulse 1.4s ease-in-out")
+    ).toBeTruthy();
+    expect(hasLiteralDuration("transition-duration", ".2s")).toBeTruthy();
+  });
+
+  it("accepts durations that come from tokens", () => {
+    expect(
+      hasLiteralDuration(
+        "transition",
+        "opacity var(--duration-fast) var(--ease-enter)"
+      )
+    ).toBeFalsy();
+    expect(
+      hasLiteralDuration("animation-duration", "var(--duration-base)")
+    ).toBeFalsy();
+  });
+
+  it("ignores delays and unrelated properties", () => {
+    expect(hasLiteralDuration("animation-delay", "30ms")).toBeFalsy();
+    expect(hasLiteralDuration("transition-property", "opacity")).toBeFalsy();
+    expect(hasLiteralDuration("inline-size", "12ms")).toBeFalsy();
+  });
+});
+
+describe("literal durations in shorthands", () => {
+  it("counts the duration, not the delay", () => {
+    expect(
+      hasLiteralDuration(
+        "animation",
+        "reveal var(--duration-base) var(--ease-enter) 120ms forwards"
+      )
+    ).toBeFalsy();
+    expect(
+      hasLiteralDuration(
+        "transition",
+        "opacity var(--duration-fast) var(--ease-enter) 30ms"
+      )
+    ).toBeFalsy();
+    expect(
+      hasLiteralDuration("animation", "reveal 400ms var(--ease-out) 120ms")
+    ).toBeTruthy();
+  });
+
+  it("counts every layer of a multi-layer value", () => {
+    expect(
+      literalDurationCount(
+        "transition",
+        "border-color 150ms ease, opacity var(--duration-fast), transform 150ms ease"
+      )
+    ).toBe(2);
+    expect(
+      hasLiteralDuration(
+        "transition",
+        "opacity var(--duration-fast) cubic-bezier(0.2, 0, 0, 1), transform 150ms ease"
+      )
+    ).toBeTruthy();
+  });
+
+  it("joins a value that spans lines before it is classified", () => {
+    const lines = joinDurationDeclarations([
+      ".card {",
+      "transition:",
+      "border-color 150ms var(--ease-out),",
+      "transform 150ms var(--ease-out);",
+      "}",
+    ]);
+    expect(lines).toStrictEqual([
+      ".card {",
+      "transition: border-color 150ms var(--ease-out), transform 150ms var(--ease-out);",
+      "}",
+    ]);
+    const [, declaration = ""] = lines;
+    expect(
+      hasLiteralDuration("transition", declaration.slice("transition:".length))
+    ).toBeTruthy();
+  });
+
+  it("leaves selectors and one-line declarations alone", () => {
+    const lines = ["a:hover,", "a:focus {", "transition: none;", "}"];
+    expect(joinDurationDeclarations(lines)).toStrictEqual(lines);
   });
 });
