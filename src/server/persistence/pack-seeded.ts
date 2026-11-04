@@ -12,7 +12,13 @@ import type {
 
 export interface SeededPackLearner extends PackLearner {
   tenantId: string;
+  /** False models a student whose membership is revoked or suspended. Default true. */
+  membershipActive?: boolean;
 }
+
+/** The same assignable-learner rule the PostgreSQL adapter applies. */
+const isAssignable = (learner: SeededPackLearner, tenantId: string): boolean =>
+  learner.tenantId === tenantId && learner.membershipActive !== false;
 
 export interface SeededPackStore {
   readonly versions: Map<string, PackVersionRecord>;
@@ -258,7 +264,7 @@ export const createSeededPackPersistence = (
     listLearners: (tenantId) => {
       return Promise.resolve(
         store.learners
-          .filter((learner) => learner.tenantId === tenantId)
+          .filter((learner) => isAssignable(learner, tenantId))
           .map((learner) => {
             return {
               id: learner.id,
@@ -271,7 +277,7 @@ export const createSeededPackPersistence = (
     readLearner: (tenantId, learnerId) => {
       const learner = store.learners.find(
         (candidate) =>
-          candidate.tenantId === tenantId && candidate.id === learnerId
+          isAssignable(candidate, tenantId) && candidate.id === learnerId
       );
       return Promise.resolve(
         learner

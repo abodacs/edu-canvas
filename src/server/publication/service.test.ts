@@ -57,6 +57,13 @@ const secondLearner: SeededPackLearner = {
   tenantId: syntheticSeed.tenant.id,
 };
 
+const unenrolledLearner: SeededPackLearner = {
+  id: "learner_unenrolled",
+  displayName: "Sami Haddad",
+  tenantId: syntheticSeed.tenant.id,
+  membershipActive: false,
+};
+
 interface Fixture {
   teacher: TeacherActor;
   open: () => Promise<ReviewPack>;
@@ -83,7 +90,11 @@ const createFixture = async (): Promise<Fixture> => {
     },
   });
 
-  const store = createSeededPackStore([demoLearner, secondLearner]);
+  const store = createSeededPackStore([
+    demoLearner,
+    secondLearner,
+    unenrolledLearner,
+  ]);
   const packs = createSeededPackPersistence({ store });
   const publishService = createPublicationService({
     generation: persistence,
@@ -491,5 +502,26 @@ describe("publication service", () => {
         operationKey: "publish-key-missing",
       });
     }, "PUBLICATION_FORBIDDEN");
+  });
+
+  it("refuses a student without an active membership before any write", async () => {
+    const fixture = await createFixture();
+
+    expect.hasAssertions();
+
+    const review = await fixture.open();
+    const approved = await approveAll(fixture, review);
+
+    await expectPublicationError(() => {
+      return fixture.publishService.publish(fixture.teacher, {
+        requestId,
+        versionId: approved.version.id,
+        expectedArtifactHash: approved.version.artifactHash,
+        learnerId: unenrolledLearner.id,
+        operationKey: "publish-key-unenrolled",
+      });
+    }, "PUBLICATION_FORBIDDEN");
+    expect(fixture.store.publications.size).toBe(0);
+    expect(fixture.store.assignments.size).toBe(0);
   });
 });

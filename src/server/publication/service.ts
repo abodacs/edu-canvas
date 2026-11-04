@@ -21,7 +21,7 @@ import {
 } from "./contracts";
 import { publicationError } from "./errors";
 import { createCanonicalHash } from "./hashes";
-import { bridgePublishedPack, learnerLinkFailure } from "./record-bridge";
+import { bridgePublishedPack } from "./record-bridge";
 import type { DecodedPackVersion } from "./contracts";
 import type {
   PackApprovalRecord,
@@ -747,8 +747,6 @@ export const createPublicationService = (
         validationResult: decoded.validationResult,
         ruleVersions: decoded.ruleVersions,
         provenance: decoded.provenance,
-      }).catch((error: unknown) => {
-        throw learnerLinkFailure(error);
       });
       learnerAssignmentId = bridged.assignmentId;
     }

@@ -198,6 +198,28 @@ const buildRuleVersions = (source: PackBridgeSource) => {
   };
 };
 
+/**
+Names the one refusal the assign step makes about the learner.
+
+`records.assign` answers FORBIDDEN when the learner is not an active student
+with an active membership. The publish check applies the same rule up front,
+so this only fires when a membership changes mid-publish. It used to surface
+as a 503 "try again later", which hid the cause. Every other code keeps its
+existing path: a stale head or an outage is transient, and an invalid input or
+an idempotency conflict is a server fault, not something the teacher fixes by
+choosing another learner.
+*/
+export const learnerLinkFailure = (error: unknown): unknown => {
+  if (!isRecordStoreError(error) || error.code !== "FORBIDDEN") {
+    return error;
+  }
+  return publicationError(
+    "LEARNER_LINK_REFUSED",
+    "The lesson is published, but this learner can no longer receive it. Restore the learner's class membership, then publish again.",
+    { detail: error.code, cause: error }
+  );
+};
+
 export const bridgePublishedPack = async (
   records: RecordPersistence,
   actor: Actor,
@@ -285,34 +307,19 @@ export const bridgePublishedPack = async (
     ruleVersions,
   });
 
-  const assignment = await records.assign(actor, {
-    operationKey: `bridge-assign-${source.packVersionId}`,
-    publicationId: recordPublication.id,
-    learnerId: source.learnerId,
-  });
+  const assignment = await records
+    .assign(actor, {
+      operationKey: `bridge-assign-${source.packVersionId}`,
+      publicationId: recordPublication.id,
+      learnerId: source.learnerId,
+    })
+    .catch((error: unknown) => {
+      throw learnerLinkFailure(error);
+    });
 
   return {
     versionId: version.id,
     publicationId: recordPublication.id,
     assignmentId: assignment.id,
   };
-};
-
-/**
-Names a records refusal raised while linking a published pack to its learner.
-
-Only an outage stays generic (and maps to 503). Any other records code is a
-decision the records boundary made about this input. Reporting that as
-"temporarily unavailable" hid the learner-membership mismatch behind a retry
-prompt, so the refusal keeps its records code in `detail`.
-*/
-export const learnerLinkFailure = (error: unknown): unknown => {
-  if (!isRecordStoreError(error) || error.code === "PERSISTENCE_UNAVAILABLE") {
-    return error;
-  }
-  return publicationError(
-    "LEARNER_LINK_REFUSED",
-    "The lesson could not be linked to that learner. Choose a learner on this class roster.",
-    { detail: error.code, cause: error }
-  );
 };

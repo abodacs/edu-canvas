@@ -330,11 +330,21 @@ describe(learnerLinkFailure, () => {
     expect((failure as PublicationError).detail).toBe("FORBIDDEN");
   });
 
-  it("leaves an outage and an unknown failure for the 503 path", () => {
-    const outage = recordError("PERSISTENCE_UNAVAILABLE");
+  it.each([
+    "PERSISTENCE_UNAVAILABLE",
+    "STALE_VERSION",
+    "INVALID_INPUT",
+    "IDEMPOTENCY_CONFLICT",
+    "NOT_FOUND",
+  ] as const)("leaves %s on its existing path", (code) => {
+    const error = recordError(code);
+
+    expect(learnerLinkFailure(error)).toBe(error);
+  });
+
+  it("leaves an unknown failure for the 503 path", () => {
     const unknown = new Error("socket closed");
 
-    expect(learnerLinkFailure(outage)).toBe(outage);
     expect(learnerLinkFailure(unknown)).toBe(unknown);
   });
 });
