@@ -1422,3 +1422,22 @@
     transform: none;
   }
 }
+
+/* The hand-off from a generated pack to the review gallery. */
+.teacher-result__cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-top: 1.25rem;
+  background: color-mix(in oklch, var(--card) 82%, var(--accent));
+  gap: 0.75rem 1.25rem;
+}
+
+.teacher-result__cta p {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 0.9rem;
+}

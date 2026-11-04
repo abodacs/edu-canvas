@@ -102,7 +102,7 @@ export const PublishConfirmation = ({
 
   return (
     <section className="review-confirm" aria-labelledby="confirm-heading">
-      <div className="review-variant__topline">
+      <div className="publish-variant__topline">
         <Button type="button" variant="outline" onClick={onBack}>
           <ArrowLeft aria-hidden="true" /> Back to the gallery
         </Button>
@@ -137,7 +137,7 @@ export const PublishConfirmation = ({
         </li>
       </ol>
 
-      <label className="review-edit-field">
+      <label className="publish-edit-field">
         <span>Assign to learner</span>
         <select
           aria-label="Assign to learner"

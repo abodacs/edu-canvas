@@ -8,27 +8,29 @@
     "literal-radius": {
       "src/styles/a2ui.css": 17,
       "src/styles/auth.css": 6,
-      "src/styles/base.css": 2,
+      "src/styles/base.css": 1,
       "src/styles/generation.css": 3,
-      "src/styles/landing.css": 3,
+      "src/styles/landing.css": 4,
       "src/styles/learn.css": 5,
       "src/styles/progress.css": 7,
-      "src/styles/review.css": 3,
+      "src/styles/publish.css": 1,
+      "src/styles/review.css": 2,
       "src/styles/source.css": 7,
-      "src/styles/studio.css": 24,
+      "src/styles/studio.css": 23,
       "src/styles/workspace.css": 6
     },
     "literal-font-size": {
-      "src/styles/a2ui.css": 33,
+      "src/styles/a2ui.css": 32,
       "src/styles/auth.css": 15,
-      "src/styles/base.css": 11,
+      "src/styles/base.css": 9,
       "src/styles/generation.css": 15,
-      "src/styles/landing.css": 26,
+      "src/styles/landing.css": 28,
       "src/styles/learn.css": 2,
       "src/styles/progress.css": 5,
-      "src/styles/review.css": 19,
+      "src/styles/publish.css": 6,
+      "src/styles/review.css": 14,
       "src/styles/source.css": 12,
-      "src/styles/studio.css": 56,
+      "src/styles/studio.css": 54,
       "src/styles/workspace.css": 8
     },
     "literal-font-family": {
@@ -43,9 +45,10 @@
     "teacher-alias": {
       "src/styles/auth.css": 11,
       "src/styles/generation.css": 1,
-      "src/styles/review.css": 6,
+      "src/styles/publish.css": 2,
+      "src/styles/review.css": 4,
       "src/styles/source.css": 7,
-      "src/styles/studio.css": 112,
+      "src/styles/studio.css": 109,
       "src/styles/workspace.css": 14
     },
     "undefined-token": {
