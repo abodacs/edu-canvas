@@ -2,7 +2,12 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-import { judgeSliceDiff, mapIssues, ownershipMapSchema } from "./ux-ownership";
+import {
+  judgeSliceDiff,
+  mapIssues,
+  ownershipMapSchema,
+  sliceDiffArguments,
+} from "./ux-ownership";
 
 /**
  * The UX ownership gate.
@@ -15,7 +20,7 @@ import { judgeSliceDiff, mapIssues, ownershipMapSchema } from "./ux-ownership";
 const projectRoot = fileURLToPath(new URL("../", import.meta.url));
 const mapPath = fileURLToPath(new URL("ux-ownership.json", import.meta.url));
 
-const git = (...gitArguments: string[]): string[] =>
+const git = (...gitArguments: readonly string[]): string[] =>
   execFileSync("git", gitArguments, { cwd: projectRoot, encoding: "utf-8" })
     .split("\n")
     .filter((line) => line.length > 0);
@@ -45,7 +50,7 @@ if ((base === undefined) !== (slice === undefined)) {
 }
 
 if (base !== undefined && slice !== undefined) {
-  const changedFiles = git("diff", "--name-only", `${base}...HEAD`);
+  const changedFiles = git(...sliceDiffArguments(base));
   const verdict = judgeSliceDiff(map, slice, changedFiles);
   issues.push(...verdict.violations);
   for (const file of verdict.unowned) {
