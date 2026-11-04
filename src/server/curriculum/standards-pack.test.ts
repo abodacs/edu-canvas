@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import { describe, expect, it } from "vitest";
 
 import { syntheticSeed } from "@/server/seed-data";
@@ -7,6 +9,9 @@ import {
   builtInStandardsPacks,
   fractionEquivalencePack,
   multistepWordProblemsPack,
+  ri52MainIdeaPack,
+  ri52Passage,
+  ri52PrimaryText,
 } from "./built-in-packs";
 import { createStandardsPackRegistry, standardsPackRegistry } from "./registry";
 import { standardsPackSchema } from "./standards-pack";
@@ -30,6 +35,7 @@ describe("standards pack schema", () => {
     expect(() =>
       standardsPackSchema.parse(multistepWordProblemsPack)
     ).not.toThrow();
+    expect(() => standardsPackSchema.parse(ri52MainIdeaPack)).not.toThrow();
   });
 
   it("rejects an unknown field at the top level", () => {
@@ -163,10 +169,91 @@ describe("built-in standards packs", () => {
     });
   });
 
-  it("keeps both packs in the built-in registry", () => {
+  it("keeps every pack in the built-in registry", () => {
     expect(
       builtInStandardsPacks.map((pack) => pack.standardCode)
-    ).toStrictEqual(["4.NF.A.1", "4.OA.A.3"]);
+    ).toStrictEqual(["4.NF.A.1", "4.OA.A.3", "RI.5.2"]);
+  });
+});
+
+describe("RI.5.2 primary-text pack", () => {
+  it("resolves with primary-text provenance, a content hash and matching only", () => {
+    const pack = standardsPackRegistry.resolve({
+      tenantId: seedTenantId,
+      standard: "RI.5.2",
+    });
+
+    expect(pack).toBeDefined();
+    expect(
+      pack && {
+        subject: pack.subject,
+        grade: pack.grade,
+        standardCode: pack.standardCode,
+        sourceKind: pack.source.kind,
+        contentHash: pack.source.contentHash,
+        allowedScreenPatterns: pack.allowedScreenPatterns,
+        allowedCatalogs: pack.allowedCatalogs,
+      }
+    ).toStrictEqual({
+      subject: "English Language Arts",
+      grade: 5,
+      standardCode: "RI.5.2",
+      sourceKind: "primary-text",
+      contentHash:
+        "c307a0c11f923164714f77bd3ce7c2622c734d165d2d8a61a0d32a46cbd097b3",
+      allowedScreenPatterns: ["matching"],
+      allowedCatalogs: [A2UI_CATALOG_VERSION],
+    });
+  });
+
+  it("cites the verbatim primary text and hashes it", () => {
+    const expectedHash = createHash("sha256")
+      .update(ri52PrimaryText, "utf-8")
+      .digest("hex");
+
+    expect(ri52MainIdeaPack.source.citation).toContain(ri52PrimaryText);
+    expect(ri52MainIdeaPack.source.citation).toContain(
+      "authored by hand from this primary text"
+    );
+    expect(ri52MainIdeaPack.source.contentHash).toBe(expectedHash);
+  });
+
+  it("authors a Grade 4 prerequisite into a two-node path", () => {
+    expect({
+      targetNodeId: ri52MainIdeaPack.graph.targetNodeId,
+      nodeIds: ri52MainIdeaPack.graph.nodes.map((node) => node.id),
+      edges: ri52MainIdeaPack.graph.edges,
+    }).toStrictEqual({
+      targetNodeId: "graph_node_two_or_more_main_ideas",
+      nodeIds: [
+        "graph_node_grade_four_main_idea",
+        "graph_node_two_or_more_main_ideas",
+      ],
+      edges: [
+        {
+          prerequisiteId: "graph_node_grade_four_main_idea",
+          successorId: "graph_node_two_or_more_main_ideas",
+        },
+      ],
+    });
+  });
+
+  it("declares text evidence as a hard block and the fit as teacher review", () => {
+    expect(ri52MainIdeaPack.answerRules).toStrictEqual([
+      {
+        kind: "text-evidence",
+        passage: ri52Passage,
+        unverifiedVerdict: "hard_block",
+      },
+      { kind: "teacher-review", unverifiedVerdict: "warning" },
+    ]);
+  });
+
+  it("keeps the passage within the A2UI Text cap", () => {
+    expect(ri52Passage.length).toBeLessThanOrEqual(500);
+    expect(ri52MainIdeaPack.promptFrame.taskLine.length).toBeLessThanOrEqual(
+      500
+    );
   });
 });
 

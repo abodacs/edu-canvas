@@ -172,7 +172,110 @@ export const multistepWordProblemsPack: StandardsPack =
     },
   });
 
+/**
+ * The verbatim CCSS primary text for RI.5.2 (thecorestandards.org mirror, the
+ * same source as the research record). The pack's content hash is computed
+ * from exactly this string.
+ */
+export const ri52PrimaryText =
+  "Determine two or more main ideas of a text and explain how they are supported by key details; summarize the text.";
+
+/**
+ * The short passage a learner matches against. It is 265 characters, inside
+ * the 500-character A2UI Text cap, and every source detail the fixture uses
+ * appears verbatim in it.
+ */
+export const ri52Passage =
+  "Bees carry pollen from one flower to the next. As they work, bees help plants make seeds. Farmers rent hives so their orchards produce more fruit. People depend on bees for food. Fewer wildflowers means bees have less to eat, so bees face threats to their survival.";
+
+/**
+ * RI.5.2 (English Language Arts, Grade 5) as a matching lesson. Learning
+ * Commons resolves the standard but returns zero components and zero
+ * prerequisites for ELA, so the skills and the Grade 4 prerequisite node are
+ * authored by hand from the primary text. The source kind and citation record
+ * that provenance; the pack never claims a Learning Commons prerequisite.
+ */
+export const ri52MainIdeaPack: StandardsPack = standardsPackSchema.parse({
+  tenantId,
+  id: "pack_ccss_ri_5_2_v1",
+  packVersion: "RI.5.2-v1",
+  subject: "English Language Arts",
+  grade: 5,
+  standardId: "standard_ccss_ri_5_2",
+  standardCode: "RI.5.2",
+  source: {
+    kind: "primary-text",
+    citation: `Common Core State Standards RI.5.2: ${ri52PrimaryText} Learning Commons resolves RI.5.2 but returns zero learning components and zero prerequisites for English Language Arts, so this pack's components and Grade 4 prerequisite node are authored by hand from this primary text.`,
+    license: "CC BY 4.0",
+    contentHash:
+      "c307a0c11f923164714f77bd3ce7c2622c734d165d2d8a61a0d32a46cbd097b3",
+  },
+  graph: {
+    version: "main-idea-detail-support-v1",
+    targetNodeId: "graph_node_two_or_more_main_ideas",
+    nodes: [
+      {
+        id: "graph_node_grade_four_main_idea",
+        label: "Determine the main idea of a text (RI.4.2)",
+        sequence: 1,
+        screenPurposeId: "screen_purpose_main_idea",
+        screenPurpose: "Choose the main idea of a short text.",
+      },
+      {
+        id: "graph_node_two_or_more_main_ideas",
+        label:
+          "Determine two or more main ideas and supporting details (RI.5.2)",
+        sequence: 2,
+        screenPurposeId: "screen_purpose_main_ideas_details",
+        screenPurpose: "Match each key detail to the main idea it supports.",
+      },
+    ],
+    edges: [
+      {
+        prerequisiteId: "graph_node_grade_four_main_idea",
+        successorId: "graph_node_two_or_more_main_ideas",
+      },
+    ],
+  },
+  components: [
+    {
+      id: "component_main_idea",
+      kind: "skill",
+      text: "Determine the main idea of a text.",
+    },
+    {
+      id: "component_supporting_details",
+      kind: "skill",
+      text: "Explain how key details support a main idea.",
+    },
+    {
+      id: "component_multiple_main_ideas",
+      kind: "concept",
+      text: "A text can develop more than one main idea.",
+    },
+  ],
+  answerRules: [
+    {
+      kind: "text-evidence",
+      passage: ri52Passage,
+      unverifiedVerdict: "hard_block",
+    },
+    { kind: "teacher-review", unverifiedVerdict: "warning" },
+  ],
+  allowedScreenPatterns: ["matching"],
+  allowedCatalogs: [A2UI_CATALOG_VERSION],
+  promptFrame: {
+    taskLine:
+      "Match each key detail from the passage to the main idea it supports.",
+    sourceGroupLabel: "Key details",
+    targetGroupLabel: "Main ideas",
+    sourceItemCount: 3,
+    targetItemCount: 3,
+  },
+});
+
 export const builtInStandardsPacks: readonly StandardsPack[] = [
   fractionEquivalencePack,
   multistepWordProblemsPack,
+  ri52MainIdeaPack,
 ];

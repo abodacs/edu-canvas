@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { multistepWordProblemsPack } from "@/server/curriculum/built-in-packs";
+import {
+  multistepWordProblemsPack,
+  ri52MainIdeaPack,
+} from "@/server/curriculum/built-in-packs";
 import { parseTenantId } from "@/server/identity/identifiers";
 import { syntheticTeacherActor } from "@/server/identity/test-actors";
 import { createSeededGenerationLimitStore } from "@/server/persistence/limits-seeded";
@@ -24,11 +27,13 @@ import type {
 import type { LessonGenerationInput } from "@/shared/generation-contract";
 
 /**
-Characterization of known gaps for the standards-generalization research
-record (docs/research/standards-generalization/README.md, break points B1, B6,
-B7). These tests pin what the gate does today with a non-fraction standard; they
-do not describe intended behavior. When slice S2 (curriculum-pack context) or S3
-(answer-rule registry) lands, the affected expectation must flip in that change.
+Characterization for the standards-generalization research record
+(docs/research/standards-generalization/README.md, break points B1, B6, B7).
+S2 and S3 flipped B1 and B6. #222 flips B7: the RI.5.2 pack authors a Grade 4
+prerequisite node and declares text-evidence and teacher-review rules, so the
+non-math path passes the structural gate. A separate case still pins the gate's
+refusal of a one-node path, so the structural rule was not weakened to fit the
+pack.
 */
 
 const tenantId = syntheticSeed.tenant.id;
@@ -196,36 +201,19 @@ const operationsSteps = [
   },
 ];
 
-const readingGraphVersion = "main-idea-v1";
-const readingContext: VersionedCurriculumContext = {
-  tenantId,
-  standardId: "standard_ccss_ri_5_2",
-  standardCode: "RI.5.2",
-  grade: 5,
-  language: "en",
-  packVersion: "RI.5.2-v1",
-  graphVersion: readingGraphVersion,
-  targetNodeId: "graph_node_main_ideas",
-  nodes: [
-    {
-      id: "graph_node_main_ideas",
-      label: "Determine main ideas and supporting details (RI.5.2)",
-      sequence: 1,
-      screenPurposeId: "screen_purpose_main_ideas",
-      screenPurpose: "Match each key detail to the main idea it supports.",
-    },
-  ],
-  edges: [],
-  answerRules: [{ kind: "teacher-review", unverifiedVerdict: "warning" }],
-  allowedScreenPatterns: ["matching"],
-};
+// The RI.5.2 pack is the authority for the non-math context. The pack authors
+// a Grade 4 prerequisite node, so the path is two steps even though Learning
+// Commons returns no ELA prerequisites.
+const readingContext: VersionedCurriculumContext =
+  createSyntheticCurriculumContext({
+    grade: 5,
+    language: "en",
+    standardId: ri52MainIdeaPack.standardId,
+  });
 
-const readingSteps = [
-  {
-    nodeId: "graph_node_main_ideas",
-    screenPurposeId: "screen_purpose_main_ideas",
-  },
-];
+const readingSteps = ri52MainIdeaPack.graph.nodes.map((node) => {
+  return { nodeId: node.id, screenPurposeId: node.screenPurposeId };
+});
 
 // The fraction control uses the pack whose answer rule is fraction equivalence,
 // not the 4.OA.A.3 context: the validator now reads the rule the pack declares.
@@ -488,7 +476,7 @@ describe("standards generalization: control for the answer rule", () => {
 });
 
 describe("standards generalization: RI.5.2 detail -> main-idea matching", () => {
-  it("B7: a one-node path fails the structural gate before semantic review", () => {
+  it("B7: the pack's two-node Grade 4 prerequisite path passes the structural gate", () => {
     const result = validateProviderDraft(
       buildDraft(detailPairs, readingSteps),
       {
@@ -496,17 +484,68 @@ describe("standards generalization: RI.5.2 detail -> main-idea matching", () => 
       }
     );
 
-    expect(result.ok).toBeFalsy();
-    expect(codesOf(result.diagnostics)).toStrictEqual(["INVALID_CONTRACT"]);
+    expect(result.ok).toBeTruthy();
+    expect(codesOf(result.diagnostics)).toStrictEqual([]);
   });
 
-  it("B7: past the structural gate, semantic review blocks the one-node path with PATH_TOO_SHORT", async () => {
+  it("B7: the pack's two-node path reaches ready-for-review with teacher review warnings", async () => {
     const acceptance = await accept(
       buildDraft(detailPairs, readingSteps),
       readingContext
     );
 
+    const curriculum = curriculumFindings(acceptance.diagnostics);
+
+    expect(acceptance.state).toBe("ready-for-review");
+    expect(codesOf(curriculum)).toStrictEqual([
+      "ANSWER_RELATIONSHIP_UNVERIFIED",
+    ]);
+    expect(curriculum).toHaveLength(12);
+    expect(
+      curriculum.every((finding) => finding.verdict === "warning")
+    ).toBeTruthy();
+  });
+
+  it("B7: a detail absent from the pack passage is hard blocked", async () => {
+    const [first, ...rest] = detailPairs;
+    if (!first) {
+      throw new Error("The fixture needs at least one pair.");
+    }
+    const absentDetailPairs = [
+      { ...first, source: "Bees build their hives inside flowers." },
+      ...rest,
+    ];
+
+    const acceptance = await accept(
+      buildDraft(absentDetailPairs, readingSteps),
+      readingContext
+    );
+    const curriculum = curriculumFindings(acceptance.diagnostics);
+
     expect(acceptance.state).toBe("blocked-by-validation");
-    expect(codesOf(acceptance.diagnostics)).toContain("PATH_TOO_SHORT");
+    expect(codesOf(curriculum)).toContain("ANSWER_MISMATCH");
+    expect(
+      curriculum.some(
+        (finding) =>
+          finding.code === "ANSWER_MISMATCH" && finding.verdict === "hard_block"
+      )
+    ).toBeTruthy();
+  });
+
+  it("B7: the structural gate still refuses a one-node path", () => {
+    const targetStep = readingSteps.at(-1);
+    if (!targetStep) {
+      throw new Error("The pack needs a target node.");
+    }
+
+    const result = validateProviderDraft(
+      buildDraft(detailPairs, [targetStep]),
+      {
+        expectedLanguage: "en",
+      }
+    );
+
+    expect(result.ok).toBeFalsy();
+    expect(codesOf(result.diagnostics)).toStrictEqual(["INVALID_CONTRACT"]);
   });
 });
