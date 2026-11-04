@@ -1,0 +1,57 @@
+[
+  {
+    "caseIdentifierUUID": "5e397edc-d7cc-11e8-824f-0242ac160002",
+    "statementCode": "RI.5.2",
+    "description": "Determine two or more main ideas of a text and explain how they are supported by key details; summarize the text.",
+    "jurisdiction": "California",
+    "author": "California State Board of Education",
+    "provider": "Learning Commons",
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "attributionStatement": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. California English Language Arts standards provided by California State Board of Education available at https://www.cde.ca.gov/be/st/ss/documents/finalelaccssstandards.pdf.",
+    "score": 0.9255177974700928
+  },
+  {
+    "caseIdentifierUUID": "5e396fed-d7cc-11e8-824f-0242ac160002",
+    "statementCode": "RI.4.2",
+    "description": "Determine the main idea of a text and explain how it is supported by key details; summarize the text.",
+    "jurisdiction": "California",
+    "author": "California State Board of Education",
+    "provider": "Learning Commons",
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "attributionStatement": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. California English Language Arts standards provided by California State Board of Education available at https://www.cde.ca.gov/be/st/ss/documents/finalelaccssstandards.pdf.",
+    "score": 0.8969257473945618
+  },
+  {
+    "caseIdentifierUUID": "5e395d0b-d7cc-11e8-824f-0242ac160002",
+    "statementCode": "RI.3.2",
+    "description": "Determine the main idea of a text; recount the key details and explain how they support the main idea.",
+    "jurisdiction": "California",
+    "author": "California State Board of Education",
+    "provider": "Learning Commons",
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "attributionStatement": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. California English Language Arts standards provided by California State Board of Education available at https://www.cde.ca.gov/be/st/ss/documents/finalelaccssstandards.pdf.",
+    "score": 0.8555804491043091
+  },
+  {
+    "caseIdentifierUUID": "5e3bde86-d7cc-11e8-824f-0242ac160002",
+    "statementCode": "CCRA.R.2",
+    "description": "Determine central ideas or themes of a text and analyze their development; summarize the key supporting details and ideas.",
+    "jurisdiction": "California",
+    "author": "California State Board of Education",
+    "provider": "Learning Commons",
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "attributionStatement": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. California English Language Arts standards provided by California State Board of Education available at https://www.cde.ca.gov/be/st/ss/documents/finalelaccssstandards.pdf.",
+    "score": 0.8433501720428467
+  },
+  {
+    "caseIdentifierUUID": "5e399d22-d7cc-11e8-824f-0242ac160002",
+    "statementCode": "RI.7.2",
+    "description": "Determine two or more central ideas in a text and analyze their development over the course of the text; provide an objective summary of the text.",
+    "jurisdiction": "California",
+    "author": "California State Board of Education",
+    "provider": "Learning Commons",
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "attributionStatement": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. California English Language Arts standards provided by California State Board of Education available at https://www.cde.ca.gov/be/st/ss/documents/finalelaccssstandards.pdf.",
+    "score": 0.8393855094909668
+  }
+]
