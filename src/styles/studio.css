@@ -113,26 +113,6 @@
   max-inline-size: 50rem;
 }
 
-.studio-kicker {
-  display: flex;
-  align-items: center;
-  margin: 0 0 1rem;
-  color: var(--primary);
-  font-size: 0.72rem;
-  font-weight: 800;
-  gap: 0.7rem;
-  letter-spacing: 0.12em;
-  line-height: 1.4;
-  text-transform: uppercase;
-}
-
-.studio-kicker__line {
-  display: inline-block;
-  background: currentcolor;
-  block-size: 1px;
-  inline-size: 2.2rem;
-}
-
 .teacher-hero h1 {
   color: var(--teacher-ink);
   font-size: clamp(3.1rem, 7vw, 6.8rem);
@@ -444,7 +424,7 @@
   max-inline-size: 14ch;
 }
 
-.teacher-guidance__rail > p:not(.studio-kicker) {
+.teacher-guidance__rail > p:not(.kicker) {
   color: color-mix(in oklch, var(--teacher-ink) 63%, transparent);
   font-size: 0.95rem;
   line-height: 1.65;
@@ -731,11 +711,11 @@
   padding-block: 1.5rem;
 }
 
-.teacher-action-band .studio-kicker {
+.teacher-action-band .kicker {
   margin-block-end: 0.45rem;
 }
 
-.teacher-action-band p:not(.studio-kicker) {
+.teacher-action-band p:not(.kicker) {
   color: color-mix(in oklch, var(--teacher-ink) 68%, transparent);
   font-size: 0.9rem;
 }

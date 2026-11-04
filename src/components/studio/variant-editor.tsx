@@ -148,7 +148,7 @@ export const VariantEditor = ({
       </div>
 
       <header>
-        <p className="studio-kicker">
+        <p className="kicker">
           {variantPurposeLabels[index] ?? "Screen review"}
         </p>
         <h2 id="variant-heading" ref={heading} tabIndex={-1}>

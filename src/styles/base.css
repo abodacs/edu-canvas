@@ -102,6 +102,27 @@ a {
   text-transform: uppercase;
 }
 
+/* The section kicker every surface shares; the line is an optional lead rule. */
+.kicker {
+  display: flex;
+  align-items: center;
+  margin: 0 0 1rem;
+  color: var(--primary);
+  font-size: 0.72rem;
+  font-weight: 800;
+  gap: 0.7rem;
+  letter-spacing: 0.12em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.kicker__line {
+  display: inline-block;
+  background: currentcolor;
+  block-size: 1px;
+  inline-size: 2.2rem;
+}
+
 h1,
 h2,
 p {

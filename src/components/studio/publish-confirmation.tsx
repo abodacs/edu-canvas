@@ -108,7 +108,7 @@ export const PublishConfirmation = ({
         </Button>
       </div>
       <header>
-        <p className="studio-kicker">Publish confirmation</p>
+        <p className="kicker">Publish confirmation</p>
         <h2 id="confirm-heading" ref={heading} tabIndex={-1}>
           Publish this exact revision
         </h2>
