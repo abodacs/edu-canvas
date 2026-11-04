@@ -5,7 +5,9 @@ import {
 
 import type {
   RecoveryAction,
+  SemanticAgentRecommendation,
   SemanticValidationFinding,
+  SemanticValidationInput,
   SemanticValidationVerdict,
   SemanticValidatorRole,
   SemanticValidatorReview,
@@ -141,5 +143,128 @@ export const createReview = (
     ...(firstFinding?.nodeId && { nodeId: firstFinding.nodeId }),
     reason: reviewReason(validator, verdict),
     findings: reviewFindings,
+  };
+};
+
+const unsafeAgentTextPatterns = [
+  /answer\s*key/iu,
+  /api\s*key/iu,
+  /secret/iu,
+  /student/iu,
+  /chain[- ]of[- ]thought/iu,
+  /\d{1,9}\s{0,3}\/\s{0,3}\d{1,9}/iu,
+];
+
+const hasUnsafeAgentText = (value: string): boolean => {
+  return unsafeAgentTextPatterns.some((pattern) => pattern.test(value));
+};
+
+/**
+The single text boundary for model-authored recommendation fields. Both the
+inline semantic runner and the async advisory reviewer use it, so a provider
+that echoes an answer key, a credential marker, or student wording cannot reach
+a teacher-facing finding.
+*/
+export const safeAgentText = (value: string, fallback: string): string => {
+  const text = value.trim().replaceAll(/\s+/gu, " ");
+  return !text || text.length > 240 || hasUnsafeAgentText(text)
+    ? fallback
+    : text;
+};
+
+const isUnsafeIdentifier = (value: string): boolean => {
+  return (
+    value.length > 80 ||
+    !/^[a-z][a-z0-9_.:-]*$/iu.test(value) ||
+    /student|learner|identity|user/iu.test(value)
+  );
+};
+
+export const safeIdentifier = (
+  value: string | undefined
+): string | undefined =>
+  value && !isUnsafeIdentifier(value) ? value : undefined;
+
+/**
+The advisory recommendation fields after sanitization. It carries no verdict:
+every consumer turns these into warnings, never into a block.
+*/
+export interface SanitizedRecommendation {
+  code: "AGENT_RECOMMENDATION";
+  field: string;
+  reason: string;
+  variantId?: string;
+  nodeId?: string;
+  recommendation?: string;
+}
+
+export const sanitizedRecommendation = (
+  recommendation: SemanticAgentRecommendation
+): SanitizedRecommendation => {
+  const variantId = safeIdentifier(recommendation.variantId);
+  const nodeId = safeIdentifier(recommendation.nodeId);
+  return {
+    code: "AGENT_RECOMMENDATION",
+    field: safeAgentText(recommendation.field ?? "draft", "draft"),
+    ...(variantId && { variantId }),
+    ...(nodeId && { nodeId }),
+    reason: safeAgentText(
+      recommendation.reason,
+      "A validator recommendation needs teacher review."
+    ),
+    ...(recommendation.recommendation && {
+      recommendation: safeAgentText(
+        recommendation.recommendation,
+        "Review this recommendation before continuing."
+      ),
+    }),
+  };
+};
+
+export const sanitizedRecommendations = (
+  recommendations: readonly SemanticAgentRecommendation[]
+): SanitizedRecommendation[] => {
+  return recommendations
+    .filter((recommendation) => recommendation.verdict !== "pass")
+    .map(sanitizedRecommendation);
+};
+
+/**
+An advisory agent reviews learning quality, never private answer keys. The
+clone drops relationships and every other value the reviewer does not need.
+*/
+export const cloneSemanticValidationInput = (
+  input: SemanticValidationInput
+): SemanticValidationInput => {
+  return {
+    draft: {
+      variants: input.draft.variants.map((variant) => {
+        return {
+          ...variant,
+          sourceItems: variant.sourceItems.map((item) => ({ ...item })),
+          targetItems: variant.targetItems.map((item) => ({ ...item })),
+          distractorItems: variant.distractorItems.map((item) => ({ ...item })),
+          relationships: [],
+          hints: [...variant.hints],
+          feedback: { ...variant.feedback },
+          languageMetadata: { ...variant.languageMetadata },
+          accessibilityMetadata: { ...variant.accessibilityMetadata },
+        };
+      }),
+    },
+    context: {
+      ...input.context,
+      nodes: input.context.nodes.map((node) => ({ ...node })),
+      edges: input.context.edges.map((edge) => ({ ...edge })),
+    },
+    ...(input.path && {
+      path: {
+        ...input.path,
+        nodeIds: [...input.path.nodeIds],
+        ...(input.path.screenPurposeIds && {
+          screenPurposeIds: [...input.path.screenPurposeIds],
+        }),
+      },
+    }),
   };
 };

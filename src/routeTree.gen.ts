@@ -35,6 +35,7 @@ import { Route as ApiPublicationsReviewRouteImport } from './routes/api/publicat
 import { Route as ApiPublicationsRevisionsRouteImport } from './routes/api/publications/revisions'
 import { Route as ApiTeacherProgressRouteImport } from './routes/api/teacher/progress'
 import { Route as ApiLessonsDraftIdIndexRouteImport } from './routes/api/lessons/$draftId/index'
+import { Route as ApiLessonsDraftIdAdvisoryReviewRouteImport } from './routes/api/lessons/$draftId/advisory-review'
 import { Route as ApiLessonsDraftIdCancelRouteImport } from './routes/api/lessons/$draftId/cancel'
 import { Route as ApiLessonsSourcesIndexRouteImport } from './routes/api/lessons/sources/index'
 import { Route as ApiLessonsSourcesSourceIdIndexRouteImport } from './routes/api/lessons/sources/$sourceId/index'
@@ -174,6 +175,12 @@ const ApiLessonsDraftIdIndexRoute = ApiLessonsDraftIdIndexRouteImport.update({
   path: '/api/lessons/$draftId/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLessonsDraftIdAdvisoryReviewRoute =
+  ApiLessonsDraftIdAdvisoryReviewRouteImport.update({
+    id: '/api/lessons/$draftId/advisory-review',
+    path: '/api/lessons/$draftId/advisory-review',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiLessonsDraftIdCancelRoute = ApiLessonsDraftIdCancelRouteImport.update({
   id: '/api/lessons/$draftId/cancel',
   path: '/api/lessons/$draftId/cancel',
@@ -235,6 +242,7 @@ export interface FileRoutesByFullPath {
   '/api/publications/revisions': typeof ApiPublicationsRevisionsRoute
   '/api/teacher/progress': typeof ApiTeacherProgressRoute
   '/api/publications/': typeof ApiPublicationsIndexRoute
+  '/api/lessons/$draftId/advisory-review': typeof ApiLessonsDraftIdAdvisoryReviewRoute
   '/api/lessons/$draftId/cancel': typeof ApiLessonsDraftIdCancelRoute
   '/api/lessons/$draftId/': typeof ApiLessonsDraftIdIndexRoute
   '/api/lessons/sources/': typeof ApiLessonsSourcesIndexRoute
@@ -269,6 +277,7 @@ export interface FileRoutesByTo {
   '/api/publications/revisions': typeof ApiPublicationsRevisionsRoute
   '/api/teacher/progress': typeof ApiTeacherProgressRoute
   '/api/publications': typeof ApiPublicationsIndexRoute
+  '/api/lessons/$draftId/advisory-review': typeof ApiLessonsDraftIdAdvisoryReviewRoute
   '/api/lessons/$draftId/cancel': typeof ApiLessonsDraftIdCancelRoute
   '/api/lessons/$draftId': typeof ApiLessonsDraftIdIndexRoute
   '/api/lessons/sources': typeof ApiLessonsSourcesIndexRoute
@@ -304,6 +313,7 @@ export interface FileRoutesById {
   '/api/publications/revisions': typeof ApiPublicationsRevisionsRoute
   '/api/teacher/progress': typeof ApiTeacherProgressRoute
   '/api/publications/': typeof ApiPublicationsIndexRoute
+  '/api/lessons/$draftId/advisory-review': typeof ApiLessonsDraftIdAdvisoryReviewRoute
   '/api/lessons/$draftId/cancel': typeof ApiLessonsDraftIdCancelRoute
   '/api/lessons/$draftId/': typeof ApiLessonsDraftIdIndexRoute
   '/api/lessons/sources/': typeof ApiLessonsSourcesIndexRoute
@@ -340,6 +350,7 @@ export interface FileRouteTypes {
     | '/api/publications/revisions'
     | '/api/teacher/progress'
     | '/api/publications/'
+    | '/api/lessons/$draftId/advisory-review'
     | '/api/lessons/$draftId/cancel'
     | '/api/lessons/$draftId/'
     | '/api/lessons/sources/'
@@ -374,6 +385,7 @@ export interface FileRouteTypes {
     | '/api/publications/revisions'
     | '/api/teacher/progress'
     | '/api/publications'
+    | '/api/lessons/$draftId/advisory-review'
     | '/api/lessons/$draftId/cancel'
     | '/api/lessons/$draftId'
     | '/api/lessons/sources'
@@ -408,6 +420,7 @@ export interface FileRouteTypes {
     | '/api/publications/revisions'
     | '/api/teacher/progress'
     | '/api/publications/'
+    | '/api/lessons/$draftId/advisory-review'
     | '/api/lessons/$draftId/cancel'
     | '/api/lessons/$draftId/'
     | '/api/lessons/sources/'
@@ -442,6 +455,7 @@ export interface RootRouteChildren {
   ApiPublicationsRevisionsRoute: typeof ApiPublicationsRevisionsRoute
   ApiTeacherProgressRoute: typeof ApiTeacherProgressRoute
   ApiPublicationsIndexRoute: typeof ApiPublicationsIndexRoute
+  ApiLessonsDraftIdAdvisoryReviewRoute: typeof ApiLessonsDraftIdAdvisoryReviewRoute
   ApiLessonsDraftIdCancelRoute: typeof ApiLessonsDraftIdCancelRoute
   ApiLessonsDraftIdIndexRoute: typeof ApiLessonsDraftIdIndexRoute
   ApiLessonsSourcesIndexRoute: typeof ApiLessonsSourcesIndexRoute
@@ -635,6 +649,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLessonsDraftIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/lessons/$draftId/advisory-review': {
+      id: '/api/lessons/$draftId/advisory-review'
+      path: '/api/lessons/$draftId/advisory-review'
+      fullPath: '/api/lessons/$draftId/advisory-review'
+      preLoaderRoute: typeof ApiLessonsDraftIdAdvisoryReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/lessons/$draftId/cancel': {
       id: '/api/lessons/$draftId/cancel'
       path: '/api/lessons/$draftId/cancel'
@@ -715,6 +736,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicationsRevisionsRoute: ApiPublicationsRevisionsRoute,
   ApiTeacherProgressRoute: ApiTeacherProgressRoute,
   ApiPublicationsIndexRoute: ApiPublicationsIndexRoute,
+  ApiLessonsDraftIdAdvisoryReviewRoute: ApiLessonsDraftIdAdvisoryReviewRoute,
   ApiLessonsDraftIdCancelRoute: ApiLessonsDraftIdCancelRoute,
   ApiLessonsDraftIdIndexRoute: ApiLessonsDraftIdIndexRoute,
   ApiLessonsSourcesIndexRoute: ApiLessonsSourcesIndexRoute,
