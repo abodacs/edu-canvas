@@ -64,6 +64,13 @@ const answerRuleSchema = z.discriminatedUnion("kind", [
         z.strictObject({
           text: copySchema(2000),
           answer: z.number(),
+          /**
+          How a remainder becomes the declared whole-number answer. A pack
+          declares it per problem instead of leaving the evaluator to guess:
+          "27 students at tables of 4" needs 7 tables (round up), while a
+          quotient that must fit inside a bound rounds down.
+          */
+          rounding: z.enum(["up", "down", "nearest"]).optional(),
         })
       )
       .min(1),

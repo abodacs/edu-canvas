@@ -151,6 +151,7 @@ export const multistepWordProblemsPack: StandardsPack =
           {
             text: "A class of 27 students sits at tables of 4. How many tables are needed so everyone has a seat?",
             answer: 7,
+            rounding: "up",
           },
           {
             text: "Mia buys 3 packs of 8 stickers and gets 7 more from a friend. How many stickers does she have?",
