@@ -1,15 +1,4 @@
-/* Teacher lesson generation (issue #3). The shared section/fragment
-   selectors above pair this surface with the seeded-fixture proof it lands
-   into. */
-.generation-section {
-  border-block-start: 1px solid var(--border);
-  padding-block-start: clamp(2rem, 5vw, 4rem);
-}
-
-.generation-section .section-heading {
-  align-items: flex-start;
-}
-
+/* Teacher lesson generation (issue #3). */
 .section-description {
   color: var(--muted-foreground);
   font-size: 0.95rem;
