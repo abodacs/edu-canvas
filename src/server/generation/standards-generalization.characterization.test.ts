@@ -9,6 +9,7 @@ import { syntheticSeed } from "@/server/seed-data";
 
 import { reviewDraftForAcceptance } from "./draft-acceptance";
 import { GenerationRequestError } from "./generation-request-error";
+import { createSyntheticCurriculumContext } from "./semantic-validation";
 import { createGenerationService, normalizeGenerationInput } from "./service";
 import { validateProviderDraft } from "./validation";
 
@@ -226,6 +227,26 @@ const readingSteps = [
   },
 ];
 
+// The fraction control uses the pack whose answer rule is fraction equivalence,
+// not the 4.OA.A.3 context: the validator now reads the rule the pack declares.
+const fractionContext: VersionedCurriculumContext =
+  createSyntheticCurriculumContext({
+    grade: 4,
+    language: "en",
+    standardId: syntheticSeed.standard.id,
+  });
+
+const fractionSteps = [
+  {
+    nodeId: "graph_node_equal_parts",
+    screenPurposeId: "screen_purpose_equal_parts",
+  },
+  {
+    nodeId: "graph_node_equivalent_fractions",
+    screenPurposeId: "screen_purpose_equivalent_fractions",
+  },
+];
+
 const requestFor = (
   context: VersionedCurriculumContext
 ): NormalizedGenerationRequest => {
@@ -379,7 +400,7 @@ describe("standards generalization: 4.OA.A.3 word problem -> equation matching",
     expect((rejection as Error).message).not.toContain("4.NF.A.1");
   });
 
-  it("B6: a correct answer set passes the structural gate and reaches ready-for-review with unverified warnings", async () => {
+  it("B6: a correct answer set passes the structural gate and reaches ready-for-review", async () => {
     const draft = buildDraft(wordProblemPairs, operationsSteps);
     expect(
       validateProviderDraft(draft, { expectedLanguage: "en" })
@@ -393,10 +414,13 @@ describe("standards generalization: 4.OA.A.3 word problem -> equation matching",
 
     expect(acceptance.state).toBe("ready-for-review");
     const curriculum = curriculumFindings(acceptance.diagnostics);
+    // Two equations per variant evaluate to the declared answer. The remainder
+    // pair carries the annotation ", round up", which the bounded parser does
+    // not evaluate, so it keeps the declared warning instead of a silent pass.
     expect(codesOf(curriculum)).toStrictEqual([
       "ANSWER_RELATIONSHIP_UNVERIFIED",
     ]);
-    expect(curriculum).toHaveLength(12);
+    expect(curriculum).toHaveLength(4);
     expect(
       acceptance.diagnostics.every(
         (diagnostic) => diagnostic.verdict === "warning"
@@ -404,7 +428,7 @@ describe("standards generalization: 4.OA.A.3 word problem -> equation matching",
     ).toBeTruthy();
   });
 
-  it("B6 (known gap): one wrong pair is indistinguishable from the correct set", async () => {
+  it("B6: one wrong pair is blocked by the pack's whole-number answer rule", async () => {
     const correct = await accept(
       buildDraft(wordProblemPairs, operationsSteps),
       operationsContext
@@ -418,11 +442,28 @@ describe("standards generalization: 4.OA.A.3 word problem -> equation matching",
     ).toBeTruthy();
 
     const wrong = await accept(wrongDraft, operationsContext);
+    const curriculum = curriculumFindings(wrong.diagnostics);
 
-    expect(correct.state).toBe("ready-for-review");
-    expect(wrong.state).toBe("ready-for-review");
-    expect(wrong.diagnostics).toStrictEqual(correct.diagnostics);
-    expect(codesOf(wrong.diagnostics)).not.toContain("ANSWER_MISMATCH");
+    expect(
+      validateProviderDraft(wrongDraft, { expectedLanguage: "en" }).ok
+    ).toBeTruthy();
+    expect({
+      correctState: correct.state,
+      wrongState: wrong.state,
+      diagnosticsChanged:
+        JSON.stringify(wrong.diagnostics) !==
+        JSON.stringify(correct.diagnostics),
+      codes: codesOf(curriculum),
+      mismatches: curriculum.filter(
+        (finding) => finding.code === "ANSWER_MISMATCH"
+      ).length,
+    }).toStrictEqual({
+      correctState: "ready-for-review",
+      wrongState: "blocked-by-validation",
+      diagnosticsChanged: true,
+      codes: ["ANSWER_MISMATCH", "ANSWER_RELATIONSHIP_UNVERIFIED"],
+      mismatches: 4,
+    });
   });
 });
 
@@ -435,8 +476,8 @@ describe("standards generalization: control for the answer rule", () => {
     ];
 
     const acceptance = await accept(
-      buildDraft(fractionPairs, operationsSteps),
-      operationsContext
+      buildDraft(fractionPairs, fractionSteps),
+      fractionContext
     );
 
     expect(acceptance.state).toBe("blocked-by-validation");
