@@ -21,6 +21,9 @@ docs/research/142-mcp-eval/evidence.json
 docs/research/142-mcp-eval/free-text-evidence.json
 docs/research/142-mcp-eval/tool-schemas.json
 docs/research/142-mcp-eval/measurements.md
+# Written by `pnpm lc:rest-matrix`; regenerated on every live run.
+docs/research/standards-generalization/live-matrix.json
+docs/research/standards-generalization/live-matrix.md
 # Written by `pnpm eval:practices` and `scripts/eval-browser.mjs`; regenerated on every run.
 docs/product/teacher-practice-assessment/delegation/results/v0.json
 docs/product/teacher-practice-assessment/delegation/results/v0-rollup.md

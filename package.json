@@ -45,6 +45,7 @@
     "fix": "ultracite fix",
     "verify:lc-mcp-eval": "node --import tsx scripts/lc-mcp-eval.ts check",
     "verify:lc-free-text": "node --import tsx scripts/lc-mcp-eval.ts free-text check",
+    "lc:rest-matrix": "node --import tsx scripts/lc-rest-matrix.ts",
     "verify:demo-removal": "node --import tsx scripts/verify-demo-removal.ts",
     "typecheck:tsc": "tsc --noEmit",
     "prepare": "git config core.hooksPath .githooks || true",
