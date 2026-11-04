@@ -151,14 +151,16 @@ export const VariantEditor = ({
         <p className="kicker">
           {variantPurposeLabels[index] ?? "Screen review"}
         </p>
-        <h2 id="variant-heading" ref={heading} tabIndex={-1}>
+        <h1 id="variant-heading" ref={heading} tabIndex={-1}>
           {variant.title}
-        </h2>
-        <p>{variant.instructions}</p>
+        </h1>
         <p className="review-variant__meta">
+          Grade {review.draft.grade} · {review.draft.standardId} ·{" "}
           {variantKindLabels[variant.kind]} · {variant.sourceItems.length}{" "}
           matching pieces · revision {review.version.revision}
+          {review.provenance.editedAt ? " · edited" : ""}
         </p>
+        <p>{variant.instructions}</p>
       </header>
 
       <div className="review-variant__columns">
@@ -268,6 +270,7 @@ export const VariantEditor = ({
         </Button>
       </div>
 
+      <h2 className="review-sr-heading sr-only">Lesson preview</h2>
       <LessonPreview
         key={`${review.version.id}:${variant.id}`}
         requestId={review.requestId}
