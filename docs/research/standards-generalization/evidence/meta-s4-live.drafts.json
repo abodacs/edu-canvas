@@ -1,0 +1,590 @@
+{
+  "1-4.OA.A.3": {
+    "learningPath": {
+      "direction": "forward",
+      "nextScreenRationale": "Supports transition from two-step to multistep modeling before independent equation writing.",
+      "rationale": "Matching word problems to equations builds Grade 4 modeling fluency for multistep situations.",
+      "steps": [
+        {
+          "nodeId": "graph_node_two_step_word_problems",
+          "screenPurposeId": "screen_purpose_two_step"
+        },
+        {
+          "nodeId": "graph_node_multistep_word_problems",
+          "screenPurposeId": "screen_purpose_multistep"
+        }
+      ]
+    },
+    "variants": [
+      {
+        "accessibilityMetadata": {
+          "instructions": "Accessible via keyboard and screen reader. No time limit. Matching interaction with text alternatives.",
+          "sourceGroupLabel": "Word problems",
+          "targetGroupLabel": "Equations"
+        },
+        "distractorItems": [],
+        "feedback": {
+          "correct": "Correct. That equation matches the story.",
+          "incorrect": "Not quite. Reread the story and check the operations, then try another match."
+        },
+        "hints": [
+          "Look for the operation words: groups of, gives away, gets more, or needed to seat all - then find the matching equation parts."
+        ],
+        "id": "variant_standard_01_stable",
+        "instructions": "Match each word problem to the equation that represents it.",
+        "kind": "standard",
+        "languageMetadata": {
+          "direction": "ltr",
+          "language": "en",
+          "locale": "en"
+        },
+        "relationships": [
+          {
+            "id": "rel_variant_standard_01_stable_01",
+            "sourceId": "src_sam_pencils_stable",
+            "targetId": "tgt_4x6_minus5_stable"
+          },
+          {
+            "id": "rel_variant_standard_01_stable_02",
+            "sourceId": "src_class_tables_stable",
+            "targetId": "tgt_27div4_ceil_stable"
+          },
+          {
+            "id": "rel_variant_standard_01_stable_03",
+            "sourceId": "src_mia_stickers_stable",
+            "targetId": "tgt_3x8_plus7_stable"
+          }
+        ],
+        "sourceItems": [
+          {
+            "id": "src_sam_pencils_stable",
+            "label": "Sam has 4 boxes with 6 pencils in each box. He gives away 5 pencils. How many pencils are left? 31 chars/d=OK approx 85"
+          },
+          {
+            "id": "src_class_tables_stable",
+            "label": "A class of 27 students sits at tables of 4. How many tables are needed so everyone has a seat?"
+          },
+          {
+            "id": "src_mia_stickers_stable",
+            "label": "Mia buys 3 packs of 8 stickers and gets 7 more from a friend. How many stickers does she have?"
+          }
+        ],
+        "targetItems": [
+          {
+            "id": "tgt_4x6_minus5_stable",
+            "label": "4 × 6 − 5 = □"
+          },
+          {
+            "id": "tgt_27div4_ceil_stable",
+            "label": "27 ÷ 4 = 6 R3 → 7 tables needed"
+          },
+          {
+            "id": "tgt_3x8_plus7_stable",
+            "label": "3 × 8 + 7 = □"
+          }
+        ],
+        "title": "Match Word Problems to Equations"
+      },
+      {
+        "accessibilityMetadata": {
+          "instructions": "Accessible via keyboard and screen reader. No time limit. Matching interaction with text alternatives.",
+          "sourceGroupLabel": "Word problems",
+          "targetGroupLabel": "Equations"
+        },
+        "distractorItems": [],
+        "feedback": {
+          "correct": "Correct. That equation matches the story.",
+          "incorrect": "Not quite. Reread the story and check the operations, then try another match."
+        },
+        "hints": [
+          "Find the total groups first, then see if the story adds or subtracts at the end."
+        ],
+        "id": "variant_standard_02_stable",
+        "instructions": "Match each word problem to the equation that represents it.",
+        "kind": "standard",
+        "languageMetadata": {
+          "direction": "ltr",
+          "language": "en",
+          "locale": "en"
+        },
+        "relationships": [
+          {
+            "id": "rel_variant_standard_02_stable_01",
+            "sourceId": "src_baker_rolls_stable",
+            "targetId": "tgt_5x12_minus9_stable"
+          },
+          {
+            "id": "rel_variant_standard_02_stable_02",
+            "sourceId": "src_books_boxes_stable",
+            "targetId": "tgt_46div8_ceil_stable"
+          },
+          {
+            "id": "rel_variant_standard_02_stable_03",
+            "sourceId": "src_sam_pencils_v2_stable",
+            "targetId": "tgt_4x6_minus5_v2_stable"
+          }
+        ],
+        "sourceItems": [
+          {
+            "id": "src_baker_rolls_stable",
+            "label": "A baker has 5 trays with 12 rolls on each tray. He sells 9 rolls. How many rolls are left?"
+          },
+          {
+            "id": "src_books_boxes_stable",
+            "label": "There are 46 books packed into boxes of 8. How many boxes are needed for all the books?"
+          },
+          {
+            "id": "src_sam_pencils_v2_stable",
+            "label": "Sam has 4 boxes with 6 pencils in each box. He gives away 5 pencils. How many pencils are left?"
+          }
+        ],
+        "targetItems": [
+          {
+            "id": "tgt_5x12_minus9_stable",
+            "label": "5 × 12 − 9 = □"
+          },
+          {
+            "id": "tgt_46div8_ceil_stable",
+            "label": "46 ÷ 8 = 5 R6 → 6 boxes needed"
+          },
+          {
+            "id": "tgt_4x6_minus5_v2_stable",
+            "label": "4 × 6 − 5 = □"
+          }
+        ],
+        "title": "Match Word Problems to Equations"
+      },
+      {
+        "accessibilityMetadata": {
+          "instructions": "Screen-reader and keyboard supported. Matching with clear text. Scaffolded with simpler totals.",
+          "sourceGroupLabel": "Word problems",
+          "targetGroupLabel": "Equations"
+        },
+        "distractorItems": [],
+        "feedback": {
+          "correct": "Correct. That equation matches the story.",
+          "incorrect": "Check again. Does the story multiply to find the total, then add or subtract?"
+        },
+        "hints": [
+          "First find the equal groups using multiplication, then add or subtract what happens next."
+        ],
+        "id": "variant_scaffold_01_stable",
+        "instructions": "Match each word problem to the equation that shows the steps.",
+        "kind": "scaffold",
+        "languageMetadata": {
+          "direction": "ltr",
+          "language": "en",
+          "locale": "en"
+        },
+        "relationships": [
+          {
+            "id": "rel_variant_scaffold_01_stable_01",
+            "sourceId": "src_sam_pencils_scaf_stable",
+            "targetId": "tgt_4x6_minus5_scaf_stable"
+          },
+          {
+            "id": "rel_variant_scaffold_01_stable_02",
+            "sourceId": "src_mia_stickers_scaf_stable",
+            "targetId": "tgt_3x8_plus7_scaf_stable"
+          },
+          {
+            "id": "rel_variant_scaffold_01_stable_03",
+            "sourceId": "src_baker_rolls_scaf_stable",
+            "targetId": "tgt_5x12_minus9_scaf_stable"
+          }
+        ],
+        "sourceItems": [
+          {
+            "id": "src_sam_pencils_scaf_stable",
+            "label": "Sam has 4 boxes with 6 pencils in each box. He gives away 5 pencils. How many pencils are left?"
+          },
+          {
+            "id": "src_mia_stickers_scaf_stable",
+            "label": "Mia buys 3 packs of 8 stickers and gets 7 more from a friend. How many stickers does she have?"
+          },
+          {
+            "id": "src_baker_rolls_scaf_stable",
+            "label": "A baker has 5 trays with 12 rolls on each tray. He sells 9 rolls. How many rolls are left?"
+          }
+        ],
+        "targetItems": [
+          {
+            "id": "tgt_4x6_minus5_scaf_stable",
+            "label": "(4 × 6) − 5 = □"
+          },
+          {
+            "id": "tgt_3x8_plus7_scaf_stable",
+            "label": "(3 × 8) + 7 = □"
+          },
+          {
+            "id": "tgt_5x12_minus9_scaf_stable",
+            "label": "(5 × 12) − 9 = □"
+          }
+        ],
+        "title": "Match Word Problems to Equations - Scaffold"
+      },
+      {
+        "accessibilityMetadata": {
+          "instructions": "Screen-reader and keyboard supported. Matching with clear text. Challenge includes interpreting remainders.",
+          "sourceGroupLabel": "Word problems",
+          "targetGroupLabel": "Equations"
+        },
+        "distractorItems": [],
+        "feedback": {
+          "correct": "Correct. That equation correctly models the multistep story.",
+          "incorrect": "Not quite. Think about whether you need an extra table or box for the remainder."
+        },
+        "hints": [
+          "For seating and packing stories, a remainder means you need one more table or box."
+        ],
+        "id": "variant_challenge_01_stable",
+        "instructions": "Match each word problem to the equation that represents it, including remainders.",
+        "kind": "challenge",
+        "languageMetadata": {
+          "direction": "ltr",
+          "language": "en",
+          "locale": "en"
+        },
+        "relationships": [
+          {
+            "id": "rel_variant_challenge_01_stable_01",
+            "sourceId": "src_class_tables_chal_stable",
+            "targetId": "tgt_27div4_ceil_chal_stable"
+          },
+          {
+            "id": "rel_variant_challenge_01_stable_02",
+            "sourceId": "src_books_boxes_chal_stable",
+            "targetId": "tgt_46div8_ceil_chal_stable"
+          },
+          {
+            "id": "rel_variant_challenge_01_stable_03",
+            "sourceId": "src_baker_rolls_chal_stable",
+            "targetId": "tgt_5x12_minus9_chal_stable"
+          }
+        ],
+        "sourceItems": [
+          {
+            "id": "src_class_tables_chal_stable",
+            "label": "A class of 27 students sits at tables of 4. How many tables are needed so everyone has a seat?"
+          },
+          {
+            "id": "src_books_boxes_chal_stable",
+            "label": "There are 46 books packed into boxes of 8. How many boxes are needed for all the books?"
+          },
+          {
+            "id": "src_baker_rolls_chal_stable",
+            "label": "A baker has 5 trays with 12 rolls on each tray. He sells 9 rolls. How many rolls are left?"
+          }
+        ],
+        "targetItems": [
+          {
+            "id": "tgt_27div4_ceil_chal_stable",
+            "label": "⌈27 ÷ 4⌉ = 7"
+          },
+          {
+            "id": "tgt_46div8_ceil_chal_stable",
+            "label": "⌈46 ÷ 8⌉ = 6"
+          },
+          {
+            "id": "tgt_5x12_minus9_chal_stable",
+            "label": "5 × 12 − 9 = □"
+          }
+        ],
+        "title": "Match Word Problems to Equations - Challenge"
+      }
+    ]
+  },
+  "2-4.OA.A.3": {
+    "learningPath": {
+      "direction": "forward",
+      "nextScreenRationale": "Progress from two-step to multistep matching to practice interpreting remainders.",
+      "rationale": "Practice matching multistep word problems including remainders to correct equations.",
+      "steps": [
+        {
+          "nodeId": "graph_node_two_step_word_problems",
+          "screenPurposeId": "screen_purpose_two_step"
+        },
+        {
+          "nodeId": "graph_node_multistep_word_problems",
+          "screenPurposeId": "screen_purpose_multistep"
+        }
+      ]
+    },
+    "variants": [
+      {
+        "accessibilityMetadata": {
+          "instructions": "screenReaderCompatible",
+          "sourceGroupLabel": "Word problems",
+          "targetGroupLabel": "Equations"
+        },
+        "distractorItems": [],
+        "feedback": {
+          "correct": "Correct. Each story matches its equation.",
+          "incorrect": "Not quite. Re-read each story and check the operations."
+        },
+        "hints": ["Look for groups, totals, and what is added or removed."],
+        "id": "variant_standard_01",
+        "instructions": "Match each word problem with the equation that represents it.",
+        "kind": "standard",
+        "languageMetadata": {
+          "direction": "ltr",
+          "language": "en",
+          "locale": "en"
+        },
+        "relationships": [
+          {
+            "id": "rel_std01_a",
+            "sourceId": "src_std01_sam",
+            "targetId": "tgt_std01_sam"
+          },
+          {
+            "id": "rel_std01_b",
+            "sourceId": "src_std01_tables",
+            "targetId": "tgt_std01_tables"
+          },
+          {
+            "id": "rel_std01_c",
+            "sourceId": "src_std01_mia",
+            "targetId": "tgt_std01_mia"
+          }
+        ],
+        "sourceItems": [
+          {
+            "id": "src_std01_sam",
+            "label": "Word problems"
+          },
+          {
+            "id": "src_std01_tables",
+            "label": "Word problems"
+          },
+          {
+            "id": "src_std01_mia",
+            "label": "Word problems"
+          }
+        ],
+        "targetItems": [
+          {
+            "id": "tgt_std01_sam",
+            "label": "Equations"
+          },
+          {
+            "id": "tgt_std01_tables",
+            "label": "Equations"
+          },
+          {
+            "id": "tgt_std01_mia",
+            "label": "Equations"
+          }
+        ],
+        "title": "Match word problems to equations"
+      },
+      {
+        "accessibilityMetadata": {
+          "instructions": "screenReaderCompatible",
+          "sourceGroupLabel": "Word problems",
+          "targetGroupLabel": "Equations"
+        },
+        "distractorItems": [],
+        "feedback": {
+          "correct": "Correct. Each story matches its equation.",
+          "incorrect": "Not quite. Re-read each story and check the operations."
+        },
+        "hints": [
+          "Identify whether the story needs sharing into equal groups or combining groups."
+        ],
+        "id": "variant_standard_02",
+        "instructions": "Match each word problem with the equation that represents it.",
+        "kind": "standard",
+        "languageMetadata": {
+          "direction": "ltr",
+          "language": "en",
+          "locale": "en"
+        },
+        "relationships": [
+          {
+            "id": "rel_std02_a",
+            "sourceId": "src_std02_baker",
+            "targetId": "tgt_std02_baker"
+          },
+          {
+            "id": "rel_std02_b",
+            "sourceId": "src_std02_books",
+            "targetId": "tgt_std02_books"
+          },
+          {
+            "id": "rel_std02_c",
+            "sourceId": "src_std02_mia2",
+            "targetId": "tgt_std02_mia2"
+          }
+        ],
+        "sourceItems": [
+          {
+            "id": "src_std02_baker",
+            "label": "Word problems"
+          },
+          {
+            "id": "src_std02_books",
+            "label": "Word problems"
+          },
+          {
+            "id": "src_std02_mia2",
+            "label": "Word problems"
+          }
+        ],
+        "targetItems": [
+          {
+            "id": "tgt_std02_baker",
+            "label": "Equations"
+          },
+          {
+            "id": "tgt_std02_books",
+            "label": "Equations"
+          },
+          {
+            "id": "tgt_std02_mia2",
+            "label": "Equations"
+          }
+        ],
+        "title": "Match word problems to equations"
+      },
+      {
+        "accessibilityMetadata": {
+          "instructions": "screenReaderCompatible",
+          "sourceGroupLabel": "Word problems",
+          "targetGroupLabel": "Equations"
+        },
+        "distractorItems": [],
+        "feedback": {
+          "correct": "Correct. Each story matches its equation.",
+          "incorrect": "Check again. Look for how many groups and what happens next."
+        },
+        "hints": [
+          "Underline the numbers and circle words that tell you to multiply, add, or subtract."
+        ],
+        "id": "variant_scaffold_01",
+        "instructions": "Match each word problem with the equation that represents it.",
+        "kind": "scaffold",
+        "languageMetadata": {
+          "direction": "ltr",
+          "language": "en",
+          "locale": "en"
+        },
+        "relationships": [
+          {
+            "id": "rel_scf_a",
+            "sourceId": "src_scf_sam",
+            "targetId": "tgt_scf_sam"
+          },
+          {
+            "id": "rel_scf_b",
+            "sourceId": "src_scf_mia",
+            "targetId": "tgt_scf_mia"
+          },
+          {
+            "id": "rel_scf_c",
+            "sourceId": "src_scf_baker",
+            "targetId": "tgt_scf_baker"
+          }
+        ],
+        "sourceItems": [
+          {
+            "id": "src_scf_sam",
+            "label": "Word problems"
+          },
+          {
+            "id": "src_scf_mia",
+            "label": "Word problems"
+          },
+          {
+            "id": "src_scf_baker",
+            "label": "Word problems"
+          }
+        ],
+        "targetItems": [
+          {
+            "id": "tgt_scf_sam",
+            "label": "Equations"
+          },
+          {
+            "id": "tgt_scf_mia",
+            "label": "Equations"
+          },
+          {
+            "id": "tgt_scf_baker",
+            "label": "Equations"
+          }
+        ],
+        "title": "Match word problems to equations"
+      },
+      {
+        "accessibilityMetadata": {
+          "instructions": "screenReaderCompatible",
+          "sourceGroupLabel": "Word problems",
+          "targetGroupLabel": "Equations"
+        },
+        "distractorItems": [],
+        "feedback": {
+          "correct": "Correct. Each story matches its equation.",
+          "incorrect": "Try again. For sharing problems, consider whether you need an extra group for leftovers."
+        },
+        "hints": [
+          "For problems with leftovers, think about whether you need one more group to include everyone."
+        ],
+        "id": "variant_challenge_01",
+        "instructions": "Match each word problem with the equation that represents it.",
+        "kind": "challenge",
+        "languageMetadata": {
+          "direction": "ltr",
+          "language": "en",
+          "locale": "en"
+        },
+        "relationships": [
+          {
+            "id": "rel_chl_a",
+            "sourceId": "src_chl_tables",
+            "targetId": "tgt_chl_tables"
+          },
+          {
+            "id": "rel_chl_b",
+            "sourceId": "src_chl_books",
+            "targetId": "tgt_chl_books"
+          },
+          {
+            "id": "rel_chl_c",
+            "sourceId": "src_chl_baker",
+            "targetId": "tgt_chl_baker"
+          }
+        ],
+        "sourceItems": [
+          {
+            "id": "src_chl_tables",
+            "label": "Word problems"
+          },
+          {
+            "id": "src_chl_books",
+            "label": "Word problems"
+          },
+          {
+            "id": "src_chl_baker",
+            "label": "Word problems"
+          }
+        ],
+        "targetItems": [
+          {
+            "id": "tgt_chl_tables",
+            "label": "Equations"
+          },
+          {
+            "id": "tgt_chl_books",
+            "label": "Equations"
+          },
+          {
+            "id": "tgt_chl_baker",
+            "label": "Equations"
+          }
+        ],
+        "title": "Match word problems to equations"
+      }
+    ]
+  }
+}

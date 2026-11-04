@@ -1,0 +1,57 @@
+[
+  {
+    "caseIdentifierUUID": "6b36c8ef-d7cc-11e8-824f-0242ac160002",
+    "statementCode": "RI.5.2",
+    "description": "Determine two or more main ideas of a text and explain how they are supported by key details; summarize the text.",
+    "jurisdiction": "Multi-State",
+    "author": "1EdTech",
+    "provider": "Learning Commons",
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "attributionStatement": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Common Core English Language Arts standards provided by 1EdTech available at https://corestandards.org/wp-content/uploads/2023/09/ADA-Compliant-ELA-Standards.pdf.",
+    "score": 0.9255447387695312
+  },
+  {
+    "caseIdentifierUUID": "6b36c281-d7cc-11e8-824f-0242ac160002",
+    "statementCode": "RI.4.2",
+    "description": "Determine the main idea of a text and explain how it is supported by key details; summarize the text.",
+    "jurisdiction": "Multi-State",
+    "author": "1EdTech",
+    "provider": "Learning Commons",
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "attributionStatement": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Common Core English Language Arts standards provided by 1EdTech available at https://corestandards.org/wp-content/uploads/2023/09/ADA-Compliant-ELA-Standards.pdf.",
+    "score": 0.8969276547431946
+  },
+  {
+    "caseIdentifierUUID": "6b36bbfc-d7cc-11e8-824f-0242ac160002",
+    "statementCode": "RI.3.2",
+    "description": "Determine the main idea of a text; recount the key details and explain how they support the main idea.",
+    "jurisdiction": "Multi-State",
+    "author": "1EdTech",
+    "provider": "Learning Commons",
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "attributionStatement": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Common Core English Language Arts standards provided by 1EdTech available at https://corestandards.org/wp-content/uploads/2023/09/ADA-Compliant-ELA-Standards.pdf.",
+    "score": 0.8557965755462646
+  },
+  {
+    "caseIdentifierUUID": "6b37e23a-d7cc-11e8-824f-0242ac160002",
+    "statementCode": "CCRA.R.2",
+    "description": "Determine central ideas or themes of a text and analyze their development; summarize the key supporting details and ideas.",
+    "jurisdiction": "Multi-State",
+    "author": "1EdTech",
+    "provider": "Learning Commons",
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "attributionStatement": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Common Core English Language Arts standards provided by 1EdTech available at https://corestandards.org/wp-content/uploads/2023/09/ADA-Compliant-ELA-Standards.pdf.",
+    "score": 0.8433501720428467
+  },
+  {
+    "caseIdentifierUUID": "6b36d521-d7cc-11e8-824f-0242ac160002",
+    "statementCode": "RI.7.2",
+    "description": "Determine two or more central ideas in a text and analyze their development over the course of the text; provide an objective summary of the text.",
+    "jurisdiction": "Multi-State",
+    "author": "1EdTech",
+    "provider": "Learning Commons",
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "attributionStatement": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Common Core English Language Arts standards provided by 1EdTech available at https://corestandards.org/wp-content/uploads/2023/09/ADA-Compliant-ELA-Standards.pdf.",
+    "score": 0.8394015431404114
+  }
+]

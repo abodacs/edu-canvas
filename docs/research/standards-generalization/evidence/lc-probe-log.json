@@ -1,0 +1,60 @@
+{
+  "capturedAt": "2026-11-03T22:31:23Z",
+  "origin": "https://api.learningcommons.org/knowledge-graph/v0",
+  "cap": 6,
+  "used": 6,
+  "ri52Uuid": "6b36c8ef-d7cc-11e8-824f-0242ac160002",
+  "calls": [
+    {
+      "n": 1,
+      "name": "search-ri-5-2",
+      "path": "/academic-standards/search",
+      "params": {
+        "query": "determine two or more main ideas of a text and explain how they are supported by key details; summarize the text",
+        "jurisdiction": "Multi-State",
+        "academicSubject": "English Language Arts",
+        "limit": "5"
+      },
+      "status": 200,
+      "elapsedMs": 1214
+    },
+    {
+      "n": 2,
+      "name": "components-ri-5-2",
+      "path": "/academic-standards/6b36c8ef-d7cc-11e8-824f-0242ac160002/learning-components",
+      "params": {},
+      "status": 200,
+      "elapsedMs": 688
+    },
+    {
+      "n": 3,
+      "name": "prerequisites-ri-5-2",
+      "path": "/academic-standards/6b36c8ef-d7cc-11e8-824f-0242ac160002/prerequisites",
+      "params": {},
+      "status": 200,
+      "elapsedMs": 761
+    },
+    {
+      "n": 4,
+      "name": "components-4-oa-a-3",
+      "path": "/academic-standards/6b9e2e91-d7cc-11e8-824f-0242ac160002/learning-components",
+      "params": {},
+      "status": 200,
+      "elapsedMs": 713
+    },
+    {
+      "n": 5,
+      "name": "components-4-nf-a-1",
+      "path": "/academic-standards/6b9c09e2-d7cc-11e8-824f-0242ac160002/learning-components",
+      "params": {},
+      "status": 200,
+      "elapsedMs": 714
+    },
+    {
+      "n": 6,
+      "name": "search-ri-5-2-california",
+      "status": 200,
+      "elapsedMs": 1522
+    }
+  ]
+}
