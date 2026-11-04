@@ -1,7 +1,7 @@
 [
   {
     "page": "landing-signedout",
-    "url": "http://localhost:37015/",
+    "url": "http://localhost:36157/",
     "viewport": "1440x900",
     "elements": 123,
     "textBlocks": 44,
@@ -624,7 +624,7 @@
   },
   {
     "page": "landing-phone",
-    "url": "http://localhost:37015/",
+    "url": "http://localhost:36157/",
     "viewport": "390x844",
     "elements": 123,
     "textBlocks": 44,
@@ -1247,7 +1247,7 @@
   },
   {
     "page": "landing-signedin",
-    "url": "http://localhost:37015/",
+    "url": "http://localhost:36157/",
     "viewport": "1440x900",
     "elements": 118,
     "textBlocks": 43,
@@ -1855,7 +1855,7 @@
   },
   {
     "page": "login",
-    "url": "http://localhost:37015/login",
+    "url": "http://localhost:36157/login",
     "viewport": "1440x900",
     "elements": 53,
     "textBlocks": 13,
@@ -2181,7 +2181,7 @@
   },
   {
     "page": "login-phone",
-    "url": "http://localhost:37015/login",
+    "url": "http://localhost:36157/login",
     "viewport": "390x844",
     "elements": 53,
     "textBlocks": 13,
@@ -2507,7 +2507,7 @@
   },
   {
     "page": "signup",
-    "url": "http://localhost:37015/sign-up",
+    "url": "http://localhost:36157/sign-up",
     "viewport": "1440x900",
     "elements": 44,
     "textBlocks": 11,
@@ -2815,7 +2815,7 @@
   },
   {
     "page": "signup-phone",
-    "url": "http://localhost:37015/sign-up",
+    "url": "http://localhost:36157/sign-up",
     "viewport": "390x844",
     "elements": 44,
     "textBlocks": 11,
@@ -3123,7 +3123,7 @@
   },
   {
     "page": "studio-composer",
-    "url": "http://localhost:37015/workspace",
+    "url": "http://localhost:36157/workspace",
     "viewport": "1440x900",
     "elements": 198,
     "textBlocks": 64,
@@ -4078,7 +4078,7 @@
   },
   {
     "page": "phone-studio",
-    "url": "http://localhost:37015/workspace",
+    "url": "http://localhost:36157/workspace",
     "viewport": "390x844",
     "elements": 198,
     "textBlocks": 64,
@@ -5009,7 +5009,7 @@
   },
   {
     "page": "dashboard",
-    "url": "http://localhost:37015/dashboard",
+    "url": "http://localhost:36157/dashboard",
     "viewport": "1440x900",
     "elements": 42,
     "textBlocks": 15,
@@ -5266,7 +5266,7 @@
         "weight": "700"
       },
       {
-        "text": "Results as of  2026-11-04T09:50:17.287Z .",
+        "text": "Results as of  2026-11-04T12:32:27.614Z .",
         "color": "oklch(0.925 0.026 86)",
         "background": "oklch(0.965 0.018 86)",
         "size": "16px",
@@ -5304,7 +5304,7 @@
   },
   {
     "page": "dashboard-phone",
-    "url": "http://localhost:37015/dashboard",
+    "url": "http://localhost:36157/dashboard",
     "viewport": "390x844",
     "elements": 42,
     "textBlocks": 15,
@@ -5561,7 +5561,7 @@
         "weight": "700"
       },
       {
-        "text": "Results as of  2026-11-04T09:50:19.011Z .",
+        "text": "Results as of  2026-11-04T12:32:30.247Z .",
         "color": "oklch(0.925 0.026 86)",
         "background": "oklch(0.965 0.018 86)",
         "size": "16px",
@@ -5599,7 +5599,7 @@
   },
   {
     "page": "learn-board",
-    "url": "http://localhost:37015/learn?assignment=01a1a5f6-f89c-7e50-95b2-2fff5b54df09&variant=variant-1",
+    "url": "http://localhost:36157/learn?assignment=01a1a68b-70d6-75ec-9257-79f535edc6e9&variant=variant-1",
     "viewport": "1440x900",
     "elements": 67,
     "textBlocks": 26,
@@ -5963,7 +5963,7 @@
   },
   {
     "page": "learn-phone",
-    "url": "http://localhost:37015/learn?assignment=01a1a5f6-f89c-7e50-95b2-2fff5b54df09&variant=variant-1",
+    "url": "http://localhost:36157/learn?assignment=01a1a68b-70d6-75ec-9257-79f535edc6e9&variant=variant-1",
     "viewport": "390x844",
     "elements": 67,
     "textBlocks": 26,
@@ -6327,7 +6327,7 @@
   },
   {
     "page": "learn-missing-params",
-    "url": "http://localhost:37015/learn",
+    "url": "http://localhost:36157/learn",
     "viewport": "1440x900",
     "elements": 27,
     "textBlocks": 7,
@@ -6526,7 +6526,7 @@
   },
   {
     "page": "learn-signedout",
-    "url": "http://localhost:37015/learn?assignment=01a1a5f6-f89c-7e50-95b2-2fff5b54df09&variant=variant-1",
+    "url": "http://localhost:36157/learn?assignment=01a1a68b-70d6-75ec-9257-79f535edc6e9&variant=variant-1",
     "viewport": "1440x900",
     "elements": 18,
     "textBlocks": 5,
@@ -6678,7 +6678,7 @@
   },
   {
     "page": "review",
-    "url": "http://localhost:37015/workspace?review=01a1a5f7-06bc-788f-ad93-f0b48e523a76",
+    "url": "http://localhost:36157/workspace?review=01a1a68b-7f18-7545-8f34-e23de7b5b324",
     "viewport": "1440x900",
     "elements": 344,
     "textBlocks": 191,
@@ -7231,7 +7231,7 @@
         "weight": "400"
       },
       {
-        "text": "01a1a5f7-06bc-788f-ad93-f0b48e523a76",
+        "text": "01a1a68b-7f18-7545-8f34-e23de7b5b324",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "11.52px",
@@ -7462,7 +7462,7 @@
         "weight": "800"
       },
       {
-        "text": "01a1a5f7-06bc-788f-ad93-f0b48e523a76",
+        "text": "01a1a68b-7f18-7545-8f34-e23de7b5b324",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.961943 0.0178547 83.6888)",
         "size": "11.52px",
@@ -8466,7 +8466,7 @@
   },
   {
     "page": "review-phone",
-    "url": "http://localhost:37015/workspace?review=01a1a5f7-06bc-788f-ad93-f0b48e523a76",
+    "url": "http://localhost:36157/workspace?review=01a1a68b-7f18-7545-8f34-e23de7b5b324",
     "viewport": "390x844",
     "elements": 344,
     "textBlocks": 191,
@@ -9011,7 +9011,7 @@
         "weight": "400"
       },
       {
-        "text": "01a1a5f7-06bc-788f-ad93-f0b48e523a76",
+        "text": "01a1a68b-7f18-7545-8f34-e23de7b5b324",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.965 0.018 86)",
         "size": "11.52px",
@@ -9242,7 +9242,7 @@
         "weight": "800"
       },
       {
-        "text": "01a1a5f7-06bc-788f-ad93-f0b48e523a76",
+        "text": "01a1a68b-7f18-7545-8f34-e23de7b5b324",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.961943 0.0178547 83.6888)",
         "size": "11.52px",
@@ -10246,7 +10246,7 @@
   },
   {
     "page": "publish",
-    "url": "http://localhost:37015/workspace?review=01a1a5f7-07a8-79d7-bbd7-77a43676f264",
+    "url": "http://localhost:36157/workspace?review=01a1a68b-8014-7c67-84f8-4d88b5db2935",
     "viewport": "1440x900",
     "elements": 84,
     "textBlocks": 31,
@@ -10566,7 +10566,7 @@
         "weight": "400"
       },
       {
-        "text": "e0864cb6e9bb",
+        "text": "8111d7ef01db",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "16px",
@@ -10709,7 +10709,7 @@
   },
   {
     "page": "publish-phone",
-    "url": "http://localhost:37015/workspace?review=01a1a5f7-07a8-79d7-bbd7-77a43676f264",
+    "url": "http://localhost:36157/workspace?review=01a1a68b-8014-7c67-84f8-4d88b5db2935",
     "viewport": "390x844",
     "elements": 84,
     "textBlocks": 31,
@@ -11029,7 +11029,7 @@
         "weight": "400"
       },
       {
-        "text": "e0864cb6e9bb",
+        "text": "8111d7ef01db",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.985 0.012 86)",
         "size": "16px",
@@ -11172,7 +11172,7 @@
   },
   {
     "page": "published",
-    "url": "http://localhost:37015/workspace?review=01a1a5f7-0ac3-746d-9794-f5796efcc9be",
+    "url": "http://localhost:36157/workspace?review=01a1a68b-838a-7059-8844-6d067ba99460",
     "viewport": "1440x900",
     "elements": 65,
     "textBlocks": 19,
@@ -11484,7 +11484,7 @@
         "weight": "400"
       },
       {
-        "text": "01a1a5f7-c29d-728c-b5b6-b0e796632b5d",
+        "text": "01a1a68c-4467-79a7-8c12-526707114aa5",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "13.6px",
@@ -11498,7 +11498,7 @@
         "weight": "400"
       },
       {
-        "text": "01a1a5f7-c2bb-7f22-94ec-382906564f50",
+        "text": "01a1a68c-4484-7f5b-894a-afc4afa79841",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "13.6px",
@@ -11543,7 +11543,7 @@
   },
   {
     "page": "published-phone",
-    "url": "http://localhost:37015/workspace?review=01a1a5f7-0dc1-7b2f-8a73-7132787215bc",
+    "url": "http://localhost:36157/workspace?review=01a1a68b-8765-7928-8539-1b14344b58a2",
     "viewport": "390x844",
     "elements": 65,
     "textBlocks": 19,
@@ -11855,7 +11855,7 @@
         "weight": "400"
       },
       {
-        "text": "01a1a5f7-d022-79e6-bf09-05df59fbd54d",
+        "text": "01a1a68c-5164-7f90-9935-6acf853b5bd6",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "13.6px",
@@ -11869,7 +11869,7 @@
         "weight": "400"
       },
       {
-        "text": "01a1a5f7-d03f-746f-a06f-6ad182dd3d43",
+        "text": "01a1a68c-5186-70bd-a875-ba9c9e2b8dad",
         "color": "oklch(0.235 0.028 65)",
         "background": "oklch(0.985 0.012 86)",
         "size": "13.6px",
@@ -11914,7 +11914,7 @@
   },
   {
     "page": "blocked-validation",
-    "url": "http://localhost:37015/workspace?draft=01a1a5f7-1061-7f32-b225-2386dbfbaede",
+    "url": "http://localhost:36157/workspace?draft=01a1a68b-8a68-78ff-848f-b7857a24fa13",
     "viewport": "1440x900",
     "elements": 220,
     "textBlocks": 75,
@@ -13018,7 +13018,7 @@
   },
   {
     "page": "blocked-validation-phone",
-    "url": "http://localhost:37015/workspace?draft=01a1a5f7-1061-7f32-b225-2386dbfbaede",
+    "url": "http://localhost:36157/workspace?draft=01a1a68b-8a68-78ff-848f-b7857a24fa13",
     "viewport": "390x844",
     "elements": 220,
     "textBlocks": 75,
@@ -14090,7 +14090,7 @@
   },
   {
     "page": "blocked-moderation",
-    "url": "http://localhost:37015/workspace?draft=01a1a5f7-10fd-7fee-a401-78c434abcd58",
+    "url": "http://localhost:36157/workspace?draft=01a1a68b-8af4-72f5-9cfd-0203f7e1b67b",
     "viewport": "1440x900",
     "elements": 199,
     "textBlocks": 66,
@@ -15062,7 +15062,7 @@
         "weight": "400"
       },
       {
-        "text": "Request 01a1a5f7-10fd-7fee-a401-78c434abcd58.   Category: Instructions aimed at ",
+        "text": "Request 01a1a68b-8af4-72f5-9cfd-0203f7e1b67b.   Category: Instructions aimed at ",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.966555 0.0166838 84.1511)",
         "size": "12.48px",
@@ -15079,7 +15079,7 @@
   },
   {
     "page": "blocked-moderation-phone",
-    "url": "http://localhost:37015/workspace?draft=01a1a5f7-10fd-7fee-a401-78c434abcd58",
+    "url": "http://localhost:36157/workspace?draft=01a1a68b-8af4-72f5-9cfd-0203f7e1b67b",
     "viewport": "390x844",
     "elements": 199,
     "textBlocks": 66,
@@ -16027,7 +16027,7 @@
         "weight": "400"
       },
       {
-        "text": "Request 01a1a5f7-10fd-7fee-a401-78c434abcd58.   Category: Instructions aimed at ",
+        "text": "Request 01a1a68b-8af4-72f5-9cfd-0203f7e1b67b.   Category: Instructions aimed at ",
         "color": "oklch(0.48 0.035 68)",
         "background": "oklch(0.966555 0.0166838 84.1511)",
         "size": "12.48px",
