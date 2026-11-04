@@ -49,6 +49,8 @@ const provenanceSchema: z.ZodType<ProviderProvenance> = z
     promptTemplateVersion: z.string(),
     validatorVersion: z.string(),
     catalogVersion: z.string().optional(),
+    packVersion: z.string().optional(),
+    allowedScreenPatterns: z.array(z.literal("matching")).optional(),
   })
   .strict();
 

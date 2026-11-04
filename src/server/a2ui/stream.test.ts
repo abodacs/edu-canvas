@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { createEquivalentFractionsDraft } from "@/server/generation/provider";
 import { buildValidatedLearningPath } from "@/server/generation/learning-path";
-import { createSyntheticCurriculumContext } from "@/server/generation/semantic-validation";
+import { createSyntheticCurriculumContext } from "@/server/generation/semantic-validation-fixtures";
 
 import { compileRawLessonPreview } from "./compiler";
 import { createPreviewSSEStream } from "./stream";

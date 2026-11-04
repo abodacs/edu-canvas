@@ -1,6 +1,6 @@
 import { generationClaimExpiredDiagnostic } from "../generation/types";
 import { serverObservability } from "../observability.server";
-import { getSyntheticSeedCounts } from "../seed-data";
+import { getSyntheticSeedCounts } from "./seed-catalog";
 import { inMemoryPersistenceKind } from "./kinds";
 import { createSeededSourcePersistence } from "./source-seeded";
 import type { FoundationPersistence } from "./types";

@@ -1,4 +1,10 @@
-import { syntheticSeed } from "@/server/seed-data";
+import type {
+  AnswerRule,
+  StandardsPack,
+  StandardsPackExample,
+  StandardsPackPromptFrame,
+  StandardsPackReference,
+} from "@/server/curriculum/standards-pack";
 import type {
   LessonLanguage,
   RecoveryAction,
@@ -8,7 +14,7 @@ import type {
 import type { NormalizedGenerationRequest } from "./provider";
 import type { ProviderLessonDraft } from "./types";
 
-export const curriculumValidatorVersion = "curriculum-validator-v1";
+export const curriculumValidatorVersion = "curriculum-validator-v2";
 export const learningQualityValidatorVersion = "learning-quality-validator-v1";
 export const semanticValidationRunnerVersion = "semantic-validation-runner-v1";
 
@@ -36,10 +42,26 @@ export interface VersionedCurriculumContext {
   standardCode: string;
   grade: number;
   language: LessonLanguage;
+  packVersion: string;
   graphVersion: string;
   targetNodeId: string;
   nodes: readonly CurriculumNode[];
   edges: readonly CurriculumEdge[];
+  answerRules: readonly AnswerRule[];
+  allowedScreenPatterns: readonly "matching"[];
+  /**
+  The task the pack asks the provider for (#221). Optional only for hand-built
+  test contexts: every pack carries one, and `createCurriculumContextFromPack`
+  always copies it.
+  */
+  promptFrame?: StandardsPackPromptFrame;
+  /**
+   * The pack's subject-correct relationships. Optional only for hand-built
+   * test contexts; every pack carries examples, and the deterministic fixture
+   * uses them instead of the seeded fraction pairs.
+   */
+  examples?: readonly StandardsPackExample[];
+  reference?: StandardsPackReference;
 }
 
 export interface NormalizedReasoningPath {
@@ -126,25 +148,31 @@ export interface SemanticValidationOptions {
 }
 
 /**
- * The seeded curriculum is a stand-in, not a tenant-owned catalogue (#110 owns
- * that). Its context is therefore bound to the acting tenant so that a real
- * signed-in teacher is not rejected by the tenant-match check. Replace this
- * default with tenant-owned graph resolution when it lands.
+ * A resolved pack is the only source of a curriculum context. The acting
+ * tenant owns the context even when the pack is a shared template, so the
+ * acceptance tenant check still proves the lesson belongs to this classroom.
  */
-export const createSyntheticCurriculumContext = (
-  input: Pick<NormalizedGenerationRequest, "grade" | "language" | "standardId">,
-  tenantId: string = syntheticSeed.tenant.id
+export const createCurriculumContextFromPack = (
+  pack: StandardsPack,
+  input: Pick<NormalizedGenerationRequest, "grade" | "language">,
+  tenantId: string
 ): VersionedCurriculumContext => {
   return {
     tenantId,
-    standardId: input.standardId,
-    standardCode: syntheticSeed.standard.code,
+    standardId: pack.standardId,
+    standardCode: pack.standardCode,
     grade: input.grade,
     language: input.language,
-    graphVersion: syntheticSeed.activityVersion.graphVersion,
-    targetNodeId: "graph_node_equivalent_fractions",
-    nodes: syntheticSeed.graphNodes,
-    edges: syntheticSeed.graphEdges,
+    packVersion: pack.packVersion,
+    graphVersion: pack.graph.version,
+    targetNodeId: pack.graph.targetNodeId,
+    nodes: pack.graph.nodes,
+    edges: pack.graph.edges,
+    answerRules: pack.answerRules,
+    allowedScreenPatterns: pack.allowedScreenPatterns,
+    promptFrame: pack.promptFrame,
+    examples: pack.examples,
+    ...(pack.reference && { reference: pack.reference }),
   };
 };
 

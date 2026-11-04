@@ -16,6 +16,7 @@ The two scanners split the work: `verify:architecture` owns the layer and state 
 
 - **No dependency cycles** (excluding the generated `routeTree.gen.ts`, whose edge to `router.tsx` the router plugin owns).
 - **Context decoupling:** `src/server/generation` and `src/server/a2ui` may not import each other’s logic; the persistence record (and its types) is their meeting point.
+- **Curriculum ownership:** `src/server/curriculum` may import `src/shared` and, until the seed inverts, `src/server/seed-data`; it may not import generation, A2UI, routes, or components. Generation may import the curriculum context; the reverse edge is an error. The `drafting-imports-seed-curriculum-directly` rule is an error, and only the test-support `*-fixtures.ts` module is exempt (`AgDR-0018`).
 - **Database-client ownership:** only `src/server/persistence` imports `postgres`.
 - **Test-double containment:** runtime modules may not import an in-memory persistence double. Every double is named `persistence/seeded.ts` or `persistence/*-seeded.ts`; the rule matches that convention, so a new double needs no rule edit. Only `.test.ts(x)` modules, `records-fixtures.ts`, and the doubles' own modules may import one. The rule is an error (`runtime-imports-in-memory-store`).
 - **Layer rules mirrored** from `verify:architecture`, so a bypass via a resolved path cannot slip past one scanner.

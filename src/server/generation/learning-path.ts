@@ -155,6 +155,7 @@ export const buildValidatedLearningPath = (input: {
     versionPins: {
       draftId: input.draftId,
       graphVersion: context.graphVersion,
+      packVersion: context.packVersion,
       catalogVersion: A2UI_CATALOG_VERSION,
       modelVersion: input.provenance.model,
       validatorVersion: input.validatorVersion,

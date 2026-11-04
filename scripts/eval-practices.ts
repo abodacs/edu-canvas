@@ -16,7 +16,11 @@ import path from "node:path";
 
 import postgres from "postgres";
 
-import { GenerationRequestError } from "@/server/generation/generation-request-error";
+import { fractionEquivalencePack } from "@/server/curriculum/built-in-packs";
+import {
+  GenerationRequestError,
+  GENERATION_STANDARD_UNSUPPORTED_MESSAGE,
+} from "@/server/generation/generation-request-error";
 import { reviewLearningQuality } from "@/server/generation/learning-quality-validator";
 import { createDeterministicLessonDraftProvider } from "@/server/generation/provider";
 import {
@@ -55,7 +59,7 @@ const DB_PROBE_TIMEOUT_MS = 4000;
 const EVAL_ACTOR_ID = "actor_eval_delegation_t1";
 const BASE_PROMPT =
   "Explain equivalent fractions with one whole cut into equal parts.";
-const CURATED_GRADE_MESSAGE = "Use Grade 4 equivalent fractions (4.NF.A.1).";
+const CURATED_STANDARD_MESSAGE = GENERATION_STANDARD_UNSUPPORTED_MESSAGE;
 const STATE_READY_FOR_REVIEW = "ready-for-review";
 const STATE_FAILED_RETRYABLE = "failed-retryable";
 const DATABASE_URL_MISSING = "No DATABASE_URL is set.";
@@ -372,8 +376,9 @@ const runDg1Challenge = (caseFile: CaseFile): CaseResult => {
     422
   );
   assertHolds(
-    rejection.message.includes(CURATED_GRADE_MESSAGE),
-    `${caseFile.id}: curated message missing: ${rejection.message}`
+    rejection.message.includes(CURATED_STANDARD_MESSAGE) &&
+      !rejection.message.includes("4.NF.A.1"),
+    `${caseFile.id}: generic unsupported-standard message missing: ${rejection.message}`
   );
   const strictParse = lessonGenerationInputSchema.safeParse({
     ...input,
@@ -385,7 +390,7 @@ const runDg1Challenge = (caseFile: CaseFile): CaseResult => {
   );
   return pass(
     caseFile,
-    `service.ts:181-186 threw ${rejection.code} status ${String(rejection.status)} with the curated Grade 4 message; the .strict() contract also rejected the extra successCriteria field, confirming goal criteria are not captured separately.`
+    `service.ts normalization threw ${rejection.code} status ${String(rejection.status)} with the generic unsupported-standard message, which names no other lesson; the .strict() contract also rejected the extra successCriteria field, confirming goal criteria are not captured separately.`
   );
 };
 
@@ -434,10 +439,13 @@ const curriculumContext = (): SemanticValidationInput["context"] => {
     standardCode: syntheticSeed.standard.code,
     grade: 4,
     language: "en",
+    packVersion: fractionEquivalencePack.packVersion,
     graphVersion: syntheticSeed.activityVersion.graphVersion,
     targetNodeId: "graph_node_equivalent_fractions",
     nodes: syntheticSeed.graphNodes,
     edges: syntheticSeed.graphEdges,
+    answerRules: fractionEquivalencePack.answerRules,
+    allowedScreenPatterns: fractionEquivalencePack.allowedScreenPatterns,
   };
 };
 

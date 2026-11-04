@@ -1,3 +1,4 @@
+import { standardsPackRegistry } from "@/server/curriculum/registry";
 import {
   gateArtifact,
   snapshotArtifactGateResult,
@@ -10,7 +11,7 @@ import {
   toNormalizedReasoningPath,
 } from "./learning-path";
 import {
-  createSyntheticCurriculumContext,
+  createCurriculumContextFromPack,
   semanticValidationRunnerVersion,
   validateSemanticLesson,
 } from "./semantic-validation";
@@ -223,14 +224,41 @@ const gateDiagnostics = (
   });
 };
 
+/**
+ * Production resolution is pack-driven. A request whose standard has no pack
+ * has no curriculum context, and acceptance blocks with
+ * `PREREQUISITE_PACK_MISSING`; the context is never synthesized from another
+ * standard's graph.
+ */
 export const resolveCurriculumContext = (
   input: NormalizedGenerationRequest,
   tenantId: string,
   options: DraftAcceptanceOptions
 ): VersionedCurriculumContext | undefined => {
-  return options.curriculumContext
-    ? options.curriculumContext(input)
-    : createSyntheticCurriculumContext(input, tenantId);
+  if (options.curriculumContext) {
+    return options.curriculumContext(input);
+  }
+
+  const pack = standardsPackRegistry.resolve({
+    tenantId,
+    standard: input.standardId,
+  });
+  return pack
+    ? createCurriculumContextFromPack(pack, input, tenantId)
+    : undefined;
+};
+
+/**
+ * The graph version a draft is generated and accepted against. It comes from
+ * the resolved pack, so a pack edit can never silently keep the previous
+ * graph.
+ */
+export const resolveExpectedGraphVersion = (
+  standardId: string,
+  tenantId: string
+): string | undefined => {
+  return standardsPackRegistry.resolve({ tenantId, standard: standardId })
+    ?.graph.version;
 };
 
 export const reviewDraftForAcceptance = async (
@@ -249,7 +277,11 @@ export const reviewDraftForAcceptance = async (
     requestId: string;
     provenance: ProviderProvenance;
     structuralDiagnostics: GenerationDiagnostic[];
-    graphVersion: string;
+    /**
+     * The graph version the caller expects. Omitted when the caller has no
+     * separate pin; acceptance then uses the resolved context's own version.
+     */
+    graphVersion?: string;
   },
   options: DraftAcceptanceOptions
 ): Promise<DraftAcceptanceResult> => {
@@ -286,7 +318,7 @@ export const reviewDraftForAcceptance = async (
     context,
     tenantId,
     input,
-    graphVersion
+    graphVersion ?? context.graphVersion
   );
   if (contextDiagnostic) {
     return {

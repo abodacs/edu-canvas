@@ -13,7 +13,7 @@ import {
 import type { GenerationRequestErrorCode } from "@/shared/generation-contract";
 
 const UNSUPPORTED_OBJECTIVE_MESSAGE =
-  "This learning objective is not supported. Use Grade 4 equivalent fractions (4.NF.A.1).";
+  "This learning objective is not supported. Choose a supported standard.";
 
 const FALLBACK_BODY = {
   code: "GENERATION_FAILED",

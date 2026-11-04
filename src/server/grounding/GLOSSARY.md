@@ -12,6 +12,12 @@ A document a teacher supplies so a draft can be grounded in it: a PDF, a text fi
 
 One accepted upload with its extracted text, page count, content hash, and gap list. A snapshot is immutable once reviewed; a correction produces a new state, not a new document identity.
 
+### Standard grounding
+
+The immutable, tenant-scoped record of one Learning Commons retrieval for a supported `{jurisdiction, statementCode}`: the standard, its description hash, required components, prerequisite path, gaps, provenance and content hash. It is #113's **SourceSnapshot** under a distinct name, because **Source snapshot** already means a teacher upload. A re-retrieval appends a new row linked through its predecessor; a superseded row stays readable. A **Standard grounding** is not a **Source snapshot**.
+
+**Implementing names:** `standard_groundings`
+
 ### Extraction
 
 The reading of text out of a source material. Extraction reports what it could not read; it does not silently drop it.
