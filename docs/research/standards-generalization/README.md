@@ -1,6 +1,6 @@
 # Standards generalization: grounding and lesson validation beyond 4.NF.A.1 (#113, #30)
 
-Status: **research record, finished 2026-11-04, with two remaining gaps (see Remaining gaps).** All file:line citations were re-checked against `main` at `211e30f`. The fixture step that had not run now runs as a vitest characterization test, and its measured result is in [§2a](#2a-measured-fixture-outcomes). Step 7 (model role) **ran live** on 2026-11-04 (8 of M=9 calls, §7). California wording comes from Learning Commons records; the CDE PDFs stay WAF-blocked (§1). No production code under `src/` changed. No GitHub issue was created or edited.
+Status: **research record, finished 2026-11-04, with one remaining gap (see Remaining gaps).** All file:line citations were re-checked against `main` at `211e30f`. The fixture step that had not run now runs as a vitest characterization test, and its measured result is in [§2a](#2a-measured-fixture-outcomes). Step 7 (model role) **ran live** on 2026-11-04 (8 of M=9 calls, §7). California is **out of scope by product decision (2026-11-04)**: Multi-State is the only shipped jurisdiction, so the CDE wording check is not required. No production code under `src/` changed in this record.
 
 This record started as a local brief. Its live evidence is now committed in [`evidence/`](evidence/), and claims resting on it are marked **(local evidence)**:
 
@@ -49,10 +49,9 @@ Primary texts, verbatim, from thecorestandards.org (an unofficial mirror; the of
 - **4.OA.A.3:** "Solve multistep word problems posed with whole numbers and having whole-number answers using the four operations, including problems in which remainders must be interpreted. Represent these problems using equations with a letter standing for the unknown quantity. Assess the reasonableness of answers using mental computation and estimation strategies including rounding."
 - **RI.5.2:** "Determine two or more main ideas of a text and explain how they are supported by key details; summarize the text."
 
-**California, from Learning Commons.** The CDE PDFs returned HTTP 303 to a WAF page, so Learning Commons supplies the California wording instead:
+**California: out of scope (product decision 2026-11-04).** The pilot ships **Multi-State only**; California is not a supported jurisdiction and no California pack is planned. The CDE PDFs redirect to a WAF page, but that no longer blocks anything: the wording check is **not required**. If California is ever sold, download the two CDE PDFs in a browser and compare them to the Multi-State text before authoring a California pack version.
 
-- **RI.5.2 (California):** identical to Multi-State, word for word. It is search top-1 at score 0.926 ([`06-search-ri-5-2-california.json`](evidence/lc-probe-out/06-search-ri-5-2-california.json), call 6 of 6).
-- **4.NF.A.1 and 4.OA.A.3 (California):** both records exist with California UUIDs (`5ebefbed…`, `5ec100e3…`). `evidence.json` keeps only the first 240 characters of each description, and those characters match CCSS except for typesetting. The full California math text was not fetched, because the N=6 cap was spent.
+The one California call already made is kept as context, not as support: California RI.5.2 matches Multi-State word for word ([`06-search-ri-5-2-california.json`](evidence/lc-probe-out/06-search-ri-5-2-california.json)).
 
 Consequence for #113: under the #113 rule R-04, RI.5.2 yields `skills-missing` and blocks generation. That rule is in an uncommitted note, `.scratch/tasks/113-source-grounding/113-source-grounding.md:103`. A non-math standards pack therefore cannot take its skills from Learning Commons today. Its skills must be written by hand from the primary text and labeled as a different kind of source.
 
@@ -173,7 +172,7 @@ Earlier evidence and code facts:
 | Wrong 4.OA.A.3 or RI.5.2 answers reached students: unverifiable pairs were only warnings (B6, measured: a wrong pair's diagnostics are identical to a correct set's), and a teacher acknowledged the warning code once per screen without checking each pair | known gap |
 | Grounding said "pack exists" for every standard (B2), so teachers were sent to generation that then failed (B1) | known gap |
 | Non-math standards packs had no Learning Commons skills; hand-written skills drifted from the primary text with no hash check | known gap |
-| California wording diverged from CCSS and was never checked (CDE blocked) | unknown |
+| California is never supported; a teacher there has no pack | accepted (out of scope) |
 | The inline advisory reviewer timed out and blocked everything | known (now) |
 | Matching-only lessons felt trivial for RI.5.2, and teachers did not adopt them | blind spot (needs #118) |
 | A standards-pack upgrade silently changed grading for published lessons | known gap (`packVersion` not pinned) |
@@ -200,7 +199,7 @@ Checks still to come, and not claimed here: #106 (eval set) and #118 (teacher re
 ## 10. Decisions for Abdullah (each with a default)
 
 1. Merge, epic, or separate? **Default: epic with children** (#113, #30, and a new pack-driven-generation child).
-2. Non-math subject and pilot jurisdictions? **Default: ELA RI.5.2, Multi-State only** (California unverified).
+2. Non-math subject and pilot jurisdictions? **Decided 2026-11-04: ELA RI.5.2, Multi-State only. California is not needed and no California pack ships.**
 3. What verdict for unverifiable relationships under a machine rule? The options are warning, silent pass, or hard_block. **Default: warning plus a required teacher acknowledgment per screen.** Never a silent pass. The per-screen acknowledgment already exists (#5, `publication/service.ts:484-498`). It works per warning _code_, though, so one acknowledgment covers every unverified pair on the screen. §2a shows the warning alone cannot tell a wrong pair from a right one. Proposed refinement, also defaulted: S3 adds machine rules, so 4.OA.A.3 pairs stop being "unverifiable", and acknowledgment stays per code.
 4. Before or after the day-3 deferral in #108? **Default: after**, except S1 and S5, which can start now.
 5. Pull #29 into scope? **Default: keep it as a dependency**, and ship matching-only standards packs with a visible pattern diagnostic.
@@ -211,7 +210,7 @@ Checks still to come, and not claimed here: #106 (eval set) and #118 (teacher re
 ## Remaining gaps
 
 - **Generator content unverified:** the drafts were not saved, and only 1 call is left under M=9. Unblock: save `draft` in `meta-probe.ts` role A, raise M by at least 3, and rerun it.
-- **Full California math text:** not fetched, because N is spent. Unblock: raise N by 2 and call `GET /academic-standards/{uuid}` for `5ebefbed-d7cc-11e8-824f-0242ac160002` and `5ec100e3-d7cc-11e8-824f-0242ac160002`.
+- **California: not needed.** Product decision 2026-11-04: Multi-State only. Do not download the CDE PDFs unless a California sale is on the table; then verify the wording before authoring a California pack version.
 
 The fixture acceptance step **ran**; see §2a. Reproduce it with:
 
