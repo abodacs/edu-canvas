@@ -268,3 +268,9 @@ h2 {
   gap: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
 }
+
+@media (width <= 38rem) {
+  h1 {
+    font-size: clamp(2.8rem, 15vw, 4.6rem);
+  }
+}

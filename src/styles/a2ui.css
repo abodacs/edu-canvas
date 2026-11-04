@@ -659,10 +659,6 @@
   .a2ui-learning-path__pins {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
-  .page-grid--hero {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (width <= 38rem) {
@@ -691,43 +687,6 @@
   }
 
   .a2ui-learning-path__pins {
-    grid-template-columns: 1fr;
-  }
-
-  .site-header,
-  .section-heading,
-  .site-footer {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .site-header {
-    margin-block-end: 3.5rem;
-  }
-
-  h1 {
-    font-size: clamp(2.8rem, 15vw, 4.6rem);
-  }
-
-  .hero-actions > * {
-    inline-size: 100%;
-  }
-
-  .site-footer {
-    gap: 0.75rem;
-  }
-
-  .generation-form__actions,
-  .generation-form__actions > * {
-    inline-size: 100%;
-  }
-
-  .generation-result__header,
-  .variant-preview__heading {
-    flex-direction: column;
-  }
-
-  .variant-preview__items {
     grid-template-columns: 1fr;
   }
 }
@@ -772,43 +731,6 @@
 
     to {
       opacity: 1;
-    }
-  }
-
-  .reveal__target {
-    animation: reveal-settle 240ms var(--ease-out) forwards;
-    opacity: 0;
-    transform: translateY(4px);
-  }
-
-  .reveal__target:nth-child(2) {
-    animation-delay: 30ms;
-  }
-
-  .reveal__target:nth-child(3) {
-    animation-delay: 60ms;
-  }
-
-  .reveal__target:nth-child(4) {
-    animation-delay: 90ms;
-  }
-
-  .reveal__equal-fill {
-    animation: reveal-fill 400ms var(--ease-out) 120ms forwards;
-    transform: scaleX(0);
-    transform-origin: left;
-  }
-
-  @keyframes reveal-settle {
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-
-  @keyframes reveal-fill {
-    to {
-      transform: scaleX(1);
     }
   }
 }

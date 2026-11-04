@@ -397,3 +397,71 @@
   font-size: 0.78rem;
   text-transform: capitalize;
 }
+
+@media (width <= 52rem) {
+  .page-grid--hero {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (width <= 38rem) {
+  .site-header,
+  .site-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .site-header {
+    margin-block-end: 3.5rem;
+  }
+
+  .hero-actions > * {
+    inline-size: 100%;
+  }
+
+  .site-footer {
+    gap: 0.75rem;
+  }
+}
+
+/* The landing reveal settling into place. Static everywhere else, and
+   collapsed to the final state under reduced motion (no opacity:0 outside
+   this no-preference block, so the reveal is never hidden by default). */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal__target {
+    animation: reveal-settle 240ms var(--ease-out) forwards;
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  .reveal__target:nth-child(2) {
+    animation-delay: 30ms;
+  }
+
+  .reveal__target:nth-child(3) {
+    animation-delay: 60ms;
+  }
+
+  .reveal__target:nth-child(4) {
+    animation-delay: 90ms;
+  }
+
+  .reveal__equal-fill {
+    animation: reveal-fill 400ms var(--ease-out) 120ms forwards;
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  @keyframes reveal-settle {
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes reveal-fill {
+    to {
+      transform: scaleX(1);
+    }
+  }
+}

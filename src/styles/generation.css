@@ -253,3 +253,19 @@
   font-size: 0.82rem;
   overflow-wrap: anywhere;
 }
+
+@media (width <= 38rem) {
+  .generation-form__actions,
+  .generation-form__actions > * {
+    inline-size: 100%;
+  }
+
+  .generation-result__header,
+  .variant-preview__heading {
+    flex-direction: column;
+  }
+
+  .variant-preview__items {
+    grid-template-columns: 1fr;
+  }
+}
