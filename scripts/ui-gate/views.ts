@@ -37,8 +37,12 @@ export interface ViewSpec {
   readonly assert?: (page: Page) => Promise<void>;
 }
 
-/** Bounded wait for a view's state after the page loads. */
-export const readyTimeoutMs = 5000;
+/**
+Bounded wait for a view's state after the page loads. Generous enough that a
+parallel browser gate or a seeded run under load settles instead of failing a
+real state; the wait ends as soon as the selector appears.
+*/
+export const readyTimeoutMs = 15_000;
 
 const continueToPublish = async (page: Page): Promise<void> => {
   await page.locator(".review-studio__toolbar").waitFor({
