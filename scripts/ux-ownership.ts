@@ -104,6 +104,19 @@ export const mapIssues = (
   return issues;
 };
 
+/**
+ * The `git diff` arguments a slice check reads. `--no-renames` reports a move
+ * as a delete of the old path plus an add of the new one, so moving a file out
+ * of a foundation path is judged against the owner of the path it left, not
+ * only the one it reached.
+ */
+export const sliceDiffArguments = (base: string): readonly string[] => [
+  "diff",
+  "--name-only",
+  "--no-renames",
+  `${base}...HEAD`,
+];
+
 export interface DiffVerdict {
   /** Changed files another owner claims; any entry fails the check. */
   readonly violations: readonly string[];

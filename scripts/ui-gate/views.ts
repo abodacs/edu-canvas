@@ -81,27 +81,34 @@ const publishAndAssign = async (page: Page): Promise<void> => {
 The redesigned routes at their default state. Keys replace the former
 path-only budget keys (`/@desktop` became `home@desktop`).
 */
+/** The sign-in form, never the membership step or an error screen. */
+export const loginFormReady = "main:has(#login-heading) form.auth-form";
+/** The loaded results surface of the dashboard. */
+export const dashboardReady = "main .progress-asof";
+/** The learner's matching board, never the status line around it. */
+export const learnBoardReady = "main .learn-board";
+
 export const routeViews: readonly ViewSpec[] = [
   {
     key: "home",
     path: "/",
     audience: "public",
     mock: "0-landing",
-    ready: "main",
+    ready: "#page-title.hero-headline",
   },
   {
     key: "login",
     path: "/login",
     audience: "public",
     mock: "5-sign-in",
-    ready: "main",
+    ready: loginFormReady,
   },
   {
     key: "sign-up",
     path: "/sign-up",
     audience: "public",
     mock: "5-sign-in",
-    ready: "main",
+    ready: "main:has(#sign-up-heading) form.auth-form",
   },
   {
     key: "workspace",
@@ -115,7 +122,9 @@ export const routeViews: readonly ViewSpec[] = [
     path: "/dashboard",
     audience: "teacher",
     mock: "4-dashboard",
-    ready: "main",
+    // The results header renders only once the progress read succeeded;
+    // loading, permission, and error surfaces never show it.
+    ready: dashboardReady,
   },
   {
     key: "learn",
@@ -123,7 +132,7 @@ export const routeViews: readonly ViewSpec[] = [
     audience: "student",
     mock: "7-learn",
     query: ({ seed }) => seed.learnerQuery,
-    ready: "main",
+    ready: learnBoardReady,
   },
 ];
 
@@ -202,9 +211,21 @@ export const screenshotName = (
 ): string => `${view.key}-${viewport}.png`;
 
 /**
+Whether the page is still on the path it was opened at. A redirect (for
+example a lost session sending /dashboard to /login) is a wrong state even when
+the new page renders cleanly.
+*/
+export const assertOnPath = (page: Page, expectedPath: string): void => {
+  const actual = new URL(page.url()).pathname;
+  if (actual !== expectedPath) {
+    throw new Error(`redirected from ${expectedPath} to ${actual}`);
+  }
+};
+
+/**
 Reach a view's state on an already-loaded page: run its clicks, wait for its
-selector, run its assertions. Throws with the view key on any miss, so the
-caller records a fatal state finding.
+selector, confirm no redirect happened, run its assertions. Throws with the
+view key on any miss, so the caller records a fatal state finding.
 */
 export const reachState = async (page: Page, view: ViewSpec): Promise<void> => {
   try {
@@ -213,6 +234,7 @@ export const reachState = async (page: Page, view: ViewSpec): Promise<void> => {
       state: "visible",
       timeout: readyTimeoutMs,
     });
+    assertOnPath(page, view.path);
     await view.assert?.(page);
   } catch (error) {
     const reason = error instanceof Error ? error.message.split("\n")[0] : "";

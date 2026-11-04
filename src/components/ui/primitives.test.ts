@@ -141,6 +141,18 @@ describe(Field, () => {
     expect(markup).not.toContain("aria-describedby");
   });
 
+  it("keeps a caller's aria-invalid when no error is shown", () => {
+    const markup = render(
+      element(
+        Field,
+        { label: "Topic" },
+        createElement("input", { "aria-invalid": true })
+      )
+    );
+    expect(markup).toContain('aria-invalid="true"');
+    expect(markup).not.toContain("data-invalid");
+  });
+
   it("respects an existing control id and marks required", () => {
     for (const tag of ["input", "textarea", "select"] as const) {
       const markup = render(

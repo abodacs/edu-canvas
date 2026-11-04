@@ -8,12 +8,12 @@ import { fileURLToPath } from "node:url";
 // source lint cannot see: how many distinct values actually reach the screen.
 // The 2026-11-02 census found 44 font sizes, 64 line heights and 20 radii on 15 pages - a type system that exists nowhere except in the author's head.
 //
-// Input is the JSON produced by .scratch/ux-revamp/walk/audit-capture.mjs, kept
-// at scripts/design-census.json so a fresh clone can run the check without a
-// browser. Regenerate it after a UI change:
+// Input is the JSON produced by `pnpm census:capture`
+// (scripts/design-census-capture.ts), kept at scripts/design-census.json so a
+// fresh clone can run the check without a browser. Regenerate it after a UI
+// change (needs a build, Chromium, and PostgreSQL):
 //
-//   node .scratch/ux-revamp/walk/audit-capture.mjs
-//   cp .scratch/ux-revamp/audit/census.json scripts/design-census.json
+//   pnpm build && pnpm census:capture --write
 //
 // Like the token check this is a RATCHET: the budget starts at today's numbers
 // and may only fall. It also fails when the record set is too small, so a

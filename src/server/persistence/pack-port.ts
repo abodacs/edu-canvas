@@ -147,7 +147,13 @@ export interface PackPersistence {
     operationKey: string
   ) => Promise<PackReceiptRecord | undefined>;
   insertReceipt: (record: PackReceiptRecord) => Promise<void>;
+  /**
+   * Assignable learners: an active student identity with an active membership
+   * in the tenant. The records bridge refuses any other learner, so the
+   * publish screen and the publish check must use this same rule.
+   */
   listLearners: (tenantId: string) => Promise<PackLearner[]>;
+  /** One assignable learner, by the same rule as `listLearners`. */
   readLearner: (
     tenantId: string,
     learnerId: string

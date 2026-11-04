@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { judgeSliceDiff, mapIssues, ownershipMapSchema } from "./ux-ownership";
+import {
+  judgeSliceDiff,
+  mapIssues,
+  ownershipMapSchema,
+  sliceDiffArguments,
+} from "./ux-ownership";
 
 const fixtureMap = ownershipMapSchema.parse({
   note: "fixture",
@@ -112,5 +117,28 @@ describe(judgeSliceDiff, () => {
     expect(() => judgeSliceDiff(fixtureMap, "foundation", [])).toThrow(
       "unknown slice"
     );
+  });
+});
+
+describe(sliceDiffArguments, () => {
+  it("reads moves as a delete plus an add", () => {
+    expect(sliceDiffArguments("origin/main")).toStrictEqual([
+      "diff",
+      "--name-only",
+      "--no-renames",
+      "origin/main...HEAD",
+    ]);
+  });
+
+  it("judges a move out of a foundation path by the path it left", () => {
+    // With --no-renames, `git mv src/components/ui/button.tsx
+    // src/styles/review-button.tsx` lists both paths.
+    const verdict = judgeSliceDiff(fixtureMap, "review", [
+      "src/components/ui/button.tsx",
+      "src/styles/review.css",
+    ]);
+    expect(verdict.violations).toStrictEqual([
+      "src/components/ui/button.tsx is owned by foundation, not review.",
+    ]);
   });
 });

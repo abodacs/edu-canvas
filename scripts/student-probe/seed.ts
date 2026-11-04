@@ -17,6 +17,12 @@ import type { LessonLanguage } from "@/shared/generation-contract";
 const learnerId = "learner_omar";
 
 const config = readServerConfig();
+const { databaseUrl } = config;
+if (databaseUrl === undefined) {
+  throw new Error(
+    "scripts/student-probe/seed.ts needs DATABASE_URL: it writes only to the scratch database the probe creates."
+  );
+}
 const teacher = await signInGateTeacher(config, gateTeacher.membership);
 const services = createSeedServices(config);
 const generation = services.generationFor("valid");
@@ -39,7 +45,7 @@ const publishPack = async (language: LessonLanguage) => {
   if (state !== "ready-for-review") {
     throw new Error(`The ${language} draft ended in ${state}.`);
   }
-  await restoreSourceLink(config.databaseUrl ?? "", requestId, snapshotId);
+  await restoreSourceLink(databaseUrl, requestId, snapshotId);
   const review = await services.approveEverything(
     teacher,
     requestId,
