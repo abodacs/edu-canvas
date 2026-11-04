@@ -188,6 +188,44 @@ describe("generation codec gate snapshot", () => {
     expect(hydrated.gate?.policyVersion).toBe(artifactGatePolicyVersion);
   });
 
+  it("round-trips the pack provenance and pack version pin", () => {
+    const record = readyRecord();
+    const { draft } = record;
+    if (!draft) {
+      throw new Error("The codec fixture needs a draft.");
+    }
+    const withPack: LessonGenerationRecord = {
+      ...record,
+      draft: {
+        ...draft,
+        provenance: {
+          ...draft.provenance,
+          packVersion: "4.NF.A.1-v1",
+          allowedScreenPatterns: ["matching"],
+        },
+        learningPath: {
+          ...draft.learningPath,
+          versionPins: {
+            ...draft.learningPath.versionPins,
+            packVersion: "4.NF.A.1-v1",
+          },
+        },
+      },
+    };
+
+    const hydrated = hydrateGenerationRecord(storedRow(withPack), []);
+
+    expect({
+      packVersion: hydrated.draft?.provenance.packVersion,
+      allowedScreenPatterns: hydrated.draft?.provenance.allowedScreenPatterns,
+      pinnedPackVersion: hydrated.draft?.learningPath.versionPins.packVersion,
+    }).toStrictEqual({
+      packVersion: "4.NF.A.1-v1",
+      allowedScreenPatterns: ["matching"],
+      pinnedPackVersion: "4.NF.A.1-v1",
+    });
+  });
+
   it("hydrates a legacy bare draft without a snapshot", () => {
     const record = readyRecord();
     const row = storedRow(record);
