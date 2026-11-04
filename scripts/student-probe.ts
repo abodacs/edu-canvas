@@ -28,6 +28,7 @@ import {
   touchTargetProblems,
 } from "./student-probe/checks";
 import { loadEnvironmentFile, withScratchApp } from "./ui-gate/app";
+import { parseProbeSeedOutput } from "./ui-gate/seed-output";
 
 import type { Browser, BrowserContext, Page, Route } from "playwright-core";
 
@@ -561,9 +562,9 @@ const main = async (): Promise<number> => {
       seedScripts: ["scripts/student-probe/seed.ts"],
     },
     async ({ baseUrl, seedOutputs }) => {
-      const links = JSON.parse(
-        seedOutputs[0]?.trim().split("\n").at(-1) ?? "{}"
-      ) as Record<Language, LearnerLink>;
+      const links: Record<Language, LearnerLink> = parseProbeSeedOutput(
+        seedOutputs[0]
+      );
       try {
         browser = await chromium.launch({ executablePath: chromiumPath });
         const signInContext = await browser.newContext({ viewport: phone });
