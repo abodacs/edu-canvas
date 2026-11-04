@@ -1,6 +1,6 @@
 # AgDR-0018 — Standards-pack context, shared templates, and grounding adapter
 
-> In the context of generalizing lesson generation beyond equivalent fractions ([#30](https://github.com/abodacs/edu-canvas/issues/30)) while the seeded curriculum is still the canonical demo data, facing the risk that a second subject becomes a second code branch and that a Learning Commons response leaks another tenant's curriculum or a raw provider payload into storage, I decided to make the versioned **standards pack** the one curriculum context for generation, to keep packs as shared templates plus tenant-owned overrides, to pin the pack version and answer rules on every accepted draft, and to place the Learning Commons adapter behind a validating anticorruption layer, accepting that seed data stays canonical until the physical wave-2 move and that the provider REST paths remain unverified until a live credential records them.
+> In the context of generalizing lesson generation beyond equivalent fractions ([#30](https://github.com/abodacs/edu-canvas/issues/30)) while the seeded curriculum is still the canonical demo data, facing the risk that a second subject becomes a second code branch and that a Learning Commons response leaks another tenant's curriculum or a raw provider payload into storage, I decided to make the versioned **standards pack** the one curriculum context for generation, to keep packs as shared templates plus tenant-owned overrides, to pin the pack version and answer rules on every accepted draft, and to place the Learning Commons adapter behind a validating anticorruption layer, accepting that seed data stays canonical until the physical wave-2 move, with the provider REST pipeline verified live on 2026-11-04 and its 8-row matrix recorded.
 
 Recorded 2026-11-04. The context map and module ownership live in [ARCHITECTURE.md](../../../ARCHITECTURE.md#bounded-contexts-and-context-map); this record owns the decision and its limits.
 
@@ -18,7 +18,7 @@ The teaching loop needs curriculum data for more than equivalent fractions. The 
 
 4. **Answer rules are declared and evaluated by kind.** A pack declares `fraction-equivalence`, `whole-number-expression` (with per-problem remainder rounding), `text-evidence`, or `teacher-review`. Each kind has exactly one evaluator. A rule that cannot decide returns its declared `unverifiedVerdict`; a definite contradiction is a mismatch. The provider prompt and the deterministic fixture read the same declared problems, passage, and examples, so an offline draft can satisfy the rule the pack declares.
 
-5. **Learning Commons sits behind an anticorruption layer.** `src/server/grounding/standards/learning-commons-rest.ts` maps a fixed provider origin and fixed paths into application-owned facts, a gap vocabulary, and bounded copy. A corrupt persisted row fails closed through runtime validation, and a provider response never becomes an error `cause`. The REST paths for learning components and progression are **unverified**: only `/academic-standards/search` has recorded evidence, so the reconstruction reports `unsupported-envelope` on a 4xx instead of claiming empty content. No live Learning Commons or META credential is present, so the live matrix remains unrun; recorded fixtures are the evidence.
+5. **Learning Commons sits behind an anticorruption layer.** `src/server/grounding/standards/learning-commons-rest.ts` maps a fixed provider origin and fixed paths into application-owned facts, a gap vocabulary, and bounded copy. A corrupt persisted row fails closed through runtime validation, and a provider response never becomes an error `cause`. The REST pipeline was **verified live on 2026-11-04**: framework lookup, paginated standard scan, components, prerequisites, and the crosswalk fallback. The 8-row matrix and the ELA boundary are in [`live-matrix.json`](../research/standards-generalization/live-matrix.json); no credential is recorded. A 4xx on a sub-resource is a visible `unsupported-envelope`, never a false empty answer.
 
 6. **Seed inversion is deferred.** `src/server/seed-data.ts` stays canonical until the wave-2 physical move into `src/curriculum/`. The temporary exception is explicit: `src/server/curriculum/built-in-packs.ts` may import the seed, and the test-support `*-fixtures.ts` module may import it; production generation may not. The `drafting-imports-seed-curriculum-directly` boundary rule is therefore an error, not a warn.
 
@@ -27,14 +27,14 @@ The teaching loop needs curriculum data for more than equivalent fractions. The 
 - **One module per standard** — multiplies validators and copy for every new standard; rejected because a pack is data.
 - **A global pack catalog with no tenant dimension** — simpler lookup, but it makes a private pack visible to every classroom; rejected in favor of templates plus tenant-owned overrides.
 - **Trusting the persisted grounding JSON** — avoids a Zod dependency at the row boundary, but a corrupt row would become a fabricated grounding; rejected.
-- **Live Learning Commons calls in this pass** — no credential exists, and a fabricated live claim would weaken the evidence; rejected. The adapter stays behind recorded fixtures until a dated live record replaces them.
+- **Live Learning Commons calls in this pass** — rejected at the time because no credential existed, and a fabricated live claim would weaken the evidence. Superseded on 2026-11-04: the verified pipeline and matrix replaced the recorded-fixture-only adapter.
 
 ## Consequences
 
 - The context map gains a named Curriculum & Standards ownership row; the stale "direct seed-data imports today" and "anticorruption layer (planned)" notes are replaced by what now exists.
 - The wave-2 boundary warn retires early for generation. The seed module itself still moves in wave 2.
 - A pack edit produces a new pack version; a stored draft keeps the version that shaped it.
-- The unverified REST paths and the missing live matrix are named limitations, not silent assumptions. A reviewer must not describe them as live-verified.
+- The REST pipeline is live-verified, with the evidence path recorded. The California crosswalk path needs about seven sequential round trips and can exceed the 10-second deadline; California is out of scope by product decision. The matrix covers the positive rows and the ELA boundary; negative probes remain unrecorded.
 
 ## Handoff
 
