@@ -3,26 +3,19 @@
   "rules": {
     "raw-color": {},
     "literal-radius": {
-      "src/styles/auth.css": 6,
       "src/styles/base.css": 3
     },
     "literal-font-size": {
-      "src/styles/auth.css": 15,
+      "src/styles/auth.css": 1,
       "src/styles/base.css": 9
     },
     "literal-font-family": {
       "src/styles/source.css": 1
     },
-    "literal-shadow": {
-      "src/styles/auth.css": 1
-    },
-    "teacher-alias": {
-      "src/styles/auth.css": 11
-    },
+    "literal-shadow": {},
+    "teacher-alias": {},
     "undefined-token": {},
     "inline-style-literal": {},
-    "literal-duration": {
-      "src/styles/auth.css": 2
-    }
+    "literal-duration": {}
   }
 }

@@ -38,11 +38,12 @@ Scholé is a production product; these documents define and verify one trustwort
 | [Architecture harness](architecture-harness.md) | Guardrails for state ownership, layer imports, contract drift, and dependency boundaries |
 | [Observed behaviour](observed-behaviour.md) | Evidence boundary, job stories, and the research plan |
 | [Threat model](security/threat-model.md) | STRIDE pass against the implemented paths, with linked residual owners |
-| [Decision records](agdr/) | Architecture decisions AgDR-0001–0015 |
+| [Decision records](agdr/) | Architecture decisions AgDR-0001–0018; the three records once numbered `AgDR-0003` are now 0003 (canonical generation), 0013 (Nitro), and 0014 (observability) |
 | GitHub issues and Projects | Work ownership, dependencies, priority, lifecycle state, and delivery evidence |
 
 ## Change log
 
+- 2026-11-04 (decision identifiers): the Nitro and observability records now carry AgDR-0013 and AgDR-0014 instead of sharing AgDR-0003; each keeps a rename note so older references stay interpretable ([#111](https://github.com/abodacs/edu-canvas/issues/111)).
 - 2026-11-04 (demo script): [demo-script.md](hackathon/meta-global-2026/demo-script.md) registered; it replaces the removed 2026-10-24 script and records the shipped teacher-to-learner loop, claim boundaries, and recording fallbacks.
 - 2026-11-04 (README): readability pass; leads with the value proposition and a current landing screenshot, adds the Foundation badge, corrects the quick start and status claims, and consolidates the project map. No implementation changed.
 - 2026-11-03 (learner hardening): [student-path-checks](engineering/student-path-checks.md) registered; it records the `verify:student-probe` matrix and the manual device pass for [#9](https://github.com/abodacs/edu-canvas/issues/9).

@@ -128,7 +128,7 @@ Scholé is named for the Greek word for leisure given to learning, and the syste
 
 The world's signature is engraved: halftone and stipple artwork (apricot sky, olive hills, limestone stoa) drawn in SVG, with the product shown floating on the art rather than beside it. That scene exists today only in the approved landing mock. The shipped code holds its palette as tokens (`--scene-*`) so the landing slice can build it without inventing colours; no shipped page renders the scene yet.
 
-The system is mid-migration and this record is honest about it. Slice 1b repointed the semantic layer (clay primary, the divider ladder, serif headings, the radius ladder), so every component that reads shadcn semantics already speaks the new direction. The structural scale from slice 1a (type roles, 4px spacing, `--radius-card` / `--radius-field` / `--radius-pill`, `--shadow-lift`, focus-ring tokens) is declared but not yet read by any surface stylesheet; surfaces move onto it one slice at a time. The census ceiling (43 distinct font sizes, 17 radii, 4 shadows, 8 AA failures) measures how far there is to go.
+The redesign has moved every page surface onto the token layer. Slice 1b repointed the semantic layer (clay primary, the divider ladder, serif headings, the radius ladder), and the seven screen slices now read the structural scale from slice 1a (type roles, 4px spacing, `--radius-card` / `--radius-field` / `--radius-pill`, `--shadow-lift`, focus-ring tokens). The census ceiling (18 distinct font sizes, 8 radii, 1 shadow, 0 AA failures) is the remaining ratchet; it may only fall.
 
 **Key Characteristics:**
 
@@ -147,8 +147,8 @@ One warm accent on a field of warm neutrals; everything that is not an action st
 ### Primary
 
 - **Fired Clay** (`primary`): every primary action, inline text link, selected or correct state, and capability icon. Shipped one step deeper than the mock's `#b4532f` so clay text reaches AA (5.1:1) on every warm ground the census measured.
-- **Kiln Clay** (`primary-deep`): pressed and emphasised clay; the target hover colour for primary buttons. The legacy `--teacher-forest` now aliases it.
-- **Clay Wash** (`primary-soft`): tinted backgrounds behind clay content (selected rows, soft chips). The legacy `--teacher-mint` now aliases it.
+- **Kiln Clay** (`primary-deep`): pressed and emphasised clay; the target hover colour for primary buttons.
+- **Clay Wash** (`primary-soft`): tinted backgrounds behind clay content (selected rows, soft chips).
 
 ### Neutral
 
@@ -168,9 +168,9 @@ One warm accent on a field of warm neutrals; everything that is not an action st
 
 `--scene-sky-hi/-mid/-lo`, `--scene-sun`, `--scene-stone/-shade/-deep`, `--scene-hill-far/-mid/-near/-front`, `--scene-olive/-hi`, `--scene-bark` are defined in `tokens.css` and copied verbatim from the landing mock. No shipped stylesheet reads them yet. They are for halftone artwork only.
 
-### Legacy palette (slated for removal)
+### Retired palette
 
-`--teacher-paper`, `--teacher-ink`, `--teacher-butter`, `--teacher-sky`, `--teacher-clay` and the aliased `--teacher-forest` / `--teacher-mint` still carry about 150 references in the studio, workspace and review stylesheets. AgDR-0016 removes the whole palette; `verify:design-tokens` ratchets the reference count down and fails on any new one.
+The `--teacher-*` palette is gone. The seven page slices moved every surface onto the semantic layer, and `verify:design-tokens` now holds the reference ceiling at zero, so a new `--teacher-*` name fails the check (AgDR-0016).
 
 ### Named Rules
 
@@ -289,11 +289,11 @@ The landing mock draws its world in inline SVG: dot `<pattern>` fills (circles 1
 - **Do** take new sizes from the `--type-*` roles and new gaps from `--space-*`.
 - **Do** use logical properties and keep every page free of sideways scroll at 390px.
 - **Do** run `pnpm verify:design-tokens`, `pnpm verify:ui <route>`, and `pnpm census:capture` + `pnpm verify:design-census` on every UI slice, together with the /modern-web-guidance, /emil-design-eng (motion) and /impeccable audits.
-- **Do** keep motion short and eased (`--ease-out: cubic-bezier(0.23, 1, 0.32, 1)`, 120–240ms for state changes) and honour `prefers-reduced-motion`.
+- **Do** keep motion short and eased (use `--duration-fast` / `--duration-base` with `--ease-enter` for state changes) and honour `prefers-reduced-motion`.
 
 ### Don't:
 
-- **Don't** add a second accent colour or bring back the forest green; `--teacher-forest` is an alias awaiting deletion.
+- **Don't** add a second accent colour or reintroduce the retired teacher palette; the forest green is gone with it.
 - **Don't** use gradients as UI decoration: no gradient fills on buttons, cards, text or borders. Gradients belong only to the scene, where the sky's light and the stipple masks use them natively.
 - **Don't** paint chrome with scene colours, or put halftone texture behind controls or body text.
 - **Don't** add a shadow other than `--shadow-lift`, or a radius off the 6/8/10/14/pill ladder.
