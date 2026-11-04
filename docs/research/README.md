@@ -19,6 +19,10 @@ The following materials are retained on the owner's machine only. They are not t
 
 - [Option C: deterministic MCP dispatch, #142](142-mcp-eval/README.md): deferred. Eight registry rows cost three visible calls each, deterministically. Provider-internal reads stay unobservable, and the contract carries no currency, licence, attribution or source links. The same directory adds a free-text stage: 33 teacher sentences, MCP keywords against REST semantic search. MCP finds the expected standard in the top five on 0 of 30; REST finds it or a child on 24 of 30. Recorded schemas, response hashes and the rerunnable runner are in the same directory.
 
+## Standards generalization
+
+- [Grounding and lesson validation beyond 4.NF.A.1, #113 and #30](standards-generalization/README.md): standards-pack research for 4.OA.A.3 and RI.5.2, covering eleven break points from teacher input to learner run, answer rules, version pins, and seven parallel slices. A characterization test measures the known gap: a 4.OA.A.3 draft with a wrong word-problem → equation pair reaches `ready-for-review` with the same diagnostics as a correct one, while the same harness blocks a wrong fraction pair. The model-role step is pending a Meta key, and California primary text is WAF-blocked.
+
 ## Synthetic study rehearsals
 
 - [Twelve fictional teacher personas for issue #118](teacher-simulation-118/README.md): v2 US Common Core profiles, neutral prompts, capability limits and a twelve-persona gap audit. No v2 outcomes are generated. The complete original AI-authored rehearsal is retained under `legacy/v1`; its profiles, procedure and raw values stay separate. Neither version supplies real teacher evidence or satisfies #118 or V12.
