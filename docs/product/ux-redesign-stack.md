@@ -55,6 +55,17 @@ Class names are a read-only contract. A slice may put another slice's class on a
 
 `scripts/ux-ownership.json` is the machine-readable form of this table, and `pnpm verify:ux-ownership` checks it. The check fails when a tracked file matches two owners, an owner pattern matches no tracked file, or a deleted path is still tracked. A pattern that a slice creates later is listed under `pending` with its reason. Files that no owner claims, such as server modules outside the list, are allowed and reported as notes.
 
+### Selectors left in place
+
+The foundation moved every rule on its list. These rules stayed where they were, each for a stated reason:
+
+- The global `prefers-reduced-motion: reduce` rule on `*` stays in `a2ui.css`. The motion tokens in PR B replace it; moving it now would change the cascade twice.
+- `.data-list*` and `.fixture-stat*` in `landing.css` match no element, but they were not on the foundation's deletion list. The Landing slice may delete them.
+
+### Census baseline
+
+The ten seeded gate pages (review, publish, published, blocked-validation, blocked-moderation, at desktop and phone) were first measured in PR A. Their values already shipped, so `scripts/design-census-budget.json` raised its ceilings once to the measured counts. The budget's `coverageRebaseline` field holds the record and the prior values. From here the ceilings only fall. The Review, Publish and Studio slices move these views onto the existing ladder and lower the budget with `--update`.
+
 ## Slices
 
 | Slice | Mock | Owns | Views in `verify:ui` | Notes |
