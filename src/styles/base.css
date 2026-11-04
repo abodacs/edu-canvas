@@ -1,7 +1,14 @@
 /*
- * The one reduced-motion rule (AgDR-0016): collapse every duration token so a
- * component that reads them stops animating. A literal duration escapes this,
+ * The one reduced-motion rule (AgDR-0016). Collapsing the duration tokens
+ * stops every transition and finite animation that reads them; an infinite
+ * animation would still loop at 1ms, so its iteration count drops to one
+ * (it settles on its last frame). A literal duration escapes the collapse,
  * which is why verify:design-tokens ratchets literal-duration.
+ *
+ * a2ui.css still carries an older universal reduced-motion block that forces
+ * every literal duration to 0.01ms and sets the same iteration count. It
+ * overlaps this rule on purpose until the review slice tokenises its
+ * transitions and deletes that block; the two agree, so neither wins.
  */
 @media (prefers-reduced-motion: reduce) {
   :root {
@@ -9,6 +16,14 @@
     --duration-fast: 1ms;
     --duration-base: 1ms;
     --duration-slow: 1ms;
+  }
+
+  /* !important because a component's animation shorthand resets the
+     iteration count at a higher specificity than any selector here. */
+  *,
+  ::before,
+  ::after {
+    animation-iteration-count: 1 !important;
   }
 }
 

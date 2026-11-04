@@ -92,9 +92,11 @@
   --teacher-sky: oklch(92.5% 0.04 228deg);
   --teacher-clay: oklch(78% 0.095 40deg);
 
-  /* Motion (AgDR-0016). Every transition and animation reads a duration
+  /* Motion (AgDR-0016). New transitions and animations read a duration
      and an ease token; base.css collapses the durations under
-     prefers-reduced-motion, so a literal duration escapes that rule. */
+     prefers-reduced-motion. Older surface rules still use literal
+     durations, which escape that collapse; verify:design-tokens ratchets
+     their count (literal-duration) so it can only fall. */
   --duration-instant: 80ms;
   --duration-fast: 140ms;
   --duration-base: 220ms;

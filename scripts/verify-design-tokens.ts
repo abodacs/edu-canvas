@@ -4,7 +4,8 @@ import { fileURLToPath } from "node:url";
 
 import {
   clampCeiling,
-  hasLiteralDuration,
+  joinDurationDeclarations,
+  literalDurationCount,
   totalOf,
 } from "./design-token-ratchet.ts";
 import type { Counts } from "./design-token-ratchet.ts";
@@ -135,9 +136,6 @@ const parseDeclaration = (
 };
 
 const classify = (property: string, value: string): RuleId | null => {
-  if (hasLiteralDuration(property, value)) {
-    return "literal-duration";
-  }
   const hasVariable = value.includes("var(");
   if (!hasVariable && property === "font-size" && LENGTH_LITERAL.test(value)) {
     return "literal-font-size";
@@ -163,10 +161,11 @@ const classify = (property: string, value: string): RuleId | null => {
 const incrementFor = (
   counts: Record<string, Counts>,
   rule: RuleId,
-  file: string
+  file: string,
+  by = 1
 ): void => {
   const perFile = counts[rule] ?? {};
-  perFile[file] = (perFile[file] ?? 0) + 1;
+  perFile[file] = (perFile[file] ?? 0) + by;
   counts[rule] = perFile;
 };
 
@@ -185,10 +184,17 @@ const scanLine = (text: string, state: ScanState): void => {
     state.declared.add(text.slice(0, colon).trim());
   } else {
     const declaration = parseDeclaration(text);
+    // Counted per layer, so tokenising one layer of a multi-layer
+    // transition lowers the count.
+    const durations = declaration
+      ? literalDurationCount(declaration.property, declaration.value)
+      : 0;
     const rule = declaration
       ? classify(declaration.property, declaration.value)
       : null;
-    if (rule) {
+    if (durations > 0) {
+      incrementFor(state.counts, "literal-duration", state.file, durations);
+    } else if (rule) {
       incrementFor(state.counts, rule, state.file);
     }
   }
@@ -235,7 +241,10 @@ const scanStylesheets = async (): Promise<{
 
   for (const [index, file] of files.entries()) {
     state.file = relative(projectRoot, file);
-    for (const text of stripComments(sources[index] ?? "")) {
+    const lines = joinDurationDeclarations(
+      stripComments(sources[index] ?? "").filter((text) => text.length > 0)
+    );
+    for (const text of lines) {
       if (text.length > 0) {
         scanLine(text, state);
       }
