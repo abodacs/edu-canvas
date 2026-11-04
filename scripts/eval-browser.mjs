@@ -428,7 +428,7 @@ const main = async () => {
       .click({ timeout: STEP_WAIT_MS });
     const learnerSelect = page.locator("select");
     await learnerSelect.waitFor({ timeout: STEP_WAIT_MS });
-    // The synthetic roster has two students named "Omar Nabil"; only
+    // The synthetic roster once had two students with one name; only
     // learner_omar carries the active records membership, and the learner
     // segment signs in as that identity. Label matching picks the unrostered
     // first row and the records assignment correctly refuses it.

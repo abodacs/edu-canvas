@@ -35,7 +35,7 @@ const teacherActor = syntheticTeacherActor({
 
 const otherTeacher = syntheticTeacherActor({
   actorId: parseActorId("actor_teacher_bilal"),
-  displayName: "Bilal Nasser",
+  displayName: "Michael Brooks",
   tenantId: parseTenantId(syntheticSeed.tenant.id),
   membershipId: parseMembershipId("membership_bilal_demo"),
 });
@@ -47,13 +47,13 @@ const northTeacher = syntheticTeacherActor({
 
 const demoLearner: SeededPackLearner = {
   id: "learner_omar",
-  displayName: "Omar Nabil",
+  displayName: "Ethan Cole",
   tenantId: syntheticSeed.tenant.id,
 };
 
 const secondLearner: SeededPackLearner = {
   id: "learner_lina",
-  displayName: "Lina Farouk",
+  displayName: "Lily Parker",
   tenantId: syntheticSeed.tenant.id,
 };
 
@@ -193,8 +193,8 @@ describe("publication service", () => {
       canPublish: false,
       missingApprovals: 5,
       learners: [
-        { id: "learner_omar", displayName: "Omar Nabil" },
-        { id: "learner_lina", displayName: "Lina Farouk" },
+        { id: "learner_omar", displayName: "Ethan Cole" },
+        { id: "learner_lina", displayName: "Lily Parker" },
       ],
     });
 
@@ -255,7 +255,7 @@ describe("publication service", () => {
       assignment: {
         id: outcome.assignmentId,
         learnerId: "learner_omar",
-        learnerDisplayName: "Omar Nabil",
+        learnerDisplayName: "Ethan Cole",
       },
       published: false,
       alreadyPublished: true,

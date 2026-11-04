@@ -82,7 +82,7 @@ const run = (overrides: Partial<ProgressRun> = {}): ProgressRun => {
     runId: "run_1",
     assignmentId: "assignment_1",
     learnerId: "learner_lina",
-    learnerDisplayName: "Lina Farouk",
+    learnerDisplayName: "Lily Parker",
     publicationId: "publication_1",
     assignedVariantId: "variant_standard",
     stage: "active",
@@ -147,7 +147,7 @@ describe(NeedsYouPanel, () => {
     );
 
     expect(markup).toContain("Needs you · 1");
-    expect(markup).toContain("Lina Farouk");
+    expect(markup).toContain("Lily Parker");
     expect(markup).toContain("The learner needs another supported example.");
     expect(markup).toContain("See results");
   });
@@ -178,7 +178,7 @@ describe(ProgressTable, () => {
       createElement(ProgressTable, { runs: [run()], onOpen: noop })
     );
 
-    expect(markup).toContain("Lina Farouk");
+    expect(markup).toContain("Lily Parker");
     expect(markup).toContain("First response: partial");
     expect(markup).toContain("1 attempt · latest score 80");
     expect(markup).toContain("Needs another supported go");

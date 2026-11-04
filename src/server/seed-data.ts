@@ -34,13 +34,13 @@ export const syntheticSeed = {
     {
       id: "identity_demo_teacher",
       role: "teacher" as const,
-      displayName: "Maya Hassan",
+      displayName: "Sarah Miller",
       demoHandle: "teacher.demo",
     },
     {
       id: "identity_demo_student",
       role: "student" as const,
-      displayName: "Omar Nabil",
+      displayName: "Daniel Ross",
       demoHandle: "student.demo",
     },
   ],

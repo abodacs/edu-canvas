@@ -124,7 +124,7 @@ const owningTeacher = syntheticTeacherActor({
 
 const otherTeacher = syntheticTeacherActor({
   actorId: parseActorId("actor_teacher_bilal"),
-  displayName: "Bilal Nasser",
+  displayName: "Michael Brooks",
   membershipId: parseMembershipId("membership_bilal_north"),
   tenantId: parseTenantId(syntheticSeed.tenant.id),
 });

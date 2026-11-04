@@ -7,12 +7,12 @@ same services the delivery seams use, with the deterministic provider, to
 publish one reviewed lesson and leave four learners at different points in the
 loop:
 
-- Omar answers incorrectly, then retries correctly. His first response keeps
+- Ethan answers incorrectly, then retries correctly. His first response keeps
   the scaffold decision, so he appears under "Needs you".
-- Maya answers correctly on her own. She routes to independent practice.
-- Samir asks for a hint, then answers correctly. The assisted first response
+- Ava answers correctly on her own. She routes to independent practice.
+- Noah asks for a hint, then answers correctly. The assisted first response
   also routes to the scaffold.
-- Noor opens the lesson but has not submitted yet. She shows as in progress.
+- Grace opens the lesson but has not submitted yet. She shows as in progress.
 
 Every write uses a stable operation key, so a second `pnpm db:seed` replays the
 receipts instead of duplicating assignments, runs, hints, or attempts.
