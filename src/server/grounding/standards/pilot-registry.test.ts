@@ -9,7 +9,9 @@ import {
 import {
   recordedColdRuns,
   recordedEvidence,
+  recordedFreeTextEvidence,
 } from "./fixtures/learning-commons-replay";
+import { LEARNING_COMMONS_REST_ORIGIN } from "./learning-commons-rest";
 
 const pilotEntries = PILOT_STANDARD_REGISTRY.entries.filter((entry) => {
   return entry.kind === "pilot";
@@ -81,6 +83,28 @@ describe("pilot standard registry (issue 218)", () => {
         );
       })?.kind
     ).toBe("boundary");
+  });
+
+  it("treats free-text evidence as context, never as the resolution input", () => {
+    const documented = recordedFreeTextEvidence.rows.filter((row) => {
+      return (
+        row.kind === "documented" && row.expectedCode !== null && row.rest?.ok
+      );
+    });
+    const restHits = documented.filter((row) => {
+      return row.rest?.codes.includes(row.expectedCode ?? "");
+    });
+
+    expect(restHits.length).toBeGreaterThan(0);
+    expect(recordedFreeTextEvidence.environment.restOrigin).toBe(
+      LEARNING_COMMONS_REST_ORIGIN
+    );
+    expect(
+      findRegistryEntry(PILOT_STANDARD_REGISTRY, {
+        jurisdiction: "Multi-State",
+        statementCode: "explain equivalent fractions",
+      }).ok
+    ).toBeFalsy();
   });
 
   it("adds a row as data without changing resolution code", () => {

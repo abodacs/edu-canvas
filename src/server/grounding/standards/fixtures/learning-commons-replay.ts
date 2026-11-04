@@ -57,9 +57,34 @@ const evidenceUrl = new URL(
   import.meta.url
 );
 
+const freeTextEvidenceUrl = new URL(
+  "../../../../../docs/research/142-mcp-eval/free-text-evidence.json",
+  import.meta.url
+);
+
 export const recordedEvidence = JSON.parse(
   readFileSync(evidenceUrl, "utf-8")
 ) as EvidenceFile;
+
+interface FreeTextEvidenceRow {
+  id: string;
+  kind: string;
+  expectedCode: string | null;
+  rest: {
+    ok: boolean;
+    codes: string[];
+    hasProvenance: boolean;
+  } | null;
+}
+
+interface FreeTextEvidenceFile {
+  environment: { restOrigin: string };
+  rows: FreeTextEvidenceRow[];
+}
+
+export const recordedFreeTextEvidence = JSON.parse(
+  readFileSync(freeTextEvidenceUrl, "utf-8")
+) as FreeTextEvidenceFile;
 
 export const recordedColdRuns = recordedEvidence.runs.filter(
   (run) => run.mode === "cold"
