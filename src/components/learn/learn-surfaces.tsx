@@ -1,3 +1,5 @@
+import { Badge } from "@/components/ui/badge";
+
 import { BidiText } from "./bidi-text";
 import type { Ref } from "react";
 
@@ -64,9 +66,12 @@ export const RevealReport = ({
                 {copy.pairJoiner}{" "}
                 <BidiText text={pair.targetLabel} direction={direction} />
               </span>
-              <span className="learn-pair-state">
+              <Badge
+                className="learn-pair-state"
+                tone={pair.correct ? "ok" : "warn"}
+              >
                 {pair.correct ? copy.pairCorrect : copy.pairNotYet}
-              </span>
+              </Badge>
             </li>
           );
         })}
