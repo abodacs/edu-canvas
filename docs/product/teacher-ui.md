@@ -25,10 +25,12 @@ The original single slice was split after review: "43 tokens into `@theme` with 
 | 4 | Review | large | on hold |
 | 5 | Publish | moderate | on hold |
 | 6 | Student board | large | on hold |
-| 7 | Landing page (mock redesigned 2026-11-03) | large | on hold |
+| 7 | Landing page (mock redesigned 2026-11-03) | large | **approved** |
 | 8 | Teacher dashboard | moderate | on hold |
 
 Slices 2–8 run in parallel on the [UX redesign stack](ux-redesign-stack.md), which names each slice's mock, owned files, gate routes, and definition of done.
+
+Row 7 scope, 2026-11-04: Abdullah approved the landing slice implementation in chat ("add them and start now"), branching from main now that the foundation (#197) is merged. Skills supplied and read: implement-spec, checklist-design, principle-never-block-on-the-human, principle-experience-first. Staging notes from the inspiration pass are recorded on [#208](https://github.com/abodacs/edu-canvas/issues/208).
 
 Verification ownership, per category. Each owner has to be able to observe the change; a check that cannot fail is not coverage.
 

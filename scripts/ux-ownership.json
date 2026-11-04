@@ -79,8 +79,6 @@
       "src/styles/learn.css"
     ]
   },
-  "pending": {
-    "src/components/landing/**": "The Landing slice creates this directory; remove this entry when it lands."
-  },
+  "pending": {},
   "deleted": ["src/components/auth/account-header.tsx"]
 }

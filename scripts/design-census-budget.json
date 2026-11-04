@@ -6,11 +6,11 @@
     "fontSize": 51,
     "lineHeight": 75,
     "fontWeight": 7,
-    "fontFamily": 2,
-    "radius": 20,
+    "fontFamily": 3,
+    "radius": 21,
     "boxShadow": 5,
-    "background": 31,
-    "borderColor": 27
+    "background": 35,
+    "borderColor": 26
   },
   "coverageRebaseline": {
     "date": "2026-11-04",
