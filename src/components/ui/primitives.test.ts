@@ -62,7 +62,8 @@ describe(Button, () => {
     expect(markup).toContain("data-busy");
     expect(markup).not.toMatch(/\sdisabled(?:=|\s|>)/u);
     expect(markup).toContain("Publish");
-    expect(markup).toContain("h-9");
+    // The size class survives busy, so the width class is unchanged.
+    expect(markup).toMatch(/class="btn lg"/u);
   });
 
   it("renders no busy state by default", () => {
@@ -246,7 +247,9 @@ describe(Steps, () => {
     );
     expect(markup).toMatch(/^<ol[^>]*aria-label="Lesson progress"/u);
     expect(count(markup, 'aria-current="step"')).toBe(1);
-    expect(markup).toMatch(/data-state="current" aria-current="step">Review/u);
+    expect(markup).toMatch(
+      /data-state="current" aria-current="step"><span class="steps__number" aria-hidden="true">2<\/span>Review/u
+    );
     expect(markup).toContain("Completed: </span>Source");
   });
 });
