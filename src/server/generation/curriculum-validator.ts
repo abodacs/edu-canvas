@@ -1,3 +1,5 @@
+import { evaluateAnswerRules } from "@/server/curriculum/answer-rules";
+
 import { curriculumValidatorVersion } from "./semantic-validation-contract";
 import { finding, createReview } from "./semantic-validation-utilities";
 import type {
@@ -6,42 +8,12 @@ import type {
   SemanticValidatorReview,
   VersionedCurriculumContext,
 } from "./semantic-validation-contract";
+import type { AnswerRule } from "@/server/curriculum/standards-pack";
 import type { ProviderVariant } from "./types";
 
 const CURRICULUM_EDGES_FIELD = "curriculum.edges";
 
 const PATH_NODE_IDS_FIELD = "path.nodeIds";
-
-interface Fraction {
-  numerator: number;
-  denominator: number;
-}
-
-const fractionValue = (label: string): Fraction | undefined => {
-  const match = /^(?<numerator>\d+)\s*\/\s*(?<denominator>\d+)$/u.exec(
-    label.trim()
-  );
-  if (!match) {
-    return undefined;
-  }
-
-  const numerator = Number(match.groups?.numerator);
-  const denominator = Number(match.groups?.denominator);
-  if (!Number.isSafeInteger(numerator) || !Number.isSafeInteger(denominator)) {
-    return undefined;
-  }
-  return denominator === 0 ? undefined : { numerator, denominator };
-};
-
-const areRelationshipsEquivalent = (
-  left: Fraction,
-  right: Fraction
-): boolean => {
-  return (
-    BigInt(left.numerator) * BigInt(right.denominator) ===
-    BigInt(right.numerator) * BigInt(left.denominator)
-  );
-};
 
 const hasGraphCycle = (context: VersionedCurriculumContext): boolean => {
   const adjacency = new Map<string, string[]>();
@@ -275,6 +247,7 @@ const validatePath = (
 
 const validateRelationships = (
   variants: readonly ProviderVariant[],
+  answerRules: readonly AnswerRule[],
   findings: SemanticValidationFinding[]
 ): void => {
   for (const variant of variants) {
@@ -286,37 +259,31 @@ const validateRelationships = (
     );
 
     for (const relationship of variant.relationships) {
-      const source = sourceItems.get(relationship.sourceId);
-      const target = targetItems.get(relationship.targetId);
-      const sourceFraction = source ? fractionValue(source) : undefined;
-      const targetFraction = target ? fractionValue(target) : undefined;
+      const evaluation = evaluateAnswerRules(answerRules, {
+        source: sourceItems.get(relationship.sourceId) ?? "",
+        target: targetItems.get(relationship.targetId) ?? "",
+      });
 
-      if (
-        sourceFraction &&
-        targetFraction &&
-        !areRelationshipsEquivalent(sourceFraction, targetFraction)
-      ) {
+      if (evaluation.status === "mismatch") {
         findings.push(
           finding("curriculum", curriculumValidatorVersion, {
             verdict: "hard_block",
             code: "ANSWER_MISMATCH",
             field: "relationships",
             variantId: variant.id,
-            reason:
-              "A matching relationship conflicts with the approved equivalent-fractions rule.",
+            reason: evaluation.reason,
             recommendation:
               "Review the matching relationship against the approved curriculum before continuing.",
           })
         );
-      } else if (!sourceFraction || !targetFraction) {
+      } else if (evaluation.status === "unverified") {
         findings.push(
           finding("curriculum", curriculumValidatorVersion, {
-            verdict: "warning",
+            verdict: evaluation.verdict,
             code: "ANSWER_RELATIONSHIP_UNVERIFIED",
             field: "relationships",
             variantId: variant.id,
-            reason:
-              "The validator could not verify this relationship with the pinned curriculum rule.",
+            reason: evaluation.reason,
             recommendation:
               "Have a teacher review the relationship before accepting the variant.",
           })
@@ -411,6 +378,10 @@ export const reviewCurriculum = (
   }
 
   validatePath(input, nodeIds, findings);
-  validateRelationships(input.draft.variants, findings);
+  validateRelationships(
+    input.draft.variants,
+    input.context.answerRules,
+    findings
+  );
   return createReview("curriculum", curriculumValidatorVersion, findings);
 };
