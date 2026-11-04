@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { clampCeiling } from "./design-token-ratchet.ts";
+import { clampCeiling, hasLiteralDuration } from "./design-token-ratchet.ts";
 
 const RULES = ["raw-color", "literal-radius"] as const;
 
@@ -49,5 +49,35 @@ describe(clampCeiling, () => {
       "raw-color": { "a.css": 9 },
       "literal-radius": {},
     });
+  });
+});
+
+describe(hasLiteralDuration, () => {
+  it("flags a literal time in a transition or animation", () => {
+    expect(
+      hasLiteralDuration("transition", "border-color 150ms ease")
+    ).toBeTruthy();
+    expect(
+      hasLiteralDuration("animation", "pulse 1.4s ease-in-out")
+    ).toBeTruthy();
+    expect(hasLiteralDuration("transition-duration", ".2s")).toBeTruthy();
+  });
+
+  it("accepts durations that come from tokens", () => {
+    expect(
+      hasLiteralDuration(
+        "transition",
+        "opacity var(--duration-fast) var(--ease-enter)"
+      )
+    ).toBeFalsy();
+    expect(
+      hasLiteralDuration("animation-duration", "var(--duration-base)")
+    ).toBeFalsy();
+  });
+
+  it("ignores delays and unrelated properties", () => {
+    expect(hasLiteralDuration("animation-delay", "30ms")).toBeFalsy();
+    expect(hasLiteralDuration("transition-property", "opacity")).toBeFalsy();
+    expect(hasLiteralDuration("inline-size", "12ms")).toBeFalsy();
   });
 });

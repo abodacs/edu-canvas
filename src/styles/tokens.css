@@ -92,7 +92,18 @@
   --teacher-sky: oklch(92.5% 0.04 228deg);
   --teacher-clay: oklch(78% 0.095 40deg);
 
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  /* Motion (AgDR-0016). Every transition and animation reads a duration
+     and an ease token; base.css collapses the durations under
+     prefers-reduced-motion, so a literal duration escapes that rule. */
+  --duration-instant: 80ms;
+  --duration-fast: 140ms;
+  --duration-base: 220ms;
+  --duration-slow: 360ms;
+  --ease-enter: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Aliases kept for one release; new rules use --ease-enter/--ease-exit. */
+  --ease-out: var(--ease-enter);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 
   /*

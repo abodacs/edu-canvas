@@ -1,3 +1,17 @@
+/*
+ * The one reduced-motion rule (AgDR-0016): collapse every duration token so a
+ * component that reads them stops animating. A literal duration escapes this,
+ * which is why verify:design-tokens ratchets literal-duration.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 1ms;
+    --duration-fast: 1ms;
+    --duration-base: 1ms;
+    --duration-slow: 1ms;
+  }
+}
+
 /* Ambient warmth: a soft, fixed wash behind the canvas. Subtle on purpose. */
 body::before {
   position: fixed;

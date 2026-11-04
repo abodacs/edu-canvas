@@ -2,7 +2,11 @@ import { readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { clampCeiling, totalOf } from "./design-token-ratchet.ts";
+import {
+  clampCeiling,
+  hasLiteralDuration,
+  totalOf,
+} from "./design-token-ratchet.ts";
 import type { Counts } from "./design-token-ratchet.ts";
 
 // Design-token gate for the UX revamp.
@@ -47,6 +51,7 @@ const RULES = [
   "teacher-alias",
   "undefined-token",
   "inline-style-literal",
+  "literal-duration",
 ] as const;
 
 type RuleId = (typeof RULES)[number];
@@ -130,6 +135,9 @@ const parseDeclaration = (
 };
 
 const classify = (property: string, value: string): RuleId | null => {
+  if (hasLiteralDuration(property, value)) {
+    return "literal-duration";
+  }
   const hasVariable = value.includes("var(");
   if (!hasVariable && property === "font-size" && LENGTH_LITERAL.test(value)) {
     return "literal-font-size";
