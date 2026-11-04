@@ -16,7 +16,15 @@ One skill, concept, or problem statement a standard pack names as part of the st
 
 ### Answer rule
 
-The pack's declared way to check whether a response is correct, together with the verdict used when the rule cannot verify it. A rule that can decide returns a match or a mismatch; teacher review is its own rule, not a silent pass.
+The pack's declared way to check whether a response is correct, together with the verdict used when the rule cannot verify it. A rule that can decide returns a match or a mismatch; teacher review is its own rule, not a silent pass. A whole-number rule declares how a remainder becomes a whole-number answer, so the evaluator never guesses whether to round up, down, or to the nearest.
+
+### Shared standards-pack template
+
+A pack pinned to `tenant_shared_standards` that every tenant may resolve. A tenant-owned pack for the same standard overrides the template; a private pack of another tenant is never visible. The template is a starting point, not a second opinion beside a classroom's own curriculum data.
+
+### Pack example
+
+One subject-correct source-to-target relationship a pack supplies so the deterministic fixture can build a matching draft that obeys the pack's own answer rule. An example is curriculum data for the offline fixture, not a learner answer or a generated variant.
 
 ### Prompt frame
 
