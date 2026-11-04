@@ -189,7 +189,6 @@ export const STANDARD_GROUNDING_ERROR_CODES = [
   "invalid-request",
   "resolution-timeout",
   "provider-unavailable",
-  "retry-exhausted",
   "idempotency-key-reused",
   "persistence-conflict",
 ] as const;

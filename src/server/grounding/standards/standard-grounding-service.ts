@@ -22,8 +22,6 @@ export interface ResolveStandardGroundingCommand {
   stored row; reusing it for a different standard is a correctable error.
   */
   readonly requestKey: string;
-  /** `2` is the single teacher-requested retry; anything else is rejected. */
-  readonly attempt?: number;
   readonly predecessorGroundingId?: string | null;
 }
 
@@ -58,14 +56,6 @@ const invalidRequest = (message: string): StandardGroundingError => {
   });
 };
 
-const retryExhausted = (): StandardGroundingError => {
-  return new StandardGroundingError(
-    "A retrieval allows one teacher-requested retry; this one is exhausted.",
-    "retry-exhausted",
-    { retryable: false, recovery: "none" }
-  );
-};
-
 const idempotencyKeyReused = (): StandardGroundingError => {
   return new StandardGroundingError(
     "This request key was already used for a different standard.",
@@ -94,29 +84,53 @@ const timeoutFailure = (): StandardGroundingError => {
   );
 };
 
+const isRetryableFailure = (error: unknown): boolean => {
+  return error instanceof StandardGroundingError && error.retryable;
+};
+
 /**
-One total deadline covers standard → components → prerequisites. The retry is
-not an automatic second call; the teacher asks for it by sending `attempt: 2`,
-and no third attempt is accepted.
+The resolver owns the retry. One total deadline covers both attempts and every
+stage (standard → components → prerequisites). A caller cannot skip the retry
+or ask for a third one: a retryable transport failure is retried exactly once,
+and the second failure is the result the caller sees.
 */
-const runWithinDeadline = async <T>(
+const runWithOneRetry = async <T>(
   deadlineMs: number,
   work: (signal: AbortSignal) => Promise<T>
-): Promise<T> => {
+): Promise<{ readonly value: T; readonly attempts: 1 | 2 }> => {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), deadlineMs);
   timer.unref?.();
   const aborted = Symbol("aborted");
 
-  try {
-    const outcome = await Promise.race([
-      work(controller.signal),
-      once(controller.signal, "abort").then(() => aborted),
-    ]);
-    if (outcome === aborted) {
+  const runAttempt = async (
+    attempt: 1 | 2
+  ): Promise<{
+    readonly value: T;
+    readonly attempts: 1 | 2;
+  }> => {
+    if (controller.signal.aborted) {
       throw timeoutFailure();
     }
-    return outcome as T;
+    try {
+      const outcome = await Promise.race([
+        work(controller.signal),
+        once(controller.signal, "abort").then(() => aborted),
+      ]);
+      if (outcome === aborted) {
+        throw timeoutFailure();
+      }
+      return { value: outcome as T, attempts: attempt };
+    } catch (error) {
+      if (attempt === 1 && isRetryableFailure(error)) {
+        return await runAttempt(2);
+      }
+      throw error;
+    }
+  };
+
+  try {
+    return await runAttempt(1);
   } finally {
     clearTimeout(timer);
   }
@@ -128,7 +142,6 @@ interface ValidatedCommand {
   readonly statementCode: string;
   readonly requestKey: string;
   readonly inputHash: string;
-  readonly attempt: 1 | 2;
 }
 
 const validateCommand = (
@@ -150,14 +163,6 @@ const validateCommand = (
     throw invalidRequest("The statement code is too long.");
   }
 
-  const attempt = command.attempt ?? 1;
-  if (!Number.isInteger(attempt) || attempt < 1) {
-    throw invalidRequest("The retrieval attempt must be 1 or 2.");
-  }
-  if (attempt > 2) {
-    throw retryExhausted();
-  }
-
   const tenantId = command.tenantId.trim();
   const jurisdiction = command.jurisdiction.trim();
   const statementCode = command.statementCode.trim();
@@ -168,7 +173,6 @@ const validateCommand = (
     statementCode,
     requestKey,
     inputHash: hashGroundingInput({ tenantId, jurisdiction, statementCode }),
-    attempt: attempt === 2 ? 2 : 1,
   };
 };
 
@@ -198,6 +202,7 @@ const resolvePredecessor = async (
 const toRecord = (
   command: ValidatedCommand,
   resolution: Awaited<ReturnType<LearningCommonsAdapter["resolve"]>>,
+  retrievalAttempt: 1 | 2,
   predecessorGroundingId: string | null,
   groundingId: string,
   createdAt: string
@@ -225,7 +230,7 @@ const toRecord = (
     inputHash: command.inputHash,
     descriptionHash: resolution.descriptionHash,
     contentHash: resolution.contentHash,
-    retrievalAttempt: command.attempt,
+    retrievalAttempt,
     retrievedAt: resolution.provenance.retrievedAt,
     predecessorGroundingId,
     createdAt,
@@ -262,18 +267,22 @@ export const createStandardGroundingService = (
       command.predecessorGroundingId ?? null
     );
 
-    const resolution = await runWithinDeadline(deadlineMs, (signal) => {
-      return adapter.resolve(
-        {
-          jurisdiction: validated.jurisdiction,
-          statementCode: validated.statementCode,
-        },
-        { signal }
-      );
-    });
+    const { value: resolution, attempts } = await runWithOneRetry(
+      deadlineMs,
+      (signal) => {
+        return adapter.resolve(
+          {
+            jurisdiction: validated.jurisdiction,
+            statementCode: validated.statementCode,
+          },
+          { signal }
+        );
+      }
+    );
     const record = toRecord(
       validated,
       resolution,
+      attempts,
       predecessorGroundingId,
       createGroundingId(),
       now()

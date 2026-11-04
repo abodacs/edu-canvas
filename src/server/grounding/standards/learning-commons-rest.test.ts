@@ -294,6 +294,100 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
     );
   });
 
+  it("keeps a 404 components response visible instead of reading it as skills-missing", async () => {
+    const transport: LearningCommonsTransport = {
+      findStandard: () => {
+        return Promise.resolve(
+          response({
+            standards: [
+              {
+                academicSubject: "Mathematics",
+                caseIdentifierUUID: "case-1",
+                description: "Standard",
+                jurisdiction: "Multi-State",
+                statementCode: "4.NF.A.1",
+              },
+            ],
+          })
+        );
+      },
+      findComponents: () => {
+        return Promise.resolve(response({ message: "Not Found" }, 404));
+      },
+      findProgression: () => {
+        return Promise.resolve(
+          response({
+            standards: [
+              {
+                alignmentScore: 1,
+                jurisdiction: "Multi-State",
+                matchType: "exact",
+                statementCode: "3.NF.A.3",
+              },
+            ],
+          })
+        );
+      },
+    };
+
+    const resolution = await createAdapter(transport).resolve({
+      jurisdiction: "Multi-State",
+      statementCode: "4.NF.A.1",
+    });
+
+    expect(resolution.gaps.map((gap) => gap.code)).toContain(
+      "unsupported-envelope"
+    );
+    expect(resolution.gaps.map((gap) => gap.code)).not.toContain(
+      "skills-missing"
+    );
+  });
+
+  it("keeps a 401 progression response visible instead of reading it as prerequisites-unavailable", async () => {
+    const transport: LearningCommonsTransport = {
+      findStandard: () => {
+        return Promise.resolve(
+          response({
+            standards: [
+              {
+                academicSubject: "Mathematics",
+                caseIdentifierUUID: "case-1",
+                description: "Standard",
+                jurisdiction: "Multi-State",
+                statementCode: "4.NF.A.1",
+              },
+            ],
+          })
+        );
+      },
+      findComponents: () => {
+        return Promise.resolve(
+          response({
+            learning_components: [
+              { description: "Component", identifier: "component-1" },
+            ],
+          })
+        );
+      },
+      findProgression: () => {
+        return Promise.resolve(response({ message: "Unauthorized" }, 401));
+      },
+    };
+
+    const resolution = await createAdapter(transport).resolve({
+      jurisdiction: "Multi-State",
+      statementCode: "4.NF.A.1",
+    });
+
+    expect(resolution.gaps.map((gap) => gap.code)).toContain(
+      "unsupported-envelope"
+    );
+    expect(resolution.gaps.map((gap) => gap.code)).not.toContain(
+      "prerequisites-unavailable"
+    );
+    expect(resolution.prerequisiteResolution).toBe("unavailable");
+  });
+
   it("reports an inexact crosswalk and does not present its rows as prerequisites", async () => {
     const transport: LearningCommonsTransport = {
       findStandard: () => {

@@ -57,6 +57,31 @@ export interface LearningCommonsTransport {
 export const LEARNING_COMMONS_REST_ORIGIN =
   "https://api.learningcommons.org/knowledge-graph/v0";
 
+/**
+UNVERIFIED LIVE PATHS. These three paths are reconstructed from the recorded
+MCP tool shapes (`find_standard_statement`,
+`find_learning_components_from_standard`,
+`find_standards_progression_from_standard`). Only `/academic-standards/search`
+was recorded against the REST API. Nothing here is live-verified: a live
+404/401 must surface `unsupported-envelope`, never an empty content gap.
+
+The exact live check that must replace this reconstruction: with
+`LEARNING_COMMONS_API_KEY` present, GET all three paths for one pilot row in
+each jurisdiction, record the status, body and schema into
+`docs/research/142-mcp-eval/evidence.json`, then replay that evidence through
+`createRecordedLearningCommonsTransport`. Do not claim live verification before
+that record exists.
+*/
+const REST_PATHS = {
+  standards: "/academic-standards",
+  components: (caseIdentifierUUID: string): string => {
+    return `/academic-standards/${encodeURIComponent(caseIdentifierUUID)}/learning-components`;
+  },
+  progression: (caseIdentifierUUID: string): string => {
+    return `/academic-standards/${encodeURIComponent(caseIdentifierUUID)}/progression`;
+  },
+} as const;
+
 export interface LearningCommonsRestTransportOptions {
   readonly apiKey: string;
   readonly origin?: string;
@@ -123,7 +148,7 @@ export const createLearningCommonsRestTransport = (
   return {
     findStandard: (input, context) => {
       return request(
-        "/academic-standards",
+        REST_PATHS.standards,
         {
           statementCode: input.statementCode,
           jurisdiction: input.jurisdiction,
@@ -134,14 +159,14 @@ export const createLearningCommonsRestTransport = (
     },
     findComponents: (input, context) => {
       return request(
-        `/academic-standards/${encodeURIComponent(input.caseIdentifierUUID)}/learning-components`,
+        REST_PATHS.components(input.caseIdentifierUUID),
         {},
         context.signal
       );
     },
     findProgression: (input, context) => {
       return request(
-        `/academic-standards/${encodeURIComponent(input.caseIdentifierUUID)}/progression`,
+        REST_PATHS.progression(input.caseIdentifierUUID),
         { direction: "backward" },
         context.signal
       );
@@ -197,6 +222,21 @@ const isServerFailure = (response: ProviderResponse): boolean => {
 
 const isClientFailure = (response: ProviderResponse): boolean => {
   return response.status >= 400 && response.status < 500;
+};
+
+/**
+A 4xx on a sub-resource says the path or credential is wrong, not that the
+standard has no skills or prerequisites. It must stay distinguishable from a
+genuine empty 200 body.
+*/
+const clientFailureGap = (
+  stage: "components" | "prerequisites",
+  status: number
+): StandardGroundingGap => {
+  return {
+    code: "unsupported-envelope",
+    message: `The provider rejected the ${stage} request with HTTP ${status}; the reconstructed ${stage} path is unverified, so no content is claimed.`,
+  };
 };
 
 /**
@@ -572,8 +612,12 @@ export const createLearningCommonsAdapter = (
       if (isServerFailure(componentResponse)) {
         throw providerUnavailable(componentResponse);
       }
-      const components = parseComponents(componentResponse.body);
-      if (components.length === 0) {
+      const components = isClientFailure(componentResponse)
+        ? []
+        : parseComponents(componentResponse.body);
+      if (isClientFailure(componentResponse)) {
+        gaps.push(clientFailureGap("components", componentResponse.status));
+      } else if (components.length === 0) {
         gaps.push({
           code: "skills-missing",
           message:
@@ -593,12 +637,22 @@ export const createLearningCommonsAdapter = (
       if (isServerFailure(progressionResponse)) {
         throw providerUnavailable(progressionResponse);
       }
-      const progressionRows = parseProgression(progressionResponse.body);
-      const prerequisiteOutcome = resolvePrerequisites(
-        entry,
-        progressionRows,
-        gaps
-      );
+      let prerequisiteOutcome: {
+        readonly prerequisites: readonly GroundedPrerequisite[];
+        readonly resolution: PrerequisiteResolution;
+      };
+      if (isClientFailure(progressionResponse)) {
+        gaps.push(
+          clientFailureGap("prerequisites", progressionResponse.status)
+        );
+        prerequisiteOutcome = { prerequisites: [], resolution: "unavailable" };
+      } else {
+        prerequisiteOutcome = resolvePrerequisites(
+          entry,
+          parseProgression(progressionResponse.body),
+          gaps
+        );
+      }
 
       const license = boundText(
         standard.license ?? entry.provenance.license,
