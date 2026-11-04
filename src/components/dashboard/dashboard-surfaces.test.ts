@@ -16,7 +16,8 @@ import {
   ProvisionalNotice,
   RunDetail,
 } from "./dashboard-surfaces";
-import { purposeLabel } from "./purpose-copy";
+import { purposeLabel, stageStatus } from "./purpose-copy";
+import { runStageValues } from "@/shared/learner-contract";
 import type { ProgressRun } from "@/shared/progress-contract";
 
 const render = (element: React.ReactElement): string =>
@@ -118,6 +119,17 @@ describe(purposeLabel, () => {
   });
 });
 
+describe(stageStatus, () => {
+  it("names every stored run stage in words and never as a failure", () => {
+    const statuses = runStageValues.map((stage) => stageStatus(stage));
+
+    expect(new Set(statuses.map((status) => status.label)).size).toBe(
+      runStageValues.length
+    );
+    expect(statuses.some((status) => status.tone === "stop")).toBeFalsy();
+  });
+});
+
 describe(ProvisionalNotice, () => {
   it("labels the view observational, never a diagnosis", () => {
     const markup = render(createElement(ProvisionalNotice));
@@ -166,10 +178,18 @@ describe(ProgressTable, () => {
     );
 
     expect(markup).toContain("Learner learner_lina");
-    expect(markup).toContain("first response partial");
+    expect(markup).toContain("First response: partial");
     expect(markup).toContain("1 attempt · latest score 80");
     expect(markup).toContain("Needs another supported go");
     expect(markup).toContain("Open");
+  });
+
+  it("names the run stage in a status pill", () => {
+    const markup = render(
+      createElement(ProgressTable, { runs: [run()], onOpen: noop })
+    );
+
+    expect(markup).toMatch(/class="pill"[^>]*>In progress</u);
   });
 
   it("renders a not-started row without inventing a result", () => {

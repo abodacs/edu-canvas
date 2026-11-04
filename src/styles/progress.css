@@ -1,27 +1,33 @@
-/* #8 teacher progress dashboard. */
+/* #8 teacher progress dashboard, styled to the 4-dashboard mock. Every value
+   reads the token layer; the stored reasoning renders verbatim. */
+.progress-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-block-end: var(--space-5);
+}
+
+.progress-top h1 {
+  font-size: var(--type-page);
+  line-height: 1.2;
+  max-inline-size: none;
+}
+
 .progress-lede {
   color: var(--muted-foreground);
+  font-size: var(--type-body-lg);
+  line-height: 1.65;
+  margin-block-start: var(--space-3);
+  max-inline-size: 50ch;
 }
 
-.progress-nav {
-  margin-block-end: 1rem;
-}
-
-.progress-state {
-  max-width: 48rem;
-  padding: 1.5rem;
-  margin: 2rem auto;
-}
-
-.progress-state p {
-  color: var(--muted-foreground);
-}
-
-.progress-provisional {
-  margin: 0.5rem 0 0;
-  color: var(--muted-foreground);
-  font-style: italic;
-  overflow-wrap: anywhere;
+.progress-section-h {
+  font-size: var(--type-section);
+  line-height: 1.2;
+  margin-block: 0 var(--space-3);
+  max-inline-size: none;
 }
 
 .progress-asof {
@@ -29,135 +35,168 @@
   flex-wrap: wrap;
   align-items: center;
   color: var(--muted-foreground);
-  gap: 0.5rem;
-  margin-block: 0.75rem;
+  font-size: var(--type-meta);
+  gap: var(--space-2) var(--space-3);
+  line-height: 1.5;
+  margin-block-end: var(--space-5);
 }
 
-.progress-refresh,
-.progress-retry,
-.progress-open {
-  min-height: 2.25rem;
-  padding: 0.35rem 0.9rem;
-  border: 1px solid var(--border, #cfd4dc);
-  border-radius: 0.5rem;
-  background: var(--surface, #fff);
-  color: var(--text, #1a202c);
-  cursor: pointer;
+/* The stale-results notice sits between the refresh row and the panels. */
+#dashboard-content > .notice {
+  margin-block-end: var(--space-5);
 }
 
-.progress-refresh:disabled,
-.progress-retry:disabled,
-.progress-open:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
+.progress-state {
+  display: grid;
+  padding: var(--space-6) var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  gap: var(--space-3);
+  justify-items: start;
+  margin-block-end: var(--space-5);
 }
 
-.progress-stale {
-  padding: 0.65rem 0.9rem;
-  border: 1px solid var(--border, #cfd4dc);
-  border-radius: 0.5rem;
-  border-inline-start: 4px solid var(--accent, #1f5fbf);
+.progress-state h1 {
+  font-size: var(--type-title);
+  line-height: 1.25;
+  max-inline-size: none;
+}
+
+.progress-state p {
   color: var(--muted-foreground);
+  line-height: 1.65;
+  max-inline-size: 60ch;
+}
+
+.progress-provisional {
+  color: var(--muted-foreground);
+  font-size: var(--type-meta);
+  line-height: 1.5;
   overflow-wrap: anywhere;
 }
 
+/* Needs you: an open list, one rule between rows, the action at the end. */
 .progress-needs {
-  padding: 1rem;
-  border: 1px solid var(--border, #cfd4dc);
-  border-radius: 0.75rem;
-  background: var(--surface, #fff);
-  margin-block-end: 1.5rem;
-}
-
-.progress-needs h2 {
-  margin: 0 0 0.75rem;
-  font-size: 1rem;
+  margin-block-end: var(--space-7);
 }
 
 .progress-needs-list {
   display: grid;
   padding: 0;
   margin: 0;
-  gap: 0.75rem;
   list-style: none;
 }
 
 .progress-needs-list li {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem 0.75rem;
+  border-block-start: 1px solid var(--line);
+  gap: var(--space-1) var(--space-4);
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding-block: var(--space-4);
 }
 
 .progress-needs-list b {
   display: block;
+  font-weight: 600;
 }
 
 .progress-needs-list span {
   color: var(--muted-foreground);
+  font-size: var(--type-secondary);
+  line-height: 1.5;
   overflow-wrap: anywhere;
+}
+
+/* All results: a table inside one card. */
+.progress-results {
+  margin-block-end: var(--space-5);
 }
 
 .progress-table-card {
-  padding: 1rem;
-  border: 1px solid var(--border, #cfd4dc);
-  border-radius: 0.75rem;
-  background: var(--surface, #fff);
-  margin-block-end: 1.5rem;
-}
-
-.progress-table-card h2 {
-  margin: 0 0 0.75rem;
-  font-size: 1rem;
+  overflow: hidden;
+  padding: 0;
 }
 
 .progress-table {
-  width: 100%;
   border-collapse: collapse;
+  font-size: var(--type-secondary);
+  inline-size: 100%;
 }
 
-.progress-table th,
-.progress-table td {
-  padding: 0.5rem 0.65rem;
-  border-block-end: 1px solid var(--border, #cfd4dc);
-  overflow-wrap: anywhere;
+.progress-table th {
+  padding: var(--space-3) var(--space-4);
+  border-block-end: 1px solid var(--line);
+  color: var(--muted-foreground);
+  font-size: var(--type-meta);
+  font-weight: 600;
   text-align: start;
-  vertical-align: top;
 }
 
-.progress-sr {
-  position: absolute;
-  overflow: hidden;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  clip-path: inset(50%);
-  white-space: nowrap;
+.progress-table td {
+  padding: var(--space-4);
+  border-block-end: 1px solid var(--line);
+  overflow-wrap: anywhere;
+  vertical-align: middle;
 }
 
+.progress-table tr:last-child td {
+  border-block-end: 0;
+}
+
+.progress-learner {
+  font-weight: 600;
+}
+
+.progress-meta {
+  display: block;
+  color: var(--muted-foreground);
+  font-size: var(--type-meta);
+  line-height: 1.5;
+  margin-block-start: var(--space-1);
+}
+
+.progress-next {
+  color: var(--muted-foreground);
+  font-size: var(--type-meta);
+  max-inline-size: 36ch;
+}
+
+.progress-action {
+  text-align: end;
+}
+
+/* Run detail. */
 .progress-detail {
-  padding: 1rem;
-  border: 1px solid var(--border, #cfd4dc);
-  border-radius: 0.75rem;
-  background: var(--surface, #fff);
+  display: grid;
+  gap: var(--space-2);
 }
 
-.progress-detail h2 {
-  margin: 0 0 0.25rem;
-  font-size: 1rem;
+.progress-detail .progress-section-h {
+  font-size: var(--type-heading);
+  line-height: 1.25;
+  margin-block-end: 0;
 }
 
 .progress-detail h3 {
-  margin: 1.25rem 0 0.5rem;
-  font-size: 0.95rem;
+  font-family: var(--font-sans);
+  font-size: var(--type-body);
+  font-weight: 600;
+  letter-spacing: normal;
+  line-height: 1.5;
+  margin-block: var(--space-4) 0;
+}
+
+.progress-detail p {
+  line-height: 1.5;
 }
 
 .progress-attempts {
   display: grid;
   padding: 0;
   margin: 0;
-  gap: 0.5rem;
+  gap: var(--space-2);
   list-style: none;
 }
 
@@ -165,32 +204,30 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  padding: 0.5rem 0.65rem;
-  border-radius: 0.5rem;
-  background: var(--surface-muted, #f4f6f9);
-  gap: 0.25rem 0.75rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-field);
+  background: var(--surface-sunk);
+  font-size: var(--type-secondary);
+  gap: var(--space-1) var(--space-3);
   overflow-wrap: anywhere;
 }
 
 .progress-decision {
-  padding: 0.75rem;
-  border: 1px solid var(--border, #cfd4dc);
-  border-radius: 0.5rem;
+  display: grid;
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-field);
+  gap: var(--space-2);
 }
 
 .progress-purpose {
-  margin: 0;
   font-weight: 600;
 }
 
-.progress-reason {
-  margin: 0.35rem 0 0;
-}
-
 .progress-provenance {
-  margin: 0.5rem 0 0;
-  font-family: var(--font-mono, monospace);
-  font-size: 0.85rem;
+  color: var(--muted-foreground);
+  font-size: var(--type-meta);
+  font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
 
@@ -198,9 +235,16 @@
   overflow-wrap: anywhere;
 }
 
-.progress-preview-title {
-  margin: 0.5rem 0 0;
+.progress-preview summary {
+  color: var(--primary);
+  cursor: pointer;
+  font-size: var(--type-secondary);
   font-weight: 600;
+}
+
+.progress-preview-title {
+  font-weight: 600;
+  margin-block-start: var(--space-2);
 }
 
 .progress-preview-columns {
@@ -210,7 +254,60 @@
 .progress-preview-items {
   display: grid;
   padding: 0;
-  margin: 0.5rem 0 0;
-  gap: 0.35rem;
+  margin: var(--space-2) 0 0;
+  gap: var(--space-1);
   list-style: none;
+}
+
+/* Phone: each result row becomes a labelled block. */
+@media (width <= 45rem) {
+  .progress-table thead {
+    position: absolute;
+    overflow: hidden;
+    block-size: 1px;
+    clip-path: inset(50%);
+    inline-size: 1px;
+    white-space: nowrap;
+  }
+
+  .progress-table,
+  .progress-table tbody,
+  .progress-table tr,
+  .progress-table td {
+    display: block;
+  }
+
+  .progress-table tr {
+    border-block-end: 1px solid var(--line);
+    padding-block: var(--space-2);
+  }
+
+  .progress-table tr:last-child {
+    border-block-end: 0;
+  }
+
+  .progress-table td {
+    border-block-end: 0;
+    padding-block: var(--space-2);
+  }
+
+  .progress-table td[data-label]::before {
+    display: block;
+    color: var(--muted-foreground);
+    content: attr(data-label);
+    font-size: var(--type-micro);
+    font-weight: 600;
+  }
+
+  .progress-action {
+    text-align: start;
+  }
+
+  .progress-needs-list li {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .progress-needs-list li > .btn {
+    justify-self: start;
+  }
 }

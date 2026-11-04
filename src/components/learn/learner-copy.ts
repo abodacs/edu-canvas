@@ -13,7 +13,8 @@ export interface LearnerCopy {
   readonly headingFallback: string;
   readonly sourceHeadingFallback: string;
   readonly targetHeadingFallback: string;
-  readonly matchedSuffix: string;
+  /** The visible label a formed pair carries on both of its cards. Never a grade: nothing is checked until Done. */
+  readonly pairBadge: (pairNumber: number) => string;
   readonly progress: (matched: number, total: number) => string;
   readonly submit: string;
   readonly checking: string;
@@ -47,7 +48,7 @@ const english: LearnerCopy = {
   headingFallback: "Matching",
   sourceHeadingFallback: "Fractions",
   targetHeadingFallback: "Equivalents",
-  matchedSuffix: " · matched",
+  pairBadge: (pairNumber) => `Pair ${pairNumber}`,
   progress: (matched, total) => `${matched} of ${total} matched.`,
   submit: "Done",
   checking: "Checking…",
@@ -89,7 +90,7 @@ const arabic: LearnerCopy = {
   headingFallback: "مطابقة",
   sourceHeadingFallback: "الكسور",
   targetHeadingFallback: "الكسور المكافئة",
-  matchedSuffix: " · تمت مطابقته",
+  pairBadge: (pairNumber) => `الزوج ${pairNumber}`,
   progress: (matched, total) => `تمت مطابقة ${matched} من ${total}.`,
   submit: "تم",
   checking: "جارٍ التحقق…",

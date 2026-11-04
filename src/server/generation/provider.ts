@@ -580,7 +580,9 @@ const answerRuleInstruction = (
     wholeNumber
       ? `Use these problem statements verbatim as the source items, without changing their wording: ${wholeNumber.problems
           .map((problem) => `"${problem.text}"`)
-          .join(" ")}. Do not include or reveal an answer key.`
+          .join(
+            " "
+          )}. Do not include or reveal an answer key. Write each target as one equation whose right side is one letter, such as "4 × 6 − 5 = n", with no words, remainders, or rounding symbols.`
       : "",
     evidence
       ? `Every detail in the source items must come from this approved passage, quoted verbatim: "${evidence.passage}".`
