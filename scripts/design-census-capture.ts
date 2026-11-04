@@ -242,22 +242,27 @@ const collect = (): Record<string, unknown> => {
       .join(" ")
       .trim();
     if (own.length > 0) {
-      let background = "rgba(0, 0, 0, 0)";
+      // Every fill up to the first opaque one. The verifier composites a
+      // translucent tint over what lies under it.
+      const fills: string[] = [];
       for (
         let current: HTMLElement | null = element;
         current;
         current = current.parentElement
       ) {
         const fill = getComputedStyle(current).backgroundColor;
-        if (fill !== "rgba(0, 0, 0, 0)" && fill !== "transparent") {
-          background = fill;
-          break;
+        if (!["rgba(0, 0, 0, 0)", "transparent"].includes(fill)) {
+          fills.push(fill);
+          if (!/(?:\/\s*[\d.]+%?|,\s*0?\.\d+)\)$/u.test(fill)) {
+            break;
+          }
         }
       }
       text.push({
         text: own.slice(0, 80),
         color: style.color,
-        background,
+        // Nearest fill first, `;`-joined; empty means nothing is painted.
+        background: fills.join(";"),
         size: style.fontSize,
         weight: style.fontWeight,
       });
