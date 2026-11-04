@@ -1,0 +1,49 @@
+{
+  "data": [
+    {
+      "identifier": "13498e57-1a95-5b05-a073-f99ab6e932ff",
+      "description": "Generate equivalent fractions using the principle a/b = (n x a)/(n x b) (denominators limited to 2, 3, 4, 5, 6, 8, 10, 12, and 100)",
+      "author": "Achievement Network",
+      "provider": "Learning Commons",
+      "license": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionStatement": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Learning Commons received learning components under CC BY-4.0 from Achievement Network."
+    },
+    {
+      "identifier": "5f61cb2a-1c2e-5a6f-9f57-47629badf7c0",
+      "description": "Recognize equivalent fractions using the principle a / b = (n x a)/(n x b)",
+      "author": "Achievement Network",
+      "provider": "Learning Commons",
+      "license": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionStatement": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Learning Commons received learning components under CC BY-4.0 from Achievement Network."
+    },
+    {
+      "identifier": "74de8dae-331b-5d0a-8f64-a1e8c7c5c3be",
+      "description": "Explain why a fraction a/b is equivalent to a fraction (n x a)/(n x b) using visual fraction models",
+      "author": "Achievement Network",
+      "provider": "Learning Commons",
+      "license": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionStatement": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Learning Commons received learning components under CC BY-4.0 from Achievement Network."
+    },
+    {
+      "identifier": "c3b684c1-9c44-51cd-8a52-d7812ec62951",
+      "description": "Generate equivalent fractions using the principle a/b = (n x a)/(n x b)",
+      "author": "Achievement Network",
+      "provider": "Learning Commons",
+      "license": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionStatement": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Learning Commons received learning components under CC BY-4.0 from Achievement Network."
+    },
+    {
+      "identifier": "df5f3fb2-9b5d-5e23-838e-dc991a80a444",
+      "description": "Recognize equivalent fractions using the principle a / b = (n x a)/(n x b) (denominators limited to 2, 3, 4, 5, 6, 8, 10, 12, and 100)",
+      "author": "Achievement Network",
+      "provider": "Learning Commons",
+      "license": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionStatement": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Learning Commons received learning components under CC BY-4.0 from Achievement Network."
+    }
+  ],
+  "pagination": {
+    "limit": 100,
+    "nextCursor": null,
+    "hasMore": false
+  }
+}
