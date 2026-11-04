@@ -689,6 +689,24 @@
   .a2ui-learning-path__pins {
     grid-template-columns: 1fr;
   }
+
+  /* #168 P2-3: preview tabs share the width without a native scrollbar and
+     snap in units when they do overflow. */
+  .a2ui-tabs {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .a2ui-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .a2ui-tab {
+    flex: 1 1 8rem;
+    min-inline-size: 0;
+    scroll-snap-align: start;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
