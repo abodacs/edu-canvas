@@ -1,6 +1,6 @@
 /* #8 teacher progress dashboard. */
 .progress-lede {
-  color: var(--muted, #4a5568);
+  color: var(--muted-foreground);
 }
 
 .progress-nav {
@@ -14,12 +14,12 @@
 }
 
 .progress-state p {
-  color: var(--muted, #4a5568);
+  color: var(--muted-foreground);
 }
 
 .progress-provisional {
   margin: 0.5rem 0 0;
-  color: var(--muted, #4a5568);
+  color: var(--muted-foreground);
   font-style: italic;
   overflow-wrap: anywhere;
 }
@@ -28,7 +28,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  color: var(--muted, #4a5568);
+  color: var(--muted-foreground);
   gap: 0.5rem;
   margin-block: 0.75rem;
 }
@@ -57,7 +57,7 @@
   border: 1px solid var(--border, #cfd4dc);
   border-radius: 0.5rem;
   border-inline-start: 4px solid var(--accent, #1f5fbf);
-  color: var(--muted, #4a5568);
+  color: var(--muted-foreground);
   overflow-wrap: anywhere;
 }
 
@@ -95,7 +95,7 @@
 }
 
 .progress-needs-list span {
-  color: var(--muted, #4a5568);
+  color: var(--muted-foreground);
   overflow-wrap: anywhere;
 }
 
@@ -204,7 +204,7 @@
 }
 
 .progress-preview-columns {
-  color: var(--muted, #4a5568);
+  color: var(--muted-foreground);
 }
 
 .progress-preview-items {
