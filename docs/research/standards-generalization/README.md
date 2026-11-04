@@ -163,7 +163,7 @@ Script: [`meta-s4-live.ts`](evidence/meta-s4-live.ts), which mirrors `buildProvi
 Findings:
 
 1. **S4 works.** The pack frame makes the model write the right subject: word problems and equations, not fractions.
-2. **S3 does not hold on live output.** The whole-number rule verified **0 of 24** model-written pairs. The model writes `□` for the unknown, `6 R3 → 7 tables needed` and `⌈27 ÷ 4⌉ = 7`, and none of these parse, so every pair drops to the `warning` path. The rule blocks only the pack's own fixture notation.
+2. **S3 does not hold on live output.** The whole-number rule verified **0 of 12** model-written pairs (the other draft's 12 pairs were placeholders). The model writes `□` for the unknown, `6 R3 → 7 tables needed` and `⌈27 ÷ 4⌉ = 7`, and none of these parse, so every pair drops to the `warning` path. The rule blocks only the pack's own fixture notation.
 3. **The gate accepts empty content.** Identical placeholder labels, repeated across all 12 items of every variant, pass both structural and semantic validation and reach teacher review with warnings only.
 4. **Correction rate 2 of 2,** against 0 of 3 under the old fraction prompt. Latency is 44–60 s with one correction, still inside AgDR-0006's 200 s budget.
 
