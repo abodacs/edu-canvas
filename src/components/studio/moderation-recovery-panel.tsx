@@ -1,3 +1,4 @@
+import { ShieldAlert } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -72,6 +73,10 @@ export const ModerationRecoveryPanel = ({
         aria-atomic="true"
         ref={announcementReference}
       />
+      <p className="result-card__meta">
+        <ShieldAlert aria-hidden="true" />
+        Blocked by the safety check · not shown to students
+      </p>
       <h2 id="blocked-generation-heading" tabIndex={-1} ref={headingReference}>
         {recovery.title}
       </h2>

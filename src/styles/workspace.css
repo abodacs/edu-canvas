@@ -5,7 +5,7 @@
 }
 
 .workspace-content:focus-visible {
-  outline: 3px solid var(--ring);
+  outline: var(--focus-ring-width) solid var(--ring);
   outline-offset: 3px;
 }
 
@@ -13,20 +13,20 @@
   position: sticky;
   z-index: 15;
   display: block;
-  border: 1px solid var(--border);
-  border-radius: 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-field);
   margin: 0;
   background: var(--card);
   color: var(--muted-foreground);
-  font-size: 0.8rem;
-  inset-block-end: 0.75rem;
-  padding-block: 0.6rem;
-  padding-inline: 0.9rem;
+  font-size: var(--type-meta);
+  inset-block-end: var(--space-3);
+  padding-block: var(--space-2);
+  padding-inline: var(--space-4);
 }
 
 .workspace-status {
   display: grid;
-  gap: 0.9rem;
+  gap: var(--space-4);
   max-inline-size: 40rem;
   padding-block: clamp(2rem, 8vw, 6rem);
   place-items: start start;
@@ -34,13 +34,13 @@
 
 .workspace-status__mark {
   display: grid;
-  border-radius: 1rem 0.4rem;
-  background: var(--teacher-forest);
-  block-size: 3rem;
-  color: var(--teacher-paper);
-  font-size: 0.8rem;
+  border-radius: var(--radius-card);
+  background: var(--foreground);
+  block-size: 48px;
+  color: var(--background);
+  font-size: var(--type-meta);
   font-weight: 800;
-  inline-size: 3rem;
+  inline-size: 48px;
   letter-spacing: 0.08em;
   place-items: center;
 }
