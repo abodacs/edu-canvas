@@ -4,10 +4,12 @@ import {
   createPrivateAnswerDigest,
   createValidationResultHash,
 } from "@/server/records/hashes";
+import { isRecordStoreError } from "@/server/records/errors";
 import { appendCurrentHead } from "@/server/records/inputs";
 import { hashVersion, recordLimits } from "@/server/records/vocabulary";
 import type { RecordPersistence } from "@/server/persistence/records-commands";
 import type { Actor } from "@/server/identity/types";
+import { publicationError } from "./errors";
 import type {
   StoredPrivateAnswers,
   StoredProvenance,
@@ -294,4 +296,23 @@ export const bridgePublishedPack = async (
     publicationId: recordPublication.id,
     assignmentId: assignment.id,
   };
+};
+
+/**
+Names a records refusal raised while linking a published pack to its learner.
+
+Only an outage stays generic (and maps to 503). Any other records code is a
+decision the records boundary made about this input. Reporting that as
+"temporarily unavailable" hid the learner-membership mismatch behind a retry
+prompt, so the refusal keeps its records code in `detail`.
+*/
+export const learnerLinkFailure = (error: unknown): unknown => {
+  if (!isRecordStoreError(error) || error.code === "PERSISTENCE_UNAVAILABLE") {
+    return error;
+  }
+  return publicationError(
+    "LEARNER_LINK_REFUSED",
+    "The lesson could not be linked to that learner. Choose a learner on this class roster.",
+    { detail: error.code, cause: error }
+  );
 };
