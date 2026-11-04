@@ -226,6 +226,13 @@ export const publicGenerationResultSchema = z
         promptTemplateVersion: z.string(),
         validatorVersion: z.string(),
         catalogVersion: z.string().optional(),
+        /**
+         * The standards pack that shaped the draft and the screen patterns it
+         * allowed. Optional so a record written before pack pins still parses;
+         * the current server always writes both for a pack-resolved draft.
+         */
+        packVersion: z.string().optional(),
+        allowedScreenPatterns: z.array(z.string()).optional(),
       })
       .strict()
       .nullable(),

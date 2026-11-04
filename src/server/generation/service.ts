@@ -510,8 +510,14 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         "A ready-for-review generation record requires an artifact gate snapshot."
       );
     }
-    const provenance = baseRecord.provenance ?? options.provider.provenance;
     const draft = "draft" in outcome ? outcome.draft : null;
+    // The draft carries the enriched provenance (pack version and allowed
+    // screen patterns) acceptance wrote; the record and attempt must expose
+    // that same provenance or preview falls back to matching-only.
+    const provenance =
+      draft?.provenance ??
+      baseRecord.provenance ??
+      options.provider.provenance;
     const record: LessonGenerationRecord = {
       ...baseRecord,
       state: outcome.state,

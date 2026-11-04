@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import { lessonGenerationInputSchema } from "@/shared/generation-contract";
 
-import { multistepWordProblemsPack } from "@/server/curriculum/built-in-packs";
+import {
+  fractionEquivalencePack,
+  multistepWordProblemsPack,
+} from "@/server/curriculum/built-in-packs";
 import { syntheticSeed } from "@/server/seed-data";
 import { parseTenantId } from "@/server/identity/identifiers";
 import {
@@ -171,6 +174,32 @@ describe("lesson generation service", () => {
         validatorVersion: "semantic-validation-runner-v1",
       },
     });
+  });
+
+  it("#30: exposes the pack version and allowed screen patterns on the record and result", async () => {
+    const service = createGenerationService({
+      limits: createSeededGenerationLimitStore(),
+      persistence: createSeededPersistence(),
+      provider: createDeterministicLessonDraftProvider(),
+      requestIdFactory: () => "draft_req_pack_provenance",
+    });
+
+    const result = await service.generate(
+      teacherCommand({
+        ...validInput,
+        idempotencyKey: "request-pack-provenance",
+      })
+    );
+    const expected = {
+      packVersion: fractionEquivalencePack.packVersion,
+      allowedScreenPatterns: [...fractionEquivalencePack.allowedScreenPatterns],
+    };
+
+    // Preview reads the record, so the record must carry the enriched
+    // provenance acceptance wrote onto the draft, not the bare provider one.
+    expect(result.record.provenance).toMatchObject(expected);
+    expect(result.record.draft?.provenance).toMatchObject(expected);
+    expect(result.publicResult.provenance).toMatchObject(expected);
   });
 
   it("generates a 4.OA.A.3 draft from the pack frame without a live provider", async () => {
