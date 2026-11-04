@@ -60,7 +60,7 @@ User flows:
 
 ## Brand Commitments
 
-- Name: **Scholé** (binding).
+- Name: **Scholé** (binding). Pronounced skoh-LAY. The Greek word means leisure and is the root of "school". The name states the goal: teachers get back their time, focus, and creativity.
 - Tagline: **"Turn one learning objective into a lesson your students understand."** (binding).
 - Source Serif 4 (display) and Figtree (body) are the fonts in use today (AgDR-0016). They are not a binding commitment.
 
