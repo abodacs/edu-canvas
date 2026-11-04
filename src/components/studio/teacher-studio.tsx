@@ -408,7 +408,7 @@ const TeacherGuidance = ({
   return (
     <section className="teacher-guidance" aria-labelledby="guidance-heading">
       <div className="teacher-guidance__rail">
-        <p className="studio-kicker">A little help, quietly</p>
+        <p className="kicker">A little help, quietly</p>
         <h2 id="guidance-heading">Good prompts carry more than a topic.</h2>
         <p>
           As you write, Scholé looks for the small details that help a visual
@@ -719,7 +719,7 @@ const GenerationResult = ({
       )}
       <div className="generation-result__header teacher-result__header">
         <div>
-          <p className="studio-kicker">Your first pass</p>
+          <p className="kicker">Your first pass</p>
           <h2>{getResultTitle(result.state)}</h2>
           <p className="teacher-result__description">
             {getResultDescription(result, requiresTeacherReview)}
@@ -930,7 +930,7 @@ const TeacherComposerOutcome = ({
       {visibleResult || hasModerationPanel ? null : (
         <div className="teacher-action-band">
           <div>
-            <p className="studio-kicker">Ready when you are</p>
+            <p className="kicker">Ready when you are</p>
             <p>One sentence is enough to start a useful conversation.</p>
           </div>
           <span>
@@ -1074,9 +1074,9 @@ const TeacherLessonComposer = ({
     <section className="teacher-studio" aria-labelledby="generation-heading">
       <div className="teacher-hero">
         <div className="teacher-hero__copy">
-          <p className="studio-kicker">
-            <span className="studio-kicker__line" aria-hidden="true" />A calmer
-            way to begin
+          <p className="kicker">
+            <span className="kicker__line" aria-hidden="true" />A calmer way to
+            begin
           </p>
           <h1 id="generation-heading">
             Make the idea{" "}
