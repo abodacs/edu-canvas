@@ -10,7 +10,7 @@ import type {
 import type { NormalizedGenerationRequest } from "./provider";
 import type { ProviderLessonDraft } from "./types";
 
-export const curriculumValidatorVersion = "curriculum-validator-v1";
+export const curriculumValidatorVersion = "curriculum-validator-v2";
 export const learningQualityValidatorVersion = "learning-quality-validator-v1";
 export const semanticValidationRunnerVersion = "semantic-validation-runner-v1";
 
