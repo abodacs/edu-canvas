@@ -4,6 +4,7 @@ import {
   FileText,
   FileWarning,
   Info,
+  Paperclip,
   RefreshCw,
   ShieldCheck,
   Trash2,
@@ -398,7 +399,7 @@ const SourceEmptyState = ({
   return (
     <div className="source-panel__empty">
       <label className="source-panel__choose">
-        <Upload aria-hidden="true" />
+        <Paperclip aria-hidden="true" />
         <span>Choose a file</span>
         <input
           type="file"
@@ -886,12 +887,11 @@ const SourcePanelHeader = ({
   readonly focusTargetReference: RefObject<HTMLSpanElement | null>;
 }) => {
   const { snapshot } = state;
-  const heading = snapshot ? snapshot.fileName : "Start from a document";
+  const heading = snapshot ? snapshot.fileName : "Add a source (optional)";
 
   return (
     <>
       <div className="source-panel__heading">
-        <p className="kicker">A real source, bounded</p>
         <h3 id="source-panel-heading">
           {}
           <span tabIndex={-1} ref={focusTargetReference}>

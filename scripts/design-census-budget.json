@@ -3,14 +3,14 @@
   "minPages": 25,
   "maxAaFailures": 0,
   "maxDistinct": {
-    "fontSize": 51,
-    "lineHeight": 75,
-    "fontWeight": 7,
-    "fontFamily": 3,
-    "radius": 21,
-    "boxShadow": 5,
-    "background": 35,
-    "borderColor": 26
+    "fontSize": 24,
+    "lineHeight": 45,
+    "fontWeight": 6,
+    "fontFamily": 2,
+    "radius": 11,
+    "boxShadow": 2,
+    "background": 17,
+    "borderColor": 7
   },
   "coverageRebaseline": {
     "date": "2026-11-04",
