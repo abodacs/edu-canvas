@@ -186,7 +186,7 @@ One warm accent on a field of warm neutrals; everything that is not an action st
 
 **Character:** A bookish serif at medium weight names the page and its sections; a neutral, slightly humanist grotesque carries every control and every paragraph. The serif speaks once per region; the sans does the work.
 
-Both families are self-hosted through `scripts/fonts-subset.py` (AgDR-0016), each split into a core face and an extended face; `public/fonts/manifest.json` records origin, version, licence and hashes. Only the Figtree core face is preloaded; the display faces load with `font-display: swap`. **The Fallback Rule:** Arabic, and any character outside the kept ranges, renders in the system fonts already in each stack; no third hosted family is added for it. The census allows two families on screen; a third is a failure.
+Both families are self-hosted through `scripts/fonts-subset.py` (AgDR-0016), each split into a core face and an extended face; `public/fonts/manifest.json` records origin, version, licence and hashes. Only the Figtree core face is preloaded; the display faces load with `font-display: swap`. The serif keeps its `opsz` axis with `font-optical-sizing: auto`, so large headings draw with the display optical size and small ones with the text size; that is an intended change from the single-cut system serif. **The Fallback Rule:** Arabic, and any character outside the kept ranges, renders in the system fonts already in each stack; no third hosted family is added for it. The census allows two families on screen; a third is a failure.
 
 ### Hierarchy
 

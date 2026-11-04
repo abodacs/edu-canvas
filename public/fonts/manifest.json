@@ -44,10 +44,12 @@
         ]
       ],
       "preload": false,
+      "publicLicence": "public/fonts/OFL-SourceSerif4.md",
+      "fallbackCodepoints": [],
       "outputs": {
         "source-serif-4-core.woff2": {
-          "bytes": 68356,
-          "sha256": "586e1af3bc385aae5417601d184b5f875382090e867bfeb4ed3c71ed3223c542",
+          "bytes": 69096,
+          "sha256": "567a8422864e35869e40f08f7b11cbde85001dc1e74ecf33e5a3761ea29a747c",
           "glyphs": 128,
           "axes": [
             [
@@ -70,8 +72,8 @@
           "codepoints": 103
         },
         "source-serif-4-extended.woff2": {
-          "bytes": 76472,
-          "sha256": "ae21d66aa8e1fc3984b007131076d898dc5c3f614ab9ccf39f00484f7779b9b4",
+          "bytes": 76904,
+          "sha256": "412452874bf063ef164250be55d3c7064d39947b37d367c30e4248bfa6d9e218",
           "glyphs": 305,
           "axes": [
             [
@@ -114,10 +116,14 @@
         ]
       ],
       "preload": true,
+      "publicLicence": "public/fonts/OFL-Figtree.txt",
+      "fallbackCodepoints": [
+        "U+2248"
+      ],
       "outputs": {
         "figtree-core.woff2": {
-          "bytes": 10560,
-          "sha256": "e30cd55653b6f7d1ca3b376fa891d58252a186b7dcba8732ae65aeb01bb2b707",
+          "bytes": 10876,
+          "sha256": "702b0175f06d637df73fceaf58237c0b621d7994c63c253a28db0c55dfcfa10c",
           "glyphs": 120,
           "axes": [
             [
@@ -135,8 +141,8 @@
           "codepoints": 103
         },
         "figtree-extended.woff2": {
-          "bytes": 13016,
-          "sha256": "b3dc149157aff25c054d2e7544627972b0f33c64a2e0bdce6e10b461273f4505",
+          "bytes": 13424,
+          "sha256": "47de565fa17900f94abfef5ba550889d78c6f31a7ea1d6630b6c0778c06d9cc2",
           "glyphs": 272,
           "axes": [
             [

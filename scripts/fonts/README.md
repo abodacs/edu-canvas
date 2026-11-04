@@ -14,11 +14,13 @@ The site self-hosts two variable families (AgDR-0016), each split into two subse
 | `public/fonts/source-serif-4-core.woff2` | same as Figtree core | pages with a serif heading; not preloaded |
 | `public/fonts/source-serif-4-extended.woff2` | same as Figtree extended, plus `≈` | only on demand |
 
-The four faces are declared at the top of `src/styles/tokens.css`. The script never rewrites a stylesheet; `--check` fails when a declared `unicode-range` there differs from the generated subset. Arabic, `⇒` (U+21D2), combining marks, and everything outside the kept ranges fall back to the system fonts in each stack (**the fallback rule**: no third hosted family).
+The four faces are declared at the top of `src/styles/tokens.css`. The script never rewrites a stylesheet; `--check` fails when a declared `unicode-range` there differs from the generated subset. Arabic, `⇒` (U+21D2), combining marks, and everything outside the kept ranges fall back to the system fonts in each stack (**the fallback rule**: no third hosted family). Each family also lists, in its `fallback` tuple, the kept characters its upstream cannot draw: Figtree 2.002 has no `≈` (U+2248), so body copy renders it in Trebuchet MS / Segoe UI / system-ui, while the serif draws it. `--check` is per family: it fails when a character used in `src/` is in the kept ranges but the family can neither draw it nor lists it as a fallback, and when a listed fallback is one the family can in fact draw.
 
 Axes are kept at their full upstream range. Partial instancing re-derives `gvar`/`HVAR` deltas and shifts sub-pixel advances at intermediate weights (measured ±0.2px per ~340px run on the previous family), which reads as a visual regression.
 
 **Reserved Font Name.** Adobe reserves "Source" under the OFL, and a subset is a Modified Version, so the Source Serif 4 subsets carry the internal name `Schole Display Serif` (name table, PostScript name; named instances and `STAT` are dropped because they point at removed names). The stylesheet still addresses the family as `"Source Serif 4"`. Figtree has no reserved name and keeps its own.
+
+**Licence notices.** Each subset keeps its copyright in nameID 0, the OFL statement in nameID 13 and the licence URL in nameID 14. For Source Serif 4 the copyright line drops only the upstream clause that names the reserved font name. The full licence ships next to the fonts as `public/fonts/OFL-Figtree.txt` and `public/fonts/OFL-SourceSerif4.md`, byte-identical to the vendored copies; `--check` fails if either drifts.
 
 ## Regenerating
 

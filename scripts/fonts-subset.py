@@ -68,6 +68,14 @@ class Family:
     origin: str
     output_prefix: str
     preload: bool
+    # Licence copy served next to the woff2 files (public/fonts/).
+    public_licence: str
+    # nameID 0 written into the subset. None keeps the upstream notice.
+    copyright: str | None = None
+    # Codepoints inside the kept ranges that this family's upstream lacks and
+    # that the site renders anyway; they fall back to the next font in the
+    # stack. --check fails on any other kept codepoint the family cannot draw.
+    fallback: tuple[int, ...] = ()
 
 
 FAMILIES: tuple[Family, ...] = (
@@ -85,6 +93,11 @@ FAMILIES: tuple[Family, ...] = (
         origin="https://github.com/adobe-fonts/source-serif/blob/2823e993c53fca27c5c8749f529b56a5a7c77b6b/VAR/SourceSerif4Variable-Roman.ttf",
         output_prefix="source-serif-4",
         preload=False,
+        public_licence="OFL-SourceSerif4.md",
+        # Upstream's notice names the reserved font name; the subset keeps the
+        # copyright and licence but not the reserved name (see rename()).
+        copyright="Copyright 2014 - 2023 Adobe (http://www.adobe.com/). "
+        "Licensed under the SIL Open Font License, Version 1.1.",
     ),
     Family(
         key="sans",
@@ -99,6 +112,10 @@ FAMILIES: tuple[Family, ...] = (
         origin="https://github.com/google/fonts/blob/a60a77e14f28abd4ef243a1b5dfc48df0cec5205/ofl/figtree/Figtree%5Bwght%5D.ttf",
         output_prefix="figtree",
         preload=True,
+        public_licence="OFL-Figtree.txt",
+        # Figtree 2.002 has no ≈; body copy renders it in the stack's next
+        # font (Trebuchet MS / Segoe UI / system-ui).
+        fallback=(0x2248,),
     ),
 )
 
@@ -175,18 +192,27 @@ def unicode_range_str(cps: set[int]) -> str:
 
 
 def rename(font: TTFont, family: Family, style: str) -> None:
-    """Set internal names to the family's non-reserved internal name."""
+    """Set internal names to the family's non-reserved internal name and keep
+    the copyright notice and licence the OFL requires a Modified Version to
+    carry."""
     ps = f"{family.postscript_prefix}-{style}"
     name_table = font["name"]
+    copyright_notice = family.copyright or name_table.getDebugName(0) or ""
+    licence_text = name_table.getDebugName(13) or (
+        "This Font Software is licensed under the SIL Open Font License, Version 1.1."
+    )
     # Drop every localized and variation-instance name so no reserved name
-    # survives in another language record; then write the three we need.
-    keep = {1, 2, 4, 6}
+    # survives in another language record; then write the ones we need.
+    keep = {0, 1, 2, 4, 6, 13, 14}
     name_table.names = [n for n in name_table.names if n.nameID in keep]
     for name_id, value in (
+        (0, copyright_notice),
         (1, family.internal_family),
         (2, "Regular"),
         (4, f"{family.internal_family} {style}"),
         (6, ps),
+        (13, licence_text),
+        (14, "https://openfontlicense.org"),
     ):
         name_table.removeNames(nameID=name_id)
         name_table.setName(value, name_id, 3, 1, 0x409)
@@ -322,6 +348,8 @@ def build_family(family: Family) -> tuple[dict[str, tuple[bytes, dict]], dict]:
         },
         "axes": [[a.axisTag, a.minValue, a.maxValue] for a in source["fvar"].axes],
         "preload": family.preload,
+        "publicLicence": f"public/fonts/{family.public_licence}",
+        "fallbackCodepoints": [f"U+{cp:04X}" for cp in family.fallback],
         "outputs": {core_file: core_info, ext_file: ext_info},
     }
     return {core_file: (core_data, core_info), ext_file: (ext_data, ext_info)}, entry
@@ -356,8 +384,11 @@ def write_outputs() -> None:
         print(f"{name}: {info['bytes']} bytes, {info['glyphs']} glyphs, axes={info['axes']}")
         print(f"  features={info['features']}")
         print(f"  unicode-range: {info['unicodeRange']}")
+    for family in FAMILIES:
+        licence = (VENDOR_DIR / family.licence_file).read_bytes()
+        (OUT_DIR / family.public_licence).write_bytes(licence)
     (OUT_DIR / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
-    print(f"wrote {OUT_DIR / 'manifest.json'}")
+    print(f"wrote {OUT_DIR / 'manifest.json'} and the licence copies")
 
 
 def declared_ranges() -> dict[str, str]:
@@ -408,6 +439,29 @@ def check() -> int:
     kept = expand(CORE_RANGES) | expand(EXTENDED_RANGES)
     allowed = kept | expand(FALLBACK_RANGES) | {c for c in range(0x80, 0xA0)}
     stray = {cp for cp in facts["chars"] if cp not in allowed}
+    for family in FAMILIES:
+        drawable = set(TTFont(VENDOR_DIR / family.vendor_file, lazy=True).getBestCmap())
+        wanted = {cp for cp in facts["chars"] if cp in kept}
+        undrawn = wanted - drawable - set(family.fallback)
+        if undrawn:
+            print(
+                f"CHECK FAIL: {family.css_family} cannot draw characters used in src: "
+                + ", ".join(f"U+{cp:04X} {chr(cp)!r}" for cp in sorted(undrawn))
+            )
+            print("  add them to the family's fallback tuple on purpose, or pick a family that has them.")
+            code = 3
+        stale = {cp for cp in family.fallback if cp in drawable}
+        if stale:
+            print(
+                f"CHECK FAIL: {family.css_family} fallback lists characters the font draws: "
+                + ", ".join(f"U+{cp:04X}" for cp in sorted(stale))
+            )
+            code = 3
+        public = OUT_DIR / family.public_licence
+        vendor = VENDOR_DIR / family.licence_file
+        if not public.exists() or public.read_bytes() != vendor.read_bytes():
+            print(f"CHECK FAIL: public/fonts/{family.public_licence} must equal {vendor.relative_to(ROOT)}")
+            code = 2
     if stray:
         print(
             "CHECK FAIL: characters outside kept ranges found in src: "
