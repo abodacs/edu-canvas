@@ -106,7 +106,9 @@ export const identities = pgTable(
 export const standards = pgTable(
   "standards",
   {
-    id: text().primaryKey().notNull(),
+    // A standard identity is tenant-local: every tenant owns one row per
+    // built-in pack, so the same catalog id appears once per tenant (#225).
+    id: text().notNull(),
     tenantId: text("tenant_id").notNull(),
     code: text().notNull(),
     name: text().notNull(),
@@ -127,6 +129,12 @@ export const standards = pgTable(
         foreignColumns: [tenants.id],
         name: "standards_tenant_id_fkey",
       }),
+      primaryKey({
+        columns: [table.tenantId, table.id],
+        name: "standards_pkey",
+      }),
+      // The composite unique stays because the six tenant-scoped foreign keys
+      // are bound to it; dropping it would require recreating them (#225).
       unique("standards_tenant_id_id_key").on(table.tenantId, table.id),
       unique("standards_tenant_id_code_key").on(table.tenantId, table.code),
       pgPolicy("standards_are_tenant_scoped", {

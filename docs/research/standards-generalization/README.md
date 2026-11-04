@@ -14,6 +14,24 @@ Committed evidence that this record cites:
 - [`scripts/lc-mcp-eval.ts`](../../../scripts/lc-mcp-eval.ts)
 - The harness, [`standards-generalization.characterization.test.ts`](../../../src/server/generation/standards-generalization.characterization.test.ts)
 
+## Live REST matrix (verified 2026-11-04)
+
+`pnpm lc:rest-matrix` runs the eight pilot rows and the ELA boundary through the production adapter against the real REST API. The evidence is [live-matrix.json](live-matrix.json), regenerated with [live-matrix.md](live-matrix.md).
+
+| Row | Found | Components | Prerequisite path | Prerequisites | Gaps |
+| --- | --- | --- | --- | --- | --- |
+| Multi-State 4.NF.A.1 | yes | 5 | direct | 4.OA.A.2, 3.NF.A.3 | — |
+| Multi-State 4.NF.A.2 | yes | 7 | direct | 4.NF.A.1 | — |
+| Multi-State 3.NF.A.3 | yes | 2 | direct | 3.NF.A.1, 3.NF.A.2 | — |
+| Multi-State 4.OA.A.3 | yes | 18 | direct | 4.NBT.A.3, 4.NBT.B.6, 3.OA.D.8 | — |
+| California 4.NF.A.1 | yes | 5 | crosswalk (jaccard 1) | 4.OA.A.2, 3.NF.A.3 | — |
+| California 4.NF.A.2 | yes | 7 | crosswalk (jaccard 1) | 4.NF.A.1 | — |
+| California 3.NF.A.3 | yes | 2 | crosswalk (jaccard 1) | 3.NF.A.1, 3.NF.A.2 | — |
+| California 4.OA.A.3 | yes | 18 | crosswalk (jaccard 1) | 4.NBT.A.3, 4.NBT.B.6, 3.OA.D.8 | — |
+| Multi-State RI.5.2 (ELA boundary) | yes | 0 | unavailable | — | skills-missing, prerequisites-unavailable |
+
+The pipeline is framework resolution → paginated standard scan by exact `statementCode` → components → prerequisites → crosswalk fallback. California math has 1467 rows and puts the pilot codes on page 2, so pagination is required. The old `/academic-standards?statementCode=` search returns 422, and `/progression` is 404.
+
 **Terminology.** In this record, a **standards pack** is the versioned curriculum data that #30 proposes: graph, components, answer rules and allowed screen patterns. The repository already has a different term, **Pack**: the generated-pack publication model in [`src/server/publication/GLOSSARY.md`](../../../src/server/publication/GLOSSARY.md). The local brief said only "pack", and this record renames it to avoid the collision. A standards pack fills the **Curriculum port** gap recorded in [`src/server/grounding/GLOSSARY.md`](../../../src/server/grounding/GLOSSARY.md).
 
 ## What changed from the local brief

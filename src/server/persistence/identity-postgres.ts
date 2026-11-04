@@ -10,6 +10,7 @@ import {
   parseTenantId,
 } from "../identity/identifiers";
 import { serverObservability } from "../observability.server";
+import { provisionTenantStandards } from "./seed-catalog";
 import type { ServerObservability } from "../observability.server";
 import type { ActorId, ClassId, TenantId } from "../identity/identifiers";
 import type {
@@ -389,6 +390,11 @@ const grantMembership = async (
     values (${input.tenantId}, ${input.tenantId}, ${input.tenantName}, true)
     on conflict (id) do nothing
   `;
+
+  // A fresh tenant needs its own standards rows before it can claim any
+  // generation; the insert-if-missing write stays inside the grant
+  // transaction so no tenant exists without the built-in catalogue (#225).
+  await provisionTenantStandards(transaction, input.tenantId);
 
   // A materialized roster learner is a student identity and carries the real
   // roster fields, so teacher-facing surfaces never render a raw machine id.

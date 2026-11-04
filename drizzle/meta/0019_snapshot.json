@@ -1,5 +1,5 @@
 {
-  "id": "58248bf0-a984-4ae3-a388-dcc712a2002d",
+  "id": "485eb0f3-e808-4d0d-b1d9-311e3245ceb1",
   "prevId": "67621623-8aca-47ea-9cc5-a19b24c39eef",
   "version": "7",
   "dialect": "postgresql",
@@ -1775,12 +1775,6 @@
         "revises_request_id": {
           "name": "revises_request_id",
           "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "advisory_review": {
-          "name": "advisory_review",
-          "type": "jsonb",
           "primaryKey": false,
           "notNull": false
         },
@@ -4911,7 +4905,7 @@
         "id": {
           "name": "id",
           "type": "text",
-          "primaryKey": true,
+          "primaryKey": false,
           "notNull": true
         },
         "tenant_id": {
@@ -4980,7 +4974,12 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "standards_pkey": {
+          "name": "standards_pkey",
+          "columns": ["tenant_id", "id"]
+        }
+      },
       "uniqueConstraints": {
         "standards_tenant_id_id_key": {
           "name": "standards_tenant_id_id_key",
