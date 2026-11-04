@@ -43,6 +43,7 @@ export const storyPlanSchema = z.strictObject({
   versionPins: z.strictObject({
     draftId: z.string().trim().min(1).max(120),
     graphVersion: z.string().trim().min(1).max(120),
+    packVersion: z.string().trim().min(1).max(120).optional(),
     catalogVersion: z.string().trim().min(1).max(120),
     modelVersion: z.string().trim().min(1).max(120),
     validatorVersion: z.string().trim().min(1).max(120),
@@ -74,6 +75,7 @@ export interface StoryPlanSource {
   readonly versionPins: {
     readonly draftId: string;
     readonly graphVersion: string;
+    readonly packVersion?: string;
     readonly catalogVersion: string;
     readonly modelVersion: string;
     readonly validatorVersion: string;

@@ -73,6 +73,7 @@ export const storedLearningPathSchema = z
       .object({
         draftId: z.string(),
         graphVersion: z.string(),
+        packVersion: z.string().optional(),
         catalogVersion: z.string(),
         modelVersion: z.string(),
         validatorVersion: z.string(),

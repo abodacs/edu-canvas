@@ -16,6 +16,7 @@ import path from "node:path";
 
 import postgres from "postgres";
 
+import { fractionEquivalencePack } from "@/server/curriculum/built-in-packs";
 import { GenerationRequestError } from "@/server/generation/generation-request-error";
 import { reviewLearningQuality } from "@/server/generation/learning-quality-validator";
 import { createDeterministicLessonDraftProvider } from "@/server/generation/provider";
@@ -434,10 +435,12 @@ const curriculumContext = (): SemanticValidationInput["context"] => {
     standardCode: syntheticSeed.standard.code,
     grade: 4,
     language: "en",
+    packVersion: fractionEquivalencePack.packVersion,
     graphVersion: syntheticSeed.activityVersion.graphVersion,
     targetNodeId: "graph_node_equivalent_fractions",
     nodes: syntheticSeed.graphNodes,
     edges: syntheticSeed.graphEdges,
+    answerRules: fractionEquivalencePack.answerRules,
   };
 };
 
