@@ -26,6 +26,7 @@ export const publicationErrorCodeValues = [
   "GATE_BLOCKED",
   "GATE_STALE",
   "IDEMPOTENCY_CONFLICT",
+  "LEARNER_LINK_REFUSED",
   "PUBLICATION_UNAVAILABLE",
 ] as const;
 
@@ -42,6 +43,7 @@ export const publicationErrorStatusByCode = {
   GATE_BLOCKED: 422,
   GATE_STALE: 409,
   IDEMPOTENCY_CONFLICT: 409,
+  LEARNER_LINK_REFUSED: 409,
   PUBLICATION_UNAVAILABLE: 503,
 } as const satisfies Record<PublicationErrorCode, number>;
 
