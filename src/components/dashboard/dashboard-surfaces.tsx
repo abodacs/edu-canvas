@@ -1,4 +1,9 @@
-import { purposeLabel } from "./purpose-copy";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Notice } from "@/components/ui/notice";
+
+import { purposeLabel, stageStatus } from "./purpose-copy";
 import type { ProgressAttempt, ProgressRun } from "@/shared/progress-contract";
 import type { ReactNode } from "react";
 
@@ -85,19 +90,19 @@ export const ProgressServerError = ({
         The server could not read the stored results. Nothing was changed. Try
         again.
       </p>
-      <button className="progress-retry" type="button" onClick={onRetry}>
+      <Button type="button" onClick={onRetry}>
         Try again
-      </button>
+      </Button>
     </section>
   );
 };
 
 export const ProgressStale = () => {
   return (
-    <output className="progress-stale">
+    <Notice tone="info">
       New learner activity since you opened this page. The list below is the
       current record; history never changes.
-    </output>
+    </Notice>
   );
 };
 
@@ -126,7 +131,9 @@ export const NeedsYouPanel = ({
   }
   return (
     <section className="progress-needs" aria-labelledby="progress-needs-h">
-      <h2 id="progress-needs-h">Needs you · {needsYou.length}</h2>
+      <h2 id="progress-needs-h" className="progress-section-h">
+        Needs you · {needsYou.length}
+      </h2>
       <ul className="progress-needs-list">
         {needsYou.map((run) => {
           return (
@@ -135,15 +142,16 @@ export const NeedsYouPanel = ({
                 <b>Learner {run.learnerId}</b>
                 <span>{run.decision?.reason ?? ""}</span>
               </div>
-              <button
+              <Button
                 className="progress-open"
+                variant="secondary"
                 type="button"
                 onClick={() => {
                   onOpen(run.runId);
                 }}
               >
                 See results
-              </button>
+              </Button>
             </li>
           );
         })}
@@ -160,59 +168,72 @@ export const ProgressTable = ({
   readonly onOpen: (runId: string) => void;
 }) => {
   return (
-    <section className="progress-table-card" aria-labelledby="progress-table-h">
-      <h2 id="progress-table-h">All results</h2>
-      <table className="progress-table">
-        <thead>
-          <tr>
-            <th scope="col">Learner</th>
-            <th scope="col">Status</th>
-            <th scope="col">Results so far</th>
-            <th scope="col">Next step</th>
-            <th scope="col">
-              <span className="progress-sr">Actions</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {runs.map((run) => {
-            const first = run.attempts[0] ?? null;
-            const latest = run.attempts.at(-1) ?? null;
-            const attemptWord =
-              run.attempts.length === 1 ? "attempt" : "attempts";
-            return (
-              <tr key={run.runId}>
-                <td>Learner {run.learnerId}</td>
-                <td>
-                  {run.stage}
-                  {first ? ` · first response ${first.correctness}` : ""}
-                </td>
-                <td>
-                  {latest
-                    ? `${run.attempts.length} ${attemptWord} · latest score ${latest.score}`
-                    : "Not started"}
-                </td>
-                <td>
-                  {run.decision === null
-                    ? "Waiting for evidence"
-                    : purposeLabel(run.decision.purpose)}
-                </td>
-                <td>
-                  <button
-                    className="progress-open"
-                    type="button"
-                    onClick={() => {
-                      onOpen(run.runId);
-                    }}
-                  >
-                    Open
-                  </button>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+    <section className="progress-results" aria-labelledby="progress-table-h">
+      <h2 id="progress-table-h" className="progress-section-h">
+        All results
+      </h2>
+      <Card className="progress-table-card">
+        <table className="progress-table">
+          <thead>
+            <tr>
+              <th scope="col">Learner</th>
+              <th scope="col">Status</th>
+              <th scope="col">Results so far</th>
+              <th scope="col">Next step</th>
+              <th scope="col">
+                <span className="sr-only">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {runs.map((run) => {
+              const first = run.attempts[0] ?? null;
+              const latest = run.attempts.at(-1) ?? null;
+              const status = stageStatus(run.stage);
+              const attemptWord =
+                run.attempts.length === 1 ? "attempt" : "attempts";
+              return (
+                <tr key={run.runId}>
+                  <td className="progress-learner" data-label="Learner">
+                    Learner {run.learnerId}
+                  </td>
+                  <td data-label="Status">
+                    <Badge tone={status.tone}>{status.label}</Badge>
+                    {first ? (
+                      <span className="progress-meta">
+                        First response: {first.correctness}
+                      </span>
+                    ) : null}
+                  </td>
+                  <td data-label="Results so far">
+                    {latest
+                      ? `${run.attempts.length} ${attemptWord} · latest score ${latest.score}`
+                      : "Not started"}
+                  </td>
+                  <td className="progress-next" data-label="Next step">
+                    {run.decision === null
+                      ? "Waiting for evidence"
+                      : purposeLabel(run.decision.purpose)}
+                  </td>
+                  <td className="progress-action">
+                    <Button
+                      className="progress-open"
+                      variant="ghost"
+                      size="sm"
+                      type="button"
+                      onClick={() => {
+                        onOpen(run.runId);
+                      }}
+                    >
+                      Open
+                    </Button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </Card>
     </section>
   );
 };
@@ -240,8 +261,14 @@ hash, then the read-only preview of the assigned approved screen.
 */
 export const RunDetail = ({ run }: { readonly run: ProgressRun }) => {
   return (
-    <section className="progress-detail" aria-labelledby="progress-detail-h">
-      <h2 id="progress-detail-h">Results for learner {run.learnerId}</h2>
+    <Card
+      as="section"
+      className="progress-detail"
+      aria-labelledby="progress-detail-h"
+    >
+      <h2 id="progress-detail-h" className="progress-section-h">
+        Results for learner {run.learnerId}
+      </h2>
       <ProvisionalNotice />
 
       <h3>Attempts</h3>
@@ -299,6 +326,6 @@ export const RunDetail = ({ run }: { readonly run: ProgressRun }) => {
           </ul>
         </details>
       )}
-    </section>
+    </Card>
   );
 };
