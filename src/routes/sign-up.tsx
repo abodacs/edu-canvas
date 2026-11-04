@@ -1,13 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { MailCheck, ShieldCheck, UserPlus } from "lucide-react";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { ShieldCheck } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { submitSignUp } from "@/components/auth/auth-client";
-import { BrandMark } from "@/components/ui/brand-mark";
 import { AuthStatus } from "@/components/auth/auth-status";
 import { PasswordField } from "@/components/auth/password-field";
 import { useAuthChallenge } from "@/components/auth/use-auth-challenge";
+import { useFocusAfterRender } from "@/components/auth/use-auth-notice";
+import { AppShell } from "@/components/ui/app-shell";
 import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
+import { Notice } from "@/components/ui/notice";
 
 import type { AuthApiFailure } from "@/components/auth/auth-client";
 import type { AuthNotice } from "@/components/auth/auth-status";
@@ -15,6 +18,19 @@ import type { ReactElement, SyntheticEvent } from "react";
 
 const MINIMUM_PASSWORD_LENGTH = 8;
 const RESEND_COOLDOWN_SECONDS = 30;
+
+const INVALID_EMAIL_MESSAGE =
+  "Enter a full email address, like name@school.org.";
+
+const describeEmailError = (
+  value: string,
+  input: HTMLInputElement | null
+): string | null => {
+  if (value === "") {
+    return "Enter your email address.";
+  }
+  return input?.validity.typeMismatch ? INVALID_EMAIL_MESSAGE : null;
+};
 
 const noCleanup = (): void => {
   // No timer was scheduled for this pass, so there is nothing to release.
@@ -64,10 +80,10 @@ const describeSignUpFailure = (failure: AuthApiFailure): AuthNotice => {
 };
 
 const SignUpPage = (): ReactElement => {
-  const emailId = useId();
-  const emailErrorId = useId();
-  const passwordErrorId = useId();
-  const verificationReference = useRef<HTMLOutputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const verificationReference = useRef<HTMLDivElement>(null);
+  const { focusAfterRender } = useFocusAfterRender();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -78,7 +94,6 @@ const SignUpPage = (): ReactElement => {
     null
   );
   const [cooldown, setCooldown] = useState(0);
-  const pendingFocusReference = useRef<string | null>(null);
   const { csrf, notice, statusReference, announce } = useAuthChallenge({
     unavailableNotice: {
       tone: "error",
@@ -86,18 +101,6 @@ const SignUpPage = (): ReactElement => {
       message: "We could not start a secure sign-up. Try again in a moment.",
     },
   });
-
-  useEffect(() => {
-    const pendingFocus = pendingFocusReference.current;
-    if (pendingFocus === null) {
-      return;
-    }
-
-    pendingFocusReference.current = null;
-    document
-      .querySelector<HTMLElement>(`#${CSS.escape(pendingFocus)}`)
-      ?.focus();
-  }, [emailError, passwordError]);
 
   useEffect(() => {
     if (cooldown <= 0) {
@@ -159,8 +162,7 @@ const SignUpPage = (): ReactElement => {
     }
 
     const trimmedEmail = email.trim();
-    const nextEmailError =
-      trimmedEmail === "" ? "Enter your email address." : null;
+    const nextEmailError = describeEmailError(trimmedEmail, emailRef.current);
     const nextPasswordError =
       password.length < MINIMUM_PASSWORD_LENGTH
         ? `Use at least ${MINIMUM_PASSWORD_LENGTH} characters.`
@@ -168,10 +170,9 @@ const SignUpPage = (): ReactElement => {
     setEmailError(nextEmailError);
     setPasswordError(nextPasswordError);
     if (nextEmailError || nextPasswordError) {
-      // The error element does not exist until React commits this update.
-      pendingFocusReference.current = nextEmailError
-        ? emailId
-        : passwordErrorId;
+      // Focus waits for the commit that marks the field invalid, so the screen
+      // reader reads the error with the control instead of before it.
+      focusAfterRender(nextEmailError ? emailRef : passwordRef);
       return;
     }
 
@@ -179,20 +180,14 @@ const SignUpPage = (): ReactElement => {
   };
 
   return (
-    <main
-      id="main"
-      tabIndex={-1}
-      className="auth-shell"
-      aria-labelledby="sign-up-heading"
-    >
-      <div className="auth-frame">
-        <BrandMark withTagline className="auth-card__brand" />
-        <section className="auth-card">
+    <AppShell>
+      <div className="auth-page">
+        <section className="auth-card" aria-labelledby="sign-up-heading">
           <header className="auth-card__header">
-            <h1 id="sign-up-heading" className="auth-heading">
-              Create a teacher account
+            <h1 id="sign-up-heading" className="auth-card__heading">
+              Create your teacher account
             </h1>
-            <p className="auth-lede">
+            <p className="auth-card__lede">
               A school or class must be assigned to your account before the
               workspace opens. Your school administrator sets that up, so
               signing up does not grant access on its own.
@@ -200,31 +195,31 @@ const SignUpPage = (): ReactElement => {
           </header>
 
           {verificationAddress ? (
-            <output
+            <div
               ref={verificationReference}
-              className="verification-panel"
+              className="auth-verification"
               tabIndex={-1}
             >
-              <h2 className="verification-panel__heading">
-                <MailCheck aria-hidden="true" /> Check your email
-              </h2>
-              <p>
-                We sent a verification link to{" "}
-                <span className="verification-panel__address">
-                  {verificationAddress}
-                </span>
-                . Open it to confirm the address, then wait for your school to
-                assign a class.
-              </p>
-              <p className="field__hint">
-                Addresses already on file receive exactly this message, so
-                nothing here reveals whether an account exists.
-              </p>
+              <Notice tone="info" title="Check your email">
+                <p>
+                  We sent a verification link to{" "}
+                  <bdi className="auth-verification__address" dir="ltr">
+                    {verificationAddress}
+                  </bdi>
+                  . Open it to confirm the address, then wait for your school to
+                  assign a class.
+                </p>
+                <p>
+                  Addresses already on file receive exactly this message, so
+                  nothing here reveals whether an account exists.
+                </p>
+              </Notice>
+              <AuthStatus notice={notice} noticeRef={statusReference} />
               <div className="auth-actions">
                 <Button
                   type="button"
                   variant="secondary"
-                  className="auth-submit"
+                  className="auth-form__submit"
                   disabled={isPending || cooldown > 0}
                   onClick={() => {
                     void send(true);
@@ -238,18 +233,17 @@ const SignUpPage = (): ReactElement => {
                   Back to sign in
                 </Link>
               </div>
-            </output>
+            </div>
           ) : (
             <form className="auth-form" onSubmit={handleSubmit} noValidate>
               <AuthStatus notice={notice} noticeRef={statusReference} />
 
-              <div className="field">
-                <label className="field__label" htmlFor={emailId}>
-                  School email address
-                </label>
+              <Field
+                label="School email address"
+                error={emailError ?? undefined}
+              >
                 <input
-                  id={emailId}
-                  className="field__input"
+                  ref={emailRef}
                   name="email"
                   type="email"
                   inputMode="email"
@@ -257,65 +251,47 @@ const SignUpPage = (): ReactElement => {
                   autoCapitalize="none"
                   spellCheck={false}
                   value={email}
-                  aria-label="School email address"
-                  aria-invalid={emailError !== null}
-                  aria-describedby={emailError ? emailErrorId : undefined}
                   required
                   disabled={isPending}
                   onChange={(event) => {
                     setEmail(event.target.value);
                   }}
                 />
-                {emailError ? (
-                  <p className="field__error" id={emailErrorId} tabIndex={-1}>
-                    {emailError}
-                  </p>
-                ) : null}
-              </div>
+              </Field>
 
               <PasswordField
                 label="Password"
                 name="password"
                 value={password}
                 autoComplete="new-password"
-                invalid={passwordError !== null}
-                describedBy={passwordError ? passwordErrorId : undefined}
+                help={`At least ${MINIMUM_PASSWORD_LENGTH} characters. No symbols or capital letters are required — paste and a password manager work normally.`}
+                error={passwordError}
                 minLength={MINIMUM_PASSWORD_LENGTH}
                 disabled={isPending}
+                inputRef={passwordRef}
                 onValueChange={setPassword}
               />
-              <p className="field__hint">
-                At least {MINIMUM_PASSWORD_LENGTH} characters. No symbols or
-                capital letters are required — paste and a password manager work
-                normally.
-              </p>
-              {passwordError ? (
-                <p className="field__error" id={passwordErrorId} tabIndex={-1}>
-                  {passwordError}
-                </p>
-              ) : null}
 
-              <div className="auth-actions">
-                <Button
-                  type="submit"
-                  className="auth-submit"
-                  disabled={isPending || csrf === null}
-                >
-                  <UserPlus aria-hidden="true" />
-                  {isPending ? "Creating account…" : "Create account"}
-                </Button>
-              </div>
+              <Button
+                type="submit"
+                className="auth-form__submit"
+                disabled={isPending || csrf === null}
+              >
+                {isPending ? "Creating account…" : "Create account"}
+              </Button>
             </form>
           )}
 
-          <p className="auth-links">
-            <span>
-              Already have an account?{" "}
-              <Link className="text-link" to="/login">
-                Sign in
-              </Link>
-            </span>
-          </p>
+          {verificationAddress ? null : (
+            <p className="auth-links">
+              <span>
+                Already have an account?{" "}
+                <Link className="text-link" to="/login">
+                  Sign in
+                </Link>
+              </span>
+            </p>
+          )}
 
           <p className="auth-note">
             <ShieldCheck aria-hidden="true" />
@@ -326,7 +302,7 @@ const SignUpPage = (): ReactElement => {
           </p>
         </section>
       </div>
-    </main>
+    </AppShell>
   );
 };
 

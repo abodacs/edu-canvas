@@ -1,204 +1,73 @@
-/* Authentication surfaces: a calm, single-column focus for sign-in, sign-up,
-   and class selection. They reuse the studio palette tokens and logical
-   properties, so the existing Arabic / RTL surfaces keep working. */
-.auth-shell {
-  display: grid;
-  align-items: center;
-  background:
-    radial-gradient(
-      60% 45% at 88% 0%,
-      color-mix(in oklch, var(--teacher-butter) 66%, transparent),
-      transparent 100%
-    ),
-    var(--teacher-paper);
-  min-block-size: 100dvh;
-  padding-block: clamp(1.5rem, 5vw, 4rem);
-  padding-inline: clamp(1rem, 5vw, 3rem);
-}
+/*
+ * Authentication surfaces: sign-up, sign-in, and the class choice after a
+ * pending sign-in. The shell owns the bar and the page frame, and the
+ * primitives own the field and notice looks. This file owns the card, the
+ * password reveal, and the class radios.
+ */
 
-.auth-frame {
-  inline-size: min(100%, 32rem);
+.auth-page {
+  display: grid;
+  gap: var(--space-5);
+  inline-size: min(100%, 30rem);
   margin-inline: auto;
 }
 
 .auth-card {
   display: grid;
-  padding: clamp(1.5rem, 4vw, 2.5rem);
-  border: 1px solid
-    color-mix(in oklch, var(--teacher-forest) 20%, var(--border));
-  border-radius: 1.5rem;
-  background: color-mix(in oklch, var(--card) 88%, var(--teacher-mint));
-  box-shadow: 0 1.5rem 3rem
-    color-mix(in oklch, var(--teacher-forest) 9%, transparent);
-  gap: 1.25rem;
-  margin-block-start: 1.25rem;
-}
-
-.auth-card__brand {
-  inline-size: fit-content;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  box-shadow: var(--shadow-lift);
+  gap: var(--space-5);
+  padding-block: var(--space-6);
+  padding-inline: var(--space-6);
 }
 
 .auth-card__header {
   display: grid;
-  gap: 0.6rem;
+  gap: var(--space-2);
 }
 
-.auth-heading {
+.auth-card__heading {
   margin: 0;
-  color: var(--teacher-ink);
-  font-size: clamp(1.7rem, 4vw, 2.35rem);
+  color: var(--foreground);
+  font-family: var(--font-display);
+  font-size: var(--type-section);
   font-weight: 500;
-  letter-spacing: -0.02em;
-  line-height: 1.05;
-  max-inline-size: 20ch;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  max-inline-size: 24ch;
 }
 
-.auth-lede {
+.auth-card__lede {
   margin: 0;
-  color: color-mix(in oklch, var(--teacher-ink) 66%, transparent);
-  font-size: 0.95rem;
-  line-height: 1.6;
-  max-inline-size: 46ch;
-}
-
-.auth-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.auth-eyebrow svg {
-  block-size: 0.9rem;
-  inline-size: 0.9rem;
+  color: var(--muted-foreground);
+  font-size: var(--type-secondary);
+  line-height: 1.55;
+  max-inline-size: 44ch;
 }
 
 .auth-form {
   display: grid;
-  gap: 1rem;
+  gap: var(--space-5);
 }
 
-.field {
-  display: grid;
-  gap: 0.4rem;
-}
-
-.field__label {
-  color: var(--teacher-ink);
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
-.field__control {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.field__input {
-  border: 1px solid var(--input);
-  border-radius: 0.65rem;
-  background: var(--background);
-  color: var(--foreground);
-  font: inherit;
+.auth-form__submit {
   inline-size: 100%;
-  min-block-size: 2.75rem;
-  padding-block: 0.55rem;
-  padding-inline: 0.8rem;
 }
 
-.field__input--with-toggle {
-  padding-inline-end: 5.25rem;
+.auth-form__cancel {
+  justify-self: center;
 }
 
-.field__input[aria-invalid="true"] {
-  border-color: var(--destructive);
-}
-
-.password-toggle {
-  position: absolute;
-  color: var(--primary);
-  font-size: 0.75rem;
-  font-weight: 750;
-  gap: 0.3rem;
-  inset-inline-end: 0.3rem;
-}
-
-.password-toggle svg {
-  block-size: 0.9rem;
-  inline-size: 0.9rem;
-}
-
-.field__hint {
-  margin: 0;
-  color: var(--muted-foreground);
-  font-size: 0.76rem;
-  line-height: 1.45;
-}
-
-.field__error {
-  margin: 0;
-  color: var(--destructive);
-  font-size: 0.8rem;
-  font-weight: 650;
-}
-
-.auth-status {
+.auth-verification {
   display: grid;
-  border-radius: 0.8rem;
-  gap: 0.35rem;
-  padding-block: 0.85rem;
-  padding-inline: 1rem;
+  gap: var(--space-4);
 }
 
-.auth-status:empty {
-  display: none;
-}
-
-.auth-status:focus-visible {
-  outline: 3px solid var(--ring);
-  outline-offset: 3px;
-}
-
-.auth-status__title {
-  font-size: 0.85rem;
-  font-weight: 750;
-}
-
-.auth-status p {
-  margin: 0;
-  font-size: 0.84rem;
-  line-height: 1.5;
-}
-
-.auth-status__action {
-  inline-size: fit-content;
-  margin-block-start: 0.35rem;
-}
-
-.auth-status--error {
-  border: 1px solid color-mix(in oklch, var(--destructive) 32%, var(--border));
-  background: color-mix(in oklch, var(--destructive) 7%, var(--card));
-  color: var(--destructive);
-}
-
-.auth-status--info {
-  border: 1px solid color-mix(in oklch, var(--primary) 26%, var(--border));
-  background: color-mix(in oklch, var(--primary) 7%, var(--card));
-  color: color-mix(in oklch, var(--primary) 60%, var(--foreground));
-}
-
-.auth-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.auth-submit {
-  border-radius: 0.8rem;
-  font-size: 0.95rem;
-  font-weight: 750;
-  min-block-size: 2.9rem;
+.auth-verification__address {
+  font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 .auth-links {
@@ -208,31 +77,26 @@
   justify-content: space-between;
   margin: 0;
   color: var(--muted-foreground);
-  font-size: 0.84rem;
-  gap: 0.75rem;
+  font-size: var(--type-secondary);
+  gap: var(--space-2);
 }
 
-.auth-links__aside {
+/* The shared link is a flex box for icon alignment; inside a sentence it has
+   to stay on the line, or the link drops to a line of its own. */
+.auth-links .text-link {
   display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-.auth-links__aside svg {
-  block-size: 0.85rem;
-  inline-size: 0.85rem;
 }
 
 .auth-note {
   display: flex;
   align-items: flex-start;
   margin: 0;
-  border-block-start: 1px solid var(--border);
+  border-block-start: 1px solid var(--line);
   color: var(--muted-foreground);
-  font-size: 0.78rem;
-  gap: 0.5rem;
+  font-size: var(--type-meta);
+  gap: var(--space-2);
   line-height: 1.5;
-  padding-block-start: 1rem;
+  padding-block-start: var(--space-4);
 }
 
 .auth-note svg {
@@ -247,82 +111,125 @@
   padding-block-start: 0;
 }
 
-.verification-panel {
-  display: grid;
-  border: 1px solid color-mix(in oklch, var(--primary) 26%, var(--border));
-  border-radius: 0.9rem;
-  background: color-mix(in oklch, var(--primary) 6%, var(--card));
-  gap: 0.7rem;
-  padding-block: 1.1rem;
-  padding-inline: 1.1rem;
+/* A server failure has no failing field to move to, so the notice host takes
+   focus; the ring makes the move visible. */
+.auth-status-host:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
-.verification-panel:focus-visible {
-  outline: 3px solid var(--ring);
-  outline-offset: 3px;
+/*
+ * Shared with the blocked workspace screen. The Studio slice owns that screen,
+ * so these keep their shape and only lose the teacher palette here.
+ */
+.auth-heading {
+  margin: 0;
+  color: var(--foreground);
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 4vw, 2.35rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  max-inline-size: 20ch;
 }
 
-.verification-panel__heading {
+.auth-lede {
+  margin: 0;
+  color: color-mix(in oklch, var(--foreground) 66%, transparent);
+  font-size: var(--type-body);
+  line-height: 1.6;
+  max-inline-size: 46ch;
+}
+
+.auth-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  margin: 0;
-  color: var(--teacher-ink);
-  font-size: 1.05rem;
-  gap: 0.45rem;
+  gap: var(--space-3);
 }
 
-.verification-panel p {
-  margin: 0;
-  color: color-mix(in oklch, var(--teacher-ink) 72%, transparent);
-  font-size: 0.86rem;
-  line-height: 1.55;
+.auth-submit {
+  border-radius: var(--radius-field);
+  font-size: var(--type-body);
+  font-weight: 600;
+  min-block-size: 2.75rem;
 }
 
-.verification-panel__address {
-  font-weight: 750;
-  overflow-wrap: anywhere;
+/* The reveal sits in the control row; the input keeps room for it. */
+.password-field {
+  position: relative;
 }
 
+.password-field__action {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+}
+
+.password-control {
+  position: relative;
+  display: grid;
+}
+
+.password-control__input {
+  padding-inline-end: calc(var(--space-8) + var(--space-5));
+}
+
+.password-toggle {
+  position: absolute;
+  border-color: transparent;
+  inset-block: 0;
+  inset-inline-end: var(--space-1);
+  margin-block: auto;
+}
+
+/* Class picker. The native radio supplies the tab stop; the label carries the
+   focus ring, so the input's own outline would draw a second, smaller ring. */
 .membership-fieldset {
   display: grid;
   padding: 0;
   border: 0;
   margin: 0;
-  gap: 0.6rem;
+  gap: var(--space-1);
+}
+
+.membership-fieldset__legend {
+  padding: 0;
+  color: var(--foreground);
+  font-size: var(--type-label);
+  font-weight: 600;
+  margin-block-end: var(--space-1);
 }
 
 .membership-options {
   display: grid;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .membership-option {
   display: flex;
   align-items: center;
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-field);
   background: var(--card);
   cursor: pointer;
-  gap: 0.75rem;
+  gap: var(--space-3);
   min-block-size: 3.25rem;
-  padding-block: 0.6rem;
-  padding-inline: 0.85rem;
+  padding-block: var(--space-2);
+  padding-inline: var(--space-4);
   transition:
-    border-color 0.16s ease,
-    background-color 0.16s ease;
+    border-color var(--duration-fast) var(--ease-enter),
+    background-color var(--duration-fast) var(--ease-enter);
 }
 
 .membership-option:has(input:checked) {
-  border-color: color-mix(in oklch, var(--primary) 52%, var(--border));
-  background: color-mix(in oklch, var(--primary) 8%, var(--card));
+  border-color: var(--primary);
+  background: var(--primary-soft);
 }
 
-/* Keyboard focus reads as a soft card ring (#168 P1-5); the radio itself
-   carries the checked tint inside the card instead of a heavy halo. */
 .membership-option:has(input:focus-visible) {
-  border-color: color-mix(in oklch, var(--ring) 55%, var(--border));
-  outline: 2px solid color-mix(in oklch, var(--ring) 60%, transparent);
-  outline-offset: 2px;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .membership-option input:focus-visible {
@@ -330,6 +237,8 @@
 }
 
 .membership-option input {
+  flex: none;
+  margin: 0;
   accent-color: var(--primary);
   block-size: 1.15rem;
   inline-size: 1.15rem;
@@ -337,18 +246,17 @@
 
 .membership-option__copy {
   display: grid;
-  gap: 0.1rem;
+  gap: 2px;
+  min-inline-size: 0;
 }
 
 .membership-option__class {
-  color: var(--teacher-ink);
-  font-size: 0.92rem;
-  font-weight: 750;
+  color: var(--foreground);
+  font-size: var(--type-body);
+  font-weight: 600;
 }
 
 .membership-option__role {
   color: var(--muted-foreground);
-  font-size: 0.76rem;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  font-size: var(--type-meta);
 }

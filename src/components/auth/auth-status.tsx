@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Notice } from "@/components/ui/notice";
 
 import type { ReactElement, Ref } from "react";
 
@@ -15,49 +16,42 @@ interface AuthStatusProperties {
   readonly noticeRef?: Ref<HTMLDivElement>;
 }
 
-const NoticeBody = ({
-  notice,
-}: {
-  readonly notice: AuthNotice;
-}): ReactElement => {
-  return (
-    <>
-      <strong className="auth-status__title">{notice.title}</strong>
-      <p>{notice.message}</p>
-      {notice.actionLabel && notice.onAction ? (
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          className="auth-status__action"
-          onClick={() => {
-            notice.onAction?.();
-          }}
-        >
-          {notice.actionLabel}
-        </Button>
-      ) : null}
-    </>
-  );
-};
-
 /**
- * One stable host for every outcome on an authentication surface. Both regions render before their text does, so repeated messages announce reliably; the focus target is the host, which the caller can focus to move focus to the outcome.
- */
+One announced outcome on an authentication surface. `Notice` is mounted with
+its content, so a new outcome arrives as a live region instead of filling an
+empty one. The host is the focus target for a server failure, which has no
+control to move to; client-side validation focuses the failing field instead.
+*/
 export const AuthStatus = ({
   notice,
   noticeRef,
-}: AuthStatusProperties): ReactElement => {
+}: AuthStatusProperties): ReactElement | null => {
+  if (notice === null) {
+    return null;
+  }
+
+  const action = notice.onAction;
+
   return (
     <div ref={noticeRef} className="auth-status-host" tabIndex={-1}>
-      <div className="auth-status auth-status--error" role="alert">
-        {notice?.tone === "error" ? <NoticeBody notice={notice} /> : null}
-      </div>
-      <output className="auth-status auth-status--info">
-        {notice && notice.tone !== "error" ? (
-          <NoticeBody notice={notice} />
-        ) : null}
-      </output>
+      <Notice
+        tone={notice.tone === "error" ? "stop" : "info"}
+        title={notice.title}
+        action={
+          notice.actionLabel && action ? (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={action}
+            >
+              {notice.actionLabel}
+            </Button>
+          ) : null
+        }
+      >
+        <p>{notice.message}</p>
+      </Notice>
     </div>
   );
 };

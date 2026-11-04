@@ -2,42 +2,47 @@ import { Eye, EyeOff } from "lucide-react";
 import { useId, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
 
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode, Ref } from "react";
 
-interface PasswordFieldProperties {
-  readonly label: string;
+interface PasswordControlProperties {
+  readonly id?: string;
+  readonly "aria-describedby"?: string;
+  readonly "aria-invalid"?: boolean;
+  readonly "aria-required"?: boolean;
   readonly name: string;
   readonly value: string;
   readonly autoComplete: "current-password" | "new-password";
-  readonly onValueChange: (value: string) => void;
-  readonly describedBy?: string;
-  readonly invalid?: boolean;
   readonly minLength?: number;
-  readonly required?: boolean;
-  readonly disabled?: boolean;
+  readonly required: boolean;
+  readonly disabled: boolean;
+  readonly inputRef?: Ref<HTMLInputElement>;
+  readonly onValueChange: (value: string) => void;
 }
 
 /**
- * A password input with a visible label and an inline show/hide toggle. The
- * toggle is a real button with `aria-pressed`, so it announces its state and
- * keeps focus where the user left it. Paste and password managers are never
- * blocked: the input keeps a name, an autocomplete token, and no paste guard.
- */
-export const PasswordField = ({
-  label,
+The input plus its reveal toggle. `Field` clones this element and passes the
+id and ARIA wiring down, so the label, help and error ids reach the real input
+while the toggle stays inside the control row.
+*/
+const PasswordControl = ({
+  id,
+  "aria-describedby": describedBy,
+  "aria-invalid": isInvalid,
+  "aria-required": isRequired,
   name,
   value,
   autoComplete,
-  onValueChange,
-  describedBy,
-  invalid = false,
   minLength,
-  required = true,
-  disabled = false,
-}: PasswordFieldProperties): ReactElement => {
+  required,
+  disabled,
+  inputRef,
+  onValueChange,
+}: PasswordControlProperties): ReactElement => {
+  const generatedId = useId();
+  const inputId = id ?? `${generatedId}-password`;
   const [isVisible, setIsVisible] = useState(false);
-  const inputId = useId();
   const toggle = useRef<HTMLButtonElement>(null);
 
   const toggleVisibility = (): void => {
@@ -46,48 +51,97 @@ export const PasswordField = ({
   };
 
   return (
-    <div className="field">
-      <label className="field__label" htmlFor={inputId}>
-        {label}
-      </label>
-      <div className="field__control">
-        <input
-          id={inputId}
-          className="field__input field__input--with-toggle"
+    <span className="password-control">
+      <input
+        id={inputId}
+        ref={inputRef}
+        className="field__input password-control__input"
+        name={name}
+        type={isVisible ? "text" : "password"}
+        value={value}
+        autoComplete={autoComplete}
+        aria-describedby={describedBy}
+        aria-invalid={isInvalid}
+        aria-required={isRequired}
+        minLength={minLength}
+        required={required}
+        disabled={disabled}
+        spellCheck={false}
+        onChange={(event) => {
+          onValueChange(event.target.value);
+        }}
+      />
+      <Button
+        ref={toggle}
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="password-toggle"
+        aria-label={isVisible ? "Hide password" : "Show password"}
+        aria-pressed={isVisible}
+        aria-controls={inputId}
+        disabled={disabled}
+        onClick={toggleVisibility}
+      >
+        {isVisible ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
+        {isVisible ? "Hide" : "Show"}
+      </Button>
+    </span>
+  );
+};
+
+interface PasswordFieldProperties {
+  readonly label: string;
+  readonly name: string;
+  readonly value: string;
+  readonly autoComplete: "current-password" | "new-password";
+  readonly onValueChange: (value: string) => void;
+  readonly help?: string;
+  readonly error?: string | null;
+  readonly minLength?: number;
+  readonly required?: boolean;
+  readonly disabled?: boolean;
+  readonly inputRef?: Ref<HTMLInputElement>;
+  /** A field-level action, such as "Forgot password?". */
+  readonly action?: ReactNode;
+}
+
+/**
+ * A password field on the shared `Field` primitive: one label, one control,
+ * an optional help line and an error that marks the input invalid. The
+ * reveal toggle is a real button with `aria-pressed`, so paste and password
+ * managers keep working and the input never loses its name.
+ */
+export const PasswordField = ({
+  label,
+  name,
+  value,
+  autoComplete,
+  onValueChange,
+  help,
+  error,
+  minLength,
+  required = true,
+  disabled = false,
+  inputRef,
+  action,
+}: PasswordFieldProperties): ReactElement => {
+  return (
+    <div className="password-field">
+      <Field label={label} help={help} error={error ?? undefined}>
+        <PasswordControl
           name={name}
-          type={isVisible ? "text" : "password"}
           value={value}
           autoComplete={autoComplete}
-          aria-label={label}
-          aria-invalid={invalid}
-          aria-describedby={describedBy}
           minLength={minLength}
           required={required}
           disabled={disabled}
-          spellCheck={false}
-          onChange={(event) => {
-            onValueChange(event.target.value);
-          }}
+          inputRef={inputRef}
+          onValueChange={onValueChange}
         />
-        <Button
-          ref={toggle}
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="password-toggle"
-          aria-pressed={isVisible}
-          aria-controls={inputId}
-          disabled={disabled}
-          onClick={toggleVisibility}
-        >
-          {isVisible ? (
-            <EyeOff aria-hidden="true" />
-          ) : (
-            <Eye aria-hidden="true" />
-          )}
-          {isVisible ? "Hide" : "Show"}
-        </Button>
-      </div>
+      </Field>
+      {action ? <div className="password-field__action">{action}</div> : null}
     </div>
   );
 };
+export type { PasswordFieldProperties };
