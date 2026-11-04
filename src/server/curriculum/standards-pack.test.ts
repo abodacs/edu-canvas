@@ -15,7 +15,11 @@ import {
   ri52Passage,
   ri52PrimaryText,
 } from "./built-in-packs";
-import { createStandardsPackRegistry, standardsPackRegistry } from "./registry";
+import {
+  createStandardsPackRegistry,
+  resolveSharedStandardPack,
+  standardsPackRegistry,
+} from "./registry";
 import { standardsPackSchema } from "./standards-pack";
 
 import type { StandardsPack } from "./standards-pack";
@@ -376,6 +380,18 @@ describe("standards pack registry", () => {
         tenantId: "tenant_real_school",
         standard: "4.NF.A.1",
       })
+    ).toStrictEqual(fractionEquivalencePack);
+  });
+
+  it("never treats another tenant's private pack as shared support", () => {
+    const privatePack = withOverrides({ tenantId: "tenant_someone_else" });
+
+    expect(resolveSharedStandardPack([privatePack], "4.NF.A.1")).toBeUndefined();
+    expect(
+      resolveSharedStandardPack(
+        [privatePack, fractionEquivalencePack],
+        "4.NF.A.1"
+      )
     ).toStrictEqual(fractionEquivalencePack);
   });
 

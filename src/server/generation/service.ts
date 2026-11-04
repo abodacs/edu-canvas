@@ -1,7 +1,10 @@
 import { setTimeout as delay } from "node:timers/promises";
 
 import { createId } from "@/server/ids";
-import { standardsPackRegistry } from "@/server/curriculum/registry";
+import {
+  resolveSharedStandardPack,
+  standardsPackRegistry,
+} from "@/server/curriculum/registry";
 
 import { IdentityError } from "../identity/errors";
 import {
@@ -143,9 +146,10 @@ const packForStandard = (standard: string, tenantId?: string) => {
   if (tenantId !== undefined) {
     return standardsPackRegistry.resolve({ tenantId, standard });
   }
-  return standardsPackRegistry.packs.find((pack) => {
-    return pack.standardId === standard || pack.standardCode === standard;
-  });
+  // Without a tenant there is no private-pack resolution: only a shared
+  // template may answer, so another tenant's pack never makes a standard
+  // "supported" for everyone.
+  return resolveSharedStandardPack(standardsPackRegistry.packs, standard);
 };
 
 // Idempotency keys are persisted and looked up across deploys; keep FNV-1a so a retry that spans a deployment still matches its record.
@@ -609,7 +613,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         requestId: baseRecord.requestId,
         provenance,
         structuralDiagnostics,
-        graphVersion: expectedGraphVersion ?? "",
+        ...(expectedGraphVersion && { graphVersion: expectedGraphVersion }),
       },
       options
     );

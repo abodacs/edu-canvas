@@ -379,6 +379,22 @@ describe("standards generalization: 4.OA.A.3 word problem -> equation matching",
     });
   });
 
+  it("accepts when the caller pins no graph version and uses the pack's own", async () => {
+    const acceptance = await reviewDraftForAcceptance(
+      {
+        draft: buildDraft(wordProblemPairs, operationsSteps),
+        input: requestFor(operationsContext),
+        tenantId,
+        requestId: "draft_req_unpinned_graph",
+        provenance: fixtureProvenance,
+        structuralDiagnostics: [],
+      },
+      { curriculumContext: () => operationsContext }
+    );
+
+    expect(acceptance.state).toBe("ready-for-review");
+  });
+
   it("B1: rejects an unknown standard without naming another lesson", () => {
     const rejection = captureStandardRejection("5.NBT.A.1");
 
