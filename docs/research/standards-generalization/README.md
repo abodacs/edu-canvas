@@ -1,6 +1,6 @@
 # Standards generalization: grounding and lesson validation beyond 4.NF.A.1 (#113, #30)
 
-Status: **research record, finished 2026-11-04 except two blocked steps.** All file:line citations were re-checked against `main` at `211e30f`. The fixture step that had not run now runs as a vitest characterization test, and its measured result is in [§2a](#2a-measured-fixture-outcomes). Step 7 (model role) is **not run: pending META key**. California primary text is **blocked (WAF)**. No production code under `src/` changed. No GitHub issue was created or edited.
+Status: **research record, finished 2026-11-04 except one blocked step.** All file:line citations were re-checked against `main` at `211e30f`. The fixture step that had not run now runs as a vitest characterization test, and its measured result is in [§2a](#2a-measured-fixture-outcomes). The async advisory reviewer was measured live in [§7a](#7a-measured-advisory-reviewer-run); the V1/V3 generation model rows in §7 remain unrun. California primary text is **blocked (WAF)**. No production code under `src/` changed by this record itself. No GitHub issue was created or edited.
 
 This record started as a local brief whose live evidence is not in the repository. Claims resting only on that evidence are marked **(uncommitted evidence)**:
 
@@ -138,9 +138,11 @@ Gap: the standards-pack version is not yet a pin. Add `packVersion` beside `grap
 
 **Verdict:** this does not block #30. A matching-only pilot is honest if each standards pack declares `allowedScreenPatterns: ["matching"]` and shows a visible diagnostic for an unsupported pattern (a #30 acceptance criterion). Richer lessons belong in #29, which stays a dependency.
 
-## 7. Model role: NOT RUN (pending META key)
+## 7. Model role: reviewer measured, V1/V3 rows still not run
 
-`META_API_KEY` is absent from this environment, as it was from the local shell and `.env`. Only the names were checked; no values were printed. No model calls were made (0 of M=9). Every model row is **pending META key**. The runtime reads `META_API_KEY`, `META_MODEL` (default `muse-spark-1.2-contributor`) and `META_BASE_URL` (`src/server/config.ts:255-259`).
+`META_API_KEY` is now present. The async advisory reviewer (#223) was measured on 6 provisional cases (§7a): all calls completed, and the reviewer warned on every case, including the three the deterministic gate accepted. The V1/V3 generation rows in this section are still **not run**; only the reviewer was.
+
+The runtime reads `META_API_KEY`, `META_MODEL` (default `muse-spark-1.2-contributor`) and `META_BASE_URL` (`src/server/config.ts:255-259`).
 
 What committed evidence already shows:
 
@@ -150,7 +152,32 @@ What committed evidence already shows:
 - Offline pack author: a model would propose component → screen-purpose mappings, for example the 18 `4.OA.A.3` components → 4 screen purposes. A person reviews each proposal before it is stored as a versioned standards-pack record. The model stays out of grounding, `hard_block` decisions, grading and answer keys.
 - Other models in the local DB (`meta/muse-spark-1.1`, `meta/muse-spark-1.3`, `deepseek/deepseek-v4.1-flash`) are **unproven**: none has V1/V3 records. **(uncommitted evidence)**: muse-spark-1.3 took 85.8 s and was blocked; deepseek took 77.4 s and failed.
 
-**Unblock:** add `META_API_KEY`, `META_MODEL=muse-spark-1.2-contributor` and `META_BASE_URL=https://api.meta.ai/v1` to `.env`. Then write a scratch `meta-probe.ts` (not yet written) that calls `createMetaLessonDraftProvider` with a standards-pack context and the §2a fixtures, and run it with `node --import tsx .scratch/tasks/standards-generalization/meta-probe.ts`.
+**Unblock:** add `META_API_KEY`, `META_MODEL=muse-spark-1.2-contributor` and `META_BASE_URL=https://api.meta.ai/v1` to `.env`. The V1/V3 generation probe still needs a scratch `meta-probe.ts` (not yet written) that calls `createMetaLessonDraftProvider` with a standards-pack context and the §2a fixtures.
+
+### 7a. Measured advisory reviewer run
+
+The async reviewer (#223) is implemented and measured. Run it with `node --import tsx scripts/advisory-review-eval.ts` (writes [advisory-review.json](advisory-review.json)) and check the committed result with `… advisory-review-eval.ts check`. The reviewer runs after `ready-for-review`, has a 60 s bound, and can only add warnings.
+
+<!-- advisory-review:start -->
+
+Measured 2026-11-04T13:09:52.989Z with `muse-spark-1.2-contributor` (meta, bound 60000 ms) on 6 provisional cases. No credential is recorded.
+
+| Case | Draft source | Deterministic gate | Advisory verdict | Agrees | Latency | Failure class |
+| --- | --- | --- | --- | --- | --- | --- |
+| `fraction-control` | pack-draft | ready-for-review | warning | no | 15051 ms | — |
+| `fraction-wrong-target` | characterization-fixture | blocked-by-validation | warning | yes | 16162 ms | — |
+| `word-problem-control` | pack-draft | ready-for-review | warning | no | 13772 ms | — |
+| `word-problem-wrong-equation` | characterization-fixture | blocked-by-validation | warning | yes | 18551 ms | — |
+| `main-idea-control` | pack-draft | ready-for-review | warning | no | 11662 ms | — |
+| `main-idea-absent-detail` | characterization-fixture | blocked-by-validation | warning | yes | 11808 ms | — |
+
+Agreement 3/6; defect recall 3/3; control false alarms 3/3; failures 0; mean latency 14501 ms (max 18551 ms).
+
+A defect case is a planted wrong pair; the deterministic gate blocks it. A control case is a pack draft the gate accepts. The shipped reviewer only runs on `ready-for-review` drafts, so the defect cases are a discrimination probe, not a product path. Agreement means the advisory verdict matched the gate: a warning on a blocked draft, or no warning on an accepted draft.
+
+<!-- advisory-review:end -->
+
+**What the result means.** The model returned exactly the prompt's 4-finding cap on all six cases, so warning presence did not discriminate a planted wrong pair from a gate-accepted draft. The 3/3 defect recall is therefore not evidence of validation skill: the same behavior produced 3/3 false alarms on the controls. Read plainly, the reviewer is a **learning-quality reviewer that always finds something**, not a validator. That matches its shipped role — it can only append advisory warnings after `ready-for-review` and can never block, publish, change a diagnostic, or touch an answer key. Two limitations follow: (1) there is no measured evidence that it catches wrong answers better than the deterministic gate, and it must never be used that way; (2) reasons longer than 240 characters fall back to a generic message, so some findings reach the teacher without the model's explanation.
 
 ## 8. Pre-mortem: it shipped and failed
 
@@ -176,7 +203,7 @@ What committed evidence already shows:
 | S3 Answer-rule registry (fraction plus whole-number-expression plus text-evidence; `unverifiedVerdict`) | `curriculum-validator.ts:276` | S1 | S4 | `verify:lesson-gate` property tests; flip the B6 wrong-pair case in the §2a harness to `ANSWER_MISMATCH`; future #106 eval cases | after S1 |
 | S4 Pack-framed prompt (B5) | `provider.ts:420-460` | S2 | model eval | future #106 cases; a V3-style record | no |
 | S5 #113 REST resolver into a SourceSnapshot (8 pilot rows) | `src/server/grounding/` | #112 storage | S1 data source | recorded Learning Commons fixtures; live matrix | **yes** (lane E1) |
-| S6 Async advisory reviewer | `SemanticValidationAgent` off the request path | S2, keys | — | agreement on K≤12 provisional cases (not #106) | no |
+| S6 Async advisory reviewer | `SemanticValidationAgent` off the request path | S2, keys | — | agreement on K≤12 provisional cases (not #106): measured, 3/6, §7a | shipped |
 | S7 Non-math standards pack (RI.5.2, matching-only, skills from the primary text) | standards-pack data | S1, S3 | #30 non-math acceptance criterion | flip the B7 RI.5.2 case once the pack authors a prerequisite node; teacher review through #118 (future) | no |
 
 Check against the #108 lanes: #30 is in "Deferred (post-day-3)". S1, S3 and S7 conflict with no day-1–3 lane seam. S5 _is_ lane E1 Dev 2. S2 touches `service.ts`, which #115 also touched. #115 is now closed, so S2 can follow S1 directly.
@@ -190,13 +217,13 @@ Checks still to come, and not claimed here: #106 (eval set) and #118 (teacher re
 3. What verdict for unverifiable relationships under a machine rule? The options are warning, silent pass, or hard_block. **Default: warning plus a required teacher acknowledgment per screen.** Never a silent pass. The per-screen acknowledgment already exists (#5, `publication/service.ts:484-498`). It works per warning _code_, though, so one acknowledgment covers every unverified pair on the screen. §2a shows the warning alone cannot tell a wrong pair from a right one. Proposed refinement, also defaulted: S3 adds machine rules, so 4.OA.A.3 pairs stop being "unverifiable", and acknowledgment stays per code.
 4. Before or after the day-3 deferral in #108? **Default: after**, except S1 and S5, which can start now.
 5. Pull #29 into scope? **Default: keep it as a dependency**, and ship matching-only standards packs with a visible pattern diagnostic.
-6. Ship the advisory reviewer? Inline or async? **Default: ship async only**, after a measured run. Inline is infeasible (§7).
+6. Ship the advisory reviewer? Inline or async? **Default: ship async only**, after a measured run. Inline is infeasible (§7). The run happened (§7a): ship async, warning-only, and never treat it as a validator — it warned on every gate-accepted control.
 7. Look into a second Meta model? **Default: no**, until V1/V3 evidence exists. The local DB shows 1.1, 1.3 and deepseek runs with no records.
 8. Caps: **Defaults N=6 (5 used), M=9 (0 used), K=12 (0 used).**
 
 ## Steps not run: blockers and unblock commands
 
-- **Step 7 (all model rows): not run, pending META key.** Unblock: see §7.
+- **V1/V3 generation rows in step 7: not run.** The advisory reviewer was measured (§7a); the draft-generation model rows were not. Unblock: see §7.
 - **California primary text: blocked (WAF).** The CDE PDFs redirect to a WAF page. Unblock: download them manually in a browser and add them to the local evidence folder.
 - **Project map final update:** not done. Unblock: run the project-map skill (UPDATE) and add the §10 decisions 1–8.
 
