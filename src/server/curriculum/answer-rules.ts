@@ -533,19 +533,25 @@ export const evaluateAnswerRules = (
     };
   }
 
-  let firstUnverified: UnverifiedEvaluation | undefined;
+  let firstMismatch:
+    Extract<AnswerRuleEvaluation, { status: "mismatch" }> | undefined;
+  let firstHardBlock: UnverifiedEvaluation | undefined;
+  let firstWarning: UnverifiedEvaluation | undefined;
+
   for (const rule of rules) {
     const evaluation = evaluateAnswerRule(rule, pair);
     if (evaluation.status === "mismatch") {
-      return evaluation;
-    }
-    if (evaluation.status === "unverified") {
+      firstMismatch ??= evaluation;
+    } else if (evaluation.status === "unverified") {
       if (evaluation.verdict === "hard_block") {
-        return evaluation;
+        firstHardBlock ??= evaluation;
+      } else {
+        firstWarning ??= evaluation;
       }
-      firstUnverified ??= evaluation;
     }
   }
 
-  return firstUnverified ?? { status: "verified" };
+  return (
+    firstMismatch ?? firstHardBlock ?? firstWarning ?? { status: "verified" }
+  );
 };

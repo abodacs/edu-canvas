@@ -230,6 +230,22 @@ describe("evaluating the declared rule set", () => {
     ).toMatchObject({ status: "mismatch" });
   });
 
+  it("keeps a mismatch visible when a hard_block unverified rule comes first", () => {
+    expect(
+      evaluateAnswerRules(
+        [
+          {
+            ...wholeNumberRule,
+            problems: [{ text: "A different problem.", answer: 5 }],
+            unverifiedVerdict: "hard_block",
+          },
+          fractionRule,
+        ],
+        { source: "1/2", target: "2/3" }
+      )
+    ).toMatchObject({ status: "mismatch" });
+  });
+
   it("uses the strictest unverified verdict among the declared rules", () => {
     expect(
       evaluateAnswerRules(
