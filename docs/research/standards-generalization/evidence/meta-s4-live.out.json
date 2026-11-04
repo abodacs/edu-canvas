@@ -1,0 +1,46 @@
+{
+  "label": "provisional, not teacher evidence, not #106",
+  "model": "muse-spark-1.2-contributor",
+  "calls": 4,
+  "cap": 4,
+  "results": [
+    {
+      "probe": "4.OA.A.3",
+      "packVersion": "4.OA.A.3-v1",
+      "state": "ready-for-review",
+      "codes": {
+        "ANSWER_RELATIONSHIP_UNVERIFIED:warning": 12,
+        "VARIANT_NOT_MEANINGFULLY_DIFFERENT:warning": 3,
+        "SCAFFOLD_LEVEL_UNCLEAR:warning": 1,
+        "CHALLENGE_LEVEL_UNCLEAR:warning": 1
+      },
+      "correctionUsed": true,
+      "latencyMs": 59554,
+      "sampleSources": [
+        "Sam has 4 boxes with 6 pencils in each box. He gives away 5 pencils. How many pencils are left? 31 chars/d=OK approx 85",
+        "A class of 27 students sits at tables of 4. How many tables are needed so everyone has a seat?",
+        "Mia buys 3 packs of 8 stickers and gets 7 more from a friend. How many stickers does she have?"
+      ],
+      "sampleTargets": [
+        "4 × 6 − 5 = □",
+        "27 ÷ 4 = 6 R3 → 7 tables needed",
+        "3 × 8 + 7 = □"
+      ]
+    },
+    {
+      "probe": "4.OA.A.3",
+      "packVersion": "4.OA.A.3-v1",
+      "state": "ready-for-review",
+      "codes": {
+        "ANSWER_RELATIONSHIP_UNVERIFIED:warning": 12,
+        "VARIANT_NOT_MEANINGFULLY_DIFFERENT:warning": 3,
+        "SCAFFOLD_LEVEL_UNCLEAR:warning": 1,
+        "CHALLENGE_LEVEL_UNCLEAR:warning": 1
+      },
+      "correctionUsed": true,
+      "latencyMs": 44295,
+      "sampleSources": ["Word problems", "Word problems", "Word problems"],
+      "sampleTargets": ["Equations", "Equations", "Equations"]
+    }
+  ]
+}

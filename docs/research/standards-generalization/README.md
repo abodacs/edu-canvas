@@ -151,6 +151,22 @@ Only the key is required: `META_MODEL` and `META_BASE_URL` have defaults (`src/s
 | Advisory reviewer (K=12 provisional cases, 3 per call) | agreed 12 of 12 (6 math, 6 RI.5.2 main idea and detail) | 2.8–4.6 s per call |
 | Offline pack author (18 4.OA.A.3 components → 4 screen purposes) | 4 groups (3, 8, 5, 2); 18 of 18 IDs covered, 0 unknown, 0 duplicated. Still a proposal: a person reviews it before it is stored | 8.3 s |
 
+### Live S4 check on #213's pack prompt (4 calls; M raised from 9 to 12)
+
+Script: [`meta-s4-live.ts`](evidence/meta-s4-live.ts), which mirrors `buildProviderContext` and runs the real gate. Outputs: [`meta-s4-live.out.json`](evidence/meta-s4-live.out.json) and the saved drafts in [`meta-s4-live.drafts.json`](evidence/meta-s4-live.drafts.json). The cap ran out before the RI.5.2 probe.
+
+| Draft | Content | State | Gate findings | Correction | Latency |
+| --- | --- | --- | --- | --- | --- |
+| 4.OA.A.3 #1 | Real word problems matched to equations. One source label leaks model scratch text: `"… How many pencils are left? 31 chars/d=OK approx 85"` | `ready-for-review` | all 12 relationships `ANSWER_RELATIONSHIP_UNVERIFIED` (warning), plus 5 quality warnings | yes | 59.6 s |
+| 4.OA.A.3 #2 | **Placeholders only.** Every source is `"Word problems"` and every target is `"Equations"`, in all 4 variants | **`ready-for-review`** | the same 12 unverified warnings, plus 5 quality warnings | yes | 44.3 s |
+
+Findings:
+
+1. **S4 works.** The pack frame makes the model write the right subject: word problems and equations, not fractions.
+2. **S3 does not hold on live output.** The whole-number rule verified **0 of 24** model-written pairs. The model writes `□` for the unknown, `6 R3 → 7 tables needed` and `⌈27 ÷ 4⌉ = 7`, and none of these parse, so every pair drops to the `warning` path. The rule blocks only the pack's own fixture notation.
+3. **The gate accepts empty content.** Identical placeholder labels, repeated across all 12 items of every variant, pass both structural and semantic validation and reach teacher review with warnings only.
+4. **Correction rate 2 of 2,** against 0 of 3 under the old fraction prompt. Latency is 44–60 s with one correction, still inside AgDR-0006's 200 s budget.
+
 Limits on these results:
 
 - **Generator content was not inspected.** The run recorded schema fit only and did not save the drafts. Because of B5, whether the items were word problems or fractions is **unverified**. A rerun must save the drafts, and only 1 call remains under M=9.
