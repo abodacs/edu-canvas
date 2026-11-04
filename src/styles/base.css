@@ -202,7 +202,7 @@ h2 {
   }
 }
 
-/* ── primitives (foundation) ──
+/* -- primitives (foundation) --
  * Rules for src/components/ui primitives. Every value is a token; state is a
  * data attribute so no slice invents a modifier class. Button keeps today's
  * look through its utility classes; only its busy state lives here.
@@ -442,7 +442,7 @@ h2 {
   color: var(--foreground);
 }
 
-/* ── app shell (foundation) ──
+/* -- app shell (foundation) --
    AppShell, SkipLink and SyntheticDataMarker (src/components/ui). Slices read
    these classes; only the foundation changes them. */
 .skip-link {
