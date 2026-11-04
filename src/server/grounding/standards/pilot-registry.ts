@@ -135,7 +135,6 @@ export const gradeFromStatementCode = (statementCode: string): number => {
     : Math.trunc(Number(match.groups.grade));
 };
 
-
 const envelopeContains = (
   registry: PilotStandardRegistry,
   jurisdiction: string,

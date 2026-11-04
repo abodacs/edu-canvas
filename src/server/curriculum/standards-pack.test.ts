@@ -386,7 +386,9 @@ describe("standards pack registry", () => {
   it("never treats another tenant's private pack as shared support", () => {
     const privatePack = withOverrides({ tenantId: "tenant_someone_else" });
 
-    expect(resolveSharedStandardPack([privatePack], "4.NF.A.1")).toBeUndefined();
+    expect(
+      resolveSharedStandardPack([privatePack], "4.NF.A.1")
+    ).toBeUndefined();
     expect(
       resolveSharedStandardPack(
         [privatePack, fractionEquivalencePack],

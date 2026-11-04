@@ -262,18 +262,22 @@ const createVariant = (
   pairs: readonly StandardsPackExample[]
 ): ProviderVariant => {
   const { language } = request;
-  const sourceItems = pairs.slice(0, plan.sourceCount).map((pair, itemIndex) => {
-    return {
-      id: `source-${plan.index}-${itemIndex + 1}`,
-      label: pair.source,
-    };
-  });
-  const targetItems = pairs.slice(0, plan.targetCount).map((pair, itemIndex) => {
-    return {
-      id: `target-${plan.index}-${itemIndex + 1}`,
-      label: pair.target,
-    };
-  });
+  const sourceItems = pairs
+    .slice(0, plan.sourceCount)
+    .map((pair, itemIndex) => {
+      return {
+        id: `source-${plan.index}-${itemIndex + 1}`,
+        label: pair.source,
+      };
+    });
+  const targetItems = pairs
+    .slice(0, plan.targetCount)
+    .map((pair, itemIndex) => {
+      return {
+        id: `target-${plan.index}-${itemIndex + 1}`,
+        label: pair.target,
+      };
+    });
   const relationshipCount = Math.min(sourceItems.length, targetItems.length);
   const distractorCount = Math.min(
     plan.distractorCount,

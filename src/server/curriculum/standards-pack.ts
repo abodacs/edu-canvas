@@ -173,14 +173,11 @@ export const standardsPackSchema = z
       path: ["promptFrame", "targetItemCount"],
     }
   )
-  .refine(
-    (pack) => pack.examples.length >= pack.promptFrame.sourceItemCount,
-    {
-      message:
-        "A standards pack needs at least as many examples as its frame's source items.",
-      path: ["examples"],
-    }
-  );
+  .refine((pack) => pack.examples.length >= pack.promptFrame.sourceItemCount, {
+    message:
+      "A standards pack needs at least as many examples as its frame's source items.",
+    path: ["examples"],
+  });
 
 export type StandardsPack = z.infer<typeof standardsPackSchema>;
 export type StandardsPackSourceKind = (typeof standardsPackSourceKinds)[number];

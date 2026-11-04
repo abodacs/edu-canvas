@@ -534,7 +534,7 @@ export const createLearningCommonsAdapter = (
       assertNotAborted(context.signal);
       const statementResponse = await options.transport
         .findStandard(input, context)
-        .catch((error: unknown) => {
+        .catch(() => {
           throw providerUnavailable();
         });
       if (isServerFailure(statementResponse)) {
@@ -607,7 +607,7 @@ export const createLearningCommonsAdapter = (
           { caseIdentifierUUID: standard.caseIdentifierUUID },
           context
         )
-        .catch((error: unknown) => {
+        .catch(() => {
           throw providerUnavailable();
         });
       if (isServerFailure(componentResponse)) {
@@ -632,7 +632,7 @@ export const createLearningCommonsAdapter = (
           { caseIdentifierUUID: standard.caseIdentifierUUID },
           context
         )
-        .catch((error: unknown) => {
+        .catch(() => {
           throw providerUnavailable();
         });
       if (isServerFailure(progressionResponse)) {

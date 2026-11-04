@@ -441,7 +441,7 @@ describe("pack-framed provider prompt (#221)", () => {
   });
 
   it("states every declared 4.OA.A.3 problem and asks for verbatim wording", () => {
-    const rule = multistepWordProblemsPack.answerRules[0];
+    const [rule] = multistepWordProblemsPack.answerRules;
     if (rule?.kind !== "whole-number-expression") {
       throw new Error("The 4.OA.A.3 pack must declare a whole-number rule.");
     }
@@ -552,7 +552,7 @@ describe("pack-framed deterministic fixture (#221)", () => {
     "builds every $label relationship from the pack's own answer rule",
     async ({ pack }) => {
       const draft = await buildPackDraft(pack.standardId);
-      const primaryRule = pack.answerRules[0];
+      const [primaryRule] = pack.answerRules;
       if (!primaryRule) {
         throw new Error(`${pack.standardCode} must declare an answer rule.`);
       }

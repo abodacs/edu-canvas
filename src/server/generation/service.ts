@@ -519,9 +519,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     // screen patterns) acceptance wrote; the record and attempt must expose
     // that same provenance or preview falls back to matching-only.
     const provenance =
-      draft?.provenance ??
-      baseRecord.provenance ??
-      options.provider.provenance;
+      draft?.provenance ?? baseRecord.provenance ?? options.provider.provenance;
     const record: LessonGenerationRecord = {
       ...baseRecord,
       state: outcome.state,

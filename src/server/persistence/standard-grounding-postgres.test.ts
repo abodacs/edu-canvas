@@ -1,9 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  hydrateStandardGroundingRow,
-  type GroundingRow,
-} from "./standard-grounding-postgres";
+import { hydrateStandardGroundingRow } from "./standard-grounding-postgres";
+import type { GroundingRow } from "./standard-grounding-postgres";
 
 const validRow: GroundingRow = {
   id: "grounding_1",
