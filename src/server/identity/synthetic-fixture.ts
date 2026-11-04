@@ -14,7 +14,7 @@ import type { DeterministicAccount } from "./provider/deterministic";
 /**
  * Synthetic identity fixture for explicit local development and tests. Two
  * classes plus the curriculum-owning synthetic class, two teachers in one
- * class, two class assignments, and three learners, per the spec's fixture
+ * class, two class assignments, and six learners, per the spec's fixture
  * requirement (the classroom membership the focused generation gate signs in
  * through was added for issue #115; the demo-tenant learner was added for
  * issue #5 so a published pack has a real assignment referent). It is invoked
@@ -58,6 +58,24 @@ export const syntheticAccounts: readonly DeterministicAccount[] = [
     subject: "subject_learner_omar",
     emailVerified: true,
   },
+  {
+    email: "maya.demo@example.test",
+    password: syntheticPassword,
+    subject: "subject_learner_maya",
+    emailVerified: true,
+  },
+  {
+    email: "samir.demo@example.test",
+    password: syntheticPassword,
+    subject: "subject_learner_samir",
+    emailVerified: true,
+  },
+  {
+    email: "noor.demo@example.test",
+    password: syntheticPassword,
+    subject: "subject_learner_noor",
+    emailVerified: true,
+  },
 ];
 
 export const syntheticPasswordForTests = syntheticPassword;
@@ -84,6 +102,9 @@ const fixture = {
     { id: "actor_learner_lina", displayName: "Lina Farouk" },
     { id: "actor_learner_yusuf", displayName: "Yusuf Karim" },
     { id: "actor_learner_omar", displayName: "Omar Nabil" },
+    { id: "actor_learner_maya", displayName: "Maya Rahman" },
+    { id: "actor_learner_samir", displayName: "Samir Haddad" },
+    { id: "actor_learner_noor", displayName: "Noor Salah" },
   ],
   memberships: [
     {
@@ -147,6 +168,39 @@ const fixture = {
         id: "learner_omar",
         displayName: "Omar Nabil",
         demoHandle: "omar.demo",
+      },
+    },
+    {
+      membershipId: "membership_maya_demo",
+      actorId: "actor_learner_maya",
+      tenantKey: "demo" as const,
+      role: "student" as const,
+      learner: {
+        id: "learner_maya",
+        displayName: "Maya Rahman",
+        demoHandle: "maya.demo",
+      },
+    },
+    {
+      membershipId: "membership_samir_demo",
+      actorId: "actor_learner_samir",
+      tenantKey: "demo" as const,
+      role: "student" as const,
+      learner: {
+        id: "learner_samir",
+        displayName: "Samir Haddad",
+        demoHandle: "samir.demo",
+      },
+    },
+    {
+      membershipId: "membership_noor_demo",
+      actorId: "actor_learner_noor",
+      tenantKey: "demo" as const,
+      role: "student" as const,
+      learner: {
+        id: "learner_noor",
+        displayName: "Noor Salah",
+        demoHandle: "noor.demo",
       },
     },
   ],

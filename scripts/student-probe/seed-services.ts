@@ -26,7 +26,11 @@ import { gateTeacher } from "../ui-gate/session";
 
 import type { ServerConfig } from "@/server/config";
 import type { DeterministicProviderScenario } from "@/server/generation/provider";
-import type { TeacherActor } from "@/server/identity/types";
+import type {
+  Actor,
+  LearnerActor,
+  TeacherActor,
+} from "@/server/identity/types";
 import type { ReviewPack } from "@/shared/publication-contract";
 
 const sourceText =
@@ -38,10 +42,19 @@ against a live session row. The seed signs the synthetic teacher in through the
 identity service, exactly as the sign-in route does, so the actor it acts with
 is a real session, not a hand-built one.
 */
-export const signInGateTeacher = async (
-  config: ServerConfig,
-  membershipId: string
-): Promise<TeacherActor> => {
+export interface SyntheticSession {
+  readonly signInAs: (email: string, membershipId: string) => Promise<Actor>;
+}
+
+/**
+Build the deterministic identity once for a seed that signs several actors in.
+The fixture provisioning pass is the expensive part of a sign-in; one pass is
+enough for the whole seed, and every later sign-in is a provider check plus a
+session row.
+*/
+export const createSyntheticSession = async (
+  config: ServerConfig
+): Promise<SyntheticSession> => {
   // The fixture provisions its entries concurrently, and two entries can race
   // to insert the same tenant on an empty database. Composition is idempotent,
   // so a second pass completes whatever the first one lost.
@@ -53,23 +66,60 @@ export const signInGateTeacher = async (
     identity = await buildConfiguredIdentity(config, identityPersistence);
   }
   const sourceAddress = "127.0.0.1";
-  const signedIn = await identity.service.signIn({
-    email: gateTeacher.email,
-    password: syntheticPasswordForTests,
-    sourceAddress,
-  });
-  const active =
-    signedIn.status === "active"
-      ? signedIn
-      : await identity.service.selectMembership({
-          pendingCredential: signedIn.pendingCredential,
-          membershipId,
-          sourceAddress,
-        });
-  if (active.actor.role !== "teacher") {
+  return {
+    signInAs: async (email, membershipId) => {
+      const signedIn = await identity.service.signIn({
+        email,
+        password: syntheticPasswordForTests,
+        sourceAddress,
+      });
+      const active =
+        signedIn.status === "active"
+          ? signedIn
+          : await identity.service.selectMembership({
+              pendingCredential: signedIn.pendingCredential,
+              membershipId,
+              sourceAddress,
+            });
+      return active.actor;
+    },
+  };
+};
+
+export const signInSyntheticActor = async (
+  config: ServerConfig,
+  email: string,
+  membershipId: string
+): Promise<Actor> => {
+  const session = await createSyntheticSession(config);
+  return session.signInAs(email, membershipId);
+};
+
+export const signInGateTeacher = async (
+  config: ServerConfig,
+  membershipId: string
+): Promise<TeacherActor> => {
+  const actor = await signInSyntheticActor(
+    config,
+    gateTeacher.email,
+    membershipId
+  );
+  if (actor.role !== "teacher") {
     throw new Error("The synthetic teacher did not resolve as a teacher.");
   }
-  return active.actor;
+  return actor;
+};
+
+export const signInSyntheticLearner = async (
+  config: ServerConfig,
+  email: string,
+  membershipId: string
+): Promise<LearnerActor> => {
+  const actor = await signInSyntheticActor(config, email, membershipId);
+  if (actor.role !== "student") {
+    throw new Error(`${email} did not resolve as a learner.`);
+  }
+  return actor;
 };
 
 export const createSeedServices = (config: ServerConfig) => {

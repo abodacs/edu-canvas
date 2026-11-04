@@ -10,6 +10,8 @@ The current release covers Grade 4 equivalent fractions (Common Core `4.NF.A.1`)
 
 ![Scholé landing page showing the hero, a sample equivalent-fractions activity, and the target preparation-time metric](docs/assets/readme-hero.png)
 
+![Scholé lesson-results dashboard showing learners grouped by who needs attention and the stored next step for each run](docs/assets/readme-dashboard.png)
+
 ## Run Scholé locally
 
 You need Node.js 26 or newer, pnpm 10.17.1, Docker, and a Meta API key.
@@ -26,7 +28,7 @@ pnpm db:setup
 pnpm dev
 ```
 
-Open `http://localhost:3000`. In development, sign in as the synthetic teacher `amira.north@example.test` with the password `synthetic-pass-1`.
+Open `http://localhost:3000`. In development, sign in as the teacher `amira.north@example.test` with the password `synthetic-pass-1`.
 
 The app needs PostgreSQL and a server-side provider key. It has no in-memory fallback. The [foundation runbook](docs/foundation-runbook.md) covers configuration, readiness checks, and safe redeploys.
 

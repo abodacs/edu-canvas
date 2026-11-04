@@ -139,7 +139,7 @@ export const NeedsYouPanel = ({
           return (
             <li key={run.runId}>
               <div>
-                <b>Learner {run.learnerId}</b>
+                <b>{run.learnerDisplayName}</b>
                 <span>{run.decision?.reason ?? ""}</span>
               </div>
               <Button
@@ -195,13 +195,16 @@ export const ProgressTable = ({
               return (
                 <tr key={run.runId}>
                   <td className="progress-learner" data-label="Learner">
-                    Learner {run.learnerId}
+                    {run.learnerDisplayName}
                   </td>
                   <td data-label="Status">
                     <Badge tone={status.tone}>{status.label}</Badge>
                     {first ? (
                       <span className="progress-meta">
                         First response: {first.correctness}
+                        {assistedCopy(first) === "with help"
+                          ? " (with help)"
+                          : ""}
                       </span>
                     ) : null}
                   </td>
@@ -267,7 +270,7 @@ export const RunDetail = ({ run }: { readonly run: ProgressRun }) => {
       aria-labelledby="progress-detail-h"
     >
       <h2 id="progress-detail-h" className="progress-section-h">
-        Results for learner {run.learnerId}
+        Results for {run.learnerDisplayName}
       </h2>
       <ProvisionalNotice />
 

@@ -58,6 +58,7 @@ export const progressRunSchema = z.strictObject({
   runId: identifierSchema,
   assignmentId: identifierSchema,
   learnerId: identifierSchema,
+  learnerDisplayName: z.string().trim().min(1).max(80),
   publicationId: identifierSchema,
   assignedVariantId: identifierSchema,
   stage: z.enum(runStageValues),
