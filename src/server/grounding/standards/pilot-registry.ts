@@ -5,12 +5,13 @@ The versioned pilot registry (#218). A standard is data, never a code branch:
 adding a supported `{jurisdiction, statementCode}` row is an entry here, and the
 resolution pipeline reads the same fields for every row.
 
-The eight pilot rows are Multi-State and California crossed with 4.NF.A.1,
-4.NF.A.2, 3.NF.A.3 and 4.OA.A.3. Boundary entries pin the recorded absence,
+The four pilot rows are Multi-State 4.NF.A.1, 4.NF.A.2, 3.NF.A.3 and 4.OA.A.3.
+California is out of scope (product decision 2026-11-04); the adapter keeps its
+exact-crosswalk path, so a California row is data only if that changes. Boundary entries pin the recorded absence,
 envelope and non-math progression cases.
 */
 
-export const PILOT_REGISTRY_VERSION = "pilot-registry-v1";
+export const PILOT_REGISTRY_VERSION = "pilot-registry-v2";
 
 export type RegistryEntryKind = "pilot" | "boundary";
 
@@ -79,11 +80,6 @@ export const PILOT_STANDARD_REGISTRY: PilotStandardRegistry = {
       grades: [3, 4],
     },
     {
-      jurisdiction: "California",
-      subject: "Mathematics",
-      grades: [3, 4],
-    },
-    {
       jurisdiction: "Multi-State",
       subject: "English Language Arts",
       grades: [5],
@@ -94,10 +90,6 @@ export const PILOT_STANDARD_REGISTRY: PilotStandardRegistry = {
     pilotRow("Multi-State", "4.NF.A.2", 4, "ccss-math", "direct"),
     pilotRow("Multi-State", "3.NF.A.3", 3, "ccss-math", "direct"),
     pilotRow("Multi-State", "4.OA.A.3", 4, "ccss-math", "direct"),
-    pilotRow("California", "4.NF.A.1", 4, "ca-ccss-math", "crosswalk"),
-    pilotRow("California", "4.NF.A.2", 4, "ca-ccss-math", "crosswalk"),
-    pilotRow("California", "3.NF.A.3", 3, "ca-ccss-math", "crosswalk"),
-    pilotRow("California", "4.OA.A.3", 4, "ca-ccss-math", "crosswalk"),
     {
       id: "multi-state-RI.5.2",
       kind: "boundary",

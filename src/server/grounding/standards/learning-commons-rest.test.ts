@@ -430,7 +430,35 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
       },
     };
 
-    const resolution = await createAdapter(transport).resolve({
+    // California is out of the shipped registry; this registry keeps one
+    // California row so the exact-crosswalk path stays tested as data.
+    const [multiStateRow] = pilotEntries;
+    if (!multiStateRow) {
+      throw new Error("The pilot registry must keep a Multi-State row.");
+    }
+    const crosswalkRegistry = {
+      ...PILOT_STANDARD_REGISTRY,
+      envelopes: [
+        ...PILOT_STANDARD_REGISTRY.envelopes,
+        { jurisdiction: "California", subject: "Mathematics", grades: [3, 4] },
+      ],
+      entries: [
+        ...PILOT_STANDARD_REGISTRY.entries,
+        {
+          ...multiStateRow,
+          id: "california-4.NF.A.1",
+          jurisdiction: "California",
+          statementCode: "4.NF.A.1",
+          frameworkId: "ca-ccss-math",
+          prerequisiteResolution: "crosswalk" as const,
+        },
+      ],
+    };
+    const resolution = await createLearningCommonsAdapter({
+      transport,
+      registry: crosswalkRegistry,
+      now: () => NOW,
+    }).resolve({
       jurisdiction: "California",
       statementCode: "4.NF.A.1",
     });
