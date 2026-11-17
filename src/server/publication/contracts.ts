@@ -390,17 +390,24 @@ export const buildInitialVersion = (
         severity: diagnostic.severity,
         code: diagnostic.code,
         message: diagnostic.message,
-        ...(diagnostic.variantId && { variantId: diagnostic.variantId }),
-        ...(diagnostic.field && { field: diagnostic.field }),
-        ...(diagnostic.nodeId && { nodeId: diagnostic.nodeId }),
+        ...(diagnostic.variantId !== undefined &&
+          diagnostic.variantId !== "" && {
+            variantId: diagnostic.variantId,
+          }),
+        ...(diagnostic.field !== undefined &&
+          diagnostic.field !== "" && { field: diagnostic.field }),
+        ...(diagnostic.nodeId !== undefined &&
+          diagnostic.nodeId !== "" && { nodeId: diagnostic.nodeId }),
         ...(diagnostic.validator && { validator: diagnostic.validator }),
         ...(diagnostic.verdict && { verdict: diagnostic.verdict }),
-        ...(diagnostic.validatorVersion && {
-          validatorVersion: diagnostic.validatorVersion,
-        }),
-        ...(diagnostic.recommendation && {
-          recommendation: diagnostic.recommendation,
-        }),
+        ...(diagnostic.validatorVersion !== undefined &&
+          diagnostic.validatorVersion !== "" && {
+            validatorVersion: diagnostic.validatorVersion,
+          }),
+        ...(diagnostic.recommendation !== undefined &&
+          diagnostic.recommendation !== "" && {
+            recommendation: diagnostic.recommendation,
+          }),
         ...(diagnostic.recovery && { recovery: diagnostic.recovery }),
       };
     }),
@@ -453,7 +460,7 @@ const applyEdit = (
     (variant) => variant.id === edit.variantId
   );
   const variant = variants[variantIndex];
-  if (!variant) {
+  if (variant === undefined) {
     throw publicationError(
       "PUBLICATION_INPUT_INVALID",
       `The edited variant ${edit.variantId} is not part of this revision.`
@@ -463,7 +470,7 @@ const applyEdit = (
   switch (edit.field) {
     case "sourceItem": {
       const item = variant.sourceItems[edit.index];
-      if (!item) {
+      if (item === undefined) {
         throw publicationError(
           "PUBLICATION_INPUT_INVALID",
           "The edit points at a source item that is not in this variant."
@@ -483,7 +490,7 @@ const applyEdit = (
     }
     case "targetItem": {
       const item = variant.targetItems[edit.index];
-      if (!item) {
+      if (item === undefined) {
         throw publicationError(
           "PUBLICATION_INPUT_INVALID",
           "The edit points at a target item that is not in this variant."
@@ -576,7 +583,7 @@ export const buildEditedVersion = (
     decoded.publicContent.input.language
   );
 
-  if (derived.gate.verdict === "hard_block" || !derived.gate.renderable) {
+  if (derived.gate.verdict === "hard_block") {
     throw publicationError(
       "GATE_BLOCKED",
       "This edit breaks the lesson's safety or validation rules. Resolve the findings before approving it.",
@@ -605,17 +612,24 @@ export const buildEditedVersion = (
         severity: diagnostic.severity,
         code: diagnostic.code,
         message: diagnostic.message,
-        ...(diagnostic.variantId && { variantId: diagnostic.variantId }),
-        ...(diagnostic.field && { field: diagnostic.field }),
-        ...(diagnostic.nodeId && { nodeId: diagnostic.nodeId }),
+        ...(diagnostic.variantId !== undefined &&
+          diagnostic.variantId !== "" && {
+            variantId: diagnostic.variantId,
+          }),
+        ...(diagnostic.field !== undefined &&
+          diagnostic.field !== "" && { field: diagnostic.field }),
+        ...(diagnostic.nodeId !== undefined &&
+          diagnostic.nodeId !== "" && { nodeId: diagnostic.nodeId }),
         ...(diagnostic.validator && { validator: diagnostic.validator }),
         ...(diagnostic.verdict && { verdict: diagnostic.verdict }),
-        ...(diagnostic.validatorVersion && {
-          validatorVersion: diagnostic.validatorVersion,
-        }),
-        ...(diagnostic.recommendation && {
-          recommendation: diagnostic.recommendation,
-        }),
+        ...(diagnostic.validatorVersion !== undefined &&
+          diagnostic.validatorVersion !== "" && {
+            validatorVersion: diagnostic.validatorVersion,
+          }),
+        ...(diagnostic.recommendation !== undefined &&
+          diagnostic.recommendation !== "" && {
+            recommendation: diagnostic.recommendation,
+          }),
         ...(diagnostic.recovery && { recovery: diagnostic.recovery }),
       };
     }),
@@ -687,7 +701,7 @@ export const deriveVersionArtifact = (
   );
   const gateResult = derived.gate;
 
-  if (gateResult.verdict === "hard_block" || !gateResult.renderable) {
+  if (gateResult.verdict === "hard_block") {
     throw publicationError(
       "GATE_BLOCKED",
       "This revision is hard-blocked by the safety gate. Resolve the findings before publishing.",

@@ -9,7 +9,7 @@ export const isRunDatabaseTests =
 
 export const requireDatabaseUrl = (): string => {
   const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) {
+  if (databaseUrl === undefined || databaseUrl === "") {
     throw new Error("DATABASE_URL must be set for database contract tests.");
   }
   return databaseUrl;

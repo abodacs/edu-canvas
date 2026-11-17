@@ -177,12 +177,16 @@ const parseRecommendations = (
       code: "AGENT_RECOMMENDATION",
       field: recommendation.field,
       reason: recommendation.reason,
-      ...(recommendation.variantId && {
-        variantId: recommendation.variantId,
-      }),
-      ...(recommendation.recommendation && {
-        recommendation: recommendation.recommendation,
-      }),
+      ...(recommendation.variantId !== undefined &&
+        recommendation.variantId !== null &&
+        recommendation.variantId !== "" && {
+          variantId: recommendation.variantId,
+        }),
+      ...(recommendation.recommendation !== undefined &&
+        recommendation.recommendation !== null &&
+        recommendation.recommendation !== "" && {
+          recommendation: recommendation.recommendation,
+        }),
     };
   });
 };

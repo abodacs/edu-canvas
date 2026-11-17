@@ -99,8 +99,9 @@ for (const { contents, label } of glossarySources) {
 
   for (const line of contents.split("\n")) {
     const heading = termHeading.exec(line);
-    if (heading?.groups?.term) {
-      currentTerm = heading.groups.term.trim();
+    const headingTerm = heading?.groups?.term;
+    if (headingTerm !== undefined && headingTerm !== "") {
+      currentTerm = headingTerm.trim();
     }
 
     if (!implementingLine.test(line)) {
@@ -113,7 +114,7 @@ for (const { contents, label } of glossarySources) {
       .filter((name): name is string => Boolean(name))
       .toArray();
 
-    if (!currentTerm) {
+    if (currentTerm === undefined || currentTerm === "") {
       issues.push(
         `${label} lists implementing names before any ### term heading.`
       );
@@ -123,7 +124,7 @@ for (const { contents, label } of glossarySources) {
     for (const name of names) {
       declaredNames.push({ name, term, file: label });
       const owner = claimedBy.get(name);
-      if (owner) {
+      if (owner !== undefined && owner !== "") {
         issues.push(
           `\`${name}\` is claimed by both "${owner}" and "${term}"; one work object, one term.`
         );

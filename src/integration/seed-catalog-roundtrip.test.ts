@@ -36,10 +36,10 @@ import type { LessonGenerationInput } from "@/shared/generation-contract";
 
 const databaseUrl = process.env.DATABASE_URL;
 const isEnabled = process.env.RUN_DATABASE_TESTS === "true";
-const isRun = Boolean(databaseUrl && isEnabled);
+const isRun = Boolean(databaseUrl) && isEnabled;
 
 const requireUrl = (): string => {
-  if (!databaseUrl) {
+  if (databaseUrl === undefined || databaseUrl === "") {
     throw new Error("DATABASE_URL is required for the seed round-trip test.");
   }
   return databaseUrl;

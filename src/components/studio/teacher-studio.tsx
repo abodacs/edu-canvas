@@ -73,6 +73,10 @@ const DEFAULT_STANDARD_ID = "standard_ccss_4_nf_a_01";
 const topicFor = (standardId: string): string =>
   displayStandardTopic(standardId) ?? "New lesson";
 
+/** The falsy check for a nullable request id, stated for the lint rule. */
+const hasText = (value: string | null | undefined): value is string =>
+  value !== undefined && value !== null && value !== "";
+
 const GENERATE_ENDPOINT = "/api/lessons/generate";
 
 const PROMPT_MAX_LENGTH = 500;
@@ -458,7 +462,7 @@ const VariantCard = ({
             }
             event.preventDefault();
             const next = moveChosenVariant(event);
-            if (next) {
+            if (hasText(next)) {
               onChoose(next);
             }
           }}
@@ -526,7 +530,7 @@ const VariantChooser = ({
           })}
         </div>
       </fieldset>
-      {chosenVariantId ? (
+      {hasText(chosenVariantId) ? (
         <div className="variant-picker__action">
           <Button
             type="button"
@@ -885,14 +889,14 @@ const ComposerStatus = ({
 
   return (
     <div className="composer-status" tabIndex={-1} ref={statusRef}>
-      {busyMessage ? (
+      {hasText(busyMessage) ? (
         <Notice tone="info">
           <p className="status-pulse">
             <span aria-hidden="true" /> {busyMessage}
           </p>
         </Notice>
       ) : null}
-      {requestError ? (
+      {hasText(requestError) ? (
         <Notice tone="stop">
           <p>{requestError}</p>
           <p className="generation-error__hint">
@@ -1163,7 +1167,7 @@ const TeacherLessonComposer = ({
   // moderation panel owns focus for its own path.
   const statusReference = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (requestError && !hasModerationFailure) {
+    if (hasText(requestError) && !hasModerationFailure) {
       statusReference.current?.focus();
     }
   }, [hasModerationFailure, requestError]);
@@ -1241,10 +1245,10 @@ const TeacherLessonComposer = ({
     revisionTargetReference.current = null;
 
     // Browser crypto has no UUIDv7, and this key needs uniqueness only.
-    const idempotencyKey = retryOfRequestId
+    const idempotencyKey = hasText(retryOfRequestId)
       ? crypto.randomUUID()
       : requestKeyReference.current || crypto.randomUUID();
-    if (!retryOfRequestId) {
+    if (!hasText(retryOfRequestId)) {
       requestKeyReference.current = idempotencyKey;
     }
 
@@ -1255,8 +1259,8 @@ const TeacherLessonComposer = ({
       language: context.language,
       difficulty: context.difficulty,
       idempotencyKey,
-      ...(retryOfRequestId && { retryOfRequestId }),
-      ...(revisesRequestId && { revisesRequestId }),
+      ...(hasText(retryOfRequestId) && { retryOfRequestId }),
+      ...(hasText(revisesRequestId) && { revisesRequestId }),
       ...(boundSource && { sourceSnapshotId: boundSource.id }),
     };
 
@@ -1361,7 +1365,7 @@ const TeacherLessonComposer = ({
         />
       )}
 
-      {pendingDraftId ? (
+      {hasText(pendingDraftId) ? (
         <StoredDraftPending
           requestId={pendingDraftId}
           onCheckAgain={handleCheckDraftAgain}
@@ -1386,7 +1390,7 @@ const TeacherLessonComposer = ({
           void submitGeneration(undefined, requestId);
         }}
         onRevise={(requestId) => {
-          if (requestId) {
+          if (hasText(requestId)) {
             revisionTargetReference.current = requestId;
           }
           openComposer();
@@ -1410,7 +1414,7 @@ export const TeacherStudio = ({
   onCloseReview,
   onUnauthorized,
 }: TeacherStudioProperties) => {
-  if (reviewRequestId) {
+  if (hasText(reviewRequestId)) {
     return (
       <ReviewStudio
         requestId={reviewRequestId}

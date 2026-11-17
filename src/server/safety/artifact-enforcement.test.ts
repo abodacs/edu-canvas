@@ -373,7 +373,12 @@ describe("stored artifact gate", () => {
     const { record } = await generateFixture(passingReport);
     const corrupted = structuredClone(record);
     const [firstVariant, secondVariant] = corrupted.draft?.variants ?? [];
-    if (!firstVariant || !secondVariant || !corrupted.draft) {
+    if (
+      firstVariant === undefined ||
+      secondVariant === undefined ||
+      corrupted.draft === undefined ||
+      corrupted.draft === null
+    ) {
       throw new Error("The fixture must carry two variants.");
     }
     secondVariant.id = firstVariant.id;

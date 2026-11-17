@@ -58,6 +58,14 @@ const characterLimitLabel = SOURCE_MAX_EXTRACTED_CHARS.toLocaleString("en");
 
 const charLimitMessage = `Corrected text is limited to ${characterLimitLabel} characters. Shorten the text; nothing was truncated.`;
 
+/** The falsy check for a nullable snapshot field, stated for the lint rule. */
+const hasText = (value: string | null | undefined): value is string =>
+  value !== undefined && value !== null && value !== "";
+
+/** The falsy check for a nullable page count, stated for the lint rule. */
+const hasPageCount = (value: number | null): value is number =>
+  value !== null && value !== 0;
+
 const formatBytes = (bytes: number): string => {
   return bytes < MEGABYTE
     ? `${Math.max(1, Math.round(bytes / KILOBYTE))} KB`
@@ -420,7 +428,7 @@ const SourceEmptyState = ({
         />
         <span>This material is synthetic. No real student data.</span>
       </label>
-      {confirmError ? (
+      {hasText(confirmError) ? (
         <p className="source-alert source-alert--error" role="alert">
           <FileWarning aria-hidden="true" />
           <span>{confirmError}</span>
@@ -480,7 +488,7 @@ const ReviewBlock = ({
               The source covers the required skills for this standard.
             </span>
           </label>
-          {skillsError ? (
+          {hasText(skillsError) ? (
             <p className="source-alert source-alert--error" role="alert">
               <FileWarning aria-hidden="true" />
               <span>{skillsError}</span>
@@ -508,12 +516,12 @@ const RepairForm = ({
   readonly onSubmit: (event: SyntheticEvent<HTMLFormElement>) => void;
   readonly onCancel: () => void;
 }) => {
+  // Code-point count, not UTF-16 units: [...str] and Array.from both do
+  // this, but unicorn/prefer-spread (error) and no-misused-spread (warn)
+  // each reject one of the two forms; the warn-level spread stays.
   const draftLength =
     state.repairDraft === null
       ? 0
-      // Code-point count, not UTF-16 units: [...str] and Array.from both do
-      // this, but unicorn/prefer-spread (error) and no-misused-spread (warn)
-      // each reject one of the two forms; the warn-level spread stays.
       : [...state.repairDraft].length.toLocaleString("en");
 
   return (
@@ -528,7 +536,7 @@ const RepairForm = ({
         value={state.repairDraft ?? ""}
         aria-invalid={state.repairError !== null}
         aria-describedby={
-          state.repairError ? "corrected-source-text-error" : undefined
+          hasText(state.repairError) ? "corrected-source-text-error" : undefined
         }
         onChange={(event) => {
           onChange(event.target.value);
@@ -544,7 +552,7 @@ const RepairForm = ({
       <span className="source-panel__counter">
         {draftLength}/{characterLimitLabel}
       </span>
-      {state.repairError ? (
+      {hasText(state.repairError) ? (
         <p
           id="corrected-source-text-error"
           className="source-alert source-alert--error"
@@ -617,7 +625,9 @@ const SnapshotResult = ({
       <p className="source-panel__meta">
         <span>{snapshot.fileFormat.toUpperCase()}</span>
         <span>{formatBytes(snapshot.fileSizeBytes)}</span>
-        {snapshot.pageCount ? <span>{snapshot.pageCount} pages</span> : null}
+        {hasPageCount(snapshot.pageCount) ? (
+          <span>{snapshot.pageCount} pages</span>
+        ) : null}
         <span
           className={cn(
             "source-state-chip",
@@ -625,11 +635,11 @@ const SnapshotResult = ({
           )}
         >
           {snapshot.state}
-          {snapshot.reviewedAt ? ", reviewed" : ""}
+          {hasText(snapshot.reviewedAt) ? ", reviewed" : ""}
         </span>
       </p>
 
-      {snapshot.state === "failed" && snapshot.failureMessage ? (
+      {snapshot.state === "failed" && hasText(snapshot.failureMessage) ? (
         <GapAlert code="parser-fault" message={snapshot.failureMessage} />
       ) : null}
 
@@ -639,7 +649,7 @@ const SnapshotResult = ({
             const isInformational =
               gap.code === "unverified-external-alignment";
             const canDismiss =
-              isInformational && !snapshot.alignmentAcknowledgedAt;
+              isInformational && !hasText(snapshot.alignmentAcknowledgedAt);
             return (
               <GapAlert
                 key={gap.code}
@@ -651,7 +661,7 @@ const SnapshotResult = ({
             );
           })}
 
-      {snapshot.state === "complete" && !snapshot.reviewedAt ? (
+      {snapshot.state === "complete" && !hasText(snapshot.reviewedAt) ? (
         <ReviewBlock
           snapshot={snapshot}
           reviewOpen={state.reviewOpen}
@@ -684,7 +694,7 @@ const SnapshotResult = ({
         />
       ) : null}
 
-      {snapshot.state === "complete" && snapshot.reviewedAt ? (
+      {snapshot.state === "complete" && hasText(snapshot.reviewedAt) ? (
         <p className="source-panel__bound-note">
           <Check aria-hidden="true" /> Reviewed. Your next draft uses this
           source.
@@ -831,7 +841,7 @@ const submitSourceCorrection = async (
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
       correctedText: value,
-      ...(replacesSnapshotId && { replacesSnapshotId }),
+      ...(hasText(replacesSnapshotId) && { replacesSnapshotId }),
     }),
   });
   if (!response) {
@@ -917,14 +927,14 @@ const SourcePanelHeader = ({
         </p>
       </div>
 
-      {state.error ? (
+      {hasText(state.error) ? (
         <p className="source-alert source-alert--error" role="alert">
           <FileWarning aria-hidden="true" />
           <span>{state.error}</span>
         </p>
       ) : null}
 
-      {state.extractingName ? (
+      {hasText(state.extractingName) ? (
         <ExtractionProgress
           fileName={state.extractingName}
           onCancel={onCancelExtraction}
@@ -992,11 +1002,11 @@ export const SourcePanel = ({
       }
       const payload = await readResponseJson(response);
       const [latest] = readSnapshotList(payload);
-      if (!latest) {
+      if (latest === undefined) {
         return;
       }
       dispatch({ type: "restored", snapshot: latest });
-      if (latest.state === "complete" && latest.reviewedAt) {
+      if (latest.state === "complete" && hasText(latest.reviewedAt)) {
         onBoundSnapshotChange({ id: latest.id, fileName: latest.fileName });
       }
     };

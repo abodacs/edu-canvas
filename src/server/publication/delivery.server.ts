@@ -52,7 +52,8 @@ export const mapPublicationError = (error: unknown): Response => {
         code: error.code,
         message: error.message,
         ...(error.findings.length > 0 && { findings: error.findings }),
-        ...(error.detail && { detail: error.detail }),
+        ...(error.detail !== undefined &&
+          error.detail !== "" && { detail: error.detail }),
       },
       error.status
     );

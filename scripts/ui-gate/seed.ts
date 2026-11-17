@@ -73,7 +73,8 @@ const generateDraft = async (plan: DraftPlan): Promise<string> => {
       language: "en",
       difficulty: "on-level",
       idempotencyKey: `ui-gate-${plan.key}`,
-      ...(snapshotId && { sourceSnapshotId: snapshotId }),
+      ...(snapshotId !== undefined &&
+        snapshotId !== "" && { sourceSnapshotId: snapshotId }),
     },
   });
   const { requestId, state } = generated.record;
@@ -82,7 +83,7 @@ const generateDraft = async (plan: DraftPlan): Promise<string> => {
       `The ${plan.key} fixture ended in ${state}, not ${plan.expected}.`
     );
   }
-  if (plan.approve && snapshotId) {
+  if (plan.approve && snapshotId !== undefined && snapshotId !== "") {
     await restoreSourceLink(databaseUrl, requestId, snapshotId);
     // Approve and stop: the gate's own clicks continue to the confirmation
     // and, for the published view, publish.

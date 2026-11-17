@@ -158,7 +158,10 @@ export const VariantEditor = ({
           Grade {review.draft.grade} · {review.draft.standardId} ·{" "}
           {variantKindLabels[variant.kind]} · {variant.sourceItems.length}{" "}
           matching pieces · revision {review.version.revision}
-          {review.provenance.editedAt ? " · edited" : ""}
+          {review.provenance.editedAt !== null &&
+          review.provenance.editedAt !== ""
+            ? " · edited"
+            : ""}
         </p>
         <p>{variant.instructions}</p>
       </header>

@@ -189,7 +189,7 @@ const readGenerationByQuery = async (
         select set_config('app.tenant_id', ${tenantId}, true)
       `;
 
-        const rows = lookup.byRequestId
+        const rows = lookup.byRequestId === true
           ? await transaction<GenerationRequestRow[]>`
             select *
             from lesson_draft_requests

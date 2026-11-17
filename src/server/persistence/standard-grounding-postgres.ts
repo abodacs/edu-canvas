@@ -248,7 +248,9 @@ export const createPostgresStandardGroundingPersistence = (
             where tenant_id = ${tenantId} and id = ${groundingId}
           `;
           const [row] = rows;
-          return row ? hydrateStandardGroundingRow(row) : undefined;
+          return row === undefined
+            ? undefined
+            : hydrateStandardGroundingRow(row);
         });
       });
     },
@@ -262,7 +264,9 @@ export const createPostgresStandardGroundingPersistence = (
             where tenant_id = ${tenantId} and request_key = ${requestKey}
           `;
           const [row] = rows;
-          return row ? hydrateStandardGroundingRow(row) : undefined;
+          return row === undefined
+            ? undefined
+            : hydrateStandardGroundingRow(row);
         });
       });
     },

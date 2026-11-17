@@ -4,7 +4,8 @@ import { describe, expect, it } from "vitest";
 
 const databaseUrl = process.env.DATABASE_URL;
 const isEnabled = process.env.RUN_DATABASE_TESTS === "true";
-const isRun = Boolean(databaseUrl && isEnabled);
+const isRun =
+  databaseUrl !== undefined && databaseUrl !== "" && isEnabled;
 
 const runProbe = (
   probeArguments: readonly string[]

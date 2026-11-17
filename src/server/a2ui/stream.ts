@@ -46,7 +46,7 @@ export const createPreviewSSEStream = (
 
   return new ReadableStream({
     start(controller) {
-      if (signal?.aborted) {
+      if (signal?.aborted === true) {
         controller.close();
         return;
       }

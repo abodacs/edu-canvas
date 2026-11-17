@@ -79,6 +79,9 @@ export interface PublicationService {
   ) => Promise<CompiledLessonPreview>;
 }
 
+const hasText = (value: string | null | undefined): value is string =>
+  value !== undefined && value !== null && value !== "";
+
 const approvalSchemaVersion = "pack-approval-v1";
 const publicationSchemaVersion = "pack-publication-v1";
 const assignmentSchemaVersion = "pack-assignment-v1";
@@ -734,7 +737,7 @@ export const createPublicationService = (
     // and the pack stays publish-only.
     let learnerAssignmentId: string | null = null;
     const learnerVariantId = decoded.publicContent.variants[0]?.id ?? null;
-    if (records && decoded.provenance.sourceSnapshotId) {
+    if (records && hasText(decoded.provenance.sourceSnapshotId)) {
       const bridged = await bridgePublishedPack(records, actor, {
         packVersionId: version.id,
         requestId: version.requestId,
@@ -758,7 +761,7 @@ export const createPublicationService = (
     const receiptIds = [
       publicationId,
       assignmentId,
-      ...(learnerAssignmentId && learnerVariantId
+      ...(hasText(learnerAssignmentId) && hasText(learnerVariantId)
         ? [learnerAssignmentId, learnerVariantId]
         : []),
     ];

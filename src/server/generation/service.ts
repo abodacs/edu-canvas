@@ -145,6 +145,9 @@ class GenerationAbortError extends Error {
   }
 }
 
+const isBlankString = (value: string | undefined): value is "" | undefined =>
+  value === undefined || value === "";
+
 const packForStandard = (standard: string, tenantId?: string) => {
   if (tenantId !== undefined) {
     return standardsPackRegistry.resolve({ tenantId, standard });
@@ -217,7 +220,7 @@ export const normalizeGenerationInput = (
     standardId,
     language: input.language,
     difficulty,
-    ...(input.sourceSnapshotId && {
+    ...(!isBlankString(input.sourceSnapshotId) && {
       sourceSnapshotId: input.sourceSnapshotId,
     }),
   };
@@ -231,8 +234,8 @@ export const normalizeGenerationInput = (
         revisesRequestId,
       }),
     requestHash: createGenerationRequestHash(normalized),
-    ...(retryOfRequestId && { retryOfRequestId }),
-    ...(revisesRequestId && { revisesRequestId }),
+    ...(!isBlankString(retryOfRequestId) && { retryOfRequestId }),
+    ...(!isBlankString(revisesRequestId) && { revisesRequestId }),
   };
 };
 
@@ -396,7 +399,7 @@ const buildProviderContext = (
       },
     }),
     ...(reference &&
-      curriculum && {
+      curriculum !== undefined && {
         referenceContext: {
           id: reference.id,
           version: reference.version,
@@ -512,11 +515,6 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         },
     attemptDiagnostics = outcome.diagnostics
   ): Promise<GenerationServiceResult> => {
-    if (outcome.state === READY_FOR_REVIEW_STATE && !outcome.gate) {
-      throw new Error(
-        "A ready-for-review generation record requires an artifact gate snapshot."
-      );
-    }
     const draft = "draft" in outcome ? outcome.draft : null;
     // The draft carries the enriched provenance (pack version and allowed
     // screen patterns) acceptance wrote; the record and attempt must expose
@@ -614,7 +612,9 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         requestId: baseRecord.requestId,
         provenance,
         structuralDiagnostics,
-        ...(expectedGraphVersion && { graphVersion: expectedGraphVersion }),
+        ...(!isBlankString(expectedGraphVersion) && {
+          graphVersion: expectedGraphVersion,
+        }),
       },
       options
     );
@@ -824,12 +824,12 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         difficulty: input.difficulty,
         // #148: the link is written with the new request, never with the
         // blocked one, so the blocked row stays byte-for-byte unchanged.
-        ...(input.revisesRequestId && {
+        ...(!isBlankString(input.revisesRequestId) && {
           revisesRequestId: input.revisesRequestId,
         }),
         // The publish bridge proves source grounding from the stored input,
         // so the citation survives the rebuild (delegation pack case s0-smoke).
-        ...(input.sourceSnapshotId && {
+        ...(!isBlankString(input.sourceSnapshotId) && {
           sourceSnapshotId: input.sourceSnapshotId,
         }),
       },
@@ -1038,7 +1038,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     actor: GenerationCommand["actor"],
     sourceSnapshotId: string | undefined
   ): Promise<void> => {
-    if (!sourceSnapshotId || !options.sourceGate) {
+    if (isBlankString(sourceSnapshotId) || !options.sourceGate) {
       return;
     }
     const resolution = await options.sourceGate.resolveForGeneration(
@@ -1059,7 +1059,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     const { sourceGate } = options;
     if (
       !sourceGate ||
-      !input.sourceSnapshotId ||
+      isBlankString(input.sourceSnapshotId) ||
       result.record.state !== READY_FOR_REVIEW_STATE
     ) {
       return;
@@ -1115,10 +1115,10 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     actor: GenerationCommand["actor"],
     input: NormalizedCommandInput
   ): Promise<void> => {
-    if (!input.revisesRequestId) {
+    if (isBlankString(input.revisesRequestId)) {
       return;
     }
-    if (input.retryOfRequestId) {
+    if (!isBlankString(input.retryOfRequestId)) {
       throw new GenerationRequestError(GENERATION_INPUT_INVALID_MESSAGE, {
         code: "GENERATION_INPUT_INVALID",
       });
@@ -1184,7 +1184,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
 
       await assertRevisionReferent(command.actor, input);
 
-      if (input.retryOfRequestId) {
+      if (!isBlankString(input.retryOfRequestId)) {
         const retryRecord = await options.persistence.readGeneration(
           command.actor.tenantId,
           input.retryOfRequestId
@@ -1198,7 +1198,10 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         // reviewed source, so its metadata and hash stay comparable.
         let effectiveInput: NormalizedCommandInput = input;
         const inheritedSource = retryRecord.input.sourceSnapshotId;
-        if (inheritedSource && !input.sourceSnapshotId) {
+        if (
+          !isBlankString(inheritedSource) &&
+          isBlankString(input.sourceSnapshotId)
+        ) {
           effectiveInput = {
             ...input,
             sourceSnapshotId: inheritedSource,
@@ -1239,10 +1242,10 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
           standardId: input.standardId,
           language: input.language,
           difficulty: input.difficulty,
-          ...(input.sourceSnapshotId && {
+          ...(!isBlankString(input.sourceSnapshotId) && {
             sourceSnapshotId: input.sourceSnapshotId,
           }),
-          ...(input.revisesRequestId && {
+          ...(!isBlankString(input.revisesRequestId) && {
             revisesRequestId: input.revisesRequestId,
           }),
         },

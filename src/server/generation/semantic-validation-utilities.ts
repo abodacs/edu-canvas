@@ -144,7 +144,8 @@ export const createReview = (
     validatorVersion,
     verdict,
     field: firstFinding?.field ?? "draft",
-    ...(firstFinding?.nodeId && { nodeId: firstFinding.nodeId }),
+    ...(firstFinding?.nodeId !== undefined &&
+      firstFinding?.nodeId !== "" && { nodeId: firstFinding.nodeId }),
     reason: reviewReason(validator, verdict),
     findings: reviewFindings,
   };
@@ -187,7 +188,9 @@ const isUnsafeIdentifier = (value: string): boolean => {
 export const safeIdentifier = (
   value: string | undefined
 ): string | undefined =>
-  value && !isUnsafeIdentifier(value) ? value : undefined;
+  value !== undefined && value !== "" && !isUnsafeIdentifier(value)
+    ? value
+    : undefined;
 
 /**
 The advisory recommendation fields after sanitization. It carries no verdict:
@@ -210,13 +213,14 @@ export const sanitizedRecommendation = (
   return {
     code: "AGENT_RECOMMENDATION",
     field: safeAgentText(recommendation.field ?? "draft", "draft"),
-    ...(variantId && { variantId }),
-    ...(nodeId && { nodeId }),
+    ...(variantId !== undefined && { variantId }),
+    ...(nodeId !== undefined && { nodeId }),
     reason: safeAgentText(
       recommendation.reason,
       "A validator recommendation needs teacher review."
     ),
-    ...(recommendation.recommendation && {
+    ...(recommendation.recommendation !== undefined &&
+      recommendation.recommendation !== "" && {
       recommendation: safeAgentText(
         recommendation.recommendation,
         "Review this recommendation before continuing."

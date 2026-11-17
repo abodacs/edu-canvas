@@ -202,7 +202,10 @@ const membershipFromRow = (row: MembershipRow): MembershipRecord => {
     role: parseRole(row.role),
     status: parseStatus(row.status),
     revision: row.revision,
-    ...(row.learner_id && { learnerId: parseLearnerId(row.learner_id) }),
+    ...(row.learner_id !== null &&
+      row.learner_id !== "" && {
+        learnerId: parseLearnerId(row.learner_id),
+      }),
   };
 };
 
@@ -224,12 +227,14 @@ const sessionFromRow = (row: SessionRow): IdentitySessionRecord => {
       row.absolute_expires_at,
       "session absolute_expires_at"
     ),
-    ...(row.provider_credentials_ciphertext && {
-      providerCredentialsCiphertext: row.provider_credentials_ciphertext,
-    }),
-    ...(row.revoked_at && {
-      revokedAt: timestamp(row.revoked_at, "session revoked_at"),
-    }),
+    ...(row.provider_credentials_ciphertext !== null &&
+      row.provider_credentials_ciphertext !== "" && {
+        providerCredentialsCiphertext: row.provider_credentials_ciphertext,
+      }),
+    ...(row.revoked_at !== null &&
+      row.revoked_at !== "" && {
+        revokedAt: timestamp(row.revoked_at, "session revoked_at"),
+      }),
   };
 };
 
@@ -257,14 +262,16 @@ const pendingFromRow = (row: PendingRow): PendingAuthenticationRecord => {
     memberships: parsePendingMemberships(row.memberships),
     providerSessionId: row.provider_session_id,
     providerSubject: row.provider_subject,
-    ...(row.provider_credentials_ciphertext && {
-      providerCredentialsCiphertext: row.provider_credentials_ciphertext,
-    }),
+    ...(row.provider_credentials_ciphertext !== null &&
+      row.provider_credentials_ciphertext !== "" && {
+        providerCredentialsCiphertext: row.provider_credentials_ciphertext,
+      }),
     createdAt: timestamp(row.created_at, "pending created_at"),
     expiresAt: timestamp(row.expires_at, "pending expires_at"),
-    ...(row.consumed_at && {
-      consumedAt: timestamp(row.consumed_at, "pending consumed_at"),
-    }),
+    ...(row.consumed_at !== null &&
+      row.consumed_at !== "" && {
+        consumedAt: timestamp(row.consumed_at, "pending consumed_at"),
+      }),
   };
 };
 
@@ -499,7 +506,7 @@ const revokeSession = async (
     return await sql.begin(async (transaction) => {
       const tenantId = await readSessionScope(transaction, sessionId);
       let revoked: IdentitySessionRecord | undefined;
-      if (tenantId) {
+      if (tenantId !== undefined && tenantId !== "") {
         await transaction`
           select set_config('app.tenant_id', ${tenantId}, true)
         `;
@@ -563,7 +570,7 @@ const createProviderBinding = async (
       `;
 
       const [created] = inserted;
-      if (created) {
+      if (created !== undefined) {
         return bindingFromRow(created);
       }
 
@@ -577,7 +584,7 @@ const createProviderBinding = async (
       const [pair] = existing;
       // Replaying the same binding is idempotent; any other conflict is
       // rejected so a provider subject cannot be rebound to another actor.
-      if (pair && pair.actor_id === binding.actorId) {
+      if (pair !== undefined && pair.actor_id === binding.actorId) {
         return bindingFromRow(pair);
       }
       throw new IdentityError("CONFLICT");
@@ -651,7 +658,7 @@ const listRosterClassIds = async (
   return await withDatabase(databaseUrl, async (sql) => {
     return await sql.begin(async (transaction) => {
       const tenantId = await readMembershipScope(transaction, membershipId);
-      if (!tenantId) {
+      if (tenantId === undefined || tenantId === "") {
         return [];
       }
       await transaction`
@@ -799,7 +806,7 @@ export const createPostgresIdentityPersistence = (
             transaction,
             update.sessionId
           );
-          if (!tenantId) {
+          if (tenantId === undefined || tenantId === "") {
             return false;
           }
           await transaction`
@@ -826,7 +833,7 @@ export const createPostgresIdentityPersistence = (
             transaction,
             replacement.sessionId
           );
-          if (!tenantId) {
+          if (tenantId === undefined || tenantId === "") {
             return false;
           }
           await transaction`
@@ -890,7 +897,7 @@ export const createPostgresIdentityPersistence = (
       return await withDatabase(databaseUrl, async (sql) => {
         return await sql.begin(async (transaction) => {
           const tenantId = await readMembershipScope(transaction, membershipId);
-          if (!tenantId) {
+          if (tenantId === undefined || tenantId === "") {
             return false;
           }
           await transaction`

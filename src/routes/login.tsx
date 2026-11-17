@@ -43,7 +43,7 @@ const describeEmailError = (
   if (value === "") {
     return "Enter your email address.";
   }
-  return input?.validity.typeMismatch ? INVALID_EMAIL_MESSAGE : null;
+  return input?.validity.typeMismatch === true ? INVALID_EMAIL_MESSAGE : null;
 };
 
 const describeSignInFailure = (failure: AuthApiFailure): AuthNotice => {
@@ -153,10 +153,17 @@ const LoginPage = (): ReactElement => {
     const nextPasswordError = password === "" ? "Enter your password." : null;
     setEmailError(nextEmailError);
     setPasswordError(nextPasswordError);
-    if (nextEmailError || nextPasswordError) {
+    if (
+      (nextEmailError !== null && nextEmailError !== "") ||
+      nextPasswordError !== null
+    ) {
       // Focus waits for the commit that marks the field invalid, so the screen
       // reader reads the error with the control instead of before it.
-      focusAfterRender(nextEmailError ? emailRef : passwordRef);
+      focusAfterRender(
+        nextEmailError !== null && nextEmailError !== ""
+          ? emailRef
+          : passwordRef
+      );
       return;
     }
 

@@ -25,7 +25,7 @@ const databaseUrl = process.env.DATABASE_URL;
 const isRun = process.env.RUN_DATABASE_TESTS === "true" && Boolean(databaseUrl);
 
 const requireUrl = (): string => {
-  if (!databaseUrl) {
+  if (databaseUrl === undefined || databaseUrl === "") {
     throw new Error(
       "DATABASE_URL is required for the synthetic fixture database tests."
     );

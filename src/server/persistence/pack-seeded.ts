@@ -135,7 +135,9 @@ export const createSeededPackPersistence = (
 
     readLatestVersion: async (tenantId, requestId) => {
       const [latest] = versionsForRequest(tenantId, requestId);
-      return await Promise.resolve(latest ? clone(latest) : undefined);
+      return await Promise.resolve(
+        latest === undefined ? undefined : clone(latest)
+      );
     },
 
     readVersion: async (tenantId, versionId) => {

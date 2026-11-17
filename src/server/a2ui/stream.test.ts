@@ -10,7 +10,7 @@ import { createPreviewSSEStream } from "./stream";
 const requireLearningPath = <T extends { learningPath?: unknown }>(
   draft: T
 ): NonNullable<T["learningPath"]> => {
-  if (!draft.learningPath) {
+  if (draft.learningPath === undefined || draft.learningPath === null) {
     throw new Error("Expected the fixture draft to include a learning path.");
   }
   return draft.learningPath;

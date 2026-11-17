@@ -156,7 +156,7 @@ export const createSourceService = (
     actor: CorrectedTextCommand["actor"],
     replacesSnapshotId: string | undefined
   ): Promise<string | null> => {
-    if (!replacesSnapshotId) {
+    if (replacesSnapshotId === undefined || replacesSnapshotId === "") {
       return null;
     }
     await readOwned(actor.tenantId, actor.actorId, replacesSnapshotId);
@@ -384,7 +384,7 @@ export const createSourceService = (
     const finalized = await persistUpdate(record, {
       reviewedAt: timestamp,
       requiredSkillsConfirmedAt: timestamp,
-      ...(command.input.alignmentAcknowledged && {
+      ...(command.input.alignmentAcknowledged === true && {
         alignmentAcknowledgedAt: timestamp,
       }),
     });

@@ -161,16 +161,20 @@ const semanticValidationDiagnostics = (
       severity: diagnosticSeverity(finding.verdict),
       code: finding.code,
       message: finding.reason,
-      ...(finding.variantId && { variantId: finding.variantId }),
-      ...(finding.field && { field: finding.field }),
-      ...(finding.nodeId && { nodeId: finding.nodeId }),
+      ...(finding.variantId !== undefined &&
+        finding.variantId !== "" && { variantId: finding.variantId }),
+      ...(finding.field !== undefined &&
+        finding.field !== "" && { field: finding.field }),
+      ...(finding.nodeId !== undefined &&
+        finding.nodeId !== "" && { nodeId: finding.nodeId }),
       validator: finding.validator,
       verdict: finding.verdict,
       validatorVersion: finding.validatorVersion,
       recovery: finding.recovery,
-      ...(finding.recommendation && {
-        recommendation: finding.recommendation,
-      }),
+      ...(finding.recommendation !== undefined &&
+        finding.recommendation !== "" && {
+          recommendation: finding.recommendation,
+        }),
     };
   });
 };
@@ -213,15 +217,20 @@ const gateDiagnostics = (
       code: finding.code,
       message: finding.reason,
       field: finding.field,
-      ...(finding.variantId && { variantId: finding.variantId }),
-      ...(finding.nodeId && { nodeId: finding.nodeId }),
+      ...(finding.variantId !== undefined &&
+        finding.variantId !== "" && { variantId: finding.variantId }),
+      ...(finding.nodeId !== undefined &&
+        finding.nodeId !== "" && { nodeId: finding.nodeId }),
       ...(finding.validator !== "structural" && {
         validator: finding.validator,
       }),
       verdict: finding.verdict,
       validatorVersion: finding.validatorVersion,
       recovery: finding.recovery,
-      ...(prior?.recommendation && { recommendation: prior.recommendation }),
+      ...(prior?.recommendation !== undefined &&
+        prior?.recommendation !== "" && {
+          recommendation: prior.recommendation,
+        }),
     };
   });
 };

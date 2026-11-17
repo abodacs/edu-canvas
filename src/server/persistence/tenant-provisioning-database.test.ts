@@ -172,7 +172,7 @@ describe.skipIf(!isRunDatabaseTests)(
       const provisioned = await readStandardRows();
       const [customized] = provisioned;
       expect(customized).toBeDefined();
-      if (!customized) {
+      if (customized === undefined) {
         throw new Error("Expected at least one provisioned standards row.");
       }
 

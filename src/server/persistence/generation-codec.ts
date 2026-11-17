@@ -246,8 +246,16 @@ export const hydrateGenerationRecord = (
     standardId: row.standardId,
     language: row.language,
     difficulty: row.difficulty,
-    ...(row.sourceSnapshotId && { sourceSnapshotId: row.sourceSnapshotId }),
-    ...(row.revisesRequestId && { revisesRequestId: row.revisesRequestId }),
+    ...(row.sourceSnapshotId !== undefined &&
+      row.sourceSnapshotId !== null &&
+      row.sourceSnapshotId !== "" && {
+        sourceSnapshotId: row.sourceSnapshotId,
+      }),
+    ...(row.revisesRequestId !== undefined &&
+      row.revisesRequestId !== null &&
+      row.revisesRequestId !== "" && {
+        revisesRequestId: row.revisesRequestId,
+      }),
   });
   const state = stateSchema.parse(row.state);
   const advisoryReview = parseStoredJson(

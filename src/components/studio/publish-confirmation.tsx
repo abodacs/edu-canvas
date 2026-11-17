@@ -46,7 +46,10 @@ const PublishedOutcome = ({
   // value, so they cannot disagree about whether there is something to open.
   const { learnerAssignmentId, learnerVariantId } = published;
   const learnerLink =
-    learnerAssignmentId && learnerVariantId
+    learnerAssignmentId !== null &&
+    learnerAssignmentId !== "" &&
+    learnerVariantId !== null &&
+    learnerVariantId !== ""
       ? { assignment: learnerAssignmentId, variant: learnerVariantId }
       : null;
   const assignedIndex = Math.max(
@@ -78,7 +81,7 @@ const PublishedOutcome = ({
         </p>
       )}
 
-      {learnerLink && assignedVariant ? (
+      {learnerLink && assignedVariant !== undefined ? (
         <ul
           className="publish-published__groups"
           aria-label="What the learner opens"
@@ -275,9 +278,9 @@ export const PublishConfirmation = ({
           {learnerName || "the selected learner"}.
         </strong>{" "}
         They open{" "}
-        {review.draft.variants[0]
-          ? `${variantPurposeLabels[0] ?? "Screen"} · ${review.draft.variants[0].title}`
-          : "the reviewed pack"}{" "}
+        {review.draft.variants[0] === undefined
+          ? "the reviewed pack"
+          : `${variantPurposeLabels[0] ?? "Screen"} · ${review.draft.variants[0].title}`}{" "}
         as their next activity.
       </p>
 

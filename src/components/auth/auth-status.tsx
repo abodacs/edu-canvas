@@ -38,7 +38,9 @@ export const AuthStatus = ({
         tone={notice.tone === "error" ? "stop" : "info"}
         title={notice.title}
         action={
-          notice.actionLabel && action ? (
+          notice.actionLabel !== undefined &&
+          notice.actionLabel !== "" &&
+          action ? (
             <Button
               type="button"
               variant="secondary"

@@ -199,14 +199,14 @@ export const ProgressTable = ({
                   </td>
                   <td data-label="Status">
                     <Badge tone={status.tone}>{status.label}</Badge>
-                    {first ? (
+                    {first === null ? null : (
                       <span className="progress-meta">
                         First response: {first.correctness}
                         {assistedCopy(first) === "with help"
                           ? " (with help)"
                           : ""}
                       </span>
-                    ) : null}
+                    )}
                   </td>
                   <td data-label="Results so far">
                     {latest

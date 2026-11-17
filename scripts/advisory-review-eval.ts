@@ -105,7 +105,8 @@ interface Evidence {
 }
 
 const loadEnvironment = (): void => {
-  if (process.env[KEY_ENV] || !existsSync(".env")) {
+  const keyValue = process.env[KEY_ENV];
+  if ((keyValue !== undefined && keyValue !== "") || !existsSync(".env")) {
     return;
   }
   process.loadEnvFile(".env");
@@ -117,7 +118,7 @@ const requireConfiguration = (): {
   baseUrl: string;
 } => {
   const apiKey = process.env[KEY_ENV]?.trim();
-  if (!apiKey) {
+  if (apiKey === undefined || apiKey === "") {
     throw new Error(
       `${KEY_ENV} is required for a measured run. The evidence cannot be produced offline.`
     );
@@ -364,7 +365,12 @@ const caseIssues = (entry: CaseEvidence): string[] => {
   const issues: string[] = [];
   const { advisory } = entry;
 
-  if (!entry.id || !advisory || typeof entry.agreesWithGate !== "boolean") {
+  if (
+    !entry.id ||
+    advisory === undefined ||
+    advisory === null ||
+    typeof entry.agreesWithGate !== "boolean"
+  ) {
     return [`case ${entry.id ?? "(missing id)"} is incomplete`];
   }
   if (advisory.status === "complete" && advisory.failureClass !== null) {

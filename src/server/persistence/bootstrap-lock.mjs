@@ -16,7 +16,7 @@ export const withFoundationBootstrapLock = async (sql, work) => {
     ) as acquired
   `;
 
-  if (!lock.acquired) {
+  if (lock.acquired !== true) {
     throw new Error(
       "Another foundation migration or seed process is already running."
     );

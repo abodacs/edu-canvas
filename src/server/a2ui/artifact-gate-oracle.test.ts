@@ -301,7 +301,10 @@ describe("artifact gate differential oracle", () => {
       // semantic rule it cannot observe is stricter by design; every such
       // case names the reason in the corpus table instead of weakening the
       // gate to make the seams agree.
-      if (!entry.stricterThanCompile) {
+      if (
+        entry.stricterThanCompile === undefined ||
+        entry.stricterThanCompile === ""
+      ) {
         failures.push(
           describeFailure(
             entry,

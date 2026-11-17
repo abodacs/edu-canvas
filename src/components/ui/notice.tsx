@@ -20,6 +20,7 @@ const Notice = ({
   children,
   action,
 }: NoticeProps): ReactElement => {
+  const hasAction = Boolean(action);
   return (
     <div
       className="notice"
@@ -27,9 +28,11 @@ const Notice = ({
       role={tone === "stop" ? "alert" : "status"}
       aria-atomic="true"
     >
-      {title ? <p className="notice__title">{title}</p> : null}
+      {title !== undefined && title !== "" ? (
+        <p className="notice__title">{title}</p>
+      ) : null}
       <div className="notice__body">{children}</div>
-      {action ? <div className="notice__action">{action}</div> : null}
+      {hasAction ? <div className="notice__action">{action}</div> : null}
     </div>
   );
 };

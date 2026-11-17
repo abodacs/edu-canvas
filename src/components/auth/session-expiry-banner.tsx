@@ -64,7 +64,7 @@ export const SessionExpiryBanner = ({
           You have been inactive for a while. Private drafts stay hidden until
           the session is renewed, and anything unsent is cleared when it ends.
         </p>
-        {error ? (
+        {error !== null && error !== "" ? (
           <p className="session-banner__error" role="alert">
             {error}
           </p>

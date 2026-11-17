@@ -577,7 +577,7 @@ describe("pack-framed deterministic fixture (#221)", () => {
     async ({ pack }) => {
       const draft = await buildPackDraft(pack.standardId);
       const [primaryRule] = pack.answerRules;
-      if (!primaryRule) {
+      if (primaryRule === undefined) {
         throw new Error(`${pack.standardCode} must declare an answer rule.`);
       }
 

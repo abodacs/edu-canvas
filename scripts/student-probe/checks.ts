@@ -292,7 +292,8 @@ export const focusLandedProblems = async (
   if (await isFocusMatching(page, match)) {
     return [];
   }
-  const expectedText = match.text ? ` "${match.text}"` : "";
+  const expectedText =
+    match.text !== undefined && match.text !== "" ? ` "${match.text}"` : "";
   return [
     `focus after ${action} on ${focus}, expected ${match.selector}${expectedText}`,
   ];

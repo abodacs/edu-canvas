@@ -270,7 +270,7 @@ export const createSeededRecordBackend = (
   };
 
   for (const [table, rows] of Object.entries(seed)) {
-    if (rows) {
+    if (rows !== undefined) {
       backend.seed(table as RecordTableName, rows);
     }
   }

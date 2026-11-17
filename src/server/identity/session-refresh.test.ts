@@ -65,13 +65,13 @@ const createHarness = async (
   const barrier = { sessionId: "" };
 
   let provider: IdentityProvider = inner;
-  if (options.refreshOutcome) {
+  if (options.refreshOutcome !== undefined) {
     const outcome = options.refreshOutcome;
     provider = {
       ...inner,
       refresh: async () => await Promise.resolve(outcome),
     };
-  } else if (options.revokeDuringRefresh) {
+  } else if (options.revokeDuringRefresh === true) {
     provider = {
       ...inner,
       refresh: async (refreshToken) => {

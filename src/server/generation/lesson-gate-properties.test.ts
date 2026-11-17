@@ -835,7 +835,7 @@ describe("lesson gate properties", () => {
                 version: "agent-pass-fixture-v1",
                 async review(agentInput) {
                   const [firstVariant] = agentInput.draft.variants;
-                  if (firstVariant) {
+                  if (firstVariant !== undefined) {
                     firstVariant.relationships = [];
                   }
                   return await Promise.resolve([

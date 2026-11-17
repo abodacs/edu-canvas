@@ -690,7 +690,7 @@ const attemptRow = async (
     );
   });
   const caseIdentifierUUID = readString(target?.caseIdentifierUUID);
-  if (!target || !caseIdentifierUUID) {
+  if (!target || caseIdentifierUUID === null || caseIdentifierUUID === "") {
     throw new Error(`No exact ${row.code} in ${row.jurisdiction}.`);
   }
 
@@ -736,7 +736,10 @@ const attemptRow = async (
       },
       visibleCalls: state.stages.length,
       elapsedMs: Math.round(performance.now() - state.startedAt),
-      sessionHash: state.session ? shortHash(state.session) : null,
+      sessionHash:
+        state.session !== null && state.session !== ""
+          ? shortHash(state.session)
+          : null,
       sessionStableAcrossStages: sessionStable,
       chainHash: chainHash(stripped),
       standardFacts: standardsFacts(standardStage),
@@ -768,7 +771,9 @@ const runNegative = async (
   const stage = buildStage({
     tool: "find_standard_statement",
     args: Object.fromEntries(
-      Object.entries(probe).filter(([key, value]) => key !== "id" && value)
+      Object.entries(probe).filter(
+        ([key, value]) => key !== "id" && Boolean(value)
+      )
     ),
     call: await callTool(rpc, "find_standard_statement", {
       code: probe.code,
@@ -805,7 +810,7 @@ const runElaBoundary = async (
   const standards = readRecords(standardStage.payload.standards);
   const [target] = standards;
   const caseIdentifierUUID = readString(target?.caseIdentifierUUID);
-  if (!caseIdentifierUUID) {
+  if (caseIdentifierUUID === null || caseIdentifierUUID === "") {
     return {
       id: ELA_BOUNDARY_PROBE.id,
       visibleCalls: 1,
@@ -848,9 +853,9 @@ const collectOutputPropertyNames = (
     into.add(key);
     collectOutputPropertyNames(value, into);
   }
-  if (schema.items) {
-    collectOutputPropertyNames(schema.items, into);
-  }
+  // `items` may hold any JSON value; the `isRecord` guard at the top of the
+  // call makes a skipped falsy value and a visited non-record equivalent.
+  collectOutputPropertyNames(schema.items, into);
   return into;
 };
 
@@ -879,7 +884,7 @@ const readToolSchema = (value: unknown): ToolSchema | null => {
     return null;
   }
   const name = readString(value.name);
-  if (!name) {
+  if (name === null || name === "") {
     return null;
   }
   const annotations = isRecord(value.annotations) ? value.annotations : {};
@@ -893,7 +898,10 @@ const readToolSchema = (value: unknown): ToolSchema | null => {
 };
 
 const readRevision = (): string => {
-  if (process.env.GIT_REVISION) {
+  if (
+    process.env.GIT_REVISION !== undefined &&
+    process.env.GIT_REVISION !== ""
+  ) {
     return process.env.GIT_REVISION;
   }
   try {
@@ -1064,7 +1072,9 @@ const checkRowGroup = (
       `${key}: expected exactly one standard whose code equals the request, saw ${exactMatches}`
     );
   }
-  if (!cold.standardFacts?.jurisdictions.includes(cold.row.jurisdiction)) {
+  if (
+    cold.standardFacts?.jurisdictions.includes(cold.row.jurisdiction) !== true
+  ) {
     failures.push(
       `${key}: resolved standards must carry the requested jurisdiction`
     );
@@ -1077,7 +1087,7 @@ const checkRowGroup = (
   }
   if (
     cold.row.jurisdiction === CALIFORNIA &&
-    !cold.progression?.jurisdictions.includes(CALIFORNIA)
+    cold.progression?.jurisdictions.includes(CALIFORNIA) !== true
   ) {
     failures.push(`${key}: progression must return California rows`);
   }
@@ -2243,7 +2253,7 @@ const checkFreeTextRows = (
   const failures: string[] = [];
   for (const [index, row] of corpus.rows.entries()) {
     const recorded = evidence.rows[index];
-    if (recorded && recorded.id === row.id) {
+    if (recorded !== undefined && recorded.id === row.id) {
       failures.push(
         ...transportFailures(row, recorded, "mcp"),
         ...transportFailures(row, recorded, "rest")

@@ -77,7 +77,8 @@ export const resolveModerationRecovery = (
     categoryLabel: copy?.label ?? null,
     categoryReference:
       copy && category ? `Category: ${copy.label} (${category}).` : null,
-    requestReference: requestId ? `Request ${requestId}.` : null,
+    requestReference:
+      requestId !== null && requestId !== "" ? `Request ${requestId}.` : null,
     actionLabel: REVISE_REQUEST_LABEL,
   };
 };

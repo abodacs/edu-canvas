@@ -32,10 +32,13 @@ import type { Actor } from "../identity/types";
  */
 
 const databaseUrl = process.env.DATABASE_URL;
-const isRun = process.env.RUN_DATABASE_TESTS === "true" && Boolean(databaseUrl);
+const isRun =
+  process.env.RUN_DATABASE_TESTS === "true" &&
+  databaseUrl !== undefined &&
+  databaseUrl !== "";
 
 const requireUrl = (): string => {
-  if (!databaseUrl) {
+  if (databaseUrl === undefined || databaseUrl === "") {
     throw new Error(
       "DATABASE_URL is required for the progress database tests."
     );
@@ -485,7 +488,7 @@ describe.skipIf(!isRun)("teacher progress database contract", () => {
   });
 
   afterAll(async () => {
-    if (fixture) {
+    if (fixture !== undefined) {
       await deleteFixture(fixture);
     }
   });

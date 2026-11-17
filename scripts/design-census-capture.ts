@@ -294,7 +294,7 @@ const capture = async (
   ]);
   const records: Record<string, unknown>[] = [];
   for (const page of pages) {
-    const viewport = page.phone ? phone : desktop;
+    const viewport = page.phone === true ? phone : desktop;
     const context = await browser.newContext({
       viewport,
       reducedMotion: "reduce",

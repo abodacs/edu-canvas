@@ -51,11 +51,12 @@ export const isTrustedOrigin = (
 export const isPreAuthChallengeValid = (
   provided: string | null | undefined,
   expected: string | null | undefined
-): boolean => {
-  return Boolean(
-    provided &&
-    expected &&
-    provided.length > 0 &&
-    areEqualBytes(provided, expected)
-  );
-};
+): boolean =>
+  provided !== undefined &&
+  provided !== null &&
+  provided !== "" &&
+  expected !== undefined &&
+  expected !== null &&
+  expected !== "" &&
+  provided.length > 0 &&
+  areEqualBytes(provided, expected);

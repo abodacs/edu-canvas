@@ -581,7 +581,10 @@ export const createRecordCommands = <TTransaction>(
       readonly resultIds: readonly string[];
     }>
   ): Promise<RecordMutationResult> => {
-    if (!actor) {
+    // The policy matrix drives unauthenticated rows through `undefined as
+    // unknown as Actor`, so the absence check is load-bearing even though the
+    // parameter type says otherwise.
+    if (actor === undefined || actor === null) {
       throw recordError("UNAUTHENTICATED");
     }
     const parsed = writeInputSchemas[action].safeParse(submitted);
@@ -672,7 +675,7 @@ export const createRecordCommands = <TTransaction>(
     capability: Capability,
     work: (transaction: TTransaction) => Promise<T>
   ): Promise<T> => {
-    if (!actor) {
+    if (actor === undefined || actor === null) {
       throw recordError("UNAUTHENTICATED");
     }
     if (!capabilitiesForRole(actor.role).includes(capability)) {
@@ -924,7 +927,7 @@ export const createRecordCommands = <TTransaction>(
       throw recordError("INVALID_INPUT");
     }
 
-    if (input.curatedReferenceId) {
+    if (input.curatedReferenceId !== null && input.curatedReferenceId !== "") {
       await assertCuratedReference(
         transaction,
         actor,
@@ -933,7 +936,11 @@ export const createRecordCommands = <TTransaction>(
       );
     }
 
-    if (input.sourceSnapshotId) {
+    if (
+      input.sourceSnapshotId !== undefined &&
+      input.sourceSnapshotId !== null &&
+      input.sourceSnapshotId !== ""
+    ) {
       await assertSourceSnapshot(
         transaction,
         actor,
@@ -942,7 +949,7 @@ export const createRecordCommands = <TTransaction>(
       );
     }
 
-    if (input.generationRequestId) {
+    if (input.generationRequestId !== null && input.generationRequestId !== "") {
       const request = await requireRow(transaction, "lesson_draft_requests", {
         tenant_id: actor.tenantId,
         id: input.generationRequestId,
@@ -974,7 +981,11 @@ export const createRecordCommands = <TTransaction>(
       }
     }
 
-    if (input.parentVersionId) {
+    if (
+      input.parentVersionId !== undefined &&
+      input.parentVersionId !== null &&
+      input.parentVersionId !== ""
+    ) {
       const parent = await requireRow(transaction, "lesson_versions", {
         tenant_id: actor.tenantId,
         id: input.parentVersionId,
@@ -984,7 +995,10 @@ export const createRecordCommands = <TTransaction>(
       }
     }
 
-    if (input.predecessorVersionId) {
+    if (
+      input.predecessorVersionId !== null &&
+      input.predecessorVersionId !== ""
+    ) {
       await requireRow(transaction, "lesson_versions", {
         tenant_id: actor.tenantId,
         id: input.predecessorVersionId,
@@ -1184,7 +1198,8 @@ export const createRecordCommands = <TTransaction>(
         await requireOwnedPackage(transaction, actor, version.packageId);
 
         if (
-          input.classId &&
+          input.classId !== undefined &&
+          input.classId !== "" &&
           (actor.role !== "teacher" ||
             actor.rosterClassIds.every((classId) => classId !== input.classId))
         ) {
@@ -1436,7 +1451,10 @@ export const createRecordCommands = <TTransaction>(
           throw recordError("INVALID_INPUT");
         }
 
-        if (input.priorAttemptId) {
+        if (
+          input.priorAttemptId !== null &&
+          input.priorAttemptId !== ""
+        ) {
           const prior = await requireRow(transaction, "learner_attempts", {
             tenant_id: actor.tenantId,
             id: input.priorAttemptId,
@@ -1602,7 +1620,8 @@ export const createRecordCommands = <TTransaction>(
           actor.tenantId
         );
         if (
-          input.approvedTargetId &&
+          input.approvedTargetId !== null &&
+          input.approvedTargetId !== "" &&
           version.variantReferences.every(
             (variant) => variant.variantId !== input.approvedTargetId
           )

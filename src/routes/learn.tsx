@@ -373,7 +373,7 @@ const LearnBoard = ({
           direction={direction}
         />
       </h1>
-      {section?.body ? (
+      {section?.body !== undefined && section?.body !== "" ? (
         <p className="learn-body">
           <BidiText text={section.body} direction={direction} />
         </p>
@@ -471,7 +471,7 @@ const LearnPage = () => {
         void handleSignOut();
       }}
     >
-      {assignment && variant && csrf ? (
+      {assignment && variant && csrf !== null && csrf !== "" ? (
         <LearnBoard assignment={assignment} variant={variant} csrf={csrf} />
       ) : (
         <p className="learn-status">

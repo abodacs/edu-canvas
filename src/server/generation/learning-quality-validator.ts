@@ -87,7 +87,7 @@ const reviewVariantStructure = (
   firstVariantId: string | undefined,
   findings: SemanticValidationFinding[]
 ): void => {
-  if (firstVariantId) {
+  if (firstVariantId !== undefined && firstVariantId !== "") {
     findings.push(
       finding(LEARNING_QUALITY_VALIDATOR_ID, learningQualityValidatorVersion, {
         verdict: "warning",
@@ -331,7 +331,7 @@ export const reviewLearningQuality = (
   for (const variant of input.draft.variants) {
     const signature = variantStructureSignature(variant);
     const firstVariantId = signatures.get(signature);
-    if (!firstVariantId) {
+    if (firstVariantId === undefined || firstVariantId === "") {
       signatures.set(signature, variant.id);
     }
 

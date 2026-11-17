@@ -150,7 +150,7 @@ export const assignedSection = (
   assignedVariantId: string
 ): LessonVersion["sections"][number] => {
   const [first] = version.sections;
-  if (!first) {
+  if (first === undefined) {
     throw recordError("INVALID_INPUT", {
       cause: new Error("A lesson version has no sections."),
     });

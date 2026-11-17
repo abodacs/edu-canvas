@@ -453,7 +453,7 @@ export const breakFirstRelationshipAnswer = (
 ): void => {
   const [firstVariant] = draft.variants;
   const [firstTarget] = firstVariant?.targetItems ?? [];
-  if (firstTarget) {
+  if (firstTarget !== undefined) {
     firstTarget.label = "3/4";
   }
 };
@@ -558,7 +558,11 @@ export const draftMutationProbes: readonly DraftMutationProbe[] = [
       const [variant] = draft.variants;
       const { relationships } = variant;
       const targetId = relationships[0]?.targetId;
-      if (targetId && relationships[2]) {
+      if (
+        targetId !== undefined &&
+        targetId !== "" &&
+        relationships[2] !== undefined
+      ) {
         relationships[2] = { ...relationships[2], targetId };
       }
     },
@@ -588,7 +592,7 @@ export const draftMutationProbes: readonly DraftMutationProbe[] = [
       "The compile guard never reads relationship endpoints.",
     apply(draft) {
       const [variant] = draft.variants;
-      if (variant.relationships[2]) {
+      if (variant.relationships[2] !== undefined) {
         variant.relationships[2].sourceId = "probe-guard-ghost-source";
       }
     },
@@ -603,7 +607,7 @@ export const draftMutationProbes: readonly DraftMutationProbe[] = [
       "The compile guard never reads relationship endpoints.",
     apply(draft) {
       const [variant] = draft.variants;
-      if (variant.relationships[2]) {
+      if (variant.relationships[2] !== undefined) {
         variant.relationships[2].targetId = "probe-guard-ghost-target";
       }
     },
@@ -618,7 +622,7 @@ export const draftMutationProbes: readonly DraftMutationProbe[] = [
       "The compile guard never counts variant kinds; it only renders the four variants.",
     apply(draft) {
       const [challenge] = draft.variants.slice(3);
-      if (challenge) {
+      if (challenge !== undefined) {
         challenge.kind = "standard";
       }
     },
@@ -631,7 +635,7 @@ export const draftMutationProbes: readonly DraftMutationProbe[] = [
     compileOutcome: "reject",
     apply(draft) {
       const [, variant] = draft.variants;
-      if (variant) {
+      if (variant !== undefined) {
         Reflect.deleteProperty(variant, "kind");
       }
     },
@@ -646,7 +650,7 @@ export const draftMutationProbes: readonly DraftMutationProbe[] = [
       "The compile guard renders whatever language metadata the draft carries.",
     apply(draft, plan) {
       const [scaffold] = draft.variants.slice(2);
-      if (scaffold) {
+      if (scaffold !== undefined) {
         scaffold.languageMetadata = {
           language: languageFlip[plan.language],
           direction: plan.language === "ar" ? "ltr" : "rtl",
@@ -665,7 +669,7 @@ export const draftMutationProbes: readonly DraftMutationProbe[] = [
       "The compile guard copies direction into the data model without cross-checking the request.",
     apply(draft, plan) {
       const [, secondStandard] = draft.variants;
-      if (secondStandard) {
+      if (secondStandard !== undefined) {
         secondStandard.languageMetadata = {
           ...secondStandard.languageMetadata,
           direction: plan.language === "ar" ? "ltr" : "rtl",
@@ -682,7 +686,7 @@ export const draftMutationProbes: readonly DraftMutationProbe[] = [
     apply(draft) {
       const [variant] = draft.variants;
       const [source] = variant?.sourceItems ?? [];
-      if (source) {
+      if (source !== undefined) {
         source.label = "<script>alert(1)</script>";
       }
     },
@@ -699,7 +703,7 @@ export const draftMutationProbes: readonly DraftMutationProbe[] = [
       const [variant] = draft.variants as (ProviderVariant & {
         untrustedField?: string;
       })[];
-      if (variant) {
+      if (variant !== undefined) {
         variant.untrustedField = "smuggled";
       }
     },
@@ -714,7 +718,7 @@ export const draftMutationProbes: readonly DraftMutationProbe[] = [
       "The compile guard does not render hints, so an empty hint list still compiles.",
     apply(draft) {
       const [variant] = draft.variants;
-      if (variant) {
+      if (variant !== undefined) {
         variant.hints = [];
       }
     },
@@ -729,7 +733,10 @@ export const draftMutationProbes: readonly DraftMutationProbe[] = [
       "The compile guard never reads relationship identifiers.",
     apply(draft) {
       const [variant] = draft.variants;
-      if (variant?.relationships[2] && variant.relationships[1]) {
+      if (
+        variant?.relationships[2] !== undefined &&
+        variant.relationships[1] !== undefined
+      ) {
         variant.relationships[2].id = variant.relationships[1].id;
       }
     },
@@ -772,7 +779,7 @@ export const learningPathMutationProbes: readonly LearningPathMutationProbe[] =
         "The compile guard does not check path node uniqueness.",
       apply(proposal) {
         const [firstStep] = proposal.steps;
-        if (firstStep) {
+        if (firstStep !== undefined) {
           proposal.steps.splice(2, 0, {
             nodeId: firstStep.nodeId,
             screenPurposeId: firstStep.screenPurposeId,
@@ -790,7 +797,7 @@ export const learningPathMutationProbes: readonly LearningPathMutationProbe[] =
         "The compile guard accepts any identifier-shaped node id in the path data model.",
       apply(proposal) {
         const [, step] = proposal.steps;
-        if (step) {
+        if (step !== undefined) {
           step.nodeId = "graph_node_ghost";
         }
       },
@@ -805,7 +812,7 @@ export const learningPathMutationProbes: readonly LearningPathMutationProbe[] =
         "The compile guard copies screen purposes without re-checking the curriculum graph.",
       apply(proposal) {
         const [, step] = proposal.steps;
-        if (step) {
+        if (step !== undefined) {
           step.screenPurposeId = "screen_purpose_ghost";
         }
       },
@@ -892,7 +899,7 @@ const mutateFirstComponent = (
 ): void => {
   const { updateComponents } = findUpdateComponents(messages);
   const [first] = updateComponents.components;
-  if (first) {
+  if (first !== undefined) {
     mutate(first);
   }
 };
@@ -957,7 +964,7 @@ export const preRenderBreakProbes: readonly PreRenderBreakProbe[] = [
       const { updateComponents } = findUpdateComponents(messages);
       const { components } = updateComponents;
       const [first, second] = components;
-      if (first && second) {
+      if (first !== undefined && second !== undefined) {
         second.id = first.id;
       }
     },
@@ -1005,7 +1012,7 @@ export const fractionBreakProbes: readonly FractionBreakProbe[] = [
     },
     apply(draft) {
       const [firstSection] = draft.sections;
-      if (firstSection) {
+      if (firstSection !== undefined) {
         firstSection.stem = "\\frac{1}";
       }
     },
@@ -1088,9 +1095,10 @@ const draftBreakCases = (): ArtifactCorpusCase[] => {
         ],
         rejectingSeams: probe.rejectingSeams,
         compileOutcome: probe.compileOutcome,
-        ...(probe.stricterThanCompile && {
-          stricterThanCompile: probe.stricterThanCompile,
-        }),
+        ...(probe.stricterThanCompile !== undefined &&
+          probe.stricterThanCompile !== "" && {
+            stricterThanCompile: probe.stricterThanCompile,
+          }),
       };
     });
 };
@@ -1118,9 +1126,10 @@ const learningPathBreakCases = (): ArtifactCorpusCase[] => {
       ],
       rejectingSeams: probe.rejectingSeams,
       compileOutcome: probe.compileOutcome,
-      ...(probe.stricterThanCompile && {
-        stricterThanCompile: probe.stricterThanCompile,
-      }),
+      ...(probe.stricterThanCompile !== undefined &&
+        probe.stricterThanCompile !== "" && {
+          stricterThanCompile: probe.stricterThanCompile,
+        }),
     };
   });
 };

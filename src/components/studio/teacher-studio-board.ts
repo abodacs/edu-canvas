@@ -64,9 +64,10 @@ export const groupDiagnostics = (
   const groups: GroupedDiagnostic[] = [];
   for (const diagnostic of diagnostics) {
     const key = diagnosticKey(diagnostic);
-    const variantName = diagnostic.variantId
-      ? variantNameById.get(diagnostic.variantId)
-      : undefined;
+    const variantName =
+      diagnostic.variantId !== undefined && diagnostic.variantId !== ""
+        ? variantNameById.get(diagnostic.variantId)
+        : undefined;
     let group = byKey.get(key);
     if (!group) {
       group = {
@@ -78,7 +79,11 @@ export const groupDiagnostics = (
       byKey.set(key, group);
       groups.push(group);
     }
-    if (variantName && !group.variantNames.includes(variantName)) {
+    if (
+      variantName !== undefined &&
+      variantName !== "" &&
+      !group.variantNames.includes(variantName)
+    ) {
       group.variantNames.push(variantName);
     }
   }

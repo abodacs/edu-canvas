@@ -29,7 +29,7 @@ const runId = randomUUID();
 const requireLearningPath = <T extends { learningPath?: unknown }>(
   draft: T
 ): NonNullable<T["learningPath"]> => {
-  if (!draft.learningPath) {
+  if (draft.learningPath === undefined || draft.learningPath === null) {
     throw new Error("Expected the generated draft to include a learning path.");
   }
   return draft.learningPath;
@@ -291,7 +291,7 @@ describe.skipIf(!isRunDatabaseTests)("PostgreSQL persistence parity", () => {
   afterAll(async () => {
     const fixtures = [tenants.primary, tenants.secondary];
     for (const fixture of fixtures) {
-      if (fixture) {
+      if (fixture !== undefined) {
         // Fixtures are removed one at a time against the same database.
         // eslint-disable-next-line no-await-in-loop
         await deleteTenantFixture(fixture);

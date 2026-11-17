@@ -163,7 +163,7 @@ const activeSession = (
 const previewRequest = (cookie?: string): Request => {
   return new Request(
     `http://localhost/api/a2ui/preview?requestId=${encodeURIComponent(draftRequestId)}`,
-    cookie ? { headers: { cookie } } : undefined
+    cookie !== undefined && cookie !== "" ? { headers: { cookie } } : undefined
   );
 };
 
@@ -267,9 +267,10 @@ describe("teacher lesson preview delivery seam", () => {
         model: record.provenance.model,
         promptTemplateVersion: record.provenance.promptTemplateVersion,
         validatorVersion: record.provenance.validatorVersion,
-        ...(record.provenance.catalogVersion && {
-          catalogVersion: record.provenance.catalogVersion,
-        }),
+        ...(record.provenance.catalogVersion !== undefined &&
+          record.provenance.catalogVersion !== "" && {
+            catalogVersion: record.provenance.catalogVersion,
+          }),
       },
     };
     useRecord(legacy);
@@ -443,9 +444,10 @@ describe("fractions-v2 preview negotiation", () => {
   };
 
   const fractionRequest = (catalogVersion?: string): Request => {
-    const query = catalogVersion
-      ? `?requestId=${draftRequestId}&catalogVersion=${catalogVersion}`
-      : `?requestId=${draftRequestId}`;
+    const query =
+      catalogVersion !== undefined && catalogVersion !== ""
+        ? `?requestId=${draftRequestId}&catalogVersion=${catalogVersion}`
+        : `?requestId=${draftRequestId}`;
     return new Request(`http://localhost/api/a2ui/preview${query}`, {
       headers: { cookie: "edu_canvas_session=owner-credential" },
     });
@@ -604,7 +606,12 @@ describe("safety-gate preview enforcement", () => {
   it("returns 422 with the verdict, findings, and recovery for a hard block", async () => {
     const corrupted = structuredClone(acceptedRecord);
     const [firstVariant, secondVariant] = corrupted.draft?.variants ?? [];
-    if (!firstVariant || !secondVariant || !corrupted.draft) {
+    if (
+      firstVariant === undefined ||
+      secondVariant === undefined ||
+      corrupted.draft === undefined ||
+      corrupted.draft === null
+    ) {
       throw new Error("The preview fixture must carry two variants.");
     }
     secondVariant.id = firstVariant.id;

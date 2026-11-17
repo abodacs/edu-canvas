@@ -150,7 +150,10 @@ export const ReviewGallery = ({
           {review.version.gateVerdict === "pass"
             ? "validation passed"
             : "validation found warnings"}
-          {review.provenance.editedAt ? " · edited" : ""}
+          {review.provenance.editedAt !== null &&
+          review.provenance.editedAt !== ""
+            ? " · edited"
+            : ""}
         </span>
       </p>
 
@@ -167,7 +170,9 @@ export const ReviewGallery = ({
           const isBlocked = review.version.findings.some(
             (finding) =>
               finding.verdict === "hard_block" &&
-              (!finding.variantId || finding.variantId === variant.id)
+              (finding.variantId === undefined ||
+                finding.variantId === "" ||
+                finding.variantId === variant.id)
           );
           const status = screenStatus(isApproved, isBlocked, warnings.length);
           const purpose = variantPurposeLabels[index] ?? "Screen";

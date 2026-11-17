@@ -199,7 +199,7 @@ export const createSeedServices = (config: ServerConfig) => {
         });
       })
     );
-    if (!options.skipReversePath) {
+    if (options.skipReversePath !== true) {
       await publication.approve(teacher, {
         requestId,
         versionId: review.version.id,

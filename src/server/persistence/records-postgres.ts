@@ -97,7 +97,7 @@ export const createPostgresRecordBackend = (
     // The conflict clause arbitrates every unique index on the table, so a
     // concurrent writer's committed row makes the loser skip instead of
     // aborting the transaction; the caller re-reads the winner's row.
-    const conflictSql = insertOptions?.onConflictDoNothing
+    const conflictSql = insertOptions?.onConflictDoNothing === true
       ? " on conflict do nothing"
       : "";
     try {

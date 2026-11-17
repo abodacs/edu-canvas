@@ -148,7 +148,7 @@ const buildDraft = (
 // target for the first word problem (4 × 6 − 5 is 19, not 4 + 6 − 5).
 const withOneWrongPair = (pairs: readonly MatchingPair[]): MatchingPair[] => {
   const [first, ...rest] = pairs;
-  if (!first) {
+  if (first === undefined) {
     throw new Error("The fixture needs at least one pair.");
   }
   return [{ ...first, target: "4 + 6 − 5 = p" }, ...rest];
@@ -524,7 +524,7 @@ describe("standards generalization: RI.5.2 detail -> main-idea matching", () => 
 
   it("B7: a detail absent from the pack passage is hard blocked", async () => {
     const [first, ...rest] = detailPairs;
-    if (!first) {
+    if (first === undefined) {
       throw new Error("The fixture needs at least one pair.");
     }
     const absentDetailPairs = [

@@ -126,6 +126,7 @@ export const PasswordField = ({
   inputRef,
   action,
 }: PasswordFieldProperties): ReactElement => {
+  const hasAction = Boolean(action);
   return (
     <div className="password-field">
       <Field label={label} help={help} error={error ?? undefined}>
@@ -140,7 +141,9 @@ export const PasswordField = ({
           onValueChange={onValueChange}
         />
       </Field>
-      {action ? <div className="password-field__action">{action}</div> : null}
+      {hasAction ? (
+        <div className="password-field__action">{action}</div>
+      ) : null}
     </div>
   );
 };
