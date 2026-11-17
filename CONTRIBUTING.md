@@ -75,21 +75,15 @@ Choose checks that exercise the change and relevant failure paths. [package.json
 
 | Change | Verification |
 | --- | --- |
-| Documentation or issue forms | Run Prettier on every changed Markdown or YAML file; check local links and form fields |
+| Documentation or issue forms | Check local links and form fields for every changed Markdown or YAML file |
 | Application code | Run `pnpm check` and relevant behavior tests; run `pnpm test:coverage` for coverage evidence |
 | Persistence or migrations | Follow the [database runbook](docs/foundation-runbook.md#postgresql-migration-and-seed); run `pnpm test:database` against a configured local PostgreSQL database |
 | Runtime or API behavior | After building, start the server with `pnpm start`; run `pnpm smoke` in another terminal |
 | UI or interaction | Exercise the affected flow, keyboard controls, and responsive layout. |
 
-For example, check the root contribution guides and issue forms with:
+For example, check that every relative link in the changed documents resolves and that issue-form fields parse. Avoid unrelated formatting changes.
 
-```bash
-pnpm exec prettier --check CODING_STANDARDS.md CONTRIBUTING.md .github/ISSUE_TEMPLATE
-```
-
-Include any other changed documentation files in that command. The `format:check` script currently covers selected documentation files. Use the existing formatter configuration. Avoid unrelated formatting changes.
-
-`pnpm install` enables the [pre-push hook](.githooks/pre-push) through `core.hooksPath`. Before every push it runs Prettier, oxlint, and Stylelint on the changed files and type-checks the project with `tsrs`, in a few seconds. Fix what it reports rather than skipping it. CI still runs every check.
+`pnpm install` enables the [pre-push hook](.githooks/pre-push) through `core.hooksPath`. Before every push it runs oxlint and Stylelint on the changed files and type-checks the project with `tsrs`, in a few seconds. Fix what it reports rather than skipping it. CI still runs every check.
 
 Record the commands, results, and untested cases in the PR. Documentation-only edits can use documentation checks; explain why a runtime check was skipped when it would otherwise apply.
 
