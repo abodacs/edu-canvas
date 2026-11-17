@@ -56,7 +56,7 @@ jobs:
   # Foundation checks
   # -----------------------------------------------------------------------
 
-  # Format, lint, types, and repository rules. No database or build needed.
+  # Lint, types, and repository rules. No database or build needed.
   static:
     if: github.event_name == 'push' || github.event.action != 'edited'
     runs-on: ubuntu-latest
