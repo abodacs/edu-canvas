@@ -83,7 +83,9 @@ const ReverseApproval = ({
       <Button
         type="button"
         disabled={busy || approved || !allAcknowledged}
-        onClick={() => onApprove(acknowledged)}
+        onClick={() => {
+          onApprove(acknowledged);
+        }}
       >
         <ShieldCheck aria-hidden="true" />
         {approved ? "Reverse path approved" : "Approve the reverse path"}
@@ -175,7 +177,9 @@ export const ReviewGallery = ({
               <button
                 type="button"
                 className="review-rail__item"
-                onClick={() => onOpenVariant(variant.id)}
+                onClick={() => {
+                  onOpenVariant(variant.id);
+                }}
               >
                 <span className="review-rail__purpose">{purpose}</span>
                 <span className="review-rail__title">{variant.title}</span>

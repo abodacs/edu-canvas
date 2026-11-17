@@ -153,7 +153,7 @@ describe(createDefaultContentSafety, () => {
 
   it("fails closed when generated content cannot be serialized", () => {
     const circular: Record<string, unknown> = {};
-    circular["self"] = circular;
+    circular.self = circular;
 
     const result = safety.checkGeneratedContent(circular);
 

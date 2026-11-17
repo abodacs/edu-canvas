@@ -146,7 +146,9 @@ const diagnosticSeverity = (
     }
     default: {
       const exhaustive: never = verdict;
-      throw new Error(`Unhandled semantic validation verdict: ${exhaustive}`);
+      throw new Error(
+        `Unhandled semantic validation verdict: ${String(exhaustive)}`
+      );
     }
   }
 };

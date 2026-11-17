@@ -39,17 +39,18 @@ const issues: string[] = [];
 
 const walk = async (directory: string): Promise<string[]> => {
   const entries = await readdir(directory, { withFileTypes: true });
-  const nested = await Promise.all(
-    entries.map((entry) => {
-      const entryPath = join(directory, entry.name);
-      if (entry.isDirectory()) {
-        return entry.name.startsWith(".") || ignoredDirectories.has(entry.name)
-          ? []
-          : walk(entryPath);
+  const groups: Promise<string[]>[] = [];
+  for (const entry of entries) {
+    const entryPath = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      if (!entry.name.startsWith(".") && !ignoredDirectories.has(entry.name)) {
+        groups.push(walk(entryPath));
       }
-      return entry.name === glossaryFilename ? [entryPath] : [];
-    })
-  );
+    } else if (entry.name === glossaryFilename) {
+      groups.push(Promise.resolve([entryPath]));
+    }
+  }
+  const nested = await Promise.all(groups);
   return nested.flat();
 };
 

@@ -154,10 +154,12 @@ describe(applySecurityHeaders, () => {
   });
 
   it("leaves a response it cannot reach untouched", () => {
-    expect(() => applySecurityHeaders(undefined, headers)).not.toThrow();
-    expect(() =>
-      applySecurityHeaders({ response: "not-a-response" }, headers)
-    ).not.toThrow();
+    expect(() => {
+      applySecurityHeaders(undefined, headers);
+    }).not.toThrow();
+    expect(() => {
+      applySecurityHeaders({ response: "not-a-response" }, headers);
+    }).not.toThrow();
   });
 
   it("adds headers without replacing or consuming the stream body", async () => {

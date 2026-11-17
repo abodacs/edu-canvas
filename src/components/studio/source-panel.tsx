@@ -511,6 +511,9 @@ const RepairForm = ({
   const draftLength =
     state.repairDraft === null
       ? 0
+      // Code-point count, not UTF-16 units: [...str] and Array.from both do
+      // this, but unicorn/prefer-spread (error) and no-misused-spread (warn)
+      // each reject one of the two forms; the warn-level spread stays.
       : [...state.repairDraft].length.toLocaleString("en");
 
   return (
@@ -567,6 +570,8 @@ const validateRepairDraft = (value: string): string | null => {
   if (value.trim().length === 0) {
     return "Enter the corrected text, or replace the file instead.";
   }
+  // Same rule-conflict trade as the draft counter above: keep the warn-level
+  // spread form.
   return [...value].length > SOURCE_MAX_EXTRACTED_CHARS
     ? charLimitMessage
     : null;
@@ -740,9 +745,16 @@ const sourceRequest = async (
 ): Promise<Response | null> => {
   let response: Response;
   try {
+    // init.headers may be a Headers instance, entries, or a record; only the
+    // record form survives an object spread, so normalize through Headers.
+    // The caller's own header still wins a name collision, as before.
+    const headers = new Headers(init.headers);
+    if (!headers.has(csrfHeaderName)) {
+      headers.set(csrfHeaderName, context.csrf);
+    }
     response = await fetch(input, {
       ...init,
-      headers: { [csrfHeaderName]: context.csrf, ...init.headers },
+      headers,
     });
   } catch {
     return null;

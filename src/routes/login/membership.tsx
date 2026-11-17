@@ -47,6 +47,12 @@ const describeMembershipFailure = (
     case "CSRF_REJECTED": {
       return { tone: "error", ...membershipCopy.errors.csrfRejected };
     }
+    case "ACCESS_NOT_PROVISIONED":
+    case "FORBIDDEN":
+    case "INVALID_INPUT":
+    case "UNKNOWN": {
+      return { tone: "error", ...membershipCopy.errors.classUnavailable };
+    }
     default: {
       return { tone: "error", ...membershipCopy.errors.classUnavailable };
     }

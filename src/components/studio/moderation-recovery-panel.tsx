@@ -51,7 +51,9 @@ export const ModerationRecoveryPanel = ({
       const frame = window.requestAnimationFrame(() => {
         region.textContent = recovery.reason;
       });
-      return () => window.cancelAnimationFrame(frame);
+      return () => {
+        window.cancelAnimationFrame(frame);
+      };
     }
 
     region.textContent = recovery.reason;

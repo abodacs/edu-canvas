@@ -389,7 +389,7 @@ export const gateArtifact = (input: ArtifactGateInput): ArtifactGateResult => {
     }
     default: {
       const exhaustive: never = verdict;
-      throw new Error(`Unhandled artifact gate verdict: ${exhaustive}`);
+      throw new Error(`Unhandled artifact gate verdict: ${String(exhaustive)}`);
     }
   }
 };

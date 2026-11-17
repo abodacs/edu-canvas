@@ -34,6 +34,12 @@ const canonicalize = (value: unknown): string => {
         });
       return `{${entries.join(",")}}`;
     }
+    case "bigint":
+    case "function":
+    case "symbol":
+    case "undefined": {
+      throw new TypeError("Canonical JSON rejects unsupported values.");
+    }
     default: {
       throw new TypeError("Canonical JSON rejects unsupported values.");
     }

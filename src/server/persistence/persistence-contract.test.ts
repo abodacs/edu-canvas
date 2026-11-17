@@ -32,7 +32,7 @@ const requireLearningPath = <T extends { learningPath?: unknown }>(
   if (!draft.learningPath) {
     throw new Error("Expected the generated draft to include a learning path.");
   }
-  return draft.learningPath as NonNullable<T["learningPath"]>;
+  return draft.learningPath;
 };
 
 interface TenantFixture {

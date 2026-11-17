@@ -26,9 +26,14 @@ import { validateProviderDraft } from "@/server/generation/validation";
 const CAP = 4;
 const here = "docs/research/standards-generalization/evidence";
 const tenantId = "tenant_s4_live_probe";
-const apiKey = process.env.META_API_KEY || process.env.OPENAI_API_KEY;
-const model = process.env.META_MODEL || "muse-spark-1.2-contributor";
-const baseUrl = process.env.META_BASE_URL || "https://api.meta.ai/v1";
+// `||` fell back on a set-but-blank variable; keep that behavior.
+const nonEmptyEnv = (name: string): string | undefined => {
+  const value = process.env[name];
+  return value === undefined || value === "" ? undefined : value;
+};
+const apiKey = nonEmptyEnv("META_API_KEY") ?? nonEmptyEnv("OPENAI_API_KEY");
+const model = nonEmptyEnv("META_MODEL") ?? "muse-spark-1.2-contributor";
+const baseUrl = nonEmptyEnv("META_BASE_URL") ?? "https://api.meta.ai/v1";
 
 if (!apiKey) {
   console.log(JSON.stringify({ status: "pending META key", calls: 0 }));

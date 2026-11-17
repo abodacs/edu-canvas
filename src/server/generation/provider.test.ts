@@ -188,7 +188,7 @@ describe("lesson draft providers", () => {
       apiKey: "server-only-test-key",
       model: "muse-spark-1.2-contributor",
       fetchImplementation: (input, init) => {
-        requestUrl = String(input);
+        requestUrl = input instanceof Request ? input.url : String(input);
         requestInit = init;
         return Promise.resolve(
           Response.json(
@@ -208,7 +208,11 @@ describe("lesson draft providers", () => {
       diagnostics: [],
     });
 
-    const body = JSON.parse(String(requestInit?.body)) as {
+    const rawBody = requestInit?.body;
+    if (typeof rawBody !== "string") {
+      throw new TypeError("Expected a string request body.");
+    }
+    const body = JSON.parse(rawBody) as {
       model: string;
       input: string;
       text: { format: { name: string; type: string } };
@@ -393,7 +397,11 @@ describe("lesson draft providers", () => {
       },
     });
 
-    const body = JSON.parse(String(requestInit?.body)) as { input: string };
+    const rawBody = requestInit?.body;
+    if (typeof rawBody !== "string") {
+      throw new TypeError("Expected a string request body.");
+    }
+    const body = JSON.parse(rawBody) as { input: string };
 
     expect(body.input).toContain("graph_node_equal_parts");
     expect(body.input).toContain("screen_purpose_equal_parts");

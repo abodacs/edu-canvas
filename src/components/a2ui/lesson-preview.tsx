@@ -293,7 +293,9 @@ const VariantTabs = ({
               tabReferences.current[surface.surfaceId] = element;
             }}
             type="button"
-            onClick={() => onSelect(surface.surfaceId)}
+            onClick={() => {
+              onSelect(surface.surfaceId);
+            }}
             onKeyDown={(event) => {
               if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") {
                 return;

@@ -225,7 +225,7 @@ const roundedQuotient = (
     }
     default: {
       const exhaustive: never = rounding;
-      throw new Error(`Unhandled remainder rounding: ${exhaustive}`);
+      throw new Error(`Unhandled remainder rounding: ${String(exhaustive)}`);
     }
   }
 };
@@ -259,7 +259,7 @@ const applyOperator = (
     }
     default: {
       const exhaustive: never = operator;
-      throw new Error(`Unhandled whole-number operator: ${exhaustive}`);
+      throw new Error(`Unhandled whole-number operator: ${String(exhaustive)}`);
     }
   }
 };
@@ -320,7 +320,7 @@ const toPostfix = (
       }
       default: {
         const exhaustive: never = token;
-        throw new Error(`Unhandled expression token: ${exhaustive}`);
+        throw new Error(`Unhandled expression token: ${String(exhaustive)}`);
       }
     }
   }
@@ -505,7 +505,7 @@ const evaluateWholeNumberExpression = (
     }
     default: {
       const exhaustive: never = evaluation;
-      throw new Error(`Unhandled equation evaluation: ${exhaustive}`);
+      throw new Error(`Unhandled equation evaluation: ${String(exhaustive)}`);
     }
   }
 };

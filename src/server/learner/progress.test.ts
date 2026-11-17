@@ -59,6 +59,13 @@ const readRun = async (
   return progress.runs.find((run) => run.runId === runId) ?? null;
 };
 
+const requireRun = (run: ProgressRun | null): ProgressRun => {
+  if (run === null) {
+    throw new Error("Expected the run to be persisted.");
+  }
+  return run;
+};
+
 const replayFor = (run: ProgressRun) => {
   return replayNextActivity({
     runId: run.runId,
@@ -107,7 +114,7 @@ describe("stored decision replay (issue #8 AC2)", () => {
       derivedFromAttemptId: submitted.attemptId,
     });
 
-    const replay = replayFor(run as ProgressRun);
+    const replay = replayFor(requireRun(run));
 
     expect(replay).not.toBeNull();
     expect(replay).toStrictEqual({
@@ -130,7 +137,7 @@ describe("stored decision replay (issue #8 AC2)", () => {
 
     expect(stored?.purpose).toBe("scaffold");
 
-    expect(replayFor(run as ProgressRun)).toStrictEqual({
+    expect(replayFor(requireRun(run))).toStrictEqual({
       activityId: stored?.activityId,
       purpose: stored?.purpose,
       reason: stored?.reason,
@@ -158,7 +165,7 @@ describe("stored decision replay (issue #8 AC2)", () => {
 
     expect(stored?.purpose).toBe("scaffold");
 
-    expect(replayFor(run as ProgressRun)).toStrictEqual({
+    expect(replayFor(requireRun(run))).toStrictEqual({
       activityId: stored?.activityId,
       purpose: stored?.purpose,
       reason: stored?.reason,

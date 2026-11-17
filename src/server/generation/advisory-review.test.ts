@@ -176,7 +176,7 @@ describe("advisory review: warning-only result", () => {
           validatorVersion: "advisory-reviewer-test-v1",
         },
         reviewedAt: "2026-11-04T10:00:00.000Z",
-        latencyMs: expect.any(Number) as unknown as number,
+        latencyMs: expect.any(Number),
         findings: [
           {
             code: "AGENT_RECOMMENDATION",
@@ -238,8 +238,8 @@ describe("advisory review: warning-only result", () => {
           model: "fake-advisory-model",
           validatorVersion: "advisory-reviewer-test-v1",
         },
-        reviewedAt: expect.any(String) as unknown as string,
-        latencyMs: expect.any(Number) as unknown as number,
+        reviewedAt: expect.any(String),
+        latencyMs: expect.any(Number),
         findings: [
           {
             code: "AGENT_RECOMMENDATION",
@@ -437,7 +437,11 @@ describe("advisory review: the Meta adapter", () => {
       timeoutMs: 5000,
       fetchImplementation: (url, init) => {
         expect(url).toBe("https://api.meta.ai/v1/responses");
-        bodies.push(JSON.parse(String(init.body)) as unknown);
+        const rawBody = init.body;
+        if (typeof rawBody !== "string") {
+          throw new TypeError("Expected a string request body.");
+        }
+        bodies.push(JSON.parse(rawBody) as unknown);
         return Promise.resolve(
           Response.json({
             output_text: JSON.stringify({

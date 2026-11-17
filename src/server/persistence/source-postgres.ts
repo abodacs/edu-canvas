@@ -57,7 +57,7 @@ const hydrateSnapshot = (row: SourceSnapshotRow): SourceSnapshotRecord => {
     mode: "upload",
     fileName: row.file_name,
     fileFormat: row.file_format as SourceFileFormat,
-    fileSizeBytes: Number(row.file_size_bytes),
+    fileSizeBytes: row.file_size_bytes,
     pageCount: row.page_count,
     contentHash: row.content_hash,
     extractedText: row.extracted_text,

@@ -127,6 +127,14 @@ const parseBoolean = (
     : { value: isFallback, invalid: true };
 };
 
+// A blank environment string counts as absent. `??` alone would pass "" through
+// when `||` was the previous behavior, so every read normalizes here first and
+// call sites fall back with `??`.
+const trimmedEnv = (value: string | undefined): string | undefined => {
+  const trimmed = value?.trim();
+  return trimmed === undefined || trimmed === "" ? undefined : trimmed;
+};
+
 export const readDatabaseBootstrapConfig = (
   environment: Record<string, string | undefined> = process.env
 ): DatabaseBootstrapConfig => {
@@ -153,7 +161,7 @@ export const readDatabaseBootstrapConfig = (
     });
   }
 
-  const databaseUrl = environment.DATABASE_URL?.trim() || undefined;
+  const databaseUrl = trimmedEnv(environment.DATABASE_URL);
   if (databaseUrl && !databaseUrlSchema.safeParse(databaseUrl).success) {
     issues.push({
       code: "INVALID_DATABASE_URL",
@@ -201,7 +209,7 @@ const readSentryDsn = (
   environment: Record<string, string | undefined>,
   issues: ConfigIssue[]
 ): string | undefined => {
-  const requested = environment.SENTRY_DSN?.trim() || undefined;
+  const requested = trimmedEnv(environment.SENTRY_DSN);
   if (!requested) {
     return undefined;
   }
@@ -252,11 +260,11 @@ const readMetaSettings = (
   environment: Record<string, string | undefined>,
   issues: ConfigIssue[]
 ) => {
-  const apiKey = environment.META_API_KEY?.trim() || undefined;
-  const model = environment.META_MODEL?.trim() || "muse-spark-1.2-contributor";
+  const apiKey = trimmedEnv(environment.META_API_KEY);
+  const model = trimmedEnv(environment.META_MODEL) ?? "muse-spark-1.2-contributor";
   const timeoutMs = readMetaTimeoutMs(environment.META_TIMEOUT_MS, issues);
   const requestedBaseUrl =
-    environment.META_BASE_URL?.trim() || defaultMetaBaseUrl;
+    trimmedEnv(environment.META_BASE_URL) ?? defaultMetaBaseUrl;
   const baseUrlIsValid = metaBaseUrlSchema.safeParse(requestedBaseUrl).success;
 
   if (!baseUrlIsValid) {
@@ -330,7 +338,7 @@ const readPublicOrigin = (
   issues: ConfigIssue[]
 ): string | undefined => {
   const publicOrigin =
-    environment.AUTH_PUBLIC_ORIGIN?.trim() ||
+    trimmedEnv(environment.AUTH_PUBLIC_ORIGIN) ??
     (isDevelopment ? developmentPublicOrigin : undefined);
   if (publicOrigin !== undefined && parseUrl(publicOrigin) === null) {
     pushIssue(
@@ -349,7 +357,7 @@ const readSessionSecret = (
   issues: ConfigIssue[]
 ): string | undefined => {
   const sessionSecret =
-    environment.AUTH_SESSION_SECRET?.trim() ||
+    trimmedEnv(environment.AUTH_SESSION_SECRET) ??
     (isDevelopment ? developmentSessionSecret : undefined);
   if (sessionSecret !== undefined && sessionSecret.length < 32) {
     pushIssue(
@@ -376,7 +384,7 @@ const readCredentialKey = (
   issues: ConfigIssue[]
 ): string | undefined => {
   const credentialKey =
-    environment.AUTH_CREDENTIAL_KEY?.trim() ||
+    trimmedEnv(environment.AUTH_CREDENTIAL_KEY) ??
     (isDevelopment ? developmentCredentialKey : undefined);
   if (credentialKey !== undefined && base64ByteLength(credentialKey) !== 32) {
     pushIssue(
@@ -399,10 +407,11 @@ const readSupabaseSettings = (
   environment: Record<string, string | undefined>,
   issues: ConfigIssue[]
 ): SupabaseSettings => {
-  const supabaseUrl = environment.SUPABASE_URL?.trim() || undefined;
-  const supabaseAnonKey = environment.SUPABASE_ANON_KEY?.trim() || undefined;
-  const supabaseServiceRoleKey =
-    environment.SUPABASE_SERVICE_ROLE_KEY?.trim() || undefined;
+  const supabaseUrl = trimmedEnv(environment.SUPABASE_URL);
+  const supabaseAnonKey = trimmedEnv(environment.SUPABASE_ANON_KEY);
+  const supabaseServiceRoleKey = trimmedEnv(
+    environment.SUPABASE_SERVICE_ROLE_KEY
+  );
   if (
     supabaseUrl !== undefined &&
     !supabaseUrlSchema.safeParse(supabaseUrl).success
@@ -430,7 +439,7 @@ const readAuthConfig = (
   // The cipher frames a payload as `${version}:${iv}:${tag}:${body}`, so a
   // version containing the separator would make every session unreadable.
   const credentialKeyVersion =
-    environment.AUTH_CREDENTIAL_KEY_VERSION?.trim() || "1";
+    trimmedEnv(environment.AUTH_CREDENTIAL_KEY_VERSION) ?? "1";
   if (!/^[A-Za-z0-9_-]{1,32}$/u.test(credentialKeyVersion)) {
     pushIssue(
       issues,

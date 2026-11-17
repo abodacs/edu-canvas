@@ -118,7 +118,7 @@ describe("validation diagnostics panel", () => {
       ...rollup,
       affectedScreens: ["variant-2"],
       screens: [
-        rollup.screens[1] as PublicDiagnosticsRollup["screens"][number],
+        rollup.screens[1],
       ],
       flow: [],
     });
@@ -160,7 +160,7 @@ describe("validation diagnostics panel", () => {
       ...rollup,
       affectedScreens: ["variant-1"],
       screens: [
-        rollup.screens[0] as PublicDiagnosticsRollup["screens"][number],
+        rollup.screens[0],
       ],
       flow: [],
     });

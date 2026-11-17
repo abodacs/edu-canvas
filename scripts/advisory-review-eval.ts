@@ -122,10 +122,14 @@ const requireConfiguration = (): {
       `${KEY_ENV} is required for a measured run. The evidence cannot be produced offline.`
     );
   }
+  // `||` fell back on a set-but-blank variable; keep that behavior.
+  const model = process.env[MODEL_ENV]?.trim();
+  const baseUrl = process.env[BASE_URL_ENV]?.trim();
   return {
     apiKey,
-    model: process.env[MODEL_ENV]?.trim() || DEFAULT_MODEL,
-    baseUrl: process.env[BASE_URL_ENV]?.trim() || DEFAULT_BASE_URL,
+    model: model === undefined || model === "" ? DEFAULT_MODEL : model,
+    baseUrl:
+      baseUrl === undefined || baseUrl === "" ? DEFAULT_BASE_URL : baseUrl,
   };
 };
 

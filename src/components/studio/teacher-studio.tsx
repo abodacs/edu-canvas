@@ -107,8 +107,8 @@ const getDifficulty = (lowerPrompt: string): PromptContext["difficulty"] => {
 };
 
 const getPromptContext = (prompt: string): PromptContext => {
-  const gradeMatch = prompt.match(
-    /\b(?:grade|year|class)\s*(?<grade>[3-6])\b/iu
+  const gradeMatch = /\b(?:grade|year|class)\s*(?<grade>[3-6])\b/iu.exec(
+    prompt
   );
   const lowerPrompt = prompt.toLowerCase();
   const matchedGrade = gradeMatch?.groups?.grade;
@@ -155,6 +155,10 @@ const getResultTitle = (state: PublicGenerationResult["state"]): string => {
     case "failed-terminal": {
       return "That draft could not be finished.";
     }
+    case "ready-for-review":
+    case "requested": {
+      return "Your lesson is taking shape.";
+    }
     default: {
       return "Your lesson is taking shape.";
     }
@@ -169,6 +173,13 @@ const getResultMeta = (state: PublicGenerationResult["state"]): string => {
     }
     case "blocked-by-validation": {
       return "Blocked by validation · not shown to students";
+    }
+    case "blocked-by-moderation":
+    case "failed-retryable":
+    case "failed-terminal":
+    case "ready-for-review":
+    case "requested": {
+      return "Draft not finished · nothing was shared";
     }
     default: {
       return "Draft not finished · nothing was shared";
@@ -241,7 +252,7 @@ const recoveryEffect = (
     }
     default: {
       const exhaustive: never = action;
-      throw new Error(`Unhandled recovery action: ${exhaustive}`);
+      throw new Error(`Unhandled recovery action: ${String(exhaustive)}`);
     }
   }
 };
@@ -600,7 +611,12 @@ const VariantBoard = ({
           · Grade {draft.grade}
         </p>
         {isReady ? (
-          <Button type="button" onClick={() => onOpenReview(result.requestId)}>
+          <Button
+            type="button"
+            onClick={() => {
+              onOpenReview(result.requestId);
+            }}
+          >
             Review variants
             <ArrowRight aria-hidden="true" className="studio-flip" />
           </Button>
@@ -812,7 +828,9 @@ const TeacherComposerOutcome = ({
           requestId={blockedRequestId}
           category={blockedCategory}
           hasEarlierDraft={hasEarlierDraft}
-          onRevise={() => onRevise(blockedRequestId)}
+          onRevise={() => {
+            onRevise(blockedRequestId);
+          }}
         />
       ) : null}
 
@@ -821,8 +839,12 @@ const TeacherComposerOutcome = ({
           key={visibleResult.requestId}
           result={visibleResult}
           onOpenReview={onOpenReview}
-          onRetry={(event) => onRetry(event, visibleResult.requestId)}
-          onRecover={(action) => onRecover(action, visibleResult.requestId)}
+          onRetry={(event) => {
+            onRetry(event, visibleResult.requestId);
+          }}
+          onRecover={(action) => {
+            onRecover(action, visibleResult.requestId);
+          }}
         />
       ) : null}
     </>
@@ -1267,6 +1289,15 @@ const TeacherLessonComposer = ({
         onUnauthorized();
         break;
       }
+      case "error": {
+        // A failed "Draft again" keeps the ready board on screen; the failure
+        // renders under the objective summary that started it.
+        setResult((current) =>
+          current?.state === READY_FOR_REVIEW_STATE ? current : null
+        );
+        setFailure(attempt);
+        break;
+      }
       default: {
         // A failed "Draft again" keeps the ready board on screen; the failure
         // renders under the objective summary that started it.
@@ -1322,7 +1353,9 @@ const TeacherLessonComposer = ({
             setPrompt(value);
             updateRequestKey();
           }}
-          onSubmit={submitGeneration}
+          onSubmit={(event) => {
+            void submitGeneration(event);
+          }}
           onBoundSourceChange={setBoundSource}
           onUnauthorized={onUnauthorized}
         />

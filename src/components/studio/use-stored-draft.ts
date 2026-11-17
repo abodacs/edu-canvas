@@ -56,8 +56,14 @@ export const loadStoredDraft = async ({
       handlers().onUnauthorized();
       break;
     }
-    default: {
+    case "unavailable": {
       handlers().onUnavailable(outcome.message);
+      break;
+    }
+    default: {
+      // Every kind is cased above, so TS narrows `outcome` to never here; the
+      // default-case rule still wants the branch. It is unreachable.
+      handlers().onUnavailable("");
     }
   }
 };

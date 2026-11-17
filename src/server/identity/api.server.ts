@@ -137,8 +137,10 @@ const cookieNamesFor = (config: ServerConfig): CookieNames => {
   };
 };
 
-const sourceAddressFor = (request: Request): string =>
-  request.headers.get("fly-client-ip")?.trim() || "unknown";
+const sourceAddressFor = (request: Request): string => {
+  const source = request.headers.get("fly-client-ip")?.trim();
+  return source === undefined || source === "" ? "unknown" : source;
+};
 
 export interface AuthDependencies {
   readonly identity: IdentityService;

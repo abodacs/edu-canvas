@@ -141,6 +141,12 @@ const jsonValue = (value: unknown): JsonValue => {
             Object.entries(value).map(([key, child]) => [key, jsonValue(child)])
           );
     }
+    case "bigint":
+    case "function":
+    case "symbol":
+    case "undefined": {
+      throw new Error("Cannot encode a non-JSON persistence value.");
+    }
     default: {
       throw new Error("Cannot encode a non-JSON persistence value.");
     }

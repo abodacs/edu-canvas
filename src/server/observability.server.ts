@@ -258,7 +258,10 @@ export const createServerObservability = (
   const sourceEnvironment = options.env ?? process.env;
   const environment = getEnvironment(sourceEnvironment);
   const logger =
-    options.logger ?? ((event) => console.error(JSON.stringify(event)));
+    options.logger ??
+    ((event) => {
+      console.error(JSON.stringify(event));
+    });
   const sentryOverride = options.sentry;
   let defaultSentry: SentryReporter | undefined;
   let isDefaultSentryInitialized = sentryOverride !== undefined;

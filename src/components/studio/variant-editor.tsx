@@ -216,7 +216,9 @@ export const VariantEditor = ({
           aria-label="First hint"
           value={hint}
           maxLength={publicationTextLimit}
-          onChange={(event) => setHint(event.target.value)}
+          onChange={(event) => {
+            setHint(event.target.value);
+          }}
         />
       </label>
 
@@ -228,7 +230,9 @@ export const VariantEditor = ({
             aria-label="Feedback when correct"
             value={feedbackCorrect}
             maxLength={publicationTextLimit}
-            onChange={(event) => setFeedbackCorrect(event.target.value)}
+            onChange={(event) => {
+              setFeedbackCorrect(event.target.value);
+            }}
           />
         </label>
         <label className="review-edit-field">
@@ -238,7 +242,9 @@ export const VariantEditor = ({
             aria-label="Feedback when incorrect"
             value={feedbackIncorrect}
             maxLength={publicationTextLimit}
-            onChange={(event) => setFeedbackIncorrect(event.target.value)}
+            onChange={(event) => {
+              setFeedbackIncorrect(event.target.value);
+            }}
           />
         </label>
       </div>
@@ -288,7 +294,9 @@ export const VariantEditor = ({
         <Button
           type="button"
           disabled={busy || approved || !allWarningsAcknowledged}
-          onClick={() => onApprove(acknowledged)}
+          onClick={() => {
+            onApprove(acknowledged);
+          }}
         >
           <ShieldCheck aria-hidden="true" />
           {approved ? "Screen approved" : "Approve this screen"}

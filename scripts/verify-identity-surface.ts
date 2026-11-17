@@ -36,15 +36,16 @@ const sessionResolutionMarkers = [
 
 const listRouteFiles = async (directory: string): Promise<string[]> => {
   const entries = await readdir(directory, { withFileTypes: true });
-  const nested = await Promise.all(
-    entries.map((entry) => {
-      const entryPath = join(directory, entry.name);
-      if (entry.isDirectory()) {
-        return listRouteFiles(entryPath);
-      }
-      return entry.name.endsWith(".ts") ? [entryPath] : [];
-    })
-  );
+  const groups: Promise<string[]>[] = [];
+  for (const entry of entries) {
+    const entryPath = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      groups.push(listRouteFiles(entryPath));
+    } else if (entry.name.endsWith(".ts")) {
+      groups.push(Promise.resolve([entryPath]));
+    }
+  }
+  const nested = await Promise.all(groups);
   return nested.flat();
 };
 
