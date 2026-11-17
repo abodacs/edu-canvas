@@ -37,7 +37,7 @@ export const withTenantSql = async <T>(
   return (await withRawDatabase((sql) => {
     return sql.begin(async (transaction) => {
       await transaction`select set_config('app.tenant_id', ${tenantId}, true)`;
-      return work(transaction);
+      return await work(transaction);
     });
   })) as T;
 };

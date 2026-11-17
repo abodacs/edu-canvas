@@ -63,7 +63,7 @@ const openReview = async (): Promise<ReviewPack> => {
     packs: createSeededPackPersistence({ store }),
     now: () => "2026-10-31T12:00:00.000Z",
   });
-  return service.openReview(teacher, requestId);
+  return await service.openReview(teacher, requestId);
 };
 
 const renderGallery = (review: ReviewPack): string => {

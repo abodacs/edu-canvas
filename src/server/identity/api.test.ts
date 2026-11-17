@@ -78,7 +78,7 @@ const selectCurriculumMembership = async (
     ) ??
     memberships?.[0];
   const flow = await bootstrapFlow(sessionDependencies);
-  return handleMembership(
+  return await handleMembership(
     new Request(`${sessionDependencies.publicOrigin}/api/auth/membership`, {
       method: "POST",
       headers: {

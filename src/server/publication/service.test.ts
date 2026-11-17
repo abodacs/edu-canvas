@@ -150,7 +150,7 @@ const approveAll = async (
       });
     })
   );
-  return fixture.publishService.approve(fixture.teacher, {
+  return await fixture.publishService.approve(fixture.teacher, {
     requestId,
     versionId: review.version.id,
     targetKind: "reverse-path",

@@ -302,7 +302,7 @@ const selectTenantMembership = async (
     (membership) => membership.tenantName === tenantName
   )?.membershipId;
   const flow = await preAuthFlow(dependencies);
-  return handleMembership(
+  return await handleMembership(
     new Request(`${dependencies.publicOrigin}/api/auth/membership`, {
       method: "POST",
       headers: {

@@ -348,7 +348,7 @@ export const createPublicationService = (
 
     const latest = await packs.readLatestVersion(actor.tenantId, requestId);
     if (latest && latest.sourceArtifactHash === record.gate.artifactHash) {
-      return projectReview(actor, latest);
+      return await projectReview(actor, latest);
     }
 
     const revision = latest
@@ -371,10 +371,10 @@ export const createPublicationService = (
       ) {
         throw error;
       }
-      return projectReview(actor, reopened);
+      return await projectReview(actor, reopened);
     }
 
-    return projectReview(actor, write);
+    return await projectReview(actor, write);
   };
 
   const readReview = async (
@@ -388,7 +388,7 @@ export const createPublicationService = (
         "This review has not been opened yet."
       );
     }
-    return projectReview(actor, latest);
+    return await projectReview(actor, latest);
   };
 
   const findReceipt = async (
@@ -506,7 +506,7 @@ export const createPublicationService = (
       inputHash
     );
     if (replay) {
-      return projectReviewDecoded(actor, version, decoded);
+      return await projectReviewDecoded(actor, version, decoded);
     }
 
     const existing = await packs.readApproval(
@@ -530,7 +530,7 @@ export const createPublicationService = (
         "pack-approval",
         [existing.id]
       );
-      return projectReviewDecoded(actor, version, decoded);
+      return await projectReviewDecoded(actor, version, decoded);
     }
 
     const approvalId = createId();
@@ -568,7 +568,7 @@ export const createPublicationService = (
       "pack-approval",
       [approvalId]
     );
-    return projectReview(actor, version);
+    return await projectReview(actor, version);
   };
 
   const revise = async (
@@ -589,7 +589,7 @@ export const createPublicationService = (
       inputHash
     );
     if (replay) {
-      return projectReview(actor, current);
+      return await projectReview(actor, current);
     }
 
     const decoded = decodePackVersion(current);
@@ -614,7 +614,7 @@ export const createPublicationService = (
       if (!concurrent || concurrent.artifactHash !== write.artifactHash) {
         throw error;
       }
-      return projectReview(actor, concurrent);
+      return await projectReview(actor, concurrent);
     }
 
     await writeReceipt(
@@ -625,7 +625,7 @@ export const createPublicationService = (
       "pack-version",
       [write.id]
     );
-    return projectReview(actor, write);
+    return await projectReview(actor, write);
   };
 
   const publish = async (
@@ -646,7 +646,7 @@ export const createPublicationService = (
       inputHash
     );
     if (replay) {
-      return replayPublish(actor, version, replay.resultIds);
+      return await replayPublish(actor, version, replay.resultIds);
     }
 
     const decoded = decodePackVersion(version);

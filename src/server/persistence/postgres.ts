@@ -211,7 +211,7 @@ const readGenerationByQuery = (
 
         return rows.length === 0
           ? undefined
-          : hydrateStoredGeneration(transaction, tenantId, rows[0]);
+          : await hydrateStoredGeneration(transaction, tenantId, rows[0]);
       }
     );
   });
@@ -246,7 +246,7 @@ const readModeratedGenerationByQuery = (
 
         return rows.length === 0
           ? undefined
-          : hydrateStoredGeneration(transaction, tenantId, rows[0]);
+          : await hydrateStoredGeneration(transaction, tenantId, rows[0]);
       }
     );
   });
@@ -577,7 +577,7 @@ export const createPostgresPersistence = (
               select set_config('app.tenant_id', ${syntheticSeed.tenant.id}, true)
             `;
 
-            return transaction`
+            return await transaction`
               select
                 (select count(*)::int from tenants where id = ${syntheticSeed.tenant.id}) as tenants,
                 (select count(*)::int from identities where tenant_id = ${syntheticSeed.tenant.id} and id = any(${syntheticSeed.identities.map((identity) => identity.id)}::text[])) as identities,

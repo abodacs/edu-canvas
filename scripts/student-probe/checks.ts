@@ -254,7 +254,7 @@ export const hasTabbedTo = async (
     await page.keyboard.press("Tab");
     trace.push(`Tab → ${await describeFocus(page)}`);
   }
-  return isFocusMatching(page, match);
+  return await isFocusMatching(page, match);
 };
 
 /**

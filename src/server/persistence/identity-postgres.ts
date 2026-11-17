@@ -860,7 +860,7 @@ export const createPostgresIdentityPersistence = (
           await transaction`
             select set_config('app.tenant_id', ${input.tenantId}, true)
           `;
-          return grantMembership(transaction, input);
+          return await grantMembership(transaction, input);
         });
       });
     },
@@ -870,7 +870,7 @@ export const createPostgresIdentityPersistence = (
           await transaction`
             select set_config('app.tenant_id', ${input.tenantId}, true)
           `;
-          return assignClass(transaction, input);
+          return await assignClass(transaction, input);
         });
       });
     },

@@ -110,7 +110,7 @@ describe.skipIf(!isRun)("seeded catalog round trip", () => {
 
     const rows = await scratch.begin(async (transaction) => {
       await transaction`select set_config('app.tenant_id', ${syntheticSeed.tenant.id}, true)`;
-      return transaction<{ catalog_version: string }[]>`
+      return await transaction<{ catalog_version: string }[]>`
         select catalog_version
         from activity_versions
         where id = ${syntheticSeed.activityVersion.id}

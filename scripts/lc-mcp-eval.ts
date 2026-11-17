@@ -2366,7 +2366,7 @@ const runCommand = async (): Promise<number> => {
     return status;
   }
   if (command === "free-text") {
-    return runFreeTextCommand(output, positional);
+    return await runFreeTextCommand(output, positional);
   }
   const directory = positional[0] ?? DEFAULT_OUTPUT_DIRECTORY;
   if (command === "check") {
