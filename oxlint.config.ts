@@ -18,6 +18,49 @@ const reactDoctorOff = Object.fromEntries(
     .map((rule) => [rule, "off" as const])
 );
 
+// Type-aware activation (the `options` block below) switched on 56
+// previously-inert preset rules; these 27 fire 2040 times on the existing
+// tree. Hold them at warn until the backlog is triaged so the gate stays
+// green while the findings stay visible, and let the lint script's
+// --max-warnings pin the count so it can only fall. Known noise while the
+// backlog exists: typescript/no-deprecated flags the @deprecated
+// declarations themselves instead of uses (a port difference from
+// typescript-eslint), and typescript/switch-exhaustiveness-check reports
+// switches that already end in a safe default.
+const typeAwareWarnRules = [
+  "typescript/await-thenable",
+  "typescript/dot-notation",
+  "typescript/no-base-to-string",
+  "typescript/no-confusing-void-expression",
+  "typescript/no-deprecated",
+  "typescript/no-floating-promises",
+  "typescript/no-misused-promises",
+  "typescript/no-misused-spread",
+  "typescript/non-nullable-type-assertion-style",
+  "typescript/no-unnecessary-type-assertion",
+  "typescript/no-unnecessary-type-conversion",
+  "typescript/no-unnecessary-type-parameters",
+  "typescript/no-unsafe-argument",
+  "typescript/no-unsafe-assignment",
+  "typescript/no-unsafe-call",
+  "typescript/no-unsafe-member-access",
+  "typescript/no-unsafe-return",
+  "typescript/no-unsafe-type-assertion",
+  "typescript/prefer-nullish-coalescing",
+  "typescript/prefer-regexp-exec",
+  "typescript/prefer-string-starts-ends-with",
+  "typescript/promise-function-async",
+  "typescript/restrict-template-expressions",
+  "typescript/return-await",
+  "typescript/strict-boolean-expressions",
+  "typescript/strict-void-return",
+  "typescript/switch-exhaustiveness-check",
+];
+
+const typeAwareWarn = Object.fromEntries(
+  typeAwareWarnRules.map((rule) => [rule, "warn" as const])
+);
+
 export default defineConfig({
   extends: [core, react, tanstack, vitest, jsPlugins, tanstackJsPlugins],
   jsPlugins: jsPlugins.jsPlugins,
@@ -42,6 +85,11 @@ export default defineConfig({
     ".dependency-cruiser.cjs",
     "src/routeTree.gen.ts",
   ],
+  // Route type-aware linting through tsrs (oxlint 1.94 + tsrs 0.25): a full
+  // run costs ~0.3 s and ~90 MB more than the plain pass. Equivalent to
+  // passing --type-aware on the CLI; see the warn block in `rules` for how
+  // the first run's 2040 findings are held.
+  options: { typeAware: true },
   rules: {
     // arrow-body-style and unicorn/consistent-arrow-return-style contradict
     // each other on arrows whose single return expression spans lines. Defer
@@ -63,6 +111,9 @@ export default defineConfig({
       "error",
       { checkInfinity: false, checkNaN: false },
     ],
+    ...typeAwareWarn,
+    // A bare severity resets the preset's option; keep its "always".
+    "typescript/return-await": ["warn", "always"],
   },
   overrides: [
     {
