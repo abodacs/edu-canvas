@@ -2,7 +2,7 @@
 
 **Turn one learning objective into a lesson your students understand.**
 
-[![Foundation checks](https://github.com/abodacs/edu-canvas/actions/workflows/foundation.yml/badge.svg)](https://github.com/abodacs/edu-canvas/actions/workflows/foundation.yml) [![Security scan](https://github.com/abodacs/edu-canvas/actions/workflows/security.yml/badge.svg)](https://github.com/abodacs/edu-canvas/actions/workflows/security.yml)
+[![CI](https://github.com/abodacs/edu-canvas/actions/workflows/foundation.yml/badge.svg)](https://github.com/abodacs/edu-canvas/actions/workflows/foundation.yml)
 
 Scholé is a lesson-preparation workspace for Grades 3–6 teachers. A teacher describes an objective, reviews four structured lesson variants, and publishes the version students receive. The model drafts the lesson. The server checks its structure, curriculum quality, learning quality, and safety. The teacher makes the final decision.
 

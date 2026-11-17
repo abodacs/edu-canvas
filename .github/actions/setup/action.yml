@@ -17,7 +17,7 @@ runs:
 
     - name: Restore node_modules
       id: modules
-      uses: actions/cache@v6.1.0
+      uses: actions/cache/restore@v6.1.0
       with:
         path: node_modules
         key: node-modules-${{ runner.os }}-node26-${{ hashFiles('pnpm-lock.yaml') }}
@@ -26,3 +26,14 @@ runs:
       if: steps.modules.outputs.cache-hit != 'true'
       shell: bash
       run: pnpm install --frozen-lockfile
+
+    # Saving is gated to main because that is the only place the cache
+    # applies: a pull request's cache is scoped to its own branch and can
+    # never be read by another branch, so saving there would only evict the
+    # caches every branch shares.
+    - name: Save node_modules
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: actions/cache/save@v6.1.0
+      with:
+        path: node_modules
+        key: node-modules-${{ runner.os }}-node26-${{ hashFiles('pnpm-lock.yaml') }}
