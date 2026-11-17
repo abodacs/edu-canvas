@@ -178,9 +178,9 @@ const seededAdapter: IdentityAdapter = {
     );
     return fixture;
   },
-  cleanupFixture: () => {
+  cleanupFixture: async () => {
     resetSeededStore();
-    return Promise.resolve();
+    await Promise.resolve();
   },
 };
 
@@ -196,7 +196,9 @@ const postgresAdapter: IdentityAdapter = {
     );
     return fixture;
   },
-  cleanupFixture: (fixture) => deleteFixtureRows(fixture),
+  cleanupFixture: async (fixture) => {
+    await deleteFixtureRows(fixture);
+  },
 };
 
 const adapters: readonly IdentityAdapter[] = [seededAdapter, postgresAdapter];

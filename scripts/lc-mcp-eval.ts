@@ -1496,8 +1496,8 @@ const readEvidenceFile = async (filePath: string): Promise<Evidence> => {
   return parsed;
 };
 
-const readEvidence = (directory: string): Promise<Evidence> =>
-  readEvidenceFile(join(directory, EVIDENCE_FILE));
+const readEvidence = async (directory: string): Promise<Evidence> =>
+  await readEvidenceFile(join(directory, EVIDENCE_FILE));
 
 // 4 and 6. Verify the schema artifact and the rendered report, not just evidence.json.
 const checkToolSchemas = async (

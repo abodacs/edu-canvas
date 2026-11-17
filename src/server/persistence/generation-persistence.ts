@@ -249,8 +249,8 @@ export const createGenerationPersistence = <TTransaction>(
         : undefined;
     },
 
-    saveGeneration: (record, expected) => {
-      return backend.withTransaction(async (transaction) => {
+    saveGeneration: async (record, expected) => {
+      return await backend.withTransaction(async (transaction) => {
         await backend.setTenant(transaction, record.tenantId);
 
         const updated = await backend.updateRequestWithExpectation(
@@ -272,22 +272,26 @@ export const createGenerationPersistence = <TTransaction>(
       });
     },
 
-    findGenerationByIdempotencyKey: (tenantId, teacherId, idempotencyKey) => {
-      return backend.findGenerationByIdempotencyKey(
+    findGenerationByIdempotencyKey: async (
+      tenantId,
+      teacherId,
+      idempotencyKey
+    ) => {
+      return await backend.findGenerationByIdempotencyKey(
         tenantId,
         teacherId,
         idempotencyKey
       );
     },
 
-    findModeratedGeneration: (tenantId, teacherId, requestHash) =>
-      backend.findModeratedGeneration(tenantId, teacherId, requestHash),
+    findModeratedGeneration: async (tenantId, teacherId, requestHash) =>
+      await backend.findModeratedGeneration(tenantId, teacherId, requestHash),
 
-    readGeneration: (tenantId, requestId) =>
-      backend.readGeneration(tenantId, requestId),
+    readGeneration: async (tenantId, requestId) =>
+      await backend.readGeneration(tenantId, requestId),
 
-    writeAdvisoryReview: (tenantId, requestId, review) => {
-      return backend.withTransaction(async (transaction) => {
+    writeAdvisoryReview: async (tenantId, requestId, review) => {
+      return await backend.withTransaction(async (transaction) => {
         await backend.setTenant(transaction, tenantId);
         return await backend.writeAdvisoryReview(
           transaction,

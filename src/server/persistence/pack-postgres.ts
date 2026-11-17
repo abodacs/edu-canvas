@@ -241,8 +241,8 @@ export const createPostgresPackPersistence = (
       }
     },
 
-    listVersions: (tenantId, requestId) => {
-      return withTenant(databaseUrl, tenantId, async (transaction) => {
+    listVersions: async (tenantId, requestId) => {
+      return await withTenant(databaseUrl, tenantId, async (transaction) => {
         const rows = await transaction<PackRow[]>`
           select *
           from pack_versions
@@ -253,8 +253,8 @@ export const createPostgresPackPersistence = (
       });
     },
 
-    readLatestVersion: (tenantId, requestId) => {
-      return withTenant(databaseUrl, tenantId, async (transaction) => {
+    readLatestVersion: async (tenantId, requestId) => {
+      return await withTenant(databaseUrl, tenantId, async (transaction) => {
         const rows = await transaction<PackRow[]>`
           select *
           from pack_versions
@@ -266,8 +266,8 @@ export const createPostgresPackPersistence = (
       });
     },
 
-    readVersion: (tenantId, versionId) => {
-      return withTenant(databaseUrl, tenantId, async (transaction) => {
+    readVersion: async (tenantId, versionId) => {
+      return await withTenant(databaseUrl, tenantId, async (transaction) => {
         const rows = await transaction<PackRow[]>`
           select *
           from pack_versions
@@ -278,8 +278,8 @@ export const createPostgresPackPersistence = (
       });
     },
 
-    insertVersion: (record) => {
-      return withTenant(databaseUrl, record.tenantId, async (transaction) => {
+    insertVersion: async (record) => {
+      await withTenant(databaseUrl, record.tenantId, async (transaction) => {
         await runInsert(() => {
           return transaction`
             insert into pack_versions (
@@ -311,8 +311,8 @@ export const createPostgresPackPersistence = (
       });
     },
 
-    listApprovals: (tenantId, versionId) => {
-      return withTenant(databaseUrl, tenantId, async (transaction) => {
+    listApprovals: async (tenantId, versionId) => {
+      return await withTenant(databaseUrl, tenantId, async (transaction) => {
         const rows = await transaction<PackRow[]>`
           select *
           from pack_approvals
@@ -323,8 +323,8 @@ export const createPostgresPackPersistence = (
       });
     },
 
-    readApproval: (tenantId, versionId, targetKind, targetId) => {
-      return withTenant(databaseUrl, tenantId, async (transaction) => {
+    readApproval: async (tenantId, versionId, targetKind, targetId) => {
+      return await withTenant(databaseUrl, tenantId, async (transaction) => {
         const rows = await transaction<PackRow[]>`
           select *
           from pack_approvals
@@ -338,8 +338,8 @@ export const createPostgresPackPersistence = (
       });
     },
 
-    insertApproval: (record) => {
-      return withTenant(databaseUrl, record.tenantId, async (transaction) => {
+    insertApproval: async (record) => {
+      await withTenant(databaseUrl, record.tenantId, async (transaction) => {
         await runInsert(() => {
           return transaction`
             insert into pack_approvals (
@@ -360,8 +360,8 @@ export const createPostgresPackPersistence = (
       });
     },
 
-    readPublicationForVersion: (tenantId, versionId) => {
-      return withTenant(databaseUrl, tenantId, async (transaction) => {
+    readPublicationForVersion: async (tenantId, versionId) => {
+      return await withTenant(databaseUrl, tenantId, async (transaction) => {
         const rows = await transaction<PackRow[]>`
           select *
           from pack_publications
@@ -372,8 +372,8 @@ export const createPostgresPackPersistence = (
       });
     },
 
-    insertPublication: (record) => {
-      return withTenant(databaseUrl, record.tenantId, async (transaction) => {
+    insertPublication: async (record) => {
+      await withTenant(databaseUrl, record.tenantId, async (transaction) => {
         await runInsert(() => {
           return transaction`
             insert into pack_publications (
@@ -394,8 +394,8 @@ export const createPostgresPackPersistence = (
       });
     },
 
-    readAssignmentForPublication: (tenantId, publicationId) => {
-      return withTenant(databaseUrl, tenantId, async (transaction) => {
+    readAssignmentForPublication: async (tenantId, publicationId) => {
+      return await withTenant(databaseUrl, tenantId, async (transaction) => {
         const rows = await transaction<PackRow[]>`
           select *
           from pack_assignments
@@ -407,8 +407,8 @@ export const createPostgresPackPersistence = (
       });
     },
 
-    insertAssignment: (record) => {
-      return withTenant(databaseUrl, record.tenantId, async (transaction) => {
+    insertAssignment: async (record) => {
+      await withTenant(databaseUrl, record.tenantId, async (transaction) => {
         await runInsert(() => {
           return transaction`
             insert into pack_assignments (
@@ -425,8 +425,8 @@ export const createPostgresPackPersistence = (
       });
     },
 
-    readReceipt: (tenantId, actorId, action, operationKey) => {
-      return withTenant(databaseUrl, tenantId, async (transaction) => {
+    readReceipt: async (tenantId, actorId, action, operationKey) => {
+      return await withTenant(databaseUrl, tenantId, async (transaction) => {
         const rows = await transaction<PackRow[]>`
           select *
           from pack_receipts
@@ -440,8 +440,8 @@ export const createPostgresPackPersistence = (
       });
     },
 
-    insertReceipt: (record) => {
-      return withTenant(databaseUrl, record.tenantId, async (transaction) => {
+    insertReceipt: async (record) => {
+      await withTenant(databaseUrl, record.tenantId, async (transaction) => {
         await runInsert(() => {
           return transaction`
             insert into pack_receipts (
@@ -463,8 +463,8 @@ export const createPostgresPackPersistence = (
       });
     },
 
-    listLearners: (tenantId) => {
-      return withTenant(databaseUrl, tenantId, async (transaction) => {
+    listLearners: async (tenantId) => {
+      return await withTenant(databaseUrl, tenantId, async (transaction) => {
         const rows = await transaction<PackRow[]>`
           select identities.id, identities.display_name
           from identities
@@ -483,8 +483,8 @@ export const createPostgresPackPersistence = (
       });
     },
 
-    readLearner: (tenantId, learnerId) => {
-      return withTenant(databaseUrl, tenantId, async (transaction) => {
+    readLearner: async (tenantId, learnerId) => {
+      return await withTenant(databaseUrl, tenantId, async (transaction) => {
         const rows = await transaction<PackRow[]>`
           select identities.id, identities.display_name
           from identities

@@ -108,12 +108,12 @@ export const createSeededGenerationLimitStore = (
     return { allowed: true };
   };
 
-  const reserveProviderCall = (
+  const reserveProviderCall = async (
     input: ProviderCallReservation
   ): Promise<LimitVerdict> => {
     const decision = evaluate(input);
     if (!decision.allowed) {
-      return Promise.resolve(decision.verdict);
+      return await Promise.resolve(decision.verdict);
     }
 
     const nowMs = now();
@@ -146,17 +146,17 @@ export const createSeededGenerationLimitStore = (
       });
     }
 
-    return Promise.resolve({ allowed: true, retryAfterMs: 0 });
+    return { allowed: true, retryAfterMs: 0 };
   };
 
-  const releaseGenerationLease = (input: LeaseRelease): Promise<void> => {
+  const releaseGenerationLease = async (input: LeaseRelease): Promise<void> => {
     const key = leaseKey(input.tenantId, input.teacherId);
     const existing = leases.get(key);
     const holder = generationLeaseHolder(input.requestId, input.attemptNumber);
     if (existing?.holder === holder) {
       leases.delete(key);
     }
-    return Promise.resolve();
+    await Promise.resolve();
   };
 
   return {

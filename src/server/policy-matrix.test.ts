@@ -231,8 +231,8 @@ const sessionCookie = (response: Response): string =>
 
 const serverConfig = () => readServerConfig({ ...testServerEnvironment });
 
-const authDependencies = (): Promise<AuthDependencies> =>
-  resolveAuthDependencies(serverConfig());
+const authDependencies = async (): Promise<AuthDependencies> =>
+  await resolveAuthDependencies(serverConfig());
 
 const foundationPersistence = (): FoundationPersistence =>
   createFoundationPersistence(serverConfig());
@@ -253,12 +253,12 @@ const preAuthFlow = async (
   };
 };
 
-const signInResponse = (
+const signInResponse = async (
   dependencies: AuthDependencies,
   email: string,
   flow: CookieJar
 ): Promise<Response> => {
-  return handleSignIn(
+  return await handleSignIn(
     new Request(`${dependencies.publicOrigin}/api/auth/sign-in`, {
       method: "POST",
       headers: {
@@ -435,12 +435,12 @@ const generate = async (
   };
 };
 
-const readDraft = (
+const readDraft = async (
   dependencies: AuthDependencies,
   requestId: string,
   cookie?: string
 ): Promise<Response> => {
-  return handleReadGenerationRequest(
+  return await handleReadGenerationRequest(
     new Request(
       `${dependencies.publicOrigin}/api/lessons/${encodeURIComponent(requestId)}`,
       cookie === undefined ? undefined : { headers: { cookie } }
@@ -1123,11 +1123,11 @@ describe("protected domain policy matrix", () => {
         ),
       ];
       const codes = await Promise.all(
-        responses.map((entry) => errorCode(entry.response))
+        responses.map(async (entry) => await errorCode(entry.response))
       );
       const rows = await Promise.all(
-        [forged, absent, foreign].map((key) => {
-          return foundationPersistence().findGenerationByIdempotencyKey(
+        [forged, absent, foreign].map(async (key) => {
+          return await foundationPersistence().findGenerationByIdempotencyKey(
             northTenantId,
             teacherActorId,
             key
@@ -1815,11 +1815,12 @@ describe("protected domain policy matrix", () => {
 
       const responses = await Promise.all(
         [colleagueDraft.requestId, foreignDraft.requestId, "draft_missing"].map(
-          (requestId) => readDraft(dependencies, requestId, teacher.cookie)
+          async (requestId) =>
+            await readDraft(dependencies, requestId, teacher.cookie)
         )
       );
       const bodies = await Promise.all(
-        responses.map((response) => response.text())
+        responses.map(async (response) => await response.text())
       );
 
       expect({
@@ -2422,9 +2423,9 @@ describe("protected domain policy matrix", () => {
       let providerCalls = 0;
       const countingProvider: LessonDraftProvider = {
         ...provider,
-        generate: (input, context, options) => {
+        generate: async (input, context, options) => {
           providerCalls += 1;
-          return provider.generate(input, context, options);
+          return await provider.generate(input, context, options);
         },
       };
       let sequence = 0;

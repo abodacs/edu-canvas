@@ -298,10 +298,10 @@ describe("lesson generation service", () => {
         promptTemplateVersion: "lesson-prompt-v1",
         validatorVersion: "lesson-validator-v2",
       },
-      generate(request) {
+      async generate(request) {
         const draft = createEquivalentFractionsDraft(request);
         delete draft.learningPath;
-        return Promise.resolve({ draft });
+        return await Promise.resolve({ draft });
       },
     };
     const service = createGenerationService({
@@ -445,7 +445,7 @@ describe("lesson generation service", () => {
           promptTemplateVersion: "lesson-prompt-v1",
           validatorVersion: "lesson-validator-v2",
         },
-        generate(request) {
+        async generate(request) {
           const draft = createEquivalentFractionsDraft(request);
           const [firstVariant] = draft.variants;
           draft.variants[1] = {
@@ -478,7 +478,7 @@ describe("lesson generation service", () => {
               };
             }),
           };
-          return Promise.resolve({ draft });
+          return await Promise.resolve({ draft });
         },
       },
       requestIdFactory: () => "draft_req_semantic_warning",
@@ -514,14 +514,14 @@ describe("lesson generation service", () => {
         promptTemplateVersion: "lesson-prompt-v1",
         validatorVersion: "lesson-validator-v2",
       },
-      generate(request: Parameters<LessonDraftProvider["generate"]>[0]) {
+      async generate(request: Parameters<LessonDraftProvider["generate"]>[0]) {
         const draft = createEquivalentFractionsDraft(request);
         const [firstVariant] = draft.variants;
         firstVariant.targetItems[0] = {
           id: firstVariant.targetItems[0]?.id ?? "target-1-1",
           label: "3/4",
         };
-        return Promise.resolve({ draft });
+        return await Promise.resolve({ draft });
       },
     };
     const service = createGenerationService({
@@ -562,10 +562,10 @@ describe("lesson generation service", () => {
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
       requestIdFactory: () => "draft_req_semantic_retry",
-      semanticValidation: (input) => {
+      semanticValidation: async (input) => {
         validationCalls += 1;
         if (validationCalls === 1) {
-          return Promise.resolve({
+          return {
             status: "retryable",
             verdict: "hard_block",
             recovery: "retry",
@@ -587,9 +587,9 @@ describe("lesson generation service", () => {
               message:
                 "Validation did not finish safely. Try this draft again.",
             },
-          });
+          };
         }
-        return validateSemanticLesson(input);
+        return await validateSemanticLesson(input);
       },
     });
 
@@ -786,8 +786,14 @@ describe("lesson generation service", () => {
     });
     const persistence = {
       ...basePersistence,
-      expireGenerationClaim: () => Promise.resolve(undefined),
-      readGeneration: () => Promise.resolve(structuredClone(currentRecord)),
+      expireGenerationClaim: async (): Promise<
+        LessonGenerationRecord | undefined
+      > => {
+        await Promise.resolve();
+        return undefined;
+      },
+      readGeneration: async () =>
+        await Promise.resolve(structuredClone(currentRecord)),
     };
     const service = createGenerationService({
       limits: createSeededGenerationLimitStore(),
@@ -818,9 +824,9 @@ describe("lesson generation service", () => {
     let claimedRecord: LessonGenerationRecord | undefined;
     const persistence = {
       ...basePersistence,
-      claimGeneration(record: LessonGenerationRecord) {
+      async claimGeneration(record: LessonGenerationRecord) {
         claimedRecord = structuredClone(record);
-        return basePersistence.claimGeneration(record);
+        return await basePersistence.claimGeneration(record);
       },
     };
     const service = createGenerationService({
@@ -935,8 +941,8 @@ describe("lesson generation service", () => {
           promptTemplateVersion: "test-prompt-v1",
           validatorVersion: "lesson-validator-v2",
         },
-        generate: (request) => {
-          return Promise.resolve({
+        generate: async (request) => {
+          return await Promise.resolve({
             draft: createEquivalentFractionsDraft({
               ...request,
               language: "en",
@@ -981,7 +987,9 @@ describe("lesson generation service", () => {
         promptTemplateVersion: "test-prompt-v1",
         validatorVersion: "lesson-validator-v1",
       },
-      generate(request: Parameters<typeof createEquivalentFractionsDraft>[0]) {
+      async generate(
+        request: Parameters<typeof createEquivalentFractionsDraft>[0]
+      ) {
         calls += 1;
         if (calls === 1) {
           throw new LessonProviderError(
@@ -989,7 +997,7 @@ describe("lesson generation service", () => {
             "The lesson provider timed out. Try again."
           );
         }
-        return Promise.resolve({
+        return await Promise.resolve({
           draft: createEquivalentFractionsDraft(request),
         });
       },
@@ -1088,12 +1096,12 @@ describe("lesson generation service", () => {
       persistence: createSeededPersistence(),
       provider: {
         provenance,
-        generate(request) {
+        async generate(request) {
           calls += 1;
           if (calls === 1) {
             const draft = createEquivalentFractionsDraft(request);
             draft.variants[0].relationships[0].targetId = "missing-target";
-            return Promise.resolve({ draft });
+            return await Promise.resolve({ draft });
           }
 
           throw new LessonProviderError(
@@ -1193,8 +1201,8 @@ describe("lesson generation service", () => {
           promptTemplateVersion: "test-prompt-v1",
           validatorVersion: "lesson-validator-v1",
         },
-        generate: () => {
-          return Promise.resolve({
+        generate: async () => {
+          return await Promise.resolve({
             draft: { unsafe: "<script>model output</script>" },
           });
         },
@@ -1310,7 +1318,7 @@ describe("lesson generation service", () => {
         promptTemplateVersion: "test",
         validatorVersion: "test",
       },
-      generate(request) {
+      async generate(request) {
         calls += 1;
         if (calls === 1) {
           throw new LessonProviderError(
@@ -1318,7 +1326,7 @@ describe("lesson generation service", () => {
             "The lesson provider timed out. Try again."
           );
         }
-        return Promise.resolve({
+        return await Promise.resolve({
           draft: createEquivalentFractionsDraft(request),
         });
       },
@@ -1349,8 +1357,11 @@ describe("lesson generation service", () => {
     const provider = createDeterministicLessonDraftProvider();
     const service = createGenerationService({
       limits: {
-        reserveProviderCall: () => Promise.reject(new Error("store down")),
-        releaseGenerationLease: () => Promise.resolve(),
+        reserveProviderCall: async () => {
+          await Promise.resolve();
+          throw new Error("store down");
+        },
+        releaseGenerationLease: async () => {},
       },
       persistence: createSeededPersistence(),
       provider,

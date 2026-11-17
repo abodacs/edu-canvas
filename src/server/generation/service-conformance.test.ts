@@ -95,7 +95,7 @@ const createControlledProvider = (
       validatorVersion: "lesson-validator-v2",
     },
     calls,
-    generate: (request, context, options) => {
+    generate: async (request, context, options) => {
       const deferred = Promise.withResolvers<ProviderResponse>();
       calls.push({
         request,
@@ -118,7 +118,7 @@ const createControlledProvider = (
           { once: true }
         );
       }
-      return deferred.promise;
+      return await deferred.promise;
     },
   };
 };
@@ -225,8 +225,8 @@ describe("generation service conformance: idempotency and ownership", () => {
       persistence: createSeededPersistence(),
       provider,
       requestIdFactory: () => "draft_req_conformance_correction_duplicate",
-      semanticValidation: () => {
-        return Promise.resolve({
+      semanticValidation: async () => {
+        return await Promise.resolve({
           status: "complete",
           verdict: "pass",
           recovery: null,
@@ -469,8 +469,8 @@ describe("generation service conformance: idempotency and ownership", () => {
       persistence: createSeededPersistence(),
       provider,
       requestIdFactory: () => "draft_req_conformance_valid_correction",
-      semanticValidation: () => {
-        return Promise.resolve({
+      semanticValidation: async () => {
+        return await Promise.resolve({
           status: "complete",
           verdict: "pass",
           recovery: null,
@@ -740,7 +740,7 @@ describe("generation service conformance: retries and moderation", () => {
       let calls = 0;
       const provider: LessonDraftProvider = {
         provenance: createDeterministicLessonDraftProvider().provenance,
-        generate(request) {
+        async generate(request) {
           calls += 1;
           if (calls === 1) {
             throw new LessonProviderError(
@@ -748,7 +748,7 @@ describe("generation service conformance: retries and moderation", () => {
               "The lesson provider failed. Try again."
             );
           }
-          return Promise.resolve({
+          return await Promise.resolve({
             draft: createEquivalentFractionsDraft(request),
           });
         },

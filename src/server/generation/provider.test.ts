@@ -126,7 +126,7 @@ const createHangingFetch = () => {
   const state: { attempts: number; signal?: AbortSignal | null } = {
     attempts: 0,
   };
-  const fetchImplementation: typeof fetch = (_input, init) => {
+  const fetchImplementation: typeof fetch = async (_input, init) => {
     state.attempts += 1;
     state.signal = init?.signal;
     const deferred = Promise.withResolvers<Response>();
@@ -137,7 +137,7 @@ const createHangingFetch = () => {
       },
       { once: true }
     );
-    return deferred.promise;
+    return await deferred.promise;
   };
 
   return { state, fetchImplementation };
@@ -187,10 +187,10 @@ describe("lesson draft providers", () => {
     const provider = createMetaLessonDraftProvider({
       apiKey: "server-only-test-key",
       model: "muse-spark-1.2-contributor",
-      fetchImplementation: (input, init) => {
+      fetchImplementation: async (input, init) => {
         requestUrl = input instanceof Request ? input.url : String(input);
         requestInit = init;
-        return Promise.resolve(
+        return await Promise.resolve(
           Response.json(
             {
               output_text: JSON.stringify(
@@ -231,8 +231,8 @@ describe("lesson draft providers", () => {
     const provider = createMetaLessonDraftProvider({
       apiKey: "server-only-test-key",
       model: "muse-spark-1.2-contributor",
-      fetchImplementation: () => {
-        return Promise.resolve(
+      fetchImplementation: async () => {
+        return await Promise.resolve(
           new Response("provider details must stay server-side", {
             status: 429,
           })
@@ -265,9 +265,11 @@ describe("lesson draft providers", () => {
       const provider = createMetaLessonDraftProvider({
         apiKey: "server-only-test-key",
         model: "muse-spark-1.2-contributor",
-        fetchImplementation: () => {
+        fetchImplementation: async () => {
           attempts += 1;
-          return Promise.resolve(new Response("provider details", { status }));
+          return await Promise.resolve(
+            new Response("provider details", { status })
+          );
         },
       });
 
@@ -349,9 +351,9 @@ describe("lesson draft providers", () => {
     const provider = createMetaLessonDraftProvider({
       apiKey: "server-only-test-key",
       model: "muse-spark-1.2-contributor",
-      fetchImplementation: (_input, init) => {
+      fetchImplementation: async (_input, init) => {
         requestInit = init;
-        return Promise.resolve(
+        return await Promise.resolve(
           Response.json(
             {
               output_text: JSON.stringify(

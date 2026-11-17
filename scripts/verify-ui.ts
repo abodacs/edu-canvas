@@ -127,10 +127,10 @@ const parseArguments = (
   };
 };
 
-const distinctValues = (
+const distinctValues = async (
   page: Page
 ): Promise<{ fontSizes: number; radii: number }> =>
-  page.evaluate(() => {
+  await page.evaluate(() => {
     const sizes = new Set<string>();
     const radii = new Set<string>();
     for (const element of document.querySelectorAll<HTMLElement>("body *")) {

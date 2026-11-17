@@ -33,10 +33,10 @@ interface ProvisionedIdentityRow {
   is_active: boolean;
 }
 
-const readTenantRow = (
+const readTenantRow = async (
   rowTenantId: string
 ): Promise<ProvisionedTenantRow | undefined> => {
-  return withTenantSql(rowTenantId, async (transaction) => {
+  return await withTenantSql(rowTenantId, async (transaction) => {
     const rows = await transaction<ProvisionedTenantRow[]>`
       select id, slug, name, synthetic_data_only
       from tenants
@@ -69,8 +69,8 @@ describe.skipIf(!isRunDatabaseTests)(
     const learnerId = parseLearnerId(`learner_issue_115_${runId}`);
     const learnerTenantName = "Issue 115 learner school";
 
-    const countActorMemberships = (): Promise<number> => {
-      return withTenantSql(tenantId, async (transaction) => {
+    const countActorMemberships = async (): Promise<number> => {
+      return await withTenantSql(tenantId, async (transaction) => {
         const rows = await transaction<{ count: string }[]>`
           select count(*) as count
           from memberships
@@ -80,10 +80,10 @@ describe.skipIf(!isRunDatabaseTests)(
       });
     };
 
-    const readProvisionedLearnerIdentity = (): Promise<
+    const readProvisionedLearnerIdentity = async (): Promise<
       ProvisionedIdentityRow | undefined
     > => {
-      return withTenantSql(learnerTenantId, async (transaction) => {
+      return await withTenantSql(learnerTenantId, async (transaction) => {
         const rows = await transaction<ProvisionedIdentityRow[]>`
           select id, tenant_id, role, display_name, demo_handle, is_active
           from identities
@@ -93,8 +93,8 @@ describe.skipIf(!isRunDatabaseTests)(
       });
     };
 
-    const countLearnerIdentityRows = (): Promise<number> => {
-      return withTenantSql(learnerTenantId, async (transaction) => {
+    const countLearnerIdentityRows = async (): Promise<number> => {
+      return await withTenantSql(learnerTenantId, async (transaction) => {
         const rows = await transaction<{ count: string }[]>`
           select count(*) as count
           from identities
@@ -104,8 +104,8 @@ describe.skipIf(!isRunDatabaseTests)(
       });
     };
 
-    const countLearnerMemberships = (): Promise<number> => {
-      return withTenantSql(learnerTenantId, async (transaction) => {
+    const countLearnerMemberships = async (): Promise<number> => {
+      return await withTenantSql(learnerTenantId, async (transaction) => {
         const rows = await transaction<{ count: string }[]>`
           select count(*) as count
           from memberships

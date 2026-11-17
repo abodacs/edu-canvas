@@ -389,12 +389,12 @@ describe("bounded semantic lesson validation", () => {
           {
             role: "curriculum",
             version: "agent-fixture-v1",
-            review(agentInput) {
+            async review(agentInput) {
               const agentVariant = agentInput.draft.variants.at(0);
               if (agentVariant) {
                 agentVariant.title = "rewritten by agent";
               }
-              return Promise.resolve([
+              return await Promise.resolve([
                 {
                   verdict: "pass" as const,
                   code: "AGENT_APPROVED",
@@ -438,14 +438,14 @@ describe("bounded semantic lesson validation", () => {
           {
             role: "learning-quality",
             version: "agent-private-output-fixture-v1",
-            review(agentInput) {
+            async review(agentInput) {
               const firstVariant = agentInput.draft.variants.at(0);
               advisoryRelationshipCount =
                 firstVariant?.relationships.length ?? -1;
               if (firstVariant) {
                 firstVariant.title = "rewritten by agent";
               }
-              return Promise.resolve([
+              return await Promise.resolve([
                 {
                   verdict: "warning" as const,
                   code: "PRIVATE_OUTPUT",

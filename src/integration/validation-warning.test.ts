@@ -36,12 +36,12 @@ const warningReport: SemanticValidationReport = {
   retry: { available: false, message: "No retry needed." },
 };
 
-const generateWarningOnly = () => {
-  return createGenerationService({
+const generateWarningOnly = async () => {
+  return await createGenerationService({
     limits: createSeededGenerationLimitStore(),
     persistence: createSeededPersistence(),
     provider: createDeterministicLessonDraftProvider(),
-    semanticValidation: () => Promise.resolve(warningReport),
+    semanticValidation: async () => await Promise.resolve(warningReport),
   }).generate({
     actor: teacherActor,
     input: {

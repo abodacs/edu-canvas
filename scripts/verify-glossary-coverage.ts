@@ -65,7 +65,7 @@ const tables = schemaSource
   .toArray();
 
 const schemaSources = await Promise.all(
-  recordSchemaFiles.map((file) => readFile(file, "utf-8"))
+  recordSchemaFiles.map(async (file) => await readFile(file, "utf-8"))
 );
 const recordSchemas = schemaSources
   .flatMap((contents) => contents.matchAll(recordSchema).toArray())

@@ -284,8 +284,9 @@ describe("advisory review: failure leaves the record untouched", () => {
   it("reports an agent failure and writes nothing", async () => {
     const fixture = await createReadyFixture();
     const before = snapshotOf(fixture.record);
-    const agent = fakeAgent(() => {
-      return Promise.reject(new Error("provider rejected the request"));
+    const agent = fakeAgent(async () => {
+      await Promise.resolve();
+      throw new Error("provider rejected the request");
     });
 
     const outcome = await serviceFor(fixture, agent).review(
@@ -312,7 +313,7 @@ describe("advisory review: failure leaves the record untouched", () => {
     const fixture = await createReadyFixture();
     const stalePersistence: GenerationPersistence = {
       ...fixture.persistence,
-      writeAdvisoryReview: () => Promise.resolve(false),
+      writeAdvisoryReview: async () => await Promise.resolve(false),
     };
 
     await expect(
@@ -366,7 +367,7 @@ describe("advisory review: ownership and readiness refusals", () => {
     };
     const persistence: GenerationPersistence = {
       ...fixture.persistence,
-      readGeneration: () => Promise.resolve(blocked),
+      readGeneration: async () => await Promise.resolve(blocked),
     };
     const agent = fakeAgent([warning()]);
 
@@ -435,14 +436,14 @@ describe("advisory review: the Meta adapter", () => {
       model: "test-model",
       version: "advisory-reviewer-test-v1",
       timeoutMs: 5000,
-      fetchImplementation: (url, init) => {
+      fetchImplementation: async (url, init) => {
         expect(url).toBe("https://api.meta.ai/v1/responses");
         const rawBody = init.body;
         if (typeof rawBody !== "string") {
           throw new TypeError("Expected a string request body.");
         }
         bodies.push(JSON.parse(rawBody) as unknown);
-        return Promise.resolve(
+        return await Promise.resolve(
           Response.json({
             output_text: JSON.stringify({
               recommendations: [
@@ -491,8 +492,8 @@ describe("advisory review: the Meta adapter", () => {
       model: "test-model",
       version: "advisory-reviewer-test-v1",
       timeoutMs: 5000,
-      fetchImplementation: () =>
-        Promise.resolve(Response.json({ output_text: "not json" })),
+      fetchImplementation: async () =>
+        await Promise.resolve(Response.json({ output_text: "not json" })),
     });
 
     const outcome = await serviceFor(fixture, agent).review(

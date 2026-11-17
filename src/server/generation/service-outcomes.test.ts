@@ -182,16 +182,16 @@ describe("generation attempt outcomes", () => {
       persistence: createSeededPersistence(),
       provider: {
         provenance: createDeterministicLessonDraftProvider().provenance,
-        generate(request) {
+        async generate(request) {
           const draft = createEquivalentFractionsDraft(request);
           if (draft.learningPath) {
             draft.learningPath.steps[0].screenPurposeId = "unapproved-purpose";
           }
-          return Promise.resolve({ draft });
+          return await Promise.resolve({ draft });
         },
       },
-      semanticValidation: () => {
-        return Promise.resolve({
+      semanticValidation: async () => {
+        return await Promise.resolve({
           status: "complete",
           verdict: "pass",
           recovery: null,

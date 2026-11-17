@@ -103,11 +103,11 @@ const insertStandardRows = async (
   );
 };
 
-export const syncSeededStandardRows = (
+export const syncSeededStandardRows = async (
   transaction: postgres.TransactionSql,
   tenantId: string
 ): Promise<void> => {
-  return insertStandardRows(transaction, tenantId, "sync");
+  await insertStandardRows(transaction, tenantId, "sync");
 };
 
 /**
@@ -115,11 +115,11 @@ export const syncSeededStandardRows = (
  * the transaction that created it. Replay is insert-if-missing: an existing
  * row keeps whatever the tenant stored.
  */
-export const provisionTenantStandards = (
+export const provisionTenantStandards = async (
   transaction: postgres.TransactionSql,
   tenantId: string
 ): Promise<void> => {
-  return insertStandardRows(transaction, tenantId, "insert-if-missing");
+  await insertStandardRows(transaction, tenantId, "insert-if-missing");
 };
 
 export const getSyntheticSeedCounts = (): SeedCounts => {

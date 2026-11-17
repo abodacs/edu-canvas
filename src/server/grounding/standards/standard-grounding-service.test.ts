@@ -142,12 +142,12 @@ describe("standard grounding service (issue 218)", () => {
     let frameworkAttempts = 0;
     const flakyTransport: LearningCommonsTransport = {
       ...recorded,
-      findFrameworks: (input, context) => {
+      findFrameworks: async (input, context) => {
         frameworkAttempts += 1;
         if (frameworkAttempts === 1) {
-          return Promise.reject(new Error("connection reset"));
+          throw new Error("connection reset");
         }
-        return recorded.findFrameworks(input, context);
+        return await recorded.findFrameworks(input, context);
       },
     };
     const service = createService(flakyTransport);
@@ -161,14 +161,15 @@ describe("standard grounding service (issue 218)", () => {
   it("stops at two attempts and surfaces the final provider failure", async () => {
     let frameworkAttempts = 0;
     const failingTransport: LearningCommonsTransport = {
-      findFrameworks: () => {
+      findFrameworks: async () => {
         frameworkAttempts += 1;
-        return Promise.reject(new Error("provider down"));
+        await Promise.resolve();
+        throw new Error("provider down");
       },
-      findStandardsPage: () => Promise.race([]),
-      findComponentsPage: () => Promise.race([]),
-      findPrerequisitesPage: () => Promise.race([]),
-      findCrosswalks: () => Promise.race([]),
+      findStandardsPage: async () => await Promise.race([]),
+      findComponentsPage: async () => await Promise.race([]),
+      findPrerequisitesPage: async () => await Promise.race([]),
+      findCrosswalks: async () => await Promise.race([]),
     };
     const service = createService(failingTransport);
 
@@ -184,12 +185,12 @@ describe("standard grounding service (issue 218)", () => {
     let frameworkAttempts = 0;
     const flakyTransport: LearningCommonsTransport = {
       ...recorded,
-      findFrameworks: () => {
+      findFrameworks: async () => {
         frameworkAttempts += 1;
         if (frameworkAttempts === 1) {
-          return Promise.reject(new Error("connection reset"));
+          throw new Error("connection reset");
         }
-        return Promise.resolve({
+        return await Promise.resolve({
           status: 200,
           body: {
             data: [],
@@ -210,11 +211,11 @@ describe("standard grounding service (issue 218)", () => {
 
   it("bounds the whole pipeline with the ten-second deadline", async () => {
     const hangingTransport: LearningCommonsTransport = {
-      findFrameworks: () => Promise.race([]),
-      findStandardsPage: () => Promise.race([]),
-      findComponentsPage: () => Promise.race([]),
-      findPrerequisitesPage: () => Promise.race([]),
-      findCrosswalks: () => Promise.race([]),
+      findFrameworks: async () => await Promise.race([]),
+      findStandardsPage: async () => await Promise.race([]),
+      findComponentsPage: async () => await Promise.race([]),
+      findPrerequisitesPage: async () => await Promise.race([]),
+      findCrosswalks: async () => await Promise.race([]),
     };
     const service = createService(hangingTransport, { deadlineMs: 10 });
 
@@ -239,11 +240,16 @@ describe("standard grounding service (issue 218)", () => {
 
   it("maps a provider server failure to a retryable provider-unavailable error", async () => {
     const failingTransport: LearningCommonsTransport = {
-      findFrameworks: () => Promise.resolve({ status: 503, body: null }),
-      findStandardsPage: () => Promise.resolve({ status: 503, body: null }),
-      findComponentsPage: () => Promise.resolve({ status: 503, body: null }),
-      findPrerequisitesPage: () => Promise.resolve({ status: 503, body: null }),
-      findCrosswalks: () => Promise.resolve({ status: 503, body: null }),
+      findFrameworks: async () =>
+        await Promise.resolve({ status: 503, body: null }),
+      findStandardsPage: async () =>
+        await Promise.resolve({ status: 503, body: null }),
+      findComponentsPage: async () =>
+        await Promise.resolve({ status: 503, body: null }),
+      findPrerequisitesPage: async () =>
+        await Promise.resolve({ status: 503, body: null }),
+      findCrosswalks: async () =>
+        await Promise.resolve({ status: 503, body: null }),
     };
     const service = createService(failingTransport);
 

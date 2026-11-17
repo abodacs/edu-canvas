@@ -137,12 +137,12 @@ const request = async (
     : { ok: false, error: toFailure(response, body) };
 };
 
-const jsonPost = (
+const jsonPost = async (
   path: string,
   csrf: string,
   payload: unknown
 ): Promise<AuthApiResult<RawResponse>> => {
-  return request(path, {
+  return await request(path, {
     method: "POST",
     headers: {
       "content-type": "application/json",

@@ -269,12 +269,12 @@ const sessionCredential = (
 /**
 GET /api/auth/context — establishes the pre-auth flow; no account data.
 */
-export const handleAuthContext = (
+export const handleAuthContext = async (
   _request: Request,
   dependencies: AuthDependencies
 ): Promise<Response> => {
   const token = createPreAuthChallenge();
-  return Promise.resolve(
+  return await Promise.resolve(
     noStoreJson({ csrf: token }, 200, challengeHeaders(dependencies, token))
   );
 };
@@ -603,7 +603,7 @@ export const handleLogout = async (
  * Resolve the caller's session for a protected delivery seam. Duplicate session
  * cookies are rejected outright (AT-25).
  */
-export const resolveRequestSession = (
+export const resolveRequestSession = async (
   request: Request,
   dependencies: AuthDependencies
 ): Promise<SessionResolution> => {
@@ -612,8 +612,8 @@ export const resolveRequestSession = (
     dependencies
   );
   return duplicate
-    ? Promise.resolve({ status: "unauthenticated" })
-    : dependencies.identity.resolveSession(credential);
+    ? await Promise.resolve({ status: "unauthenticated" })
+    : await dependencies.identity.resolveSession(credential);
 };
 
 /**

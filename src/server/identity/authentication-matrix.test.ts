@@ -160,8 +160,8 @@ const configuredTestDependencies = authDependenciesFrom(
   )
 );
 
-const configuredDependencies = (): Promise<AuthDependencies> =>
-  Promise.resolve(configuredTestDependencies);
+const configuredDependencies = async (): Promise<AuthDependencies> =>
+  await Promise.resolve(configuredTestDependencies);
 
 const readJson = async <T>(response: Response): Promise<T> =>
   (await response.json()) as T;
@@ -399,24 +399,24 @@ const createHarness = async (
   });
   const counted: IdentityProvider = {
     issuer: provider.issuer,
-    signInWithPassword: (email, secret) => {
+    signInWithPassword: async (email, secret) => {
       calls.signIn += 1;
-      return provider.signInWithPassword(email, secret);
+      return await provider.signInWithPassword(email, secret);
     },
-    signUpTeacher: (email, secret) => {
+    signUpTeacher: async (email, secret) => {
       calls.signUp += 1;
-      return provider.signUpTeacher(email, secret);
+      return await provider.signUpTeacher(email, secret);
     },
-    refresh: (refreshToken) => provider.refresh(refreshToken),
-    signOut: (accessToken) => {
+    refresh: async (refreshToken) => await provider.refresh(refreshToken),
+    signOut: async (accessToken) => {
       calls.signOut += 1;
-      return options.signOutOutage === true
+      await (options.signOutOutage === true
         ? Promise.resolve()
-        : provider.signOut(accessToken);
+        : provider.signOut(accessToken));
     },
-    verifySession: (accessToken) => {
+    verifySession: async (accessToken) => {
       calls.verifySession += 1;
-      return provider.verifySession(accessToken);
+      return await provider.verifySession(accessToken);
     },
   };
 
@@ -955,8 +955,8 @@ describe("AT-15 to AT-19: mutation protection and provider failure", () => {
       [null, "https://evil.test"].map((origin) => ({ path, origin }))
     );
     const responses = await Promise.all(
-      attempts.map(({ path, origin }) => {
-        return mutationHandlers[path](
+      attempts.map(async ({ path, origin }) => {
+        return await mutationHandlers[path](
           authMutation({
             dependencies,
             path,
@@ -974,7 +974,9 @@ describe("AT-15 to AT-19: mutation protection and provider failure", () => {
       attempts.map(() => 403)
     );
     await expect(
-      Promise.all(responses.map((response) => readJson<ErrorBody>(response)))
+      Promise.all(
+        responses.map(async (response) => await readJson<ErrorBody>(response))
+      )
     ).resolves.toStrictEqual(
       attempts.map(() => {
         return {
@@ -1103,8 +1105,10 @@ describe("AT-15 to AT-19: mutation protection and provider failure", () => {
       wrapPersistence: (persistence) => {
         return {
           ...persistence,
-          findProviderBinding: () =>
-            Promise.reject(new Error("identity store unavailable")),
+          findProviderBinding: async () => {
+            await Promise.resolve();
+            throw new Error("identity store unavailable");
+          },
         };
       },
     });
@@ -1170,7 +1174,7 @@ describe("AT-20 to AT-22: logout", () => {
       wrapPersistence: (persistence) => {
         return {
           ...persistence,
-          revokeSession: () => Promise.resolve(undefined),
+          revokeSession: async () => {},
         };
       },
     });

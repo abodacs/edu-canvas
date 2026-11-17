@@ -833,12 +833,12 @@ describe("lesson gate properties", () => {
               {
                 role: "curriculum",
                 version: "agent-pass-fixture-v1",
-                review(agentInput) {
+                async review(agentInput) {
                   const [firstVariant] = agentInput.draft.variants;
                   if (firstVariant) {
                     firstVariant.relationships = [];
                   }
-                  return Promise.resolve([
+                  return await Promise.resolve([
                     {
                       verdict: "pass" as const,
                       code: "AGENT_APPROVED",

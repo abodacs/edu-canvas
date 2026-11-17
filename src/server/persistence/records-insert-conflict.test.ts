@@ -14,9 +14,9 @@ import { createPostgresRecordBackend } from "./records-postgres";
 describe("records postgres insert conflict option", () => {
   const captured: string[] = [];
   const transaction = {
-    unsafe: (sql: string): Promise<unknown> => {
+    unsafe: async (sql: string): Promise<unknown> => {
       captured.push(sql);
-      return Promise.resolve([]);
+      return await Promise.resolve([]);
     },
   };
 

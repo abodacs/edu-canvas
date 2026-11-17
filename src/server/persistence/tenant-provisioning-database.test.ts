@@ -80,10 +80,10 @@ describe.skipIf(!isRunDatabaseTests)(
     const membershipId = parseMembershipId(`membership_issue_225_${runId}`);
     const tenantName = "Issue 225 fresh tenant school";
 
-    const grantTeacherMembership = () => {
+    const grantTeacherMembership = async () => {
       const persistence =
         createPostgresIdentityPersistence(requireDatabaseUrl());
-      return persistence.grantMembership({
+      return await persistence.grantMembership({
         membershipId,
         actorId,
         tenantId,
@@ -92,8 +92,8 @@ describe.skipIf(!isRunDatabaseTests)(
       });
     };
 
-    const readStandardRows = (): Promise<StandardRow[]> => {
-      return withTenantSql(tenantId, (transaction) => {
+    const readStandardRows = async (): Promise<StandardRow[]> => {
+      return await withTenantSql(tenantId, (transaction) => {
         return transaction<StandardRow[]>`
           select id, code, name, subject, grade_band
           from standards

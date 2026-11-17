@@ -128,28 +128,28 @@ export const createSeededPackPersistence = (
 
   return {
     kind: "seeded-demo",
-    check: () => Promise.resolve(true),
+    check: async () => await Promise.resolve(true),
 
-    listVersions: (tenantId, requestId) =>
-      Promise.resolve(versionsForRequest(tenantId, requestId).map(clone)),
+    listVersions: async (tenantId, requestId) =>
+      await Promise.resolve(versionsForRequest(tenantId, requestId).map(clone)),
 
-    readLatestVersion: (tenantId, requestId) => {
+    readLatestVersion: async (tenantId, requestId) => {
       const [latest] = versionsForRequest(tenantId, requestId);
-      return Promise.resolve(latest ? clone(latest) : undefined);
+      return await Promise.resolve(latest ? clone(latest) : undefined);
     },
 
-    readVersion: (tenantId, versionId) => {
+    readVersion: async (tenantId, versionId) => {
       const record = store.versions.get(versionKey(tenantId, versionId));
-      return Promise.resolve(record ? clone(record) : undefined);
+      return await Promise.resolve(record ? clone(record) : undefined);
     },
 
-    insertVersion: (record) => {
+    insertVersion: async (record) => {
       rememberVersion(record);
-      return Promise.resolve();
+      await Promise.resolve();
     },
 
-    listApprovals: (tenantId, versionId) => {
-      return Promise.resolve(
+    listApprovals: async (tenantId, versionId) => {
+      return await Promise.resolve(
         store.approvals
           .values()
           .filter((approval) => {
@@ -162,14 +162,14 @@ export const createSeededPackPersistence = (
       );
     },
 
-    readApproval: (tenantId, versionId, targetKind, targetId) => {
+    readApproval: async (tenantId, versionId, targetKind, targetId) => {
       const record = store.approvals.get(
         approvalKey(tenantId, versionId, targetKind, targetId)
       );
-      return Promise.resolve(record ? clone(record) : undefined);
+      return await Promise.resolve(record ? clone(record) : undefined);
     },
 
-    insertApproval: (record) => {
+    insertApproval: async (record) => {
       const key = approvalKey(
         record.tenantId,
         record.versionId,
@@ -177,43 +177,43 @@ export const createSeededPackPersistence = (
         record.targetId
       );
       if (store.approvals.has(key)) {
+        await Promise.resolve();
         throw new PackUniqueViolationError(
           "pack_approvals_tenant_version_target_key"
         );
       }
       store.approvals.set(key, clone(record));
-      return Promise.resolve();
     },
 
-    readPublicationForVersion: (tenantId, versionId) => {
+    readPublicationForVersion: async (tenantId, versionId) => {
       const record = store.publications.get(
         publicationKey(tenantId, versionId)
       );
-      return Promise.resolve(record ? clone(record) : undefined);
+      return await Promise.resolve(record ? clone(record) : undefined);
     },
 
-    insertPublication: (record) => {
+    insertPublication: async (record) => {
       const key = publicationKey(record.tenantId, record.versionId);
       if (store.publications.has(key)) {
+        await Promise.resolve();
         throw new PackUniqueViolationError(
           "pack_publications_tenant_version_key"
         );
       }
       store.publications.set(key, clone(record));
-      return Promise.resolve();
     },
 
-    readAssignmentForPublication: (tenantId, publicationId) => {
+    readAssignmentForPublication: async (tenantId, publicationId) => {
       const record = store.assignments.values().find((assignment) => {
         return (
           assignment.tenantId === tenantId &&
           assignment.publicationId === publicationId
         );
       });
-      return Promise.resolve(record ? clone(record) : undefined);
+      return await Promise.resolve(record ? clone(record) : undefined);
     },
 
-    insertAssignment: (record) => {
+    insertAssignment: async (record) => {
       const key = assignmentKey(
         record.tenantId,
         record.publicationId,
@@ -228,6 +228,7 @@ export const createSeededPackPersistence = (
           );
         });
       if (publicationAlreadyAssigned) {
+        await Promise.resolve();
         throw new PackUniqueViolationError(
           store.assignments.has(key)
             ? "pack_assignments_tenant_publication_learner_key"
@@ -235,17 +236,16 @@ export const createSeededPackPersistence = (
         );
       }
       store.assignments.set(key, clone(record));
-      return Promise.resolve();
     },
 
-    readReceipt: (tenantId, actorId, action, operationKey) => {
+    readReceipt: async (tenantId, actorId, action, operationKey) => {
       const record = store.receipts.get(
         receiptKey(tenantId, actorId, action, operationKey)
       );
-      return Promise.resolve(record ? clone(record) : undefined);
+      return await Promise.resolve(record ? clone(record) : undefined);
     },
 
-    insertReceipt: (record) => {
+    insertReceipt: async (record) => {
       const key = receiptKey(
         record.tenantId,
         record.actorId,
@@ -253,16 +253,16 @@ export const createSeededPackPersistence = (
         record.operationKey
       );
       if (store.receipts.has(key)) {
+        await Promise.resolve();
         throw new PackUniqueViolationError(
           "pack_receipts_tenant_actor_action_key_key"
         );
       }
       store.receipts.set(key, clone(record));
-      return Promise.resolve();
     },
 
-    listLearners: (tenantId) => {
-      return Promise.resolve(
+    listLearners: async (tenantId) => {
+      return await Promise.resolve(
         store.learners
           .filter((learner) => isAssignable(learner, tenantId))
           .map((learner) => {
@@ -274,12 +274,12 @@ export const createSeededPackPersistence = (
       );
     },
 
-    readLearner: (tenantId, learnerId) => {
+    readLearner: async (tenantId, learnerId) => {
       const learner = store.learners.find(
         (candidate) =>
           isAssignable(candidate, tenantId) && candidate.id === learnerId
       );
-      return Promise.resolve(
+      return await Promise.resolve(
         learner
           ? { id: learner.id, displayName: learner.displayName }
           : undefined

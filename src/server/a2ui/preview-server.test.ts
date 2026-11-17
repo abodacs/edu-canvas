@@ -47,10 +47,10 @@ const seam = vi.hoisted(() => {
     return { ok: false, error: { code, status, message } };
   }
 
-  function resolveTeacherActor() {
+  async function resolveTeacherActor() {
     const resolution = sessionState.resolution as SessionResolution;
     if (resolution.status === "unavailable") {
-      return Promise.resolve(
+      return await Promise.resolve(
         failure(
           "AUTH_UNAVAILABLE",
           503,
@@ -59,21 +59,21 @@ const seam = vi.hoisted(() => {
       );
     }
     if (resolution.status !== "active") {
-      return Promise.resolve(
-        failure("UNAUTHENTICATED", 401, "Sign in to continue.")
-      );
+      return failure("UNAUTHENTICATED", 401, "Sign in to continue.");
     }
     if (resolution.actor.role !== "teacher") {
-      return Promise.resolve(
-        failure("FORBIDDEN", 403, "You do not have access to this resource.")
+      return failure(
+        "FORBIDDEN",
+        403,
+        "You do not have access to this resource."
       );
     }
-    return Promise.resolve({
+    return {
       ok: true,
       actor: resolution.actor,
       sessionId: resolution.session.sessionId,
       dependencies: { config: { issues: [] } },
-    });
+    };
   }
 
   return { resolveTeacherActor };
@@ -85,8 +85,9 @@ vi.mock(
   ),
   () => {
     return {
-      resolveAuthDependencies: () => Promise.resolve({}),
-      resolveRequestSession: () => Promise.resolve(sessionState.resolution),
+      resolveAuthDependencies: async () => await Promise.resolve({}),
+      resolveRequestSession: async () =>
+        await Promise.resolve(sessionState.resolution),
       resolveTeacherActor: seam.resolveTeacherActor,
     } as never;
   }

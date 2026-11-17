@@ -39,8 +39,10 @@ const reservation = (
   };
 };
 
-const counterCounts = (tenantId: string): Promise<Record<string, number>> => {
-  return withTenantSql(tenantId, async (transaction) => {
+const counterCounts = async (
+  tenantId: string
+): Promise<Record<string, number>> => {
+  return await withTenantSql(tenantId, async (transaction) => {
     const rows = await transaction<
       { scope_kind: string; counter_kind: string; count: number }[]
     >`

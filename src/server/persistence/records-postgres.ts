@@ -203,7 +203,9 @@ export const createPostgresRecordBackend = (
     ): Promise<T> => {
       const client = createSqlClient(databaseUrl);
       try {
-        const result = await client.begin((transaction) => work(transaction));
+        const result = await client.begin(
+          async (transaction) => await work(transaction)
+        );
         return result as unknown as T;
       } finally {
         await client.end({ timeout: 3 });

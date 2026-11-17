@@ -35,8 +35,9 @@ const recorder = () => {
   };
 };
 
-const readAs = (outcome: StoredDraftRead) => (): Promise<StoredDraftRead> =>
-  Promise.resolve(outcome);
+const readAs =
+  (outcome: StoredDraftRead) => async (): Promise<StoredDraftRead> =>
+    await Promise.resolve(outcome);
 
 describe(loadStoredDraft, () => {
   it("opens, clears the previous result, then delivers the draft", async () => {
@@ -73,10 +74,10 @@ describe(loadStoredDraft, () => {
     const controller = new AbortController();
     await loadStoredDraft({
       requestId: "req_1",
-      read: () => {
+      read: async () => {
         // The link changed (or the composer unmounted) while reading.
         controller.abort();
-        return Promise.resolve({ kind: "draft", stored });
+        return await Promise.resolve({ kind: "draft", stored });
       },
       signal: controller.signal,
       ...record,

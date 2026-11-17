@@ -106,7 +106,7 @@ const blockedReport: SemanticValidationReport = {
 const acceptanceDraft = (): ProviderLessonDraft =>
   createEquivalentFractionsDraft(normalizedInput);
 
-const review = (
+const review = async (
   draft: ProviderLessonDraft,
   options: {
     report?: SemanticValidationReport;
@@ -118,7 +118,7 @@ const review = (
     >[1]["artifactGate"];
   } = {}
 ) => {
-  return reviewDraftForAcceptance(
+  return await reviewDraftForAcceptance(
     {
       draft,
       input: normalizedInput,
@@ -129,8 +129,8 @@ const review = (
       graphVersion: syntheticSeed.activityVersion.graphVersion,
     },
     {
-      semanticValidation: () =>
-        Promise.resolve(options.report ?? passingReport),
+      semanticValidation: async () =>
+        await Promise.resolve(options.report ?? passingReport),
       ...(options.artifactGate && { artifactGate: options.artifactGate }),
     }
   );
@@ -148,7 +148,7 @@ const captureShareRejection = (record: LessonGenerationRecord): unknown => {
   }
 };
 
-const generateFixture = (
+const generateFixture = async (
   report: SemanticValidationReport
 ): Promise<
   Awaited<ReturnType<ReturnType<typeof createGenerationService>["generate"]>>
@@ -158,10 +158,10 @@ const generateFixture = (
     persistence: createSeededPersistence(),
     provider: createDeterministicLessonDraftProvider(),
     requestIdFactory: () => "draft_req_share_fixture",
-    semanticValidation: () => Promise.resolve(report),
+    semanticValidation: async () => await Promise.resolve(report),
   });
 
-  return service.generate({
+  return await service.generate({
     actor: teacherActor,
     input: {
       ...validInput,
@@ -278,7 +278,7 @@ describe("acceptance gate snapshot", () => {
       persistence: createSeededPersistence(),
       provider: createDeterministicLessonDraftProvider(),
       requestIdFactory: () => "draft_req_gate_crash",
-      semanticValidation: () => Promise.resolve(passingReport),
+      semanticValidation: async () => await Promise.resolve(passingReport),
       artifactGate: () => {
         throw new Error("The gate exploded.");
       },

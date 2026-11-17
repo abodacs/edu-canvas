@@ -32,7 +32,10 @@ describe("local logout independence", () => {
       persistence,
       provider: {
         ...inner,
-        signOut: () => Promise.reject(new Error("provider logout outage")),
+        signOut: async () => {
+          await Promise.resolve();
+          throw new Error("provider logout outage");
+        },
       },
       cipher: createCredentialCipher({
         keyVersion: "1",

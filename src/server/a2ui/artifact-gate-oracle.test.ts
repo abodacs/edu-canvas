@@ -125,8 +125,8 @@ interface OracleRow {
   readonly enforced: CompileOutcome;
 }
 
-const oracleRows = (): Promise<OracleRow[]> => {
-  return Promise.all(
+const oracleRows = async (): Promise<OracleRow[]> => {
+  return await Promise.all(
     artifactCorpus.map(async (entry) => {
       const evaluation = await evaluateCorpusArtifact(entry);
       return {

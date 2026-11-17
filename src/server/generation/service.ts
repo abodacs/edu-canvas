@@ -494,7 +494,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     return resultFor(current ?? record);
   };
 
-  const finishAttempt = (
+  const finishAttempt = async (
     baseRecord: LessonGenerationRecord,
     outcome:
       | {
@@ -537,7 +537,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         provenance,
       }),
     };
-    return persist(record, baseRecord.updatedAt);
+    return await persist(record, baseRecord.updatedAt);
   };
 
   const resolveDuplicate = async (
@@ -651,7 +651,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     });
   };
 
-  const persistProviderFailure = (
+  const persistProviderFailure = async (
     baseRecord: LessonGenerationRecord,
     error: unknown,
     priorDiagnostics: GenerationDiagnostic[] = []
@@ -666,30 +666,34 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     const failureDiagnostic = providerFailureDiagnostic(providerError);
     const diagnostics = [...priorDiagnostics, failureDiagnostic];
     const state = stateForProviderFailure(providerError.kind);
-    return finishAttempt(baseRecord, { state, diagnostics });
+    return await finishAttempt(baseRecord, { state, diagnostics });
   };
 
-  const persistCallFailure = (
+  const persistCallFailure = async (
     baseRecord: LessonGenerationRecord,
     failure: Exclude<ProviderCallFailure, { kind: "limited" }>,
     priorDiagnostics: GenerationDiagnostic[] = []
   ): Promise<GenerationServiceResult> => {
     if (failure.kind === "cancelled") {
-      return currentResult(baseRecord);
+      return await currentResult(baseRecord);
     }
     if (failure.kind === "total") {
-      return finishAttempt(baseRecord, {
+      return await finishAttempt(baseRecord, {
         state: FAILED_RETRYABLE_STATE,
         diagnostics: [...priorDiagnostics, deadlineDiagnostic()],
       });
     }
     if (failure.kind === "per-call") {
-      return finishAttempt(baseRecord, {
+      return await finishAttempt(baseRecord, {
         state: FAILED_RETRYABLE_STATE,
         diagnostics: [...priorDiagnostics, providerTimeoutDiagnostic()],
       });
     }
-    return persistProviderFailure(baseRecord, failure.error, priorDiagnostics);
+    return await persistProviderFailure(
+      baseRecord,
+      failure.error,
+      priorDiagnostics
+    );
   };
 
   const handleCallFailure = async (

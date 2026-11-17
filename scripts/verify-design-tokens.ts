@@ -235,7 +235,7 @@ const scanStylesheets = async (): Promise<{
 }> => {
   const files = await stylesheetFiles();
   const sources = await Promise.all(
-    files.map((file) => readFile(file, "utf-8"))
+    files.map(async (file) => await readFile(file, "utf-8"))
   );
   const state: ScanState = {
     counts: {},
@@ -303,10 +303,12 @@ const inlineLiteralCount = (source: string): number => {
 };
 
 const scanTsx = async (): Promise<Counts> => {
-  const groups = await Promise.all(TSX_ROOTS.map((root) => collectTsx(root)));
+  const groups = await Promise.all(
+    TSX_ROOTS.map(async (root) => await collectTsx(root))
+  );
   const files = groups.flat();
   const sources = await Promise.all(
-    files.map((file) => readFile(file, "utf-8"))
+    files.map(async (file) => await readFile(file, "utf-8"))
   );
   const counts: Counts = {};
 

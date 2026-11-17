@@ -2,13 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { handleReviewPreviewRequest } from "@/server/publication/delivery.server";
 
-const handleGet = ({
+const handleGet = async ({
   request,
   params,
 }: {
   request: Request;
   params: { versionId: string };
-}) => handleReviewPreviewRequest(request, params.versionId);
+}) => await handleReviewPreviewRequest(request, params.versionId);
 
 export const Route = createFileRoute(
   "/api/publications/versions/$versionId/preview"

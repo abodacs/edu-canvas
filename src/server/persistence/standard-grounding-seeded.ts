@@ -54,11 +54,12 @@ export const createSeededStandardGroundingPersistence = (
 
   return {
     kind: "seeded-demo",
-    check: () => Promise.resolve(true),
+    check: async () => await Promise.resolve(true),
 
-    insert: (record) => {
+    insert: async (record) => {
       const key = recordKey(record.tenantId, record.id);
       if (store.records.has(key)) {
+        await Promise.resolve();
         throw new StandardGroundingUniqueViolationError(
           "standard_groundings_tenant_id_id_key"
         );
@@ -75,30 +76,29 @@ export const createSeededStandardGroundingPersistence = (
         );
       }
       store.records.set(key, clone(record));
-      return Promise.resolve();
     },
 
-    read: (tenantId, groundingId) => {
+    read: async (tenantId, groundingId) => {
       const record = store.records.get(recordKey(tenantId, groundingId));
-      return Promise.resolve(record ? clone(record) : undefined);
+      return await Promise.resolve(record ? clone(record) : undefined);
     },
 
-    readByRequestKey: (tenantId, requestKey) => {
+    readByRequestKey: async (tenantId, requestKey) => {
       const record = store.records.values().find((candidate) => {
         return (
           candidate.tenantId === tenantId && candidate.requestKey === requestKey
         );
       });
-      return Promise.resolve(record ? clone(record) : undefined);
+      return await Promise.resolve(record ? clone(record) : undefined);
     },
 
-    readLatestForStandard: (tenantId, standard) => {
+    readLatestForStandard: async (tenantId, standard) => {
       const [latest] = forStandard(tenantId, standard);
-      return Promise.resolve(latest ? clone(latest) : undefined);
+      return await Promise.resolve(latest ? clone(latest) : undefined);
     },
 
-    history: (tenantId, standard) => {
-      return Promise.resolve(forStandard(tenantId, standard).map(clone));
+    history: async (tenantId, standard) => {
+      return await Promise.resolve(forStandard(tenantId, standard).map(clone));
     },
   };
 };
