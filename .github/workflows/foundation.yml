@@ -128,14 +128,24 @@ jobs:
       # own scratch database and free port, so the three run concurrently;
       # that keeps the required learner check in CI without serialising three
       # full browser runs.
-      - name: Cache the Chromium build
-        uses: actions/cache@v6.1.0
+      - name: Restore the Chromium build
+        uses: actions/cache/restore@v6.1.0
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Install Chromium for browser checks
         run: pnpm exec playwright-core install --with-deps chromium
+
+      # Saving is gated to main, same rule as node_modules: a pull request's
+      # cache is scoped to its own branch and can never be read by another
+      # branch, so saving there would only evict the shared pool.
+      - name: Save the Chromium build
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Run the browser gates
         env:
