@@ -502,12 +502,12 @@ export const createRecordCommands = <TTransaction>(
 ): RecordPersistence => {
   const clock = options.clock ?? nowIso;
 
-  const findOne = (
+  const findOne = async (
     transaction: TTransaction,
     table: RecordTableName,
     where: Readonly<Record<string, string | number | boolean | null>>
   ): Promise<StoredRow | undefined> =>
-    backend.findOne(transaction, table, where);
+    await backend.findOne(transaction, table, where);
 
   const requireRow = async (
     transaction: TTransaction,
@@ -765,11 +765,11 @@ export const createRecordCommands = <TTransaction>(
     }
   };
 
-  const storeGrounding = (
+  const storeGrounding = async (
     actor: Actor,
     submitted: StoreGroundingInput
   ): Promise<RecordMutationResult> => {
-    return runWrite(
+    return await runWrite(
       actor,
       "store-grounding",
       submitted,
@@ -992,11 +992,11 @@ export const createRecordCommands = <TTransaction>(
     }
   };
 
-  const appendVersion = (
+  const appendVersion = async (
     actor: Actor,
     submitted: AppendVersionInput
   ): Promise<RecordMutationResult> => {
-    return runWrite(
+    return await runWrite(
       actor,
       "append-version",
       submitted,
@@ -1096,11 +1096,11 @@ export const createRecordCommands = <TTransaction>(
     );
   };
 
-  const publish = (
+  const publish = async (
     actor: Actor,
     submitted: PublishInput
   ): Promise<RecordMutationResult> => {
-    return runWrite(
+    return await runWrite(
       actor,
       "publish",
       submitted,
@@ -1162,11 +1162,11 @@ export const createRecordCommands = <TTransaction>(
     );
   };
 
-  const assign = (
+  const assign = async (
     actor: Actor,
     submitted: AssignInput
   ): Promise<RecordMutationResult> => {
-    return runWrite(
+    return await runWrite(
       actor,
       "assign",
       submitted,
@@ -1232,11 +1232,11 @@ export const createRecordCommands = <TTransaction>(
     );
   };
 
-  const startRun = (
+  const startRun = async (
     actor: Actor,
     submitted: StartRunInput
   ): Promise<RecordMutationResult> => {
-    return runWrite(
+    return await runWrite(
       actor,
       "start-run",
       submitted,
@@ -1342,11 +1342,11 @@ export const createRecordCommands = <TTransaction>(
     );
   };
 
-  const recordHint = (
+  const recordHint = async (
     actor: Actor,
     submitted: RecordHintInput
   ): Promise<RecordMutationResult> => {
-    return runWrite(
+    return await runWrite(
       actor,
       "record-hint",
       submitted,
@@ -1408,11 +1408,11 @@ export const createRecordCommands = <TTransaction>(
     );
   };
 
-  const recordAttempt = (
+  const recordAttempt = async (
     actor: Actor,
     submitted: RecordAttemptInput
   ): Promise<RecordMutationResult> => {
-    return runWrite(
+    return await runWrite(
       actor,
       "record-attempt",
       submitted,
@@ -1543,11 +1543,11 @@ export const createRecordCommands = <TTransaction>(
     );
   };
 
-  const choose = (
+  const choose = async (
     actor: Actor,
     submitted: ChooseInput
   ): Promise<RecordMutationResult> => {
-    return runWrite(
+    return await runWrite(
       actor,
       "choose",
       submitted,
@@ -1659,12 +1659,12 @@ export const createRecordCommands = <TTransaction>(
     );
   };
 
-  const readAuthoring = (
+  const readAuthoring = async (
     actor: Actor,
     submitted: ReadAuthoringInput
   ): Promise<AuthoringProjection> => {
     const parsed = parseOrThrow(readAuthoringInputSchema, submitted);
-    return read(actor, "preview_draft", async (transaction) => {
+    return await read(actor, "preview_draft", async (transaction) => {
       if (parsed.kind === "version") {
         const version = await loadVersion(
           transaction,
@@ -1700,12 +1700,12 @@ export const createRecordCommands = <TTransaction>(
     });
   };
 
-  const readEvidence = (
+  const readEvidence = async (
     actor: Actor,
     submitted: ReadEvidenceInput
   ): Promise<TeacherEvidenceProjection> => {
     const parsed = parseOrThrow(readEvidenceInputSchema, submitted);
-    return read(actor, "teacher_decision", async (transaction) => {
+    return await read(actor, "teacher_decision", async (transaction) => {
       const runRow = await requireRow(transaction, "learner_runs", {
         tenant_id: actor.tenantId,
         id: parsed.runId,
@@ -1748,12 +1748,12 @@ export const createRecordCommands = <TTransaction>(
     });
   };
 
-  const readLesson = (
+  const readLesson = async (
     actor: Actor,
     submitted: ReadLessonInput
   ): Promise<LessonReadResult> => {
     const parsed = parseOrThrow(readLessonInputSchema, submitted);
-    return read(actor, "read_assignment", async (transaction) => {
+    return await read(actor, "read_assignment", async (transaction) => {
       const { run } = await requireRunForLearner(
         transaction,
         actor,
@@ -1795,12 +1795,12 @@ export const createRecordCommands = <TTransaction>(
     });
   };
 
-  const readAttemptContext = (
+  const readAttemptContext = async (
     actor: Actor,
     submitted: ReadAttemptContextInput
   ): Promise<AttemptContext> => {
     const parsed = parseOrThrow(readAttemptContextInputSchema, submitted);
-    return read(actor, "submit_attempt", async (transaction) => {
+    return await read(actor, "submit_attempt", async (transaction) => {
       const { run } = await requireRunForLearner(
         transaction,
         actor,
@@ -1858,10 +1858,10 @@ export const createRecordCommands = <TTransaction>(
    * rows are filtered out before mapping. Read-only: nothing here writes or
    * revises history.
    */
-  const readTeacherProgress = (
+  const readTeacherProgress = async (
     actor: Actor
   ): Promise<TeacherProgressResponse> => {
-    return read(actor, "teacher_decision", async (transaction) => {
+    return await read(actor, "teacher_decision", async (transaction) => {
       const assignmentRows = await backend.list(transaction, "assignments", {
         tenant_id: actor.tenantId,
         assigning_actor_id: actor.actorId,

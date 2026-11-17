@@ -2,13 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { handleSourceCancelRequest } from "@/server/grounding/delivery.server";
 
-const handlePost = ({
+const handlePost = async ({
   request,
   params,
 }: {
   request: Request;
   params: { sourceId: string };
-}) => handleSourceCancelRequest(request, params.sourceId);
+}) => await handleSourceCancelRequest(request, params.sourceId);
 
 export const Route = createFileRoute("/api/lessons/sources/$sourceId/cancel")({
   server: { handlers: { POST: handlePost } },

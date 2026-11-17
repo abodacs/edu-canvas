@@ -5,11 +5,11 @@ import {
   handleReadReviewRequest,
 } from "@/server/publication/delivery.server";
 
-const handlePost = ({ request }: { request: Request }) =>
-  handleOpenReviewRequest(request);
+const handlePost = async ({ request }: { request: Request }) =>
+  await handleOpenReviewRequest(request);
 
-const handleGet = ({ request }: { request: Request }) =>
-  handleReadReviewRequest(request);
+const handleGet = async ({ request }: { request: Request }) =>
+  await handleReadReviewRequest(request);
 
 export const Route = createFileRoute("/api/publications/review")({
   server: { handlers: { POST: handlePost, GET: handleGet } },

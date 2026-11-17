@@ -107,7 +107,8 @@ const prepareCall = async (
       const input = groundingInput(operationKey);
       return {
         fixture,
-        call: (actor) => fixture.records.storeGrounding(actor, input),
+        call: async (actor) =>
+          await fixture.records.storeGrounding(actor, input),
       };
     }
     case "append-version": {
@@ -119,7 +120,8 @@ const prepareCall = async (
       );
       return {
         fixture,
-        call: (actor) => fixture.records.appendVersion(actor, input),
+        call: async (actor) =>
+          await fixture.records.appendVersion(actor, input),
       };
     }
     case "publish": {
@@ -127,20 +129,23 @@ const prepareCall = async (
       const input = publishInput(operationKey, loop.versionId);
       return {
         fixture,
-        call: (actor) => fixture.records.publish(actor, input),
+        call: async (actor) => await fixture.records.publish(actor, input),
       };
     }
     case "assign": {
       const loop = await buildLoop(fixture, setup, "publication");
       const input = assignInput(operationKey, loop.publicationId);
-      return { fixture, call: (actor) => fixture.records.assign(actor, input) };
+      return {
+        fixture,
+        call: async (actor) => await fixture.records.assign(actor, input),
+      };
     }
     case "start-run": {
       const loop = await buildLoop(fixture, setup, "assignment");
       const input = startRunInput(operationKey, loop.assignmentId);
       return {
         fixture,
-        call: (actor) => fixture.records.startRun(actor, input),
+        call: async (actor) => await fixture.records.startRun(actor, input),
       };
     }
     case "record-hint": {
@@ -148,7 +153,7 @@ const prepareCall = async (
       const input = recordHintInput(operationKey, loop.runId);
       return {
         fixture,
-        call: (actor) => fixture.records.recordHint(actor, input),
+        call: async (actor) => await fixture.records.recordHint(actor, input),
       };
     }
     case "record-attempt": {
@@ -156,7 +161,8 @@ const prepareCall = async (
       const input = recordAttemptInput(operationKey, loop.runId, loop.hintId);
       return {
         fixture,
-        call: (actor) => fixture.records.recordAttempt(actor, input),
+        call: async (actor) =>
+          await fixture.records.recordAttempt(actor, input),
       };
     }
     case "choose": {
@@ -167,14 +173,17 @@ const prepareCall = async (
         loop.revision,
         loop.evidenceHash
       );
-      return { fixture, call: (actor) => fixture.records.choose(actor, input) };
+      return {
+        fixture,
+        call: async (actor) => await fixture.records.choose(actor, input),
+      };
     }
     case "read-authoring": {
       const loop = await buildLoop(fixture, setup, "version");
       return {
         fixture,
-        call: (actor) => {
-          return fixture.records.readAuthoring(actor, {
+        call: async (actor) => {
+          return await fixture.records.readAuthoring(actor, {
             kind: "version",
             versionId: loop.versionId,
           });
@@ -185,16 +194,16 @@ const prepareCall = async (
       const loop = await buildLoop(fixture, setup, "attempt");
       return {
         fixture,
-        call: (actor) =>
-          fixture.records.readEvidence(actor, { runId: loop.runId }),
+        call: async (actor) =>
+          await fixture.records.readEvidence(actor, { runId: loop.runId }),
       };
     }
     case "read-lesson": {
       const loop = await buildLoop(fixture, setup, "run");
       return {
         fixture,
-        call: (actor) =>
-          fixture.records.readLesson(actor, { runId: loop.runId }),
+        call: async (actor) =>
+          await fixture.records.readLesson(actor, { runId: loop.runId }),
       };
     }
     default: {

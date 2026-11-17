@@ -34,8 +34,8 @@ export const withTenantSql = async <T>(
   tenantId: string,
   work: (transaction: postgres.TransactionSql) => Promise<T>
 ): Promise<T> => {
-  return (await withRawDatabase((sql) => {
-    return sql.begin(async (transaction) => {
+  return (await withRawDatabase(async (sql) => {
+    return await sql.begin(async (transaction) => {
       await transaction`select set_config('app.tenant_id', ${tenantId}, true)`;
       return await work(transaction);
     });

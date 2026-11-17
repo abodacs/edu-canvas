@@ -103,7 +103,7 @@ const createToken = (claims: Record<string, unknown>): string => {
   ].join(".");
 };
 
-const hangingFetch: typeof fetch = (_input, init) => {
+const hangingFetch: typeof fetch = async (_input, init) => {
   const deferred = Promise.withResolvers<Response>();
   init?.signal?.addEventListener(
     "abort",
@@ -112,7 +112,7 @@ const hangingFetch: typeof fetch = (_input, init) => {
     },
     { once: true }
   );
-  return deferred.promise;
+  return await deferred.promise;
 };
 
 const createProvider = (

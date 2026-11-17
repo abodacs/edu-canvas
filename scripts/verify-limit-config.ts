@@ -19,8 +19,8 @@ const projectRoot = fileURLToPath(new URL("../", import.meta.url));
 
 const issues: string[] = [];
 
-const readProjectFile = (relativePath: string): Promise<string> =>
-  readFile(join(projectRoot, relativePath), "utf-8");
+const readProjectFile = async (relativePath: string): Promise<string> =>
+  await readFile(join(projectRoot, relativePath), "utf-8");
 
 const policy = generationLimitPolicy;
 

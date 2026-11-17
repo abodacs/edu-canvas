@@ -22,8 +22,8 @@ const testDependencies = authDependenciesFrom(
   await buildConfiguredIdentity(testConfig, createSeededIdentityPersistence())
 );
 
-const sessionDependencies = (): Promise<AuthDependencies> =>
-  Promise.resolve(testDependencies);
+const sessionDependencies = async (): Promise<AuthDependencies> =>
+  await Promise.resolve(testDependencies);
 
 const cookiePairs = (response: Response): string[] => {
   return response.headers

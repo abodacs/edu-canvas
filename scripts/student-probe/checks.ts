@@ -208,8 +208,8 @@ export const bidiProblems = async (
 /**
 A short, stable description of the focused element for traces.
 */
-export const describeFocus = (page: Page): Promise<string> => {
-  return page.evaluate(() => {
+export const describeFocus = async (page: Page): Promise<string> => {
+  return await page.evaluate(() => {
     const active = document.activeElement;
     if (!active || active === document.body) {
       return "body";
@@ -227,11 +227,11 @@ export interface FocusMatch {
   readonly text?: string;
 }
 
-export const isFocusMatching = (
+export const isFocusMatching = async (
   page: Page,
   match: FocusMatch
 ): Promise<boolean> => {
-  return page.evaluate(({ selector, text }) => {
+  return await page.evaluate(({ selector, text }) => {
     const active = document.activeElement;
     return active instanceof HTMLElement && active.matches(selector)
       ? text === undefined || (active.textContent ?? "").includes(text)

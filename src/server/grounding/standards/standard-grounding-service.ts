@@ -263,8 +263,8 @@ export const createStandardGroundingService = (
 
     const { value: resolution, attempts } = await runWithOneRetry(
       deadlineMs,
-      (signal) => {
-        return adapter.resolve(
+      async (signal) => {
+        return await adapter.resolve(
           {
             jurisdiction: validated.jurisdiction,
             statementCode: validated.statementCode,
@@ -302,11 +302,11 @@ export const createStandardGroundingService = (
 
   return {
     resolve,
-    read: (tenantId, groundingId) => {
-      return persistence.read(tenantId, groundingId);
+    read: async (tenantId, groundingId) => {
+      return await persistence.read(tenantId, groundingId);
     },
-    history: (tenantId, standard) => {
-      return persistence.history(tenantId, standard);
+    history: async (tenantId, standard) => {
+      return await persistence.history(tenantId, standard);
     },
   };
 };

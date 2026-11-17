@@ -65,8 +65,12 @@ const readErrorCode = async (
   }
 };
 
-const post = (path: string, csrf: string, body: unknown): Promise<Response> => {
-  return fetch(path, {
+const post = async (
+  path: string,
+  csrf: string,
+  body: unknown
+): Promise<Response> => {
+  return await fetch(path, {
     body: JSON.stringify(body),
     headers: { "content-type": "application/json", [csrfHeaderName]: csrf },
     method: "POST",
@@ -115,8 +119,8 @@ const useLearnerRun = (input: {
 
   // One start shape for the page load and the retry replay; the idempotent
   // operation key returns the same run with its current revision.
-  const postStartRun = (): Promise<Response> => {
-    return post("/api/learner/runs", csrf, {
+  const postStartRun = async (): Promise<Response> => {
+    return await post("/api/learner/runs", csrf, {
       operationKey: `start-${assignment}-${variant}`,
       assignedVariantId: variant,
       assignmentId: assignment,

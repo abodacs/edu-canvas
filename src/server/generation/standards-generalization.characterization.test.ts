@@ -247,11 +247,11 @@ const requestFor = (
   };
 };
 
-const accept = (
+const accept = async (
   draft: ProviderLessonDraft,
   context: VersionedCurriculumContext
 ) => {
-  return reviewDraftForAcceptance(
+  return await reviewDraftForAcceptance(
     {
       draft,
       input: requestFor(context),
@@ -328,9 +328,9 @@ describe("standards generalization: 4.OA.A.3 word problem -> equation matching",
       persistence: createSeededPersistence(),
       provider: {
         provenance: fixtureProvenance,
-        generate(request, context) {
+        async generate(request, context) {
           received = { request, context };
-          return Promise.resolve({
+          return await Promise.resolve({
             draft: buildDraft(wordProblemPairs, operationsSteps),
           });
         },

@@ -148,7 +148,7 @@ export const createSeededRecordBackend = (
     );
   };
 
-  const insert = (
+  const insert = async (
     _transaction: undefined,
     table: RecordTableName,
     values: Readonly<Record<string, RecordValue>>,
@@ -157,28 +157,28 @@ export const createSeededRecordBackend = (
     assertColumns(table, values);
     const candidate = structuredClone(values) as StoredRow;
     const constraints = recordUniqueConstraints[table] ?? [];
+    await Promise.resolve();
     for (const constraint of constraints) {
       if (doesViolate(table, candidate, constraint)) {
         if (options?.onConflictDoNothing === true) {
-          return Promise.resolve();
+          return;
         }
         throw new RecordUniqueViolationError(constraint.name);
       }
     }
     rowsFor(table).push(candidate);
-    return Promise.resolve();
   };
 
-  const findOne = (
+  const findOne = async (
     _transaction: undefined,
     table: RecordTableName,
     where: Readonly<Record<string, RecordValue>>
   ): Promise<StoredRow | undefined> => {
     const row = rowsFor(table).find((entry) => matches(entry, where));
-    return Promise.resolve(row ? structuredClone(row) : undefined);
+    return await Promise.resolve(row ? structuredClone(row) : undefined);
   };
 
-  const list = (
+  const list = async (
     _transaction: undefined,
     table: RecordTableName,
     where: Readonly<Record<string, RecordValue>>,
@@ -197,10 +197,10 @@ export const createSeededRecordBackend = (
     if (limit !== undefined) {
       rows = rows.slice(0, limit);
     }
-    return Promise.resolve(rows.map((row) => structuredClone(row)));
+    return await Promise.resolve(rows.map((row) => structuredClone(row)));
   };
 
-  const update = (
+  const update = async (
     _transaction: undefined,
     table: RecordTableName,
     where: Readonly<Record<string, RecordValue>>,
@@ -222,7 +222,7 @@ export const createSeededRecordBackend = (
       Object.assign(row, structuredClone(values));
       affected += 1;
     }
-    return Promise.resolve(affected);
+    return await Promise.resolve(affected);
   };
 
   const snapshot = (): Map<RecordTableName, StoredRow[]> => {
@@ -243,7 +243,7 @@ export const createSeededRecordBackend = (
 
   const backend: SeededRecordBackend = {
     kind: "seeded-demo",
-    check: () => Promise.resolve(true),
+    check: async () => await Promise.resolve(true),
     withTransaction: async (work) => {
       const snap = snapshot();
       try {
@@ -253,7 +253,10 @@ export const createSeededRecordBackend = (
         throw error;
       }
     },
-    setTenant: () => Promise.resolve(),
+    setTenant: async () => {
+      // Row isolation in the seeded backend is per-instance, so there is no
+      // session variable to scope like the PostgreSQL set_config call.
+    },
     insert,
     findOne,
     list,

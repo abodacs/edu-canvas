@@ -71,20 +71,20 @@ export const buildConfiguredIdentity = async (
 /**
 The composition root is memoized per configuration identity. The deterministic provider keeps provider sessions in memory, so a fresh instance per request would forget them; the hosted adapter is stateless but memoizing it keeps one client.
 */
-export const createConfiguredIdentity = (
+export const createConfiguredIdentity = async (
   config: ServerConfig = readServerConfig()
 ): Promise<ConfiguredIdentity> => {
   const key = cacheKey(config);
   const existing = configuredCache.get(key);
   if (existing) {
-    return existing;
+    return await existing;
   }
   const created = buildConfiguredIdentity(
     config,
     createIdentityPersistence(config)
   );
   configuredCache.set(key, created);
-  return created;
+  return await created;
 };
 
 /**

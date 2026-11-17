@@ -198,8 +198,8 @@ export const createLearningCommonsRestTransport = (
   };
 
   return {
-    findFrameworks: (input, context) => {
-      return request(
+    findFrameworks: async (input, context) => {
+      return await request(
         REST_PATHS.frameworks,
         {
           jurisdiction: input.jurisdiction,
@@ -210,8 +210,8 @@ export const createLearningCommonsRestTransport = (
         context.signal
       );
     },
-    findStandardsPage: (input, context) => {
-      return request(
+    findStandardsPage: async (input, context) => {
+      return await request(
         REST_PATHS.standards,
         {
           standardsFrameworkCaseIdentifierUUID:
@@ -222,8 +222,8 @@ export const createLearningCommonsRestTransport = (
         context.signal
       );
     },
-    findComponentsPage: (input, context) => {
-      return request(
+    findComponentsPage: async (input, context) => {
+      return await request(
         REST_PATHS.components(input.standardCaseIdentifierUUID),
         {
           limit: String(LEARNING_COMMONS_REST_LIMITS.subresource),
@@ -232,8 +232,8 @@ export const createLearningCommonsRestTransport = (
         context.signal
       );
     },
-    findPrerequisitesPage: (input, context) => {
-      return request(
+    findPrerequisitesPage: async (input, context) => {
+      return await request(
         REST_PATHS.prerequisites(input.standardCaseIdentifierUUID),
         {
           limit: String(LEARNING_COMMONS_REST_LIMITS.subresource),
@@ -242,8 +242,8 @@ export const createLearningCommonsRestTransport = (
         context.signal
       );
     },
-    findCrosswalks: (input, context) => {
-      return request(
+    findCrosswalks: async (input, context) => {
+      return await request(
         REST_PATHS.crosswalks(input.standardCaseIdentifierUUID),
         {
           jurisdiction: input.jurisdiction,
@@ -787,8 +787,8 @@ const resolveFrameworkMatch = async (
   const frameworksOutcome = await collectPages(
     frameworksEnvelopeSchema,
     LEARNING_COMMONS_PAGE_BOUNDS.frameworkPages,
-    (cursor) => {
-      return transport.findFrameworks(
+    async (cursor) => {
+      return await transport.findFrameworks(
         {
           jurisdiction: entry.jurisdiction,
           academicSubject: entry.subject,
@@ -966,8 +966,8 @@ export const createLearningCommonsAdapter = (
       const componentsOutcome = await collectPages(
         componentsEnvelopeSchema,
         LEARNING_COMMONS_PAGE_BOUNDS.componentPages,
-        (cursor) => {
-          return options.transport.findComponentsPage(
+        async (cursor) => {
+          return await options.transport.findComponentsPage(
             {
               standardCaseIdentifierUUID: standard.caseIdentifierUUID,
               ...(cursor === undefined ? {} : { cursor }),
@@ -1055,8 +1055,8 @@ const resolvePrerequisites = async (
   const directOutcome = await collectPages(
     prerequisitesEnvelopeSchema,
     LEARNING_COMMONS_PAGE_BOUNDS.prerequisitePages,
-    (cursor) => {
-      return transport.findPrerequisitesPage(
+    async (cursor) => {
+      return await transport.findPrerequisitesPage(
         {
           standardCaseIdentifierUUID,
           ...(cursor === undefined ? {} : { cursor }),
@@ -1100,8 +1100,8 @@ const resolvePrerequisites = async (
   const crosswalkOutcome = await collectPages(
     crosswalksEnvelopeSchema,
     LEARNING_COMMONS_PAGE_BOUNDS.crosswalkPages,
-    (cursor) => {
-      return transport.findCrosswalks(
+    async (cursor) => {
+      return await transport.findCrosswalks(
         {
           standardCaseIdentifierUUID,
           jurisdiction: "Multi-State",
@@ -1144,8 +1144,8 @@ const resolvePrerequisites = async (
   const crosswalkedOutcome = await collectPages(
     prerequisitesEnvelopeSchema,
     LEARNING_COMMONS_PAGE_BOUNDS.prerequisitePages,
-    (cursor) => {
-      return transport.findPrerequisitesPage(
+    async (cursor) => {
+      return await transport.findPrerequisitesPage(
         {
           standardCaseIdentifierUUID: crosswalk.caseIdentifierUUID,
           ...(cursor === undefined ? {} : { cursor }),

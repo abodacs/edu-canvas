@@ -221,8 +221,13 @@ export const createPostgresGenerationLimitStore = (
   return {
     async reserveProviderCall(input) {
       try {
-        return await withDatabase(databaseUrl, (sql) =>
-          sql.begin((transaction) => reserveInTransaction(transaction, input))
+        return await withDatabase(
+          databaseUrl,
+          async (sql) =>
+            await sql.begin(
+              async (transaction) =>
+                await reserveInTransaction(transaction, input)
+            )
         );
       } catch (error) {
         if (error instanceof LimitExceededSignalError) {

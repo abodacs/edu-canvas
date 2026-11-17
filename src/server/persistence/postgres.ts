@@ -176,14 +176,14 @@ const hydrateStoredGeneration = async (
   return hydrateGenerationRecord(storedRequest, storedAttempts);
 };
 
-const readGenerationByQuery = (
+const readGenerationByQuery = async (
   databaseUrl: string,
   tenantId: string,
   value: string,
   lookup: { teacherId?: string; byRequestId?: boolean } = {}
 ): Promise<LessonGenerationRecord | undefined> => {
-  return withDatabase(databaseUrl, (sql) => {
-    return sql.begin(
+  return await withDatabase(databaseUrl, async (sql) => {
+    return await sql.begin(
       async (transaction): Promise<LessonGenerationRecord | undefined> => {
         await transaction`
         select set_config('app.tenant_id', ${tenantId}, true)
@@ -217,14 +217,14 @@ const readGenerationByQuery = (
   });
 };
 
-const readModeratedGenerationByQuery = (
+const readModeratedGenerationByQuery = async (
   databaseUrl: string,
   tenantId: string,
   teacherId: string,
   requestHash: string
 ): Promise<LessonGenerationRecord | undefined> => {
-  return withDatabase(databaseUrl, (sql) => {
-    return sql.begin(
+  return await withDatabase(databaseUrl, async (sql) => {
+    return await sql.begin(
       async (transaction): Promise<LessonGenerationRecord | undefined> => {
         await transaction`
         select set_config('app.tenant_id', ${tenantId}, true)
@@ -255,10 +255,10 @@ const createPostgresGenerationBackend = (
   databaseUrl: string
 ): GenerationPersistenceBackend<SqlTransaction> => {
   return {
-    withTransaction: <T>(
+    withTransaction: async <T>(
       work: (transaction: SqlTransaction) => Promise<T>
     ): Promise<T> => {
-      return withDatabase(databaseUrl, async (sql) => {
+      return await withDatabase(databaseUrl, async (sql) => {
         const result = await sql.begin(work);
         return result as T;
       });
@@ -491,14 +491,23 @@ const createPostgresGenerationBackend = (
       `;
     },
 
-    findGenerationByIdempotencyKey: (tenantId, teacherId, idempotencyKey) => {
-      return readGenerationByQuery(databaseUrl, tenantId, idempotencyKey, {
-        teacherId,
-      });
+    findGenerationByIdempotencyKey: async (
+      tenantId,
+      teacherId,
+      idempotencyKey
+    ) => {
+      return await readGenerationByQuery(
+        databaseUrl,
+        tenantId,
+        idempotencyKey,
+        {
+          teacherId,
+        }
+      );
     },
 
-    findModeratedGeneration: (tenantId, teacherId, requestHash) => {
-      return readModeratedGenerationByQuery(
+    findModeratedGeneration: async (tenantId, teacherId, requestHash) => {
+      return await readModeratedGenerationByQuery(
         databaseUrl,
         tenantId,
         teacherId,
@@ -506,8 +515,8 @@ const createPostgresGenerationBackend = (
       );
     },
 
-    readGeneration: (tenantId, requestId) => {
-      return readGenerationByQuery(databaseUrl, tenantId, requestId, {
+    readGeneration: async (tenantId, requestId) => {
+      return await readGenerationByQuery(databaseUrl, tenantId, requestId, {
         byRequestId: true,
       });
     },
@@ -571,8 +580,8 @@ export const createPostgresPersistence = (
 
     async readSeedCounts(): Promise<SeedCounts> {
       try {
-        const rows = await withDatabase(databaseUrl, (sql) => {
-          return sql.begin(async (transaction) => {
+        const rows = await withDatabase(databaseUrl, async (sql) => {
+          return await sql.begin(async (transaction) => {
             await transaction`
               select set_config('app.tenant_id', ${syntheticSeed.tenant.id}, true)
             `;

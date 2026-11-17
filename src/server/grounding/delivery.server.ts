@@ -154,7 +154,7 @@ const parseUploadParts = async (request: Request): Promise<UploadParts> => {
   };
 };
 
-const storeUploadParts = (
+const storeUploadParts = async (
   service: ReturnType<typeof createSourceService>,
   actor: TeacherActor,
   parts: UploadParts
@@ -164,7 +164,7 @@ const storeUploadParts = (
       ? {}
       : { replacesSnapshotId: parts.replacesSnapshotId };
   if (parts.kind === "file") {
-    return service.upload({
+    return await service.upload({
       actor,
       fileName: parts.fileName,
       bytes: parts.bytes,
@@ -172,7 +172,7 @@ const storeUploadParts = (
       ...replaces,
     });
   }
-  return service.addCorrectedText({
+  return await service.addCorrectedText({
     actor,
     correctedText: parts.correctedText,
     ...replaces,

@@ -449,9 +449,9 @@ const curriculumContext = (): SemanticValidationInput["context"] => {
   };
 };
 
-const fixtureDraft = () => {
+const fixtureDraft = async () => {
   const provider = createDeterministicLessonDraftProvider("valid");
-  return provider.generate(
+  return await provider.generate(
     {
       prompt: BASE_PROMPT,
       grade: 4,
@@ -679,8 +679,8 @@ const executeDg6Challenge = async (
     `${caseFile.id}: expected ${STATE_FAILED_RETRYABLE} base, got ${driftBase.record.state}.`
   );
   const driftRejection = expectGenerationRejection(
-    await captureRejectionAsync(() => {
-      return generateOnce(persistence, "valid", runToken, "6c2", {
+    await captureRejectionAsync(async () => {
+      return await generateOnce(persistence, "valid", runToken, "6c2", {
         retryOfRequestId: driftBase.record.requestId,
         prompt: "A different lesson request that drifts from the original.",
       });
@@ -695,8 +695,8 @@ const executeDg6Challenge = async (
     `${caseFile.id}: expected ${STATE_READY_FOR_REVIEW} draft, got ${finished.record.state}.`
   );
   const staleRejection = expectGenerationRejection(
-    await captureRejectionAsync(() => {
-      return generateOnce(persistence, "valid", runToken, "6c4", {
+    await captureRejectionAsync(async () => {
+      return await generateOnce(persistence, "valid", runToken, "6c4", {
         retryOfRequestId: finished.record.requestId,
       });
     }),
@@ -735,8 +735,8 @@ const runDg6 = async (
     return deferred(caseFile, KIND_BLOCKED_ENVIRONMENT, DATABASE_URL_MISSING);
   }
   const persistence = createPostgresPersistence(databaseUrl);
-  const runWork = (): Promise<CaseResult> =>
-    work(persistence, caseFile, runToken);
+  const runWork = async (): Promise<CaseResult> =>
+    await work(persistence, caseFile, runToken);
   try {
     return await withEvalConnection(databaseUrl, runWork);
   } catch (error) {
@@ -744,15 +744,15 @@ const runDg6 = async (
   }
 };
 
-const runDg6Normal = (
+const runDg6Normal = async (
   caseFile: CaseFile,
   runToken: string
-): Promise<CaseResult> => runDg6(caseFile, runToken, executeDg6Normal);
+): Promise<CaseResult> => await runDg6(caseFile, runToken, executeDg6Normal);
 
-const runDg6Challenge = (
+const runDg6Challenge = async (
   caseFile: CaseFile,
   runToken: string
-): Promise<CaseResult> => runDg6(caseFile, runToken, executeDg6Challenge);
+): Promise<CaseResult> => await runDg6(caseFile, runToken, executeDg6Challenge);
 
 // --- Dispatch ---------------------------------------------------------------
 

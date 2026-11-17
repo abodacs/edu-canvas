@@ -362,11 +362,11 @@ const createActor = async (
   return existing;
 };
 
-const selectMembershipForActor = (
+const selectMembershipForActor = async (
   transaction: SqlTransaction,
   input: NewMembershipInput
 ): Promise<MembershipRow[]> => {
-  return transaction<MembershipRow[]>`
+  return await transaction<MembershipRow[]>`
     select
       id as membership_id,
       actor_id,
@@ -450,12 +450,12 @@ const assignClass = async (
   `;
 };
 
-const createSession = (
+const createSession = async (
   databaseUrl: string,
   input: NewSessionInput
 ): Promise<void> => {
-  return withDatabase(databaseUrl, (sql) => {
-    return sql.begin(async (transaction) => {
+  await withDatabase(databaseUrl, async (sql) => {
+    await sql.begin(async (transaction) => {
       await transaction`
         select set_config('app.tenant_id', ${input.tenantId}, true)
       `;
@@ -464,11 +464,11 @@ const createSession = (
   });
 };
 
-const readSessionByVerifier = (
+const readSessionByVerifier = async (
   databaseUrl: string,
   verifierHash: string
 ): Promise<IdentitySessionRecord | undefined> => {
-  return withDatabase(databaseUrl, async (sql) => {
+  return await withDatabase(databaseUrl, async (sql) => {
     const rows = await sql<SessionRow[]>`
       select *
       from identity_lookup_session(${verifierHash})
@@ -477,11 +477,11 @@ const readSessionByVerifier = (
   });
 };
 
-const readSession = (
+const readSession = async (
   databaseUrl: string,
   sessionId: string
 ): Promise<IdentitySessionRecord | undefined> => {
-  return withDatabase(databaseUrl, async (sql) => {
+  return await withDatabase(databaseUrl, async (sql) => {
     const rows = await sql<SessionRow[]>`
       select *
       from identity_lookup_session_by_id(${sessionId})
@@ -490,13 +490,13 @@ const readSession = (
   });
 };
 
-const revokeSession = (
+const revokeSession = async (
   databaseUrl: string,
   sessionId: string,
   revokedAt: string
 ): Promise<IdentitySessionRecord | undefined> => {
-  return withDatabase(databaseUrl, (sql) => {
-    return sql.begin(async (transaction) => {
+  return await withDatabase(databaseUrl, async (sql) => {
+    return await sql.begin(async (transaction) => {
       const tenantId = await readSessionScope(transaction, sessionId);
       let revoked: IdentitySessionRecord | undefined;
       if (tenantId) {
@@ -519,12 +519,12 @@ const revokeSession = (
   });
 };
 
-const findProviderBinding = (
+const findProviderBinding = async (
   databaseUrl: string,
   issuer: string,
   subject: string
 ): Promise<ProviderBindingRecord | undefined> => {
-  return withDatabase(databaseUrl, async (sql) => {
+  return await withDatabase(databaseUrl, async (sql) => {
     const rows = await sql<ProviderBindingRow[]>`
       select provider_issuer, provider_subject, actor_id, created_at
       from provider_bindings
@@ -535,12 +535,12 @@ const findProviderBinding = (
   });
 };
 
-const createProviderBinding = (
+const createProviderBinding = async (
   databaseUrl: string,
   binding: ProviderBindingRecord
 ): Promise<ProviderBindingRecord> => {
-  return withDatabase(databaseUrl, (sql) => {
-    return sql.begin(async (transaction) => {
+  return await withDatabase(databaseUrl, async (sql) => {
+    return await sql.begin(async (transaction) => {
       // `on conflict do nothing` rather than catching the unique violation:
       // postgres.js rethrows the first query error out of `begin` even when it
       // is caught, so a caught constraint error would escape as a raw driver
@@ -585,11 +585,11 @@ const createProviderBinding = (
   });
 };
 
-const listMemberships = (
+const listMemberships = async (
   databaseUrl: string,
   actorId: ActorId
 ): Promise<readonly MembershipRecord[]> => {
-  return withDatabase(databaseUrl, async (sql) => {
+  return await withDatabase(databaseUrl, async (sql) => {
     const rows = await sql<MembershipRow[]>`
       select
         membership_id,
@@ -606,11 +606,11 @@ const listMemberships = (
   });
 };
 
-const readMembership = (
+const readMembership = async (
   databaseUrl: string,
   membershipId: string
 ): Promise<MembershipRecord | undefined> => {
-  return withDatabase(databaseUrl, async (sql) => {
+  return await withDatabase(databaseUrl, async (sql) => {
     const rows = await sql<MembershipRow[]>`
       select
         membership_id,
@@ -627,12 +627,12 @@ const readMembership = (
   });
 };
 
-const readTenantName = (
+const readTenantName = async (
   databaseUrl: string,
   tenantId: TenantId
 ): Promise<string | undefined> => {
-  return withDatabase(databaseUrl, (sql) => {
-    return sql.begin(async (transaction) => {
+  return await withDatabase(databaseUrl, async (sql) => {
+    return await sql.begin(async (transaction) => {
       await transaction`
         select set_config('app.tenant_id', ${tenantId}, true)
       `;
@@ -644,12 +644,12 @@ const readTenantName = (
   });
 };
 
-const listRosterClassIds = (
+const listRosterClassIds = async (
   databaseUrl: string,
   membershipId: string
 ): Promise<readonly ClassId[]> => {
-  return withDatabase(databaseUrl, (sql) => {
-    return sql.begin(async (transaction) => {
+  return await withDatabase(databaseUrl, async (sql) => {
+    return await sql.begin(async (transaction) => {
       const tenantId = await readMembershipScope(transaction, membershipId);
       if (!tenantId) {
         return [];
@@ -668,11 +668,11 @@ const listRosterClassIds = (
   });
 };
 
-const createPendingAuthentication = (
+const createPendingAuthentication = async (
   databaseUrl: string,
   record: PendingAuthenticationRecord
 ): Promise<void> => {
-  return withDatabase(databaseUrl, async (sql) => {
+  await withDatabase(databaseUrl, async (sql) => {
     await sql`
       insert into pending_authentications (
         pending_id,
@@ -701,11 +701,11 @@ const createPendingAuthentication = (
   });
 };
 
-const readPendingAuthentication = (
+const readPendingAuthentication = async (
   databaseUrl: string,
   verifierHash: string
 ): Promise<PendingAuthenticationRecord | undefined> => {
-  return withDatabase(databaseUrl, async (sql) => {
+  return await withDatabase(databaseUrl, async (sql) => {
     const rows = await sql<PendingRow[]>`
       select *
       from identity_lookup_pending(${verifierHash})
@@ -714,11 +714,11 @@ const readPendingAuthentication = (
   });
 };
 
-const appendProvisioningAudit = (
+const appendProvisioningAudit = async (
   databaseUrl: string,
   entry: ProvisioningAuditEntry
 ): Promise<void> => {
-  return withDatabase(databaseUrl, async (sql) => {
+  await withDatabase(databaseUrl, async (sql) => {
     await sql`
       insert into provisioning_audit (
         id,
@@ -762,28 +762,39 @@ export const createPostgresIdentityPersistence = (
   }
 
   return {
-    findProviderBinding: (issuer, subject) =>
-      findProviderBinding(databaseUrl, issuer, subject),
-    createProviderBinding: (binding) =>
-      createProviderBinding(databaseUrl, binding),
+    findProviderBinding: async (issuer, subject) =>
+      await findProviderBinding(databaseUrl, issuer, subject),
+    createProviderBinding: async (binding) =>
+      await createProviderBinding(databaseUrl, binding),
 
-    readActor: (actorId) =>
-      withDatabase(databaseUrl, (sql) => readActorById(sql, actorId)),
-    createActor: (input) =>
-      withDatabase(databaseUrl, (sql) => createActor(sql, input)),
-    listMemberships: (actorId) => listMemberships(databaseUrl, actorId),
-    readMembership: (membershipId) => readMembership(databaseUrl, membershipId),
-    readTenantName: (tenantId) => readTenantName(databaseUrl, tenantId),
-    listRosterClassIds: (membershipId) =>
-      listRosterClassIds(databaseUrl, membershipId),
+    readActor: async (actorId) =>
+      await withDatabase(
+        databaseUrl,
+        async (sql) => await readActorById(sql, actorId)
+      ),
+    createActor: async (input) =>
+      await withDatabase(
+        databaseUrl,
+        async (sql) => await createActor(sql, input)
+      ),
+    listMemberships: async (actorId) =>
+      await listMemberships(databaseUrl, actorId),
+    readMembership: async (membershipId) =>
+      await readMembership(databaseUrl, membershipId),
+    readTenantName: async (tenantId) =>
+      await readTenantName(databaseUrl, tenantId),
+    listRosterClassIds: async (membershipId) =>
+      await listRosterClassIds(databaseUrl, membershipId),
 
-    createSession: (input) => createSession(databaseUrl, input),
-    readSessionByVerifier: (verifierHash) =>
-      readSessionByVerifier(databaseUrl, verifierHash),
-    readSession: (sessionId) => readSession(databaseUrl, sessionId),
-    touchSession: (update) => {
-      return withDatabase(databaseUrl, (sql) => {
-        return sql.begin(async (transaction) => {
+    createSession: async (input) => {
+      await createSession(databaseUrl, input);
+    },
+    readSessionByVerifier: async (verifierHash) =>
+      await readSessionByVerifier(databaseUrl, verifierHash),
+    readSession: async (sessionId) => await readSession(databaseUrl, sessionId),
+    touchSession: async (update) => {
+      return await withDatabase(databaseUrl, async (sql) => {
+        return await sql.begin(async (transaction) => {
           const tenantId = await readSessionScope(
             transaction,
             update.sessionId
@@ -808,9 +819,9 @@ export const createPostgresIdentityPersistence = (
         });
       });
     },
-    rotateSessionCredentials: (replacement) => {
-      return withDatabase(databaseUrl, (sql) => {
-        return sql.begin(async (transaction) => {
+    rotateSessionCredentials: async (replacement) => {
+      return await withDatabase(databaseUrl, async (sql) => {
+        return await sql.begin(async (transaction) => {
           const tenantId = await readSessionScope(
             transaction,
             replacement.sessionId
@@ -835,15 +846,16 @@ export const createPostgresIdentityPersistence = (
         });
       });
     },
-    revokeSession: (sessionId, revokedAt) =>
-      revokeSession(databaseUrl, sessionId, revokedAt),
+    revokeSession: async (sessionId, revokedAt) =>
+      await revokeSession(databaseUrl, sessionId, revokedAt),
 
-    createPendingAuthentication: (record) =>
-      createPendingAuthentication(databaseUrl, record),
-    readPendingAuthentication: (verifierHash) =>
-      readPendingAuthentication(databaseUrl, verifierHash),
-    consumePendingAuthentication: (pendingId, consumedAt) => {
-      return withDatabase(databaseUrl, async (sql) => {
+    createPendingAuthentication: async (record) => {
+      await createPendingAuthentication(databaseUrl, record);
+    },
+    readPendingAuthentication: async (verifierHash) =>
+      await readPendingAuthentication(databaseUrl, verifierHash),
+    consumePendingAuthentication: async (pendingId, consumedAt) => {
+      return await withDatabase(databaseUrl, async (sql) => {
         const rows = await sql<{ pending_id: string }[]>`
           update pending_authentications
           set consumed_at = ${consumedAt}
@@ -854,9 +866,9 @@ export const createPostgresIdentityPersistence = (
       });
     },
 
-    grantMembership: (input) => {
-      return withDatabase(databaseUrl, (sql) => {
-        return sql.begin(async (transaction) => {
+    grantMembership: async (input) => {
+      return await withDatabase(databaseUrl, async (sql) => {
+        return await sql.begin(async (transaction) => {
           await transaction`
             select set_config('app.tenant_id', ${input.tenantId}, true)
           `;
@@ -864,9 +876,9 @@ export const createPostgresIdentityPersistence = (
         });
       });
     },
-    assignClass: (input) => {
-      return withDatabase(databaseUrl, (sql) => {
-        return sql.begin(async (transaction) => {
+    assignClass: async (input) => {
+      await withDatabase(databaseUrl, async (sql) => {
+        await sql.begin(async (transaction) => {
           await transaction`
             select set_config('app.tenant_id', ${input.tenantId}, true)
           `;
@@ -874,9 +886,9 @@ export const createPostgresIdentityPersistence = (
         });
       });
     },
-    revokeMembership: (membershipId) => {
-      return withDatabase(databaseUrl, (sql) => {
-        return sql.begin(async (transaction) => {
+    revokeMembership: async (membershipId) => {
+      return await withDatabase(databaseUrl, async (sql) => {
+        return await sql.begin(async (transaction) => {
           const tenantId = await readMembershipScope(transaction, membershipId);
           if (!tenantId) {
             return false;
@@ -894,8 +906,8 @@ export const createPostgresIdentityPersistence = (
         });
       });
     },
-    disableActor: (actorId) => {
-      return withDatabase(databaseUrl, async (sql) => {
+    disableActor: async (actorId) => {
+      return await withDatabase(databaseUrl, async (sql) => {
         const now = new Date();
         const rows = await sql<{ disabled: boolean }[]>`
           select identity_disable_actor(${actorId}, ${now.toISOString()}) as disabled
@@ -904,7 +916,8 @@ export const createPostgresIdentityPersistence = (
       });
     },
 
-    appendProvisioningAudit: (entry) =>
-      appendProvisioningAudit(databaseUrl, entry),
+    appendProvisioningAudit: async (entry) => {
+      await appendProvisioningAudit(databaseUrl, entry);
+    },
   };
 };

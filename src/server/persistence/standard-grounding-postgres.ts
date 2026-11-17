@@ -199,8 +199,8 @@ export const createPostgresStandardGroundingPersistence = (
 
     insert: async (record) => {
       try {
-        await withTenantDatabase((sql) => {
-          return sql.begin(async (transaction) => {
+        await withTenantDatabase(async (sql) => {
+          await sql.begin(async (transaction) => {
             await setTenant(transaction, record.tenantId);
             await transaction`
               insert into standard_groundings (

@@ -5,11 +5,11 @@ import {
   handleSourceUploadRequest,
 } from "@/server/grounding/delivery.server";
 
-const handlePost = ({ request }: { request: Request }) =>
-  handleSourceUploadRequest(request);
+const handlePost = async ({ request }: { request: Request }) =>
+  await handleSourceUploadRequest(request);
 
-const handleGet = ({ request }: { request: Request }) =>
-  handleSourceListRequest(request);
+const handleGet = async ({ request }: { request: Request }) =>
+  await handleSourceListRequest(request);
 
 export const Route = createFileRoute("/api/lessons/sources/")({
   server: { handlers: { POST: handlePost, GET: handleGet } },

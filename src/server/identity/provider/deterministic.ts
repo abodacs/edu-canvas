@@ -82,31 +82,32 @@ export const createDeterministicIdentityProvider = (
 
   return {
     issuer,
-    signInWithPassword: (email, password): Promise<ProviderSignInOutcome> => {
+    signInWithPassword: async (
+      email,
+      password
+    ): Promise<ProviderSignInOutcome> => {
       if (!available) {
-        return Promise.resolve({ status: "unavailable" });
+        return await Promise.resolve({ status: "unavailable" });
       }
       const account = accounts.get(normalizeEmail(email));
       if (!account || account.password !== password) {
-        return Promise.resolve({ status: "rejected" });
+        return { status: "rejected" };
       }
-      return Promise.resolve(
-        account.emailVerified
-          ? { status: "authenticated", auth: mint(account) }
-          : { status: "email-unverified" }
-      );
+      return account.emailVerified
+        ? { status: "authenticated", auth: mint(account) }
+        : { status: "email-unverified" };
     },
-    signUpTeacher: (email): Promise<ProviderSignUpOutcome> => {
+    signUpTeacher: async (email): Promise<ProviderSignUpOutcome> => {
       // New and duplicate addresses return the same verification-pending state.
-      return Promise.resolve(
+      return await Promise.resolve(
         available
           ? { status: "verification-pending", email }
           : { status: "unavailable" }
       );
     },
-    refresh: (refreshToken): Promise<ProviderRefreshOutcome> => {
+    refresh: async (refreshToken): Promise<ProviderRefreshOutcome> => {
       if (!available) {
-        return Promise.resolve({ status: "unavailable" });
+        return await Promise.resolve({ status: "unavailable" });
       }
       const match = sessions
         .values()
@@ -116,32 +117,30 @@ export const createDeterministicIdentityProvider = (
             .values()
             .find((candidate) => candidate.subject === match.subject)
         : undefined;
-      return Promise.resolve(
-        match && account
-          ? { status: "refreshed", auth: mint(account) }
-          : { status: "invalid" }
-      );
+      return match && account
+        ? { status: "refreshed", auth: mint(account) }
+        : { status: "invalid" };
     },
-    signOut: (accessToken): Promise<void> => {
+    signOut: async (accessToken): Promise<void> => {
       sessions.delete(accessToken);
-      return Promise.resolve();
+      await Promise.resolve();
     },
-    verifySession: (accessToken): Promise<ProviderSessionStatus> => {
+    verifySession: async (accessToken): Promise<ProviderSessionStatus> => {
       if (!available) {
-        return Promise.resolve({ status: "unavailable" });
+        return await Promise.resolve({ status: "unavailable" });
       }
       const session = sessions.get(accessToken);
       if (!session || expiredAccessTokens.has(accessToken)) {
-        return Promise.resolve({ status: "unauthorized" });
+        return { status: "unauthorized" };
       }
       const account = accounts
         .values()
         .find((candidate) => candidate.subject === session.subject);
-      return Promise.resolve({
+      return {
         status: "active",
         subject: parseProviderSubject(session.subject),
         emailVerified: account?.emailVerified ?? false,
-      });
+      };
     },
     expireAccessTokens: () => {
       for (const accessToken of sessions.keys()) {

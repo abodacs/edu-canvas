@@ -117,29 +117,29 @@ const post = async <T>(
 const parseReview = (value: unknown): ReviewPack =>
   reviewPackSchema.parse(value);
 
-export const openPublicationReview = (
+export const openPublicationReview = async (
   requestId: string,
   csrf: string
 ): Promise<PublicationClientResult<ReviewPack>> =>
-  post("/api/publications/review", csrf, { requestId }, parseReview);
+  await post("/api/publications/review", csrf, { requestId }, parseReview);
 
-export const approvePublicationTarget = (
+export const approvePublicationTarget = async (
   input: PublicationApproveInput,
   csrf: string
 ): Promise<PublicationClientResult<ReviewPack>> =>
-  post("/api/publications/approvals", csrf, input, parseReview);
+  await post("/api/publications/approvals", csrf, input, parseReview);
 
-export const revisePublicationVersion = (
+export const revisePublicationVersion = async (
   input: PublicationReviseInput,
   csrf: string
 ): Promise<PublicationClientResult<ReviewPack>> =>
-  post("/api/publications/revisions", csrf, input, parseReview);
+  await post("/api/publications/revisions", csrf, input, parseReview);
 
-export const publishPublication = (
+export const publishPublication = async (
   input: PublicationPublishInput,
   csrf: string
 ): Promise<PublicationClientResult<PublicationPublishResult>> => {
-  return post("/api/publications", csrf, input, (value) =>
+  return await post("/api/publications", csrf, input, (value) =>
     publicationPublishResultSchema.parse(value)
   );
 };

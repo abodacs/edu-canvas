@@ -473,8 +473,8 @@ describe("session resolution, expiry, and revocation", () => {
 describe("rate limiting", () => {
   it("rejects further sign-in attempts once the account limit is reached", async () => {
     const { service } = await createHarness({ signInAttemptLimit: 2 });
-    const attempt = () => {
-      return service.signIn({
+    const attempt = async () => {
+      return await service.signIn({
         email: "bilal.north@example.test",
         password: "wrong-password",
         sourceAddress: "203.0.113.40",

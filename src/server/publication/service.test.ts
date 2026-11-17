@@ -104,7 +104,7 @@ const createFixture = async (): Promise<Fixture> => {
 
   return {
     teacher: teacherActor,
-    open: () => publishService.openReview(teacherActor, requestId),
+    open: async () => await publishService.openReview(teacherActor, requestId),
     store,
     publishService,
   };
@@ -139,8 +139,8 @@ const approveAll = async (
     .map((finding) => finding.code);
 
   await Promise.all(
-    review.draft.variants.map((variant) => {
-      return fixture.publishService.approve(fixture.teacher, {
+    review.draft.variants.map(async (variant) => {
+      return await fixture.publishService.approve(fixture.teacher, {
         requestId,
         versionId: review.version.id,
         targetKind: "variant",
@@ -160,8 +160,8 @@ const approveAll = async (
   });
 };
 
-const publishAll = (fixture: Fixture, review: ReviewPack) => {
-  return fixture.publishService.publish(fixture.teacher, {
+const publishAll = async (fixture: Fixture, review: ReviewPack) => {
+  return await fixture.publishService.publish(fixture.teacher, {
     requestId,
     versionId: review.version.id,
     expectedArtifactHash: review.version.artifactHash,
@@ -223,7 +223,7 @@ describe("publication service", () => {
     const review = await fixture.open();
 
     const error = await expectPublicationError(
-      () => publishAll(fixture, review),
+      async () => await publishAll(fixture, review),
       "MISSING_APPROVAL"
     );
 
@@ -283,8 +283,8 @@ describe("publication service", () => {
     expect(secondKey.publicationId).toBe(first.publicationId);
     expect(secondKey.assignmentId).toBe(first.assignmentId);
 
-    await expectPublicationError(() => {
-      return fixture.publishService.publish(fixture.teacher, {
+    await expectPublicationError(async () => {
+      return await fixture.publishService.publish(fixture.teacher, {
         requestId,
         versionId: approved.version.id,
         expectedArtifactHash: approved.version.artifactHash,
@@ -303,8 +303,8 @@ describe("publication service", () => {
     const approved = await approveAll(fixture, review);
     await publishAll(fixture, approved);
 
-    await expectPublicationError(() => {
-      return fixture.publishService.publish(fixture.teacher, {
+    await expectPublicationError(async () => {
+      return await fixture.publishService.publish(fixture.teacher, {
         requestId,
         versionId: approved.version.id,
         expectedArtifactHash: approved.version.artifactHash,
@@ -355,8 +355,8 @@ describe("publication service", () => {
     const fixture = await createFixture();
     const review = await fixture.open();
 
-    const error = await expectPublicationError(() => {
-      return fixture.publishService.revise(fixture.teacher, {
+    const error = await expectPublicationError(async () => {
+      return await fixture.publishService.revise(fixture.teacher, {
         requestId,
         versionId: review.version.id,
         expectedArtifactHash: review.version.artifactHash,
@@ -393,8 +393,8 @@ describe("publication service", () => {
 
     const review = await fixture.open();
 
-    await expectPublicationError(() => {
-      return fixture.publishService.revise(fixture.teacher, {
+    await expectPublicationError(async () => {
+      return await fixture.publishService.revise(fixture.teacher, {
         requestId,
         versionId: review.version.id,
         expectedArtifactHash: "a".repeat(64),
@@ -435,8 +435,8 @@ describe("publication service", () => {
       ],
     };
 
-    await expectPublicationError(() => {
-      return fixture.publishService.approve(fixture.teacher, {
+    await expectPublicationError(async () => {
+      return await fixture.publishService.approve(fixture.teacher, {
         requestId,
         versionId: review.version.id,
         targetKind: "variant",
@@ -466,15 +466,17 @@ describe("publication service", () => {
     const review = await fixture.open();
 
     await expectPublicationError(
-      () => fixture.publishService.readReview(otherTeacher, requestId),
+      async () =>
+        await fixture.publishService.readReview(otherTeacher, requestId),
       "PUBLICATION_NOT_FOUND"
     );
     await expectPublicationError(
-      () => fixture.publishService.readReview(northTeacher, requestId),
+      async () =>
+        await fixture.publishService.readReview(northTeacher, requestId),
       "PUBLICATION_NOT_FOUND"
     );
-    await expectPublicationError(() => {
-      return fixture.publishService.approve(otherTeacher, {
+    await expectPublicationError(async () => {
+      return await fixture.publishService.approve(otherTeacher, {
         requestId,
         versionId: review.version.id,
         targetKind: "variant",
@@ -493,8 +495,8 @@ describe("publication service", () => {
     const review = await fixture.open();
     const approved = await approveAll(fixture, review);
 
-    await expectPublicationError(() => {
-      return fixture.publishService.publish(fixture.teacher, {
+    await expectPublicationError(async () => {
+      return await fixture.publishService.publish(fixture.teacher, {
         requestId,
         versionId: approved.version.id,
         expectedArtifactHash: approved.version.artifactHash,
@@ -512,8 +514,8 @@ describe("publication service", () => {
     const review = await fixture.open();
     const approved = await approveAll(fixture, review);
 
-    await expectPublicationError(() => {
-      return fixture.publishService.publish(fixture.teacher, {
+    await expectPublicationError(async () => {
+      return await fixture.publishService.publish(fixture.teacher, {
         requestId,
         versionId: approved.version.id,
         expectedArtifactHash: approved.version.artifactHash,

@@ -41,12 +41,12 @@ const readUnknownField = (value: unknown, key: string): unknown =>
  * exactly one request per auth call, so this bounds the total provider call.
  */
 const createTimeoutFetch = (timeoutMs: number): typeof fetch => {
-  return (input, init) => {
+  return async (input, init) => {
     const timeoutSignal = AbortSignal.timeout(timeoutMs);
     const signal = init?.signal
       ? AbortSignal.any([init.signal, timeoutSignal])
       : timeoutSignal;
-    return fetch(input, { ...init, signal });
+    return await fetch(input, { ...init, signal });
   };
 };
 

@@ -29,32 +29,34 @@ export const createSeededSourcePersistence = (
   };
 
   return {
-    insertSnapshot(record) {
+    async insertSnapshot(record) {
       store.set(
         snapshotKey(record.tenantId, record.id),
         structuredClone(record)
       );
-      return Promise.resolve();
+      await Promise.resolve();
     },
 
-    updateSnapshot(record, expectedUpdatedAt) {
+    async updateSnapshot(record, expectedUpdatedAt) {
       const existing = findOwned(record.tenantId, record.teacherId, record.id);
       if (!existing || existing.updatedAt !== expectedUpdatedAt) {
-        return Promise.resolve(false);
+        return await Promise.resolve(false);
       }
       store.set(
         snapshotKey(record.tenantId, record.id),
         structuredClone(record)
       );
-      return Promise.resolve(true);
+      return true;
     },
 
-    readSnapshot(tenantId, teacherId, snapshotId) {
+    async readSnapshot(tenantId, teacherId, snapshotId) {
       const record = findOwned(tenantId, teacherId, snapshotId);
-      return Promise.resolve(record ? structuredClone(record) : undefined);
+      return await Promise.resolve(
+        record ? structuredClone(record) : undefined
+      );
     },
 
-    listSnapshots(tenantId, teacherId) {
+    async listSnapshots(tenantId, teacherId) {
       const records = store
         .values()
         .filter(
@@ -65,19 +67,21 @@ export const createSeededSourcePersistence = (
         .toSorted((left, right) =>
           right.createdAt.localeCompare(left.createdAt)
         );
-      return Promise.resolve(records.map((record) => structuredClone(record)));
+      return await Promise.resolve(
+        records.map((record) => structuredClone(record))
+      );
     },
 
-    deleteSnapshot(tenantId, teacherId, snapshotId) {
+    async deleteSnapshot(tenantId, teacherId, snapshotId) {
       const existing = findOwned(tenantId, teacherId, snapshotId);
       if (!existing) {
-        return Promise.resolve(false);
+        return await Promise.resolve(false);
       }
       store.delete(snapshotKey(tenantId, snapshotId));
-      return Promise.resolve(true);
+      return true;
     },
 
-    expireSnapshotsBefore(nowIso) {
+    async expireSnapshotsBefore(nowIso) {
       let expired = 0;
       for (const [key, record] of store) {
         if (Date.parse(record.expiresAt) >= Date.parse(nowIso)) {
@@ -87,10 +91,10 @@ export const createSeededSourcePersistence = (
         store.delete(key);
         expired += 1;
       }
-      return Promise.resolve(expired);
+      return await Promise.resolve(expired);
     },
 
-    failStaleExtractingSnapshots(staleBeforeIso, nowIso) {
+    async failStaleExtractingSnapshots(staleBeforeIso, nowIso) {
       let interrupted = 0;
       for (const [key, record] of store) {
         if (!(
@@ -109,13 +113,19 @@ export const createSeededSourcePersistence = (
         });
         interrupted += 1;
       }
-      return Promise.resolve(interrupted);
+      return await Promise.resolve(interrupted);
     },
 
-    markSnapshotUsed(tenantId, teacherId, snapshotId, usedAtIso, expiresAtIso) {
+    async markSnapshotUsed(
+      tenantId,
+      teacherId,
+      snapshotId,
+      usedAtIso,
+      expiresAtIso
+    ) {
       const existing = findOwned(tenantId, teacherId, snapshotId);
       if (!existing || existing.usedAt !== null) {
-        return Promise.resolve(false);
+        return await Promise.resolve(false);
       }
       store.set(snapshotKey(tenantId, snapshotId), {
         ...existing,
@@ -123,7 +133,7 @@ export const createSeededSourcePersistence = (
         expiresAt: expiresAtIso,
         updatedAt: usedAtIso,
       });
-      return Promise.resolve(true);
+      return true;
     },
   };
 };

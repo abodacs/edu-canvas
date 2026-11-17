@@ -14,6 +14,36 @@ export interface SeededPersistenceOptions {
   snapshotStore?: Map<string, SourceSnapshotRecord>;
 }
 
+const expireGenerationClaimRecord = (
+  existing: LessonGenerationRecord | undefined,
+  expectedUpdatedAt: string,
+  updatedAt: string
+): LessonGenerationRecord | undefined => {
+  if (
+    !existing ||
+    existing.state !== "generating" ||
+    existing.updatedAt !== expectedUpdatedAt
+  ) {
+    return undefined;
+  }
+
+  const diagnostics = [
+    ...existing.diagnostics,
+    generationClaimExpiredDiagnostic(),
+  ];
+  return {
+    ...existing,
+    state: "failed-retryable",
+    diagnostics,
+    updatedAt,
+    attempts: existing.attempts.map((attempt) => {
+      return attempt.attemptNumber === existing.attempt
+        ? { ...attempt, state: "failed-retryable", diagnostics }
+        : attempt;
+    }),
+  };
+};
+
 export const createSeededPersistence = (
   options: SeededPersistenceOptions = {}
 ): FoundationPersistence => {
@@ -44,11 +74,30 @@ export const createSeededPersistence = (
     return undefined;
   };
 
+  const findModeratedGenerationRecord = (
+    tenantId: string,
+    teacherId: string,
+    requestHash: string
+  ): LessonGenerationRecord | undefined => {
+    for (const record of generationStore.values()) {
+      if (
+        record.tenantId === tenantId &&
+        record.teacherId === teacherId &&
+        record.state === "blocked-by-moderation" &&
+        record.attempts.some((attempt) => attempt.requestHash === requestHash)
+      ) {
+        return record;
+      }
+    }
+
+    return undefined;
+  };
+
   return {
     kind: inMemoryPersistenceKind,
     ...sourcePersistence,
 
-    check() {
+    async check() {
       try {
         getSyntheticSeedCounts();
       } catch (error) {
@@ -61,7 +110,7 @@ export const createSeededPersistence = (
         throw error;
       }
 
-      return Promise.resolve({
+      return await Promise.resolve({
         status: "ready",
         kind: inMemoryPersistenceKind,
         code: "READY",
@@ -69,9 +118,9 @@ export const createSeededPersistence = (
       });
     },
 
-    readSeedCounts() {
+    async readSeedCounts() {
       try {
-        return Promise.resolve(getSyntheticSeedCounts());
+        return await Promise.resolve(getSyntheticSeedCounts());
       } catch (error) {
         observability.captureError(error, {
           operation: "persistence.seeded.read-seed-counts",
@@ -83,7 +132,7 @@ export const createSeededPersistence = (
       }
     },
 
-    claimGeneration(record) {
+    async claimGeneration(record) {
       const attempt = record.attempts.at(-1);
       if (!attempt) {
         throw new Error("A generation claim requires an attempt.");
@@ -95,7 +144,7 @@ export const createSeededPersistence = (
         attempt.idempotencyKey
       );
       if (existing) {
-        return Promise.resolve({
+        return await Promise.resolve({
           claimed: false,
           record: structuredClone(existing),
         });
@@ -105,98 +154,88 @@ export const createSeededPersistence = (
         `${record.tenantId}:${record.requestId}`,
         structuredClone(record)
       );
-      return Promise.resolve({
+      return {
         claimed: true,
         record: structuredClone(record),
-      });
-    },
-
-    expireGenerationClaim(tenantId, requestId, expectedUpdatedAt, updatedAt) {
-      const key = `${tenantId}:${requestId}`;
-      const existing = generationStore.get(key);
-      if (
-        !existing ||
-        existing.state !== "generating" ||
-        existing.updatedAt !== expectedUpdatedAt
-      ) {
-        return Promise.resolve(undefined);
-      }
-
-      const diagnostics = [
-        ...existing.diagnostics,
-        generationClaimExpiredDiagnostic(),
-      ];
-      const expired: LessonGenerationRecord = {
-        ...existing,
-        state: "failed-retryable",
-        diagnostics,
-        updatedAt,
-        attempts: existing.attempts.map((attempt) => {
-          return attempt.attemptNumber === existing.attempt
-            ? { ...attempt, state: "failed-retryable", diagnostics }
-            : attempt;
-        }),
       };
-      generationStore.set(key, structuredClone(expired));
-      return Promise.resolve(structuredClone(expired));
     },
 
-    saveGeneration(record, expected) {
+    async expireGenerationClaim(
+      tenantId,
+      requestId,
+      expectedUpdatedAt,
+      updatedAt
+    ) {
+      const key = `${tenantId}:${requestId}`;
+      const expired = expireGenerationClaimRecord(
+        generationStore.get(key),
+        expectedUpdatedAt,
+        updatedAt
+      );
+      if (expired) {
+        generationStore.set(key, structuredClone(expired));
+      }
+      return await Promise.resolve(
+        expired ? structuredClone(expired) : undefined
+      );
+    },
+
+    async saveGeneration(record, expected) {
       const key = `${record.tenantId}:${record.requestId}`;
       const existing = generationStore.get(key);
       if (!existing || existing.state !== "generating") {
-        return Promise.resolve(false);
+        return await Promise.resolve(false);
       }
       if (
         existing.attempt !== expected.attempt ||
         existing.updatedAt !== expected.updatedAt
       ) {
-        return Promise.resolve(false);
+        return false;
       }
       if (
         Date.parse(existing.updatedAt) <= Date.parse(expected.leaseValidAfter)
       ) {
-        return Promise.resolve(false);
+        return false;
       }
 
       generationStore.set(key, structuredClone(record));
-      return Promise.resolve(true);
+      return true;
     },
 
-    findGenerationByIdempotencyKey(tenantId, teacherId, idempotencyKey) {
+    async findGenerationByIdempotencyKey(tenantId, teacherId, idempotencyKey) {
       const record = findStoredGenerationByIdempotencyKey(
         tenantId,
         teacherId,
         idempotencyKey
       );
-      return Promise.resolve(record ? structuredClone(record) : undefined);
+      return await Promise.resolve(
+        record ? structuredClone(record) : undefined
+      );
     },
 
-    findModeratedGeneration(tenantId, teacherId, requestHash) {
-      for (const record of generationStore.values()) {
-        if (
-          record.tenantId === tenantId &&
-          record.teacherId === teacherId &&
-          record.state === "blocked-by-moderation" &&
-          record.attempts.some((attempt) => attempt.requestHash === requestHash)
-        ) {
-          return Promise.resolve(structuredClone(record));
-        }
-      }
-
-      return Promise.resolve(undefined);
+    async findModeratedGeneration(tenantId, teacherId, requestHash) {
+      const record = findModeratedGenerationRecord(
+        tenantId,
+        teacherId,
+        requestHash
+      );
+      return await Promise.resolve(
+        record ? structuredClone(record) : undefined
+      );
     },
 
-    readGeneration(tenantId, requestId) {
+    async readGeneration(tenantId, requestId) {
       const record = generationStore.get(`${tenantId}:${requestId}`);
-      return Promise.resolve(record ? structuredClone(record) : undefined);
+      return await Promise.resolve(
+        record ? structuredClone(record) : undefined
+      );
     },
 
-    writeAdvisoryReview(tenantId, requestId, review) {
+    async writeAdvisoryReview(tenantId, requestId, review) {
       const key = `${tenantId}:${requestId}`;
       const existing = generationStore.get(key);
       if (!existing || existing.state !== "ready-for-review") {
-        return Promise.resolve(false);
+        return await Promise.resolve(false);
       }
       // #223: additive only. The draft, state, diagnostics and gate stay as
       // they were; the advisory result rides in its own field.
@@ -204,7 +243,7 @@ export const createSeededPersistence = (
         key,
         structuredClone({ ...existing, advisoryReview: review })
       );
-      return Promise.resolve(true);
+      return true;
     },
   };
 };

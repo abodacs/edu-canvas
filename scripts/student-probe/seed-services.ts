@@ -188,8 +188,8 @@ export const createSeedServices = (config: ServerConfig) => {
       .filter((finding) => finding.verdict === "warning")
       .map((finding) => finding.code);
     await Promise.all(
-      review.draft.variants.map((variant) => {
-        return publication.approve(teacher, {
+      review.draft.variants.map(async (variant) => {
+        return await publication.approve(teacher, {
           requestId,
           versionId: review.version.id,
           targetKind: "variant",

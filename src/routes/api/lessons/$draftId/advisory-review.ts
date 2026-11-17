@@ -5,21 +5,21 @@ import {
   handleRequestAdvisoryReview,
 } from "@/server/generation/delivery.server";
 
-const handlePost = ({
+const handlePost = async ({
   request,
   params,
 }: {
   request: Request;
   params: { draftId: string };
-}) => handleRequestAdvisoryReview(request, params.draftId);
+}) => await handleRequestAdvisoryReview(request, params.draftId);
 
-const handleGet = ({
+const handleGet = async ({
   request,
   params,
 }: {
   request: Request;
   params: { draftId: string };
-}) => handleReadAdvisoryReview(request, params.draftId);
+}) => await handleReadAdvisoryReview(request, params.draftId);
 
 export const Route = createFileRoute("/api/lessons/$draftId/advisory-review")({
   server: { handlers: { POST: handlePost, GET: handleGet } },

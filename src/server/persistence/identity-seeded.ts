@@ -92,19 +92,21 @@ export const createSeededIdentityPersistence = (
   };
 
   return {
-    findProviderBinding: (issuer, subject) => {
+    findProviderBinding: async (issuer, subject) => {
       const binding = store.providerBindings.get(bindingKey(issuer, subject));
-      return Promise.resolve(binding ? structuredClone(binding) : undefined);
+      return await Promise.resolve(
+        binding ? structuredClone(binding) : undefined
+      );
     },
 
-    createProviderBinding: (binding) => {
+    createProviderBinding: async (binding) => {
       const existing = store.providerBindings.get(
         bindingKey(binding.providerIssuer, binding.providerSubject)
       );
       if (existing) {
         return existing.actorId === binding.actorId
-          ? Promise.resolve(structuredClone(existing))
-          : Promise.reject(new IdentityError("CONFLICT"));
+          ? await Promise.resolve(structuredClone(existing))
+          : await Promise.reject(new IdentityError("CONFLICT"));
       }
 
       const isActorAlreadyBound = store.providerBindings
@@ -116,25 +118,25 @@ export const createSeededIdentityPersistence = (
           );
         });
       if (isActorAlreadyBound) {
-        return Promise.reject(new IdentityError("CONFLICT"));
+        throw new IdentityError("CONFLICT");
       }
 
       store.providerBindings.set(
         bindingKey(binding.providerIssuer, binding.providerSubject),
         structuredClone(binding)
       );
-      return Promise.resolve(structuredClone(binding));
+      return structuredClone(binding);
     },
 
-    readActor: (actorId) => {
+    readActor: async (actorId) => {
       const actor = store.actors.get(actorId);
-      return Promise.resolve(actor ? structuredClone(actor) : undefined);
+      return await Promise.resolve(actor ? structuredClone(actor) : undefined);
     },
 
-    createActor: (input) => {
+    createActor: async (input) => {
       const existing = store.actors.get(input.actorId);
       if (existing) {
-        return Promise.resolve(structuredClone(existing));
+        return await Promise.resolve(structuredClone(existing));
       }
       const actor: ActorRecord = {
         actorId: input.actorId,
@@ -143,34 +145,34 @@ export const createSeededIdentityPersistence = (
         authorizationRevision: 1,
       };
       store.actors.set(input.actorId, actor);
-      return Promise.resolve(structuredClone(actor));
+      return structuredClone(actor);
     },
 
-    listMemberships: (actorId) => {
+    listMemberships: async (actorId) => {
       const memberships = store.memberships
         .values()
         .filter((membership) => membership.actorId === actorId)
         .map((membership) => structuredClone(membership))
         .toArray();
-      return Promise.resolve(memberships);
+      return await Promise.resolve(memberships);
     },
 
-    readMembership: (membershipId) => {
+    readMembership: async (membershipId) => {
       const membership = store.memberships.get(membershipId);
-      return Promise.resolve(
+      return await Promise.resolve(
         membership ? structuredClone(membership) : undefined
       );
     },
 
-    readTenantName: (tenantId) =>
-      Promise.resolve(store.tenantNames.get(tenantId)),
+    readTenantName: async (tenantId) =>
+      await Promise.resolve(store.tenantNames.get(tenantId)),
 
-    listRosterClassIds: (membershipId) => {
+    listRosterClassIds: async (membershipId) => {
       const classIds = store.classAssignments.get(membershipId) ?? [];
-      return Promise.resolve(structuredClone(classIds));
+      return await Promise.resolve(structuredClone(classIds));
     },
 
-    grantMembership: (input) => {
+    grantMembership: async (input) => {
       const existing = store.memberships.values().find((membership) => {
         return (
           membership.actorId === input.actorId &&
@@ -179,7 +181,7 @@ export const createSeededIdentityPersistence = (
         );
       });
       if (existing) {
-        return Promise.resolve(structuredClone(existing));
+        return await Promise.resolve(structuredClone(existing));
       }
       const membership: MembershipRecord = {
         membershipId: input.membershipId,
@@ -192,10 +194,10 @@ export const createSeededIdentityPersistence = (
         ...(input.learner && { learnerId: input.learner.id }),
       };
       store.memberships.set(input.membershipId, membership);
-      return Promise.resolve(structuredClone(membership));
+      return structuredClone(membership);
     },
 
-    assignClass: (input) => {
+    assignClass: async (input) => {
       const classIds = store.classAssignments.get(input.membershipId) ?? [];
       if (!classIds.includes(input.classId)) {
         store.classAssignments.set(input.membershipId, [
@@ -203,26 +205,26 @@ export const createSeededIdentityPersistence = (
           input.classId,
         ]);
       }
-      return Promise.resolve();
+      await Promise.resolve();
     },
 
-    revokeMembership: (membershipId) => {
+    revokeMembership: async (membershipId) => {
       const membership = store.memberships.get(membershipId);
       if (!membership || membership.status === "revoked") {
-        return Promise.resolve(false);
+        return await Promise.resolve(false);
       }
       store.memberships.set(membershipId, {
         ...membership,
         status: "revoked",
         revision: membership.revision + 1,
       });
-      return Promise.resolve(true);
+      return true;
     },
 
-    disableActor: (actorId) => {
+    disableActor: async (actorId) => {
       const actor = store.actors.get(actorId);
       if (!actor) {
-        return Promise.resolve(false);
+        return await Promise.resolve(false);
       }
       store.actors.set(actorId, {
         ...actor,
@@ -240,10 +242,10 @@ export const createSeededIdentityPersistence = (
           });
         }
       }
-      return Promise.resolve(true);
+      return true;
     },
 
-    createSession: (input) => {
+    createSession: async (input) => {
       const session: IdentitySessionRecord = {
         sessionId: input.sessionId,
         verifierHash: input.verifierHash,
@@ -264,15 +266,16 @@ export const createSeededIdentityPersistence = (
       };
       store.sessions.set(session.sessionId, session);
       store.sessionVerifiers.set(session.verifierHash, session.sessionId);
-      return Promise.resolve();
+      await Promise.resolve();
     },
 
-    readSessionByVerifier: (verifierHash) =>
-      Promise.resolve(readSessionByVerifier(verifierHash)),
+    readSessionByVerifier: async (verifierHash) =>
+      await Promise.resolve(readSessionByVerifier(verifierHash)),
 
-    readSession: (sessionId) => Promise.resolve(readSession(sessionId)),
+    readSession: async (sessionId) =>
+      await Promise.resolve(readSession(sessionId)),
 
-    touchSession: (update) => {
+    touchSession: async (update) => {
       const updated = updateSession(
         update.sessionId,
         update.expectedRevision,
@@ -284,10 +287,10 @@ export const createSeededIdentityPersistence = (
           };
         }
       );
-      return Promise.resolve(updated !== undefined);
+      return await Promise.resolve(updated !== undefined);
     },
 
-    rotateSessionCredentials: (replacement) => {
+    rotateSessionCredentials: async (replacement) => {
       const updated = updateSession(
         replacement.sessionId,
         replacement.expectedRevision,
@@ -300,53 +303,58 @@ export const createSeededIdentityPersistence = (
           };
         }
       );
-      return Promise.resolve(updated !== undefined);
+      return await Promise.resolve(updated !== undefined);
     },
 
-    revokeSession: (sessionId, revokedAt) => {
+    revokeSession: async (sessionId, revokedAt) => {
       const session = store.sessions.get(sessionId);
-      if (!session || session.revokedAt) {
-        return Promise.resolve(undefined);
+      const revoked: IdentitySessionRecord | undefined =
+        session && !session.revokedAt
+          ? {
+              ...session,
+              revokedAt,
+              revision: session.revision + 1,
+            }
+          : undefined;
+      if (revoked) {
+        store.sessions.set(sessionId, revoked);
       }
-      const revoked: IdentitySessionRecord = {
-        ...session,
-        revokedAt,
-        revision: session.revision + 1,
-      };
-      store.sessions.set(sessionId, revoked);
-      return Promise.resolve(structuredClone(revoked));
+      return await Promise.resolve(
+        revoked ? structuredClone(revoked) : undefined
+      );
     },
 
-    createPendingAuthentication: (record) => {
+    createPendingAuthentication: async (record) => {
       store.pendingAuthentications.set(
         record.pendingId,
         structuredClone(record)
       );
       store.pendingVerifiers.set(record.verifierHash, record.pendingId);
-      return Promise.resolve();
+      await Promise.resolve();
     },
 
-    readPendingAuthentication: (verifierHash) => {
+    readPendingAuthentication: async (verifierHash) => {
       const pendingId = store.pendingVerifiers.get(verifierHash);
-      if (!pendingId) {
-        return Promise.resolve(undefined);
-      }
-      const pending = store.pendingAuthentications.get(pendingId);
-      return Promise.resolve(pending ? structuredClone(pending) : undefined);
+      const pending = pendingId
+        ? store.pendingAuthentications.get(pendingId)
+        : undefined;
+      return await Promise.resolve(
+        pending ? structuredClone(pending) : undefined
+      );
     },
 
-    consumePendingAuthentication: (pendingId, consumedAt) => {
+    consumePendingAuthentication: async (pendingId, consumedAt) => {
       const pending = store.pendingAuthentications.get(pendingId);
       if (!pending || pending.consumedAt) {
-        return Promise.resolve(false);
+        return await Promise.resolve(false);
       }
       store.pendingAuthentications.set(pendingId, { ...pending, consumedAt });
-      return Promise.resolve(true);
+      return true;
     },
 
-    appendProvisioningAudit: (entry) => {
+    appendProvisioningAudit: async (entry) => {
       store.provisioningAudit.push(structuredClone(entry));
-      return Promise.resolve();
+      await Promise.resolve();
     },
   };
 };

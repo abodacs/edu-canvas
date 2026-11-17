@@ -373,19 +373,19 @@ const emptyPage: ProviderResponse = page([]);
 export const createRecordedLearningCommonsTransport =
   (): LearningCommonsTransport => {
     return {
-      findFrameworks: ({ jurisdiction, academicSubject }) => {
+      findFrameworks: async ({ jurisdiction, academicSubject }) => {
         const frameworks =
           RECORDED_FRAMEWORKS[
             `${jurisdiction}\0${academicSubject}` as keyof typeof RECORDED_FRAMEWORKS
           ] ?? [];
-        return Promise.resolve(page(frameworks));
+        return await Promise.resolve(page(frameworks));
       },
 
-      findStandardsPage: ({ frameworkCaseIdentifierUUID, cursor }) => {
+      findStandardsPage: async ({ frameworkCaseIdentifierUUID, cursor }) => {
         const standards =
           standardsByFramework.get(frameworkCaseIdentifierUUID) ?? [];
         if (standards.length === 0) {
-          return Promise.resolve(emptyPage);
+          return await Promise.resolve(emptyPage);
         }
         // Live framework pages mix grouping rows (null statementCode) with
         // standards, including exact codes that only appear after page one.
@@ -401,58 +401,52 @@ export const createRecordedLearningCommonsTransport =
           cursor === undefined
         ) {
           // California math has 1467 rows live; the target is on page 2.
-          return Promise.resolve(
-            page(
-              [
-                groupingRow,
-                standardRow({
-                  ...standards[0],
-                  statementCode: "recorded-filler-1",
-                }),
-              ],
-              "recorded-page-2"
-            )
+          return page(
+            [
+              groupingRow,
+              standardRow({
+                ...standards[0],
+                statementCode: "recorded-filler-1",
+              }),
+            ],
+            "recorded-page-2"
           );
         }
-        return Promise.resolve(
-          page([groupingRow, ...standards.map(standardRow)])
-        );
+        return page([groupingRow, ...standards.map(standardRow)]);
       },
 
-      findComponentsPage: ({ standardCaseIdentifierUUID }) => {
+      findComponentsPage: async ({ standardCaseIdentifierUUID }) => {
         const standard = standardsByCaseId.get(standardCaseIdentifierUUID);
-        return Promise.resolve(
+        return await Promise.resolve(
           standard ? page(componentRows(standard)) : emptyPage
         );
       },
 
-      findPrerequisitesPage: ({ standardCaseIdentifierUUID }) => {
+      findPrerequisitesPage: async ({ standardCaseIdentifierUUID }) => {
         const standard = standardsByCaseId.get(standardCaseIdentifierUUID);
-        return Promise.resolve(
+        return await Promise.resolve(
           standard ? page(prerequisiteRows(standard)) : emptyPage
         );
       },
 
-      findCrosswalks: ({ standardCaseIdentifierUUID }) => {
+      findCrosswalks: async ({ standardCaseIdentifierUUID }) => {
         const standard = standardsByCaseId.get(standardCaseIdentifierUUID);
         if (!standard?.crosswalk) {
-          return Promise.resolve(emptyPage);
+          return await Promise.resolve(emptyPage);
         }
         const target = standardsByCaseId.get(
           standard.crosswalk.caseIdentifierUUID
         );
-        return Promise.resolve(
-          page([
-            {
-              caseIdentifierUUID: standard.crosswalk.caseIdentifierUUID,
-              statementCode: target?.statementCode ?? "",
-              description: `Recorded crosswalk to ${target?.statementCode ?? ""}.`,
-              jurisdiction: "Multi-State",
-              jaccard: standard.crosswalk.jaccard,
-              provider: "Learning Commons",
-            },
-          ])
-        );
+        return page([
+          {
+            caseIdentifierUUID: standard.crosswalk.caseIdentifierUUID,
+            statementCode: target?.statementCode ?? "",
+            description: `Recorded crosswalk to ${target?.statementCode ?? ""}.`,
+            jurisdiction: "Multi-State",
+            jaccard: standard.crosswalk.jaccard,
+            provider: "Learning Commons",
+          },
+        ]);
       },
     };
   };

@@ -84,18 +84,18 @@ const isTextFile = (filePath: string): boolean =>
 const listFiles = async (directory: string): Promise<string[]> => {
   const entries = await readdir(directory, { withFileTypes: true });
   const nested = await Promise.all(
-    entries.map((entry) => {
+    entries.map(async (entry) => {
       const entryPath = join(directory, entry.name);
       return entry.isDirectory()
-        ? listFiles(entryPath)
-        : Promise.resolve([entryPath]);
+        ? await listFiles(entryPath)
+        : await Promise.resolve([entryPath]);
     })
   );
   return nested.flat();
 };
 
 const rootFiles = await Promise.all(
-  scanRoots.map((root) => listFiles(join(projectRoot, root)))
+  scanRoots.map(async (root) => await listFiles(join(projectRoot, root)))
 );
 const files = [
   ...rootFiles.flat(),
@@ -140,7 +140,7 @@ const collectViolations = async (filePath: string): Promise<Violation[]> => {
 };
 
 const results = await Promise.all(
-  files.map((filePath) => collectViolations(filePath))
+  files.map(async (filePath) => await collectViolations(filePath))
 );
 const violations = results.flat();
 

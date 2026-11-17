@@ -225,9 +225,9 @@ const withPage = async (
   }
 };
 
-const scenarioLoading = (matrix: Matrix, language: Language) => {
+const scenarioLoading = async (matrix: Matrix, language: Language) => {
   const scenario = `${language} loading`;
-  return withPage(matrix, {}, async (page) => {
+  await withPage(matrix, {}, async (page) => {
     await page.route("**/api/learner/runs", async (route) => {
       await delay(loadingDelayMs);
       await route.continue();
@@ -239,9 +239,9 @@ const scenarioLoading = (matrix: Matrix, language: Language) => {
   });
 };
 
-const scenarioEmpty = (matrix: Matrix, language: Language) => {
+const scenarioEmpty = async (matrix: Matrix, language: Language) => {
   const scenario = `${language} empty`;
-  return withPage(
+  await withPage(
     matrix,
     { viewport: { width: 320, height: 640 } },
     async (page) => {
@@ -302,11 +302,11 @@ const scenarioViewports = async (matrix: Matrix, language: Language) => {
   }
 };
 
-const scenarioKeyboardLoop = (matrix: Matrix, language: Language) => {
+const scenarioKeyboardLoop = async (matrix: Matrix, language: Language) => {
   const scenario = `${language} keyboard loop`;
   const trace: string[] = [];
   matrix.traces[scenario] = trace;
-  return withPage(matrix, {}, async (page) => {
+  await withPage(matrix, {}, async (page) => {
     await openBoard(page, learnUrl(matrix.baseUrl, matrix.links[language]));
     const sourceCount = await page.locator(sourceSelector).count();
 
@@ -397,11 +397,11 @@ const scenarioKeyboardLoop = (matrix: Matrix, language: Language) => {
   });
 };
 
-const scenarioError = (matrix: Matrix, language: Language) => {
+const scenarioError = async (matrix: Matrix, language: Language) => {
   const scenario = `${language} error (409)`;
-  return withPage(matrix, {}, async (page) => {
-    await page.route("**/api/learner/attempts", (route) => {
-      return route.fulfill({
+  await withPage(matrix, {}, async (page) => {
+    await page.route("**/api/learner/attempts", async (route) => {
+      await route.fulfill({
         status: 409,
         json: { code: "STALE_RUN_REVISION", message: "stale" },
       });
@@ -430,9 +430,12 @@ The app defines a dark palette under the `.dark` class but has no theme switch
 yet, so the probe applies the class itself: the learner surfaces must already
 read correctly in both palettes when theming lands.
 */
-const scenarioDarkReducedMotion = (matrix: Matrix, language: Language) => {
+const scenarioDarkReducedMotion = async (
+  matrix: Matrix,
+  language: Language
+) => {
   const scenario = `${language} dark + reduced motion`;
-  return withPage(
+  await withPage(
     matrix,
     { colorScheme: "dark", reducedMotion: "reduce" },
     async (page) => {
@@ -453,9 +456,9 @@ const disableCanvas = `
   globalThis.OffscreenCanvas = undefined;
 `;
 
-const scenarioCanvasDisabled = (matrix: Matrix, language: Language) => {
+const scenarioCanvasDisabled = async (matrix: Matrix, language: Language) => {
   const scenario = `${language} canvas disabled`;
-  return withPage(matrix, { initScript: disableCanvas }, async (page) => {
+  await withPage(matrix, { initScript: disableCanvas }, async (page) => {
     await openBoard(page, learnUrl(matrix.baseUrl, matrix.links[language]));
     record(matrix, scenario, "no canvas", await canvasProblems(page));
     await page.locator(sourceSelector).first().click();
@@ -472,9 +475,9 @@ const scenarioCanvasDisabled = (matrix: Matrix, language: Language) => {
   });
 };
 
-const scenarioBidi = (matrix: Matrix) => {
+const scenarioBidi = async (matrix: Matrix) => {
   const scenario = "ar bidi";
-  return withPage(matrix, {}, async (page) => {
+  await withPage(matrix, {}, async (page) => {
     await patchRun(page, (body) => {
       const section = assignedSection(body);
       if (section) {
@@ -492,9 +495,9 @@ const scenarioBidi = (matrix: Matrix) => {
   });
 };
 
-const scenarioMissingLink = (matrix: Matrix) => {
+const scenarioMissingLink = async (matrix: Matrix) => {
   const scenario = "missing link";
-  return withPage(
+  await withPage(
     matrix,
     { viewport: { width: 320, height: 640 } },
     async (page) => {

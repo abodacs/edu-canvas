@@ -17,7 +17,7 @@ const renderMathMLNode = (node: MathMLNode, key: string): ReactNode => {
       return createElement(
         "mrow",
         { key },
-        node.children.map((child, childIndex) =>
+        node.children.map((child, childIndex): ReactNode =>
           renderMathMLNode(child, `${key}-${childIndex}`)
         )
       );
@@ -29,14 +29,14 @@ const renderMathMLNode = (node: MathMLNode, key: string): ReactNode => {
         createElement(
           "mrow",
           { key: `${key}-numerator` },
-          node.numerator.map((child, childIndex) =>
+          node.numerator.map((child, childIndex): ReactNode =>
             renderMathMLNode(child, `${key}-n${childIndex}`)
           )
         ),
         createElement(
           "mrow",
           { key: `${key}-denominator` },
-          node.denominator.map((child, childIndex) =>
+          node.denominator.map((child, childIndex): ReactNode =>
             renderMathMLNode(child, `${key}-d${childIndex}`)
           )
         )

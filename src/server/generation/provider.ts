@@ -517,7 +517,7 @@ export const createDeterministicLessonDraftProvider = (
       return calls;
     },
 
-    generate(request, context) {
+    async generate(request, context) {
       calls += 1;
 
       if (scenario === "timeout") {
@@ -550,7 +550,7 @@ export const createDeterministicLessonDraftProvider = (
         draft.variants[0].relationships[0].targetId = "missing-target";
       }
 
-      return Promise.resolve({
+      return await Promise.resolve({
         draft,
       });
     },

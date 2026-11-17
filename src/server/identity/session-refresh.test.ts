@@ -67,7 +67,10 @@ const createHarness = async (
   let provider: IdentityProvider = inner;
   if (options.refreshOutcome) {
     const outcome = options.refreshOutcome;
-    provider = { ...inner, refresh: () => Promise.resolve(outcome) };
+    provider = {
+      ...inner,
+      refresh: async () => await Promise.resolve(outcome),
+    };
   } else if (options.revokeDuringRefresh) {
     provider = {
       ...inner,
@@ -113,7 +116,8 @@ const createHarness = async (
   }
   barrier.sessionId = signedIn.session.sessionId;
 
-  const readStored = () => persistence.readSession(signedIn.session.sessionId);
+  const readStored = async () =>
+    await persistence.readSession(signedIn.session.sessionId);
 
   return {
     service,

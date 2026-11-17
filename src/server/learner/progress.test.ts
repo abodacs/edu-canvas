@@ -33,22 +33,25 @@ const setup = async (suffix: string) => {
   return { fixture, loop, service };
 };
 
-const submitAttempt = (
+const submitAttempt = async (
   fixture: RecordFixture,
   runId: string,
   overrides: Partial<SubmitAttemptInput> = {}
 ) => {
-  return createLearnerService(fixture.records).submitAttempt(fixture.student, {
-    operationKey: `submit-${runId}-${overrides.expectedRunRevision ?? 0}`,
-    runId,
-    itemId: "item_1",
-    expectedRunRevision: 0,
-    priorAttemptId: null,
-    pairs: [{ sourceId: "item_1", targetId: "target_1" }],
-    assistanceState: "none",
-    assistanceEventIds: [],
-    ...overrides,
-  });
+  return await createLearnerService(fixture.records).submitAttempt(
+    fixture.student,
+    {
+      operationKey: `submit-${runId}-${overrides.expectedRunRevision ?? 0}`,
+      runId,
+      itemId: "item_1",
+      expectedRunRevision: 0,
+      priorAttemptId: null,
+      pairs: [{ sourceId: "item_1", targetId: "target_1" }],
+      assistanceState: "none",
+      assistanceEventIds: [],
+      ...overrides,
+    }
+  );
 };
 
 const readRun = async (

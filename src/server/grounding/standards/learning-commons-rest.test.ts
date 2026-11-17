@@ -87,23 +87,23 @@ const createTransport = (
   overrides: Partial<LearningCommonsTransport> = {}
 ): LearningCommonsTransport => {
   return {
-    findFrameworks: () => {
-      return Promise.resolve(
+    findFrameworks: async () => {
+      return await Promise.resolve(
         page([{ caseIdentifierUUID: "framework-1", isCurrent: true }])
       );
     },
-    findStandardsPage: () => Promise.resolve(page([standardRow()])),
-    findComponentsPage: () => {
-      return Promise.resolve(
+    findStandardsPage: async () => await Promise.resolve(page([standardRow()])),
+    findComponentsPage: async () => {
+      return await Promise.resolve(
         page([{ description: "Component", identifier: "component-1" }])
       );
     },
-    findPrerequisitesPage: () => {
-      return Promise.resolve(
+    findPrerequisitesPage: async () => {
+      return await Promise.resolve(
         page([{ jurisdiction: "Multi-State", statementCode: "3.NF.A.3" }])
       );
     },
-    findCrosswalks: () => Promise.resolve(page([])),
+    findCrosswalks: async () => await Promise.resolve(page([])),
     ...overrides,
   };
 };
@@ -201,14 +201,14 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
   it("resolves an exact code that appears on page two", async () => {
     const cursors: (string | undefined)[] = [];
     const transport = createTransport({
-      findStandardsPage: ({ cursor }) => {
+      findStandardsPage: async ({ cursor }) => {
         cursors.push(cursor);
         if (cursor === undefined) {
-          return Promise.resolve(
+          return await Promise.resolve(
             page([standardRow({ statementCode: "recorded-filler" })], "page-2")
           );
         }
-        return Promise.resolve(page([standardRow()]));
+        return page([standardRow()]);
       },
     });
 
@@ -225,9 +225,9 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
   it("stops a paginated scan at the page cap and claims no absence", async () => {
     let calls = 0;
     const transport = createTransport({
-      findStandardsPage: () => {
+      findStandardsPage: async () => {
         calls += 1;
-        return Promise.resolve(
+        return await Promise.resolve(
           page(
             [standardRow({ statementCode: "not-the-code" })],
             `cursor-${calls}`
@@ -251,9 +251,9 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
   it("treats hasMore without a cursor as a bounded malformed pager", async () => {
     let calls = 0;
     const transport = createTransport({
-      findStandardsPage: () => {
+      findStandardsPage: async () => {
         calls += 1;
-        return Promise.resolve(
+        return await Promise.resolve(
           response({
             data: [standardRow({ statementCode: "not-the-code" })],
             pagination: { hasMore: true, nextCursor: null },
@@ -275,7 +275,7 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
 
   it("reports an absent framework without inventing a standard", async () => {
     const transport = createTransport({
-      findFrameworks: () => Promise.resolve(page([])),
+      findFrameworks: async () => await Promise.resolve(page([])),
       findStandardsPage: () => {
         throw new Error("Standards must not run without a framework.");
       },
@@ -294,13 +294,13 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
 
   it("reports framework ambiguity when one framework repeats the code", async () => {
     const transport = createTransport({
-      findFrameworks: () => {
-        return Promise.resolve(
+      findFrameworks: async () => {
+        return await Promise.resolve(
           page([{ caseIdentifierUUID: "framework-1", isCurrent: true }])
         );
       },
-      findStandardsPage: () => {
-        return Promise.resolve(
+      findStandardsPage: async () => {
+        return await Promise.resolve(
           page([
             standardRow({ caseIdentifierUUID: "case-1" }),
             standardRow({ caseIdentifierUUID: "case-2" }),
@@ -352,26 +352,26 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
 
   it("uses the best inexact crosswalk and states that it is inexact", async () => {
     const transport = createTransport({
-      findFrameworks: () => {
-        return Promise.resolve(
+      findFrameworks: async () => {
+        return await Promise.resolve(
           page([{ caseIdentifierUUID: "framework-ca", isCurrent: true }])
         );
       },
-      findStandardsPage: () => {
-        return Promise.resolve(
+      findStandardsPage: async () => {
+        return await Promise.resolve(
           page([standardRow({ jurisdiction: "California" })])
         );
       },
-      findPrerequisitesPage: ({ standardCaseIdentifierUUID }) => {
+      findPrerequisitesPage: async ({ standardCaseIdentifierUUID }) => {
         if (standardCaseIdentifierUUID === "case-1") {
-          return Promise.resolve(page([]));
+          return await Promise.resolve(page([]));
         }
-        return Promise.resolve(
-          page([{ jurisdiction: "Multi-State", statementCode: "3.NF.A.3" }])
-        );
+        return page([
+          { jurisdiction: "Multi-State", statementCode: "3.NF.A.3" },
+        ]);
       },
-      findCrosswalks: () => {
-        return Promise.resolve(
+      findCrosswalks: async () => {
+        return await Promise.resolve(
           page([
             {
               caseIdentifierUUID: "ccss-1",
@@ -421,8 +421,8 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
 
   it("keeps an empty component list as skills-missing, never as none", async () => {
     const transport = createTransport({
-      findComponentsPage: () => Promise.resolve(page([])),
-      findPrerequisitesPage: () => Promise.resolve(page([])),
+      findComponentsPage: async () => await Promise.resolve(page([])),
+      findPrerequisitesPage: async () => await Promise.resolve(page([])),
     });
 
     const resolution = await createAdapter(transport).resolve({
@@ -439,18 +439,16 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
 
   it("joins component pages instead of truncating at the first page", async () => {
     const transport = createTransport({
-      findComponentsPage: ({ cursor }) => {
+      findComponentsPage: async ({ cursor }) => {
         if (cursor === undefined) {
-          return Promise.resolve(
+          return await Promise.resolve(
             page(
               [{ description: "First", identifier: "component-1" }],
               "components-2"
             )
           );
         }
-        return Promise.resolve(
-          page([{ description: "Second", identifier: "component-2" }])
-        );
+        return page([{ description: "Second", identifier: "component-2" }]);
       },
     });
 
@@ -466,8 +464,8 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
 
   it("keeps a 404 components response visible instead of reading it as skills-missing", async () => {
     const transport = createTransport({
-      findComponentsPage: () => {
-        return Promise.resolve(response({ message: "Not Found" }, 404));
+      findComponentsPage: async () => {
+        return await Promise.resolve(response({ message: "Not Found" }, 404));
       },
     });
 
@@ -486,8 +484,10 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
 
   it("keeps a 401 prerequisites response visible instead of reading it as unavailable", async () => {
     const transport = createTransport({
-      findPrerequisitesPage: () => {
-        return Promise.resolve(response({ message: "Unauthorized" }, 401));
+      findPrerequisitesPage: async () => {
+        return await Promise.resolve(
+          response({ message: "Unauthorized" }, 401)
+        );
       },
     });
 
@@ -507,8 +507,8 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
 
   it("marks a not-current standard without hiding its data", async () => {
     const transport = createTransport({
-      findStandardsPage: () => {
-        return Promise.resolve(page([standardRow({ isCurrent: false })]));
+      findStandardsPage: async () => {
+        return await Promise.resolve(page([standardRow({ isCurrent: false })]));
       },
     });
 
@@ -525,8 +525,8 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
 
   it("bounds description and component text", async () => {
     const transport = createTransport({
-      findStandardsPage: () => {
-        return Promise.resolve(
+      findStandardsPage: async () => {
+        return await Promise.resolve(
           page([
             standardRow({
               description: "d".repeat(GROUNDING_TEXT_LIMITS.description + 50),
@@ -534,8 +534,8 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
           ])
         );
       },
-      findComponentsPage: () => {
-        return Promise.resolve(
+      findComponentsPage: async () => {
+        return await Promise.resolve(
           page([
             {
               description: "c".repeat(GROUNDING_TEXT_LIMITS.component + 50),
@@ -564,8 +564,8 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
   it("keeps unsafe or arbitrary provider links out of provenance", async () => {
     const unsafeSourceLink = ["java", "script:alert(1)"].join("");
     const transport = createTransport({
-      findStandardsPage: () => {
-        return Promise.resolve(
+      findStandardsPage: async () => {
+        return await Promise.resolve(
           page([standardRow({ sourceLink: unsafeSourceLink })])
         );
       },
@@ -584,7 +584,8 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
 
   it("turns a malformed provider body into a stated gap, not an exception", async () => {
     const transport = createTransport({
-      findFrameworks: () => Promise.resolve(response({ data: "nope" })),
+      findFrameworks: async () =>
+        await Promise.resolve(response({ data: "nope" })),
     });
 
     const resolution = await createAdapter(transport).resolve({
@@ -601,7 +602,8 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
   it("keeps a raw provider payload out of the provider error", async () => {
     const secret = "raw-provider-payload-secret";
     const transport = createTransport({
-      findFrameworks: () => Promise.resolve(response({ secret }, 503)),
+      findFrameworks: async () =>
+        await Promise.resolve(response({ secret }, 503)),
     });
 
     let caught: unknown;
@@ -638,13 +640,13 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
       apiKey: string | null;
       redirect: RequestRedirect | undefined;
     }[] = [];
-    const fetchImpl: typeof fetch = (input, init) => {
+    const fetchImpl: typeof fetch = async (input, init) => {
       calls.push({
         url: input instanceof Request ? input.url : String(input),
         apiKey: new Headers(init?.headers).get("x-api-key"),
         redirect: init?.redirect,
       });
-      return Promise.resolve(
+      return await Promise.resolve(
         Response.json(
           { data: [], pagination: { hasMore: false, nextCursor: null } },
           { status: 200 }

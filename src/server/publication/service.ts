@@ -301,11 +301,11 @@ export const createPublicationService = (
     });
   };
 
-  const projectReview = (
+  const projectReview = async (
     actor: TeacherActor,
     version: PackVersionRecord
   ): Promise<ReviewPack> =>
-    projectReviewDecoded(actor, version, decodePackVersion(version));
+    await projectReviewDecoded(actor, version, decodePackVersion(version));
 
   // A retried publish returns what the first one wrote, including the canonical
   // learner assignment, so a second click lands on the same lesson.

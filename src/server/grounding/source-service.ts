@@ -163,12 +163,12 @@ export const createSourceService = (
     return replacesSnapshotId;
   };
 
-  const finalizeExtraction = (
+  const finalizeExtraction = async (
     record: SourceSnapshotRecord,
     outcome: ExtractionOutcome
   ): Promise<SourceSnapshotRecord> => {
     if (!outcome.ok) {
-      return persistUpdate(record, {
+      return await persistUpdate(record, {
         state: "failed",
         failureReason: outcome.reason,
         gaps: [],
@@ -179,7 +179,7 @@ export const createSourceService = (
     const { pages } = outcome;
     const pageCountDecision = decidePageCount(pages.length);
     if (!pageCountDecision.ok) {
-      return persistUpdate(record, {
+      return await persistUpdate(record, {
         state: "failed",
         failureReason: pageCountDecision.reason,
         gaps: [],
@@ -191,7 +191,7 @@ export const createSourceService = (
     const text = pages.join("\n\n");
     const lengthDecision = decideExtractedLength(text);
     if (!lengthDecision.ok) {
-      return persistUpdate(record, {
+      return await persistUpdate(record, {
         state: "failed",
         failureReason: lengthDecision.reason,
         gaps: [],
@@ -201,7 +201,7 @@ export const createSourceService = (
     }
 
     if (text.trim().length === 0) {
-      return persistUpdate(record, {
+      return await persistUpdate(record, {
         state: "failed",
         failureReason: "empty-source",
         gaps: [],
@@ -211,7 +211,7 @@ export const createSourceService = (
     }
 
     if (!safety.checkSourceText(text).allowed) {
-      return persistUpdate(record, {
+      return await persistUpdate(record, {
         state: "failed",
         failureReason: "personal-data",
         gaps: [],
@@ -232,7 +232,7 @@ export const createSourceService = (
     const state =
       !packAvailable || pageGaps.length > 0 ? "partial" : "complete";
 
-    return persistUpdate(record, {
+    return await persistUpdate(record, {
       state,
       gaps,
       extractedText: text,

@@ -108,8 +108,8 @@ export const createPostgresSourcePersistence = (
 
   return {
     async insertSnapshot(record): Promise<void> {
-      await withTenantDatabase((sql) => {
-        return sql.begin(async (transaction) => {
+      await withTenantDatabase(async (sql) => {
+        await sql.begin(async (transaction) => {
           await setTenant(transaction, record.tenantId);
           await transaction`
             insert into source_snapshots (
@@ -137,8 +137,8 @@ export const createPostgresSourcePersistence = (
     },
 
     updateSnapshot: async (record, expectedUpdatedAt): Promise<boolean> => {
-      return await withTenantDatabase((sql) => {
-        return sql.begin(async (transaction) => {
+      return await withTenantDatabase(async (sql) => {
+        return await sql.begin(async (transaction) => {
           await setTenant(transaction, record.tenantId);
           const rows = await transaction<{ id: string }[]>`
             update source_snapshots set
@@ -166,8 +166,8 @@ export const createPostgresSourcePersistence = (
     },
 
     readSnapshot: async (tenantId, teacherId, snapshotId) => {
-      return await withTenantDatabase((sql) => {
-        return sql.begin(async (transaction) => {
+      return await withTenantDatabase(async (sql) => {
+        return await sql.begin(async (transaction) => {
           await setTenant(transaction, tenantId);
           const rows = await transaction<SourceSnapshotRow[]>`
             select *
@@ -183,8 +183,8 @@ export const createPostgresSourcePersistence = (
     },
 
     listSnapshots: async (tenantId, teacherId) => {
-      return await withTenantDatabase((sql) => {
-        return sql.begin(async (transaction) => {
+      return await withTenantDatabase(async (sql) => {
+        return await sql.begin(async (transaction) => {
           await setTenant(transaction, tenantId);
           const rows = await transaction<SourceSnapshotRow[]>`
             select *
@@ -203,8 +203,8 @@ export const createPostgresSourcePersistence = (
       teacherId,
       snapshotId
     ): Promise<boolean> => {
-      return await withTenantDatabase((sql) => {
-        return sql.begin(async (transaction) => {
+      return await withTenantDatabase(async (sql) => {
+        return await sql.begin(async (transaction) => {
           await setTenant(transaction, tenantId);
           const rows = await transaction<{ id: string }[]>`
             delete from source_snapshots
@@ -257,8 +257,8 @@ export const createPostgresSourcePersistence = (
       usedAtIso,
       expiresAtIso
     ) => {
-      return await withTenantDatabase((sql) => {
-        return sql.begin(async (transaction) => {
+      return await withTenantDatabase(async (sql) => {
+        return await sql.begin(async (transaction) => {
           await setTenant(transaction, tenantId);
           const rows = await transaction<{ id: string }[]>`
             update source_snapshots set
