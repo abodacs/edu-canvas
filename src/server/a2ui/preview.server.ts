@@ -74,7 +74,8 @@ const compileFailure = (
   return {
     code: error.code,
     field: error.field ?? "preview",
-    ...(error.variantId && { variantId: error.variantId }),
+    ...(error.variantId !== undefined &&
+      error.variantId !== "" && { variantId: error.variantId }),
     reason: error.message,
   };
 };

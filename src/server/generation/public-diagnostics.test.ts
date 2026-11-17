@@ -359,7 +359,7 @@ describe("public payload scrub", () => {
   it("never publishes private relationship (answer-key) identifiers", () => {
     const draft = fixtureDraft();
     const [firstVariant] = draft.variants;
-    if (!firstVariant) {
+    if (firstVariant === undefined) {
       throw new Error("The fixture must carry a first variant.");
     }
     firstVariant.relationships = firstVariant.relationships.map(

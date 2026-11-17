@@ -207,7 +207,7 @@ const scanLine = (text: string, state: ScanState): void => {
 
   for (const match of text.matchAll(DECLARATION_TOKEN)) {
     const name = match.groups?.name;
-    if (name && !state.referenced.has(name)) {
+    if (name !== undefined && name !== "" && !state.referenced.has(name)) {
       state.referenced.set(name, state.file);
     }
   }

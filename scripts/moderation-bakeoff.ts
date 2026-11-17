@@ -166,7 +166,7 @@ const presidioScriptPath = presidioScriptUrl.pathname;
 
 const readPresidio = (corpusPath: string): Map<string, Prediction> | null => {
   const python = process.env.MOD132_PRESIDIO_PYTHON;
-  if (!python) {
+  if (python === undefined || python === "") {
     return null;
   }
   const output = execFileSync(python, [presidioScriptPath, corpusPath], {
@@ -431,12 +431,12 @@ const buildDetectors = (
 const main = (): void => {
   const cliArguments = process.argv.slice(2);
   const corpusPath = cliArguments.at(0);
-  if (!corpusPath) {
+  if (corpusPath === undefined || corpusPath === "") {
     throw new Error("Usage: moderation-bakeoff.ts <corpus.tsv> [--json]");
   }
   const split = readSplit();
   const rows = parseCorpus(readFileSync(corpusPath, "utf-8")).filter(
-    (row) => !split || row.split === split
+    (row) => split === undefined || split === "" || row.split === split
   );
   const detectors = buildDetectors(readPresidio(corpusPath));
   const scores = detectors.map((detector) => score(detector, rows));
@@ -446,7 +446,10 @@ const main = (): void => {
     return;
   }
   console.log(markdown(scores));
-  if (!process.env.MOD132_PRESIDIO_PYTHON) {
+  if (
+    process.env.MOD132_PRESIDIO_PYTHON === undefined ||
+    process.env.MOD132_PRESIDIO_PYTHON === ""
+  ) {
     console.log(
       "\nPresidio arm skipped: set MOD132_PRESIDIO_PYTHON to a venv interpreter."
     );

@@ -30,7 +30,7 @@ const phase = readArgument("--phase");
 const runId = readArgument("--run-id") ?? randomUUID().slice(0, 8);
 const databaseUrl = process.env.DATABASE_URL;
 
-if (!databaseUrl) {
+if (databaseUrl === undefined || databaseUrl === "") {
   throw new Error("DATABASE_URL is required for the restart probe.");
 }
 
@@ -352,7 +352,7 @@ const writePhase = async (): Promise<void> => {
 
 const readPhase = async (): Promise<void> => {
   const learnerRunId = readArgument("--learner-run-id");
-  if (!learnerRunId) {
+  if (learnerRunId === undefined || learnerRunId === "") {
     throw new Error("--learner-run-id is required for --phase read.");
   }
   const records = createRecordCommands(

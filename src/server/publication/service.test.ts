@@ -417,7 +417,7 @@ describe("publication service", () => {
 
     expect(stored).toBeDefined();
 
-    if (!stored) {
+    if (stored === undefined) {
       throw new Error("The fixture did not store a version.");
     }
     stored.validationResult = {

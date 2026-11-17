@@ -129,7 +129,8 @@ const action = (
       name,
       context: {
         surfaceId,
-        ...(itemId && { itemId }),
+        ...(itemId !== undefined &&
+          itemId !== "" && { itemId }),
       },
     },
   };

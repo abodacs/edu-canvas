@@ -50,7 +50,7 @@ const screenLabel = (variantId: string, index: number): string => {
 };
 
 const fieldLabel = (field: string | undefined): string | undefined => {
-  if (!field) {
+  if (field === undefined || field === "") {
     return undefined;
   }
   const segment = field.split(".").at(-1) ?? field;
@@ -101,7 +101,7 @@ const ValidationFinding = ({
   return (
     <li className="validation-diagnostics__finding">
       <div>
-        {label ? (
+        {label !== undefined && label !== "" ? (
           <span className="validation-diagnostics__field">{label}</span>
         ) : null}
         <p>{finding.message}</p>

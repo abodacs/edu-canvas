@@ -40,7 +40,7 @@ const contextDirectories = serverEntries
 const documentedContexts = new Set<string>();
 for (const match of architecture.matchAll(contextPath)) {
   const context = match.groups?.context;
-  if (context) {
+  if (context !== undefined && context !== "") {
     documentedContexts.add(context);
   }
 }
@@ -59,9 +59,9 @@ const identifierOwner = new Map<string, string>();
 
 for (const file of decisionFiles) {
   const identifier = agdrFilename.exec(file)?.groups?.identifier;
-  if (identifier) {
+  if (identifier !== undefined && identifier !== "") {
     const owner = identifierOwner.get(identifier);
-    if (owner) {
+    if (owner !== undefined && owner !== "") {
       issues.push(
         `${identifier} is claimed by both docs/agdr/${owner} and docs/agdr/${file}; decision identifiers must be unique.`
       );
@@ -75,7 +75,7 @@ for (const file of decisionFiles) {
 
 for (const match of architecture.matchAll(agdrCitation)) {
   const cited = match.groups?.file;
-  if (cited && !decisionFiles.includes(cited)) {
+  if (cited !== undefined && cited !== "" && !decisionFiles.includes(cited)) {
     issues.push(
       `ARCHITECTURE.md cites docs/agdr/${cited}, which does not exist.`
     );

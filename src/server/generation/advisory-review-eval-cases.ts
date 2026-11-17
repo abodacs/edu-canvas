@@ -100,11 +100,11 @@ const withWrongTargetLabel = (
   label: string
 ): ProviderLessonDraft => {
   const [variant, ...rest] = draft.variants;
-  if (!variant) {
+  if (variant === undefined) {
     throw new Error("The fixture draft needs a first variant.");
   }
   const [relationship] = variant.relationships;
-  if (!relationship) {
+  if (relationship === undefined) {
     throw new Error("The fixture draft needs a relationship.");
   }
   return {
@@ -126,11 +126,11 @@ const withWrongSourceLabel = (
   label: string
 ): ProviderLessonDraft => {
   const [variant, ...rest] = draft.variants;
-  if (!variant) {
+  if (variant === undefined) {
     throw new Error("The fixture draft needs a first variant.");
   }
   const [relationship] = variant.relationships;
-  if (!relationship) {
+  if (relationship === undefined) {
     throw new Error("The fixture draft needs a relationship.");
   }
   return {

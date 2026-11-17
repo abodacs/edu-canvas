@@ -180,7 +180,7 @@ const loadApiKey = (): string => {
     }
   }
   const key = process.env.LEARNING_COMMONS_API_KEY?.trim();
-  if (!key) {
+  if (key === undefined || key === "") {
     console.error(
       "LEARNING_COMMONS_API_KEY is required. No live request was made."
     );
@@ -288,7 +288,7 @@ const sameCodes = (
 
 const verify = (evidence: RowEvidence): string[] => {
   const expected = EXPECTED[evidence.id];
-  if (!expected) {
+  if (expected === undefined) {
     return [];
   }
   const failures: string[] = [];

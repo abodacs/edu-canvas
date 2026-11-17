@@ -4,7 +4,12 @@ import { runDatabaseMigrations } from "./database-migrate-runtime.mjs";
 
 const getDatabaseUrl = (): string => {
   const config = readDatabaseBootstrapConfig(process.env);
-  if (config.issues.length > 0 || !config.databaseUrl) {
+  const { databaseUrl } = config;
+  if (
+    config.issues.length > 0 ||
+    databaseUrl === undefined ||
+    databaseUrl === ""
+  ) {
     console.error(
       JSON.stringify(
         {
@@ -19,7 +24,7 @@ const getDatabaseUrl = (): string => {
     throw new Error("Database migration configuration is invalid.");
   }
 
-  return config.databaseUrl;
+  return databaseUrl;
 };
 
 const main = async () => {

@@ -29,7 +29,7 @@ const requireDatabaseUrl = (config: ServerConfig, port: string): string => {
     throw new Error(`Cannot create ${port} persistence for invalid config.`);
   }
 
-  if (!config.databaseUrl) {
+  if (config.databaseUrl === undefined) {
     throw new Error(`PostgreSQL ${port} persistence requires DATABASE_URL.`);
   }
 
@@ -67,7 +67,7 @@ export const createFoundationPersistence = (
     throw error;
   }
 
-  if (!config.databaseUrl) {
+  if (config.databaseUrl === undefined) {
     const error = new Error("PostgreSQL persistence requires DATABASE_URL.");
     observability.captureError(error, {
       operation: "persistence.create",

@@ -24,10 +24,11 @@ import type { AppendVersionInput } from "../records/inputs";
 
 const databaseUrl = process.env.DATABASE_URL;
 const isEnabled = process.env.RUN_DATABASE_TESTS === "true";
-const isRun = Boolean(databaseUrl && isEnabled);
+const isRun =
+  databaseUrl !== undefined && databaseUrl !== "" && isEnabled;
 
 const requireUrl = (): string => {
-  if (!databaseUrl) {
+  if (databaseUrl === undefined || databaseUrl === "") {
     throw new Error("DATABASE_URL is required for the record database tests.");
   }
   return databaseUrl;

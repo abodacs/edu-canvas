@@ -99,7 +99,10 @@ export const ModerationRecoveryPanel = ({
         </p>
       ) : null}
 
-      {recovery.requestReference || recovery.categoryReference ? (
+      {(recovery.requestReference !== null &&
+        recovery.requestReference !== "") ||
+      (recovery.categoryReference !== null &&
+        recovery.categoryReference !== "") ? (
         <p id="blocked-generation-reference">
           {recovery.requestReference} {recovery.categoryReference}
         </p>

@@ -189,7 +189,10 @@ const checkImportRules = (
     specifier,
     importedFile,
     importerScope: sourceScope(importer),
-    importedScope: importedFile ? sourceScope(importedFile) : undefined,
+    importedScope:
+      importedFile !== undefined && importedFile !== ""
+        ? sourceScope(importedFile)
+        : undefined,
   };
 
   for (const rule of importRules) {
@@ -222,7 +225,7 @@ const auditSourceFile = async (file: string): Promise<string[]> => {
 
   for (const match of contents.matchAll(importPattern)) {
     const specifier = match.groups?.specifier;
-    if (!specifier) {
+    if (specifier === undefined || specifier === "") {
       continue;
     }
 

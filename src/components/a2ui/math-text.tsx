@@ -85,7 +85,8 @@ export const MathText = ({
         },
         renderMathMLNode(parsed.root, "root")
       )}
-      {component.textEquivalent ? (
+      {component.textEquivalent !== undefined &&
+      component.textEquivalent !== "" ? (
         <span className="sr-only">{component.textEquivalent}</span>
       ) : null}
     </span>

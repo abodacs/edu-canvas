@@ -211,7 +211,7 @@ const withPage = async (
     colorScheme: options.colorScheme ?? "light",
     reducedMotion: options.reducedMotion ?? "no-preference",
   });
-  if (options.initScript) {
+  if (options.initScript !== undefined && options.initScript !== "") {
     await context.addInitScript(options.initScript);
   }
   const page = await context.newPage();

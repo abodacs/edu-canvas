@@ -217,7 +217,8 @@ const TeacherHome = (): ReactElement => {
   // #168 P1-4: once the tab's session resolves as active, the header and the
   // hero hand the teacher their workspace instead of advertising a sign-in.
   const session = useAuthSession();
-  const hasActiveSession = session.phase === "active" && session.projection;
+  const hasActiveSession =
+    session.phase === "active" && session.projection !== null;
   const isSignedOutArrival = Route.useSearch().signedOut === true;
 
   const primaryCta = hasActiveSession ? (

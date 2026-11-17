@@ -211,7 +211,7 @@ const collectFailures = (pages: readonly Page[]): string[] => {
     }
     for (const block of page.text) {
       const failure = contrastFailure(page, block);
-      if (failure) {
+      if (failure !== null && failure !== "") {
         failures.push(failure);
       }
     }
@@ -316,7 +316,9 @@ const main = async (): Promise<string[]> => {
   const censusPath =
     argv.find((argument) => !argument.startsWith("--")) ?? DEFAULT_CENSUS;
   const parsed = (await readJson<Page[]>(censusPath)) ?? [];
-  const pages = parsed.filter((page) => !page.error);
+  const pages = parsed.filter(
+    (page) => page.error === undefined || page.error === ""
+  );
   const result = {
     pages: pages.length,
     distinct: distinctCounts(pages),

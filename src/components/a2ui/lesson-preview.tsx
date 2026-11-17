@@ -70,6 +70,10 @@ interface SurfaceEntry {
   language: "en" | "ar";
 }
 
+/** The falsy check for a nullable identifier, stated for the lint rule. */
+const hasText = (value: string | null | undefined): value is string =>
+  value !== undefined && value !== null && value !== "";
+
 const PreviewLoading = () => {
   return (
     <div className="a2ui-loading" aria-live="polite">
@@ -114,11 +118,11 @@ const usePreviewStream = (
       controller.abort();
     }, PREVIEW_STREAM_TIMEOUT_MS);
 
-    const previewPath = previewVersionId
+    const previewPath = hasText(previewVersionId)
       ? `/api/publications/versions/${encodeURIComponent(previewVersionId)}/preview`
       : "/api/a2ui/preview";
     const url = new URL(previewPath, window.location.origin);
-    if (!previewVersionId) {
+    if (!hasText(previewVersionId)) {
       url.searchParams.set("requestId", requestId);
       url.searchParams.set("catalogVersion", catalogVersion);
     }
@@ -305,7 +309,7 @@ const VariantTabs = ({
                 event.key === "ArrowRight" ? index + 1 : index - 1;
               const next =
                 surfaces[(nextIndex + surfaces.length) % surfaces.length];
-              if (!next) {
+              if (next === undefined) {
                 return;
               }
               onSelect(next.surfaceId);
@@ -460,18 +464,18 @@ export const LessonPreview = ({
 
   const fallbackSurfaceId = surfaces[0]?.surfaceId ?? null;
   const activeSurfaceId =
-    requestedSurfaceId &&
+    hasText(requestedSurfaceId) &&
     surfaces.some((surface) => surface.surfaceId === requestedSurfaceId)
       ? requestedSurfaceId
       : fallbackSurfaceId;
 
   // Render-phase adjustment, the React-sanctioned way to sync state to a
   // changed prop: activate the chosen variant's surface once it is loaded.
-  if (focusVariantId && focusVariantId !== appliedVariantId) {
+  if (hasText(focusVariantId) && focusVariantId !== appliedVariantId) {
     const targetSurfaceId = surfaces.find(
       (surface) => surface.tabId === focusVariantId
     )?.surfaceId;
-    if (targetSurfaceId) {
+    if (hasText(targetSurfaceId)) {
       setAppliedVariantId(focusVariantId);
       setRequestedSurfaceId(targetSurfaceId);
     }
@@ -479,7 +483,7 @@ export const LessonPreview = ({
 
   // DOM side effects only — the state above is already committed by then.
   useLayoutEffect(() => {
-    if (!appliedVariantId || appliedVariantId !== focusVariantId) {
+    if (!hasText(appliedVariantId) || appliedVariantId !== focusVariantId) {
       return;
     }
     const node = previewReference.current;
@@ -494,10 +498,10 @@ export const LessonPreview = ({
     setSelections((current) => {
       const previous = current[surfaceId] ?? {};
 
-      if (action === "selectSource" && itemId) {
+      if (action === "selectSource" && hasText(itemId)) {
         return { ...current, [surfaceId]: { ...previous, source: itemId } };
       }
-      if (action === "selectTarget" && itemId) {
+      if (action === "selectTarget" && hasText(itemId)) {
         return { ...current, [surfaceId]: { ...previous, target: itemId } };
       }
       return action === "clearSelection"
@@ -514,7 +518,7 @@ export const LessonPreview = ({
       (surface) => surface.surfaceId === surfaceId
     );
     const next = surfaces[currentIndex + 1];
-    if (next) {
+    if (next !== undefined) {
       setRequestedSurfaceId(next.surfaceId);
     }
   };

@@ -47,7 +47,7 @@ for (const tool of tools) {
     });
     samples.push(performance.now() - startedAt);
 
-    if (result.error) {
+    if (result.error !== undefined && result.error !== null) {
       throw result.error;
     }
 

@@ -181,7 +181,7 @@ export const ReviewStudio = ({
 
   const keyFor = (intent: string): string => {
     const existing = keys.current.get(intent);
-    if (existing) {
+    if (existing !== undefined && existing !== "") {
       return existing;
     }
     const created = crypto.randomUUID();
@@ -348,7 +348,9 @@ export const ReviewStudio = ({
         />
       ) : null}
 
-      {state.view === "variant" && state.activeVariantId ? (
+      {state.view === "variant" &&
+      state.activeVariantId !== null &&
+      state.activeVariantId !== "" ? (
         <VariantEditor
           key={`${state.review.version.id}:${state.activeVariantId}`}
           review={state.review}

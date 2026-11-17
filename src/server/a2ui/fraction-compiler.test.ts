@@ -50,7 +50,7 @@ describe(compileRawFractionPreview, () => {
     const [createSurface] = preview.messages;
 
     expect(
-      createSurface && "createSurface" in createSurface
+      createSurface !== undefined && "createSurface" in createSurface
         ? createSurface.createSurface.catalogId
         : undefined
     ).toBe(FRACTIONS_CATALOG_ID);

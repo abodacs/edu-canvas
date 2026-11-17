@@ -6,7 +6,7 @@ import type { LessonDraftProvider } from "./provider";
 export const createConfiguredLessonDraftProvider = (
   config: ServerConfig
 ): LessonDraftProvider => {
-  if (!config.metaApiKey) {
+  if (config.metaApiKey === undefined) {
     throw new Error("Meta provider configuration is incomplete.");
   }
 

@@ -40,7 +40,11 @@ export const buildConfiguredIdentity = async (
   }
 
   const { auth } = config;
-  if (!auth.sessionSecret || !auth.credentialKey || !auth.publicOrigin) {
+  if (
+    auth.sessionSecret === undefined ||
+    auth.credentialKey === undefined ||
+    auth.publicOrigin === undefined
+  ) {
     throw new Error("Authentication secrets and public origin are required.");
   }
 

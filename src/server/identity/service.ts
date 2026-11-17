@@ -164,7 +164,7 @@ export const createIdentityService = (
   const readCredentials = (
     ciphertext: string | undefined
   ): EncryptedCredentials | undefined => {
-    if (!ciphertext) {
+    if (ciphertext === undefined || ciphertext === "") {
       return undefined;
     }
     try {
@@ -262,9 +262,10 @@ export const createIdentityService = (
       createdAt,
       lastActivityAt: createdAt,
       absoluteExpiresAt: absoluteExpiry.toISOString(),
-      ...(input.providerCredentialsCiphertext && {
-        providerCredentialsCiphertext: input.providerCredentialsCiphertext,
-      }),
+      ...(input.providerCredentialsCiphertext !== undefined &&
+        input.providerCredentialsCiphertext !== "" && {
+          providerCredentialsCiphertext: input.providerCredentialsCiphertext,
+        }),
     };
 
     await options.persistence.createSession({ ...sessionRecord });
@@ -297,7 +298,8 @@ export const createIdentityService = (
       (await options.persistence.readSession(session.sessionId)) ?? session;
 
     if (
-      current.providerCredentialsCiphertext &&
+      current.providerCredentialsCiphertext !== undefined &&
+      current.providerCredentialsCiphertext !== "" &&
       current.providerCredentialsCiphertext !==
         session.providerCredentialsCiphertext
     ) {
@@ -340,7 +342,10 @@ export const createIdentityService = (
     const latest = await options.persistence.readSession(current.sessionId);
     // A logout that wins the revision check leaves the session revoked, and its
     // late credentials are discarded rather than written back.
-    if (!latest || latest.revokedAt) {
+    if (
+      latest === undefined ||
+      (latest.revokedAt !== undefined && latest.revokedAt !== "")
+    ) {
       return { status: "ended" };
     }
     if (!rotated) {
@@ -359,14 +364,17 @@ export const createIdentityService = (
   const validate = async (
     credential: string | undefined
   ): Promise<SessionResolution> => {
-    if (!credential) {
+    if (credential === undefined || credential === "") {
       return { status: "unauthenticated" };
     }
 
     const session = await options.persistence.readSessionByVerifier(
       hashCredential(credential)
     );
-    if (!session || session.revokedAt) {
+    if (
+      session === undefined ||
+      (session.revokedAt !== undefined && session.revokedAt !== "")
+    ) {
       return { status: "unauthenticated" };
     }
 
@@ -478,7 +486,7 @@ export const createIdentityService = (
       );
 
       const [onlyMembership] = activeMemberships;
-      if (!onlyMembership) {
+      if (onlyMembership === undefined) {
         throw new IdentityError("ACCESS_NOT_PROVISIONED");
       }
 
@@ -574,8 +582,8 @@ export const createIdentityService = (
         hashCredential(command.pendingCredential)
       );
       if (
-        !pending ||
-        pending.consumedAt ||
+        pending === undefined ||
+        pending.consumedAt !== undefined ||
         Date.parse(pending.expiresAt) <= now()
       ) {
         throw new IdentityError("UNAUTHENTICATED");
@@ -618,9 +626,10 @@ export const createIdentityService = (
         authorizationRevision: actorRecord.authorizationRevision,
         providerSessionId: pending.providerSessionId,
         providerSubject: pending.providerSubject,
-        ...(pending.providerCredentialsCiphertext && {
-          providerCredentialsCiphertext: pending.providerCredentialsCiphertext,
-        }),
+        ...(pending.providerCredentialsCiphertext !== undefined &&
+          pending.providerCredentialsCiphertext !== "" && {
+            providerCredentialsCiphertext: pending.providerCredentialsCiphertext,
+          }),
       });
     },
 
@@ -656,13 +665,16 @@ export const createIdentityService = (
     },
 
     endSession: async (credential) => {
-      if (!credential) {
+      if (credential === undefined || credential === "") {
         return { status: "revoked" };
       }
       const session = await options.persistence.readSessionByVerifier(
         hashCredential(credential)
       );
-      if (!session || session.revokedAt) {
+      if (
+        session === undefined ||
+        (session.revokedAt !== undefined && session.revokedAt !== "")
+      ) {
         return { status: "revoked" };
       }
 

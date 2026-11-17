@@ -208,7 +208,7 @@ describe(bridgePublishedPack, () => {
       versionId: bridged.versionId,
     });
     const [version] = authoring.versions;
-    if (!version) {
+    if (version === undefined) {
       throw new Error("Expected the bridged version.");
     }
 

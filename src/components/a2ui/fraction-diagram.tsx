@@ -100,7 +100,9 @@ export const FractionDiagram = ({
           step={1}
           value={inputValue}
           aria-label={`Parts shaded out of ${denominator}`}
-          aria-describedby={error ? errorId : undefined}
+          aria-describedby={
+            error !== null && error !== "" ? errorId : undefined
+          }
           onChange={(event) => {
             handleInput(event.target.value);
           }}
@@ -117,7 +119,7 @@ export const FractionDiagram = ({
           +
         </button>
       </div>
-      {error ? (
+      {error !== null && error !== "" ? (
         <p className="a2ui-fraction__error" id={errorId} role="alert">
           {error}
         </p>

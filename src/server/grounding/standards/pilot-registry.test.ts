@@ -129,11 +129,13 @@ describe("pilot standard registry (issue 218)", () => {
   it("treats free-text evidence as context, never as the resolution input", () => {
     const documented = recordedFreeTextEvidence.rows.filter((row) => {
       return (
-        row.kind === "documented" && row.expectedCode !== null && row.rest?.ok
+        row.kind === "documented" &&
+        row.expectedCode !== null &&
+        row.rest?.ok === true
       );
     });
     const restHits = documented.filter((row) => {
-      return row.rest?.codes.includes(row.expectedCode ?? "");
+      return row.rest?.codes.includes(row.expectedCode ?? "") === true;
     });
 
     expect(restHits.length).toBeGreaterThan(0);

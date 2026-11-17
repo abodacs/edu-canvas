@@ -250,7 +250,7 @@ export const ensureSyntheticIdentityFixture = async (
   // rejected promise for the process lifetime (delegation pack case s0-smoke).
   for (const [index, account] of syntheticAccounts.entries()) {
     const actor = fixture.actors[index];
-    if (!actor) {
+    if (actor === undefined) {
       continue;
     }
     // eslint-disable-next-line no-await-in-loop -- sequential provisioning is the fix: concurrent grants race on the shared tenant row.

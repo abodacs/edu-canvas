@@ -138,8 +138,10 @@ const publishLesson = async (
   });
   if (
     !published.publicationId ||
-    !published.learnerVariantId ||
-    !published.learnerAssignmentId
+    published.learnerVariantId === null ||
+    published.learnerVariantId === "" ||
+    published.learnerAssignmentId === null ||
+    published.learnerAssignmentId === ""
   ) {
     throw new Error("The dashboard seed published without a learner link.");
   }

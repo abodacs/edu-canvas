@@ -70,7 +70,9 @@ export const createSeededIdentityPersistence = (
     verifierHash: string
   ): IdentitySessionRecord | undefined => {
     const sessionId = store.sessionVerifiers.get(verifierHash);
-    return sessionId ? readSession(sessionId) : undefined;
+    return sessionId !== undefined && sessionId !== ""
+      ? readSession(sessionId)
+      : undefined;
   };
 
   const updateSession = (
@@ -80,8 +82,8 @@ export const createSeededIdentityPersistence = (
   ): IdentitySessionRecord | undefined => {
     const session = store.sessions.get(sessionId);
     if (
-      !session ||
-      session.revokedAt ||
+      session === undefined ||
+      (session.revokedAt !== undefined && session.revokedAt !== "") ||
       session.revision !== expectedRevision
     ) {
       return undefined;
@@ -234,7 +236,10 @@ export const createSeededIdentityPersistence = (
       const now = new Date();
       const revokedAt = now.toISOString();
       for (const [sessionId, session] of store.sessions) {
-        if (session.actorId === actorId && !session.revokedAt) {
+        if (
+          session.actorId === actorId &&
+          (session.revokedAt === undefined || session.revokedAt === "")
+        ) {
           store.sessions.set(sessionId, {
             ...session,
             revokedAt,
@@ -260,9 +265,10 @@ export const createSeededIdentityPersistence = (
         createdAt: input.createdAt,
         lastActivityAt: input.lastActivityAt,
         absoluteExpiresAt: input.absoluteExpiresAt,
-        ...(input.providerCredentialsCiphertext && {
-          providerCredentialsCiphertext: input.providerCredentialsCiphertext,
-        }),
+        ...(input.providerCredentialsCiphertext !== undefined &&
+          input.providerCredentialsCiphertext !== "" && {
+            providerCredentialsCiphertext: input.providerCredentialsCiphertext,
+          }),
       };
       store.sessions.set(session.sessionId, session);
       store.sessionVerifiers.set(session.verifierHash, session.sessionId);
@@ -309,7 +315,8 @@ export const createSeededIdentityPersistence = (
     revokeSession: async (sessionId, revokedAt) => {
       const session = store.sessions.get(sessionId);
       const revoked: IdentitySessionRecord | undefined =
-        session && !session.revokedAt
+        session !== undefined &&
+        (session.revokedAt === undefined || session.revokedAt === "")
           ? {
               ...session,
               revokedAt,
@@ -335,17 +342,21 @@ export const createSeededIdentityPersistence = (
 
     readPendingAuthentication: async (verifierHash) => {
       const pendingId = store.pendingVerifiers.get(verifierHash);
-      const pending = pendingId
-        ? store.pendingAuthentications.get(pendingId)
-        : undefined;
+      const pending =
+        pendingId === undefined || pendingId === ""
+          ? undefined
+          : store.pendingAuthentications.get(pendingId);
       return await Promise.resolve(
-        pending ? structuredClone(pending) : undefined
+        pending === undefined ? undefined : structuredClone(pending)
       );
     },
 
     consumePendingAuthentication: async (pendingId, consumedAt) => {
       const pending = store.pendingAuthentications.get(pendingId);
-      if (!pending || pending.consumedAt) {
+      if (
+        pending === undefined ||
+        (pending.consumedAt !== undefined && pending.consumedAt !== "")
+      ) {
         return await Promise.resolve(false);
       }
       store.pendingAuthentications.set(pendingId, { ...pending, consumedAt });

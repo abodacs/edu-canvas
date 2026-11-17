@@ -196,8 +196,10 @@ const semanticFindings = (
         verdict: item.verdict,
         code: item.code,
         field: item.field,
-        ...(item.variantId && { variantId: item.variantId }),
-        ...(item.nodeId && { nodeId: item.nodeId }),
+        ...(item.variantId !== undefined &&
+          item.variantId !== "" && { variantId: item.variantId }),
+        ...(item.nodeId !== undefined &&
+          item.nodeId !== "" && { nodeId: item.nodeId }),
         reason: item.reason,
         recovery: item.recovery,
       };
@@ -223,8 +225,10 @@ const structuralFinding = (
     verdict,
     code: diagnostic.code,
     field: diagnostic.field ?? "draft",
-    ...(diagnostic.variantId && { variantId: diagnostic.variantId }),
-    ...(diagnostic.nodeId && { nodeId: diagnostic.nodeId }),
+    ...(diagnostic.variantId !== undefined &&
+      diagnostic.variantId !== "" && { variantId: diagnostic.variantId }),
+    ...(diagnostic.nodeId !== undefined &&
+      diagnostic.nodeId !== "" && { nodeId: diagnostic.nodeId }),
     reason: diagnostic.message,
     recovery: recoveryForFinding(diagnostic.code, verdict),
   };
@@ -242,7 +246,8 @@ const preRenderFinding = (
     verdict: "hard_block",
     code: failure.code,
     field: failure.field,
-    ...(failure.variantId && { variantId: failure.variantId }),
+    ...(failure.variantId !== undefined &&
+      failure.variantId !== "" && { variantId: failure.variantId }),
     reason: failure.reason,
     recovery: recoveryForCode(failure.code),
   };
@@ -400,7 +405,7 @@ export const gateArtifact = (input: ArtifactGateInput): ArtifactGateResult => {
 export const snapshotArtifactGateResult = (
   result: ArtifactGateResult
 ): ArtifactGateSnapshot => {
-  if (result.verdict === "hard_block" || !result.renderable) {
+  if (result.verdict === "hard_block") {
     throw new Error(
       "A hard-blocked artifact gate result cannot produce a shareable snapshot."
     );

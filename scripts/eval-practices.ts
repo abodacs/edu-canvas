@@ -219,7 +219,10 @@ const readCases = async (): Promise<CaseFile[]> => {
       throw new Error(`Duplicate case id: ${entry.id}`);
     }
     ids.add(entry.id);
-    if (entry.blockedFeature === true && !entry.flipCondition) {
+    if (
+      entry.blockedFeature === true &&
+      (entry.flipCondition === null || entry.flipCondition === "")
+    ) {
       throw new Error(`Blocked case ${entry.id} needs a flipCondition`);
     }
   }

@@ -201,7 +201,8 @@ export const viewUrl = (
   context: ViewContext
 ): string => {
   const query = view.query?.(context);
-  return `${baseUrl}${view.path}${query ? `?${query}` : ""}`;
+  const suffix = query !== undefined && query !== "" ? `?${query}` : "";
+  return `${baseUrl}${view.path}${suffix}`;
 };
 
 /** Budget and finding key for one view at one viewport. */

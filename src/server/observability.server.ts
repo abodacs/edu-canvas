@@ -101,7 +101,11 @@ const getEnvironment = (
   environment: Record<string, string | undefined>
 ): ServerEnvironment => {
   const requested = environment.APP_ENV;
-  if (requested && serverEnvironments.has(requested as ServerEnvironment)) {
+  if (
+    requested !== undefined &&
+    requested !== "" &&
+    serverEnvironments.has(requested as ServerEnvironment)
+  ) {
     return requested as ServerEnvironment;
   }
 
@@ -121,7 +125,8 @@ const normalizeError = (error: unknown): StructuredServerError["error"] => {
     return {
       name: scrubString(error.name || "Error"),
       message: scrubString(error.message || "Unknown server error."),
-      ...(error.stack && { stack: scrubString(error.stack) }),
+      ...(error.stack !== undefined &&
+        error.stack !== "" && { stack: scrubString(error.stack) }),
     };
   }
 
@@ -196,7 +201,7 @@ const toSentryError = (error: StructuredServerError["error"]): Error => {
     configurable: true,
     writable: true,
   });
-  if (error.stack) {
+  if (error.stack !== undefined && error.stack !== "") {
     Object.defineProperty(sanitized, "stack", {
       value: error.stack,
       configurable: true,
@@ -210,7 +215,7 @@ const createDefaultSentryReporter = (
   environment: Record<string, string | undefined>
 ): SentryReporter | undefined => {
   const dsn = environment.SENTRY_DSN?.trim();
-  if (!dsn || !isValidSentryDsn(dsn)) {
+  if (dsn === undefined || dsn === "" || !isValidSentryDsn(dsn)) {
     return undefined;
   }
 

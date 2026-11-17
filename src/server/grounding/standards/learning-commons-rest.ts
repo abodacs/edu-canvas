@@ -290,7 +290,7 @@ const providerUnavailable = (status?: number): StandardGroundingError => {
 };
 
 const assertNotAborted = (signal: AbortSignal | undefined): void => {
-  if (signal?.aborted) {
+  if (signal?.aborted === true) {
     throw resolutionTimeout();
   }
 };
@@ -681,7 +681,7 @@ const scanFramework = async (
       return { kind: "ambiguous" };
     }
     const [match] = matches;
-    if (match) {
+    if (match !== undefined) {
       return { kind: "found", standard: match };
     }
     if (!parsed.hasMore) {

@@ -58,7 +58,12 @@ const publishPack = async (language: LessonLanguage) => {
     learnerId,
     operationKey: `probe-publish-${language}`,
   });
-  if (!published.learnerAssignmentId || !published.learnerVariantId) {
+  if (
+    published.learnerAssignmentId === null ||
+    published.learnerAssignmentId === "" ||
+    published.learnerVariantId === null ||
+    published.learnerVariantId === ""
+  ) {
     throw new Error(`The ${language} pack published without a learner link.`);
   }
   return {

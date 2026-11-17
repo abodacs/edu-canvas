@@ -19,7 +19,11 @@ export const createConfiguredIdentityProvider = (
   if (config.auth.provider === "supabase") {
     const { supabaseUrl, supabaseAnonKey, supabaseServiceRoleKey } =
       config.auth;
-    if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey) {
+    if (
+      supabaseUrl === undefined ||
+      supabaseAnonKey === undefined ||
+      supabaseServiceRoleKey === undefined
+    ) {
       throw new Error(
         "The Supabase provider is selected without complete configuration."
       );

@@ -641,7 +641,7 @@ export const buildLessonPrompt = (
     `Grade: ${request.grade}. Primary standard: ${request.standardId}. Language: ${request.language}. Difficulty: ${request.difficulty}.`,
     itemInstruction,
     answerRuleInstruction(context.answerRules),
-    approvedNodes
+    approvedNodes !== undefined && approvedNodes !== ""
       ? `Approved curriculum nodes: ${approvedNodes}. Approved curriculum edges: ${approvedEdges}.`
       : "",
     referenceInstruction,
@@ -924,7 +924,14 @@ export const createMetaLessonDraftProvider = (
         );
       }
 
-      if (!draft) {
+      if (
+        draft === undefined ||
+        draft === null ||
+        draft === false ||
+        draft === "" ||
+        draft === 0 ||
+        (typeof draft === "number" && Number.isNaN(draft))
+      ) {
         throw new LessonProviderError(
           "terminal",
           "The lesson provider returned no lesson content."

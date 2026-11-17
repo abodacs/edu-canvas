@@ -53,14 +53,22 @@ const unsafeIdentifierPattern =
 const safePublicIdentifier = (
   value: string | undefined
 ): string | undefined => {
-  if (!value || !/^[a-z][a-z\d_.:-]{0,79}$/iu.test(value)) {
+  if (
+    value === undefined ||
+    value === "" ||
+    !/^[a-z][a-z\d_.:-]{0,79}$/iu.test(value)
+  ) {
     return undefined;
   }
   return unsafeIdentifierPattern.test(value) ? undefined : value;
 };
 
 const safePublicField = (value: string | undefined): string | undefined =>
-  value && /^[a-z][a-z\d_.:-]{0,119}$/iu.test(value) ? value : undefined;
+  value !== undefined &&
+  value !== "" &&
+  /^[a-z][a-z\d_.:-]{0,119}$/iu.test(value)
+    ? value
+    : undefined;
 
 const recoveryForDiagnostic = (
   diagnostic: GenerationDiagnostic
@@ -90,19 +98,20 @@ const toPublicDiagnostic = (
     severity: diagnostic.severity,
     code: diagnostic.code,
     message: scrubPublicMessage(diagnostic.message),
-    ...(variantId && { variantId }),
-    ...(field && { field }),
-    ...(nodeId && { nodeId }),
+    ...(variantId !== undefined && { variantId }),
+    ...(field !== undefined && { field }),
+    ...(nodeId !== undefined && { nodeId }),
     ...(diagnostic.validator && { validator: diagnostic.validator }),
     ...((diagnostic.verdict === "warning" ||
       diagnostic.verdict === "hard_block") && { verdict: diagnostic.verdict }),
-    ...(validatorVersion && { validatorVersion }),
+    ...(validatorVersion !== undefined && { validatorVersion }),
     ...(diagnostic.moderationCategory && {
       moderationCategory: diagnostic.moderationCategory,
     }),
-    ...(diagnostic.recommendation && {
-      recommendation: scrubPublicMessage(diagnostic.recommendation),
-    }),
+    ...(diagnostic.recommendation !== undefined &&
+      diagnostic.recommendation !== "" && {
+        recommendation: scrubPublicMessage(diagnostic.recommendation),
+      }),
     recovery: recoveryForDiagnostic(diagnostic),
   };
 };
@@ -158,7 +167,7 @@ export const toPublicDiagnosticsPayload = (
   const findingsByScreen = new Map<string, PublicGenerationDiagnostic[]>();
   const flow: PublicGenerationDiagnostic[] = [];
   for (const finding of publicDiagnostics) {
-    if (finding.variantId) {
+    if (finding.variantId !== undefined && finding.variantId !== "") {
       const findings = findingsByScreen.get(finding.variantId) ?? [];
       findings.push(finding);
       findingsByScreen.set(finding.variantId, findings);

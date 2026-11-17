@@ -48,7 +48,7 @@ never joins the generation request.
 */
 const createAdvisoryReviewServiceFromConfig = (): AdvisoryReviewService => {
   const config = readServerConfig();
-  if (!config.metaApiKey) {
+  if (config.metaApiKey === undefined) {
     throw new Error("Meta provider configuration is incomplete.");
   }
 

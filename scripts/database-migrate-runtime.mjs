@@ -60,14 +60,14 @@ const readJournal = async () => {
 };
 
 const assertLedgerMatchesJournal = async (sql, entries) => {
-  if (!entries.length) {
+  if (entries.length === 0) {
     return noPendingMigrations;
   }
 
   const [ledger] = await sql`
     select to_regclass(${ledgerTable}) is not null as exists
   `;
-  if (!ledger.exists) {
+  if (ledger.exists !== true) {
     return entries.length;
   }
 
@@ -133,19 +133,20 @@ export const runDatabaseMigrations = async (databaseUrl) => {
 const scriptArgumentIndex = 1;
 
 const describeError = (error) => {
-  const cause = Error.isError(error) ? error.cause : undefined;
-  if (Error.isError(cause)) {
+  const cause = Error.isError(error) === true ? error.cause : undefined;
+  if (Error.isError(cause) === true) {
     return cause.message;
   }
-  return Error.isError(error) ? error.message : "Unknown error.";
+  return Error.isError(error) === true ? error.message : "Unknown error.";
 };
 
+const scriptArgument = process.argv.at(scriptArgumentIndex);
 if (
-  process.argv.at(scriptArgumentIndex) &&
-  import.meta.filename === path.resolve(process.argv.at(scriptArgumentIndex))
+  Boolean(scriptArgument) &&
+  import.meta.filename === path.resolve(scriptArgument)
 ) {
   const databaseUrl = process.env.DATABASE_URL?.trim();
-  if (databaseUrl) {
+  if (databaseUrl !== undefined && databaseUrl !== "") {
     try {
       await runDatabaseMigrations(databaseUrl);
     } catch (error) {

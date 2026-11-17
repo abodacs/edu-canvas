@@ -24,10 +24,11 @@ import type { IdentityPersistence } from "../identity/persistence-port";
 
 const databaseUrl = process.env.DATABASE_URL;
 const isDatabaseTestsEnabled = process.env.RUN_DATABASE_TESTS === "true";
-const isRunDatabaseTests = Boolean(databaseUrl && isDatabaseTestsEnabled);
+const isRunDatabaseTests =
+  databaseUrl !== undefined && databaseUrl !== "" && isDatabaseTestsEnabled;
 
 const requireDatabaseUrl = (): string => {
-  if (!databaseUrl) {
+  if (databaseUrl === undefined || databaseUrl === "") {
     throw new Error("DATABASE_URL must be set for database contract tests.");
   }
   return databaseUrl;

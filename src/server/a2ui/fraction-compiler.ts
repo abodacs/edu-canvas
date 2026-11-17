@@ -98,9 +98,10 @@ const sectionMessages = (
       id: stemId,
       component: "MathText",
       latex: section.stem,
-      ...(section.stemTextEquivalent && {
-        textEquivalent: section.stemTextEquivalent,
-      }),
+      ...(section.stemTextEquivalent !== undefined &&
+        section.stemTextEquivalent !== "" && {
+          textEquivalent: section.stemTextEquivalent,
+        }),
     },
     {
       id: diagramId,

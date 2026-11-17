@@ -46,8 +46,10 @@ const Field = ({
   const control = children;
 
   const controlId = control.props.id ?? `${generatedId}-control`;
-  const helpId = help ? `${controlId}-help` : undefined;
-  const errorId = error ? `${controlId}-error` : undefined;
+  const helpId =
+    help !== undefined && help !== "" ? `${controlId}-help` : undefined;
+  const errorId =
+    error !== undefined && error !== "" ? `${controlId}-error` : undefined;
   const hasError = Boolean(error);
 
   return (
@@ -64,7 +66,7 @@ const Field = ({
           </span>
         ) : null}
       </label>
-      {help ? (
+      {help !== undefined && help !== "" ? (
         <p className="field__hint" id={helpId}>
           {help}
         </p>
@@ -82,7 +84,7 @@ const Field = ({
         "aria-invalid": hasError ? true : control.props["aria-invalid"],
         "aria-required": required ? true : control.props["aria-required"],
       })}
-      {error ? (
+      {error !== undefined && error !== "" ? (
         <p className="field__error" id={errorId}>
           {error}
         </p>

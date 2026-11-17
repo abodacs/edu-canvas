@@ -422,7 +422,8 @@ const teacherRequest = (
 ): Request => {
   return new Request(`${sessionDependencies.publicOrigin}/lesson/preview`, {
     method: "GET",
-    ...(cookie && { headers: { cookie } }),
+    ...(cookie !== undefined &&
+      cookie !== "" && { headers: { cookie } }),
   });
 };
 

@@ -83,7 +83,7 @@ export const safeSourceLink = (
   candidate: string | undefined,
   fallback: string
 ): string => {
-  if (!candidate) {
+  if (candidate === undefined || candidate === "") {
     return fallback;
   }
   try {

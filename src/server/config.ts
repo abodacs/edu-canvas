@@ -162,7 +162,10 @@ export const readDatabaseBootstrapConfig = (
   }
 
   const databaseUrl = trimmedEnv(environment.DATABASE_URL);
-  if (databaseUrl && !databaseUrlSchema.safeParse(databaseUrl).success) {
+  if (
+    databaseUrl !== undefined &&
+    !databaseUrlSchema.safeParse(databaseUrl).success
+  ) {
     issues.push({
       code: "INVALID_DATABASE_URL",
       field: "DATABASE_URL",
@@ -172,7 +175,7 @@ export const readDatabaseBootstrapConfig = (
 
   return {
     syntheticDataOnly: true,
-    ...(databaseUrl && { databaseUrl }),
+    ...(databaseUrl !== undefined && { databaseUrl }),
     issues,
   };
 };
@@ -210,7 +213,7 @@ const readSentryDsn = (
   issues: ConfigIssue[]
 ): string | undefined => {
   const requested = trimmedEnv(environment.SENTRY_DSN);
-  if (!requested) {
+  if (requested === undefined) {
     return undefined;
   }
   if (isValidSentryDsn(requested)) {
@@ -275,7 +278,7 @@ const readMetaSettings = (
       "META_BASE_URL must use HTTPS, or HTTP for a local loopback test server."
     );
   }
-  if (!apiKey) {
+  if (apiKey === undefined) {
     pushIssue(
       issues,
       "META_API_KEY_REQUIRED",
@@ -451,7 +454,12 @@ const readAuthConfig = (
   const { supabaseUrl, supabaseAnonKey, supabaseServiceRoleKey } =
     readSupabaseSettings(environment, issues);
 
-  if (!isDevelopment && (!publicOrigin || !sessionSecret || !credentialKey)) {
+  if (
+    !isDevelopment &&
+    (publicOrigin === undefined ||
+      sessionSecret === undefined ||
+      credentialKey === undefined)
+  ) {
     pushIssue(
       issues,
       "AUTH_CONFIG_REQUIRED",
@@ -462,7 +470,9 @@ const readAuthConfig = (
 
   if (
     provider === "supabase" &&
-    (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey)
+    (supabaseUrl === undefined ||
+      supabaseAnonKey === undefined ||
+      supabaseServiceRoleKey === undefined)
   ) {
     pushIssue(
       issues,
@@ -475,12 +485,12 @@ const readAuthConfig = (
   return {
     provider,
     credentialKeyVersion,
-    ...(publicOrigin && { publicOrigin }),
-    ...(sessionSecret && { sessionSecret }),
-    ...(credentialKey && { credentialKey }),
-    ...(supabaseUrl && { supabaseUrl }),
-    ...(supabaseAnonKey && { supabaseAnonKey }),
-    ...(supabaseServiceRoleKey && { supabaseServiceRoleKey }),
+    ...(publicOrigin !== undefined && { publicOrigin }),
+    ...(sessionSecret !== undefined && { sessionSecret }),
+    ...(credentialKey !== undefined && { credentialKey }),
+    ...(supabaseUrl !== undefined && { supabaseUrl }),
+    ...(supabaseAnonKey !== undefined && { supabaseAnonKey }),
+    ...(supabaseServiceRoleKey !== undefined && { supabaseServiceRoleKey }),
   };
 };
 
@@ -495,7 +505,7 @@ export const readServerConfig = (
   const auth = readAuthConfig(environment, appEnvironment, issues);
   const { syntheticDataOnly, databaseUrl } = databaseConfig;
 
-  if (!databaseUrl) {
+  if (databaseUrl === undefined) {
     pushIssue(
       issues,
       "DATABASE_REQUIRED",
@@ -507,9 +517,9 @@ export const readServerConfig = (
   return {
     appEnv: appEnvironment,
     syntheticDataOnly,
-    ...(databaseUrl && { databaseUrl }),
-    ...(sentryDsn && { sentryDsn }),
-    ...(meta.apiKey && { metaApiKey: meta.apiKey }),
+    ...(databaseUrl !== undefined && { databaseUrl }),
+    ...(sentryDsn !== undefined && { sentryDsn }),
+    ...(meta.apiKey !== undefined && { metaApiKey: meta.apiKey }),
     metaModel: meta.model,
     metaBaseUrl: meta.baseUrl,
     metaTimeoutMs: meta.timeoutMs,
@@ -522,18 +532,22 @@ export const safeConfigSummary = (config: ServerConfig) => {
   return {
     appEnv: config.appEnv,
     syntheticDataOnly: config.syntheticDataOnly,
-    persistence: config.databaseUrl
-      ? ("postgres" satisfies PersistenceKind)
-      : "unconfigured",
+    persistence: config.databaseUrl === undefined
+      ? "unconfigured"
+      : ("postgres" satisfies PersistenceKind),
     provider: { timeoutMs: config.metaTimeoutMs },
     auth: {
       provider: config.auth.provider,
-      publicOrigin: config.auth.publicOrigin ? "configured" : "missing",
-      sessionSecret: config.auth.sessionSecret ? "configured" : "missing",
-      credentialKey: config.auth.credentialKey ? "configured" : "missing",
+      publicOrigin:
+        config.auth.publicOrigin === undefined ? "missing" : "configured",
+      sessionSecret:
+        config.auth.sessionSecret === undefined ? "missing" : "configured",
+      credentialKey:
+        config.auth.credentialKey === undefined ? "missing" : "configured",
     },
     observability: {
-      sentry: config.sentryDsn ? "configured" : "structured-log-only",
+      sentry:
+        config.sentryDsn === undefined ? "structured-log-only" : "configured",
     },
     issues: config.issues,
   };

@@ -176,7 +176,12 @@ const pixelShareInPage = async ([left, right]: readonly [
     images.push(await createImageBitmap(blob));
   }
   const [a, b] = images;
-  if (!a || !b || a.width !== b.width || a.height !== b.height) {
+  if (
+    a === undefined ||
+    b === undefined ||
+    a.width !== b.width ||
+    a.height !== b.height
+  ) {
     return -1;
   }
   const data: Uint8ClampedArray[] = [];
@@ -190,7 +195,7 @@ const pixelShareInPage = async ([left, right]: readonly [
     data.push(drawing.getImageData(0, 0, image.width, image.height).data);
   }
   const [pa, pb] = data;
-  if (!pa || !pb) {
+  if (pa === undefined || pb === undefined) {
     return -1;
   }
   let changed = 0;
@@ -270,16 +275,17 @@ const inspectView = async (
     }
     await page.waitForTimeout(settleMs);
     await page.screenshot({ path: screenshot, fullPage: true });
-    const previous = options.compare
-      ? path.join(options.compare, file)
-      : undefined;
+    const previous =
+      options.compare !== undefined && options.compare !== ""
+        ? path.join(options.compare, file)
+        : undefined;
     return {
       ...base,
       axe: await axeProblems(page),
       overflow: await overflowProblems(page),
       ...(await distinctValues(page)),
       changed:
-        previous && existsSync(previous)
+        previous !== undefined && previous !== "" && existsSync(previous)
           ? await changedShare(context, previous, screenshot)
           : undefined,
     };
@@ -384,7 +390,9 @@ const report = (findings: readonly Finding[], out: string): number => {
   const mocks = allViews
     .filter(
       (view) =>
-        view.mock && findings.some((finding) => finding.view === view.key)
+        view.mock !== undefined &&
+        view.mock !== "" &&
+        findings.some((finding) => finding.view === view.key)
     )
     .map(
       (view) =>

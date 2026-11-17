@@ -181,7 +181,7 @@ const MatchCard = ({
           2.5.3, axe label-content-name-mismatch). */}
       <span>{component.label}</span>
       <small>{component.group === "source" ? "Source" : "Candidate"}</small>
-      {component.description ? (
+      {component.description !== undefined && component.description !== "" ? (
         <span className="sr-only">{component.description}</span>
       ) : null}
     </button>

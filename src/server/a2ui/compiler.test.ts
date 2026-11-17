@@ -137,7 +137,7 @@ const storySurfaces = (preview: CompiledLessonPreview): StorySurface[] => {
 const requireLearningPath = <T extends { learningPath?: unknown }>(
   draft: T
 ): NonNullable<T["learningPath"]> => {
-  if (!draft.learningPath) {
+  if (draft.learningPath === undefined || draft.learningPath === null) {
     throw new Error("Expected the fixture draft to include a learning path.");
   }
   return draft.learningPath;
@@ -316,7 +316,7 @@ describe("lesson preview compiler", () => {
     const [firstDataModel] = dataModels;
 
     expect(
-      firstDataModel && "learningPath" in firstDataModel
+      firstDataModel !== undefined && "learningPath" in firstDataModel
         ? firstDataModel.learningPath
         : undefined
     ).toMatchObject({

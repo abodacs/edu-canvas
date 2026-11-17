@@ -94,7 +94,9 @@ export const createSeededStandardGroundingPersistence = (
 
     readLatestForStandard: async (tenantId, standard) => {
       const [latest] = forStandard(tenantId, standard);
-      return await Promise.resolve(latest ? clone(latest) : undefined);
+      return await Promise.resolve(
+        latest === undefined ? undefined : clone(latest)
+      );
     },
 
     history: async (tenantId, standard) => {

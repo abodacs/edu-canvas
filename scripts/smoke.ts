@@ -68,7 +68,7 @@ const securityHeaderProblems = (
     problems.push("missing permissions-policy");
   }
   const nonce = noncePattern.exec(policy)?.groups?.nonce;
-  if (!nonce) {
+  if (nonce === undefined || nonce === "") {
     problems.push("document policy has no nonce");
   } else if (!(
     body.includes(`nonce="${nonce}"`) && body.includes(`content="${nonce}"`)

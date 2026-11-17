@@ -212,8 +212,9 @@ const parseDiagnostics = (
         issue.code === "unrecognized_keys"
           ? `Generated content contains an unknown field: ${issue.keys.join(", ")}.`
           : `Generated content is invalid at ${path.join(".") || "root"}: ${issue.message}`,
-      ...(variantId && { variantId }),
-      ...(field && { field }),
+      ...(variantId !== undefined &&
+        variantId !== "" && { variantId }),
+      ...(field !== undefined && field !== "" && { field }),
     };
   });
 };
@@ -317,7 +318,7 @@ const validateRelationships = (
     );
 
     const owner = targetOwners.get(relationship.targetId);
-    if (owner && owner !== relationship.sourceId) {
+    if (owner !== undefined && owner !== "" && owner !== relationship.sourceId) {
       addDiagnostic(diagnostics, {
         severity: "error",
         code: "TARGET_REUSED",

@@ -175,7 +175,10 @@ export const useAuthSession = (): AuthSessionState => {
     setIsSigningOut(true);
     clearPendingMembershipHandoff();
 
-    const result = csrf ? await endSession(csrf) : { ok: true as const };
+    const result =
+      csrf !== null && csrf !== ""
+        ? await endSession(csrf)
+        : { ok: true as const };
     if (result.ok) {
       clear(false);
       return true;

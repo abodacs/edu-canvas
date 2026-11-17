@@ -99,8 +99,11 @@ export const warningsForTarget = (
       return false;
     }
     return targetKind === "variant"
-      ? !finding.variantId || finding.variantId === targetId
-      : !finding.variantId && finding.field === "learningPath";
+      ? finding.variantId === undefined ||
+          finding.variantId === "" ||
+          finding.variantId === targetId
+      : (finding.variantId === undefined || finding.variantId === "") &&
+          finding.field === "learningPath";
   });
   const seen = new Set<string>();
   return relevant.filter((finding) => {

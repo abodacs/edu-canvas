@@ -69,7 +69,7 @@ interface CookieSpec {
 const parseCookies = (request: Request): ReadonlyMap<string, string[]> => {
   const header = request.headers.get("cookie");
   const map = new Map<string, string[]>();
-  if (!header) {
+  if (header === null || header === "") {
     return map;
   }
   for (const part of header.split(";")) {
@@ -103,11 +103,11 @@ const serializeCookie = (
   options: { maxAge: number; secure: boolean; clear?: boolean }
 ): string => {
   const attributes = [
-    `${spec.name}=${options.clear ? "" : spec.value}`,
+    `${spec.name}=${options.clear === true ? "" : spec.value}`,
     "Path=/",
     "HttpOnly",
     "SameSite=Lax",
-    `Max-Age=${options.clear ? 0 : options.maxAge}`,
+    `Max-Age=${options.clear === true ? 0 : options.maxAge}`,
   ];
   if (options.secure) {
     attributes.push("Secure");
@@ -216,7 +216,8 @@ const guardSessionChallenge = (
   sessionId: string
 ): IdentityError | null => {
   const header = request.headers.get(csrfHeaderName);
-  return header &&
+  return header !== null &&
+    header !== "" &&
     isSessionChallengeValid(dependencies.sessionSecret, sessionId, header)
     ? null
     : new IdentityError("CSRF_REJECTED");
@@ -407,7 +408,7 @@ export const handleMembership = async (
     request,
     cookieNamesFor(dependencies.config).pending
   );
-  if (!pendingCredential) {
+  if (pendingCredential === undefined || pendingCredential === "") {
     return errorResponse(new IdentityError("UNAUTHENTICATED"));
   }
 
@@ -509,7 +510,11 @@ export const handleContinue = async (
     request,
     dependencies
   );
-  if (duplicate || !credential) {
+  if (
+    duplicate ||
+    credential === undefined ||
+    credential === ""
+  ) {
     return errorResponse(new IdentityError("UNAUTHENTICATED"));
   }
 

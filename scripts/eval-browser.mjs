@@ -134,7 +134,7 @@ const main = async () => {
     page.setDefaultTimeout(STEP_WAIT_MS);
     let sourceSnapshotIdLogged = null;
     page.on("request", (request) => {
-      if (!request.url().includes("/api/lessons/generate")) {
+      if (request.url().includes("/api/lessons/generate") === false) {
         return;
       }
 
@@ -169,7 +169,7 @@ const main = async () => {
     await page.waitForURL(/membership|workspace/, { timeout: STEP_WAIT_MS });
     await shot(page, "s0-02-after-sign-in");
 
-    if (page.url().includes("membership")) {
+    if (page.url().includes("membership") === true) {
       log("step 3: choose the synthetic fractions membership");
       const option = page
         .locator("label", { hasText: "Synthetic Fractions" })
@@ -486,7 +486,7 @@ const main = async () => {
     await learnerPage.waitForURL(/membership|workspace|learn/, {
       timeout: STEP_WAIT_MS,
     });
-    if (learnerPage.url().includes("membership")) {
+    if (learnerPage.url().includes("membership") === true) {
       await learnerPage
         .locator("label", { hasText: "Synthetic Fractions" })
         .first()
@@ -589,7 +589,7 @@ const main = async () => {
         await dashPage.waitForURL(/membership|workspace/, {
           timeout: STEP_WAIT_MS,
         });
-        if (dashPage.url().includes("membership")) {
+        if (dashPage.url().includes("membership") === true) {
           await dashPage
             .locator("label", { hasText: membershipLabel })
             .first()
@@ -668,7 +668,7 @@ const main = async () => {
           score: 0,
           expected:
             "The dashboard renders the run from the completed loop with reason, provenance, and preview.",
-          observed: `Runner error: ${Error.isError(error) ? error.message : String(error)}`,
+          observed: `Runner error: ${Error.isError(error) === true ? error.message : String(error)}`,
           evidence: [
             "results/s0/s0-99-failure-state.png",
             "results/s0/s0-runner-log.txt",
@@ -718,7 +718,7 @@ const main = async () => {
           score: 0,
           expected:
             "A teacher scoped to the other tenant sees only the designed empty screen.",
-          observed: `Runner error: ${Error.isError(error) ? error.message : String(error)}`,
+          observed: `Runner error: ${Error.isError(error) === true ? error.message : String(error)}`,
           evidence: [
             "results/s0/s0-99-failure-state.png",
             "results/s0/s0-runner-log.txt",
@@ -730,11 +730,15 @@ const main = async () => {
       }
     }
   } catch (error) {
-    fail(Error.isError(error) ? (error.stack ?? error.message) : String(error));
+    fail(
+      Error.isError(error) === true
+        ? (error.stack ?? error.message)
+        : String(error)
+    );
     try {
       const current = (await browser.contexts()).at(-1);
       const openPage = current?.pages().at(-1);
-      if (openPage) {
+      if (openPage !== undefined && openPage !== null) {
         await shot(openPage, "s0-99-failure-state");
       }
     } catch {
@@ -748,7 +752,7 @@ const main = async () => {
       score: 0,
       expected:
         "Full loop completes with evidence: sign-in, moderation block, recovery revise, ready-for-review, approvals, publish, learner attempt, reveal.",
-      observed: `Runner error: ${Error.isError(error) ? error.message : String(error)}`,
+      observed: `Runner error: ${Error.isError(error) === true ? error.message : String(error)}`,
       evidence: [
         "results/s0/s0-99-failure-state.png",
         "results/s0/s0-runner-log.txt",

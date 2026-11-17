@@ -45,7 +45,7 @@ export const ErrorPanel = ({
           })}
         </ul>
       ) : null}
-      {error.detail ? (
+      {error.detail !== undefined && error.detail !== "" ? (
         <p className="review-error__detail">{error.detail}</p>
       ) : null}
     </section>
