@@ -92,7 +92,7 @@ export const signInSyntheticActor = async (
   membershipId: string
 ): Promise<Actor> => {
   const session = await createSyntheticSession(config);
-  return session.signInAs(email, membershipId);
+  return await session.signInAs(email, membershipId);
 };
 
 export const signInGateTeacher = async (

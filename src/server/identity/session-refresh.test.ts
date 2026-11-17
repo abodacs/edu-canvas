@@ -78,7 +78,7 @@ const createHarness = async (
           barrier.sessionId,
           revokedAt.toISOString()
         );
-        return inner.refresh(refreshToken);
+        return await inner.refresh(refreshToken);
       },
     };
   }

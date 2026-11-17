@@ -619,7 +619,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       options
     );
     if (acceptance.state !== READY_FOR_REVIEW_STATE) {
-      return finishAttempt(baseRecord, acceptance);
+      return await finishAttempt(baseRecord, acceptance);
     }
 
     const draftProvenance = curriculum
@@ -630,7 +630,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         }
       : provenance;
 
-    return finishAttempt(baseRecord, {
+    return await finishAttempt(baseRecord, {
       state: acceptance.state,
       diagnostics: acceptance.diagnostics,
       gate: acceptance.gate,
@@ -698,7 +698,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     priorDiagnostics: GenerationDiagnostic[] = []
   ): Promise<GenerationServiceResult> => {
     if (failure.kind !== "limited") {
-      return persistCallFailure(record, failure, priorDiagnostics);
+      return await persistCallFailure(record, failure, priorDiagnostics);
     }
 
     const diagnostics = [
@@ -879,7 +879,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
           "This request was blocked by safety review. Revise the request before trying again."
         ),
       ];
-      return finishAttempt(record, {
+      return await finishAttempt(record, {
         state: BLOCKED_BY_MODERATION_STATE,
         diagnostics,
       });
@@ -891,7 +891,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
 
     const firstRemaining = remainingBudget();
     if (firstRemaining <= 0) {
-      return finishAttempt(record, {
+      return await finishAttempt(record, {
         state: FAILED_RETRYABLE_STATE,
         diagnostics: [deadlineDiagnostic()],
       });
@@ -906,7 +906,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       sessionId
     );
     if (!firstOutcome.ok) {
-      return handleCallFailure(record, firstOutcome);
+      return await handleCallFailure(record, firstOutcome);
     }
 
     const firstDecision = safety.checkGeneratedContent(
@@ -919,7 +919,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
           "The generated lesson was blocked by safety review and was not shown."
         ),
       ];
-      return finishAttempt(record, {
+      return await finishAttempt(record, {
         state: BLOCKED_BY_MODERATION_STATE,
         diagnostics,
       });
@@ -929,7 +929,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       expectedLanguage: input.language,
     });
     if (firstValidation.ok) {
-      return acceptDraft(
+      return await acceptDraft(
         record,
         input,
         curriculum,
@@ -960,7 +960,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
 
     const correctionRemaining = remainingBudget();
     if (correctionRemaining <= 0) {
-      return finishAttempt(record, {
+      return await finishAttempt(record, {
         state: FAILED_RETRYABLE_STATE,
         diagnostics: [...correctionDiagnostics, deadlineDiagnostic()],
       });
@@ -975,7 +975,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       sessionId
     );
     if (!correctionOutcome.ok) {
-      return handleCallFailure(
+      return await handleCallFailure(
         record,
         correctionOutcome,
         correctionDiagnostics
@@ -992,7 +992,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
           "The corrected lesson was blocked by safety review and was not shown."
         ),
       ];
-      return finishAttempt(
+      return await finishAttempt(
         record,
         {
           state: BLOCKED_BY_MODERATION_STATE,
@@ -1009,7 +1009,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       }
     );
     if (correctedValidation.ok) {
-      return acceptDraft(
+      return await acceptDraft(
         record,
         input,
         curriculum,
@@ -1020,7 +1020,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     }
 
     const { diagnostics } = correctedValidation;
-    return finishAttempt(
+    return await finishAttempt(
       record,
       {
         state: BLOCKED_BY_VALIDATION_STATE,
@@ -1217,7 +1217,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
             { code: "RETRY_METADATA_MISMATCH" }
           );
         }
-        return runAttemptWithSourceUsage(
+        return await runAttemptWithSourceUsage(
           retryRecord,
           effectiveInput,
           command.actor.sessionId
@@ -1250,7 +1250,11 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         createdAt: timestamp,
         updatedAt: timestamp,
       };
-      return runAttemptWithSourceUsage(record, input, command.actor.sessionId);
+      return await runAttemptWithSourceUsage(
+        record,
+        input,
+        command.actor.sessionId
+      );
     },
 
     /**
@@ -1311,7 +1315,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         writeExpectation(record)
       );
       if (!saved) {
-        return currentResult(record);
+        return await currentResult(record);
       }
 
       inFlightCalls

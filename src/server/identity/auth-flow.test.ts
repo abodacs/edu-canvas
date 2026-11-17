@@ -57,7 +57,7 @@ const signInAmira = async (
   dependencies: AuthDependencies
 ): Promise<Response> => {
   const flow = await challenge(dependencies);
-  return handleSignIn(
+  return await handleSignIn(
     new Request(`${dependencies.publicOrigin}/api/auth/sign-in`, {
       method: "POST",
       headers: {
@@ -85,7 +85,7 @@ const selectMembership = async ({
   const pending = `edu_canvas_pending=${
     cookieValue(signInResponse, "edu_canvas_pending") ?? ""
   }`;
-  return handleMembership(
+  return await handleMembership(
     new Request(`${dependencies.publicOrigin}/api/auth/membership`, {
       method: "POST",
       headers: {
@@ -172,7 +172,7 @@ describe("teacher sign-up over HTTP", () => {
 
     const submit = async (email: string): Promise<Response> => {
       const flow = await challenge(dependencies);
-      return handleSignUp(
+      return await handleSignUp(
         new Request(`${dependencies.publicOrigin}/api/auth/sign-up`, {
           method: "POST",
           headers: {

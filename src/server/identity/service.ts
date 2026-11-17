@@ -488,7 +488,7 @@ export const createIdentityService = (
       });
 
       if (activeMemberships.length === 1) {
-        return establishSession({
+        return await establishSession({
           actorId: binding.actorId,
           membership: onlyMembership,
           authorizationRevision: actorRecord.authorizationRevision,
@@ -612,7 +612,7 @@ export const createIdentityService = (
         throw new IdentityError("UNAUTHENTICATED");
       }
 
-      return establishSession({
+      return await establishSession({
         actorId: pending.actorId,
         membership,
         authorizationRevision: actorRecord.authorizationRevision,

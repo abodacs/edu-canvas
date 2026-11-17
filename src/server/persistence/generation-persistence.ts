@@ -244,7 +244,9 @@ export const createGenerationPersistence = <TTransaction>(
         return true;
       });
 
-      return expired ? backend.readGeneration(tenantId, requestId) : undefined;
+      return expired
+        ? await backend.readGeneration(tenantId, requestId)
+        : undefined;
     },
 
     saveGeneration: (record, expected) => {
@@ -287,7 +289,7 @@ export const createGenerationPersistence = <TTransaction>(
     writeAdvisoryReview: (tenantId, requestId, review) => {
       return backend.withTransaction(async (transaction) => {
         await backend.setTenant(transaction, tenantId);
-        return backend.writeAdvisoryReview(
+        return await backend.writeAdvisoryReview(
           transaction,
           tenantId,
           requestId,

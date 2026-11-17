@@ -245,7 +245,7 @@ const signIn = async (
   options: { readonly password?: string; readonly origin?: string } = {}
 ): Promise<Response> => {
   const flow = await openChallenge(dependencies);
-  return handleSignIn(
+  return await handleSignIn(
     authMutation({
       dependencies,
       path: signInPath,
@@ -263,7 +263,7 @@ const signUp = async (
   email: string
 ): Promise<Response> => {
   const flow = await openChallenge(dependencies);
-  return handleSignUp(
+  return await handleSignUp(
     authMutation({
       dependencies,
       path: signUpPath,
@@ -281,7 +281,7 @@ const selectMembership = async (input: {
   readonly membershipId: string;
 }): Promise<Response> => {
   const flow = await openChallenge(input.dependencies);
-  return handleMembership(
+  return await handleMembership(
     authMutation({
       dependencies: input.dependencies,
       path: membershipPath,
@@ -315,7 +315,7 @@ const signInAndSelect = async (
     body.memberships.find((option) => option.membershipId.includes("_demo")) ??
     body.memberships.find((option) => option.role === "teacher") ??
     body.memberships[0];
-  return selectMembership({
+  return await selectMembership({
     dependencies,
     signInResponse,
     membershipId: membership?.membershipId ?? "",

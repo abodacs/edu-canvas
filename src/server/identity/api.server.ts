@@ -669,7 +669,7 @@ export const resolveTeacherActor = async (
     return { ok: false, error: new IdentityError("AUTH_UNAVAILABLE") };
   }
 
-  return resolveTeacherSession(request, dependencies);
+  return await resolveTeacherSession(request, dependencies);
 };
 
 // Resolve the caller's session as a verified student over an injected composition.
@@ -712,7 +712,7 @@ export const resolveLearnerActor = async (
     return { ok: false, error: new IdentityError("AUTH_UNAVAILABLE") };
   }
 
-  return resolveLearnerSession(request, dependencies);
+  return await resolveLearnerSession(request, dependencies);
 };
 
 export const identityErrorJson = (error: IdentityError): Response =>
@@ -800,7 +800,7 @@ export const authRoute = (
   return async ({ request }) => {
     const resolved = await resolveAuthOrError();
     return resolved.ok
-      ? handler(request, resolved.dependencies)
+      ? await handler(request, resolved.dependencies)
       : resolved.response;
   };
 };

@@ -70,7 +70,7 @@ const withTenant = async <T>(
   try {
     const result = await sql.begin(async (transaction) => {
       await transaction`select set_config('app.tenant_id', ${tenantId}, true)`;
-      return work(transaction);
+      return await work(transaction);
     });
     return result as T;
   } finally {
