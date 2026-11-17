@@ -1,4 +1,5 @@
 import { globSync, readFileSync } from "node:fs";
+import os from "node:os";
 
 import { defineConfig } from "vitest/config";
 
@@ -19,6 +20,10 @@ const config = defineConfig({
   test: {
     environment: "node",
     reporters: ["default"],
+    // Vitest's run-mode default is one worker per core minus one
+    // (`resolveMaxWorkers` in vitest's config resolution), which leaves the
+    // last core of the four-vCPU CI runner idle. Pin workers to every core.
+    maxWorkers: os.availableParallelism(),
     // Shared workers leak state between files unless each file cleans up.
     // This hook undoes env stubs, global stubs, spies, and fake timers after
     // every file; anything else a test changes (module-level caches, servers,
