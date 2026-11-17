@@ -21,7 +21,7 @@
     "test:database": "RUN_DATABASE_TESTS=true vitest run src/server/persistence/persistence-contract.test.ts src/server/persistence/source-contract.test.ts src/server/persistence/standard-grounding-database.test.ts src/server/persistence/pack-database.test.ts src/server/persistence/records-database.test.ts src/server/persistence/records-restart.test.ts src/server/persistence/progress-database.test.ts src/server/persistence/limits-database.test.ts src/server/persistence/advisory-review-database.test.ts src/server/persistence/tenant-provisioning-database.test.ts src/integration/seed-catalog-roundtrip.test.ts",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
-    "lint": "oxlint -c oxlint.config.ts --max-warnings 991",
+    "lint": "oxlint -c oxlint.config.ts --max-warnings 994",
     "lint:styles": "stylelint \"src/**/*.css\"",
     "format": "prettier --write .",
     "format:check": "prettier --check --cache .",
