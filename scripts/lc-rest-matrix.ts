@@ -256,7 +256,9 @@ const runRow = async (
   row: MatrixRow
 ): Promise<RowEvidence> => {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), ROW_DEADLINE_MS);
+  const timer = setTimeout(() => {
+    controller.abort();
+  }, ROW_DEADLINE_MS);
   const startedAt = performance.now();
   try {
     const resolution = await adapter.resolve(

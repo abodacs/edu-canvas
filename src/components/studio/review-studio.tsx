@@ -160,7 +160,9 @@ export const ReviewStudio = ({
         </h2>
         <ErrorPanel
           error={state.error}
-          onDismiss={() => dispatch({ type: "error", error: null })}
+          onDismiss={() => {
+            dispatch({ type: "error", error: null });
+          }}
         />
         <Button type="button" variant="secondary" onClick={onClose}>
           Back to the studio
@@ -323,7 +325,9 @@ export const ReviewStudio = ({
       {state.error ? (
         <ErrorPanel
           error={state.error}
-          onDismiss={() => dispatch({ type: "error", error: null })}
+          onDismiss={() => {
+            dispatch({ type: "error", error: null });
+          }}
         />
       ) : null}
 
@@ -338,7 +342,9 @@ export const ReviewStudio = ({
           onApproveReverse={(codes) => {
             void runApprove("reverse-path", reversePathTargetId, codes);
           }}
-          onContinue={() => dispatch({ type: "view", view: "confirm" })}
+          onContinue={() => {
+            dispatch({ type: "view", view: "confirm" });
+          }}
         />
       ) : null}
 
@@ -348,7 +354,9 @@ export const ReviewStudio = ({
           review={state.review}
           variantId={state.activeVariantId}
           busy={state.busy}
-          onBack={() => dispatch({ type: "view", view: "gallery" })}
+          onBack={() => {
+            dispatch({ type: "view", view: "gallery" });
+          }}
           onApprove={(codes) => {
             void runApprove("variant", state.activeVariantId ?? "", codes);
           }}
@@ -363,7 +371,9 @@ export const ReviewStudio = ({
           review={state.review}
           busy={state.busy}
           published={state.published}
-          onBack={() => dispatch({ type: "view", view: "gallery" })}
+          onBack={() => {
+            dispatch({ type: "view", view: "gallery" });
+          }}
           onPublish={(learnerId) => {
             void runPublish(learnerId);
           }}

@@ -49,6 +49,12 @@ const jsonValue = (value: unknown): JsonValue => {
             Object.entries(value).map(([key, child]) => [key, jsonValue(child)])
           );
     }
+    case "bigint":
+    case "function":
+    case "symbol":
+    case "undefined": {
+      throw new Error("Cannot encode a non-JSON persistence value.");
+    }
     default: {
       throw new Error("Cannot encode a non-JSON persistence value.");
     }
@@ -115,7 +121,7 @@ const toIso = (value: unknown): string => {
 };
 
 const asNullableString = (value: unknown): string | null =>
-  value === null || value === undefined ? null : String(value);
+  value === null || value === undefined ? null : asString(value);
 
 const asNumber = Number;
 

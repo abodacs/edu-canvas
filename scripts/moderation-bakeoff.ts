@@ -165,7 +165,7 @@ const presidioScriptUrl = new URL(
 const presidioScriptPath = presidioScriptUrl.pathname;
 
 const readPresidio = (corpusPath: string): Map<string, Prediction> | null => {
-  const python = process.env["MOD132_PRESIDIO_PYTHON"];
+  const python = process.env.MOD132_PRESIDIO_PYTHON;
   if (!python) {
     return null;
   }
@@ -446,7 +446,7 @@ const main = (): void => {
     return;
   }
   console.log(markdown(scores));
-  if (!process.env["MOD132_PRESIDIO_PYTHON"]) {
+  if (!process.env.MOD132_PRESIDIO_PYTHON) {
     console.log(
       "\nPresidio arm skipped: set MOD132_PRESIDIO_PYTHON to a venv interpreter."
     );

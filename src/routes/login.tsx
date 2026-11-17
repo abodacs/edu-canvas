@@ -88,6 +88,15 @@ const describeSignInFailure = (failure: AuthApiFailure): AuthNotice => {
           "Your account cannot open the workspace right now. Contact your school administrator.",
       };
     }
+    case "INVALID_INPUT":
+    case "UNAUTHENTICATED":
+    case "UNKNOWN": {
+      return {
+        tone: "error",
+        title: SIGN_IN_FAILURE_TITLE,
+        message: GENERIC_CREDENTIAL_MESSAGE,
+      };
+    }
     default: {
       return {
         tone: "error",
@@ -223,7 +232,13 @@ const LoginPage = (): ReactElement => {
 
           <AuthStatus notice={notice} noticeRef={statusReference} />
 
-          <form className="auth-form" onSubmit={handleSubmit} noValidate>
+          <form
+            className="auth-form"
+            onSubmit={(event) => {
+              void handleSubmit(event);
+            }}
+            noValidate
+          >
             <Field
               label="Email address"
               help="Learner accounts come from a teacher invitation."

@@ -131,6 +131,6 @@ describe("prompt text exposure", () => {
 
     const event = events.at(0) as { context: Record<string, unknown> };
 
-    expect(event.context["prompt"]).toBe("[REDACTED]");
+    expect(event.context.prompt).toBe("[REDACTED]");
   });
 });

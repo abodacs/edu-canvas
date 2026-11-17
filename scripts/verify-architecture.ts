@@ -28,16 +28,16 @@ type SourceScope =
 
 const listSourceFiles = async (directory: string): Promise<string[]> => {
   const entries = await readdir(directory, { withFileTypes: true });
-  const nested = await Promise.all(
-    entries.map((entry) => {
-      const entryPath = join(directory, entry.name);
-      if (entry.isDirectory()) {
-        return listSourceFiles(entryPath);
-      }
-
-      return sourceExtensions.has(extname(entry.name)) ? [entryPath] : [];
-    })
-  );
+  const groups: Promise<string[]>[] = [];
+  for (const entry of entries) {
+    const entryPath = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      groups.push(listSourceFiles(entryPath));
+    } else if (sourceExtensions.has(extname(entry.name))) {
+      groups.push(Promise.resolve([entryPath]));
+    }
+  }
+  const nested = await Promise.all(groups);
 
   return nested.flat();
 };

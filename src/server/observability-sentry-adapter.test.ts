@@ -15,7 +15,9 @@ const sentrySdk = vi.hoisted(() => {
     init: vi.fn<(options?: unknown) => void>(),
     withIsolationScope: vi.fn<
       (work: (scope: typeof sentryScope) => void) => void
-    >((work) => work(sentryScope)),
+    >((work) => {
+      work(sentryScope);
+    }),
   };
 });
 

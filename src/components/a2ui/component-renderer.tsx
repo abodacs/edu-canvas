@@ -172,9 +172,9 @@ const MatchCard = ({
       })}
       type="button"
       aria-pressed={isSelected}
-      onClick={() =>
-        onAction(surfaceId, component.action.event.name, component.itemId)
-      }
+      onClick={() => {
+        onAction(surfaceId, component.action.event.name, component.itemId);
+      }}
     >
       {/* The accessible name is the visible text plus the description, in
           reading order, so speech-input users can say what they see (WCAG
@@ -266,7 +266,9 @@ export const A2UIComponentRenderer = ({
         <button
           className={`a2ui-action a2ui-action--${component.variant}`}
           type="button"
-          onClick={() => onAction(surfaceId, component.action.event.name)}
+          onClick={() => {
+            onAction(surfaceId, component.action.event.name);
+          }}
         >
           {component.label}
         </button>

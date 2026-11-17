@@ -276,13 +276,13 @@ const scanStylesheets = async (): Promise<{
 
 const collectTsx = async (directory: string): Promise<string[]> => {
   const entries = await readdir(directory, { withFileTypes: true });
-  const groups: (string[] | Promise<string[]>)[] = [];
+  const groups: Promise<string[]>[] = [];
   for (const entry of entries) {
     const full = join(directory, entry.name);
     if (entry.isDirectory()) {
       groups.push(collectTsx(full));
     } else if (entry.name.endsWith(".tsx")) {
-      groups.push([full]);
+      groups.push(Promise.resolve([full]));
     }
   }
   const nested = await Promise.all(groups);
@@ -332,7 +332,7 @@ const writeBaseline = async (counts: Record<string, Counts>): Promise<void> => {
   const { rules, refused } = clampCeiling(RULES, previous?.rules, counts);
   const next: Baseline = {
     note: "Ratchet ceiling for scripts/verify-design-tokens.ts. Counts may only fall; regenerate with --update after a reduction.",
-    rules: rules as Record<RuleId, Counts>,
+    rules,
   };
   await writeFile(BASELINE_PATH, `${JSON.stringify(next, null, 2)}\n`, "utf-8");
   console.log(`Updated ${relative(projectRoot, BASELINE_PATH)}`);

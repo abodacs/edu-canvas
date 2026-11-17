@@ -1368,9 +1368,11 @@ const renderMarkdown = (evidence: Evidence): string => {
       .map((run) => {
         return tableRow([
           runLabel(run),
-          run.progression?.statementCodes
-            .filter((code): code is string => code !== null)
-            .join(", ") || "none",
+          (
+            run.progression?.statementCodes.filter(
+              (code): code is string => code !== null
+            ) ?? []
+          ).join(", ") || "none",
           (run.progression?.matchTypes ?? []).join(", ") || "none",
           String(run.progression?.minAlignmentScore ?? "n/a"),
         ]);

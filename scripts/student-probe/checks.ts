@@ -216,7 +216,7 @@ export const describeFocus = (page: Page): Promise<string> => {
     }
     const text = (active.textContent ?? "").trim().replaceAll(/\s+/gu, " ");
     const tag = active.tagName.toLowerCase();
-    const firstClass = String(active.className).split(" ", 1)[0] ?? "";
+    const firstClass = active.className.split(" ", 1)[0] ?? "";
     const classPart = firstClass === "" ? "" : `.${firstClass}`;
     return `${tag}${classPart} "${text.slice(0, 40)}"`;
   });

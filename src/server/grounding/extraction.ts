@@ -131,7 +131,7 @@ export const startBoundedExtraction = (
   const deadline = new AbortController();
   const timer = setTimeout(() => {
     deadline.abort();
-    worker.terminate();
+    void worker.terminate();
   }, SOURCE_EXTRACTION_TIMEOUT_MS);
 
   const promise = (async (): Promise<ExtractionOutcome> => {
@@ -157,7 +157,7 @@ export const startBoundedExtraction = (
     } finally {
       clearTimeout(timer);
       worker.unref();
-      worker.terminate();
+      void worker.terminate();
     }
   })();
 
@@ -166,7 +166,7 @@ export const startBoundedExtraction = (
     cancel: () => {
       clearTimeout(timer);
       deadline.abort();
-      worker.terminate();
+      void worker.terminate();
     },
   };
 };

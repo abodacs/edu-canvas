@@ -13,7 +13,7 @@ const requireLearningPath = <T extends { learningPath?: unknown }>(
   if (!draft.learningPath) {
     throw new Error("Expected the fixture draft to include a learning path.");
   }
-  return draft.learningPath as NonNullable<T["learningPath"]>;
+  return draft.learningPath;
 };
 
 describe("lesson preview SSE delivery", () => {

@@ -408,6 +408,15 @@ describe("record contracts", () => {
     expect(contentHash).toHaveLength(64);
   });
 
+  it("rejects the degenerate typeof values it cannot canonicalize", () => {
+    // The degenerate typeof branches share one rejection path; each keeps
+    // the canonicalizer total over unknown input.
+    expect(() => canonicalJson(1n)).toThrow(/unsupported/u);
+    expect(() => canonicalJson(undefined)).toThrow(/unsupported/u);
+    expect(() => canonicalJson(Symbol("x"))).toThrow(/unsupported/u);
+    expect(() => canonicalJson(() => "x")).toThrow(/unsupported/u);
+  });
+
   it("resolves the assigned section by variant link and keeps v1 fallback", () => {
     const run = learnerRunSchema.parse({
       id: "run_1",

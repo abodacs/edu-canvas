@@ -28,7 +28,9 @@ const targetNodeLabel = (pack: StandardsPack): string | undefined => {
 const packStandardName = (pack: StandardsPack): string => {
   const label = targetNodeLabel(pack);
   const withoutStandardSuffix = label?.replace(/\s*\([^)]*\)\s*$/u, "").trim();
-  return withoutStandardSuffix || pack.standardCode;
+  return withoutStandardSuffix === undefined || withoutStandardSuffix === ""
+    ? pack.standardCode
+    : withoutStandardSuffix;
 };
 
 const rowForPack = (pack: StandardsPack): SeededStandardRow => {

@@ -255,7 +255,9 @@ export const PublishConfirmation = ({
         <select
           id={learnerSelectId}
           value={learnerId}
-          onChange={(event) => setLearnerId(event.target.value)}
+          onChange={(event) => {
+            setLearnerId(event.target.value);
+          }}
         >
           {review.availableLearners.map((learner) => {
             return (
@@ -299,7 +301,9 @@ export const PublishConfirmation = ({
           type="button"
           aria-describedby={summaryId}
           disabled={busy || !review.canPublish || !learnerId}
-          onClick={() => onPublish(learnerId)}
+          onClick={() => {
+            onPublish(learnerId);
+          }}
         >
           <ShieldCheck aria-hidden="true" /> Publish and assign
         </Button>

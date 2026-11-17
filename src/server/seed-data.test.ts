@@ -13,7 +13,9 @@ import { assertSeedIntegrity, syntheticSeed } from "./seed-data";
 
 describe("synthetic seed", () => {
   it("has stable unique identifiers and expected fixture counts", () => {
-    expect(() => assertSeedIntegrity()).not.toThrow();
+    expect(() => {
+      assertSeedIntegrity();
+    }).not.toThrow();
     expect(getSyntheticSeedCounts()).toStrictEqual({
       tenants: 1,
       identities: 2,

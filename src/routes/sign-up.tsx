@@ -69,6 +69,16 @@ const describeSignUpFailure = (failure: AuthApiFailure): AuthNotice => {
           "Use a valid email address and a password of at least eight characters.",
       };
     }
+    case "ACCESS_NOT_PROVISIONED":
+    case "FORBIDDEN":
+    case "UNAUTHENTICATED":
+    case "UNKNOWN": {
+      return {
+        tone: "error",
+        title: "We could not complete that request",
+        message: "Check the details you entered, then try again.",
+      };
+    }
     default: {
       return {
         tone: "error",
@@ -235,7 +245,13 @@ const SignUpPage = (): ReactElement => {
               </div>
             </div>
           ) : (
-            <form className="auth-form" onSubmit={handleSubmit} noValidate>
+            <form
+              className="auth-form"
+              onSubmit={(event) => {
+                void handleSubmit(event);
+              }}
+              noValidate
+            >
               <AuthStatus notice={notice} noticeRef={statusReference} />
 
               <Field

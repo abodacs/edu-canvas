@@ -84,7 +84,9 @@ export const FractionDiagram = ({
           className="a2ui-fraction__step"
           type="button"
           aria-label="Clear one shaded part"
-          onClick={() => step(-1)}
+          onClick={() => {
+            step(-1);
+          }}
           disabled={shaded === 0}
         >
           −
@@ -99,13 +101,17 @@ export const FractionDiagram = ({
           value={inputValue}
           aria-label={`Parts shaded out of ${denominator}`}
           aria-describedby={error ? errorId : undefined}
-          onChange={(event) => handleInput(event.target.value)}
+          onChange={(event) => {
+            handleInput(event.target.value);
+          }}
         />
         <button
           className="a2ui-fraction__step"
           type="button"
           aria-label="Shade one more part"
-          onClick={() => step(1)}
+          onClick={() => {
+            step(1);
+          }}
           disabled={shaded === denominator}
         >
           +

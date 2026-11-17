@@ -863,7 +863,7 @@ const findUpdateComponents = (
   if (!message || !("updateComponents" in message)) {
     throw new Error("The compiled corpus artifact has no components message.");
   }
-  return message as unknown as RawComponentsMessage;
+  return message;
 };
 
 const findCreateSurface = (
@@ -873,7 +873,7 @@ const findCreateSurface = (
   if (!message || !("createSurface" in message)) {
     throw new Error("The compiled corpus artifact has no surface message.");
   }
-  return message as unknown as { createSurface: { catalogId: string } };
+  return message;
 };
 
 const findDataModel = (
@@ -883,9 +883,7 @@ const findDataModel = (
   if (!message || !("updateDataModel" in message)) {
     throw new Error("The compiled corpus artifact has no data-model message.");
   }
-  return message as unknown as {
-    updateDataModel: { value: Record<string, unknown> };
-  };
+  return message;
 };
 
 const mutateFirstComponent = (

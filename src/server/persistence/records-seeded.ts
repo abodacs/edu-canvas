@@ -213,7 +213,7 @@ export const createSeededRecordBackend = (
       if (!matches(row, where)) {
         continue;
       }
-      const candidate = { ...row, ...structuredClone(values) } as StoredRow;
+      const candidate = { ...row, ...structuredClone(values) };
       for (const constraint of constraints) {
         if (doesViolate(table, candidate, constraint, row)) {
           throw new RecordUniqueViolationError(constraint.name);

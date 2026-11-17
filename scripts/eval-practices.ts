@@ -331,7 +331,7 @@ const expectGenerationRejection = (
       Error.isError(thrown) ? thrown.message : String(thrown)
     }`
   );
-  const rejection = thrown as GenerationRequestError;
+  const rejection = thrown;
   assertHolds(
     rejection.code === code && rejection.status === status,
     `${caseFile.id}: unexpected rejection ${rejection.code} ${String(rejection.status)}, expected ${code} ${String(status)}.`
@@ -847,13 +847,14 @@ const runBrowserOrLiveCase = (
     );
   }
   const observed = context.browserEvidence.get(caseFile.id);
-  return observed === undefined
-    ? deferred(
-        caseFile,
-        KIND_BLOCKED_ENVIRONMENT,
-        "No browser evidence was provided for this run; execute scripts/eval-browser.mjs against the running dev server."
-      )
-    : observed;
+  return (
+    observed ??
+    deferred(
+      caseFile,
+      KIND_BLOCKED_ENVIRONMENT,
+      "No browser evidence was provided for this run; execute scripts/eval-browser.mjs against the running dev server."
+    )
+  );
 };
 
 const runSingleCase = async (

@@ -640,7 +640,7 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
     }[] = [];
     const fetchImpl: typeof fetch = (input, init) => {
       calls.push({
-        url: String(input),
+        url: input instanceof Request ? input.url : String(input),
         apiKey: new Headers(init?.headers).get("x-api-key"),
         redirect: init?.redirect,
       });

@@ -108,7 +108,9 @@ const Chip = ({
         value={value}
         checked={checked}
         disabled={disabled}
-        onChange={() => context.onValueChange(value)}
+        onChange={() => {
+          context.onValueChange(value);
+        }}
       />
       <span>{children}</span>
     </label>

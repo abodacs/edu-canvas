@@ -28,25 +28,25 @@ const projectRoot = fileURLToPath(new URL("../", import.meta.url));
 
 const seedRoot = join(projectRoot, "src", "server");
 const seedModulePattern = /^seed(?:-[\w-]+)?\.ts$/u;
-const seedTestPattern = /\.test\.ts$/u;
 
 // A seed module must import the catalog identifier rather than write it down.
 const literalCatalogPattern = /catalogVersion\s*:\s*["'`]/u;
 
 const listSeedModules = async (directory: string): Promise<string[]> => {
   const entries = await readdir(directory, { withFileTypes: true });
-  const nested = await Promise.all(
-    entries.map((entry) => {
-      const entryPath = join(directory, entry.name);
-      if (entry.isDirectory()) {
-        return listSeedModules(entryPath);
-      }
-      return seedModulePattern.test(entry.name) &&
-        !seedTestPattern.test(entry.name)
-        ? [entryPath]
-        : [];
-    })
-  );
+  const groups: Promise<string[]>[] = [];
+  for (const entry of entries) {
+    const entryPath = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      groups.push(listSeedModules(entryPath));
+    } else if (
+      seedModulePattern.test(entry.name) &&
+      !entry.name.endsWith(".test.ts")
+    ) {
+      groups.push(Promise.resolve([entryPath]));
+    }
+  }
+  const nested = await Promise.all(groups);
   return nested.flat();
 };
 

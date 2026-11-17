@@ -25,7 +25,7 @@ const recoveryLabel = (recovery: RecoveryAction): string => {
     }
     default: {
       const exhaustive: never = recovery;
-      throw new Error(`Unhandled recovery action: ${exhaustive}`);
+      throw new Error(`Unhandled recovery action: ${String(exhaustive)}`);
     }
   }
 };
@@ -109,7 +109,9 @@ const ValidationFinding = ({
       <button
         type="button"
         className="validation-diagnostics__action"
-        onClick={() => onRecover(recovery)}
+        onClick={() => {
+          onRecover(recovery);
+        }}
       >
         {recoveryLabel(recovery)}
       </button>
@@ -165,7 +167,9 @@ export const ValidationDiagnostics = ({
       const frame = window.requestAnimationFrame(() => {
         region.textContent = summary;
       });
-      return () => window.cancelAnimationFrame(frame);
+      return () => {
+        window.cancelAnimationFrame(frame);
+      };
     }
 
     region.textContent = summary;
@@ -215,7 +219,9 @@ export const ValidationDiagnostics = ({
                   <ValidationFinding
                     key={findingKey(finding, "screen")}
                     finding={finding}
-                    onRecover={(action) => onRecover(action, screen.variantId)}
+                    onRecover={(action) => {
+                      onRecover(action, screen.variantId);
+                    }}
                   />
                 );
               })}
@@ -236,7 +242,9 @@ export const ValidationDiagnostics = ({
                 <ValidationFinding
                   key={findingKey(finding, "flow")}
                   finding={finding}
-                  onRecover={(action) => onRecover(action)}
+                  onRecover={(action) => {
+                    onRecover(action);
+                  }}
                 />
               );
             })}

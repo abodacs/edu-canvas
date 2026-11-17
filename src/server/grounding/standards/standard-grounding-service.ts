@@ -91,7 +91,9 @@ const runWithOneRetry = async <T>(
   work: (signal: AbortSignal) => Promise<T>
 ): Promise<{ readonly value: T; readonly attempts: 1 | 2 }> => {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), deadlineMs);
+  const timer = setTimeout(() => {
+    controller.abort();
+  }, deadlineMs);
   timer.unref?.();
   const aborted = Symbol("aborted");
 

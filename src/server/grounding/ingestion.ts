@@ -46,17 +46,18 @@ const REPLACEMENT_CHARACTER = "\u{FFFD}";
 const BROKEN_MATH_CLASS = "broken-math";
 
 const textDensity = (page: string): number => {
-  const characters = [...page];
-  if (characters.length === 0) {
-    return 1;
-  }
   let readable = 0;
-  for (const character of characters) {
+  let characters = 0;
+  for (const character of page) {
+    characters += 1;
     if (/[\p{L}\p{N}\s]/u.test(character)) {
       readable += 1;
     }
   }
-  return readable / characters.length;
+  if (characters === 0) {
+    return 1;
+  }
+  return readable / characters;
 };
 
 const classifyPage = (page: string): PageClass => {
@@ -121,7 +122,13 @@ export const decodeTextSource = (
     : { ok: true, value: withoutBom };
 };
 
-export const countCodePoints = (text: string): number => [...text].length;
+export const countCodePoints = (text: string): number => {
+  let count = 0;
+  for (const _character of text) {
+    count += 1;
+  }
+  return count;
+};
 
 export const decideExtractedLength = (
   text: string

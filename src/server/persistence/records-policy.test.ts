@@ -86,7 +86,7 @@ const actorFor = (fixture: RecordFixture, kind: ActorKind): Actor => {
       return undefined as unknown as Actor;
     }
     default: {
-      throw new Error(`Unknown actor kind: ${kind}`);
+      throw new Error(`Unknown actor kind: ${String(kind)}`);
     }
   }
 };

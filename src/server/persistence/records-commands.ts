@@ -572,7 +572,7 @@ export const createRecordCommands = <TTransaction>(
   const runWrite = async <TInput extends { operationKey: string }>(
     actor: Actor,
     action: WriteAction,
-    submitted: object,
+    submitted: TInput,
     perform: (
       transaction: TTransaction,
       input: TInput
@@ -769,7 +769,7 @@ export const createRecordCommands = <TTransaction>(
     actor: Actor,
     submitted: StoreGroundingInput
   ): Promise<RecordMutationResult> => {
-    return runWrite<StoreGroundingInput>(
+    return runWrite(
       actor,
       "store-grounding",
       submitted,
@@ -996,7 +996,7 @@ export const createRecordCommands = <TTransaction>(
     actor: Actor,
     submitted: AppendVersionInput
   ): Promise<RecordMutationResult> => {
-    return runWrite<AppendVersionInput>(
+    return runWrite(
       actor,
       "append-version",
       submitted,
@@ -1100,7 +1100,7 @@ export const createRecordCommands = <TTransaction>(
     actor: Actor,
     submitted: PublishInput
   ): Promise<RecordMutationResult> => {
-    return runWrite<PublishInput>(
+    return runWrite(
       actor,
       "publish",
       submitted,
@@ -1166,7 +1166,7 @@ export const createRecordCommands = <TTransaction>(
     actor: Actor,
     submitted: AssignInput
   ): Promise<RecordMutationResult> => {
-    return runWrite<AssignInput>(
+    return runWrite(
       actor,
       "assign",
       submitted,
@@ -1236,7 +1236,7 @@ export const createRecordCommands = <TTransaction>(
     actor: Actor,
     submitted: StartRunInput
   ): Promise<RecordMutationResult> => {
-    return runWrite<StartRunInput>(
+    return runWrite(
       actor,
       "start-run",
       submitted,
@@ -1346,7 +1346,7 @@ export const createRecordCommands = <TTransaction>(
     actor: Actor,
     submitted: RecordHintInput
   ): Promise<RecordMutationResult> => {
-    return runWrite<RecordHintInput>(
+    return runWrite(
       actor,
       "record-hint",
       submitted,
@@ -1412,7 +1412,7 @@ export const createRecordCommands = <TTransaction>(
     actor: Actor,
     submitted: RecordAttemptInput
   ): Promise<RecordMutationResult> => {
-    return runWrite<RecordAttemptInput>(
+    return runWrite(
       actor,
       "record-attempt",
       submitted,
@@ -1547,7 +1547,7 @@ export const createRecordCommands = <TTransaction>(
     actor: Actor,
     submitted: ChooseInput
   ): Promise<RecordMutationResult> => {
-    return runWrite<ChooseInput>(
+    return runWrite(
       actor,
       "choose",
       submitted,

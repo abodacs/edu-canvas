@@ -55,10 +55,12 @@ describe("view keys", () => {
   it("refuses two views that share a key", () => {
     const [first] = seededViews;
     const twin = { ...first, path: "/elsewhere" } as ViewSpec;
-    expect(() => assertUniqueKeys(allViews)).not.toThrow();
-    expect(() => assertUniqueKeys([...allViews, twin])).toThrow(
-      /share the key "review"/u
-    );
+    expect(() => {
+      assertUniqueKeys(allViews);
+    }).not.toThrow();
+    expect(() => {
+      assertUniqueKeys([...allViews, twin]);
+    }).toThrow(/share the key "review"/u);
   });
 });
 
