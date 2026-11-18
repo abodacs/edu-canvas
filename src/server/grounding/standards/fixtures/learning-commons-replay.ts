@@ -1,5 +1,7 @@
 import { readFileSync } from "node:fs";
 
+import { z } from "zod";
+
 import type {
   LearningCommonsTransport,
   ProviderResponse,
@@ -60,6 +62,57 @@ interface FreeTextEvidenceFile {
   rows: FreeTextEvidenceRow[];
 }
 
+const evidenceRunSchema: z.ZodType<EvidenceRun> = z.object({
+  id: z.string(),
+  mode: z.string(),
+  row: z.object({ jurisdiction: z.string(), code: z.string() }),
+  resolvedStandard: z.object({
+    statementCode: z.string(),
+    caseIdentifierUUID: z.string(),
+    jurisdiction: z.string(),
+  }),
+  componentFacts: z.object({ componentCount: z.number() }).nullable(),
+  progression: z
+    .object({
+      prerequisiteCount: z.number(),
+      jurisdictions: z.array(z.string()),
+      matchTypes: z.array(z.string()),
+      statementCodes: z.array(z.string()),
+      minAlignmentScore: z.number().nullable(),
+      maxAlignmentScore: z.number().nullable(),
+      errorMessage: z.string().nullable(),
+    })
+    .nullable(),
+  stages: z.array(z.object({ tool: z.string(), excerpt: z.string() })),
+});
+
+const evidenceFileSchema: z.ZodType<EvidenceFile> = z.object({
+  runs: z.array(evidenceRunSchema),
+  elaBoundary: z.object({
+    resolvedCode: z.string(),
+    progressionIsError: z.boolean(),
+    message: z.string(),
+  }),
+});
+
+const freeTextEvidenceRowSchema: z.ZodType<FreeTextEvidenceRow> = z.object({
+  id: z.string(),
+  kind: z.string(),
+  expectedCode: z.string().nullable(),
+  rest: z
+    .object({
+      ok: z.boolean(),
+      codes: z.array(z.string()),
+      hasProvenance: z.boolean(),
+    })
+    .nullable(),
+});
+
+const freeTextEvidenceFileSchema: z.ZodType<FreeTextEvidenceFile> = z.object({
+  environment: z.object({ restOrigin: z.string() }),
+  rows: z.array(freeTextEvidenceRowSchema),
+});
+
 const evidenceUrl = new URL(
   "../../../../../docs/research/142-mcp-eval/evidence.json",
   import.meta.url
@@ -69,13 +122,12 @@ const freeTextEvidenceUrl = new URL(
   import.meta.url
 );
 
-export const recordedEvidence = JSON.parse(
-  readFileSync(evidenceUrl, "utf-8")
-) as EvidenceFile;
+export const recordedEvidence: EvidenceFile = evidenceFileSchema.parse(
+  JSON.parse(readFileSync(evidenceUrl, "utf-8"))
+);
 
-export const recordedFreeTextEvidence = JSON.parse(
-  readFileSync(freeTextEvidenceUrl, "utf-8")
-) as FreeTextEvidenceFile;
+export const recordedFreeTextEvidence: FreeTextEvidenceFile =
+  freeTextEvidenceFileSchema.parse(JSON.parse(readFileSync(freeTextEvidenceUrl, "utf-8")));
 
 export const recordedColdRuns = recordedEvidence.runs.filter((run) => {
   return run.mode === "cold";
@@ -151,6 +203,11 @@ export const RECORDED_FRAMEWORKS = {
     },
   ],
 } as const;
+
+const recordedFrameworkEntries: Record<
+  string,
+  readonly { caseIdentifierUUID: string; name: string; isCurrent: boolean }[]
+> = RECORDED_FRAMEWORKS;
 
 const MULTI_STATE_MATH = "c6496676-d7cb-11e8-824f-0242ac160002";
 const CALIFORNIA_MATH = "c6487102-d7cb-11e8-824f-0242ac160002";
@@ -375,9 +432,7 @@ export const createRecordedLearningCommonsTransport =
     return {
       findFrameworks: async ({ jurisdiction, academicSubject }) => {
         const frameworks =
-          RECORDED_FRAMEWORKS[
-            `${jurisdiction}\0${academicSubject}` as keyof typeof RECORDED_FRAMEWORKS
-          ] ?? [];
+          recordedFrameworkEntries[`${jurisdiction}\0${academicSubject}`] ?? [];
         return await Promise.resolve(page(frameworks));
       },
 

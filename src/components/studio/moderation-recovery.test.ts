@@ -67,7 +67,7 @@ describe("moderation recovery copy", () => {
       resolveModerationRecovery({ category: "harmful-content" })
     ).toMatchObject({
       categoryLabel: "Content that could harm students",
-      reason: expect.stringContaining("could harm students"),
+      reason: expect.stringContaining("could harm students") as unknown,
     });
   });
 

@@ -1,4 +1,5 @@
 import { fractionEquivalencePack } from "@/server/curriculum/built-in-packs";
+import { isJsonObject } from "@/lib/http";
 
 import { validatorVersion } from "./validation";
 import type { LessonLanguage } from "@/shared/generation-contract";
@@ -654,33 +655,29 @@ export const buildLessonPrompt = (
 };
 
 const extractResponseDraft = (body: unknown): unknown => {
-  if (typeof body !== "object" || body === null) {
+  if (!isJsonObject(body)) {
     return undefined;
   }
-  if ("output_text" in body && typeof body.output_text === "string") {
-    return JSON.parse(body.output_text) as unknown;
+  const { output_text: outputText } = body;
+  if (typeof outputText === "string") {
+    return JSON.parse(outputText) as unknown;
   }
 
-  if (!("output" in body) || !Array.isArray(body.output)) {
+  const { output } = body;
+  if (!Array.isArray(output)) {
     return undefined;
   }
-  for (const item of body.output) {
-    if (
-      typeof item !== "object" ||
-      item === null ||
-      !("content" in item) ||
-      !Array.isArray(item.content)
-    ) {
+  for (const item of output) {
+    if (!isJsonObject(item)) {
       continue;
     }
-    for (const content of item.content) {
-      if (
-        typeof content === "object" &&
-        content !== null &&
-        "text" in content &&
-        typeof content.text === "string"
-      ) {
-        return JSON.parse(content.text) as unknown;
+    const { content } = item;
+    if (!Array.isArray(content)) {
+      continue;
+    }
+    for (const contentPart of content) {
+      if (isJsonObject(contentPart) && typeof contentPart.text === "string") {
+        return JSON.parse(contentPart.text) as unknown;
       }
     }
   }

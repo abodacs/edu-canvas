@@ -109,6 +109,24 @@ const buildPackDraft = async (
   return result.draft;
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const isProviderRequestBody = (
+  value: unknown
+): value is {
+  model: string;
+  input: string;
+  text: { format: { name: string; type: string } };
+} =>
+  isRecord(value) &&
+  typeof value.model === "string" &&
+  typeof value.input === "string" &&
+  isRecord(value.text) &&
+  isRecord(value.text.format) &&
+  typeof value.text.format.name === "string" &&
+  typeof value.text.format.type === "string";
+
 const expectCanonicalRequestBody = (body: {
   model: string;
   input: string;
@@ -212,11 +230,12 @@ describe("lesson draft providers", () => {
     if (typeof rawBody !== "string") {
       throw new TypeError("Expected a string request body.");
     }
-    const body = JSON.parse(rawBody) as {
-      model: string;
-      input: string;
-      text: { format: { name: string; type: string } };
-    };
+    const body: unknown = JSON.parse(rawBody);
+    if (!isProviderRequestBody(body)) {
+      throw new TypeError(
+        "Expected a provider request body matching its contract."
+      );
+    }
     const headers = new Headers(requestInit?.headers);
 
     expect(requestUrl).toBe("https://api.meta.ai/v1/responses");
@@ -403,7 +422,10 @@ describe("lesson draft providers", () => {
     if (typeof rawBody !== "string") {
       throw new TypeError("Expected a string request body.");
     }
-    const body = JSON.parse(rawBody) as { input: string };
+    const body: unknown = JSON.parse(rawBody);
+    if (!isRecord(body) || typeof body.input !== "string") {
+      throw new TypeError("Expected a request body with an input prompt.");
+    }
 
     expect(body.input).toContain("graph_node_equal_parts");
     expect(body.input).toContain("screen_purpose_equal_parts");

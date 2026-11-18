@@ -400,8 +400,9 @@ describe("standards generalization: 4.OA.A.3 word problem -> equation matching",
 
     expect(rejection).toBeInstanceOf(GenerationRequestError);
     expect(rejection).toMatchObject({ code: "GENERATION_INPUT_INVALID" });
-    expect((rejection as Error).message).toContain("not supported");
-    expect((rejection as Error).message).not.toContain("4.NF.A.1");
+    const message = rejection instanceof Error ? rejection.message : "";
+    expect(message).toContain("not supported");
+    expect(message).not.toContain("4.NF.A.1");
   });
 
   it("B6: a correct answer set passes the structural gate and reaches ready-for-review", async () => {

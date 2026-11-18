@@ -9,23 +9,47 @@ import {
   selectViews,
   viewUrl,
 } from "./views";
+import { gateSeedOutputSchema, probeSeedOutputSchema } from "./seed-output";
 
 import type { SeedOutputs } from "./seed-output";
 import type { ViewSpec } from "./views";
 
-const seed = {
+const seed: SeedOutputs = {
   learnerQuery: "assignment=a&variant=v",
-  gate: {
-    drafts: {
-      readyForReview: { requestId: "req_review" },
-      approvedForPublish: { requestId: "req_publish" },
-      approvedForPublishedDesktop: { requestId: "req_pub_desktop" },
-      approvedForPublishedPhone: { requestId: "req_pub_phone" },
-      blockedValidation: { requestId: "req_validation" },
-      blockedModeration: { requestId: "req_moderation" },
+  probe: probeSeedOutputSchema.parse({
+    en: { assignment: "a", variant: "v" },
+    ar: { assignment: "a", variant: "v" },
+  }),
+  gate: gateSeedOutputSchema.parse({
+    teacher: {
+      email: "teacher.demo@example.test",
+      membership: "membership_demo",
     },
-  },
-} as unknown as SeedOutputs;
+    drafts: {
+      readyForReview: { requestId: "req_review", state: "ready-for-review" },
+      approvedForPublish: {
+        requestId: "req_publish",
+        state: "ready-for-review",
+      },
+      approvedForPublishedDesktop: {
+        requestId: "req_pub_desktop",
+        state: "ready-for-review",
+      },
+      approvedForPublishedPhone: {
+        requestId: "req_pub_phone",
+        state: "ready-for-review",
+      },
+      blockedValidation: {
+        requestId: "req_validation",
+        state: "blocked-by-validation",
+      },
+      blockedModeration: {
+        requestId: "req_moderation",
+        state: "blocked-by-moderation",
+      },
+    },
+  }),
+};
 
 const workspaceViews = allViews.filter((view) => view.path === "/workspace");
 

@@ -780,7 +780,7 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       return { ok: true, response };
     } catch (error) {
       if (controller.signal.aborted) {
-        const { reason } = controller.signal;
+        const reason: unknown = controller.signal.reason;
         return {
           ok: false,
           kind:

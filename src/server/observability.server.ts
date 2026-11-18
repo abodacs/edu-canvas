@@ -6,11 +6,14 @@ import type { ServerEnvironment } from "./config";
 
 const REDACTED_VALUE = "[REDACTED]";
 
-const serverEnvironments = new Set<ServerEnvironment>([
+const serverEnvironments = new Set<string>([
   "development",
   "preview",
   "production",
 ]);
+
+const isServerEnvironment = (value: string): value is ServerEnvironment =>
+  serverEnvironments.has(value);
 
 const safeContextKeys = new Set([
   "reason",
@@ -104,9 +107,9 @@ const getEnvironment = (
   if (
     requested !== undefined &&
     requested !== "" &&
-    serverEnvironments.has(requested as ServerEnvironment)
+    isServerEnvironment(requested)
   ) {
-    return requested as ServerEnvironment;
+    return requested;
   }
 
   return environment.NODE_ENV === "production" ? "production" : "development";

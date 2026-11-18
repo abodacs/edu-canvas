@@ -277,6 +277,13 @@ interface Evidence {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
+const isMcpToolResult = (value: unknown): value is McpToolResult | undefined =>
+  value === undefined ||
+  (isRecord(value) &&
+    (value.content === undefined ||
+      (Array.isArray(value.content) && value.content.every(isRecord))) &&
+    (value.isError === undefined || typeof value.isError === "boolean"));
+
 const readString = (value: unknown): string | null =>
   typeof value === "string" ? value : null;
 
@@ -399,7 +406,10 @@ const createClient = (apiKey: string) => {
         error: { message: readString(rpcError.message) ?? undefined },
       };
     }
-    return { ...gateway, result: message.result as McpToolResult | undefined };
+    return {
+      ...gateway,
+      result: isMcpToolResult(message.result) ? message.result : undefined,
+    };
   };
 };
 
@@ -1490,12 +1500,11 @@ const hasEvidenceArtifacts = (value: Record<string, unknown>): boolean => {
   );
 };
 
+const isEvidence = (value: unknown): value is Evidence =>
+  isRecord(value) && hasEvidenceMetadata(value) && hasEvidenceArtifacts(value);
+
 const parseEvidence = (value: unknown): Evidence | null => {
-  return isRecord(value) &&
-    hasEvidenceMetadata(value) &&
-    hasEvidenceArtifacts(value)
-    ? (value as unknown as Evidence)
-    : null;
+  return isEvidence(value) ? value : null;
 };
 
 const readEvidenceFile = async (filePath: string): Promise<Evidence> => {
@@ -2093,20 +2102,19 @@ const recordFreeText = async (directory: string): Promise<FreeTextEvidence> => {
   return evidence;
 };
 
+const isFreeTextEvidence = (value: unknown): value is FreeTextEvidence =>
+  isRecord(value) && Array.isArray(value.rows) && isRecord(value.environment);
+
 const readFreeTextEvidence = async (
   directory: string
 ): Promise<FreeTextEvidence> => {
   const parsed = JSON.parse(
     await readFile(join(directory, FREE_TEXT_EVIDENCE_FILE), "utf-8")
   ) as unknown;
-  if (
-    !isRecord(parsed) ||
-    !Array.isArray(parsed.rows) ||
-    !isRecord(parsed.environment)
-  ) {
+  if (!isFreeTextEvidence(parsed)) {
     throw new Error(`${FREE_TEXT_EVIDENCE_FILE} is not valid evidence.`);
   }
-  return parsed as unknown as FreeTextEvidence;
+  return parsed;
 };
 
 const scoredRows = (evidence: FreeTextEvidence): FreeTextRowEvidence[] =>

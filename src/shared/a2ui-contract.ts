@@ -443,7 +443,7 @@ const hasUnknownComponent = (value: unknown): boolean => {
     return (
       isRecord(component) &&
       typeof component.component === "string" &&
-      !a2uiComponentNames.includes(component.component as A2UIComponentName)
+      !a2uiComponentNames.some((name) => name === component.component)
     );
   });
 };
@@ -545,7 +545,7 @@ const hasUnknownAction = (value: unknown): boolean => {
     return (
       isRecord(event) &&
       typeof event.name === "string" &&
-      !a2uiActionNames.includes(event.name as A2UIActionName)
+      !a2uiActionNames.some((name) => name === event.name)
     );
   });
 };

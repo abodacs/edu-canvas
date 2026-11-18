@@ -7,6 +7,7 @@ import {
   SOURCE_EXTRACTION_TIMEOUT_MS,
   SOURCE_EXTRACTION_WORKER_MEMORY_MB,
 } from "@/shared/source-contract";
+import { isJsonObject } from "@/lib/http";
 
 import type {
   SourceFailureReason,
@@ -71,12 +72,15 @@ const resolveExtractionModuleUrl = (): string => {
   return extractionModule.url;
 };
 
-const reasonForWorkerFailure = (name: string): SourceFailureReason => {
+const reasonForWorkerFailure = (name: unknown): SourceFailureReason => {
   if (name === "PasswordException") {
     return "encrypted";
   }
   return name === "EncodingError" ? "encoding" : "parser-fault";
 };
+
+const isStringArray = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every((entry) => typeof entry === "string");
 
 export interface BoundedExtraction {
   readonly promise: Promise<ExtractionOutcome>;
@@ -87,16 +91,16 @@ export interface BoundedExtraction {
 }
 
 const outcomeFromMessage = (message: unknown): ExtractionOutcome => {
-  const parsed = message as
-    | { ok: true; pages: string[] }
-    | { ok: false; name: string; message: string };
-  if (parsed.ok) {
+  const parsed = isJsonObject(message) ? message : undefined;
+  if (parsed?.ok === true && isStringArray(parsed.pages)) {
     return { ok: true, pages: parsed.pages };
   }
+  const name = parsed?.name;
+  const detail = parsed?.message;
   return {
     ok: false,
-    reason: reasonForWorkerFailure(parsed.name),
-    detail: `${parsed.name}: ${parsed.message}`,
+    reason: reasonForWorkerFailure(name),
+    detail: `${String(name)}: ${String(detail)}`,
   };
 };
 
@@ -136,9 +140,10 @@ export const startBoundedExtraction = (
 
   const promise = (async (): Promise<ExtractionOutcome> => {
     try {
-      const [message] = (await once(worker, "message", {
+      const messages: unknown[] = await once(worker, "message", {
         signal: deadline.signal,
-      })) as [unknown];
+      });
+      const [message] = messages;
       return outcomeFromMessage(message);
     } catch (error) {
       if (deadline.signal.aborted) {
@@ -148,11 +153,11 @@ export const startBoundedExtraction = (
           detail: `Extraction exceeded ${SOURCE_EXTRACTION_TIMEOUT_MS} ms.`,
         };
       }
-      const failure = error as Error;
+      const failure = error instanceof Error ? error : undefined;
       return {
         ok: false,
-        reason: reasonForWorkerFailure(failure.name),
-        detail: failure.message,
+        reason: reasonForWorkerFailure(failure?.name),
+        detail: failure?.message ?? "",
       };
     } finally {
       clearTimeout(timer);

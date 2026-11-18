@@ -79,6 +79,22 @@ interface Budget {
   readonly routes: Record<string, { axe: number; overflow: number }>;
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const isRouteCeiling = (
+  value: unknown
+): value is { axe: number; overflow: number } =>
+  isRecord(value) &&
+  typeof value.axe === "number" &&
+  typeof value.overflow === "number";
+
+const isBudget = (value: unknown): value is Budget =>
+  isRecord(value) &&
+  typeof value.note === "string" &&
+  isRecord(value.routes) &&
+  Object.values(value.routes).every(isRouteCeiling);
+
 const isRequired = process.env.UI_GATE_REQUIRED === "true";
 
 const skip = (reason: string): never => {
@@ -329,10 +345,13 @@ const inspect = async (
   return findings;
 };
 
-const readBudget = (): Budget | undefined =>
-  existsSync(budgetPath)
-    ? (JSON.parse(readFileSync(budgetPath, "utf-8")) as Budget)
-    : undefined;
+const readBudget = (): Budget | undefined => {
+  if (!existsSync(budgetPath)) {
+    return undefined;
+  }
+  const parsed: unknown = JSON.parse(readFileSync(budgetPath, "utf-8"));
+  return isBudget(parsed) ? parsed : undefined;
+};
 
 const writeBudget = (findings: readonly Finding[]): void => {
   const previous = readBudget()?.routes ?? {};

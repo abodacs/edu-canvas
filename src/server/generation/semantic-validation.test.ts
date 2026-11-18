@@ -132,11 +132,11 @@ describe("bounded semantic lesson validation", () => {
       expect.arrayContaining([
         expect.objectContaining({
           validator: "curriculum",
-          validatorVersion: expect.any(String),
+          validatorVersion: expect.any(String) as unknown,
         }),
         expect.objectContaining({
           validator: "learning-quality",
-          validatorVersion: expect.any(String),
+          validatorVersion: expect.any(String) as unknown,
         }),
       ])
     );
@@ -147,8 +147,8 @@ describe("bounded semantic lesson validation", () => {
           verdict: "warning",
           field: "variants",
           variantId: "variant-2",
-          reason: expect.any(String),
-          validatorVersion: expect.any(String),
+          reason: expect.any(String) as unknown,
+          validatorVersion: expect.any(String) as unknown,
         }),
       ])
     );
@@ -176,8 +176,8 @@ describe("bounded semantic lesson validation", () => {
           verdict: "hard_block",
           field: "relationships",
           variantId: firstVariant.id,
-          reason: expect.any(String),
-          recommendation: expect.any(String),
+          reason: expect.any(String) as unknown,
+          recommendation: expect.any(String) as unknown,
         }),
       ])
     );

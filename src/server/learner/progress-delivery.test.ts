@@ -8,8 +8,6 @@ import {
   handleTeacherProgressRequest,
   progressErrorJson,
 } from "./progress.server";
-import type { resolveTeacherActor } from "@/server/identity/api.server";
-import type { createRecordPersistence as createRecords } from "@/server/persistence";
 
 // The handler composes from process.env; pin a hermetic config. Session
 // resolution itself is stubbed here because this suite proves the transport
@@ -22,6 +20,9 @@ vi.stubEnv(
 );
 vi.stubEnv("META_API_KEY", "test-server-key");
 vi.stubEnv("AUTH_PROVIDER", "deterministic");
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
 
 const mocks = vi.hoisted(() => {
   const identityErrorJson = (error: {
@@ -47,12 +48,13 @@ vi.mock(
   import(
     /* webpackChunkName: "progress-delivery-identity" */ "@/server/identity/api.server"
   ),
-  () => {
-    return {
-      resolveTeacherActor:
-        mocks.resolveTeacherActor as unknown as typeof resolveTeacherActor,
+  async (importOriginal) => {
+    const actual = await importOriginal();
+    const merged = { ...actual };
+    return Object.assign(merged, {
+      resolveTeacherActor: mocks.resolveTeacherActor,
       identityErrorJson: mocks.identityErrorJson,
-    };
+    });
   }
 );
 
@@ -60,11 +62,12 @@ vi.mock(
   import(
     /* webpackChunkName: "progress-delivery-persistence" */ "@/server/persistence"
   ),
-  () => {
-    return {
-      createRecordPersistence: (() =>
-        mocks.recordPersistence) as unknown as typeof createRecords,
-    };
+  async (importOriginal) => {
+    const actual = await importOriginal();
+    const merged = { ...actual };
+    return Object.assign(merged, {
+      createRecordPersistence: () => mocks.recordPersistence,
+    });
   }
 );
 
@@ -150,7 +153,10 @@ describe(handleTeacherProgressRequest, () => {
 
     expect(response.status).toBe(503);
 
-    const body = (await response.json()) as { code: string; message: string };
+    const body: unknown = await response.json();
+    if (!isRecord(body)) {
+      throw new TypeError("the progress refusal must be a JSON object");
+    }
 
     expect(body.code).toBe("PROGRESS_UNAVAILABLE");
     expect(body.message).not.toContain("connection reset");

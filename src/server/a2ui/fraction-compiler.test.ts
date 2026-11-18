@@ -5,12 +5,13 @@ import {
   FRACTIONS_CATALOG_ID,
   FRACTIONS_CATALOG_VERSION,
 } from "@/shared/a2ui-contract";
+import { fractionLessonDraftSchema } from "@/shared/fractions-contract";
 import {
   compileFractionPreview,
   compileRawFractionPreview,
 } from "./fraction-compiler";
 
-const validFractionDraft = {
+const validFractionDraft = fractionLessonDraftSchema.parse({
   requestId: "draft_req_fraction_test",
   standardId: "standard_ccss_4_nf_a_01",
   grade: 4,
@@ -37,7 +38,7 @@ const validFractionDraft = {
       advanceLabel: "Finish section",
     },
   ],
-};
+});
 
 describe(compileRawFractionPreview, () => {
   it("compiles one fraction surface per section with the pinned catalog", () => {
@@ -147,7 +148,7 @@ describe(compileRawFractionPreview, () => {
   it("compiles only a gate-accepted renderable artifact", () => {
     const gate = gateArtifact({
       kind: "fraction",
-      draft: validFractionDraft as never,
+      draft: validFractionDraft,
     });
 
     if (gate.renderable?.kind !== "fraction") {
@@ -159,7 +160,8 @@ describe(compileRawFractionPreview, () => {
 
   it("refuses an unbranded draft at the production seam", () => {
     expect(() =>
-      compileFractionPreview({ draft: validFractionDraft } as never)
+      // @ts-expect-error -- only gateArtifact may mint the private brand; the compiler must refuse the raw draft.
+      compileFractionPreview({ draft: validFractionDraft })
     ).toThrow(/gate-accepted/iu);
   });
 });

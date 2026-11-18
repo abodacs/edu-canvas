@@ -20,6 +20,20 @@ import type { AuthDependencies } from "./api.server";
 
 const password = "synthetic-pass-1";
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const isMembershipList = (
+  value: unknown
+): value is MembershipBody["memberships"] =>
+  Array.isArray(value) &&
+  value.every(
+    (entry) =>
+      isRecord(entry) &&
+      typeof entry.membershipId === "string" &&
+      typeof entry.tenantName === "string"
+  );
+
 const testConfig = readServerConfig({ ...testServerEnvironment });
 const testDependencies = authDependenciesFrom(
   testConfig,
@@ -46,7 +60,10 @@ const bootstrapFlow = async (sessionDependencies: AuthDependencies) => {
     }),
     sessionDependencies
   );
-  const body = (await context.json()) as { csrf: string };
+  const body: unknown = await context.json();
+  if (!isRecord(body) || typeof body.csrf !== "string") {
+    throw new TypeError("the auth context response must carry a csrf token");
+  }
   const challengeCookie = cookieValue(context, "edu_canvas_csrf") ?? "";
   return {
     csrf: body.csrf,
@@ -116,15 +133,25 @@ const signIn = async (
     }),
     sessionDependencies
   );
-  const body = (await response.clone().json()) as MembershipBody & {
-    status?: string;
-  };
+  const body: unknown = await response.clone().json();
+  if (!isRecord(body)) {
+    throw new TypeError("the sign-in response must be a JSON object");
+  }
+  const { status, memberships } = body;
+  if (
+    (status !== undefined && typeof status !== "string") ||
+    (memberships !== undefined && !isMembershipList(memberships))
+  ) {
+    throw new TypeError(
+      "the sign-in response must carry a status and membership list"
+    );
+  }
   const established =
-    body.status === "membership-required"
+    status === "membership-required"
       ? await selectCurriculumMembership(
           sessionDependencies,
           response,
-          body.memberships
+          memberships
         )
       : response;
   return {
@@ -146,7 +173,10 @@ describe("auth context and challenge", () => {
 
     expect(response.status).toBe(200);
 
-    const body = (await response.json()) as Record<string, unknown>;
+    const body: unknown = await response.json();
+    if (!isRecord(body)) {
+      throw new TypeError("the auth context response must be a JSON object");
+    }
 
     expect(Object.keys(body)).toStrictEqual(["csrf"]);
     expect(cookiesFrom(response).join(";")).toContain("HttpOnly");
@@ -258,7 +288,10 @@ describe("session projection", () => {
 
     expect(response.status).toBe(200);
 
-    const body = (await response.json()) as Record<string, unknown>;
+    const body: unknown = await response.json();
+    if (!isRecord(body)) {
+      throw new TypeError("the session response must be a JSON object");
+    }
 
     expect(body).toMatchObject({ status: "active" });
     expect(JSON.stringify(body)).not.toContain("password");
@@ -302,7 +335,11 @@ describe("continue", () => {
       }),
       sessionDependencies
     );
-    const { csrf } = (await session.json()) as { csrf: string };
+    const sessionBody: unknown = await session.json();
+    if (!isRecord(sessionBody) || typeof sessionBody.csrf !== "string") {
+      throw new TypeError("the session response must carry a csrf token");
+    }
+    const { csrf } = sessionBody;
 
     const forged = await handleContinue(
       new Request(`${sessionDependencies.publicOrigin}/api/auth/continue`, {
@@ -356,7 +393,11 @@ describe("logout header contract", () => {
       }),
       sessionDependencies
     );
-    const { csrf } = (await session.json()) as { csrf: string };
+    const sessionBody: unknown = await session.json();
+    if (!isRecord(sessionBody) || typeof sessionBody.csrf !== "string") {
+      throw new TypeError("the session response must carry a csrf token");
+    }
+    const { csrf } = sessionBody;
 
     const response = await handleLogout(
       new Request(`${sessionDependencies.publicOrigin}/api/auth/logout`, {
@@ -422,8 +463,7 @@ const teacherRequest = (
 ): Request => {
   return new Request(`${sessionDependencies.publicOrigin}/lesson/preview`, {
     method: "GET",
-    ...(cookie !== undefined &&
-      cookie !== "" && { headers: { cookie } }),
+    ...(cookie !== undefined && cookie !== "" && { headers: { cookie } }),
   });
 };
 
@@ -440,7 +480,7 @@ describe("teacher delivery seam", () => {
     expect(resolved).toMatchObject({
       ok: true,
       actor: { role: "teacher", actorId: "actor_teacher_bilal" },
-      sessionId: expect.any(String),
+      sessionId: expect.any(String) as unknown,
     });
   });
 

@@ -163,8 +163,16 @@ const configuredTestDependencies = authDependenciesFrom(
 const configuredDependencies = async (): Promise<AuthDependencies> =>
   await Promise.resolve(configuredTestDependencies);
 
-const readJson = async <T>(response: Response): Promise<T> =>
-  (await response.json()) as T;
+const isRecordShaped = <T>(value: unknown, _witness?: T): value is T =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const readJson = async <T>(response: Response): Promise<T> => {
+  const body: unknown = await response.json();
+  if (!isRecordShaped<T>(body)) {
+    throw new TypeError("the identity response must be a JSON object");
+  }
+  return body;
+};
 
 const cookiePairs = (response: Response): string[] => {
   return response.headers

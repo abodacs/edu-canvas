@@ -234,9 +234,26 @@ const distinctCounts = (pages: readonly Page[]): Record<string, number> => {
   return result;
 };
 
-const readJson = async <T>(file: string): Promise<T | null> => {
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const isNumberRecord = (value: unknown): value is Record<string, number> =>
+  isRecord(value) &&
+  Object.values(value).every((entry) => typeof entry === "number");
+
+const isBudget = (value: unknown): value is Budget =>
+  isRecord(value) &&
+  typeof value.note === "string" &&
+  typeof value.minPages === "number" &&
+  typeof value.maxAaFailures === "number" &&
+  isNumberRecord(value.maxDistinct);
+
+const isPageList = (value: unknown): value is Page[] =>
+  Array.isArray(value) && value.every(isRecord);
+
+const readJson = async (file: string): Promise<unknown> => {
   try {
-    return JSON.parse(await readFile(file, "utf-8")) as T;
+    return JSON.parse(await readFile(file, "utf-8")) as unknown;
   } catch {
     return null;
   }
@@ -247,7 +264,8 @@ const writeBudget = async (result: {
   distinct: Record<string, number>;
   failures: number;
 }): Promise<void> => {
-  const previous = await readJson<Budget>(BUDGET_PATH);
+  const previousValue = await readJson(BUDGET_PATH);
+  const previous = isBudget(previousValue) ? previousValue : null;
   const next: Budget = {
     note: "Ratchet ceiling for scripts/verify-design-census.ts. Counts may only fall; regenerate with --update after a reduction.",
     minPages: Math.max(result.pages, previous?.minPages ?? 0),
@@ -315,7 +333,8 @@ const main = async (): Promise<string[]> => {
   const argv = process.argv.slice(2);
   const censusPath =
     argv.find((argument) => !argument.startsWith("--")) ?? DEFAULT_CENSUS;
-  const parsed = (await readJson<Page[]>(censusPath)) ?? [];
+  const parsedValue = await readJson(censusPath);
+  const parsed = isPageList(parsedValue) ? parsedValue : [];
   const pages = parsed.filter(
     (page) => page.error === undefined || page.error === ""
   );
@@ -330,7 +349,8 @@ const main = async (): Promise<string[]> => {
     return [];
   }
 
-  const budget = await readJson<Budget>(BUDGET_PATH);
+  const budgetValue = await readJson(BUDGET_PATH);
+  const budget = isBudget(budgetValue) ? budgetValue : null;
   if (!budget) {
     return [
       `no budget at ${relative(projectRoot, BUDGET_PATH)}; run with --update once`,

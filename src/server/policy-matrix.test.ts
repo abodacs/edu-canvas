@@ -1,4 +1,5 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { z } from "zod";
 
 import { handleLessonPreviewRequest } from "@/server/a2ui/preview.server";
 import { readServerConfig } from "@/server/config";
@@ -42,8 +43,15 @@ import { createSeededPersistence } from "@/server/persistence/seeded";
 import { syntheticSeed } from "@/server/seed-data";
 import { testServerEnvironment } from "@/server/test-environment";
 
-import { storedGenerationResultSchema } from "@/shared/generation-contract";
-import { publicationPublishResultSchema } from "@/shared/publication-contract";
+import {
+  publicGenerationResultSchema,
+  storedGenerationResultSchema,
+} from "@/shared/generation-contract";
+import {
+  publicationPublishResultSchema,
+  reviewPackSchema,
+} from "@/shared/publication-contract";
+import { sessionProjectionSchema } from "@/shared/identity-contract";
 import { createSeededGenerationLimitStore } from "@/server/persistence/limits-seeded";
 import type { AuthDependencies } from "@/server/identity/api.server";
 import type { NewSessionInput } from "@/server/identity/persistence-port";
@@ -218,6 +226,61 @@ interface MutationAuth {
   readonly origin?: string | null;
 }
 
+const csrfBodySchema = z.object({ csrf: z.string() });
+
+const sessionCsrfSchema = z.object({ csrf: z.string().nullish() });
+
+const errorBodySchema: z.ZodType<{ code?: string; message?: string }> =
+  z.object({
+    code: z.string().optional(),
+    message: z.string().optional(),
+  });
+
+/**
+A generation error body carries no success fields; success rows narrow through
+`publicGenerationResultSchema.parse` or the `requestId` marker.
+*/
+interface GenerationErrorBody {
+  code?: string;
+  message?: string;
+}
+
+const draftBodyOf = (
+  body: PublicGenerationResult | GenerationErrorBody
+): PublicGenerationResult => {
+  if (!("requestId" in body)) {
+    throw new Error("Expected a generation draft body.");
+  }
+  return body;
+};
+
+// The session GET response carries the forgery challenge beside the
+// projection; the projection schema stays strict about its own shape.
+const projectionBodyOf = (payload: unknown): unknown => {
+  if (typeof payload !== "object" || payload === null) {
+    return payload;
+  }
+  return Object.fromEntries(
+    Object.entries(payload).filter(([key]) => key !== "csrf")
+  );
+};
+
+const publishResponseBodySchema: z.ZodType<{
+  publicationId?: string;
+  assignmentId?: string;
+  code?: string;
+  review?: ReviewPack;
+  learnerAssignmentId?: string | null;
+  learnerVariantId?: string | null;
+}> = z.object({
+  publicationId: z.string().optional(),
+  assignmentId: z.string().optional(),
+  code: z.string().optional(),
+  review: reviewPackSchema.optional(),
+  learnerAssignmentId: z.string().nullable().optional(),
+  learnerVariantId: z.string().nullable().optional(),
+});
+
 const cookieValue = (response: Response, name: string): string | undefined => {
   const match = response.headers
     .getSetCookie()
@@ -246,7 +309,7 @@ const preAuthFlow = async (
     new Request(`${dependencies.publicOrigin}/api/auth/context`),
     dependencies
   );
-  const body = (await response.json()) as { csrf: string };
+  const body = csrfBodySchema.parse(await response.json());
   return {
     csrf: body.csrf,
     cookie: `edu_canvas_csrf=${cookieValue(response, "edu_canvas_csrf") ?? ""}`,
@@ -283,7 +346,7 @@ const sessionChallenge = async (
     }),
     dependencies
   );
-  const body = (await response.json()) as { csrf?: string };
+  const body = sessionCsrfSchema.parse(await response.json());
   return body.csrf ?? "";
 };
 
@@ -295,12 +358,13 @@ const selectTenantMembership = async (
   signIn: Response,
   tenantName: string
 ): Promise<Response> => {
-  const body = (await signIn.clone().json()) as {
-    memberships?: { membershipId: string; tenantName: string }[];
-  };
-  const membershipId = body.memberships?.find(
-    (membership) => membership.tenantName === tenantName
-  )?.membershipId;
+  const body = sessionProjectionSchema.parse(await signIn.clone().json());
+  const membershipId =
+    body.status === "membership-required"
+      ? body.memberships.find(
+          (membership) => membership.tenantName === tenantName
+        )?.membershipId
+      : undefined;
   const flow = await preAuthFlow(dependencies);
   return await handleMembership(
     new Request(`${dependencies.publicOrigin}/api/auth/membership`, {
@@ -331,7 +395,7 @@ const signInDirect = async (
     email,
     await preAuthFlow(dependencies)
   );
-  const body = (await response.clone().json()) as { status?: string };
+  const body = sessionProjectionSchema.parse(await response.clone().json());
   const established =
     body.status === "membership-required"
       ? await selectTenantMembership(dependencies, response, northTenantName)
@@ -420,7 +484,10 @@ const generate = async (
   auth: MutationAuth,
   idempotencyKey: string,
   overrides: Record<string, unknown> = {}
-): Promise<{ response: Response; body: PublicGenerationResult }> => {
+): Promise<{
+  response: Response;
+  body: PublicGenerationResult | GenerationErrorBody;
+}> => {
   const response = await handleGenerateLessonRequest(
     mutationRequest(
       dependencies,
@@ -431,7 +498,9 @@ const generate = async (
   );
   return {
     response,
-    body: (await response.clone().json()) as PublicGenerationResult,
+    body: response.ok
+      ? publicGenerationResultSchema.parse(await response.clone().json())
+      : errorBodySchema.parse(await response.clone().json()),
   };
 };
 
@@ -458,7 +527,7 @@ const generateReadyDraft = async (
   idempotencyKey: string
 ): Promise<PublicGenerationResult> => {
   const { response, body } = await generate(dependencies, auth, idempotencyKey);
-  if (response.status !== 200 || !body.requestId) {
+  if (response.status !== 200 || !("requestId" in body)) {
     throw new Error(
       `Expected a ready draft for ${idempotencyKey}, received ${response.status}.`
     );
@@ -478,7 +547,7 @@ const openReview = async (
   );
   return {
     response,
-    review: (await response.clone().json()) as ReviewPack,
+    review: reviewPackSchema.parse(await response.clone().json()),
   };
 };
 
@@ -499,7 +568,7 @@ const approveTarget = async (
   );
   return {
     response,
-    review: (await response.clone().json()) as ReviewPack,
+    review: reviewPackSchema.parse(await response.clone().json()),
   };
 };
 
@@ -571,14 +640,7 @@ const publishPack = async (
   );
   return {
     response,
-    body: (await response.clone().json()) as {
-      publicationId?: string;
-      assignmentId?: string;
-      code?: string;
-      review?: ReviewPack;
-      learnerAssignmentId?: string | null;
-      learnerVariantId?: string | null;
-    },
+    body: publishResponseBodySchema.parse(await response.clone().json()),
   };
 };
 
@@ -587,7 +649,7 @@ const packPersistence = () => createPackPersistence(serverConfig());
 const errorBody = async (
   response: Response
 ): Promise<{ code?: string; message?: string }> =>
-  (await response.clone().json()) as { code?: string; message?: string };
+  errorBodySchema.parse(await response.clone().json());
 
 const errorCode = async (response: Response): Promise<string | undefined> => {
   const body = await errorBody(response);
@@ -726,7 +788,9 @@ describe("protected domain policy matrix", () => {
         }),
         dependencies
       );
-      const actor = activeActorOf((await response.json()) as SessionProjection);
+      const actor = activeActorOf(
+        sessionProjectionSchema.parse(projectionBodyOf(await response.json()))
+      );
 
       expect({
         status: response.status,
@@ -764,7 +828,7 @@ describe("protected domain policy matrix", () => {
 
       expect({
         status: response.status,
-        state: body.state,
+        state: publicGenerationResultSchema.parse(body).state,
         storedState: stored?.state,
         storedTenant: stored?.tenantId,
         storedTeacher: stored?.teacherId,
@@ -841,7 +905,9 @@ describe("protected domain policy matrix", () => {
         }),
         dependencies
       );
-      const actor = activeActorOf((await response.json()) as SessionProjection);
+      const actor = activeActorOf(
+        sessionProjectionSchema.parse(projectionBodyOf(await response.json()))
+      );
 
       expect({
         status: response.status,
@@ -951,8 +1017,10 @@ describe("protected domain policy matrix", () => {
           teacher.cookie
         )
       );
-      const sameTenantBody = await sameTenantResponse.clone().json();
-      const foreignTenantBody = await foreignTenantResponse.clone().json();
+      const sameTenantBody: unknown = await sameTenantResponse.clone().json();
+      const foreignTenantBody: unknown = await foreignTenantResponse
+        .clone()
+        .json();
       const sameTenantRecord = await foundationPersistence().readGeneration(
         northTenantId,
         sameTenantDraft.requestId
@@ -967,7 +1035,7 @@ describe("protected domain policy matrix", () => {
         foreignTenant: foreignTenantResponse.status,
         identicalError:
           JSON.stringify(sameTenantBody) === JSON.stringify(foreignTenantBody),
-        code: (sameTenantBody as { code?: string }).code,
+        code: errorBodySchema.parse(sameTenantBody).code,
         untouched: [sameTenantRecord?.state, foreignTenantRecord?.state],
       }).toStrictEqual({
         sameTenant: 403,
@@ -1014,7 +1082,9 @@ describe("protected domain policy matrix", () => {
         dependencies
       );
       const body = await response.text();
-      const actor = activeActorOf(JSON.parse(body) as SessionProjection);
+      const actor = activeActorOf(
+        sessionProjectionSchema.parse(projectionBodyOf(JSON.parse(body)))
+      );
 
       expect({
         status: response.status,
@@ -1048,7 +1118,7 @@ describe("protected domain policy matrix", () => {
 
       expect({
         status: response.status,
-        state: body.state,
+        state: publicGenerationResultSchema.parse(body).state,
         storedState: stored?.state,
       }).toStrictEqual({
         status: 200,
@@ -1068,7 +1138,9 @@ describe("protected domain policy matrix", () => {
       expect({
         firstStatus: first.response.status,
         secondStatus: second.response.status,
-        separateDrafts: first.body.requestId !== second.body.requestId,
+        separateDrafts:
+          draftBodyOf(first.body).requestId !==
+          draftBodyOf(second.body).requestId,
       }).toStrictEqual({
         firstStatus: 200,
         secondStatus: 200,
@@ -1080,7 +1152,9 @@ describe("protected domain policy matrix", () => {
           "actor_teacher_amira",
           key
         )
-      ).resolves.toMatchObject({ requestId: second.body.requestId });
+      ).resolves.toMatchObject({
+        requestId: draftBodyOf(second.body).requestId,
+      });
     });
 
     it("PT-42 PC-02: valid origin and session challenge authorize the effect", async () => {
@@ -1097,7 +1171,7 @@ describe("protected domain policy matrix", () => {
 
       expect({
         status: response.status,
-        state: body.state,
+        state: publicGenerationResultSchema.parse(body).state,
         stored: stored?.state,
       }).toStrictEqual({
         status: 200,
@@ -1256,7 +1330,9 @@ describe("protected domain policy matrix", () => {
         ),
         "policy_pt_52_own_draft"
       );
-      const body = (await response.clone().json()) as PublicGenerationResult;
+      const body = publicGenerationResultSchema.parse(
+        await response.clone().json()
+      );
       const other = await foundationPersistence().readGeneration(
         northTenantId,
         "policy_pt_52_other_draft"
@@ -1826,7 +1902,7 @@ describe("protected domain policy matrix", () => {
       expect({
         statuses: responses.map((response) => response.status),
         identical: new Set(bodies).size === 1,
-        code: (JSON.parse(bodies[0] ?? "{}") as { code?: string }).code,
+        code: errorBodySchema.parse(JSON.parse(bodies[0] ?? "{}")).code,
       }).toStrictEqual({
         statuses: [403, 403, 403],
         identical: true,

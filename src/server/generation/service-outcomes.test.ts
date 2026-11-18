@@ -66,7 +66,7 @@ describe("generation attempt outcomes", () => {
       diagnostics: expect.arrayContaining([
         expect.objectContaining({ code: "UNKNOWN_TARGET" }),
         expect.objectContaining({ code: "MODERATION_BLOCKED" }),
-      ]),
+      ]) as unknown,
     });
     expect(publicResult).toMatchObject({
       draft: null,

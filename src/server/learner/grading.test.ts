@@ -147,7 +147,7 @@ describe(gradeMatching, () => {
       pairs: correct,
       relationships,
       score: 0,
-    } as unknown as Parameters<typeof gradeMatching>[0];
+    };
 
     expect(gradeMatching(tampered).score).toBe(100);
   });

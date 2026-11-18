@@ -26,8 +26,8 @@ type WithoutChildren<P> = P extends unknown ? Omit<P, "children"> : never;
 
 /**
 `createElement` with children as arguments. React's typing wants required
-children in the props object, and the lint rule forbids that; one cast here
-keeps every call site honest.
+children in the props object, and the lint rule forbids that; one documented
+hole here keeps every call site honest.
 */
 const element = <P extends object>(
   type: ComponentType<P>,
@@ -35,7 +35,8 @@ const element = <P extends object>(
   ...children: ReactNode[]
 ) =>
   createElement(
-    type as unknown as ComponentType<WithoutChildren<P>>,
+    type,
+    // @ts-expect-error -- children arrive as variadic arguments; React's typing lists them as required props.
     properties,
     ...children
   );

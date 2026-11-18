@@ -23,8 +23,15 @@ const globalStateCalls = /\b(?:createStore|configureStore|createSlice)\s*\(/u;
 const globalStateFile =
   /(?:^|\/)(?:store|global-state|app-state)\.(?:ts|tsx)$/u;
 
-type SourceScope =
-  "components" | "lib" | "routes" | "server" | "shared" | "other";
+const sourceScopeValues = [
+  "components",
+  "lib",
+  "routes",
+  "server",
+  "shared",
+] as const;
+
+type SourceScope = (typeof sourceScopeValues)[number] | "other";
 
 const listSourceFiles = async (directory: string): Promise<string[]> => {
   const entries = await readdir(directory, { withFileTypes: true });
@@ -46,9 +53,7 @@ const sourceScope = (filePath: string): SourceScope => {
   const pathFromSource = relative(sourceRoot, filePath);
   const [topLevel] = pathFromSource.split(sep);
 
-  return ["components", "lib", "routes", "server", "shared"].includes(topLevel)
-    ? (topLevel as SourceScope)
-    : "other";
+  return sourceScopeValues.find((scope) => scope === topLevel) ?? "other";
 };
 
 const resolveSourceImport = (

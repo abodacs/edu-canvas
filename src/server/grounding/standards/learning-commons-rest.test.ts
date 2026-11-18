@@ -160,8 +160,8 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
         contentHash: resolution.contentHash,
         descriptionHash: resolution.descriptionHash,
       }).toStrictEqual({
-        contentHash: expect.stringMatching(/^[a-f0-9]{64}$/u),
-        descriptionHash: expect.stringMatching(/^[a-f0-9]{64}$/u),
+        contentHash: expect.stringMatching(/^[a-f0-9]{64}$/u) as unknown,
+        descriptionHash: expect.stringMatching(/^[a-f0-9]{64}$/u) as unknown,
       });
     }
   );
@@ -617,8 +617,11 @@ describe("Learning Commons REST resolution pipeline (issue 218)", () => {
     }
 
     expect(caught).toBeInstanceOf(Error);
-    expect((caught as Error).message).toContain("503");
-    expect((caught as Error).cause).toBeUndefined();
+    if (!(caught instanceof Error)) {
+      throw new TypeError("the grounding failure must be an Error");
+    }
+    expect(caught.message).toContain("503");
+    expect(caught.cause).toBeUndefined();
     expect(JSON.stringify(caught)).not.toContain(secret);
   });
 

@@ -3,9 +3,16 @@ import { z } from "zod";
 import type { PersistenceKind } from "./persistence/kinds";
 
 const environmentValues = ["development", "preview", "production"] as const;
+const authProviderValues = ["deterministic", "supabase"] as const;
 
 export type ServerEnvironment = (typeof environmentValues)[number];
 export type AuthProviderKind = "deterministic" | "supabase";
+
+const isServerEnvironment = (value: string): value is ServerEnvironment =>
+  environmentValues.some((candidate) => candidate === value);
+
+const isAuthProviderKind = (value: string): value is AuthProviderKind =>
+  authProviderValues.some((candidate) => candidate === value);
 
 interface ConfigIssueCodes {
   INVALID_APP_ENV: true;
@@ -196,8 +203,8 @@ const readAppEnvironment = (
   const requested =
     environment.APP_ENV ??
     (environment.NODE_ENV === "production" ? "production" : "development");
-  if (environmentValues.includes(requested as ServerEnvironment)) {
-    return requested as ServerEnvironment;
+  if (isServerEnvironment(requested)) {
+    return requested;
   }
   pushIssue(
     issues,
@@ -295,7 +302,6 @@ const readMetaSettings = (
   };
 };
 
-const authProviderValues = ["deterministic", "supabase"] as const;
 const developmentPublicOrigin = "http://localhost:3000";
 const developmentSessionSecret =
   "edu-canvas-development-only-session-secret-0000";
@@ -311,7 +317,7 @@ const readAuthProvider = (
   if (requested === undefined || requested === "") {
     return isDevelopment ? "deterministic" : "supabase";
   }
-  if (!(authProviderValues as readonly string[]).includes(requested)) {
+  if (!isAuthProviderKind(requested)) {
     pushIssue(
       issues,
       "INVALID_AUTH_PROVIDER",
@@ -332,7 +338,7 @@ const readAuthProvider = (
     );
     return "supabase";
   }
-  return requested as AuthProviderKind;
+  return requested;
 };
 
 const readPublicOrigin = (

@@ -63,6 +63,24 @@ const createValidProviderDraft = () => {
   };
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+/**
+These tests plant malformed output on the first variant of an otherwise valid
+draft; the guards keep those plants on the draft's real objects.
+*/
+const firstVariantRecordOf = (draft: object): Record<string, unknown> => {
+  if (!isRecord(draft) || !Array.isArray(draft.variants)) {
+    throw new TypeError("the provider draft must carry a variants list");
+  }
+  const variant: unknown = draft.variants.at(0);
+  if (!isRecord(variant)) {
+    throw new TypeError("the first draft variant must be a JSON object");
+  }
+  return variant;
+};
+
 describe("lesson draft validation", () => {
   it("accepts a bounded learning path proposal with screen-purpose references", () => {
     const draft = {
@@ -236,9 +254,8 @@ describe("lesson draft validation", () => {
   });
 
   it("blocks executable content and untrusted fields from model output", () => {
-    const draft = createValidProviderDraft() as Record<string, unknown>;
-    const variants = draft.variants as Record<string, unknown>[];
-    const [firstVariant] = variants;
+    const draft = createValidProviderDraft();
+    const firstVariant = firstVariantRecordOf(draft);
 
     firstVariant.instructions = "<script>alert(1)</script>";
     firstVariant.untrustedField = "must not be accepted";
@@ -278,17 +295,12 @@ describe("lesson draft validation", () => {
   });
 
   it("enforces the distractor limit and required accessibility metadata", () => {
-    const distractorDraft = createValidProviderDraft() as Record<
-      string,
-      unknown
-    >;
-    const distractorVariants = distractorDraft.variants as Record<
-      string,
-      unknown
-    >[];
-    const [firstVariant] = distractorVariants;
-    firstVariant.distractorItems = [
-      ...(firstVariant.distractorItems as Record<string, string>[]),
+    const distractorDraft = createValidProviderDraft();
+    const distractorVariant = firstVariantRecordOf(distractorDraft);
+    distractorVariant.distractorItems = [
+      ...(Array.isArray(distractorVariant.distractorItems)
+        ? distractorVariant.distractorItems.filter(isRecord)
+        : []),
       { id: "distractor-extra", label: "5/7" },
     ];
 
@@ -301,12 +313,9 @@ describe("lesson draft validation", () => {
       ])
     );
 
-    const metadataDraft = createValidProviderDraft() as Record<string, unknown>;
-    const metadataVariants = metadataDraft.variants as Record<
-      string,
-      unknown
-    >[];
-    delete metadataVariants[0].accessibilityMetadata;
+    const metadataDraft = createValidProviderDraft();
+    const metadataVariant = firstVariantRecordOf(metadataDraft);
+    delete metadataVariant.accessibilityMetadata;
     const metadataResult = validateProviderDraft(metadataDraft);
 
     expect(metadataResult.ok).toBeFalsy();

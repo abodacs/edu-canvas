@@ -184,7 +184,7 @@ describe("acceptance gate snapshot", () => {
       verdict: "pass",
       recovery: null,
       policyVersion: artifactGatePolicyVersion,
-      artifactHash: expect.stringMatching(/^[a-f\d]{64}$/u),
+      artifactHash: expect.stringMatching(/^[a-f\d]{64}$/u) as unknown,
       findings: [],
     });
   });

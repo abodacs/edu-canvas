@@ -1,3 +1,5 @@
+import { isJsonObject } from "@/lib/http";
+
 export type PreviewStreamOutcome =
   | { status: "complete"; surfaceCount: number }
   | { status: "error"; code: string; message: string };
@@ -18,11 +20,10 @@ export class PreviewStreamMessageError extends Error {
 }
 
 const readField = (value: unknown, key: string): unknown => {
-  if (typeof value !== "object" || value === null) {
+  if (!isJsonObject(value)) {
     return undefined;
   }
-  const record = value as Record<string, unknown>;
-  return Object.hasOwn(record, key) ? record[key] : undefined;
+  return Object.hasOwn(value, key) ? value[key] : undefined;
 };
 
 const streamError = (code: string, message: string): PreviewStreamOutcome => {

@@ -176,7 +176,7 @@ describe("advisory review: warning-only result", () => {
           validatorVersion: "advisory-reviewer-test-v1",
         },
         reviewedAt: "2026-11-04T10:00:00.000Z",
-        latencyMs: expect.any(Number),
+        latencyMs: expect.any(Number) as unknown,
         findings: [
           {
             code: "AGENT_RECOMMENDATION",
@@ -238,8 +238,8 @@ describe("advisory review: warning-only result", () => {
           model: "fake-advisory-model",
           validatorVersion: "advisory-reviewer-test-v1",
         },
-        reviewedAt: expect.any(String),
-        latencyMs: expect.any(Number),
+        reviewedAt: expect.any(String) as unknown,
+        latencyMs: expect.any(Number) as unknown,
         findings: [
           {
             code: "AGENT_RECOMMENDATION",

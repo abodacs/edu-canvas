@@ -173,8 +173,8 @@ const parseCommand = (
     };
   }
 
-  const translated =
-    commandTranslations[name as keyof typeof commandTranslations];
+  const commands: Record<string, string> = commandTranslations;
+  const translated = commands[name];
   return translated
     ? { ok: true, nodes: [{ kind: "operator", value: translated }] }
     : failure(`Math text contains the unsupported command \\${name}.`);

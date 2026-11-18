@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { generationRequestErrorStatusByCode } from "@/shared/generation-contract";
+import {
+  generationRequestErrorCodeValues,
+  generationRequestErrorStatusByCode,
+} from "@/shared/generation-contract";
 
 import { IdentityError } from "../identity/errors";
 import { GenerationLimitError } from "../limits/errors";
@@ -11,8 +14,6 @@ import {
   GENERATION_INPUT_INVALID_MESSAGE,
 } from "./generation-request-error";
 
-import type { GenerationRequestErrorCode } from "@/shared/generation-contract";
-
 const UNSUPPORTED_OBJECTIVE_MESSAGE =
   "This learning objective is not supported. Choose a supported standard.";
 
@@ -21,22 +22,19 @@ const FALLBACK_BODY = {
   message: "The draft could not be completed. Try again.",
 } as const;
 
-const requestErrorCodes = Object.keys(
-  generationRequestErrorStatusByCode
-) as GenerationRequestErrorCode[];
+const requestErrorCodes = generationRequestErrorCodeValues;
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
 
 const errorBodyOf = async (
   response: Response
-): Promise<{
-  code?: string;
-  message?: string;
-  retryAfterSeconds?: number;
-}> => {
-  return (await response.json()) as {
-    code?: string;
-    message?: string;
-    retryAfterSeconds?: number;
-  };
+): Promise<Record<string, unknown>> => {
+  const body: unknown = await response.json();
+  if (!isRecord(body)) {
+    throw new TypeError("the mapped error body is not a JSON object");
+  }
+  return body;
 };
 
 describe("generation delivery error mapping", () => {

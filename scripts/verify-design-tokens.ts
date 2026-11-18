@@ -60,6 +60,27 @@ interface Baseline {
   readonly note: string;
   readonly rules: Record<RuleId, Counts>;
 }
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const isCounts = (value: unknown): value is Record<string, number> =>
+  isRecord(value) &&
+  Object.values(value).every((entry) => typeof entry === "number");
+
+const isBaseline = (value: unknown): value is Baseline => {
+  if (
+    !isRecord(value) ||
+    typeof value.note !== "string" ||
+    !isRecord(value.rules)
+  ) {
+    return false;
+  }
+  const { rules } = value;
+  return RULES.every(
+    (rule) => rules[rule] === undefined || isCounts(rules[rule])
+  );
+};
 interface ScanState {
   readonly counts: Record<string, Counts>;
   readonly declared: Set<string>;
@@ -323,7 +344,10 @@ const scanTsx = async (): Promise<Counts> => {
 
 const readBaseline = async (): Promise<Baseline | undefined> => {
   try {
-    return JSON.parse(await readFile(BASELINE_PATH, "utf-8")) as Baseline;
+    const parsed: unknown = JSON.parse(
+      await readFile(BASELINE_PATH, "utf-8")
+    ) as unknown;
+    return isBaseline(parsed) ? parsed : undefined;
   } catch {
     return undefined;
   }
@@ -382,10 +406,15 @@ const main = async (): Promise<string[] | null> => {
   console.log(
     `Design tokens: ${declaredCount} declarations across ${fileCount} stylesheets`
   );
-  const baseline = JSON.parse(
+  const baselineValue = JSON.parse(
     await readFile(BASELINE_PATH, "utf-8")
-  ) as Baseline;
-  return report(current, baseline);
+  ) as unknown;
+  if (!isBaseline(baselineValue)) {
+    throw new Error(
+      "design-token baseline does not match its shape; run with --update to regenerate"
+    );
+  }
+  return report(current, baselineValue);
 };
 
 const grown = await main();

@@ -4,7 +4,12 @@ import {
   createSeededIdentityPersistence,
   createSeededIdentityStore,
 } from "../persistence/identity-seeded";
-import { parseActorId, parseMembershipId, parseTenantId } from "./identifiers";
+import {
+  parseActorId,
+  parseClassId,
+  parseMembershipId,
+  parseTenantId,
+} from "./identifiers";
 import { createIdentityProvisioning } from "./provisioning";
 import { ensureSyntheticIdentityFixture } from "./synthetic-fixture";
 import type { IdentityError } from "./errors";
@@ -88,7 +93,7 @@ describe("trusted provisioning", () => {
 
     await provisioning.assignClass({
       membershipId: parseMembershipId("membership_bilal_north"),
-      classId: "class_north_5b" as never,
+      classId: parseClassId("class_north_5b"),
       tenantId: parseTenantId("tenant_school_north"),
       ...principal,
     });

@@ -100,6 +100,9 @@ const openBoard = async (page: Page, url: string): Promise<void> => {
   await page.locator(".learn-card").waitFor();
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
 /**
 Patch the real run response; the server still owns everything else.
 */
@@ -109,21 +112,29 @@ const patchRun = async (
 ): Promise<void> => {
   await page.route("**/api/learner/runs", async (route: Route) => {
     const response = await route.fetch();
-    const body = (await response.json()) as Record<string, unknown>;
-    patch(body);
-    await route.fulfill({ response, json: body });
+    const parsed: unknown = await response.json();
+    if (!isRecord(parsed)) {
+      throw new Error("the learner run response is not a JSON object");
+    }
+    patch(parsed);
+    await route.fulfill({ response, json: parsed });
   });
 };
 
 const assignedSection = (
   body: Record<string, unknown>
 ): Record<string, unknown> | undefined => {
-  const lesson = body.lesson as {
-    assignedSectionId: string;
-    sections: Record<string, unknown>[];
-  };
+  const { lesson } = body;
+  if (
+    !isRecord(lesson) ||
+    !Array.isArray(lesson.sections) ||
+    typeof lesson.assignedSectionId !== "string"
+  ) {
+    return undefined;
+  }
   return lesson.sections.find(
-    (section) => section.id === lesson.assignedSectionId
+    (section): section is Record<string, unknown> =>
+      isRecord(section) && section.id === lesson.assignedSectionId
   );
 };
 
