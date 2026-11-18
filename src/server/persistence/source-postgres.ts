@@ -1,10 +1,11 @@
 import postgres from "postgres";
+import { z } from "zod";
 
-import type {
-  SourceFailureReason,
-  SourceFileFormat,
-  SourceGap,
-  SourceSnapshotState,
+import {
+  sourceFailureReasonValues,
+  sourceFileFormatValues,
+  sourceGapSchema,
+  sourceSnapshotStateValues,
 } from "@/shared/source-contract";
 import type {
   SourcePersistence,
@@ -48,6 +49,10 @@ const toIso = (value: StoredTimestamp): string =>
 const toIsoOrNull = (value: StoredTimestamp | null): string | null =>
   value === null ? null : toIso(value);
 
+const fileFormatSchema = z.enum(sourceFileFormatValues);
+const snapshotStateSchema = z.enum(sourceSnapshotStateValues);
+const failureReasonSchema = z.enum(sourceFailureReasonValues);
+
 const hydrateSnapshot = (row: SourceSnapshotRow): SourceSnapshotRecord => {
   return {
     id: row.id,
@@ -56,14 +61,19 @@ const hydrateSnapshot = (row: SourceSnapshotRow): SourceSnapshotRecord => {
     standardId: row.standard_id,
     mode: "upload",
     fileName: row.file_name,
-    fileFormat: row.file_format as SourceFileFormat,
+    fileFormat: fileFormatSchema.parse(row.file_format),
     fileSizeBytes: row.file_size_bytes,
     pageCount: row.page_count,
     contentHash: row.content_hash,
     extractedText: row.extracted_text,
-    state: row.state as SourceSnapshotState,
-    gaps: Array.isArray(row.gaps) ? (row.gaps as SourceGap[]) : [],
-    failureReason: row.failure_reason as SourceFailureReason | null,
+    state: snapshotStateSchema.parse(row.state),
+    gaps: Array.isArray(row.gaps)
+      ? z.array(sourceGapSchema).parse(row.gaps)
+      : [],
+    failureReason:
+      row.failure_reason === null
+        ? null
+        : failureReasonSchema.parse(row.failure_reason),
     unverifiedAlignment: row.unverified_alignment,
     alignmentAcknowledgedAt: toIsoOrNull(row.alignment_acknowledged_at),
     syntheticMaterialConfirmed: row.synthetic_material_confirmed,

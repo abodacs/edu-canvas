@@ -1,4 +1,5 @@
 import { getTableColumns, getTableName } from "drizzle-orm";
+import type { Column } from "drizzle-orm";
 
 import {
   actors,
@@ -23,6 +24,7 @@ import {
 } from "../../../drizzle/schema";
 import {
   RecordUniqueViolationError,
+  recordTableNames,
   recordUniqueConstraints,
 } from "./records-port";
 import type {
@@ -95,12 +97,13 @@ const columnsOf = (table: RecordTableName): readonly string[] => {
   if (stored !== table) {
     throw new Error(`Record table ${table} is bound to ${stored}.`);
   }
-  return Object.values(getTableColumns(bound)).map((column) => column.name);
+  const columns: Record<string, Column> = getTableColumns(bound);
+  return Object.values(columns).map((column) => column.name);
 };
 
 const assertColumns = (
   table: RecordTableName,
-  values: Readonly<Record<string, RecordValue>>
+  values: Readonly<Record<string, unknown>>
 ): void => {
   const allowed = new Set<string>(columnsOf(table));
   for (const column of Object.keys(values)) {
@@ -263,15 +266,16 @@ export const createSeededRecordBackend = (
     update,
     seed: (table, rows) => {
       for (const row of rows) {
-        assertColumns(table, row as Record<string, RecordValue>);
+        assertColumns(table, row);
       }
       rowsFor(table).push(...cloneRows(rows));
     },
   };
 
-  for (const [table, rows] of Object.entries(seed)) {
+  for (const table of recordTableNames) {
+    const rows = seed[table];
     if (rows !== undefined) {
-      backend.seed(table as RecordTableName, rows);
+      backend.seed(table, rows);
     }
   }
 

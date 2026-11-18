@@ -15,6 +15,9 @@ type SqlParameter = string | number | boolean | null;
 
 const maxErrorDepth = 5;
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
 const isScalarParameter = (value: RecordValue): value is SqlParameter => {
   return (
     typeof value === "string" ||
@@ -41,16 +44,15 @@ const findUniqueViolation = (
 ): RecordUniqueViolationError | undefined => {
   let current: unknown = error;
   for (let depth = 0; depth < maxErrorDepth; depth += 1) {
-    if (typeof current !== "object" || current === null) {
+    if (!isRecord(current)) {
       return undefined;
     }
-    const record = current as Record<string, unknown>;
-    if (record.code === "23505") {
+    if (current.code === "23505") {
       const constraint =
-        typeof record.constraint === "string" ? record.constraint : "";
+        typeof current.constraint === "string" ? current.constraint : "";
       return new RecordUniqueViolationError(constraint, { cause: error });
     }
-    current = record.cause;
+    current = current.cause;
   }
   return undefined;
 };
@@ -203,10 +205,11 @@ export const createPostgresRecordBackend = (
     ): Promise<T> => {
       const client = createSqlClient(databaseUrl);
       try {
-        const result = await client.begin(
+        // The explicit `Promise<T>` type argument resolves postgres.js's
+        // tuple-oriented `UnwrapPromiseArray` result to a plain `T`.
+        return await client.begin<Promise<T>>(
           async (transaction) => await work(transaction)
         );
-        return result as unknown as T;
       } finally {
         await client.end({ timeout: 3 });
       }

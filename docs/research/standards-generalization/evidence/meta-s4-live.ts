@@ -35,7 +35,7 @@ const apiKey = nonEmptyEnv("META_API_KEY") ?? nonEmptyEnv("OPENAI_API_KEY");
 const model = nonEmptyEnv("META_MODEL") ?? "muse-spark-1.2-contributor";
 const baseUrl = nonEmptyEnv("META_BASE_URL") ?? "https://api.meta.ai/v1";
 
-if (!apiKey) {
+if (apiKey === undefined || apiKey === "") {
   console.log(JSON.stringify({ status: "pending META key", calls: 0 }));
   process.exit(0);
 }
@@ -65,7 +65,7 @@ const buildContext = (
     diagnostics,
     ...(curriculum.promptFrame && { promptFrame: curriculum.promptFrame }),
     ...(curriculum.examples && { examples: curriculum.examples }),
-    ...(curriculum.answerRules && { answerRules: curriculum.answerRules }),
+    answerRules: curriculum.answerRules,
     curriculumContext: {
       nodes: curriculum.nodes.map((node) => ({
         id: node.id,

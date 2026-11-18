@@ -238,6 +238,9 @@ const sessionFromRow = (row: SessionRow): IdentitySessionRecord => {
   };
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
 const parsePendingMemberships = (value: unknown): PendingMembershipOption[] => {
   const decoded =
     typeof value === "string" ? (JSON.parse(value) as unknown) : value;
@@ -245,11 +248,13 @@ const parsePendingMemberships = (value: unknown): PendingMembershipOption[] => {
     throw new TypeError("Stored pending memberships are not an array.");
   }
   return decoded.map((entry) => {
-    const option = entry as Record<string, unknown>;
+    if (!isRecord(entry)) {
+      throw new TypeError("Stored pending membership is not an object.");
+    }
     return {
-      membershipId: parseMembershipId(String(option.membershipId)),
-      tenantName: String(option.tenantName),
-      role: parseRole(String(option.role)),
+      membershipId: parseMembershipId(String(entry.membershipId)),
+      tenantName: String(entry.tenantName),
+      role: parseRole(String(entry.role)),
     };
   });
 };
@@ -889,7 +894,7 @@ export const createPostgresIdentityPersistence = (
           await transaction`
             select set_config('app.tenant_id', ${input.tenantId}, true)
           `;
-          return await assignClass(transaction, input);
+          await assignClass(transaction, input);
         });
       });
     },

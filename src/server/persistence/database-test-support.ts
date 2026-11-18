@@ -28,16 +28,16 @@ export const withRawDatabase = async <T>(
 };
 
 /**
-Run one transaction with the tenant-local session variable every row-level policy expects, mirroring how the persistence adapters scope their writes. The cast papers over postgres.js's tuple-oriented `UnwrapPromiseArray`; awaited query results here are ordinary promises.
+Run one transaction with the tenant-local session variable every row-level policy expects, mirroring how the persistence adapters scope their writes. The explicit `Promise<T>` type argument resolves postgres.js's tuple-oriented `UnwrapPromiseArray` result, so the awaited value is plain `T`.
 */
 export const withTenantSql = async <T>(
   tenantId: string,
   work: (transaction: postgres.TransactionSql) => Promise<T>
 ): Promise<T> => {
-  return (await withRawDatabase(async (sql) => {
-    return await sql.begin(async (transaction) => {
+  return await withRawDatabase(async (sql) => {
+    return await sql.begin<Promise<T>>(async (transaction) => {
       await transaction`select set_config('app.tenant_id', ${tenantId}, true)`;
       return await work(transaction);
     });
-  })) as T;
+  });
 };

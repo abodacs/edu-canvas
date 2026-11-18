@@ -7,6 +7,9 @@ const isEnabled = process.env.RUN_DATABASE_TESTS === "true";
 const isRun =
   databaseUrl !== undefined && databaseUrl !== "" && isEnabled;
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
 const runProbe = (
   probeArguments: readonly string[]
 ): Record<string, unknown> => {
@@ -19,7 +22,11 @@ const runProbe = (
       encoding: "utf-8",
     }
   );
-  return JSON.parse(output) as Record<string, unknown>;
+  const parsed: unknown = JSON.parse(output);
+  if (!isRecord(parsed)) {
+    throw new Error("The restart probe did not return a JSON object.");
+  }
+  return parsed;
 };
 
 describe.skipIf(!isRun)("record restart", () => {

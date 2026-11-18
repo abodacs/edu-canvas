@@ -117,6 +117,22 @@ export default defineConfig({
   },
   overrides: [
     {
+      // The no-unsafe-* family needs type information to be meaningful. The
+      // repository's deliberately untyped .mjs scripts (browser automation,
+      // the migration runtime, commit hygiene, tooling config) would flag on
+      // every access, so they stay out of scope until those scripts gain
+      // types.
+      files: ["**/*.mjs"],
+      rules: {
+        "typescript/no-unsafe-argument": "off",
+        "typescript/no-unsafe-assignment": "off",
+        "typescript/no-unsafe-call": "off",
+        "typescript/no-unsafe-member-access": "off",
+        "typescript/no-unsafe-return": "off",
+        "typescript/no-unsafe-type-assertion": "off",
+      },
+    },
+    {
       // The ESLint preset scoped React rules to JSX files; oxlint's preset
       // applies them everywhere. Keep the old scope so server modules are not
       // linted as components.

@@ -30,7 +30,7 @@ const apiKey = nonEmptyEnv("META_API_KEY") ?? nonEmptyEnv("OPENAI_API_KEY");
 const model = nonEmptyEnv("META_MODEL") ?? "muse-spark-1.2-contributor";
 const baseUrl = nonEmptyEnv("META_BASE_URL") ?? "https://api.meta.ai/v1";
 
-if (!apiKey) {
+if (apiKey === undefined || apiKey === "") {
   console.log(JSON.stringify({ status: "pending META key", calls: 0 }));
   process.exit(0);
 }

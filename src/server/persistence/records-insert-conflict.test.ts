@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { createPostgresRecordBackend } from "./records-postgres";
 
@@ -11,40 +11,62 @@ import { createPostgresRecordBackend } from "./records-postgres";
  * pins the SQL the backend builds for that option.
  */
 
-describe("records postgres insert conflict option", () => {
-  const captured: string[] = [];
+const capturedStatements = vi.hoisted(() => {
+  return {
+    sql: [] as string[],
+  };
+});
+
+vi.mock(import("postgres"), async (importOriginal) => {
+  const actual = await importOriginal();
   const transaction = {
-    unsafe: async (sql: string): Promise<unknown> => {
-      captured.push(sql);
+    unsafe: async (statement: string) => {
+      capturedStatements.sql.push(statement);
       return await Promise.resolve([]);
     },
   };
+  const client = {
+    begin: async (work: (query: typeof transaction) => Promise<unknown>) => {
+      return await work(transaction);
+    },
+    end: async () => {},
+  };
+  return {
+    ...actual,
+    default: Object.assign(() => client, actual.default),
+  };
+});
 
+describe("records postgres insert conflict option", () => {
   it("appends the conflict clause when the option is set", async () => {
-    captured.length = 0;
+    capturedStatements.sql.length = 0;
     const backend = createPostgresRecordBackend({
       databaseUrl: "postgres://stub.invalid/db",
     });
-    await backend.insert(
-      transaction as never,
-      "learner_runs",
-      { id: "run_1", tenant_id: "tenant_1" },
-      { onConflictDoNothing: true }
-    );
+    await backend.withTransaction(async (transaction) => {
+      await backend.insert(
+        transaction,
+        "learner_runs",
+        { id: "run_1", tenant_id: "tenant_1" },
+        { onConflictDoNothing: true }
+      );
+    });
 
-    expect(captured[0]).toContain("on conflict do nothing");
+    expect(capturedStatements.sql[0]).toContain("on conflict do nothing");
   });
 
   it("leaves the plain insert without a conflict clause", async () => {
-    captured.length = 0;
+    capturedStatements.sql.length = 0;
     const backend = createPostgresRecordBackend({
       databaseUrl: "postgres://stub.invalid/db",
     });
-    await backend.insert(transaction as never, "learner_runs", {
-      id: "run_2",
-      tenant_id: "tenant_1",
+    await backend.withTransaction(async (transaction) => {
+      await backend.insert(transaction, "learner_runs", {
+        id: "run_2",
+        tenant_id: "tenant_1",
+      });
     });
 
-    expect(captured[0]).not.toContain("on conflict");
+    expect(capturedStatements.sql[0]).not.toContain("on conflict");
   });
 });

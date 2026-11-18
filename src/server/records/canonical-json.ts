@@ -1,3 +1,6 @@
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
 const canonicalize = (value: unknown): string => {
   if (value === null) {
     return "null";
@@ -20,7 +23,10 @@ const canonicalize = (value: unknown): string => {
       if (Array.isArray(value)) {
         return `[${value.map((entry) => canonicalize(entry)).join(",")}]`;
       }
-      const record = value as Record<string, unknown>;
+      if (!isRecord(value)) {
+        throw new TypeError("Canonical JSON rejects unsupported values.");
+      }
+      const record = value;
       const entries = Object.keys(record)
         .toSorted((left, right) => left.localeCompare(right))
         .map((key) => {

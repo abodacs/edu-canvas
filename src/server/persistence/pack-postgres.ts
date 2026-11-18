@@ -61,6 +61,9 @@ const jsonValue = (value: unknown): JsonValue => {
   }
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
 const withTenant = async <T>(
   databaseUrl: string,
   tenantId: string,
@@ -68,33 +71,29 @@ const withTenant = async <T>(
 ): Promise<T> => {
   const sql = createSqlClient(databaseUrl);
   try {
-    const result = await sql.begin(async (transaction) => {
+    // The explicit `Promise<T>` type argument resolves postgres.js's
+    // tuple-oriented `UnwrapPromiseArray` result to a plain `T`.
+    return await sql.begin<Promise<T>>(async (transaction) => {
       await transaction`select set_config('app.tenant_id', ${tenantId}, true)`;
       return await work(transaction);
     });
-    return result as T;
   } finally {
     await sql.end({ timeout: 3 });
   }
 };
 
 const constraintOf = (error: unknown): string | undefined => {
-  if (typeof error !== "object" || error === null) {
+  if (!isRecord(error)) {
     return undefined;
   }
-  const record = error as Record<string, unknown>;
-  if (typeof record.constraint_name === "string") {
-    return record.constraint_name;
+  if (typeof error.constraint_name === "string") {
+    return error.constraint_name;
   }
-  return typeof record.constraint === "string" ? record.constraint : undefined;
+  return typeof error.constraint === "string" ? error.constraint : undefined;
 };
 
 const isUniqueViolation = (error: unknown): boolean => {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    (error as Record<string, unknown>).code === "23505"
-  );
+  return isRecord(error) && error.code === "23505";
 };
 
 const runInsert = async (work: () => Promise<unknown>): Promise<void> => {
