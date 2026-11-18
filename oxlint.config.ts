@@ -19,48 +19,14 @@ const reactDoctorOff = Object.fromEntries(
 );
 
 // Type-aware activation (the `options` block below) switched on 56
-// previously-inert preset rules; these 27 fire 2040 times on the existing
-// tree. Hold them at warn until the backlog is triaged so the gate stays
-// green while the findings stay visible, and let the lint script's
-// --max-warnings pin the count so it can only fall. Known noise while the
-// backlog exists: typescript/no-deprecated flags the @deprecated
-// declarations themselves instead of uses (a port difference from
-// typescript-eslint), and typescript/switch-exhaustiveness-check reports
-// switches that already end in a safe default.
-const typeAwareWarnRules = [
-  "typescript/await-thenable",
-  "typescript/dot-notation",
-  "typescript/no-base-to-string",
-  "typescript/no-confusing-void-expression",
-  "typescript/no-deprecated",
-  "typescript/no-floating-promises",
-  "typescript/no-misused-promises",
-  "typescript/no-misused-spread",
-  "typescript/non-nullable-type-assertion-style",
-  "typescript/no-unnecessary-type-assertion",
-  "typescript/no-unnecessary-type-conversion",
-  "typescript/no-unnecessary-type-parameters",
-  "typescript/no-unsafe-argument",
-  "typescript/no-unsafe-assignment",
-  "typescript/no-unsafe-call",
-  "typescript/no-unsafe-member-access",
-  "typescript/no-unsafe-return",
-  "typescript/no-unsafe-type-assertion",
-  "typescript/prefer-nullish-coalescing",
-  "typescript/prefer-regexp-exec",
-  "typescript/prefer-string-starts-ends-with",
-  "typescript/promise-function-async",
-  "typescript/restrict-template-expressions",
-  "typescript/return-await",
-  "typescript/strict-boolean-expressions",
-  "typescript/strict-void-return",
-  "typescript/switch-exhaustiveness-check",
-];
-
-const typeAwareWarn = Object.fromEntries(
-  typeAwareWarnRules.map((rule) => [rule, "warn" as const])
-);
-
+// previously-inert preset rules; the backlog they surfaced (2040 findings on
+// 2026-11-17) is resolved, so every rule runs at its preset severity again.
+// Two stay at warn on documented exceptions: typescript/no-deprecated flags
+// the @deprecated declarations themselves instead of uses (a port difference
+// from typescript-eslint, reported upstream), and the two
+// typescript/no-misused-spread code-point counts have no clean alternative
+// (each form trips unicorn/prefer-spread at error). The lint script's
+// --max-warnings pins that residual count so it can only fall.
 export default defineConfig({
   extends: [core, react, tanstack, vitest, jsPlugins, tanstackJsPlugins],
   jsPlugins: jsPlugins.jsPlugins,
@@ -111,9 +77,9 @@ export default defineConfig({
       "error",
       { checkInfinity: false, checkNaN: false },
     ],
-    ...typeAwareWarn,
-    // A bare severity resets the preset's option; keep its "always".
-    "typescript/return-await": ["warn", "always"],
+    // The two documented warn exceptions (see the type-aware note above).
+    "typescript/no-deprecated": "warn",
+    "typescript/no-misused-spread": "warn",
   },
   overrides: [
     {

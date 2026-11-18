@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { generationRequestErrorStatusByCode } from "@/shared/generation-contract";
+import {
+  generationRequestErrorCodeValues,
+  generationRequestErrorStatusByCode,
+} from "@/shared/generation-contract";
 
 import { resolveFailure } from "./generation-failures";
 
@@ -32,18 +35,18 @@ describe("generation failure resolution", () => {
     );
   });
 
-  it.each(Object.entries(generationRequestErrorStatusByCode))(
-    "surfaces the server message and the code for %s",
-    (code, status) => {
-      const serverMessage = `curated: ${code}`;
+  it.each(
+    generationRequestErrorCodeValues.map((code) => [
+      code,
+      generationRequestErrorStatusByCode[code],
+    ])
+  )("surfaces the server message and the code for %s", (code, status) => {
+    const serverMessage = `curated: ${code}`;
 
-      expect(
-        resolveFailure(status, payloadWith(code, serverMessage))
-      ).toStrictEqual(
-        errorFailure(serverMessage, code as GenerationRequestErrorCode)
-      );
-    }
-  );
+    expect(
+      resolveFailure(status, payloadWith(code, serverMessage))
+    ).toStrictEqual(errorFailure(serverMessage, code));
+  });
 
   it("offers the revision panel's code to the studio", () => {
     expect(
