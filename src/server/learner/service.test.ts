@@ -135,10 +135,10 @@ describe(createLearnerService, () => {
 
   it("ignores a caller-supplied score", async () => {
     const { fixture, loop, service } = await setup("service-tamper");
-    const tampered = inputFor(loop.runId) as SubmitAttemptInput & {
-      score: number;
+    const tampered: SubmitAttemptInput & { score: number } = {
+      ...inputFor(loop.runId),
+      score: 0,
     };
-    tampered.score = 0;
     const submitted = await service.submitAttempt(fixture.student, tampered);
 
     expect(submitted.score).toBe(100);

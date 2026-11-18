@@ -29,7 +29,6 @@ import { createGenerationRequestHash } from "./types";
 import type { LessonGenerationInput } from "@/shared/generation-contract";
 import type { LessonGenerationRecord } from "./types";
 import type { LessonDraftProvider } from "./provider";
-import type { TeacherActor } from "@/server/identity/types";
 
 const validRequestHash = createGenerationRequestHash({
   prompt: "equivalent fractions for grade 4",
@@ -324,7 +323,9 @@ describe("lesson generation service", () => {
       expect.arrayContaining([
         expect.objectContaining({
           code: "PREREQUISITE_PATH_MISSING",
-          message: expect.stringContaining("prerequisite path is missing"),
+          message: expect.stringContaining(
+            "prerequisite path is missing"
+          ) as unknown,
         }),
       ])
     );
@@ -357,7 +358,7 @@ describe("lesson generation service", () => {
         expect.objectContaining({
           code: "PREREQUISITE_PACK_MISSING",
           severity: "error",
-          message: expect.stringContaining("approved prerequisite"),
+          message: expect.stringContaining("approved prerequisite") as unknown,
         }),
       ])
     );
@@ -390,7 +391,7 @@ describe("lesson generation service", () => {
       expect.arrayContaining([
         expect.objectContaining({
           code: "CURRICULUM_TENANT_MISMATCH",
-          message: expect.stringContaining("different classroom"),
+          message: expect.stringContaining("different classroom") as unknown,
         }),
       ])
     );
@@ -423,7 +424,9 @@ describe("lesson generation service", () => {
       expect.arrayContaining([
         expect.objectContaining({
           code: "CURRICULUM_GRAPH_VERSION_UNSUPPORTED",
-          message: expect.stringContaining("version is not available"),
+          message: expect.stringContaining(
+            "version is not available"
+          ) as unknown,
         }),
       ])
     );
@@ -500,7 +503,7 @@ describe("lesson generation service", () => {
           validator: "learning-quality",
           verdict: "warning",
           validatorVersion: "learning-quality-validator-v1",
-          recommendation: expect.any(String),
+          recommendation: expect.any(String) as unknown,
         }),
       ])
     );
@@ -548,7 +551,7 @@ describe("lesson generation service", () => {
           severity: "error",
           validator: "curriculum",
           verdict: "hard_block",
-          validatorVersion: expect.any(String),
+          validatorVersion: expect.any(String) as unknown,
         }),
       ])
     );
@@ -1134,7 +1137,8 @@ describe("lesson generation service", () => {
 
     await expect(
       service.generate({
-        actor: syntheticLearnerActor() as unknown as TeacherActor,
+        // @ts-expect-error -- the generate command's parameter type is teacher-only by construction; the service still guards the role at runtime (service.ts:332), and this probe feeds a learner actor through that guard on purpose.
+        actor: syntheticLearnerActor(),
         input: validInput,
       })
     ).rejects.toMatchObject({
@@ -1262,7 +1266,7 @@ describe("lesson generation service", () => {
 
     await expect(service.generate(teacherCommand())).rejects.toMatchObject({
       code: "RATE_LIMITED",
-      retryAfterMs: expect.any(Number),
+      retryAfterMs: expect.any(Number) as unknown,
     });
 
     expect(provider.calls).toBe(0);

@@ -2,13 +2,30 @@ import { describe, expect, it } from "vitest";
 
 import { loadStoredDraft } from "./use-stored-draft";
 
+import { storedGenerationResultSchema } from "@/shared/generation-contract";
 import type { StoredDraftRead } from "@/lib/stored-draft-client";
 import type { StoredGenerationResult } from "@/shared/generation-contract";
 
-const stored = {
+const stored: StoredGenerationResult = storedGenerationResultSchema.parse({
   prompt: "equivalent fractions for grade 4",
-  result: { requestId: "req_1", state: "blocked-by-validation" },
-} as unknown as StoredGenerationResult;
+  result: {
+    requestId: "req_1",
+    state: "blocked-by-validation",
+    attempt: 1,
+    language: "en",
+    diagnostics: [],
+    diagnosticsRollup: {
+      verdict: "hard_block",
+      recovery: "edit",
+      screens: [],
+      flow: [],
+      affectedScreens: [],
+    },
+    draft: null,
+    provenance: null,
+    retry: { available: false, message: "Generate the draft again." },
+  },
+});
 
 /** Records every flag change and handler call, in order. */
 const recorder = () => {

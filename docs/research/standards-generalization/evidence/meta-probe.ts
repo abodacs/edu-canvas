@@ -53,11 +53,45 @@ const budget = () => {
   }
 };
 
-const components = (
-  JSON.parse(
-    readFileSync(`${here}/lc-probe-out/04-components-4-oa-a-3.json`, "utf-8")
-  ) as { data: { identifier: string; description: string }[] }
-).data;
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const isResponsesBody = (
+  value: unknown
+): value is {
+  output_text?: string;
+  output?: { content?: { text?: string }[] }[];
+} =>
+  isRecord(value) &&
+  (value.output_text === undefined || typeof value.output_text === "string") &&
+  (value.output === undefined ||
+    (Array.isArray(value.output) &&
+      value.output.every(
+        (o) =>
+          isRecord(o) &&
+          (o.content === undefined ||
+            (Array.isArray(o.content) &&
+              o.content.every(
+                (c) =>
+                  isRecord(c) &&
+                  (c.text === undefined || typeof c.text === "string")
+              )))
+      )));
+
+const isComponentCorpus = (
+  value: unknown
+): value is { data: { identifier: string; description: string }[] } =>
+  isRecord(value) &&
+  Array.isArray(value.data) &&
+  value.data.every((c) => isRecord(c) && typeof c.identifier === "string");
+
+const rawComponents: unknown = JSON.parse(
+  readFileSync(`${here}/lc-probe-out/04-components-4-oa-a-3.json`, "utf-8")
+);
+if (!isComponentCorpus(rawComponents)) {
+  throw new Error("component corpus does not match its expected shape");
+}
+const components = rawComponents.data;
 
 // A. Draft generator.
 const provider = createMetaLessonDraftProvider({
@@ -116,7 +150,7 @@ for (let i = 0; i < 3; i += 1) {
   } catch (error) {
     log.push({
       role: "generator",
-      error: (error as Error).message,
+      error: error instanceof Error ? error.message : String(error),
       latencyMs: Math.round(performance.now() - started),
     });
   }
@@ -136,13 +170,11 @@ const rawCall = async (
     body: JSON.stringify({ model, input }),
     signal: AbortSignal.timeout(100_000),
   });
-  const body = (await response.json()) as {
-    output_text?: string;
-    output?: { content?: { text?: string }[] }[];
-  };
+  const rawBody: unknown = await response.json();
+  const body = isResponsesBody(rawBody) ? rawBody : undefined;
   const text =
-    body.output_text ??
-    body.output
+    body?.output_text ??
+    body?.output
       ?.flatMap((o) => o.content ?? [])
       .map((c) => c.text ?? "")
       .join("") ??
@@ -210,9 +242,15 @@ for (let i = 0; i < 12; i += 3) {
   );
   let verdicts: string[] = [];
   try {
-    verdicts = JSON.parse(
+    const parsedVerdicts: unknown = JSON.parse(
       text.slice(text.indexOf("["), text.lastIndexOf("]") + 1)
-    ) as string[];
+    );
+    if (
+      Array.isArray(parsedVerdicts) &&
+      parsedVerdicts.every((v) => typeof v === "string")
+    ) {
+      verdicts = parsedVerdicts;
+    }
   } catch {
     /* unparsed */
   }

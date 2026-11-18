@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createServerObservability } from "./observability.server";
 
+import type * as SentryNodeModule from "@sentry/node";
+
 const sentryScope = {
   clear: vi.fn<() => void>(),
   setContext: vi.fn<(name: string, context: Record<string, unknown>) => void>(),
@@ -26,8 +28,29 @@ vi.mock(
     /* webpackChunkName: "sentry-node" */
     "@sentry/node"
   ),
-  () => sentrySdk as never
+  async (importOriginal) => {
+    const actual = await importOriginal<SentryMockModule>();
+    const merged = { ...actual };
+    return Object.assign(merged, sentrySdk);
+  }
 );
+
+/**
+The mocker adds a `default` export to the module shape it hands the factory;
+the augmentation names that shape without an `import()` type annotation.
+*/
+type SentryMockModule = typeof SentryNodeModule & {
+  default: typeof SentryNodeModule;
+};
+
+const isBeforeSendOptions = (
+  value: unknown
+): value is {
+  beforeSend: (event: Record<string, unknown>) => Record<string, unknown>;
+} =>
+  typeof value === "object" &&
+  value !== null &&
+  typeof (value as { beforeSend?: unknown }).beforeSend === "function";
 
 const captureProductionError = () => {
   const logs: unknown[] = [];
@@ -48,9 +71,11 @@ const captureProductionError = () => {
   );
 
   // oxlint-disable-next-line no-unsafe-optional-chaining -- the init call above guarantees one recorded call; a miss should throw here.
-  const { beforeSend } = sentrySdk.init.mock.calls[0]?.[0] as {
-    beforeSend: (event: Record<string, unknown>) => Record<string, unknown>;
-  };
+  const initOptions: unknown = sentrySdk.init.mock.calls[0]?.[0];
+  if (!isBeforeSendOptions(initOptions)) {
+    throw new TypeError("the init options must carry a beforeSend hook");
+  }
+  const { beforeSend } = initOptions;
   const scrubbedEvent = beforeSend({
     breadcrumbs: [{ message: "student identity_demo_student" }],
     contexts: {
@@ -79,7 +104,7 @@ describe("the Sentry observability adapter", () => {
       expect.objectContaining({
         defaultIntegrations: false,
         sendDefaultPii: false,
-        beforeSend: expect.any(Function),
+        beforeSend: expect.any(Function) as unknown,
       })
     );
   });
@@ -120,9 +145,10 @@ describe("the Sentry observability adapter", () => {
       expect.any(Error)
     );
     expect(capturedError).toBeInstanceOf(Error);
-    expect((capturedError as Error).message).not.toContain(
-      "identity_demo_student"
-    );
+    if (!(capturedError instanceof Error)) {
+      throw new TypeError("the captured error must be an Error");
+    }
+    expect(capturedError.message).not.toContain("identity_demo_student");
   });
 
   it("delivers the error through the Sentry path", () => {

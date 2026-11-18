@@ -1,5 +1,4 @@
 import { createElement } from "react";
-import type { ComponentProps } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
   createMemoryHistory,
@@ -21,9 +20,8 @@ const render = (withTagline: boolean): string => {
   return renderToStaticMarkup(
     createElement(
       RouterContextProvider,
-      // children arrive as the third argument; the cast only satisfies the
-      // provider's props type, which lists them as required.
-      { router } as ComponentProps<typeof RouterContextProvider>,
+      // @ts-expect-error -- children arrive as the third argument, as JSX would pass them; the provider's props type lists them as required.
+      { router },
       createElement(BrandMark, { withTagline })
     )
   );

@@ -289,12 +289,15 @@ describe("lesson preview compiler", () => {
 
   it("refuses an unbranded draft at the production seam", () => {
     expect(() => {
-      return compileLessonPreview(request as never, {
-        requestId: request.requestId,
-        grade: request.grade,
-        standardId: request.standardId,
-        language: request.language,
-      });
+      return (
+        // @ts-expect-error -- only gateArtifact may mint the private brand; the compiler must refuse the raw request.
+        compileLessonPreview(request, {
+          requestId: request.requestId,
+          grade: request.grade,
+          standardId: request.standardId,
+          language: request.language,
+        })
+      );
     }).toThrow(/gate-accepted/iu);
   });
 

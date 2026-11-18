@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 
+import { isJsonObject } from "@/lib/http";
 import { validatorVersion as lessonValidatorVersion } from "@/server/generation/validation";
 import { artifactGateSnapshotSchema } from "./artifact-gate-contract";
 import {
@@ -61,8 +62,8 @@ export const isRenderableArtifact = (
   return (
     typeof value === "object" &&
     value !== null &&
-    (value as RenderableArtifactBase)[renderableArtifactBrand] ===
-      renderableArtifactBrand
+    renderableArtifactBrand in value &&
+    value[renderableArtifactBrand] === renderableArtifactBrand
   );
 };
 
@@ -141,12 +142,11 @@ const canonicalize = (value: unknown): string => {
   if (Array.isArray(value)) {
     return `[${value.map((entry) => canonicalize(entry)).join(",")}]`;
   }
-  if (value !== null && typeof value === "object") {
-    const record = value as Record<string, unknown>;
+  if (isJsonObject(value)) {
     const entries: string[] = [];
-    const keys = Object.keys(record).toSorted(compareKeys);
+    const keys = Object.keys(value).toSorted(compareKeys);
     for (const key of keys) {
-      const entry = record[key];
+      const entry = value[key];
       if (entry !== undefined) {
         entries.push(`${JSON.stringify(key)}:${canonicalize(entry)}`);
       }

@@ -15,6 +15,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 import postgres from "postgres";
+import { z } from "zod";
 
 import { fractionEquivalencePack } from "@/server/curriculum/built-in-packs";
 import {
@@ -33,6 +34,12 @@ import { createSeededGenerationLimitStore } from "@/server/persistence/limits-se
 import { createPostgresPersistence } from "@/server/persistence/postgres";
 import { syntheticSeed } from "@/server/seed-data";
 import { lessonGenerationInputSchema } from "@/shared/generation-contract";
+
+import {
+  parseActorId,
+  parseMembershipId,
+  parseTenantId,
+} from "@/server/identity/identifiers";
 
 import type { SemanticValidationInput } from "@/server/generation/semantic-validation-contract";
 import type {
@@ -125,7 +132,7 @@ interface CaseFile {
   readonly expected: string;
   readonly observableFailure: string;
   readonly blockedFeature?: boolean;
-  readonly flipCondition: string | null;
+  readonly flipCondition?: string | null;
 }
 
 interface CaseResult {
@@ -138,7 +145,7 @@ interface CaseResult {
   readonly expected: string;
   readonly observed: string;
   readonly evidence: readonly string[];
-  readonly flipCondition: string | null;
+  readonly flipCondition?: string | null;
 }
 
 interface RunContext {
@@ -147,6 +154,41 @@ interface RunContext {
   readonly hasDatabase: boolean;
   readonly browserEvidence: Map<string, CaseResult>;
 }
+
+const caseLayerSchema: z.ZodType<CaseLayer> = z.enum([
+  "A",
+  "B-det",
+  "B-browser",
+  "B-live",
+]);
+
+const caseResultSchema: z.ZodType<CaseResult> = z.object({
+  id: z.string(),
+  practice: z.string(),
+  layer: caseLayerSchema,
+  status: z.enum(["executed", "deferred"]),
+  deferredKind: z
+    .enum(["not-run", "blocked-feature", "blocked-environment"])
+    .optional(),
+  score: z.union([z.literal(0), z.literal(1), z.literal(2), z.null()]),
+  expected: z.string(),
+  observed: z.string(),
+  evidence: z.array(z.string()),
+  flipCondition: z.string().nullable().optional(),
+});
+
+const caseFileSchema: z.ZodType<CaseFile> = z.object({
+  id: z.string(),
+  practice: z.string(),
+  practiceName: z.string(),
+  title: z.string(),
+  layer: caseLayerSchema,
+  turnSequence: z.array(z.string()),
+  expected: z.string(),
+  observableFailure: z.string(),
+  blockedFeature: z.boolean().optional(),
+  flipCondition: z.string().nullable().optional(),
+});
 
 const statusLabel = (entry: CaseResult): string => {
   if (entry.status === "executed") {
@@ -210,7 +252,7 @@ const readCases = async (): Promise<CaseFile[]> => {
   const cases = await Promise.all(
     files.map(async (file) => {
       const raw = await readFile(path.join(CASES_DIRECTORY, file), "utf-8");
-      return JSON.parse(raw) as CaseFile;
+      return caseFileSchema.parse(JSON.parse(raw) as unknown);
     })
   );
   const ids = new Set<string>();
@@ -535,20 +577,18 @@ const runDg4Challenge = async (caseFile: CaseFile): Promise<CaseResult> => {
 // --- Layer B-det handlers (real PostgreSQL, deterministic fixture provider) --
 
 const evalActor = (): TeacherActor => {
-  const actor = {
-    actorId: EVAL_ACTOR_ID,
+  return {
+    actorId: parseActorId(EVAL_ACTOR_ID),
     displayName: "Delegation eval pack (T1)",
-    tenantId: syntheticSeed.tenant.id,
+    tenantId: parseTenantId(syntheticSeed.tenant.id),
     tenantName: syntheticSeed.tenant.name,
-    membershipId: "membership_eval_delegation_t1",
+    membershipId: parseMembershipId("membership_eval_delegation_t1"),
     sessionId: "session_eval_delegation_t1",
     sessionGeneration: "0",
+    authorizationRevision: 1,
     role: "teacher",
     rosterClassIds: [],
-    // The service reads only tenantId, actorId, and role; the identity brands
-    // are satisfied the same way the service tests build synthetic actors.
   };
-  return actor as unknown as TeacherActor;
 };
 
 const evalInput = (
@@ -774,10 +814,13 @@ const layerBDetHandlers = {
 } as const;
 
 const readBrowserCasesOrThrow = async (): Promise<CaseResult[]> => {
-  const raw = JSON.parse(
+  const raw: unknown = JSON.parse(
     await readFile(path.join(RESULTS_DIRECTORY, BROWSER_RESULTS_FILE), "utf-8")
-  ) as { cases?: CaseResult[] };
-  return Array.isArray(raw.cases) ? raw.cases : [];
+  );
+  const results = z
+    .object({ cases: z.array(caseResultSchema).optional() })
+    .parse(raw);
+  return results.cases ?? [];
 };
 
 const readBrowserEvidence = async (): Promise<Map<string, CaseResult>> => {
@@ -794,8 +837,15 @@ const readBrowserEvidence = async (): Promise<Map<string, CaseResult>> => {
   return byId;
 };
 
+const isHandlerId = <T extends object>(
+  map: T,
+  id: string
+): id is keyof T & string => Object.hasOwn(map, id);
+
 const runLayerACase = async (caseFile: CaseFile): Promise<CaseResult> => {
-  const handler = layerAHandlers[caseFile.id as keyof typeof layerAHandlers];
+  const handler = isHandlerId(layerAHandlers, caseFile.id)
+    ? layerAHandlers[caseFile.id]
+    : undefined;
   if (handler === undefined) {
     return fail(caseFile, "No layer A handler is implemented.");
   }
@@ -819,8 +869,9 @@ const runLayerBDetCase = async (
         : "The DATABASE_URL target did not accept a connection."
     );
   }
-  const handler =
-    layerBDetHandlers[caseFile.id as keyof typeof layerBDetHandlers];
+  const handler = isHandlerId(layerBDetHandlers, caseFile.id)
+    ? layerBDetHandlers[caseFile.id]
+    : undefined;
   if (handler === undefined) {
     return fail(caseFile, "No layer B-det handler is implemented.");
   }

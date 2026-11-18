@@ -156,7 +156,7 @@ const variantIdAt = (
     return undefined;
   }
 
-  const variant = value[path[1]];
+  const variant: unknown = value[path[1]];
   return hasStringIdentifier(variant) ? variant.id : undefined;
 };
 

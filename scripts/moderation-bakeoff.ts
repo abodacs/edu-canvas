@@ -157,6 +157,20 @@ interface PresidioRow {
   category: string;
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const isPresidioRow = (value: unknown): value is PresidioRow =>
+  isRecord(value) &&
+  typeof value.id === "string" &&
+  typeof value.allowed === "boolean" &&
+  typeof value.category === "string";
+
+const parsePresidioRow = (line: string): PresidioRow | undefined => {
+  const parsed: unknown = JSON.parse(line);
+  return isPresidioRow(parsed) ? parsed : undefined;
+};
+
 const presidioScriptUrl = new URL(
   "../docs/hackathon/meta-global-2026/evidence/moderation-2026-10-31/presidio_scan.py",
   import.meta.url
@@ -177,9 +191,12 @@ const readPresidio = (corpusPath: string): Map<string, Prediction> | null => {
     .split("\n")
     .filter((line) => line.trim().length > 0)
     .map((line) => {
-      const row = JSON.parse(line) as PresidioRow;
-      return [row.id, { allowed: row.allowed, category: row.category }];
-    });
+      const row = parsePresidioRow(line);
+      return row === undefined
+        ? undefined
+        : [row.id, { allowed: row.allowed, category: row.category }];
+    })
+    .filter((entry): entry is [string, Prediction] => entry !== undefined);
   return new Map(entries);
 };
 

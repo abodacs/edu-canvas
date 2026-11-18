@@ -16,6 +16,27 @@ import type { AuthDependencies } from "./api.server";
 
 const password = "synthetic-pass-1";
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const isMembershipList = (
+  value: unknown
+): value is { membershipId: string; tenantName: string }[] =>
+  Array.isArray(value) &&
+  value.every(
+    (entry) =>
+      isRecord(entry) &&
+      typeof entry.membershipId === "string" &&
+      typeof entry.tenantName === "string"
+  );
+
+const membershipsOf = (body: Record<string, unknown>) => {
+  if (!isMembershipList(body.memberships)) {
+    throw new TypeError("the sign-in response must carry a membership list");
+  }
+  return body.memberships;
+};
+
 const testConfig = readServerConfig({ ...testServerEnvironment });
 const testDependencies = authDependenciesFrom(
   testConfig,
@@ -44,7 +65,10 @@ const challenge = async (dependencies: AuthDependencies) => {
     }),
     dependencies
   );
-  const body = (await response.json()) as { csrf: string };
+  const body: unknown = await response.json();
+  if (!isRecord(body) || typeof body.csrf !== "string") {
+    throw new TypeError("the auth context response must carry a csrf token");
+  }
   return {
     csrf: body.csrf,
     cookie: `edu_canvas_csrf=${cookieValue(response, "edu_canvas_csrf") ?? ""}`,
@@ -104,16 +128,21 @@ describe("membership selection over HTTP", () => {
   it("returns a bounded pending state listing only own memberships", async () => {
     const dependencies = await sessionDependencies();
     const response = await signInAmira(dependencies);
-    const body = (await response.json()) as {
-      status: string;
-      memberships: { membershipId: string; tenantName: string }[];
-    };
+    const body: unknown = await response.json();
+    if (!isRecord(body)) {
+      throw new TypeError("the sign-in response must be a JSON object");
+    }
+    const memberships = membershipsOf(body);
+    const { status } = body;
+    if (typeof status !== "string") {
+      throw new TypeError("the sign-in response must carry a status");
+    }
 
     // Amira's fixture shape now includes the curriculum classroom membership.
     expect({
       status: response.status,
-      bodyStatus: body.status,
-      membershipCount: body.memberships.length,
+      bodyStatus: status,
+      membershipCount: memberships.length,
       leaksVerifier: JSON.stringify(body).includes("verifierHash"),
     }).toStrictEqual({
       status: 200,
@@ -126,10 +155,11 @@ describe("membership selection over HTTP", () => {
   it("selects an own membership and rotates into a session credential", async () => {
     const dependencies = await sessionDependencies();
     const signInResponse = await signInAmira(dependencies);
-    const body = (await signInResponse.json()) as {
-      memberships: { membershipId: string; tenantName: string }[];
-    };
-    const south = body.memberships.find(
+    const body: unknown = await signInResponse.json();
+    if (!isRecord(body)) {
+      throw new TypeError("the sign-in response must be a JSON object");
+    }
+    const south = membershipsOf(body).find(
       (membership) => membership.tenantName === "Grade 5B · Ratio Reasoning"
     );
 

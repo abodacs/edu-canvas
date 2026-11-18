@@ -38,7 +38,11 @@ import type { FoundationPersistence } from "@/server/persistence/types";
 
 const draftRequestId = "draft_req_preview_owner";
 
-const sessionState = vi.hoisted(() => ({ resolution: undefined as unknown }));
+const sessionState = vi.hoisted(
+  (): { resolution: SessionResolution | undefined } => ({
+    resolution: undefined,
+  })
+);
 
 /* eslint-disable func-style, unicorn/consistent-function-scoping -- vi.mock factories are hoisted and cannot reference module-scope helpers. */
 // Mirrors the production seam: resolve the session, then require a teacher.
@@ -48,7 +52,10 @@ const seam = vi.hoisted(() => {
   }
 
   async function resolveTeacherActor() {
-    const resolution = sessionState.resolution as SessionResolution;
+    const { resolution } = sessionState;
+    if (resolution === undefined) {
+      throw new Error("The preview test must set a session resolution.");
+    }
     if (resolution.status === "unavailable") {
       return await Promise.resolve(
         failure(
@@ -83,18 +90,34 @@ vi.mock(
   import(
     /* webpackChunkName: "identity-api-server" */ "@/server/identity/api.server"
   ),
-  () => {
-    return {
+  async (importOriginal) => {
+    const actual = await importOriginal();
+    const merged = { ...actual };
+    return Object.assign(merged, {
       resolveAuthDependencies: async () => await Promise.resolve({}),
       resolveRequestSession: async () =>
         await Promise.resolve(sessionState.resolution),
       resolveTeacherActor: seam.resolveTeacherActor,
-    } as never;
+    });
   }
 );
 /* eslint-enable func-style, unicorn/consistent-function-scoping */
 
-const persistenceState = vi.hoisted(() => ({ current: undefined as unknown }));
+interface PersistenceSeam {
+  readGeneration: (tenantId: string, requestId: string) => unknown;
+}
+
+const persistenceState = vi.hoisted(
+  (): { current: PersistenceSeam | undefined } => ({ current: undefined })
+);
+
+const currentPersistence = (): PersistenceSeam => {
+  const persistence = persistenceState.current;
+  if (persistence === undefined) {
+    throw new Error("The preview test must install a persistence seam.");
+  }
+  return persistence;
+};
 
 const useRecord = (record: unknown) => {
   persistenceState.current = {
@@ -102,9 +125,13 @@ const useRecord = (record: unknown) => {
   };
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
 const fractionGate = (draft: unknown) => {
   return snapshotArtifactGateResult(
-    gateArtifact({ kind: "fraction", draft: draft as never })
+    // @ts-expect-error -- the gate owns the verdict at runtime; broken probes stay intentionally off-contract.
+    gateArtifact({ kind: "fraction", draft })
   );
 };
 
@@ -112,10 +139,12 @@ vi.mock(
   import(
     /* webpackChunkName: "foundation-persistence" */ "@/server/persistence"
   ),
-  () => {
-    return {
+  async (importOriginal) => {
+    const actual = await importOriginal();
+    const merged = { ...actual };
+    return Object.assign(merged, {
       createFoundationPersistence: () => persistenceState.current,
-    } as never;
+    });
   }
 );
 
@@ -227,12 +256,12 @@ describe("teacher lesson preview delivery seam", () => {
         { headers: { cookie: "edu_canvas_session=owner-credential" } }
       )
     );
-    const body = await response.json();
+    const body: unknown = await response.json();
 
     expect(response.status).toBe(406);
     expect(body).toMatchObject({
       code: "UNSUPPORTED_SCREEN_PATTERN",
-      message: expect.stringContaining("matching"),
+      message: expect.stringContaining("matching") as unknown,
     });
     expect(body).not.toHaveProperty("messages");
   });
@@ -252,24 +281,29 @@ describe("teacher lesson preview delivery seam", () => {
   });
 
   it("keeps matching-only for a legacy record with no pinned patterns", async () => {
-    const persistence = persistenceState.current as FoundationPersistence;
-    const record = await persistence.readGeneration(
+    const persistence = currentPersistence();
+    const recordValue = await persistence.readGeneration(
       syntheticSeed.tenant.id,
       draftRequestId
     );
-    if (!record?.provenance) {
+    if (!isRecord(recordValue) || !isRecord(recordValue.provenance)) {
+      throw new Error("The prepared draft must carry provenance.");
+    }
+    const record = recordValue;
+    const { provenance } = record;
+    if (!isRecord(provenance)) {
       throw new Error("The prepared draft must carry provenance.");
     }
     const legacy = {
       ...record,
       provenance: {
-        provider: record.provenance.provider,
-        model: record.provenance.model,
-        promptTemplateVersion: record.provenance.promptTemplateVersion,
-        validatorVersion: record.provenance.validatorVersion,
-        ...(record.provenance.catalogVersion !== undefined &&
-          record.provenance.catalogVersion !== "" && {
-            catalogVersion: record.provenance.catalogVersion,
+        provider: provenance.provider,
+        model: provenance.model,
+        promptTemplateVersion: provenance.promptTemplateVersion,
+        validatorVersion: provenance.validatorVersion,
+        ...(provenance.catalogVersion !== undefined &&
+          provenance.catalogVersion !== "" && {
+            catalogVersion: provenance.catalogVersion,
           }),
       },
     };
@@ -369,10 +403,11 @@ describe("teacher lesson preview delivery seam", () => {
   });
 
   it("never compiles a story for a blocked draft", async () => {
-    const ownedRecord = await (
-      persistenceState.current as FoundationPersistence
-    ).readGeneration(owningTeacher.tenantId, draftRequestId);
-    if (!ownedRecord) {
+    const ownedRecord = await currentPersistence().readGeneration(
+      owningTeacher.tenantId,
+      draftRequestId
+    );
+    if (!isRecord(ownedRecord)) {
       throw new Error("Expected the owned draft to be persisted.");
     }
     const blockedRecord = {
@@ -632,7 +667,7 @@ describe("safety-gate preview enforcement", () => {
     const response = await handleLessonPreviewRequest(
       previewRequest("edu_canvas_session=owner-credential")
     );
-    const body = await response.json();
+    const body: unknown = await response.json();
 
     expect(response.status).toBe(422);
     expect(response.headers.get("content-type")).toContain("application/json");
@@ -642,7 +677,7 @@ describe("safety-gate preview enforcement", () => {
       recovery: "edit",
       findings: expect.arrayContaining([
         expect.objectContaining({ code: "DUPLICATE_ID" }),
-      ]),
+      ]) as unknown,
     });
     expect(JSON.stringify(body)).not.toContain("event: a2ui");
   });
@@ -675,13 +710,16 @@ describe("safety-gate preview enforcement", () => {
     const response = await handleLessonPreviewRequest(
       previewRequest("edu_canvas_session=owner-credential")
     );
-    const body = await response.json();
+    const body: unknown = await response.json();
 
     expect(response.status).toBe(422);
     expect(body).toMatchObject({
       code: "GATE_SNAPSHOT_STALE",
       recovery: "retry",
     });
+    if (!isRecord(body)) {
+      throw new TypeError("the stale-gate refusal must be a JSON object");
+    }
     expect(body.message).toContain("Re-derive");
   });
 

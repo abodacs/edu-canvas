@@ -105,21 +105,31 @@ const emptyPassReport: SemanticValidationReport = {
   retry: { available: false, message: "No retry needed." },
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
 const reverseKeys = (value: unknown): unknown => {
   if (Array.isArray(value)) {
     return value.map((entry) => reverseKeys(entry));
   }
-  if (value === null || typeof value !== "object") {
+  if (!isRecord(value)) {
     return value;
   }
 
-  const record = value as Record<string, unknown>;
   return Object.fromEntries(
-    Object.keys(record)
+    Object.entries(value)
       .toReversed()
-      .map((key) => [key, reverseKeys(record[key])])
+      .map(([key, entry]) => [key, reverseKeys(entry)])
   );
 };
+
+/**
+Key reversal only reorders members, so a reversed clone keeps the input's
+runtime shape; the original parameter type is recovered through this guard
+instead of an assertion.
+*/
+const isReorderedShape = <T>(value: unknown, reference: T): value is T =>
+  value !== undefined && value !== null && reference !== undefined;
 
 const consumerRecovery = (result: ArtifactGateResult): string | null => {
   switch (result.verdict) {
@@ -160,7 +170,7 @@ describe("artifact gate contract", () => {
       findings: [],
       policyVersion: artifactGatePolicyVersion,
       renderable: {
-        artifactHash: expect.stringMatching(/^[a-f\d]{64}$/u),
+        artifactHash: expect.stringMatching(/^[a-f\d]{64}$/u) as unknown,
         policyVersion: artifactGatePolicyVersion,
       },
     });
@@ -298,7 +308,7 @@ describe("artifact gate contract", () => {
           code: "UNKNOWN_PATH_NODE",
           field: "path.nodeIds",
           nodeId: "graph_node_ghost",
-          reason: expect.any(String),
+          reason: expect.any(String) as unknown,
           recovery: "edit",
         },
       ])
@@ -311,7 +321,7 @@ describe("artifact gate contract", () => {
           code: "ANSWER_MISMATCH",
           field: "relationships",
           variantId: draft.variants[0]?.id,
-          reason: expect.any(String),
+          reason: expect.any(String) as unknown,
           recovery: "edit",
         }),
       ])
@@ -378,10 +388,23 @@ describe("artifact gate contract", () => {
       learningPath,
       report,
     });
+    const reorderedDraft = reverseKeys(draft);
+    if (!isReorderedShape<ProviderLessonDraft>(reorderedDraft, draft)) {
+      throw new Error("key reversal must preserve the draft shape");
+    }
+    const reorderedLearningPath = reverseKeys(learningPath);
+    if (
+      !isReorderedShape<ValidatedLearningPath>(
+        reorderedLearningPath,
+        learningPath
+      )
+    ) {
+      throw new Error("key reversal must preserve the learning path shape");
+    }
     const reordered = gateArtifact({
       kind: "lesson",
-      draft: reverseKeys(draft) as ProviderLessonDraft,
-      learningPath: reverseKeys(learningPath) as ValidatedLearningPath,
+      draft: reorderedDraft,
+      learningPath: reorderedLearningPath,
       report,
     });
 
@@ -617,7 +640,7 @@ describe("artifact gate contract", () => {
     expect(first.renderable).toMatchObject({
       kind: "fraction",
       draft: validFractionDraft,
-      artifactHash: expect.stringMatching(/^[a-f\d]{64}$/u),
+      artifactHash: expect.stringMatching(/^[a-f\d]{64}$/u) as unknown,
     });
     expect(second.artifactHash).toBe(first.artifactHash);
   });

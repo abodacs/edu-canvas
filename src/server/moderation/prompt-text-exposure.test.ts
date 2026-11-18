@@ -12,6 +12,9 @@ import { createSeededPersistence } from "../persistence/seeded";
 
 import { createDefaultContentSafety } from "./content-safety";
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
 /**
 A canary that is not personal data. If any log, diagnostic, or public payload echoes prompt text, this token appears there.
 */
@@ -129,7 +132,10 @@ describe("prompt text exposure", () => {
     expect(serialized).not.toContain(CANARY_EMAIL);
     expect(serialized).toContain("[REDACTED_EMAIL]");
 
-    const event = events.at(0) as { context: Record<string, unknown> };
+    const event = events.at(0);
+    if (!isRecord(event) || !isRecord(event.context)) {
+      throw new TypeError("the generation event must carry a context object");
+    }
 
     expect(event.context.prompt).toBe("[REDACTED]");
   });

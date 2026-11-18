@@ -67,8 +67,8 @@ describe("standard grounding service (issue 218)", () => {
       contentHash: record.contentHash,
       inputHash: record.inputHash,
     }).toStrictEqual({
-      contentHash: expect.stringMatching(/^[a-f0-9]{64}$/u),
-      inputHash: expect.stringMatching(/^[a-f0-9]{64}$/u),
+      contentHash: expect.stringMatching(/^[a-f0-9]{64}$/u) as unknown,
+      inputHash: expect.stringMatching(/^[a-f0-9]{64}$/u) as unknown,
     });
   });
 

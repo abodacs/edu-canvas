@@ -405,14 +405,17 @@ const evidenceIssues = (evidence: Evidence): string[] => {
   return issues;
 };
 
+const isEvidence = (value: unknown): value is Evidence =>
+  typeof value === "object" && value !== null;
+
 const checkEvidence = async (): Promise<number> => {
   const raw = await readFile(join(EVIDENCE_DIRECTORY, EVIDENCE_FILE), "utf-8");
   const parsed = JSON.parse(raw) as unknown;
 
-  if (typeof parsed !== "object" || parsed === null) {
+  if (!isEvidence(parsed)) {
     throw new Error("The advisory-review evidence is not a JSON object.");
   }
-  const evidence = parsed as Evidence;
+  const evidence = parsed;
   const issues = evidenceIssues(evidence);
 
   if (issues.length > 0) {

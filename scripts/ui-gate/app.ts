@@ -40,10 +40,10 @@ export const run = async (
   child.stderr.on("data", (chunk: Buffer) => {
     stderr += chunk.toString();
   });
-  const [code] = (await once(child, "close")) as [number | null];
-  if (code !== 0) {
+  const [closeCode] = (await once(child, "close")) as unknown[];
+  if (closeCode !== 0) {
     throw new Error(
-      `${command} ${commandArguments.join(" ")} exited ${String(code)}: ${stderr.slice(-2000)}`
+      `${command} ${commandArguments.join(" ")} exited ${String(closeCode)}: ${stderr.slice(-2000)}`
     );
   }
   return stdout;

@@ -201,9 +201,8 @@ const checkAcceptedRelationships = (
   }
 
   for (const candidate of relationships) {
-    const relationship = candidate;
     checkAcceptedRelationship(
-      relationship,
+      candidate,
       sourceIdSet,
       targetIdSet,
       ownersByTarget,

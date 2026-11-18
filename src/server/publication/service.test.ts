@@ -110,6 +110,16 @@ const createFixture = async (): Promise<Fixture> => {
   };
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const publicationFailureOf = (failure: unknown): PublicationError => {
+  if (!(failure instanceof PublicationError)) {
+    throw new TypeError("expected a PublicationError");
+  }
+  return failure;
+};
+
 const expectPublicationError = async (
   work: () => Promise<unknown>,
   code: string
@@ -125,9 +135,10 @@ const expectPublicationError = async (
 
   expect(failure).not.toBeNull();
   expect(failure).toBeInstanceOf(PublicationError);
-  expect((failure as PublicationError).code).toBe(code);
+  const publicationError = publicationFailureOf(failure);
+  expect(publicationError.code).toBe(code);
 
-  return failure as PublicationError;
+  return publicationError;
 };
 
 const approveAll = async (
@@ -420,8 +431,12 @@ describe("publication service", () => {
     if (stored === undefined) {
       throw new Error("The fixture did not store a version.");
     }
+    const { validationResult } = stored;
+    if (!isRecord(validationResult)) {
+      throw new TypeError("the stored version must carry a validation result");
+    }
     stored.validationResult = {
-      ...(stored.validationResult as Record<string, unknown>),
+      ...validationResult,
       findings: [
         {
           validator: "learning-quality",

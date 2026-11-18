@@ -53,8 +53,22 @@ const { anonClient, createClientMock, serviceRoleClient } = vi.hoisted(() => {
 
 vi.mock(
   import(/* webpackChunkName: "supabase-js" */ "@supabase/supabase-js"),
-  () => ({ createClient: createClientMock }) as never
+  async (importOriginal) => {
+    const actual = await importOriginal();
+    const merged = { ...actual };
+    return Object.assign(merged, { createClient: createClientMock });
+  }
 );
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const isClientOptions = (
+  value: unknown
+): value is { global: { fetch: typeof fetch } } =>
+  isRecord(value) &&
+  isRecord(value.global) &&
+  typeof value.global.fetch === "function";
 
 const createApiError = (message: string, status: number, code: string): Error =>
   Object.assign(new Error(message), { code, status });
@@ -153,7 +167,7 @@ describe("the Supabase identity provider adapter", () => {
           persistSession: false,
           detectSessionInUrl: false,
         },
-        global: { fetch: expect.any(Function) },
+        global: { fetch: expect.any(Function) as unknown },
       })
     );
     expect(createClientMock).toHaveBeenNthCalledWith(
@@ -454,9 +468,10 @@ describe("the Supabase identity provider adapter", () => {
     vi.stubGlobal("fetch", hangingFetch);
     createProvider({ timeoutMs: 20 });
 
-    const clientOptions = createClientMock.mock.calls[0]?.[2] as {
-      global: { fetch: typeof fetch };
-    };
+    const clientOptions: unknown = createClientMock.mock.calls[0]?.[2];
+    if (!isClientOptions(clientOptions)) {
+      throw new TypeError("the client options must carry a fetch function");
+    }
 
     await expect(
       clientOptions.global.fetch(`${projectUrl}/auth/v1/token`, {})

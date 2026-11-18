@@ -22,6 +22,19 @@ interface AxeViolation {
   readonly nodes: readonly { readonly target: readonly string[] }[];
 }
 
+declare global {
+  // axe-core is injected into the page through `page.evaluate(axeSource)`;
+  // the augmentation types the global it attaches without an assertion.
+  interface Window {
+    axe?: {
+      run: (
+        context: Document,
+        options: object
+      ) => Promise<{ violations: AxeViolation[] }>;
+    };
+  }
+}
+
 /**
 axe-core with every rule on; only serious and critical findings block.
 */
@@ -29,14 +42,10 @@ export const axeProblems = async (page: Page): Promise<string[]> => {
   // Evaluated through the protocol, so the page's nonce CSP stays in force.
   await page.evaluate(axeSource);
   const violations = await page.evaluate(async () => {
-    const { axe } = globalThis as unknown as {
-      axe: {
-        run: (
-          context: Document,
-          options: object
-        ) => Promise<{ violations: AxeViolation[] }>;
-      };
-    };
+    const { axe } = window;
+    if (axe === undefined) {
+      throw new Error("axe did not attach to the page");
+    }
     const result = await axe.run(document, {
       resultTypes: ["violations"],
     });

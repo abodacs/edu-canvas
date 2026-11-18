@@ -1,5 +1,6 @@
 import { fractionEquivalencePack } from "@/server/curriculum/built-in-packs";
 import { gateArtifact } from "@/server/safety/artifact-gate";
+import { isJsonObject } from "@/lib/http";
 import {
   buildValidatedLearningPath,
   toNormalizedReasoningPath,
@@ -933,8 +934,8 @@ export const preRenderBreakProbes: readonly PreRenderBreakProbe[] = [
       const matchCard = components.find(
         (component) => component.component === "MatchCard"
       );
-      const action = matchCard?.action as { event?: { name?: string } };
-      if (action.event) {
+      const action = matchCard?.action;
+      if (isJsonObject(action) && isJsonObject(action.event)) {
         action.event.name = "teleport";
       }
     },

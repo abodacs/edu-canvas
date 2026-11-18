@@ -33,6 +33,9 @@ const requestIdSchema = z
   .trim()
   .regex(/^[A-Za-z0-9_-]{1,80}$/u);
 
+const isSupportedCatalog = (value: string): value is A2UICatalogVersion =>
+  a2uiCatalogVersions.some((version) => version === value);
+
 const sseError = (code: string, message: string, status: number) =>
   noStoreJson({ code, message }, status);
 
@@ -241,7 +244,7 @@ export const handleLessonPreviewRequest = async (
 
   const requestedCatalog =
     url.searchParams.get("catalogVersion") ?? A2UI_CATALOG_VERSION;
-  if (!a2uiCatalogVersions.includes(requestedCatalog as A2UICatalogVersion)) {
+  if (!isSupportedCatalog(requestedCatalog)) {
     return sseError(
       "UNSUPPORTED_CATALOG",
       "This preview catalog version is not supported.",
@@ -267,7 +270,7 @@ export const handleLessonPreviewRequest = async (
       requestId: parsedRequestId.data,
       tenantId: resolved.actor.tenantId,
       actorId: resolved.actor.actorId,
-      requestedCatalog: requestedCatalog as A2UICatalogVersion,
+      requestedCatalog,
       requestedScreenPattern,
       signal: request.signal,
     });

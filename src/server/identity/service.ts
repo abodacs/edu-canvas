@@ -1,4 +1,5 @@
 import { createId } from "../ids";
+import { isJsonObject } from "@/lib/http";
 
 import {
   createOpaqueCredential,
@@ -132,13 +133,12 @@ interface EncryptedCredentials {
 const isEncryptedCredentials = (
   value: unknown
 ): value is EncryptedCredentials => {
-  if (typeof value !== "object" || value === null) {
+  if (!isJsonObject(value)) {
     return false;
   }
-  const candidate = value as Record<string, unknown>;
   return (
-    typeof candidate.accessToken === "string" &&
-    typeof candidate.refreshToken === "string"
+    typeof value.accessToken === "string" &&
+    typeof value.refreshToken === "string"
   );
 };
 

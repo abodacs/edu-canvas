@@ -1,5 +1,5 @@
 import { createElement } from "react";
-import type { ComponentProps, ReactElement, ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
   createMemoryHistory,
@@ -29,20 +29,23 @@ const renderAt = (path: string, element: ReactElement): string => {
   return renderToStaticMarkup(
     createElement(
       RouterContextProvider,
-      // children arrive as the third argument; the cast only satisfies the
-      // provider's props type, which lists them as required.
-      { router } as ComponentProps<typeof RouterContextProvider>,
+      // @ts-expect-error -- children arrive as the third argument, as JSX would pass them; the provider's props type lists them as required.
+      { router },
       element
     )
   );
 };
 
-// children arrive as the third argument, as JSX would pass them; the cast only
-// satisfies the props type, which lists them as required.
 const shell = (
   props: Omit<AppShellProps, "children">,
   child: ReactNode
-): ReactElement => createElement(AppShell, props as AppShellProps, child);
+): ReactElement =>
+  createElement(
+    AppShell,
+    // @ts-expect-error -- children arrive as the third argument, as JSX would pass them; the props type lists them as required.
+    props,
+    child
+  );
 
 const countOf = (markup: string, pattern: RegExp): number =>
   markup.match(pattern)?.length ?? 0;

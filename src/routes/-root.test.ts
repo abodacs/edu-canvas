@@ -9,7 +9,8 @@ describe("root document metadata", () => {
       throw new Error("The root route must define document metadata.");
     }
 
-    const content = await head({} as never);
+    // @ts-expect-error -- the head metadata reads only the route's static configuration; the loader info argument stays unused here.
+    const content = await head({});
 
     expect(content.links ?? []).toContainEqual({
       rel: "icon",

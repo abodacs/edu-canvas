@@ -325,9 +325,14 @@ describe(learnerLinkFailure, () => {
     const failure = learnerLinkFailure(recordError("FORBIDDEN"));
 
     expect(failure).toBeInstanceOf(PublicationError);
-    expect((failure as PublicationError).code).toBe("LEARNER_LINK_REFUSED");
-    expect((failure as PublicationError).status).toBe(409);
-    expect((failure as PublicationError).detail).toBe("FORBIDDEN");
+    if (!(failure instanceof PublicationError)) {
+      throw new TypeError(
+        "the learner link refusal must be a PublicationError"
+      );
+    }
+    expect(failure.code).toBe("LEARNER_LINK_REFUSED");
+    expect(failure.status).toBe(409);
+    expect(failure.detail).toBe("FORBIDDEN");
   });
 
   it.each([

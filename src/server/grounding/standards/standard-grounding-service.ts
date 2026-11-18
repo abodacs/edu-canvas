@@ -86,6 +86,10 @@ stage (standard → components → prerequisites). A caller cannot skip the retr
 or ask for a third one: a retryable transport failure is retried exactly once,
 and the second failure is the result the caller sees.
 */
+type RaceOutcome<T> =
+  | { readonly done: true; readonly value: T }
+  | { readonly done: false };
+
 const runWithOneRetry = async <T>(
   deadlineMs: number,
   work: (signal: AbortSignal) => Promise<T>
@@ -95,7 +99,6 @@ const runWithOneRetry = async <T>(
     controller.abort();
   }, deadlineMs);
   timer.unref?.();
-  const aborted = Symbol("aborted");
 
   const runAttempt = async (
     attempt: 1 | 2
@@ -107,14 +110,18 @@ const runWithOneRetry = async <T>(
       throw resolutionTimeout();
     }
     try {
-      const outcome = await Promise.race([
-        work(controller.signal),
-        once(controller.signal, "abort").then(() => aborted),
+      const outcome: RaceOutcome<T> = await Promise.race([
+        work(controller.signal).then(
+          (value): RaceOutcome<T> => ({ done: true, value })
+        ),
+        once(controller.signal, "abort").then(
+          (): RaceOutcome<T> => ({ done: false })
+        ),
       ]);
-      if (outcome === aborted) {
+      if (!outcome.done) {
         throw resolutionTimeout();
       }
-      return { value: outcome as T, attempts: attempt };
+      return { value: outcome.value, attempts: attempt };
     } catch (error) {
       if (attempt === 1 && isRetryableFailure(error)) {
         return await runAttempt(2);
