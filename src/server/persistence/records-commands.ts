@@ -219,6 +219,13 @@ const toIso = (value: unknown): string => {
   return Number.isNaN(parsed.getTime()) ? String(value) : parsed.toISOString();
 };
 
+const asString = String;
+
+const asNumber = Number;
+
+const asStringArray = (value: unknown): readonly string[] =>
+  Array.isArray(value) ? value.map(asString) : [];
+
 const parseOrThrow = <T>(schema: z.ZodType<T>, value: unknown): T => {
   const parsed = schema.safeParse(value);
   if (!parsed.success) {
@@ -275,11 +282,11 @@ const mapStorageError = (error: unknown): unknown => {
 
 const packageProjection = (row: StoredRow): AuthoringPackageProjection => {
   return {
-    id: row.id as string,
-    tenantId: row.tenant_id as string,
-    title: row.title as string,
-    standardId: row.standard_id as string,
-    headRevision: row.head_revision as number,
+    id: asString(row.id),
+    tenantId: asString(row.tenant_id),
+    title: asString(row.title),
+    standardId: asString(row.standard_id),
+    headRevision: asNumber(row.head_revision),
     createdAt: toIso(row.created_at),
     updatedAt: toIso(row.updated_at),
   };
@@ -573,6 +580,7 @@ export const createRecordCommands = <TTransaction>(
     actor: Actor,
     action: WriteAction,
     submitted: TInput,
+    schema: z.ZodType<TInput>,
     perform: (
       transaction: TTransaction,
       input: TInput
@@ -581,17 +589,17 @@ export const createRecordCommands = <TTransaction>(
       readonly resultIds: readonly string[];
     }>
   ): Promise<RecordMutationResult> => {
-    // The policy matrix drives unauthenticated rows through `undefined as
-    // unknown as Actor`, so the absence check is load-bearing even though the
-    // parameter type says otherwise.
+    // The policy matrix drives unauthenticated rows through an absent actor,
+    // so the absence check is load-bearing even though the parameter type
+    // says otherwise.
     if (actor === undefined || actor === null) {
       throw recordError("UNAUTHENTICATED");
     }
-    const parsed = writeInputSchemas[action].safeParse(submitted);
+    const parsed = schema.safeParse(submitted);
     if (!parsed.success) {
       throw recordError("INVALID_INPUT", { cause: parsed.error });
     }
-    const input = parsed.data as unknown as TInput;
+    const input = parsed.data;
     const inputHash = createInputHash(withoutOperationKey(input));
 
     try {
@@ -610,7 +618,7 @@ export const createRecordCommands = <TTransaction>(
           receipt
             ? {
                 inputHash: String(receipt.input_hash),
-                resultIds: receipt.result_ids as readonly string[],
+                resultIds: asStringArray(receipt.result_ids),
               }
             : undefined,
           inputHash
@@ -657,8 +665,12 @@ export const createRecordCommands = <TTransaction>(
           action,
           operation_key: input.operationKey,
         });
-        const storedIds = (stored?.result_ids as
-          readonly string[] | undefined) ?? [...result.resultIds];
+        const storedIds =
+          stored === undefined ||
+          stored.result_ids === null ||
+          stored.result_ids === undefined
+            ? [...result.resultIds]
+            : asStringArray(stored.result_ids);
         const [first] = storedIds;
         if (typeof first !== "string") {
           throw recordError("PERSISTENCE_UNAVAILABLE");
@@ -776,6 +788,7 @@ export const createRecordCommands = <TTransaction>(
       actor,
       "store-grounding",
       submitted,
+      writeInputSchemas["store-grounding"],
       async (transaction, input) => {
         await requireRow(transaction, "standards", {
           tenant_id: actor.tenantId,
@@ -1014,6 +1027,7 @@ export const createRecordCommands = <TTransaction>(
       actor,
       "append-version",
       submitted,
+      writeInputSchemas["append-version"],
       async (transaction, input) => {
         const head = await assertAppendPackage(transaction, actor, input);
         await assertVersionReferences(transaction, actor, input);
@@ -1118,6 +1132,7 @@ export const createRecordCommands = <TTransaction>(
       actor,
       "publish",
       submitted,
+      writeInputSchemas.publish,
       async (transaction, input) => {
         const version = await loadVersion(
           transaction,
@@ -1184,6 +1199,7 @@ export const createRecordCommands = <TTransaction>(
       actor,
       "assign",
       submitted,
+      writeInputSchemas.assign,
       async (transaction, input) => {
         const publication = await requirePublication(
           transaction,
@@ -1255,6 +1271,7 @@ export const createRecordCommands = <TTransaction>(
       actor,
       "start-run",
       submitted,
+      writeInputSchemas["start-run"],
       async (transaction, input) => {
         if (actor.role !== "student") {
           throw recordError("FORBIDDEN");
@@ -1295,7 +1312,7 @@ export const createRecordCommands = <TTransaction>(
           }
           return {
             resultKind: "learner-run",
-            resultIds: [existing.id as string],
+            resultIds: [asString(existing.id)],
           };
         }
 
@@ -1351,7 +1368,7 @@ export const createRecordCommands = <TTransaction>(
 
         return {
           resultKind: "learner-run",
-          resultIds: [storedRun.id as string],
+          resultIds: [asString(storedRun.id)],
         };
       }
     );
@@ -1365,6 +1382,7 @@ export const createRecordCommands = <TTransaction>(
       actor,
       "record-hint",
       submitted,
+      writeInputSchemas["record-hint"],
       async (transaction, input) => {
         const { run } = await requireRunForLearner(
           transaction,
@@ -1431,6 +1449,7 @@ export const createRecordCommands = <TTransaction>(
       actor,
       "record-attempt",
       submitted,
+      writeInputSchemas["record-attempt"],
       async (transaction, input) => {
         const { run } = await requireRunForLearner(
           transaction,
@@ -1569,6 +1588,7 @@ export const createRecordCommands = <TTransaction>(
       actor,
       "choose",
       submitted,
+      writeInputSchemas.choose,
       async (transaction, input) => {
         const runRow = await requireRow(transaction, "learner_runs", {
           tenant_id: actor.tenantId,

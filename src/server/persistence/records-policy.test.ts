@@ -83,7 +83,11 @@ const actorFor = (fixture: RecordFixture, kind: ActorKind): Actor => {
       return fixture.revokedStudent;
     }
     case "none": {
-      return undefined as unknown as Actor;
+      // The records command layer rejects an absent actor at runtime with
+      // UNAUTHENTICATED, but its parameter type does not model the absence.
+      // The absent caller therefore arrives from an unpopulated actor list.
+      const absentActors: readonly Actor[] = [];
+      return absentActors[0];
     }
     default: {
       throw new Error(`Unknown actor kind: ${String(kind)}`);

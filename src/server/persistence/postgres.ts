@@ -259,8 +259,9 @@ const createPostgresGenerationBackend = (
       work: (transaction: SqlTransaction) => Promise<T>
     ): Promise<T> => {
       return await withDatabase(databaseUrl, async (sql) => {
-        const result = await sql.begin(work);
-        return result as T;
+        // The explicit `Promise<T>` type argument resolves postgres.js's
+        // tuple-oriented `UnwrapPromiseArray` result to a plain `T`.
+        return await sql.begin<Promise<T>>(work);
       });
     },
 

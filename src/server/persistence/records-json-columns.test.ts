@@ -1,4 +1,5 @@
 import { getTableColumns } from "drizzle-orm";
+import type { Column } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
 import { recordJsonColumns, recordTableNames } from "./records-port";
@@ -11,9 +12,11 @@ import { tablesByStoredName } from "./records-seeded";
 // "expected object, received string". This binds the list to the jsonb
 // columns the schema declares, in both directions.
 const jsonColumnNames = (table: RecordTableName): Set<string> => {
-  const columns = Object.values(getTableColumns(tablesByStoredName[table]));
+  const columns: Record<string, Column> = getTableColumns(
+    tablesByStoredName[table]
+  );
   return new Set(
-    columns
+    Object.values(columns)
       .filter((column) => column.dataType === "json")
       .map((column) => column.name)
   );

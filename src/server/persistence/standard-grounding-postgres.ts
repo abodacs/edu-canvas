@@ -22,6 +22,43 @@ const CLIENT_OPTIONS = {
   prepare: false,
 } as const;
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const jsonValue = (value: unknown): postgres.JSONValue => {
+  if (value === null) {
+    return null;
+  }
+  switch (typeof value) {
+    case "boolean":
+    case "string": {
+      return value;
+    }
+    case "number": {
+      if (!Number.isFinite(value)) {
+        throw new TypeError("Cannot encode a non-finite JSON number.");
+      }
+      return value;
+    }
+    case "object": {
+      return Array.isArray(value)
+        ? value.map(jsonValue)
+        : Object.fromEntries(
+            Object.entries(value).map(([key, child]) => [key, jsonValue(child)])
+          );
+    }
+    case "bigint":
+    case "function":
+    case "symbol":
+    case "undefined": {
+      throw new Error("Cannot encode a non-JSON persistence value.");
+    }
+    default: {
+      throw new Error("Cannot encode a non-JSON persistence value.");
+    }
+  }
+};
+
 const toIso = (value: StoredTimestamp): string => {
   return value instanceof Date ? value.toISOString() : value;
 };
@@ -137,22 +174,17 @@ const setTenant = async (
 };
 
 const constraintOf = (error: unknown): string | undefined => {
-  if (typeof error !== "object" || error === null) {
+  if (!isRecord(error)) {
     return undefined;
   }
-  const record = error as Record<string, unknown>;
-  if (typeof record.constraint_name === "string") {
-    return record.constraint_name;
+  if (typeof error.constraint_name === "string") {
+    return error.constraint_name;
   }
-  return typeof record.constraint === "string" ? record.constraint : undefined;
+  return typeof error.constraint === "string" ? error.constraint : undefined;
 };
 
 const isUniqueViolation = (error: unknown): boolean => {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    (error as Record<string, unknown>).code === "23505"
-  );
+  return isRecord(error) && error.code === "23505";
 };
 
 export const createPostgresStandardGroundingPersistence = (
@@ -217,11 +249,11 @@ export const createPostgresStandardGroundingPersistence = (
                 ${record.statementCode}, ${record.subject}, ${record.grade},
                 ${record.standardId}, ${record.description},
                 ${record.descriptionHash},
-                ${transaction.json(record.components as unknown as postgres.JSONValue)}::jsonb,
-                ${transaction.json(record.prerequisites as unknown as postgres.JSONValue)}::jsonb,
+                ${transaction.json(jsonValue(record.components))}::jsonb,
+                ${transaction.json(jsonValue(record.prerequisites))}::jsonb,
                 ${record.prerequisiteResolution},
-                ${transaction.json(record.gaps as unknown as postgres.JSONValue)}::jsonb,
-                ${transaction.json(record.provenance as unknown as postgres.JSONValue)}::jsonb,
+                ${transaction.json(jsonValue(record.gaps))}::jsonb,
+                ${transaction.json(jsonValue(record.provenance))}::jsonb,
                 ${record.contentHash}, ${record.retrievalAttempt},
                 ${record.retrievedAt}, ${record.predecessorGroundingId},
                 ${record.createdAt}

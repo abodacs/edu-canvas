@@ -490,9 +490,10 @@ describe.skipIf(!isRun)("record database parity", () => {
         await transaction`grant select on all tables in schema public to edu_canvas_runtime`;
         await transaction`select set_config('app.tenant_id', ${fixture.otherTenantId}, true)`;
         await transaction`set local role edu_canvas_runtime`;
-        const rows =
-          await transaction`select count(*)::int as count from publications where id = ${publicationId}`;
-        return rows[0]?.count as number;
+        const rows = await transaction<{ count: number }[]>`
+          select count(*)::int as count from publications where id = ${publicationId}
+        `;
+        return rows[0]?.count;
       });
 
       expect(count).toBe(0);

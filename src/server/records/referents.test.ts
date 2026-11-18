@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
 import { writeInputReferents, writeInputSchemas } from "./inputs";
+import type { WriteAction } from "./inputs";
+
+const isWriteAction = (action: string): action is WriteAction =>
+  action in writeInputSchemas;
 
 interface JsonSchemaNode {
   readonly type?: string;
@@ -11,8 +15,18 @@ interface JsonSchemaNode {
   readonly anyOf?: readonly JsonSchemaNode[];
 }
 
+const jsonSchemaNodeSchema: z.ZodType<JsonSchemaNode> = z.object({
+  type: z.string().optional(),
+  properties: z
+    .record(z.string(), z.lazy(() => jsonSchemaNodeSchema))
+    .optional(),
+  required: z.array(z.string()).optional(),
+  items: z.lazy(() => jsonSchemaNodeSchema).optional(),
+  anyOf: z.array(z.lazy(() => jsonSchemaNodeSchema)).optional(),
+});
+
 const toJsonSchema = (schema: z.ZodType): JsonSchemaNode =>
-  z.toJSONSchema(schema, { io: "input" }) as JsonSchemaNode;
+  jsonSchemaNodeSchema.parse(z.toJSONSchema(schema, { io: "input" }));
 
 const collectIdPaths = (node: JsonSchemaNode, prefix = ""): string[] => {
   const paths: string[] = [];
@@ -61,8 +75,10 @@ const doesPathExist = (node: JsonSchemaNode, path: string): boolean => {
 describe("record referent sweep", () => {
   it("declares a scope validator for every identifier in every write input", () => {
     for (const [action, schema] of Object.entries(writeInputSchemas)) {
-      const declared =
-        writeInputReferents[action as keyof typeof writeInputSchemas];
+      if (!isWriteAction(action)) {
+        throw new Error(`Unknown write action: ${action}`);
+      }
+      const declared = writeInputReferents[action];
       const declaredPaths = new Set(declared.map((entry) => entry.path));
       const derived = collectIdPaths(toJsonSchema(schema));
 

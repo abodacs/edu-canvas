@@ -277,15 +277,14 @@ const createGeneratingRecord = (
     updatedAt,
   };
 };
-const tenants = {} as {
-  primary: TenantFixture;
-  secondary: TenantFixture;
-};
-
 describe.skipIf(!isRunDatabaseTests)("PostgreSQL persistence parity", () => {
+  let tenants: { primary: TenantFixture; secondary: TenantFixture };
+
   beforeAll(async () => {
-    tenants.primary = await createTenantFixture("primary");
-    tenants.secondary = await createTenantFixture("secondary");
+    tenants = {
+      primary: await createTenantFixture("primary"),
+      secondary: await createTenantFixture("secondary"),
+    };
   });
 
   afterAll(async () => {

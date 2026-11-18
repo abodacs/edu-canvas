@@ -1,9 +1,7 @@
-/* eslint-disable unicorn/single-line-block-comment-style -- import-x requires a single-line chunk-name comment for dynamic imports. */
 import { describe, expect, it, vi } from "vitest";
 
 import { createServerObservability } from "../observability.server";
 import { createPostgresPersistence } from "./postgres";
-import type postgresDefault from "postgres";
 import type { LessonGenerationRecord } from "../generation/types";
 
 const asGenerationRecord = (
@@ -11,24 +9,22 @@ const asGenerationRecord = (
 ): LessonGenerationRecord => record;
 
 const postgresMock = vi.hoisted(() => {
-  return vi.fn<() => never>(() => {
+  return vi.fn<(...args: unknown[]) => unknown>(() => {
     throw new Error(
       "database connection failed for student identity_demo_student"
     );
   });
 });
 
-vi.mock(
-  import(
-    /* webpackChunkName: "postgres" */
-    "postgres"
-  ),
-  () => {
-    return {
-      default: postgresMock as unknown as typeof postgresDefault,
-    };
-  }
-);
+vi.mock(import("postgres"), async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    // The mocked default keeps the real namespace members so it still
+    // satisfies the module's export type; its callable behavior is the mock.
+    default: Object.assign(postgresMock, actual.default),
+  };
+});
 
 describe("PostgreSQL persistence", () => {
   it("reports an unavailable database through server observability", async () => {
@@ -108,7 +104,7 @@ describe("PostgreSQL persistence", () => {
     >((work) => work(transaction));
     const end = vi.fn<() => void>();
     const sqlClient = Object.assign(vi.fn(), { begin, end });
-    postgresMock.mockReturnValueOnce(sqlClient as never);
+    postgresMock.mockReturnValueOnce(sqlClient);
 
     const result = await createPostgresPersistence(
       "postgresql://user:password@db.example/app"
@@ -238,8 +234,8 @@ describe("PostgreSQL persistence", () => {
       end: vi.fn<() => void>(),
     });
     postgresMock
-      .mockReturnValueOnce(claimClient as never)
-      .mockReturnValueOnce(readClient as never);
+      .mockReturnValueOnce(claimClient)
+      .mockReturnValueOnce(readClient);
 
     const result = await createPostgresPersistence(
       "postgresql://user:password@db.example/app"
@@ -368,8 +364,8 @@ describe("PostgreSQL persistence", () => {
       end: vi.fn<() => void>(),
     });
     postgresMock
-      .mockReturnValueOnce(expiryClient as never)
-      .mockReturnValueOnce(readClient as never);
+      .mockReturnValueOnce(expiryClient)
+      .mockReturnValueOnce(readClient);
 
     const result = await createPostgresPersistence(
       "postgresql://user:password@db.example/app"
