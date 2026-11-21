@@ -7,6 +7,12 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
+    ignore:
+      # router 1.170.19+ pins a router-core that drops the `server` route
+      # option typed by no published @tanstack/react-start yet; every API
+      # route in src/routes/api uses it. Remove when a published pair types it.
+      - dependency-name: "@tanstack/react-router"
+        versions: [">=1.170.19"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
