@@ -709,6 +709,42 @@ describe("generation service conformance: deadlines and cancellation", () => {
     }
   );
 
+  it("cancels in flight across service instances and aborts the original call", async () => {
+    const provider = createControlledProvider("respect-abort");
+    const persistence = createSeededPersistence();
+    const sharedOptions = {
+      limits: createSeededGenerationLimitStore(),
+      persistence,
+      provider,
+    };
+    const generatingService = createGenerationService({
+      ...sharedOptions,
+      requestIdFactory: () => "draft_req_conformance_cancel_cross_instance",
+    });
+    const cancellingService = createGenerationService(sharedOptions);
+
+    const pending = generatingService.generate(teacherCommand());
+    await vi.waitFor(() => {
+      expect(provider.calls).toHaveLength(1);
+    });
+
+    const cancelled = await cancellingService.cancel({
+      actor: teacherActor,
+      requestId: "draft_req_conformance_cancel_cross_instance",
+    });
+
+    expect(provider.calls[0].signal?.aborted).toBeTruthy();
+
+    expectCancelledRecord(cancelled.record);
+
+    provider.calls[0].resolve({
+      draft: createEquivalentFractionsDraft(provider.calls[0].request),
+    });
+    const late = await pending;
+
+    expectCancelledRecord(late.record);
+  });
+
   it("does not add a call when cancelling an already completed request", async () => {
     const provider = createDeterministicLessonDraftProvider();
     const service = createGenerationService({
