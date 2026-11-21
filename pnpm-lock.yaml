@@ -115,11 +115,11 @@ importers:
         specifier: ^4.0.9
         version: 4.0.9(postcss@8.5.31)
       prettier:
-        specifier: ^3.9.10
-        version: 3.9.10
+        specifier: ^3.10.1
+        version: 3.10.1
       prettier-plugin-tailwindcss:
         specifier: ^0.8.1
-        version: 0.8.1(prettier@3.9.10)
+        version: 0.8.1(prettier@3.10.1)
       shadcn:
         specifier: 4.22.1
         version: 4.22.1
@@ -146,7 +146,7 @@ importers:
         version: 6.0.3
       ultracite:
         specifier: 8.0.1
-        version: 8.0.1(oxlint@1.94.0)(prettier@3.9.10)(stylelint@17.16.0(typescript@6.0.3))
+        version: 8.0.1(oxlint@1.94.0)(prettier@3.10.1)(stylelint@17.16.0(typescript@6.0.3))
       vite:
         specifier: 8.3.5
         version: 8.3.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)(yaml@2.9.1)
@@ -3702,8 +3702,8 @@ packages:
       prettier-plugin-svelte:
         optional: true
 
-  prettier@3.9.10:
-    resolution: {integrity: sha512-skGHTH1Yb9QvaTC4hWnRTzEYtCpApF0UMBPz+t/0ZPzP8ihefo/btKd+QA7pUE0fEwA1SbS/NmhyEcstdXOIdA==}
+  prettier@3.10.1:
+    resolution: {integrity: sha512-70vp3ZUYoPlFbF9uiTdXHUUCGEIp7d4+6p+8DYbkm2jP7x/3i/paXVF6dopSI3zd/CEitrZN1rc4i85xWmmXlg==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -5769,7 +5769,7 @@ snapshots:
       '@tanstack/virtual-file-routes': 1.162.0
       jiti: 2.7.0
       magic-string: 0.30.21
-      prettier: 3.9.10
+      prettier: 3.10.1
       zod: 4.4.3
     transitivePeerDependencies:
       - supports-color
@@ -5782,7 +5782,7 @@ snapshots:
       '@tanstack/virtual-file-routes': 1.162.0
       jiti: 2.7.0
       magic-string: 0.30.21
-      prettier: 3.9.10
+      prettier: 3.10.1
       zod: 4.6.7
     transitivePeerDependencies:
       - supports-color
@@ -7523,11 +7523,11 @@ snapshots:
 
   powershell-utils@0.2.1: {}
 
-  prettier-plugin-tailwindcss@0.8.1(prettier@3.9.10):
+  prettier-plugin-tailwindcss@0.8.1(prettier@3.10.1):
     dependencies:
-      prettier: 3.9.10
+      prettier: 3.10.1
 
-  prettier@3.9.10: {}
+  prettier@3.10.1: {}
 
   pretty-ms@9.3.1:
     dependencies:
@@ -8054,7 +8054,7 @@ snapshots:
 
   ufo@1.6.4: {}
 
-  ultracite@8.0.1(oxlint@1.94.0)(prettier@3.9.10)(stylelint@17.16.0(typescript@6.0.3)):
+  ultracite@8.0.1(oxlint@1.94.0)(prettier@3.10.1)(stylelint@17.16.0(typescript@6.0.3)):
     dependencies:
       '@clack/prompts': 1.8.1
       cli-truncate: 6.1.1
@@ -8077,7 +8077,7 @@ snapshots:
       zod: 4.6.7
     optionalDependencies:
       oxlint: 1.94.0
-      prettier: 3.9.10
+      prettier: 3.10.1
       stylelint: 17.16.0(typescript@6.0.3)
 
   undici-types@8.3.0: {}
