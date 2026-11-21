@@ -76,6 +76,7 @@ export const mapSourceError = (error: unknown): Response => {
       error.status
     );
   }
+  console.error("[grounding] unhandled failure", error);
   return noStoreJson(
     {
       code: "SOURCE_FAILED",
