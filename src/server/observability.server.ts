@@ -227,7 +227,13 @@ const createDefaultSentryReporter = (
       dsn,
       environment: getEnvironment(environment),
       defaultIntegrations: false,
-      sendDefaultPii: false,
+      dataCollection: {
+        userInfo: false,
+        cookies: false,
+        httpHeaders: false,
+        httpBodies: [],
+        urlQueryParams: false,
+      },
       beforeSend(event) {
         delete event.user;
         delete event.request;
@@ -251,7 +257,6 @@ const createDefaultSentryReporter = (
   return {
     captureException(error, event) {
       withIsolationScope((scope) => {
-        scope.clear();
         scope.setTag("operation", event.operation);
         scope.setContext("edu-canvas", event.context);
         captureException(error);
