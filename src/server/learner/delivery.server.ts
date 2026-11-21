@@ -2,18 +2,14 @@ import { z } from "zod";
 
 import { readServerConfig } from "@/server/config";
 import { noStoreJson, readJsonBody } from "@/server/http.server";
-import {
-  identityErrorJson,
-  resolveProtectedLearner,
-} from "@/server/identity/api.server";
-import { IdentityError } from "@/server/identity/errors";
+import { resolveProtectedLearner } from "@/server/identity/api.server";
 import { createRecordPersistence } from "@/server/persistence";
-import { isRecordStoreError } from "@/server/records/errors";
 import {
   learnerAttemptResponseSchema,
   learnerRunResponseSchema,
 } from "@/shared/learner-contract";
 import { createLearnerService } from "./service";
+import { recordStoreErrorResponse } from "./error-transport";
 
 const idSchema = z
   .string()
@@ -42,36 +38,14 @@ export const learnerRunInputSchema = z.strictObject({
   assignedVariantId: idSchema,
 });
 
-const statusByCode = {
-  UNAUTHENTICATED: 401,
-  FORBIDDEN: 403,
-  INVALID_INPUT: 422,
-  NOT_FOUND: 404,
-  STALE_VERSION: 409,
-  ATTEMPT_LIMIT_REACHED: 409,
-  IDEMPOTENCY_CONFLICT: 409,
-  PERSISTENCE_UNAVAILABLE: 503,
-} as const;
-
 const unavailableMessage =
   "The learner record is temporarily unavailable. Try again later.";
 
 export const learnerErrorJson = (error: unknown): Response => {
-  if (error instanceof IdentityError) {
-    return identityErrorJson(error);
-  }
-  if (!isRecordStoreError(error)) {
-    console.error("[learner] unhandled failure", error);
-  }
-  return isRecordStoreError(error)
-    ? noStoreJson(
-        { code: error.code, message: error.message },
-        statusByCode[error.code]
-      )
-    : noStoreJson(
-        { code: "LEARNER_UNAVAILABLE", message: unavailableMessage },
-        503
-      );
+  return recordStoreErrorResponse(error, {
+    code: "LEARNER_UNAVAILABLE",
+    message: unavailableMessage,
+  });
 };
 
 const invalidInput = (): Response => {
