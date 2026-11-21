@@ -6,7 +6,6 @@ import { createServerObservability } from "./observability.server";
 import type * as SentryNodeModule from "@sentry/node";
 
 const sentryScope = {
-  clear: vi.fn<() => void>(),
   setContext: vi.fn<(name: string, context: Record<string, unknown>) => void>(),
   setTag: vi.fn<(key: string, value: string) => void>(),
 };
@@ -99,7 +98,13 @@ describe("the Sentry observability adapter", () => {
     expect(sentrySdk.init).toHaveBeenCalledWith(
       expect.objectContaining({
         defaultIntegrations: false,
-        sendDefaultPii: false,
+        dataCollection: {
+          userInfo: false,
+          cookies: false,
+          httpHeaders: false,
+          httpBodies: [],
+          urlQueryParams: false,
+        },
         beforeSend: expect.any(Function) as unknown,
       })
     );
@@ -136,7 +141,6 @@ describe("the Sentry observability adapter", () => {
     expect(sentrySdk.withIsolationScope).toHaveBeenCalledExactlyOnceWith(
       expect.any(Function)
     );
-    expect(sentryScope.clear).toHaveBeenCalledExactlyOnceWith();
     expect(sentrySdk.captureException).toHaveBeenCalledExactlyOnceWith(
       expect.any(Error)
     );
