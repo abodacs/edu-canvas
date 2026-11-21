@@ -176,7 +176,7 @@ flowchart TB
 | Drafting, Teacher Review → Identity & Tenancy | Customer–supplier through an identity port (target) | Imports pass through the identity delivery seam today; waves 3–4 replace them |
 | All contexts → Platform | Generic services behind ports | Implemented |
 
-A context decision changes through an AgDR first, then this map, then the rules — in the same PR.
+A context decision changes through an AgDR first, then this map, then the rules — in the same PR. `src/` carries no prose comments ([AgDR-0019](docs/agdr/AgDR-0019-comment-free-source.md)); the decisions once recorded beside the code live in AgDR-0020–0023.
 
 ## Target layout and migration waves
 
