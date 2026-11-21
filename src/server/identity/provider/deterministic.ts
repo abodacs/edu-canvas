@@ -20,9 +20,6 @@ export interface DeterministicAccount {
 export interface DeterministicProviderOptions {
   readonly issuer?: string;
   readonly accounts?: readonly DeterministicAccount[];
-  /**
-  When false every call reports `unavailable`, for outage tests.
-  */
   readonly available?: boolean;
 }
 
@@ -38,15 +35,9 @@ const encodeToken = (bytes: Uint8Array): string =>
   bytes.toBase64({ alphabet: "base64url", omitPadding: true });
 
 export interface DeterministicIdentityProvider extends IdentityProvider {
-  /**
-   * Expire every access token issued so far while leaving the refresh tokens usable, so a test can drive the bounded internal refresh path. Test-only.
-   */
   readonly expireAccessTokens: () => void;
 }
 
-/**
- * In-memory provider used by tests and explicit local development tooling. It implements the same contract as the hosted adapter, so application behavior is exercised without a live vendor. It can never supply authority to a deployed request: it is constructed only where the caller chooses it.
- */
 export const createDeterministicIdentityProvider = (
   options: DeterministicProviderOptions = {}
 ): DeterministicIdentityProvider => {
@@ -98,7 +89,6 @@ export const createDeterministicIdentityProvider = (
         : { status: "email-unverified" };
     },
     signUpTeacher: async (email): Promise<ProviderSignUpOutcome> => {
-      // New and duplicate addresses return the same verification-pending state.
       return await Promise.resolve(
         available
           ? { status: "verification-pending", email }

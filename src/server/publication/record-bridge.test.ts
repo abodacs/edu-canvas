@@ -212,7 +212,6 @@ describe(bridgePublishedPack, () => {
       throw new Error("Expected the bridged version.");
     }
 
-    // What crosses the seam.
     expect({
       variantsMatch: version.variantReferences.map(
         (reference) => reference.variantId
@@ -227,11 +226,6 @@ describe(bridgePublishedPack, () => {
       edits: ["section-variant-a"],
     });
 
-    // What does not cross, pinned so the loss is a decision rather than an
-    // accident: a section carries no hints, feedback, or accessibility
-    // metadata. #176 moved the two carryable pieces (the approved feedback and
-    // the column labels) into the version-level `approvedCopy` block, so this
-    // key list is the contract a new section field has to argue with.
     expect(
       Object.keys(version.sections[0] ?? {}).toSorted((left, right) =>
         left.localeCompare(right)
@@ -262,9 +256,6 @@ describe(bridgePublishedPack, () => {
       }),
     });
 
-    // #176 deferrals, pinned so carrying one later is a decision: hints have
-    // no route yet, RTL metadata is #9, and the two screen-purpose fields
-    // stay teacher-facing.
     const serializedApprovedCopy = JSON.stringify(version.approvedCopy);
     for (const deferred of [
       "hint",

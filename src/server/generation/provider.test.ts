@@ -41,12 +41,6 @@ const request: NormalizedGenerationRequest = {
   difficulty: "on-level",
 };
 
-/**
- * The provider context a resolved pack produces: the acceptance path maps a
- * `VersionedCurriculumContext` into this shape. Building it from
- * `createSyntheticCurriculumContext` keeps the test on the real pack data, so a
- * frame change in `built-in-packs.ts` reaches these assertions.
- */
 const packProviderContext = (
   standardId: string,
   language: "en" | "ar" = "en"

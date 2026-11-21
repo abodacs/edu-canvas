@@ -1,8 +1,5 @@
 import type { RecoveryAction } from "@/shared/generation-contract";
 
-/**
- * The one code-to-recovery table for issue #28. Unknown, executable, or untrusted payloads are replaced; bounded infrastructure failures are retried; every schema, identifier, relationship, or math break is edited.
- */
 const replacementCodes: ReadonlySet<string> = new Set([
   "EXECUTABLE_CONTENT",
   "UNTRUSTED_FIELD",
@@ -28,9 +25,6 @@ const retryCodes: ReadonlySet<string> = new Set([
   "PREREQUISITE_PATH_MISSING",
 ]);
 
-/**
- * The single priority order. A lesson-level refusal takes the strongest actionable recovery among its findings: retry, then replace, then edit.
- */
 export const recoveryPriority: Record<RecoveryAction, number> = {
   retry: 0,
   replace: 1,
@@ -44,9 +38,6 @@ export const recoveryForCode = (code: string): RecoveryAction => {
   return replacementCodes.has(code) ? "replace" : "edit";
 };
 
-/**
- * A warning never blocks rendering, so it always asks for an edit; only a hard block reaches the structural replacement or infrastructure retry rule.
- */
 export const recoveryForFinding = (
   code: string,
   verdict: "warning" | "hard_block"

@@ -35,10 +35,6 @@ vi.mock(
   }
 );
 
-/**
-The mocker adds a `default` export to the module shape it hands the factory;
-the augmentation names that shape without an `import()` type annotation.
-*/
 type SentryMockModule = typeof SentryNodeModule & {
   default: typeof SentryNodeModule;
 };

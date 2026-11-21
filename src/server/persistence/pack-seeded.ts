@@ -12,11 +12,9 @@ import type {
 
 export interface SeededPackLearner extends PackLearner {
   tenantId: string;
-  /** False models a student whose membership is revoked or suspended. Default true. */
   membershipActive?: boolean;
 }
 
-/** The same assignable-learner rule the PostgreSQL adapter applies. */
 const isAssignable = (learner: SeededPackLearner, tenantId: string): boolean =>
   learner.tenantId === tenantId && learner.membershipActive !== false;
 

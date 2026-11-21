@@ -237,8 +237,6 @@ export const createSeededPersistence = (
       if (!existing || existing.state !== "ready-for-review") {
         return await Promise.resolve(false);
       }
-      // #223: additive only. The draft, state, diagnostics and gate stay as
-      // they were; the advisory result rides in its own field.
       generationStore.set(
         key,
         structuredClone({ ...existing, advisoryReview: review })

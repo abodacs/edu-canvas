@@ -183,8 +183,6 @@ const SignUpPage = (): ReactElement => {
       (nextEmailError !== null && nextEmailError !== "") ||
       nextPasswordError !== null
     ) {
-      // Focus waits for the commit that marks the field invalid, so the screen
-      // reader reads the error with the control instead of before it.
       focusAfterRender(
         nextEmailError !== null && nextEmailError !== ""
           ? emailRef

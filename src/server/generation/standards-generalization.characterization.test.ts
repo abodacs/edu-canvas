@@ -26,16 +26,6 @@ import type {
 } from "./types";
 import type { LessonGenerationInput } from "@/shared/generation-contract";
 
-/**
-Characterization for the standards-generalization research record
-(docs/research/standards-generalization/README.md, break points B1, B6, B7).
-S2 and S3 flipped B1 and B6. #222 flips B7: the RI.5.2 pack authors a Grade 4
-prerequisite node and declares text-evidence and teacher-review rules, so the
-non-math path passes the structural gate. A separate case still pins the gate's
-refusal of a one-node path, so the structural rule was not weakened to fit the
-pack.
-*/
-
 const tenantId = syntheticSeed.tenant.id;
 
 const fixtureProvenance: ProviderProvenance = {
@@ -50,7 +40,6 @@ interface MatchingPair {
   target: string;
 }
 
-// 4.OA.A.3: word problem -> equation with a letter for the unknown.
 const wordProblemPairs: readonly MatchingPair[] = [
   {
     source:
@@ -69,7 +58,6 @@ const wordProblemPairs: readonly MatchingPair[] = [
   },
 ];
 
-// RI.5.2: key detail -> the main idea it supports.
 const detailPairs: readonly MatchingPair[] = [
   {
     source: "Bees carry pollen from one flower to the next.",
@@ -144,8 +132,6 @@ const buildDraft = (
   };
 };
 
-// A one-step equation with a whole-number answer is a deliberately wrong
-// target for the first word problem (4 × 6 − 5 is 19, not 4 + 6 − 5).
 const withOneWrongPair = (pairs: readonly MatchingPair[]): MatchingPair[] => {
   const [first, ...rest] = pairs;
   if (first === undefined) {
@@ -201,9 +187,6 @@ const operationsSteps = [
   },
 ];
 
-// The RI.5.2 pack is the authority for the non-math context. The pack authors
-// a Grade 4 prerequisite node, so the path is two steps even though Learning
-// Commons returns no ELA prerequisites.
 const readingContext: VersionedCurriculumContext =
   createSyntheticCurriculumContext({
     grade: 5,
@@ -215,8 +198,6 @@ const readingSteps = ri52MainIdeaPack.graph.nodes.map((node) => {
   return { nodeId: node.id, screenPurposeId: node.screenPurposeId };
 });
 
-// The fraction control uses the pack whose answer rule is fraction equivalence,
-// not the 4.OA.A.3 context: the validator now reads the rule the pack declares.
 const fractionContext: VersionedCurriculumContext =
   createSyntheticCurriculumContext({
     grade: 4,
@@ -292,9 +273,6 @@ const captureStandardRejection = (standardId: string): unknown => {
   return undefined;
 };
 
-// The fixture repeats one interaction structure across variants, so the
-// learning-quality validator adds its own warnings; the answer rule is the
-// curriculum validator's, so these checks read its findings only.
 const curriculumFindings = (
   diagnostics: readonly CodedDiagnostic[]
 ): CodedDiagnostic[] => {
@@ -419,9 +397,6 @@ describe("standards generalization: 4.OA.A.3 word problem -> equation matching",
 
     expect(acceptance.state).toBe("ready-for-review");
     const curriculum = curriculumFindings(acceptance.diagnostics);
-    // Two equations per variant evaluate to the declared answer. The remainder
-    // pair carries the annotation ", round up", which the bounded parser does
-    // not evaluate, so it keeps the declared warning instead of a silent pass.
     expect(codesOf(curriculum)).toStrictEqual([
       "ANSWER_RELATIONSHIP_UNVERIFIED",
     ]);

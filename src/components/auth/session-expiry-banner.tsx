@@ -16,10 +16,6 @@ interface SessionExpiryBannerProperties {
   readonly onDismiss: () => void;
 }
 
-// A persistent, labelled alert dialog that warns about idle expiry and offers
-// the only action that renews the session. It carries no ticking countdown, so
-// it announces once: the caller moves focus into it when it opens, and Escape
-// hands focus back to the work.
 export const SessionExpiryBanner = ({
   bannerRef,
   isContinuing,
@@ -49,8 +45,6 @@ export const SessionExpiryBanner = ({
       aria-modal="false"
       aria-labelledby={TITLE_ID}
       aria-describedby={DESCRIPTION_ID}
-      // The expiry-warning contract requires alertdialog semantics; a native
-      // <dialog> announces as role="dialog" and would lose them.
       // eslint-disable-next-line react-doctor/prefer-html-dialog -- role="alertdialog" is required here.
       role="alertdialog"
       tabIndex={-1}

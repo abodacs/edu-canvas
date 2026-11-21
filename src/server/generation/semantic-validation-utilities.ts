@@ -164,12 +164,6 @@ const hasUnsafeAgentText = (value: string): boolean => {
   return unsafeAgentTextPatterns.some((pattern) => pattern.test(value));
 };
 
-/**
-The single text boundary for model-authored recommendation fields. Both the
-inline semantic runner and the async advisory reviewer use it, so a provider
-that echoes an answer key, a credential marker, or student wording cannot reach
-a teacher-facing finding.
-*/
 export const safeAgentText = (value: string, fallback: string): string => {
   const text = value.trim().replaceAll(/\s+/gu, " ");
   return !text || text.length > 240 || hasUnsafeAgentText(text)
@@ -192,10 +186,6 @@ export const safeIdentifier = (
     ? value
     : undefined;
 
-/**
-The advisory recommendation fields after sanitization. It carries no verdict:
-every consumer turns these into warnings, never into a block.
-*/
 export interface SanitizedRecommendation {
   code: "AGENT_RECOMMENDATION";
   field: string;
@@ -221,11 +211,11 @@ export const sanitizedRecommendation = (
     ),
     ...(recommendation.recommendation !== undefined &&
       recommendation.recommendation !== "" && {
-      recommendation: safeAgentText(
-        recommendation.recommendation,
-        "Review this recommendation before continuing."
-      ),
-    }),
+        recommendation: safeAgentText(
+          recommendation.recommendation,
+          "Review this recommendation before continuing."
+        ),
+      }),
   };
 };
 
@@ -237,10 +227,6 @@ export const sanitizedRecommendations = (
     .map(sanitizedRecommendation);
 };
 
-/**
-An advisory agent reviews learning quality, never private answer keys. The
-clone drops relationships and every other value the reviewer does not need.
-*/
 export const cloneSemanticValidationInput = (
   input: SemanticValidationInput
 ): SemanticValidationInput => {

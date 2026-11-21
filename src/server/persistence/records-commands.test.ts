@@ -440,9 +440,6 @@ describe("record commands", () => {
       reviewedContent: reviewContent,
     });
 
-    // The assigned variant's section holds only item_2, so item_1 belongs to
-    // another variant's section. Grading against that section would use
-    // another variant's answer key, so the submit must be refused.
     const [worked, guided, independent, followUp] = sections;
     const linkedSections = [
       { ...worked, variantId: "variant_standard", itemIds: ["item_2"] },

@@ -11,16 +11,6 @@ import type {
   LearnerItem,
 } from "@/shared/learner-contract";
 
-/**
-#9 learner board pieces. Each control carries a data hook (`data-source`,
-`data-target`) so the page can name where focus lands after an action
-removes or disables the focused control.
-*/
-
-/**
-Pair numbers in the order the learner formed them. A target can be chosen by
-more than one source, so it may carry several numbers.
-*/
 const pairNumbers = (pairs: Readonly<Record<string, string>>) => {
   const bySource = new Map<string, number>();
   const byTarget = new Map<string, number[]>();
@@ -32,10 +22,6 @@ const pairNumbers = (pairs: Readonly<Record<string, string>>) => {
   return { bySource, byTarget };
 };
 
-/**
-The visible pair label. It is part of the button's name, so a screen reader
-hears "1/2 Pair 1" on both cards of the pair. The tick is decoration only.
-*/
 const PairBadge = ({
   copy,
   pairNumber,
@@ -161,11 +147,6 @@ export const MatchingColumns = ({
   );
 };
 
-/**
-The finish row: Done, the progress line beside it, and Clear at the far end.
-The progress line is visible text, not a live region; the page's single
-`<output>` announces each change.
-*/
 export const BoardActions = ({
   copy,
   progress,

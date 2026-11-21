@@ -166,10 +166,6 @@ const expectStoredRecord = async (
   ).resolves.toStrictEqual(expected);
 };
 
-/**
-#148: one service whose safety rules block any prompt that contains "unsafe".
-The fixture makes the blocked path and the revised path reachable in one test.
-*/
 const createModerationService = () => {
   const provider = createDeterministicLessonDraftProvider();
   const persistence = createSeededPersistence();
@@ -925,8 +921,6 @@ describe("generation service conformance: retries and moderation", () => {
     ).rejects.toMatchObject({ code: "MODERATION_REVISION_REQUIRED" });
   });
 
-  // #148: a revision is a new request, not a retry. The link names the blocked
-  // predecessor and never enters the request hash.
   it("creates a new request for a changed prompt linked to a moderation block", async () => {
     const { provider, service } = createModerationService();
 

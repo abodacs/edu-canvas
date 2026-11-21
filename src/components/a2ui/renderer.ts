@@ -95,8 +95,6 @@ const applyUpdateComponents = (
     );
   }
 
-  // #116: the surface's pinned catalog scopes components and actions; a
-  // foreign component fails closed even though another catalog knows it.
   const scoped = validateA2UIMessage(input, {
     catalogVersion: surface.catalogVersion,
   });

@@ -36,10 +36,6 @@ interface ReadyFixture {
   record: LessonGenerationRecord;
 }
 
-/**
-A real `ready-for-review` record from the deterministic drafting path, so the
-advisory service meets the stored shape the route meets.
-*/
 const createReadyFixture = async (): Promise<ReadyFixture> => {
   const persistence = createSeededPersistence();
   const service = createGenerationService({
@@ -192,7 +188,6 @@ describe("advisory review: warning-only result", () => {
         ],
       },
       snapshot: before,
-      // The reviewer never sees the private answer pairs.
       answerPairsSeen: 0,
     });
   });
@@ -256,7 +251,6 @@ describe("advisory review: failure leaves the record untouched", () => {
   it("times out inside one bound and writes nothing", async () => {
     const fixture = await createReadyFixture();
     const before = snapshotOf(fixture.record);
-    // The agent would answer long after the service's own bound.
     const agent = fakeAgent(async () => {
       await delay(200);
       return [];

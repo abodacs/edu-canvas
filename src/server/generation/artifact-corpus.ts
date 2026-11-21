@@ -37,15 +37,6 @@ import type {
   ValidatedLearningPath,
 } from "./types";
 
-// One fixture corpus for the Validation & Safety gate. Every seam test (draft
-// gate, semantic runner, A2UI compile guard) reads its break fixtures and its
-// expected verdict from this module, so a new seam extends one table.
-//
-// The corpus module stays in `src/server/generation` on purpose: the compile
-// guard lives in `src/server/a2ui`, and the dependency boundary forbids the
-// drafting context from importing it. The differential oracle test assembles
-// both contexts as a test module.
-
 export type CorpusSeam = "draft" | "semantic" | "compile";
 
 export type CorpusSeamVerdict = SemanticValidationVerdict | "not_applicable";
@@ -79,10 +70,6 @@ export interface ArtifactCorpusCase {
   readonly messageMutation?: MessageMutation;
   readonly compileFailure?: CompileFailure;
   readonly compileOutcome: "accept" | "reject" | "not_applicable";
-  /**
-   * Set when the raw compile guard accepts an artifact the gate hard-blocks.
-   * The compile guard only sees the rendered projection, so it cannot observe every draft or semantic rule. The gate stays the stricter seam.
-   */
   readonly stricterThanCompile?: string;
 }
 
@@ -244,9 +231,6 @@ export const qualifyingExtraPairs = (nodeCount: number): [number, number][] => {
   });
 };
 
-/**
- * A randomized-shape curriculum graph used by the path property. The corpus fixtures use the fixed three-node graph; this generator keeps the independent re-check honest about longer graphs.
- */
 export const buildVersionedPlanContext = (
   plan: PathPlan
 ): VersionedCurriculumContext => {
@@ -415,9 +399,6 @@ const createVariant = (
   return variant;
 };
 
-/**
- * The warning-only base: every variant shares one interaction structure, so the semantic runner warns without hard-blocking.
- */
 export const buildValidBaseDraft = (
   plan: DraftPlan = defaultCorpusPlan
 ): ProviderLessonDraft => {
@@ -429,9 +410,6 @@ export const buildValidBaseDraft = (
   };
 };
 
-/**
- * The passing base: each variant carries a distinct learning move, so the semantic runner emits neither warnings nor hard blocks.
- */
 export const buildPassingLessonDraft = (
   plan: DraftPlan = defaultCorpusPlan
 ): ProviderLessonDraft => {
@@ -446,9 +424,6 @@ export const buildPassingLessonDraft = (
   return draft;
 };
 
-/**
- * The semantic answer-key break: the first relationship pairs two fractions that do not name the same part. The draft gate cannot see it and the compile guard never reads relationships; the semantic runner hard-blocks.
- */
 export const breakFirstRelationshipAnswer = (
   draft: ProviderLessonDraft
 ): void => {

@@ -21,9 +21,6 @@ export interface SupabaseProviderOptions {
 
 const defaultTimeoutMs = 5000;
 
-/**
- * Provider codes that mean the submitted password did not match the account.
- */
 const credentialRejectionCodes = new Set([
   "invalid_credentials",
   "user_not_found",
@@ -35,11 +32,6 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const readUnknownField = (value: unknown, key: string): unknown =>
   isRecord(value) ? value[key] : undefined;
 
-/**
- * Composes a fresh `AbortSignal.timeout` into the fetch the SDK uses, so every
- * request fails closed once `timeoutMs` elapses. The GoTrue client issues
- * exactly one request per auth call, so this bounds the total provider call.
- */
 const createTimeoutFetch = (timeoutMs: number): typeof fetch => {
   return async (input, init) => {
     const timeoutSignal = AbortSignal.timeout(timeoutMs);
@@ -64,11 +56,6 @@ const readErrorDetails = (error: unknown): ProviderErrorDetails => {
   };
 };
 
-/**
- * A transport failure is anything the provider never answered for: a network
- * error or timeout (status 0), an error with no HTTP status, or a 5xx outage.
- * These fail closed as `unavailable` rather than as a credential rejection.
- */
 const isTransportFailure = (error: unknown): boolean => {
   const { status } = readErrorDetails(error);
   return status === undefined || status === 0 || status >= 500;
@@ -85,11 +72,6 @@ const decodeClaims = (payload: string): Record<string, unknown> | undefined => {
   return isRecord(decoded) ? decoded : undefined;
 };
 
-/**
- * Reads JWT claims without verifying the signature. This is only for
- * non-security-critical fields (session id, subject consistency); authority
- * always comes from the provider's own `getUser`/`signIn` responses.
- */
 const readTokenClaims = (
   accessToken: string
 ): Record<string, unknown> | undefined => {
@@ -149,8 +131,6 @@ const classifySignInFailure = (error: unknown): ProviderSignInOutcome => {
   if (code === "email_not_confirmed") {
     return { status: "email-unverified" };
   }
-  // Unrecognized provider answers stay indeterminate and never disclose
-  // whether an account exists.
   return {
     status:
       code !== undefined && credentialRejectionCodes.has(code)
@@ -172,12 +152,6 @@ const classifySessionFailure = (error: unknown): ProviderSessionStatus => {
 const stripTrailingSlash = (value: string): string =>
   value.endsWith("/") ? value.slice(0, -1) : value;
 
-/**
- * The hosted identity provider. An anon-key client performs every end-user
- * flow (sign-in, sign-up, refresh, get-user); a service-role client is used
- * only to revoke one provider session on sign-out. Passwords are transient
- * request data and never leave the method calls that receive them.
- */
 export const createSupabaseIdentityProvider = (
   options: SupabaseProviderOptions
 ): IdentityProvider => {
@@ -220,8 +194,6 @@ export const createSupabaseIdentityProvider = (
     password: string
   ): Promise<ProviderSignUpOutcome> => {
     const { error } = await anonClient.auth.signUp({ email, password });
-    // A fresh address and an already-registered one share one outcome so
-    // sign-up never reveals whether the address exists (AT-37).
     return error && isTransportFailure(error)
       ? { status: "unavailable" }
       : { status: "verification-pending", email };
@@ -292,7 +264,6 @@ export const createSupabaseIdentityProvider = (
     },
     signOut: async (accessToken): Promise<void> => {
       try {
-        // Best effort, this session only. Local logout must still succeed.
         await serviceRoleClient.auth.admin.signOut(accessToken, "local");
       } catch {
         // Provider revocation is never allowed to block logout.

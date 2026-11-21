@@ -164,8 +164,6 @@ describe.skipIf(!isRunDatabaseTests)(
         displayName: "Issue 115 regression teacher",
       });
 
-      // No tenants row exists for tenantId: the fresh-database shape from
-      // issue #115 where deterministic sign-in failed with a 503.
       await expect(
         persistence.grantMembership({
           membershipId,
@@ -209,8 +207,6 @@ describe.skipIf(!isRunDatabaseTests)(
       ).resolves.toMatchObject({ membershipId, status: "active" });
 
       await expect(countActorMemberships()).resolves.toBe(1);
-      // The grant must stay insert-if-missing: replaying a fixture boot may
-      // not rename or rebrand a tenant row that already exists.
       await expect(persistence.readTenantName(tenantId)).resolves.toBe(
         tenantName
       );
@@ -220,8 +216,6 @@ describe.skipIf(!isRunDatabaseTests)(
       const persistence =
         createPostgresIdentityPersistence(requireDatabaseUrl());
 
-      // A tenant that was provisioned outside the synthetic fixture must not
-      // be renamed or marked synthetic by a membership grant.
       await withTenantSql(realTenantId, async (transaction) => {
         await transaction`
           insert into tenants (id, slug, name, synthetic_data_only)
@@ -269,8 +263,6 @@ describe.skipIf(!isRunDatabaseTests)(
         displayName: "Issue 115 regression learner",
       });
 
-      // Neither a tenants row nor an identities row exists: the
-      // fresh-database shape for learner memberships from issue #115.
       await expect(
         persistence.grantMembership({
           membershipId: learnerMembershipId,
@@ -289,8 +281,6 @@ describe.skipIf(!isRunDatabaseTests)(
         status: "active",
       });
 
-      // The materialized identity carries the real roster fields, never a
-      // raw machine id a teacher-facing surface would render.
       await expect(readProvisionedLearnerIdentity()).resolves.toMatchObject({
         id: learnerId,
         tenant_id: learnerTenantId,

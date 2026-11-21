@@ -6,11 +6,6 @@ import { recordJsonColumns, recordTableNames } from "./records-port";
 import type { RecordTableName } from "./records-port";
 import { tablesByStoredName } from "./records-seeded";
 
-// The PostgreSQL adapter stringifies every value it writes and casts only the
-// columns in `recordJsonColumns` back to jsonb. A jsonb column missing from
-// that list stores a JSON string scalar, so the record parse reads
-// "expected object, received string". This binds the list to the jsonb
-// columns the schema declares, in both directions.
 const jsonColumnNames = (table: RecordTableName): Set<string> => {
   const columns: Record<string, Column> = getTableColumns(
     tablesByStoredName[table]

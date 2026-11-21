@@ -25,9 +25,6 @@ import { teacherProgressResponseSchema } from "@/shared/progress-contract";
 import type { TeacherProgressResponse } from "@/shared/progress-contract";
 import type { ReactElement } from "react";
 
-/**
-A fetch rejection carries no HTTP status; the sentinel stands for the network failure.
-*/
 const statusNetworkFailure = 0;
 
 type ProgressState =
@@ -45,9 +42,6 @@ type ProgressAction =
   | { readonly type: "loaded"; readonly data: TeacherProgressResponse }
   | { readonly type: "failed"; readonly status: number };
 
-/**
-The refresh compares the stored run revisions it knew with the ones it received. Any change — a new attempt, a new run, a new decision — turns the stale marker on; the record itself is never rewritten by this view.
-*/
 const hasNewActivity = (
   previous: TeacherProgressResponse,
   next: TeacherProgressResponse

@@ -30,9 +30,6 @@ import type { LearnerCopy } from "@/components/learn/learner-copy";
 
 type Phase = "loading" | "ready" | "saving" | "done" | "error";
 
-/**
-A fetch rejection carries no HTTP status; the sentinel picks the network failure message.
-*/
 const statusNetworkFailure = 0;
 const statusUnauthorized = 401;
 const statusForbidden = 403;
@@ -80,9 +77,6 @@ const post = async (
 const toPairList = (pairs: Readonly<Record<string, string>>) =>
   Object.entries(pairs).map(([sourceId, targetId]) => ({ sourceId, targetId }));
 
-/**
-#9: where focus goes after an action removes or disables the focused control. Pairing disables every target, Done unmounts itself, and Try again or Clear resets the board, so each names its landing place instead of dropping focus to the document body.
-*/
 type FocusTarget = "first-source" | "next-source" | "reveal" | "error";
 
 const focusSelectors: Readonly<Record<"first-source" | "next-source", string>> =
@@ -100,9 +94,6 @@ interface LearnerRunState {
   readonly copy: LearnerCopy;
 }
 
-/**
-The run's network lifecycle: start, submit, and retry. It owns the phase and the single announcement the page's live region reads.
-*/
 const useLearnerRun = (input: {
   readonly assignment: string;
   readonly variant: string;
@@ -117,8 +108,6 @@ const useLearnerRun = (input: {
   const [announcement, setAnnouncement] = useState("");
   const copy = learnerCopyFor(run?.lesson.language ?? null);
 
-  // One start shape for the page load and the retry replay; the idempotent
-  // operation key returns the same run with its current revision.
   const postStartRun = async (): Promise<Response> => {
     return await post("/api/learner/runs", csrf, {
       operationKey: `start-${assignment}-${variant}`,
@@ -195,9 +184,6 @@ const useLearnerRun = (input: {
     }
   };
 
-  // #7: a retry appends evidence; the stored first response and decision stay.
-  // The replayed start returns the current run revision, so the next submit is
-  // never stale.
   const retry = async (onReset: () => void): Promise<void> => {
     setPhase("saving");
     try {
@@ -227,9 +213,6 @@ const useLearnerRun = (input: {
   return { state, submit, retry, announce: setAnnouncement };
 };
 
-/**
-Moves focus once the render that removed or disabled the focused control has committed. The request lives in a ref: it is not shown, only consumed.
-*/
 const useFocusAfterRender = () => {
   const pending = useRef<FocusTarget | null>(null);
   const boardReference = useRef<HTMLElement>(null);
@@ -267,9 +250,6 @@ const useFocusAfterRender = () => {
   };
 };
 
-/**
-The assigned section's items split into the two columns, with headings.
-*/
 const deriveBoard = (run: LearnerRunResponse, copy: LearnerCopy) => {
   const section = run.lesson.sections.find(
     (candidate) => candidate.id === run.lesson.assignedSectionId

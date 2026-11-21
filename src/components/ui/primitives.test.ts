@@ -24,11 +24,6 @@ const ignoreValue = (): void => {
 
 type WithoutChildren<P> = P extends unknown ? Omit<P, "children"> : never;
 
-/**
-`createElement` with children as arguments. React's typing wants required
-children in the props object, and the lint rule forbids that; one documented
-hole here keeps every call site honest.
-*/
 const element = <P extends object>(
   type: ComponentType<P>,
   properties: WithoutChildren<P>,
@@ -63,7 +58,6 @@ describe(Button, () => {
     expect(markup).toContain("data-busy");
     expect(markup).not.toMatch(/\sdisabled(?:=|\s|>)/u);
     expect(markup).toContain("Publish");
-    // The size class survives busy, so the width class is unchanged.
     expect(markup).toMatch(/class="btn lg"/u);
   });
 

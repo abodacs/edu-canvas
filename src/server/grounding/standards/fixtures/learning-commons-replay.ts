@@ -7,11 +7,6 @@ import type {
   ProviderResponse,
 } from "../learning-commons-rest";
 
-/**
- The #142 MCP evidence stays readable for the registry tests: it records the
- historical envelope, the ELA boundary and the free-text context. The REST
- replay below is separate and models the live shape.
-*/
 interface EvidenceRun {
   id: string;
   mode: string;
@@ -127,29 +122,13 @@ export const recordedEvidence: EvidenceFile = evidenceFileSchema.parse(
 );
 
 export const recordedFreeTextEvidence: FreeTextEvidenceFile =
-  freeTextEvidenceFileSchema.parse(JSON.parse(readFileSync(freeTextEvidenceUrl, "utf-8")));
+  freeTextEvidenceFileSchema.parse(
+    JSON.parse(readFileSync(freeTextEvidenceUrl, "utf-8"))
+  );
 
 export const recordedColdRuns = recordedEvidence.runs.filter((run) => {
   return run.mode === "cold";
 });
-
-/**
- Replay transport pinned to the live Learning Commons REST API on 2026-11-04.
- It makes no network call.
-
- The committed live matrix (`docs/research/standards-generalization/live-matrix.json`)
- records the per-row facts: the framework, the standard UUID, the component
- count, the prerequisite codes and the crosswalk target. This module rebuilds
- provider-shaped envelopes (`data` + `pagination`) from those facts so the
- adapter is exercised against the real response shape. Descriptions and
- component text are shortened; counts, codes, UUIDs and pagination are recorded.
-
- Live facts reproduced here:
- - Multi-State 4.NF.A.1 → 5 components, prerequisites 4.OA.A.2, 3.NF.A.3
- - Multi-State 4.OA.A.3 → 18 components, prerequisites 4.NBT.A.3, 4.NBT.B.6, 3.OA.D.8
- - California rows have no direct prerequisites and crosswalk to CCSS at jaccard 1
- - Multi-State RI.5.2 resolves but has 0 math components and 0 prerequisites
-*/
 
 interface RecordedPrerequisite {
   readonly statementCode: string;
@@ -442,8 +421,6 @@ export const createRecordedLearningCommonsTransport =
         if (standards.length === 0) {
           return await Promise.resolve(emptyPage);
         }
-        // Live framework pages mix grouping rows (null statementCode) with
-        // standards, including exact codes that only appear after page one.
         const groupingRow = {
           caseIdentifierUUID: `${frameworkCaseIdentifierUUID}:grouping`,
           statementCode: null,
@@ -455,7 +432,6 @@ export const createRecordedLearningCommonsTransport =
           frameworkCaseIdentifierUUID === CALIFORNIA_MATH &&
           cursor === undefined
         ) {
-          // California math has 1467 rows live; the target is on page 2.
           return page(
             [
               groupingRow,

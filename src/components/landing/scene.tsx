@@ -1,17 +1,5 @@
 import type { ReactElement } from "react";
 
-/**
-The landing artwork, ported from the approved mock
-(.impeccable/mocks/screens/0-landing.html): a halftone-and-stipple dawn
-landscape with a stoa, the place where scholé happened. Inline SVG only —
-the CSP allows no remote image host — and every colour reads a --scene-*
-token so the artwork shares one palette with the tokens layer.
-
-The ids are namespaced `landing-*` because the closing scene's dusk gradient
-reuses this component's dot patterns and stipple filter; both scenes are
-always mounted on the page, so the references resolve.
-*/
-
 const HeroScene = (): ReactElement => {
   return (
     <svg
@@ -295,7 +283,6 @@ const HeroScene = (): ReactElement => {
   );
 };
 
-/** The dusk echo of the hero scene behind the closing call to action. */
 const ClosingScene = (): ReactElement => {
   return (
     <svg

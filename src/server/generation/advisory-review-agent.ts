@@ -11,15 +11,6 @@ import type {
   SemanticValidationInput,
 } from "./semantic-validation-contract";
 
-/**
-#223: the Meta-backed advisory reviewer.
-
-It asks for warnings about learning quality only. The request schema has no
-field for an answer key, a grade, or a block, and the response parser clamps any
-verdict the model still returns to a warning. The reviewer never grounds, grades,
-authors answer keys, or touches the deterministic gate.
-*/
-
 const advisoryReviewResponseSchema = z
   .object({
     recommendations: z
@@ -38,11 +29,6 @@ const advisoryReviewResponseSchema = z
   })
   .strict();
 
-/**
-The response JSON schema the provider must satisfy. A strict schema requires
-every property to be listed in `required`, so the two optional fields are
-required and nullable instead of absent.
-*/
 const advisoryRecommendationsJsonSchema = {
   type: "object",
   additionalProperties: false,
@@ -84,11 +70,6 @@ const itemList = (items: readonly { label: string }[]): string => {
   return items.map((item, index) => `${index + 1}. ${item.label}`).join("\n");
 };
 
-/**
-The prompt carries only the sanitized draft and pack-derived context. The
-advisory input clone already dropped relationships, so the reviewer never sees
-the answer pairs.
-*/
 export const buildAdvisoryReviewPrompt = (
   input: SemanticValidationInput
 ): string => {
@@ -169,8 +150,6 @@ const parseRecommendations = (
 
   return parsed.data.recommendations.map((recommendation) => {
     return {
-      // The response type still admits a block verdict so a provider that
-      // disobeys is downgraded here instead of failing the whole review.
       verdict: recommendation.verdict === "pass" ? "pass" : "warning",
       code: "AGENT_RECOMMENDATION",
       field: recommendation.field,

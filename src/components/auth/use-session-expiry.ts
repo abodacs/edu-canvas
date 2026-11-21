@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 
 import { renewSession } from "./auth-client";
 
-// The warning appears this long before the server-provided idle deadline.
 export const SESSION_WARNING_LEAD_MS = 120_000;
 
 interface SessionExpiryOptions {
@@ -34,10 +33,6 @@ const noCleanup = (): void => {
   // Nothing was scheduled, so there is nothing to release.
 };
 
-// Drives the idle warning from the server's own deadline: one timer that shows
-// the banner 120 seconds early and one that expires the session exactly on
-// time. Only the explicit Continue action renews; nothing here counts down in a
-// live region, so the warning announces once.
 export const useSessionExpiry = ({
   idleExpiresAt,
   absoluteExpiresAt,

@@ -12,8 +12,6 @@ import {
   resolveModerationRecovery,
 } from "./moderation-recovery";
 
-// Copy rule 2 and rule 8 from docs/design/blocked-generation-recovery.md:
-// moderation copy never offers the unchanged request again.
 const FORBIDDEN_PATTERNS = [
   /try again/iu,
   /retry/iu,

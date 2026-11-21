@@ -25,10 +25,6 @@ import type {
   LessonPreviewCompileInput,
 } from "./compiler";
 
-/**
- * The production seam accepts only the branded artifact that `gateArtifact`
- * mints, so every preview test enters through that gate.
- */
 const compileGatedPreview = (input: LessonPreviewCompileInput) => {
   const gate = gateArtifact({
     kind: "lesson",

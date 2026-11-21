@@ -7,12 +7,6 @@ import {
 import { routeTree } from "./routeTree.gen";
 import { readCspNonce } from "./server/security-headers";
 
-/**
- * #130: the middleware in `start.ts` mints one nonce per request. The router
- * needs it so `Scripts` and `HeadContent` stamp it on the inline hydration
- * bootstrap and on rendered styles. The client reads the same value back from
- * the `csp-nonce` meta tag.
- */
 const requestCspNonce = createIsomorphicFn()
   .client((): string | undefined => undefined)
   .server((): string | undefined => readCspNonce(getGlobalStartContext()));

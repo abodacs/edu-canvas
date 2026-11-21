@@ -2,15 +2,6 @@ import { describe, expect, it, vi } from "vitest";
 
 import { createPostgresRecordBackend } from "./records-postgres";
 
-/**
- * The learner run-start write races against itself when the surface
- * double-fires its start request (delegation pack case s0-smoke): two
- * transactions pass the receipt lookup, and the loser aborts on the
- * `learner_runs` natural key. The insert gains a conflict clause so the
- * loser skips the insert and re-reads the winner's row instead. This suite
- * pins the SQL the backend builds for that option.
- */
-
 const capturedStatements = vi.hoisted(() => {
   return {
     sql: [] as string[],

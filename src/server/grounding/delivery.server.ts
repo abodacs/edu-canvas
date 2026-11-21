@@ -21,17 +21,6 @@ import { SourceRequestError } from "./types";
 import type { PublicSourceSnapshot } from "@/shared/source-contract";
 import type { TeacherActor } from "../identity/types";
 
-/**
-Server delivery seam for bounded source snapshots (#114). Every handler
-resolves a verified teacher actor and the mutation guard before any domain
-work; the cleanup sweep starts lazily with this module's first request.
-*/
-
-/**
- * A source snapshot is only complete when the requested standard resolves to
- * a real standards pack. Resolving the registry directly keeps an unknown
- * standard from reporting a false positive.
- */
 export const resolveStandardPack = (
   standardId: string,
   tenantId: string
@@ -179,10 +168,6 @@ const storeUploadParts = async (
   });
 };
 
-/**
-POST /api/lessons/sources — multipart file upload or JSON corrected text.
-Owning teacher, mutation-protected.
-*/
 export const handleSourceUploadRequest = async (
   request: Request
 ): Promise<Response> => {
@@ -202,9 +187,6 @@ export const handleSourceUploadRequest = async (
   }
 };
 
-/**
-GET /api/lessons/sources — the teacher's snapshots without extracted text.
-*/
 export const handleSourceListRequest = async (
   request: Request
 ): Promise<Response> => {
@@ -222,9 +204,6 @@ export const handleSourceListRequest = async (
   }
 };
 
-/**
-GET /api/lessons/sources/:sourceId — single snapshot with extracted text for teacher review.
-*/
 export const handleSourceReadRequest = async (
   request: Request,
   snapshotId: string
@@ -248,9 +227,6 @@ export const handleSourceReadRequest = async (
   }
 };
 
-/**
-POST /api/lessons/sources/:sourceId/cancel — cancel an extraction or remove an existing snapshot. Owning teacher, mutation-protected.
-*/
 export const handleSourceCancelRequest = async (
   request: Request,
   snapshotId: string
@@ -274,9 +250,6 @@ export const handleSourceCancelRequest = async (
   }
 };
 
-/**
-POST /api/lessons/sources/:sourceId/review — teacher review completes a complete snapshot. Owning teacher, mutation-protected.
-*/
 export const handleSourceReviewRequest = async (
   request: Request,
   snapshotId: string

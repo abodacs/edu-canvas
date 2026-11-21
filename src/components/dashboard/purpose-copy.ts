@@ -1,11 +1,6 @@
 import type { BadgeTone } from "@/components/ui/badge";
 import type { ProgressRun } from "@/shared/progress-contract";
 
-/**
- * #8 the teacher-facing routing words for a stored decision purpose. The
- * stored reason itself renders verbatim; this label only names the routing.
- */
-
 type DecisionPurpose = NonNullable<ProgressRun["decision"]>["purpose"];
 type RunStage = ProgressRun["stage"];
 
@@ -25,10 +20,6 @@ const purposeCopy: Record<DecisionPurpose, string> = {
 export const purposeLabel = (purpose: DecisionPurpose): string =>
   purposeCopy[purpose];
 
-/**
-The status pill for a stored run stage. The words carry the meaning; the tone
-only reinforces it, and no stage is coloured as a failure.
-*/
 const stageCopy: Record<RunStage, StageStatus> = {
   assigned: { label: "Assigned", tone: "idle" },
   active: { label: "In progress", tone: "idle" },

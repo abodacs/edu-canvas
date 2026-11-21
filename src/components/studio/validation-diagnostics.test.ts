@@ -117,9 +117,7 @@ describe("validation diagnostics panel", () => {
     const markup = render("ltr", {
       ...rollup,
       affectedScreens: ["variant-2"],
-      screens: [
-        rollup.screens[1],
-      ],
+      screens: [rollup.screens[1]],
       flow: [],
     });
     const labels = markup
@@ -159,9 +157,7 @@ describe("validation diagnostics panel", () => {
     const oneScreen = render("ltr", {
       ...rollup,
       affectedScreens: ["variant-1"],
-      screens: [
-        rollup.screens[0],
-      ],
+      screens: [rollup.screens[0]],
       flow: [],
     });
 

@@ -16,29 +16,15 @@ import type {
 import type { VersionedCurriculumContext } from "./semantic-validation-contract";
 import type { StandardsPack } from "@/server/curriculum/standards-pack";
 
-/**
-#223: the provisional K≤12 cases for the advisory reviewer's measured run.
-
-Every case is a draft plus the standards-pack context the deterministic gate
-would use, so the run can compare the reviewer's warning against the gate's own
-verdict. These are not #106 eval cases and carry no expected answer key: the
-fraction/word-problem/main-idea packs supply the answer rules.
-
-`scripts/advisory-review-eval.ts` consumes this module. It is test-support
-evidence, not a production entry point.
-*/
-
 export type AdvisoryReviewEvalCaseKind = "control" | "defect";
 
 export interface AdvisoryReviewEvalCase {
   id: string;
   kind: AdvisoryReviewEvalCaseKind;
-  /** Where the draft came from: a characterization fixture or the pack fixture. */
   source: "characterization-fixture" | "pack-draft";
   standardCode: string;
   context: VersionedCurriculumContext;
   draft: ProviderLessonDraft;
-  /** The deterministic gate's own verdict for the same draft and context. */
   deterministicState: "ready-for-review" | "blocked-by-validation";
   deterministicCodes: readonly string[];
 }
@@ -90,11 +76,6 @@ const packDraft = (pack: StandardsPack): ProviderLessonDraft => {
   );
 };
 
-/**
-Replace the label a relationship points at, so exactly one pair becomes wrong
-without touching the structure. This mirrors what the characterization harness
-does; the answer rule decides whether it blocks.
-*/
 const withWrongTargetLabel = (
   draft: ProviderLessonDraft,
   label: string

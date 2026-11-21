@@ -87,8 +87,6 @@ const seedFixtures = async (): Promise<void> => {
         (${secondLearnerId}, ${tenantId}, 'student', 'Second Learner', ${`pack-second-${runId}`}, true),
         (${revokedLearnerId}, ${tenantId}, 'student', 'Revoked Learner', ${`pack-revoked-${runId}`}, true)
     `;
-    // Only the first learner has a membership. The second is an active
-    // student identity with no membership, which the records bridge refuses.
     await sql`
       insert into memberships (id, actor_id, tenant_id, role, status, learner_id, revision)
       values
@@ -192,9 +190,6 @@ describe.skipIf(!isRunDatabaseTests)("pack records in PostgreSQL", () => {
   });
 
   it("forces RLS on every pack table and scopes adapter reads by tenant", async () => {
-    // The local docker role is a superuser, so a live bypass check cannot
-    // prove the policy. The catalog check proves FORCE is deployed; the
-    // cross-tenant adapter read proves the query scoping.
     const tables = await withRawDatabase(async (sql) => {
       const rows = await sql<{ relname: string }[]>`
         select relname

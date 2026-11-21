@@ -127,8 +127,6 @@ const readPreviewFrames = async (
   let isStreamDone = false;
 
   while (!isStreamDone) {
-    // A stream is read frame by frame; the next read needs the previous
-    // chunk to have been decoded and parsed.
     // eslint-disable-next-line no-await-in-loop
     const result = await reader.read();
     isStreamDone = result.done;

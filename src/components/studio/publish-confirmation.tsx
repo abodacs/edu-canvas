@@ -41,9 +41,6 @@ const PublishedOutcome = ({
   readonly headingRef: RefObject<HTMLHeadingElement | null>;
   readonly onClose: () => void;
 }) => {
-  // A publish that cites no reviewed source has no canonical record to assign,
-  // so it produces no learner activity. The heading and the link both read one
-  // value, so they cannot disagree about whether there is something to open.
   const { learnerAssignmentId, learnerVariantId } = published;
   const learnerLink =
     learnerAssignmentId !== null &&

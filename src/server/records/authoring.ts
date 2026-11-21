@@ -58,9 +58,6 @@ export const curatedReferenceSchema = z.strictObject({
 
 export type CuratedReference = z.infer<typeof curatedReferenceSchema>;
 
-/**
- * #6: an item carries the label and role the learner surface needs. Optional so rows written before this field still parse.
- */
 export const sectionItemSchema = z.strictObject({
   id: recordIdSchema,
   label: boundedTextSchema(recordLimits.attributionText),
@@ -72,11 +69,6 @@ export type SectionItem = z.infer<typeof sectionItemSchema>;
 export const sectionSchema = z.strictObject({
   id: recordIdSchema,
   kind: z.enum(sectionKindValues),
-  /**
-  #176: the variant this section was projected from. Optional so rows written
-  before the link still parse; the bridge always sets it, so a learner's
-  assigned variant resolves to one section without an id convention.
-  */
   variantId: recordIdSchema.optional(),
   title: boundedTextSchema(recordLimits.titleText),
   body: boundedTextSchema(recordLimits.bodyText),
@@ -100,11 +92,6 @@ export const approvedVariantCopySchema = z.strictObject({
 
 export type ApprovedVariantCopy = z.infer<typeof approvedVariantCopySchema>;
 
-/**
-#176: the approved learner-facing copy the reveal needs, stored once per
-version. Path copy sits at the version level; variant copy is keyed by the
-variant it belongs to. Null only on rows written before this column existed.
-*/
 export const approvedCopySchema = z.strictObject({
   schemaVersion: z.literal("approved-copy-v1"),
   language: z.enum(languageValues),
@@ -226,9 +213,6 @@ const isLineageValid = (version: {
   }
 };
 
-/**
- * A version is grounded in exactly one reviewed source: a curated reference for the authoring lane, or a source snapshot for the generated-pack lane. Both are nullable so either lane can write the same row shape.
- */
 export const hasExactlyOneReference = (version: {
   readonly curatedReferenceId: string | null;
   readonly sourceSnapshotId?: string | null;

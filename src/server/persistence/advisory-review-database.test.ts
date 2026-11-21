@@ -22,12 +22,6 @@ import type {
 import type { FoundationPersistence } from "../persistence";
 import type { AdvisoryReview } from "@/shared/generation-contract";
 
-/**
-#223: the advisory review is additive. This suite proves the real PostgreSQL
-port stores it without touching the draft, state, diagnostics, gate, or
-`updated_at`, and that rows written before the column still hydrate.
-*/
-
 const runId = randomUUID();
 const tenantId = `tenant_issue_223_${runId}`;
 const teacherId = `actor_issue_223_${runId}`;

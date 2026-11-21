@@ -33,13 +33,8 @@ type PreviewStatus =
 
 interface LessonPreviewProperties {
   readonly requestId: string;
-  // The record's pinned catalog (from generation provenance). matching-v1
-  // stays the default for records that predate catalog pinning.
   readonly catalogVersion?: string;
-  // #5: render a persisted review revision instead of the generation record.
   readonly previewVersionId?: string;
-  // When the teacher picks a variant card in the studio, the preview jumps to
-  // that variant's surface. Null keeps the preview on its own selection.
   readonly focusVariantId?: string | null;
 }
 
@@ -70,7 +65,6 @@ interface SurfaceEntry {
   language: "en" | "ar";
 }
 
-/** The falsy check for a nullable identifier, stated for the lint rule. */
 const hasText = (value: string | null | undefined): value is string =>
   value !== undefined && value !== null && value !== "";
 
@@ -156,9 +150,6 @@ const usePreviewStream = (
         const surfaceCount = Object.keys(
           renderStateReference.current.surfaces
         ).length;
-        // The stream declares how many surfaces the record compiles to; the
-        // count differs per catalog (four matching variants, one surface per
-        // fraction section), so the client checks integrity, not a fixed 4.
         if (outcome.surfaceCount < 1 || surfaceCount !== outcome.surfaceCount) {
           setStatus("blocked");
           setStatusMessage(
@@ -348,8 +339,6 @@ const SurfacePanel = ({
       id={`a2ui-panel-${entry.tabId}`}
       role="tabpanel"
       aria-labelledby={`a2ui-tab-${entry.tabId}`}
-      // WAI-ARIA APG: a panel with no focusable control must itself be
-      // reachable by keyboard so screen-reader users can read its content.
       // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- tabpanel is a valid tab stop.
       tabIndex={0}
     >
@@ -425,9 +414,6 @@ export const LessonPreview = ({
   const [selections, setSelections] = useState<Record<string, SelectionState>>(
     {}
   );
-  // The studio's variant chooser hands over the picked variant id; the surface
-  // activates through the render-phase adjustment below once its content is
-  // loaded, and the layout effect moves pointer and keyboard focus.
   const previewReference = useRef<HTMLElement>(null);
   const [appliedVariantId, setAppliedVariantId] = useState<string | null>(null);
   const surfaces = useMemo<SurfaceEntry[]>(() => {
@@ -469,8 +455,6 @@ export const LessonPreview = ({
       ? requestedSurfaceId
       : fallbackSurfaceId;
 
-  // Render-phase adjustment, the React-sanctioned way to sync state to a
-  // changed prop: activate the chosen variant's surface once it is loaded.
   if (hasText(focusVariantId) && focusVariantId !== appliedVariantId) {
     const targetSurfaceId = surfaces.find(
       (surface) => surface.tabId === focusVariantId
@@ -481,7 +465,6 @@ export const LessonPreview = ({
     }
   }
 
-  // DOM side effects only — the state above is already committed by then.
   useLayoutEffect(() => {
     if (!hasText(appliedVariantId) || appliedVariantId !== focusVariantId) {
       return;
@@ -508,9 +491,6 @@ export const LessonPreview = ({
         ? { ...current, [surfaceId]: {} }
         : current;
     });
-    // #116: in the teacher preview, advanceStage moves the previewed stage
-    // forward; the server-authorized learner transition lands with learner
-    // delivery and never persists anything from this preview.
     if (action !== "advanceStage") {
       return;
     }

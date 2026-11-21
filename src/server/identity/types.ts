@@ -9,9 +9,6 @@ import type {
 export const identityRoleValues = ["teacher", "student"] as const;
 export type IdentityRole = (typeof identityRoleValues)[number];
 
-/**
- * Capabilities are derived from the current membership and roster relationships on the server. A browser never supplies them.
- */
 export const capabilityValues = [
   "read_environment",
   "generate",
@@ -59,18 +56,12 @@ interface ActorBase {
   readonly tenantName: string;
   readonly membershipId: MembershipId;
   readonly sessionId: string;
-  /**
-  Non-secret session generation used to key client caches and drop stale results.
-  */
   readonly sessionGeneration: string;
   readonly authorizationRevision: number;
 }
 
 export interface TeacherActor extends ActorBase {
   readonly role: "teacher";
-  /**
-  Classes this teacher is currently assigned to inside the active tenant.
-  */
   readonly rosterClassIds: readonly ClassId[];
 }
 
@@ -93,13 +84,7 @@ export interface IdentitySessionRecord extends SessionTimes {
   readonly actorId: ActorId;
   readonly membershipId: MembershipId;
   readonly tenantId: TenantId;
-  /**
-  The provider session this application session is bound to, for logout and status checks.
-  */
   readonly providerSessionId: string;
-  /**
-  The verified provider subject, compared against the provider-status check.
-  */
   readonly providerSubject: string;
   readonly sessionGeneration: string;
   readonly authorizationRevision: number;
@@ -163,9 +148,6 @@ export interface UnavailableResolution {
   readonly status: "unavailable";
 }
 
-/**
- * An exhaustive session resolution. Only the active variant carries an actor; an "authenticated" boolean with an optional actor would let a failed check read as a session.
- */
 export type SessionResolution =
   ActiveResolution | UnauthenticatedResolution | UnavailableResolution;
 

@@ -1,16 +1,5 @@
 import type { StandardGroundingGap, StandardGroundingGapCode } from "./types";
 
-/**
-The versioned pilot registry (#218). A standard is data, never a code branch:
-adding a supported `{jurisdiction, statementCode}` row is an entry here, and the
-resolution pipeline reads the same fields for every row.
-
-The four pilot rows are Multi-State 4.NF.A.1, 4.NF.A.2, 3.NF.A.3 and 4.OA.A.3.
-California is out of scope (product decision 2026-11-04); the adapter keeps its
-exact-crosswalk path, so a California row is data only if that changes. Boundary entries pin the recorded absence,
-envelope and non-math progression cases.
-*/
-
 export const PILOT_REGISTRY_VERSION = "pilot-registry-v2";
 
 export type RegistryEntryKind = "pilot" | "boundary";
@@ -115,11 +104,6 @@ const gap = (
   return { code, message };
 };
 
-/**
- * The grade a statement code names. A math code leads with it (`4.NF.A.1`); an
- * ELA code puts it after the domain letters (`RI.5.2`). The first
- * dot-delimited numeric segment is the grade in both shapes.
- */
 export const gradeFromStatementCode = (statementCode: string): number => {
   const match = /(?:^|[^\d])(?<grade>\d+)(?=\.)/u.exec(statementCode);
   return match?.groups?.grade === undefined
@@ -142,11 +126,6 @@ const envelopeContains = (
   });
 };
 
-/**
-A lookup never guesses. A jurisdiction or grade outside the registered envelope
-is `unsupported-envelope`; a supported envelope with no matching entry is
-`standard-absent`.
-*/
 export const findRegistryEntry = (
   registry: PilotStandardRegistry,
   input: { readonly jurisdiction: string; readonly statementCode: string }

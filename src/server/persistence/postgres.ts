@@ -189,14 +189,15 @@ const readGenerationByQuery = async (
         select set_config('app.tenant_id', ${tenantId}, true)
       `;
 
-        const rows = lookup.byRequestId === true
-          ? await transaction<GenerationRequestRow[]>`
+        const rows =
+          lookup.byRequestId === true
+            ? await transaction<GenerationRequestRow[]>`
             select *
             from lesson_draft_requests
             where tenant_id = ${tenantId} and id = ${value}
             limit 1
           `
-          : await transaction<GenerationRequestRow[]>`
+            : await transaction<GenerationRequestRow[]>`
             select request.*
             from lesson_draft_requests request
             join lesson_generation_attempts attempt
@@ -259,8 +260,6 @@ const createPostgresGenerationBackend = (
       work: (transaction: SqlTransaction) => Promise<T>
     ): Promise<T> => {
       return await withDatabase(databaseUrl, async (sql) => {
-        // The explicit `Promise<T>` type argument resolves postgres.js's
-        // tuple-oriented `UnwrapPromiseArray` result to a plain `T`.
         return await sql.begin<Promise<T>>(work);
       });
     },

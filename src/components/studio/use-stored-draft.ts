@@ -6,7 +6,6 @@ import type { StoredDraftRead } from "@/lib/stored-draft-client";
 import type { StoredGenerationResult } from "@/shared/generation-contract";
 
 export interface StoredDraftHandlers {
-  /** A draft link starts loading: drop whatever the previous read showed. */
   readonly onReset: () => void;
   readonly onDraft: (stored: StoredGenerationResult) => void;
   readonly onUnauthorized: () => void;
@@ -24,12 +23,6 @@ interface StoredDraftLoad {
   readonly handlers: () => StoredDraftHandlers;
 }
 
-/**
-One load of one draft link, free of React so its ordering is testable. The
-opening flag follows the link: it is set when a link starts loading and
-cleared when there is no link, so it never sticks after the link goes away
-mid-read. An aborted read (a newer link, an unmount) changes nothing.
-*/
 export const loadStoredDraft = async ({
   requestId,
   read,
@@ -61,28 +54,17 @@ export const loadStoredDraft = async ({
       break;
     }
     default: {
-      // Every kind is cased above, so TS narrows `outcome` to never here; the
-      // default-case rule still wants the branch. It is unreachable.
       handlers().onUnavailable("");
     }
   }
 };
 
-/**
-Opens a persisted draft once per draft link (`/workspace?draft=<id>`). The
-caller routes the result through the same outcome branch a fresh generation
-takes, so a blocked draft shows its diagnostics or moderation panel exactly as
-it did when it was generated. `reload` reads the same link again on request;
-nothing polls.
-*/
 export const useStoredDraft = (
   draftRequestId: string | undefined,
   handlers: StoredDraftHandlers
 ): { readonly isOpening: boolean; readonly reload: () => void } => {
   const [isOpening, setIsOpening] = useState(draftRequestId !== undefined);
   const [readCount, setReadCount] = useState(0);
-  // Callers pass fresh callbacks each render; the read must run once per
-  // link, so it reads the latest handlers through a ref.
   const handlersReference = useRef(handlers);
   useEffect(() => {
     handlersReference.current = handlers;

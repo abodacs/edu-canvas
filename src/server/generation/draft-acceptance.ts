@@ -44,9 +44,6 @@ export interface DraftAcceptanceOptions {
   semanticValidation?: (
     input: SemanticValidationInput
   ) => Promise<SemanticValidationReport>;
-  /**
-   * Overridable only for fail-closed tests; production uses `gateArtifact`.
-   */
   artifactGate?: (input: ArtifactGateInput) => ArtifactGateResult;
 }
 
@@ -78,10 +75,6 @@ const diagnostic = (
   };
 };
 
-/**
- * Fail closed: an unavailable gate is infrastructure, not artifact evidence.
- * The attempt stays retryable and never becomes ready-for-review.
- */
 const gateUnavailableDiagnostic = (): GenerationDiagnostic => {
   return diagnostic(
     "ARTIFACT_GATE_UNAVAILABLE",
@@ -199,9 +192,6 @@ const findingIdentity = (finding: ArtifactGateFinding): string => {
   ].join("|");
 };
 
-/**
- * The gate decides the verdict for the whole artifact, so its findings become the record diagnostics on a hard block. Each one keeps its recovery action; a prior diagnostic with the same identity contributes its recommendation.
- */
 const gateDiagnostics = (
   findings: readonly ArtifactGateFinding[],
   existing: readonly GenerationDiagnostic[]
@@ -235,12 +225,6 @@ const gateDiagnostics = (
   });
 };
 
-/**
- * Production resolution is pack-driven. A request whose standard has no pack
- * has no curriculum context, and acceptance blocks with
- * `PREREQUISITE_PACK_MISSING`; the context is never synthesized from another
- * standard's graph.
- */
 export const resolveCurriculumContext = (
   input: NormalizedGenerationRequest,
   tenantId: string,
@@ -259,11 +243,6 @@ export const resolveCurriculumContext = (
     : undefined;
 };
 
-/**
- * The graph version a draft is generated and accepted against. It comes from
- * the resolved pack, so a pack edit can never silently keep the previous
- * graph.
- */
 export const resolveExpectedGraphVersion = (
   standardId: string,
   tenantId: string
@@ -288,10 +267,6 @@ export const reviewDraftForAcceptance = async (
     requestId: string;
     provenance: ProviderProvenance;
     structuralDiagnostics: GenerationDiagnostic[];
-    /**
-     * The graph version the caller expects. Omitted when the caller has no
-     * separate pin; acceptance then uses the resolved context's own version.
-     */
     graphVersion?: string;
   },
   options: DraftAcceptanceOptions

@@ -23,11 +23,6 @@ const createSeededStandardGroundingStore = (): SeededStandardGroundingStore => {
   return { records: new Map() };
 };
 
-/**
-In-memory test double for **Standard grounding**. It mirrors the append-only
-port: insert only, tenant scoped reads, and a unique request key per tenant.
-Runtime composition uses PostgreSQL; this module is never imported by runtime.
-*/
 export const createSeededStandardGroundingPersistence = (
   options: SeededStandardGroundingOptions = {}
 ): StandardGroundingPersistence => {

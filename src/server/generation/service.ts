@@ -79,10 +79,6 @@ const FAILED_RETRYABLE_STATE = "failed-retryable";
 const CANCELLED_DIAGNOSTIC_CODE = "GENERATION_CANCELLED";
 const DRAFT_NOT_FOUND_MESSAGE = "The requested draft was not found.";
 
-/**
-Teacher-ready copy for a classroom whose standards table has no row for the
-requested objective; the studio surfaces it verbatim (#168 P0-2).
-*/
 const CURRICULUM_STANDARD_NOT_CONFIGURED_MESSAGE =
   "This classroom has no curriculum target for that standard yet. Ask an admin to add it to your class, or try a different objective.";
 
@@ -91,16 +87,8 @@ const DEADLINE_DIAGNOSTIC_CODE = "GENERATION_DEADLINE_EXCEEDED";
 export interface GenerationServiceOptions extends DraftAcceptanceOptions {
   persistence: GenerationPersistence;
   provider: LessonDraftProvider;
-  /**
-  Shared request-limit state (#104). Required: reaching the provider without a
-  limit decision is exactly the bypass this port closes.
-  */
   limits: GenerationLimitStore;
   safety?: ContentSafety;
-  /**
-  Blocks generation behind an incomplete or unreviewed source snapshot (#114).
-  Optional: prompt-only requests never touch it.
-  */
   sourceGate?: SourceGate;
   now?: () => string;
   clock?: () => number;
@@ -113,7 +101,6 @@ export interface GenerationCancellationCommand {
   requestId: string;
 }
 
-/** The owning teacher and the persisted request a draft read names. */
 export type GenerationReadCommand = GenerationCancellationCommand;
 
 interface NormalizedCommandInput extends NormalizedGenerationRequest {
@@ -152,13 +139,9 @@ const packForStandard = (standard: string, tenantId?: string) => {
   if (tenantId !== undefined) {
     return standardsPackRegistry.resolve({ tenantId, standard });
   }
-  // Without a tenant there is no private-pack resolution: only a shared
-  // template may answer, so another tenant's pack never makes a standard
-  // "supported" for everyone.
   return resolveSharedStandardPack(standardsPackRegistry.packs, standard);
 };
 
-// Idempotency keys are persisted and looked up across deploys; keep FNV-1a so a retry that spans a deployment still matches its record.
 const hashForIdempotency = (value: string): string => {
   let hash = 2_166_136_261;
   for (const character of value) {
@@ -189,9 +172,6 @@ const createImplicitIdempotencyKey = (
   )}`;
 };
 
-// The delivery seam parses the body with `lessonGenerationInputSchema`; this
-// function owns only what the schema cannot say: which grades and standards
-// this product supports for the acting tenant, and the derived idempotency key.
 export const normalizeGenerationInput = (
   input: LessonGenerationInput,
   tenantId?: string
@@ -247,11 +227,6 @@ const diagnostic = (code: string, message: string): GenerationDiagnostic => {
   };
 };
 
-/**
-#132: one code for every local moderation block, plus the category the teacher
-must revise. The rule set version stays out of the diagnostic: it is a server
-detail and it would leak the rule fingerprint to the client.
-*/
 const moderationDiagnostic = (
   decision: ContentSafetyResult,
   message: string
@@ -331,8 +306,6 @@ const isRetryableState = (state: GenerationState): boolean =>
 
 const assertTeacherCanGenerate = (actor: Actor): void => {
   if (actor.role !== "teacher") {
-    // Defense-in-depth behind the delivery seam's own teacher resolution: an
-    // authorization condition, so it uses the identity error contract.
     throw new IdentityError("FORBIDDEN");
   }
 };
@@ -516,9 +489,6 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     attemptDiagnostics = outcome.diagnostics
   ): Promise<GenerationServiceResult> => {
     const draft = "draft" in outcome ? outcome.draft : null;
-    // The draft carries the enriched provenance (pack version and allowed
-    // screen patterns) acceptance wrote; the record and attempt must expose
-    // that same provenance or preview falls back to matching-only.
     const provenance =
       draft?.provenance ?? baseRecord.provenance ?? options.provider.provenance;
     const record: LessonGenerationRecord = {
@@ -556,8 +526,6 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     ) {
       const deadline = clock() + generationDuplicateWaitMs;
       while (clock() < deadline) {
-        // Polling is sequential by design: each wait and read observes the
-        // previous state before deciding whether to poll again.
         // eslint-disable-next-line no-await-in-loop
         await delay(25);
         // eslint-disable-next-line no-await-in-loop
@@ -725,8 +693,6 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     budgetKind: "per-call" | "total",
     sessionId: string
   ): Promise<ProviderCallOutcome> => {
-    // The single provider choke point. Every provider call, including a
-    // correction, must reserve shared limit state before it can run.
     let reservation: LimitVerdict;
     try {
       reservation = await options.limits.reserveProviderCall({
@@ -739,7 +705,6 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         leaseTtlMs: deadlines.leaseMs,
       });
     } catch {
-      // Fail closed: an unavailable limit store rejects with a bounded wait.
       return {
         ok: false,
         kind: "limited",
@@ -822,13 +787,9 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
         standardId: input.standardId,
         language: input.language,
         difficulty: input.difficulty,
-        // #148: the link is written with the new request, never with the
-        // blocked one, so the blocked row stays byte-for-byte unchanged.
         ...(!isBlankString(input.revisesRequestId) && {
           revisesRequestId: input.revisesRequestId,
         }),
-        // The publish bridge proves source grounding from the stored input,
-        // so the citation survives the rebuild (delegation pack case s0-smoke).
         ...(!isBlankString(input.sourceSnapshotId) && {
           sourceSnapshotId: input.sourceSnapshotId,
         }),
@@ -842,8 +803,6 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       updatedAt: timestamp,
     };
 
-    // Source resolution completes before the claim so the remaining lease is
-    // reserved for generation, validation, and persistence.
     const curriculum = resolveCurriculumContext(
       input,
       record.tenantId,
@@ -1080,8 +1039,6 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
   const releaseAttemptLease = async (
     baseRecord: LessonGenerationRecord
   ): Promise<void> => {
-    // A provider error, timeout, limit rejection, or cancellation must not
-    // leave the teacher locked out until the lease expires.
     try {
       await options.limits.releaseGenerationLease({
         tenantId: baseRecord.tenantId,
@@ -1108,9 +1065,6 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
     }
   };
 
-  // #148: a revision is a new request that names the blocked one. It never
-  // reuses the blocked record, and its link stays out of the request hash, so
-  // the moderated-hash guard remains the same-prompt refusal.
   const assertRevisionReferent = async (
     actor: GenerationCommand["actor"],
     input: NormalizedCommandInput
@@ -1194,8 +1148,6 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
             code: "DRAFT_NOT_FOUND",
           });
         }
-        // A retry that does not name a source inherits the original request's
-        // reviewed source, so its metadata and hash stay comparable.
         let effectiveInput: NormalizedCommandInput = input;
         const inheritedSource = retryRecord.input.sourceSnapshotId;
         if (
@@ -1264,11 +1216,6 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       );
     },
 
-    /**
-    Read one persisted draft for its owning teacher. A missing request, another
-    teacher's request, and another tenant's request are one indistinguishable
-    refusal, so the read never reveals whether a draft exists (PT-19).
-    */
     async read(
       command: GenerationReadCommand
     ): Promise<GenerationServiceResult> {

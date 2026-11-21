@@ -41,9 +41,6 @@ const withDatabase = async <T>(
   }
 };
 
-/**
-An internal signal that aborts the reservation transaction. The public store surface returns a verdict; the throw is what makes the rejection roll back every increment already applied in the same transaction.
-*/
 class LimitExceededSignalError extends Error {
   readonly verdict: LimitVerdict;
 
@@ -164,8 +161,6 @@ const reserveInTransaction = async (
   const nowMs = Date.parse(nowIso);
   const claims = counterClaimsFor(input, generationLimitPolicy);
 
-  // Each counter is one conditional write. A zero-row result means the limit
-  // is already at capacity; throwing rolls back the earlier increments.
   for (const claim of claims) {
     const bounds = windowBounds(claim.window, nowMs);
     if (claim.limit <= 0) {
@@ -212,9 +207,6 @@ const reserveInTransaction = async (
   return { allowed: true, retryAfterMs: 0 };
 };
 
-/**
-Shared request-limit state on the database that already owns quotas. One transaction reserves every applicable counter and the teacher's active generation lease; a rejected reservation rolls back to zero consumption.
-*/
 export const createPostgresGenerationLimitStore = (
   databaseUrl: string
 ): GenerationLimitStore => {

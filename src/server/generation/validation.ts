@@ -212,8 +212,7 @@ const parseDiagnostics = (
         issue.code === "unrecognized_keys"
           ? `Generated content contains an unknown field: ${issue.keys.join(", ")}.`
           : `Generated content is invalid at ${path.join(".") || "root"}: ${issue.message}`,
-      ...(variantId !== undefined &&
-        variantId !== "" && { variantId }),
+      ...(variantId !== undefined && variantId !== "" && { variantId }),
       ...(field !== undefined && field !== "" && { field }),
     };
   });
@@ -318,7 +317,11 @@ const validateRelationships = (
     );
 
     const owner = targetOwners.get(relationship.targetId);
-    if (owner !== undefined && owner !== "" && owner !== relationship.sourceId) {
+    if (
+      owner !== undefined &&
+      owner !== "" &&
+      owner !== relationship.sourceId
+    ) {
       addDiagnostic(diagnostics, {
         severity: "error",
         code: "TARGET_REUSED",
@@ -356,11 +359,6 @@ const validateRelationships = (
   }
 };
 
-/**
- * Labels in one group must be distinct. A group of identical labels, such as
- * every source reading "Word problems", carries no lesson and no answer, yet
- * every other structural rule passes it.
- */
 const validateDistinctLabels = (
   items: readonly { label: string }[],
   field: "sourceItems" | "targetItems",

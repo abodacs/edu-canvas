@@ -1,6 +1,3 @@
-/**
- * Application error codes for the identity boundary. These are application codes, never vendor codes. Every code maps to one safe transport status and a message that never names another tenant's resource, owner, or existence.
- */
 export const identityErrorCodeValues = [
   "UNAUTHENTICATED",
   "FORBIDDEN",
@@ -48,9 +45,6 @@ export const identityErrorStatus = (code: IdentityErrorCode): number =>
 export const identityErrorSafeMessage = (code: IdentityErrorCode): string =>
   safeMessageByCode[code];
 
-/**
- * The single error type the identity boundary throws. The message is always the safe message for the code, so a caller can serialize it without leaking server detail.
- */
 export class IdentityError extends Error {
   readonly code: IdentityErrorCode;
 

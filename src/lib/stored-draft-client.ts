@@ -3,11 +3,6 @@ import { storedGenerationResultSchema } from "@/shared/generation-contract";
 
 import type { StoredGenerationResult } from "@/shared/generation-contract";
 
-/**
-The teacher-visible copy when a draft link cannot be opened. The server answers
-a missing draft and another teacher's draft identically, so the copy never
-claims which one it was.
-*/
 export const STORED_DRAFT_UNAVAILABLE_MESSAGE =
   "This draft is not available. Start a new lesson, or open a draft from your own workspace.";
 
@@ -21,10 +16,6 @@ const unavailable: StoredDraftRead = {
   message: STORED_DRAFT_UNAVAILABLE_MESSAGE,
 };
 
-/**
-GET /api/lessons/:draftId for the signed-in teacher. Every failure resolves to
-one of three outcomes so the composer never handles transport detail.
-*/
 export const readStoredDraft = async (
   requestId: string,
   signal?: AbortSignal

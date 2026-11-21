@@ -45,7 +45,6 @@ const sessionState = vi.hoisted(
 );
 
 /* eslint-disable func-style, unicorn/consistent-function-scoping -- vi.mock factories are hoisted and cannot reference module-scope helpers. */
-// Mirrors the production seam: resolve the session, then require a teacher.
 const seam = vi.hoisted(() => {
   function failure(code: string, status: number, message: string) {
     return { ok: false, error: { code, status, message } };
@@ -101,7 +100,6 @@ vi.mock(
     });
   }
 );
-/* eslint-enable func-style, unicorn/consistent-function-scoping */
 
 interface PersistenceSeam {
   readGeneration: (tenantId: string, requestId: string) => unknown;

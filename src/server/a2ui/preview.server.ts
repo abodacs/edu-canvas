@@ -39,9 +39,6 @@ const isSupportedCatalog = (value: string): value is A2UICatalogVersion =>
 const sseError = (code: string, message: string, status: number) =>
   noStoreJson({ code, message }, status);
 
-/**
- * The structured refusal shape: hard blocks name the verdict, findings, and recovery; an infrastructure or snapshot refusal stays retryable.
- */
 export const previewRefusalSchema = z
   .object({
     code: z.enum([
@@ -122,7 +119,6 @@ const buildPreviewResponse = async ({
     /* webpackChunkName: "foundation-persistence" */
     "../persistence"
   );
-  /* eslint-enable unicorn/single-line-block-comment-style */
   const record = await createFoundationPersistence(config).readGeneration(
     tenantId,
     requestId
@@ -147,9 +143,6 @@ const buildPreviewResponse = async ({
     );
   }
 
-  // #116: the record's pinned catalog is the authority. Records without a
-  // provenance pin are matching-v1; the request must ask for exactly what is
-  // pinned so a surface never renders under a foreign catalog.
   const pinnedCatalog =
     record.provenance?.catalogVersion === FRACTIONS_CATALOG_VERSION
       ? FRACTIONS_CATALOG_VERSION
@@ -162,10 +155,6 @@ const buildPreviewResponse = async ({
     );
   }
 
-  // The pack's allowed screen patterns, recorded in the draft provenance, are
-  // the authority. A request for another pattern is a visible 406, never a
-  // silent fallback to matching. A record written before patterns were pinned
-  // keeps the old matching-only behavior.
   const screenPattern = resolveScreenPattern(
     record.provenance?.allowedScreenPatterns ?? ["matching"],
     requestedScreenPattern
@@ -178,8 +167,6 @@ const buildPreviewResponse = async ({
     );
   }
 
-  // #28: never trust the stored verdict alone. Re-derive the gate from the
-  // stored artifact and prove the acceptance snapshot still describes it.
   const gateOutcome = gateStoredArtifact(record);
   if (!gateOutcome.ok) {
     return gateRefusal(gateOutcome.refusal);
@@ -192,8 +179,6 @@ const buildPreviewResponse = async ({
       if (!(error instanceof LessonPreviewCompileError)) {
         throw error;
       }
-      // The compile guard failed closed. Feed the deterministic rejection
-      // back into the gate so the refusal carries findings and recovery.
       const blocked = gateStoredArtifact(record, {
         preRenderFailures: [compileFailure(error)],
       });
@@ -204,7 +189,6 @@ const buildPreviewResponse = async ({
   };
 
   if (pinnedCatalog === FRACTIONS_CATALOG_VERSION) {
-    // #28: compile the branded artifact the gate minted, never the raw draft.
     return compileGuarded(() => {
       return streamPreview(
         compileFractionPreview(gateOutcome.result.renderable),

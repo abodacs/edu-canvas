@@ -30,13 +30,7 @@ const createCipher = () => {
 };
 
 interface HarnessOptions {
-  /**
-  Replace the refresh outcome, so one branch of the refresh path can run.
-  */
   readonly refreshOutcome?: ProviderRefreshOutcome;
-  /**
-  Revoke the session while the refresh is in flight, as a logout would.
-  */
   readonly revokeDuringRefresh?: boolean;
 }
 
@@ -75,7 +69,6 @@ const createHarness = async (
     provider = {
       ...inner,
       refresh: async (refreshToken) => {
-        // A concurrent logout commits before the refresh replaces credentials.
         const revokedAt = new Date();
         await persistence.revokeSession(
           barrier.sessionId,
@@ -98,8 +91,6 @@ const createHarness = async (
     password,
     sourceAddress: "203.0.113.90",
   });
-  // The fixture teachers also hold the curriculum classroom membership, so the
-  // harness completes the designed selection with it before anything else.
   const signedIn =
     signIn.status === "membership-required"
       ? await service.selectMembership({

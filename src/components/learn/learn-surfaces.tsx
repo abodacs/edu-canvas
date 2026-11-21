@@ -6,12 +6,6 @@ import type { Ref } from "react";
 import type { LearnerCopy } from "./learner-copy";
 import type { LearnerAttemptResponse } from "@/shared/learner-contract";
 
-/**
-#7 learner reveal surfaces. Every string is either approved copy arriving in
-the attempt response or a fixed template from the learner copy; the component
-adds none.
-*/
-
 export const CheckOutcome = ({
   correctness,
   copy,

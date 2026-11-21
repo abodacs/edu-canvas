@@ -27,7 +27,6 @@ const stored: StoredGenerationResult = storedGenerationResultSchema.parse({
   },
 });
 
-/** Records every flag change and handler call, in order. */
 const recorder = () => {
   const events: string[] = [];
   return {
@@ -92,7 +91,6 @@ describe(loadStoredDraft, () => {
     await loadStoredDraft({
       requestId: "req_1",
       read: async () => {
-        // The link changed (or the composer unmounted) while reading.
         controller.abort();
         return await Promise.resolve({ kind: "draft", stored });
       },

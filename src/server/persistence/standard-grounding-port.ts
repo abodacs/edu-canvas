@@ -1,11 +1,5 @@
 import type { StandardGroundingRecord } from "../grounding/standards/types";
 
-/**
-Persistence port for **Standard grounding** (#218). The record is append-only:
-there is no update and no delete. A re-retrieval inserts a new row whose
-`predecessorGroundingId` points at the prior row, and every read is tenant
-scoped.
-*/
 export interface StandardGroundingPersistence {
   readonly kind: "seeded-demo" | "postgres";
   readonly check: () => Promise<boolean>;

@@ -49,17 +49,7 @@ export interface VersionedCurriculumContext {
   edges: readonly CurriculumEdge[];
   answerRules: readonly AnswerRule[];
   allowedScreenPatterns: readonly "matching"[];
-  /**
-  The task the pack asks the provider for (#221). Optional only for hand-built
-  test contexts: every pack carries one, and `createCurriculumContextFromPack`
-  always copies it.
-  */
   promptFrame?: StandardsPackPromptFrame;
-  /**
-   * The pack's subject-correct relationships. Optional only for hand-built
-   * test contexts; every pack carries examples, and the deterministic fixture
-   * uses them instead of the seeded fraction pairs.
-   */
   examples?: readonly StandardsPackExample[];
   reference?: StandardsPackReference;
 }
@@ -147,11 +137,6 @@ export interface SemanticValidationOptions {
   retryDelayMs?: number;
 }
 
-/**
- * A resolved pack is the only source of a curriculum context. The acting
- * tenant owns the context even when the pack is a shared template, so the
- * acceptance tenant check still proves the lesson belongs to this classroom.
- */
 export const createCurriculumContextFromPack = (
   pack: StandardsPack,
   input: Pick<NormalizedGenerationRequest, "grade" | "language">,

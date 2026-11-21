@@ -43,7 +43,6 @@ describe("server configuration", () => {
       "DATABASE_REQUIRED",
     ]);
     expect(config.sentryDsn).toBeUndefined();
-    // A summary must not claim a persistence backend the config never selected.
     expect(safeConfigSummary(config)).toMatchObject({
       persistence: "unconfigured",
       observability: { sentry: "structured-log-only" },
@@ -76,7 +75,6 @@ describe("server configuration", () => {
 
   it("rejects a non-TLS Sentry DSN", () => {
     const config = readServerConfig({
-      // The clear-text scheme is the input under test.
       // eslint-disable-next-line sonarjs/no-clear-text-protocols
       SENTRY_DSN: "http://public@example.ingest.sentry.io/123",
     });
@@ -155,7 +153,6 @@ describe("server configuration", () => {
 
   it("rejects a non-HTTPS provider endpoint outside local development", () => {
     const config = readServerConfig({
-      // The clear-text scheme is the input under test.
       // eslint-disable-next-line sonarjs/no-clear-text-protocols
       META_BASE_URL: "ftp://untrusted.invalid",
     });

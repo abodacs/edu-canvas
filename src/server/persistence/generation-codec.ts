@@ -39,7 +39,6 @@ const normalizedGenerationRequestSchema: z.ZodType<NormalizedGenerationRequest> 
     language: z.enum(languageValues),
     difficulty: z.enum(difficultyValues),
     sourceSnapshotId: z.string().optional(),
-    // #148: readable lineage only; never part of the request hash.
     revisesRequestId: z.string().optional(),
   });
 
@@ -65,9 +64,6 @@ const lessonDraftSchema: z.ZodType<LessonDraft> = providerDraftSchema
   })
   .strict();
 
-// #28: rows written before the hard_block rename stored `verdict: "block"`.
-// The legacy contract maps only that field on read; every other diagnostic
-// field keeps its strict contract.
 const legacyBlockDiagnosticSchema = publicGenerationDiagnosticSchema
   .extend({ verdict: z.literal("block") })
   .transform((diagnostic) => {
@@ -101,7 +97,6 @@ export interface StoredGenerationRequestRow {
   provenance: unknown;
   sourceSnapshotId: string | null;
   revisesRequestId?: string | null;
-  /** #223: absent (null) on every row written before the advisory reviewer. */
   advisoryReview?: unknown;
   createdAt: string | Date;
   updatedAt: string | Date;
@@ -155,12 +150,6 @@ const timestamp = (value: string | Date, field: string): string => {
   return parsed.toISOString();
 };
 
-// #116: a fraction-pinned record stores a fractions-v2 draft; every other
-// record keeps the matching draft contract. One boundary, catalog-aware.
-//
-// #28: a lesson draft may be stored as an envelope carrying the acceptance
-// gate snapshot. Legacy rows keep the bare draft shape and hydrate without a
-// snapshot, which preview refuses.
 const lessonDraftEnvelopeSchema = z
   .object({
     artifact: lessonDraftSchema,
@@ -207,9 +196,6 @@ const parseStoredDrafts = (
   };
 };
 
-/**
- * Encodes the record's draft column. The gate snapshot rides beside the draft in the existing JSON column instead of a new migration.
- */
 export const storedGenerationDraft = (
   record: LessonGenerationRecord
 ): unknown => {

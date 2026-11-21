@@ -24,8 +24,7 @@ import type { AppendVersionInput } from "../records/inputs";
 
 const databaseUrl = process.env.DATABASE_URL;
 const isEnabled = process.env.RUN_DATABASE_TESTS === "true";
-const isRun =
-  databaseUrl !== undefined && databaseUrl !== "" && isEnabled;
+const isRun = databaseUrl !== undefined && databaseUrl !== "" && isEnabled;
 
 const requireUrl = (): string => {
   if (databaseUrl === undefined || databaseUrl === "") {
@@ -243,8 +242,6 @@ const deleteFixture = async (fixture: Fixture): Promise<void> => {
   });
   try {
     await sql.begin(async (transaction) => {
-      // Test-only cleanup: immutable triggers block deletes, so the fixture
-      // removal runs with triggers suspended. Production never deletes these.
       await transaction`set session_replication_role = replica`;
       await transaction`select set_config('app.tenant_id', ${fixture.tenantId}, true)`;
       await transaction`delete from learner_attempts where tenant_id = ${fixture.tenantId}`;

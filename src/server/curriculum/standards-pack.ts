@@ -1,28 +1,11 @@
 import { z } from "zod";
 
-/**
- * A standards pack is versioned curriculum data: the standard, the provenance
- * of its source, its prerequisite graph, its components, its answer rules, the
- * screens and catalogs it may render, and the provider's prompt frame.
- *
- * The schema is strict. A pack is data, not a code branch, so an unknown field
- * is a mistake rather than an extension point, and a pack version must differ
- * from the graph version it embeds: editing the graph produces a new pack, not
- * a silent in-place change. See #217 and the research record at
- * docs/research/standards-generalization/README.md.
- */
-
 export const standardsPackSourceKinds = [
   "learning-commons",
   "primary-text",
   "hand-authored",
 ] as const;
 
-/**
- * Packs pinned to this tenant are shared templates: every tenant may resolve
- * them, but they never carry another tenant's private data. A tenant-owned pack
- * for the same standard takes precedence over the template.
- */
 export const sharedStandardsPackTenantId = "tenant_shared_standards";
 
 const identifierSchema = z.string().trim().min(1).max(120);
@@ -64,12 +47,6 @@ const answerRuleSchema = z.discriminatedUnion("kind", [
         z.strictObject({
           text: copySchema(2000),
           answer: z.number(),
-          /**
-          How a remainder becomes the declared whole-number answer. A pack
-          declares it per problem instead of leaving the evaluator to guess:
-          "27 students at tables of 4" needs 7 tables (round up), while a
-          quotient that must fit inside a bound rounds down.
-          */
           rounding: z.enum(["up", "down", "nearest"]).optional(),
         })
       )
@@ -107,22 +84,10 @@ const standardsPackPromptFrameSchema = z.strictObject({
   taskLine: copySchema(500),
   sourceGroupLabel: copySchema(240),
   targetGroupLabel: copySchema(240),
-  /**
-  The frame chooses the matching draft's item counts, so both numbers stay
-  inside the structural validator's caps (`matching` drafts carry 3–8 source
-  items and at most 8 target items). A pack asking for anything else could never
-  produce an acceptable draft.
-  */
   sourceItemCount: z.number().int().min(3).max(8),
   targetItemCount: z.number().int().min(1).max(8),
 });
 
-/**
- * One subject-correct relationship the deterministic fixture may build its
- * matching draft from. A source is what the learner matches; a target is the
- * item it belongs with. Keeping examples on the pack means the offline draft
- * obeys the same answer rule the pack declares, for every subject.
- */
 const standardsPackExampleSchema = z.strictObject({
   source: copySchema(2000),
   target: copySchema(2000),

@@ -14,12 +14,6 @@ import type { ProgressRun } from "@/shared/progress-contract";
 import type { ActivityOption } from "./decision";
 import type { SubmitAttemptInput } from "./service";
 
-/**
- * #8 teacher progress read model over the seeded record backend.
- *
- * The replay suite is the core proof for issue #8 AC2: it recomputes the submit-time decision pass from the run's persisted attempts and diffs the result against the stored next_activity row. The boundary suite proves AC3: a read reaches only the calling teacher's own assignments inside the calling tenant, and never carries an answer key.
- */
-
 const variantOptions: readonly ActivityOption[] = [
   { activityId: "variant_standard", kind: "standard" },
   { activityId: "variant_standard_b", kind: "standard" },

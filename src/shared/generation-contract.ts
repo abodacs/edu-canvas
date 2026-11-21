@@ -37,9 +37,6 @@ export const lessonGenerationInputSchema = z
     difficulty: z.enum(difficultyValues).optional(),
     idempotencyKey: z.string().trim().min(8).max(128).optional(),
     retryOfRequestId: z.string().trim().min(1).max(80).optional(),
-    /**
-    #148: the `blocked-by-moderation` request this one revises. A revision is a new request with changed input, not a retry of the blocked record.
-    */
     revisesRequestId: z.string().trim().min(1).max(80).optional(),
     sourceSnapshotId: z
       .string()
@@ -49,13 +46,6 @@ export const lessonGenerationInputSchema = z
   })
   .strict();
 
-/**
-Stable machine codes the generation delivery seam rejects requests with, and
-the transport status each maps to, following the seam conventions (identity
-`CONFLICT` 409, `INVALID_INPUT` 422) and the design-doc error table
-(`NOT_FOUND` 404; conflict-family codes 409; revise-the-request codes 422).
-The client reads the same table to learn which rejections carry a curated, teacher-ready server message it must surface verbatim.
-*/
 export const generationRequestErrorCodeValues = [
   "GENERATION_INPUT_INVALID",
   "IDEMPOTENCY_CONFLICT",
@@ -148,11 +138,6 @@ export const publicLessonDraftSchema = z
   })
   .strict();
 
-/**
-#132: the reviewed moderation category. A teacher sees this word, never the
-internal diagnostic code. `unserializable` is the fail-closed case where the
-screened value could not be serialized at all.
-*/
 export const moderationCategoryValues = [
   "personal-data",
   "harmful-content",
@@ -168,9 +153,6 @@ export const publicGenerationDiagnosticSchema = z
     severity: z.enum(["warning", "error"]),
     code: z.string(),
     message: z.string(),
-    /**
-     * Present only on a moderation block. It names the category the teacher must revise, without exposing the rule set or the matching text.
-     */
     moderationCategory: z.enum(moderationCategoryValues).optional(),
     variantId: z.string().optional(),
     field: z.string().optional(),
@@ -179,9 +161,6 @@ export const publicGenerationDiagnosticSchema = z
     verdict: z.enum(semanticValidationVerdictValues).optional(),
     validatorVersion: z.string().optional(),
     recommendation: z.string().optional(),
-    /**
-     * The single teacher action for this finding. Optional so a payload from an older server still parses; the current server always sets it.
-     */
     recovery: z.enum(recoveryActionValues).optional(),
   })
   .strict();
@@ -198,9 +177,6 @@ export const publicDiagnosticsRollupSchema = z
   .object({
     verdict: z.enum(semanticValidationVerdictValues),
     recovery: z.enum(recoveryActionValues).nullable(),
-    /**
-     * One entry per screen with a non-pass finding. The flow-level roll-up names every affected screen here, so a warning never disappears between the screen and the lesson.
-     */
     screens: z.array(publicScreenDiagnosticsSchema),
     flow: z.array(publicGenerationDiagnosticSchema),
     affectedScreens: z.array(z.string()),
@@ -212,9 +188,6 @@ export const publicGenerationResultSchema = z
     requestId: z.string(),
     state: z.enum(generationStateValues),
     attempt: z.number().int().min(1),
-    /**
-     * The record input language. It stays available when a blocked record has no draft, so the result can keep its reading direction.
-     */
     language: z.enum(languageValues),
     diagnostics: z.array(publicGenerationDiagnosticSchema),
     diagnosticsRollup: publicDiagnosticsRollupSchema,
@@ -226,11 +199,6 @@ export const publicGenerationResultSchema = z
         promptTemplateVersion: z.string(),
         validatorVersion: z.string(),
         catalogVersion: z.string().optional(),
-        /**
-         * The standards pack that shaped the draft and the screen patterns it
-         * allowed. Optional so a record written before pack pins still parses;
-         * the current server always writes both for a pack-resolved draft.
-         */
         packVersion: z.string().optional(),
         allowedScreenPatterns: z.array(z.string()).optional(),
       })
@@ -245,12 +213,6 @@ export const publicGenerationResultSchema = z
   })
   .strict();
 
-/**
-#223: the advisory review a teacher may request after a draft reaches
-`ready-for-review`. It is separate from the draft diagnostics on purpose: the
-reviewer runs outside the generation deadline and may only add warnings, so it
-cannot change the record's state, its diagnostics, or its answer keys.
-*/
 export const advisoryReviewFindingSchema = z
   .object({
     code: z.string().min(1),
@@ -276,18 +238,10 @@ export const advisoryReviewSchema = z
     agent: advisoryReviewAgentSchema,
     reviewedAt: z.string().min(1),
     latencyMs: z.number().int().min(0),
-    /**
-    Every entry is a warning by construction: the stored shape has no verdict
-    field, so a reviewer result cannot express a block.
-    */
     findings: z.array(advisoryReviewFindingSchema),
   })
   .strict();
 
-/**
-The advisory reviewer's failure classes. A failure is reported to the teacher
-and never persisted against the draft.
-*/
 export const advisoryReviewFailureClassValues = [
   "timeout",
   "agent-failure",
@@ -326,12 +280,6 @@ export type AdvisoryReviewReadResponse = z.infer<
   typeof advisoryReviewReadResponseSchema
 >;
 
-/**
-GET /api/lessons/:draftId — one persisted draft for its owning teacher. The
-public result is the same projection a fresh generation returns; `prompt` is
-the teacher's own objective, so a reopened draft can be retried or revised
-with the request it was generated from.
-*/
 export const storedGenerationResultSchema = z
   .object({
     result: publicGenerationResultSchema,

@@ -1,9 +1,6 @@
 import type { PrivateAnswerRelationship } from "@/server/records/private-answers";
 import type { Correctness } from "@/server/records/vocabulary";
 
-/**
- * #6 matching grader. The client never supplies a score: the caller loads the private answer relationships and passes the submitted pairs. Score = correct / (required + incorrect) x 100. A repeated source, an unknown source, or a target outside the answer set is incorrect. A required source with no correct pair lowers the score by omission, not by penalty.
- */
 export const matchingGradingRuleVersion = "matching-grader-v1";
 
 const percentScale = 100;

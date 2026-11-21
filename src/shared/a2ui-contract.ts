@@ -3,9 +3,6 @@ import { z } from "zod";
 import { isAllowedLatexInput, parseLatexToMathML } from "@/shared/latex-mathml";
 
 export const A2UI_PROTOCOL_VERSION = "v0.9.1" as const;
-/**
-The teacher-facing purpose of each generated screen, in pack order. One source so the review gallery and the rendered surface never disagree.
-*/
 export const variantPurposeLabels = [
   "Teach the model",
   "Independent practice",
@@ -17,9 +14,6 @@ export const A2UI_CATALOG_VERSION = "matching-v1" as const;
 export const A2UI_CATALOG_ID =
   "https://edu-canvas.app/a2ui/v0.9.1/catalogs/matching-v1" as const;
 
-// #116: fractions-v2 joins as an explicit catalog on the same A2UI protocol.
-// matching-v1 keeps its original component and action set; the fraction catalog adds MathText, FractionDiagram, setFractionValue, and advanceStage.
-// Unknown components and actions fail closed per pinned catalog.
 export const FRACTIONS_CATALOG_VERSION = "fractions-v2" as const;
 export const FRACTIONS_CATALOG_ID =
   "https://edu-canvas.app/a2ui/v0.9.1/catalogs/fractions-v2" as const;
@@ -140,7 +134,6 @@ const actionContextSchema = z.strictObject({
   surfaceId: componentIdSchema,
   itemId: componentIdSchema.optional(),
   variantId: componentIdSchema.optional(),
-  // #116: stage changes name the section they advance from.
   sectionId: componentIdSchema.optional(),
 });
 
@@ -189,9 +182,6 @@ const matchCardSchema = z.strictObject({
   action: actionSchema,
 });
 
-// #116 MathText: at most 500 characters of a bounded LaTeX subset. Markup,
-// executable handlers, external resources, and untrusted macros fail closed.
-// The structural parse runs again in validateA2UIMessage and at compile time.
 const latexSchema = z
   .string()
   .trim()
@@ -215,9 +205,6 @@ const mathTextSchema = z.strictObject({
   textEquivalent: safeTextSchema.optional(),
 });
 
-// #116 FractionDiagram: integer numerator 0 through denominator, whole
-// denominators 1-12, equal-sized wholes, labeled controls, and a text
-// equivalent. The numerator bound is enforced again in validateA2UIMessage.
 const fractionDiagramSchema = z.strictObject({
   id: componentIdSchema,
   component: z.literal("FractionDiagram"),
@@ -324,8 +311,6 @@ const previewDataModelSchema = z
   })
   .readonly();
 
-// #116: fraction stages carry a leaner data model; no matching selection or
-// learning-path projection leaks into a fraction surface.
 const fractionDataModelSchema = z
   .strictObject({
     sectionId: componentIdSchema,
@@ -379,8 +364,6 @@ export type A2UIValidationResult =
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
 
-// Keep server-only field markers out of the browser bundle while still
-// rejecting them if an untrusted stream tries to send one.
 const privateFieldCodepoints = [
   [97, 110, 115, 119, 101, 114, 107, 101, 121],
   [97, 110, 115, 119, 101, 114],
@@ -501,8 +484,6 @@ const hasActionOutsideCatalog = (
   });
 };
 
-// #116: MathText payloads must parse into the MathML tree, not only pass the
-// character allowlist, so unbalanced groups and bad \frac arity fail closed.
 const hasInvalidMath = (value: unknown): boolean => {
   return listUpdateComponents(value).some((component) => {
     if (!isRecord(component) || component.component !== "MathText") {
@@ -513,7 +494,6 @@ const hasInvalidMath = (value: unknown): boolean => {
   });
 };
 
-// #116: a fraction value may never exceed its whole.
 const hasInvalidFractionValue = (value: unknown): boolean => {
   return listUpdateComponents(value).some((component) => {
     if (!isRecord(component) || component.component !== "FractionDiagram") {
@@ -591,9 +571,6 @@ const catalogScopedFailure = (
 };
 
 export interface A2UIValidationOptions {
-  // When the caller pins a surface's catalog (the renderer pins it from
-  // createSurface), components and actions outside that catalog fail closed
-  // even though they belong to another known catalog.
   readonly catalogVersion?: A2UICatalogVersion;
 }
 

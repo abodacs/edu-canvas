@@ -7,11 +7,6 @@ interface StepsProps {
   readonly items: readonly { label: string; state: StepState }[];
 }
 
-/**
-An ordered progress list. Exactly one item carries `aria-current="step"`: the
-first `current` item (a second one is shown but not announced as current).
-A done item says "Completed" in text, not only by colour.
-*/
 const Steps = ({ label, items }: StepsProps): ReactElement => {
   const currentIndex = items.findIndex((item) => item.state === "current");
   return (

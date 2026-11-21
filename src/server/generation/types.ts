@@ -20,16 +20,7 @@ export interface NormalizedGenerationRequest {
   standardId: string;
   language: LessonLanguage;
   difficulty: LessonDifficulty;
-  /**
-  The reviewed, complete source snapshot this request is grounded in (#114).
-  Absent for prompt-only requests; the focused event composer never sends it.
-  */
   sourceSnapshotId?: string;
-  /**
-  #148: the `blocked-by-moderation` request this request revises. It is readable
-  lineage only. `createGenerationRequestHash` and `hasSameRequestMetadata` skip
-  it on purpose, so a revision never inherits the blocked request's hash.
-  */
   revisesRequestId?: string;
 }
 
@@ -39,11 +30,6 @@ export interface ProviderProvenance {
   promptTemplateVersion: string;
   validatorVersion: string;
   catalogVersion?: string;
-  /**
-   * The standards pack the draft was generated against, plus the screen
-   * patterns it allowed. Both are optional because a provider provenance that
-   * arrived before pack resolution can be stored without them.
-   */
   packVersion?: string;
   allowedScreenPatterns?: readonly "matching"[];
 }
@@ -152,15 +138,7 @@ export interface GenerationDiagnostic {
   verdict?: SemanticValidationVerdict;
   validatorVersion?: string;
   recommendation?: string;
-  /**
-   * #28: the single teacher action for this finding, carried from the artifact
-   * gate so a blocked teacher sees the way out with the reason.
-   */
   recovery?: RecoveryAction;
-  /**
-   * #132: the moderation category behind a block. It is teacher-safe and it
-   * never carries the rule set, the matched text, or the internal code.
-   */
   moderationCategory?: ModerationCategory;
 }
 
@@ -200,19 +178,8 @@ export interface LessonGenerationRecord {
   diagnostics: GenerationDiagnostic[];
   provenance?: ProviderProvenance;
   draft?: LessonDraft | null;
-  // #116: a fraction-pinned record hydrates its draft here, leaving the
-  // matching draft contract untouched for every existing consumer.
   fractionDraft?: FractionLessonDraft | null;
-  /**
-   * #28: acceptance evidence. Present only on a `ready-for-review` record; a
-   * missing snapshot refuses preview and Share. Persisted beside the draft.
-   */
   gate?: ArtifactGateSnapshot | null;
-  /**
-   * #223: the warning-only advisory review a teacher requested after the draft
-   * reached `ready-for-review`. It is additive and separate from `diagnostics`:
-   * the reviewer cannot change the state, the diagnostics, or the gate.
-   */
   advisoryReview?: AdvisoryReview;
   attempts: GenerationAttemptRecord[];
   createdAt: string;
@@ -227,11 +194,6 @@ export interface GenerationClaim {
 export interface GenerationWriteExpectation {
   attempt: number;
   updatedAt: string;
-  /**
-   * The write must also prove that the claim lease is still active. The value
-   * is the oldest `updatedAt` that remains inside the lease; a stale owner
-   * cannot commit a write after this instant even when no replacement exists.
-   */
   leaseValidAfter: string;
 }
 
@@ -252,9 +214,6 @@ export const defaultGenerationDeadlines: GenerationDeadlines = {
   leaseMs: generationClaimLeaseMs,
 };
 
-/**
- * Canonical hash of the normalized request metadata. The operation key reuses its original result only when this hash matches exactly.
- */
 export const createGenerationRequestHash = (
   input: NormalizedGenerationRequest
 ): string => {
@@ -297,13 +256,6 @@ export const generationClaimExpiredDiagnostic = (): GenerationDiagnostic => {
   };
 };
 
-/**
-The claim insert requires a curriculum standard row for the classroom's
-tenant. A tenant that has no such row makes the claim impossible, and the
-database says so with the `lesson_draft_requests_tenant_id_standard_id_fkey`
-foreign key (23503). Persistence detects that signature and raises this typed
-signal instead of a raw driver error (#168 P0-2).
-*/
 export class StandardNotConfiguredError extends Error {
   constructor() {
     super("The classroom has no curriculum standard row for this request.");
@@ -337,11 +289,6 @@ export interface GenerationPersistence {
     tenantId: string,
     requestId: string
   ) => Promise<LessonGenerationRecord | undefined>;
-  /**
-   * #223: store a warning-only advisory review without touching the draft,
-   * state, diagnostics, or gate. Returns false when the record is no longer
-   * `ready-for-review`, so a concurrent change cannot receive a stale result.
-   */
   writeAdvisoryReview: (
     tenantId: string,
     requestId: string,
@@ -350,14 +297,7 @@ export interface GenerationPersistence {
 }
 
 export interface GenerationCommand {
-  /**
-  Only a verified teacher actor may generate drafts; learners cannot compile.
-  */
   actor: TeacherActor;
-  /**
-  The delivery seam parses the request body with `lessonGenerationInputSchema`,
-  so a command carries a value that already crossed that boundary.
-  */
   input: LessonGenerationInput;
 }
 

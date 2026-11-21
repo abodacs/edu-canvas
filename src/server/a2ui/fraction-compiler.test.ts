@@ -136,8 +136,6 @@ describe(compileRawFractionPreview, () => {
       ],
     };
 
-    // The trusted contract rejects the value first; the compiler still keeps
-    // its own bounds check as the second, fail-closed seam.
     expect(() => compileRawFractionPreview({ draft: outside })).toThrow(
       expect.objectContaining({
         code: "INVALID_CONTRACT",

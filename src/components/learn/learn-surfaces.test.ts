@@ -137,8 +137,6 @@ describe(CheckOutcome, () => {
       const markup = render(createElement(CheckOutcome, { correctness, copy }));
 
       expect(markup).toContain(`data-correctness="${correctness}"`);
-      // The page's single live region announces the grade; the outcome line
-      // itself stays static so the result is not announced twice.
       expect(markup).not.toContain("<output");
     }
   });
@@ -295,8 +293,6 @@ describe(BidiText, () => {
   });
 });
 
-// #9: learner rules must not pin a physical side, or the Arabic page cannot
-// mirror. One- and two-value margin and padding are symmetric and allowed.
 const physicalSides = ["top", "right", "bottom", "left"] as const;
 const physicalProperties = new Set<string>([
   ...physicalSides,

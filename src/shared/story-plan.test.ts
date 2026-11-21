@@ -119,8 +119,6 @@ describe(buildStoryPlan, () => {
     ];
     const isApprovedCopy = (value: string) =>
       approvedCopy.some((copy) => copy.includes(value));
-    // Role labels are surface chrome. They are the only strings a beat may
-    // carry that do not come from the accepted path.
     const roleLabels = new Set(plan.beats.map((beat) => beat.roleLabel));
 
     for (const beat of plan.beats) {

@@ -19,9 +19,6 @@ import type {
 
 const NOW = "2026-11-04T12:00:00.000Z";
 
-// California is out of the shipped registry (product decision 2026-11-04). The
-// exact-crosswalk path stays tested as data: this registry adds California rows
-// beside the shipped Multi-State ones.
 const crosswalkRegistry = {
   ...PILOT_STANDARD_REGISTRY,
   envelopes: [

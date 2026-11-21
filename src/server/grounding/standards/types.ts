@@ -1,10 +1,5 @@
 import { createHash } from "node:crypto";
 
-/**
-The fixed gap vocabulary for a standard retrieval (#218). A resolution reports
-one of these codes instead of a generic failure, so a teacher can see what the
-provider did not supply.
-*/
 export const STANDARD_GROUNDING_GAP_CODES = [
   "standard-absent",
   "unsupported-envelope",
@@ -50,13 +45,10 @@ export interface StandardProvenance {
   readonly retrievedAt: string;
 }
 
-/** One clock reading for a retrieval, used by the adapter and the service. */
 export const currentIso = (): string => new Date().toISOString();
 
-/** One total provider-pipeline budget, shared by every stage of a retrieval. */
 export const DEFAULT_RESOLUTION_DEADLINE_MS = 10_000;
 
-/** Bounded text keeps a hostile or oversized provider body out of storage. */
 export const GROUNDING_TEXT_LIMITS = {
   description: 1200,
   component: 400,
@@ -75,10 +67,6 @@ export const boundText = (value: string, limit: number): string => {
   return `${normalized.slice(0, Math.max(0, limit - 1)).trimEnd()}…`;
 };
 
-/**
-Only an HTTPS link on a known standards host is kept. The adapter never fetches
-a provider-supplied URL; a bad link falls back to the registry's safe link.
-*/
 export const safeSourceLink = (
   candidate: string | undefined,
   fallback: string
@@ -206,10 +194,6 @@ export interface StandardGroundingErrorOptions extends ErrorOptions {
   readonly recovery: StandardGroundingRecovery;
 }
 
-/**
-Every rejection names the recovery the teacher can take. A malformed request is
-correctable, a timeout is retryable, and an exhausted retry is terminal.
-*/
 export class StandardGroundingError extends Error {
   readonly code: StandardGroundingErrorCode;
   readonly retryable: boolean;
@@ -228,7 +212,6 @@ export class StandardGroundingError extends Error {
   }
 }
 
-/** The one deadline rejection shared by the adapter and the service. */
 export const resolutionTimeout = (): StandardGroundingError => {
   return new StandardGroundingError(
     "The Learning Commons retrieval exceeded its total deadline.",

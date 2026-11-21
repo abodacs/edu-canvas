@@ -15,9 +15,6 @@ import {
 } from "@/shared/learner-contract";
 import { createLearnerService } from "./service";
 
-/**
- * #6 learner delivery. The body has no score field, and the schema is strict, so a tampered submission is rejected before any record work.
- */
 const idSchema = z
   .string()
   .trim()
@@ -87,9 +84,6 @@ const invalidInput = (): Response => {
   );
 };
 
-/**
-POST /api/learner/attempts — grade and record one matching submission.
-*/
 export const handleSubmitAttemptRequest = async (
   request: Request
 ): Promise<Response> => {
@@ -115,9 +109,6 @@ export const handleSubmitAttemptRequest = async (
   }
 };
 
-/**
-POST /api/learner/runs — open or replay the learner's run and return the surface.
-*/
 export const handleStartRunRequest = async (
   request: Request
 ): Promise<Response> => {

@@ -13,13 +13,7 @@ export interface CredentialCipher {
 }
 
 export interface CredentialCipherKeys {
-  /**
-  The active key version, written into new ciphertext.
-  */
   readonly keyVersion: string;
-  /**
-  Base64-encoded 32-byte keys by version. The active key is authoritative.
-  */
   readonly keys: Readonly<Record<string, string>>;
 }
 
@@ -37,9 +31,6 @@ const decodeKey = (encoded: string): Uint8Array => {
   return key;
 };
 
-/**
- * Authenticated encryption for provider credentials. Ciphertext carries its key version so rotation can decrypt live sessions with the previous key during a bounded rollout. A missing key invalidates affected sessions rather than falling back to plaintext.
- */
 export const createCredentialCipher = (
   keys: CredentialCipherKeys
 ): CredentialCipher => {
@@ -90,7 +81,6 @@ export const createCredentialCipher = (
         algorithm,
         key,
         Uint8Array.fromBase64(noncePart, { alphabet: "base64url" }),
-        // Rejects truncated tags; encryption always writes this length.
         { authTagLength: tagBytes }
       );
       decipher.setAuthTag(

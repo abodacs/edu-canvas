@@ -6,20 +6,9 @@ import {
 
 import type { StandardsPack } from "./standards-pack";
 
-/**
- * A standards pack is resolved by tenant and standard, never by a global
- * fallback. A pack is visible when it belongs to the tenant or when it is a
- * shared template; another tenant's private pack is never visible. The
- * registry holds parsed packs, rejects an ambiguous
- * `(tenant, standard, version)` pair, and returns one exact version: the
- * requested one, or the highest version when the caller does not pin one.
- */
-
 export interface StandardsPackLookup {
   tenantId: string;
-  /** A standard id or standard code, such as `standard_ccss_4_nf_a_01` or `4.NF.A.1`. */
   standard: string;
-  /** Return exactly this pack version instead of the highest one. */
   packVersion?: string;
 }
 
@@ -39,11 +28,6 @@ const versionSegments = (value: string): string[] => {
   return value.split(/(?<digits>\d+)/u).filter((segment) => segment.length > 0);
 };
 
-/**
- * A deterministic natural ordering: numeric segments compare as numbers, so
- * `v9` sorts before `v10`, and text segments compare by code unit rather than
- * by the host locale.
- */
 export const comparePackVersions = (left: string, right: string): number => {
   const leftSegments = versionSegments(left);
   const rightSegments = versionSegments(right);
@@ -105,11 +89,6 @@ const assertUniquePackVersions = (packs: readonly StandardsPack[]): void => {
   }
 };
 
-/**
- * The support check for a request that names no tenant. Only a shared template
- * may answer it; another tenant's private pack must never make a standard
- * "supported" for everyone.
- */
 export const resolveSharedStandardPack = (
   packs: readonly StandardsPack[],
   standard: string
@@ -139,9 +118,6 @@ export const createStandardsPackRegistry = (
       );
     });
 
-    // A tenant-owned pack overrides the shared template for its standard. The
-    // template is a starting point, never a second opinion beside the tenant's
-    // own curriculum data.
     const owned = matches.filter((pack) => pack.tenantId === lookup.tenantId);
     const candidates = owned.length > 0 ? owned : matches;
 

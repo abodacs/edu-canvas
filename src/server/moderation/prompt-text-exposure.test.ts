@@ -15,9 +15,6 @@ import { createDefaultContentSafety } from "./content-safety";
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-/**
-A canary that is not personal data. If any log, diagnostic, or public payload echoes prompt text, this token appears there.
-*/
 const CANARY = "CANARY132TOKEN9F3C";
 
 const CANARY_EMAIL = "canary132@example.test";
@@ -97,11 +94,6 @@ describe("prompt text exposure", () => {
     expect(finding?.code).toBe("MODERATION_BLOCKED");
   });
 
-  /**
-  Deliberate product behavior, recorded so it cannot change silently: the
-  teacher's own prompt stays in their own request row so the revise flow can
-  show it (#119). Retention of a blocked prompt is a #101 governance question.
-  */
   it("retains the teacher's own prompt in the request row", async () => {
     const { record } = await generateBlocked();
 

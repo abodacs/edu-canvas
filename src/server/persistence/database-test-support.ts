@@ -1,8 +1,5 @@
 import postgres from "postgres";
 
-/**
-Shared plumbing for database contract tests. They drive the real configured backend, so every suite gates itself on these values and skips otherwise.
-*/
 export const isRunDatabaseTests =
   process.env.RUN_DATABASE_TESTS === "true" &&
   Boolean(process.env.DATABASE_URL);
@@ -27,9 +24,6 @@ export const withRawDatabase = async <T>(
   }
 };
 
-/**
-Run one transaction with the tenant-local session variable every row-level policy expects, mirroring how the persistence adapters scope their writes. The explicit `Promise<T>` type argument resolves postgres.js's tuple-oriented `UnwrapPromiseArray` result, so the awaited value is plain `T`.
-*/
 export const withTenantSql = async <T>(
   tenantId: string,
   work: (transaction: postgres.TransactionSql) => Promise<T>

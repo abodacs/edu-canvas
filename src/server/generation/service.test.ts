@@ -192,8 +192,6 @@ describe("lesson generation service", () => {
       allowedScreenPatterns: [...fractionEquivalencePack.allowedScreenPatterns],
     };
 
-    // Preview reads the record, so the record must carry the enriched
-    // provenance acceptance wrote onto the draft, not the bare provider one.
     expect(result.record.provenance).toMatchObject(expected);
     expect(result.record.draft?.provenance).toMatchObject(expected);
     expect(result.publicResult.provenance).toMatchObject(expected);
@@ -436,11 +434,6 @@ describe("lesson generation service", () => {
     const service = createGenerationService({
       limits: createSeededGenerationLimitStore(),
       persistence: createSeededPersistence(),
-      // The fixture's standard variants are genuinely different now (#168),
-      // so the warning scenario serves an actual duplicate structure on
-      // purpose instead of relying on the old identical fixture. The duplicate
-      // needs its own ids across the draft or the structural validator
-      // hard-blocks on reused identifiers.
       provider: {
         provenance: {
           provider: "deterministic-fixture",
@@ -1146,8 +1139,6 @@ describe("lesson generation service", () => {
       code: "FORBIDDEN",
     });
 
-    // The schema is the boundary: an out-of-range grade and an unknown key are
-    // refused there, before normalization sees the value.
     expect(
       lessonGenerationInputSchema.safeParse({ ...validInput, grade: 9 }).success
     ).toBeFalsy();
@@ -1158,8 +1149,6 @@ describe("lesson generation service", () => {
       }).success
     ).toBeFalsy();
 
-    // Normalization owns what the schema cannot say: which standards have a
-    // pack. An unknown standard fails closed without naming another lesson.
     expect(() => {
       return normalizeGenerationInput({
         ...validInput,

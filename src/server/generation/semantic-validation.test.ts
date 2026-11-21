@@ -85,9 +85,6 @@ describe("bounded semantic lesson validation", () => {
 
   it("accepts a normalized equivalent-fractions draft and its versioned context", async () => {
     const input = validInput();
-    // The fixture's standard variants are genuinely different now (#168); the
-    // duplicate-structure warning needs an actual duplicate, and the duplicate
-    // keeps unique identifiers across the draft.
     const draft = createEquivalentFractionsDraft(input);
     const [firstVariant] = draft.variants;
     draft.variants[1] = {

@@ -57,23 +57,17 @@ interface TeacherStudioProperties {
   readonly csrf: string;
   readonly generation: string;
   readonly reviewRequestId?: string;
-  /** A persisted draft to open in the composer (`/workspace?draft=<id>`). */
   readonly draftRequestId?: string;
   readonly onOpenReview: (requestId: string) => void;
   readonly onCloseReview: () => void;
   readonly onUnauthorized: () => void;
 }
 
-/**
-The seeded synthetic curriculum every draft is generated against. The identity session projection carries no curriculum id, so the studio pins the classroom's current standard here until a teacher can choose one.
-*/
 const DEFAULT_STANDARD_ID = "standard_ccss_4_nf_a_01";
 
-/** The page names the standard's topic; an unknown pin reads "New lesson". */
 const topicFor = (standardId: string): string =>
   displayStandardTopic(standardId) ?? "New lesson";
 
-/** The falsy check for a nullable request id, stated for the lint rule. */
 const hasText = (value: string | null | undefined): value is string =>
   value !== undefined && value !== null && value !== "";
 
@@ -129,7 +123,6 @@ const GENERATING_STATE = "generating";
 const BLOCKED_BY_VALIDATION_STATE = "blocked-by-validation";
 const BLOCKED_BY_MODERATION_STATE = "blocked-by-moderation";
 
-// #119: the same-prompt refusal opens the same panel as a blocked result.
 const REVISION_REQUIRED_CODE = "MODERATION_REVISION_REQUIRED";
 
 const moderationCategoryOf = (
@@ -141,7 +134,6 @@ const moderationCategoryOf = (
   );
 };
 
-/** The heading of a result that has no variants to show. */
 const getResultTitle = (state: PublicGenerationResult["state"]): string => {
   switch (state) {
     case "generating": {
@@ -169,7 +161,6 @@ const getResultTitle = (state: PublicGenerationResult["state"]): string => {
   }
 };
 
-/** The short line above a result heading: what kind of state this is. */
 const getResultMeta = (state: PublicGenerationResult["state"]): string => {
   switch (state) {
     case "generating": {
@@ -225,9 +216,6 @@ const getVariantNoteName = (variant: {
   readonly title: string;
 }): string => `${variant.title} (${variantLabels[variant.kind]})`;
 
-/**
- * The edit recovery action returns the teacher to the objective field. The field keeps its current text and the caret moves to the logical end, so an edit never replaces what the teacher already wrote.
- */
 const focusLessonPrompt = (): void => {
   const field = document.querySelector<HTMLTextAreaElement>("#lesson-prompt");
   if (!field) {
@@ -238,9 +226,6 @@ const focusLessonPrompt = (): void => {
   field.setSelectionRange(end, end);
 };
 
-/**
- * What each recovery action does today. Edit returns to the objective and keeps the teacher's text. Replace and retry both ask for a new generation; neither can regenerate a single screen yet, so the action label says "regenerate".
- */
 const recoveryEffect = (
   action: RecoveryAction
 ): "focus-objective" | "regenerate" => {
@@ -306,7 +291,6 @@ const postGenerationRequest = async (
       };
 };
 
-/** The page header: where the teacher is in the flow, and what the page is. */
 const StudioHeader = ({ standardId }: { readonly standardId: string }) => {
   return (
     <header className="studio-head">
@@ -331,10 +315,6 @@ const StandardCode = ({ standardId }: { readonly standardId: string }) => (
   <span className="studio-code">{displayStandardCode(standardId)}</span>
 );
 
-/**
- * Once a draft exists the composer collapses to one line: the objective as
- * sent, what it was matched to, and the two ways to change it.
- */
 const ObjectiveSummary = ({
   prompt,
   context,
@@ -431,8 +411,6 @@ const VariantCard = ({
   const tag = `${variantLetter(index)} · ${variantLabels[variant.kind]}`;
   const radioId = `variant-choice-${variant.id}`;
   const detailsId = `variant-details-${variant.id}`;
-  // A label holds phrasing content only, so it wraps the title alone and
-  // stretches over the card (studio.css) to keep the whole card clickable.
   return (
     <div className={cn("variant-card", isChosen && "variant-card--chosen")}>
       <span className="variant-card__tag">{tag}</span>
@@ -449,9 +427,6 @@ const VariantCard = ({
             onChoose(variant.id);
           }}
           onKeyDown={(event) => {
-            // Keyboard selection is set explicitly: the hidden radio's change
-            // event alone does not reach React state reliably (the membership
-            // screen ships the same explicit pattern).
             if (event.key === " " || event.key === "Enter") {
               event.preventDefault();
               onChoose(variant.id);
@@ -491,11 +466,6 @@ const VariantCard = ({
   );
 };
 
-/**
- * The variant cards are the chooser (#168 P0-1): a native radio group whose
- * keyboard story follows the membership screen's explicit-key pattern, and
- * one action that opens the chosen card in the preview.
- */
 const VariantChooser = ({
   variants,
   diagnostics,
@@ -582,7 +552,6 @@ interface GenerationResultProperties {
   readonly onOpenReview: (requestId: string) => void;
 }
 
-/** The ready board: heading, count, notes, the cards, and the preview. */
 const VariantBoard = ({
   result,
   draft,
@@ -594,8 +563,6 @@ const VariantBoard = ({
   readonly diagnosticGroups: readonly GroupedDiagnostic[];
   readonly onOpenReview: (requestId: string) => void;
 }) => {
-  // #168 P0-1: the variant cards are the chooser. Selection is in-page state
-  // for now; the decision endpoint belongs to the teacher-decisions seam (#8).
   const [chosenVariantId, setChosenVariantId] = useState<string | null>(null);
   const [previewVariantId, setPreviewVariantId] = useState<string | null>(null);
   const { variants } = draft;
@@ -652,11 +619,6 @@ const VariantBoard = ({
   );
 };
 
-/**
- * A result with nothing to choose: blocked, failed, still generating, or
- * waiting on teacher review. It renders as one state card in the 6-errors
- * shape: what happened, what is safe, and the one thing to do next.
- */
 const ResultStateCard = ({
   result,
   requiresTeacherReview,
@@ -735,8 +697,6 @@ const GenerationResult = ({
   onRecover,
   onOpenReview,
 }: GenerationResultProperties) => {
-  // A blocked record has no draft, so the record input language keeps the
-  // result in its own reading direction.
   const direction = directionForLanguage(result.language);
   const requiresTeacherReview = result.diagnostics.some((diagnostic) =>
     isTeacherReviewDiagnostic(diagnostic.code)
@@ -803,11 +763,6 @@ interface TeacherComposerOutcomeProperties {
   readonly onRevise: (requestId: string | null) => void;
 }
 
-/**
-The composer's result area. A moderation block replaces the result with the
-recovery panel; an earlier ready draft stays mounted below it, unchanged (#119
-variant B). The panel's focus and live region live in the panel itself.
-*/
 const TeacherComposerOutcome = ({
   prompt,
   visibleResult,
@@ -868,12 +823,6 @@ const composerBusyMessage = (
   return null;
 };
 
-/**
-The status line beside Create lesson: opening a saved draft, generating, or
-the failure the teacher can fix. Both tones come from the shared Notice, so
-they look and announce like every other in-page message. The wrapper receives
-focus on failure (#168 P0-2) so the cause lands in view.
-*/
 const ComposerStatus = ({
   statusRef,
   isOpeningDraft,
@@ -908,10 +857,6 @@ const ComposerStatus = ({
   );
 };
 
-/**
-The facts the next draft is built on. They are read from the objective, not
-chosen, so they render as a description list and change as the teacher types.
-*/
 const ComposerFacts = ({
   context,
   standardId,
@@ -946,12 +891,6 @@ const ComposerFacts = ({
   );
 };
 
-/**
-The open composer card (1-studio mock): the objective form, the source attach
-row, the facts the draft reads, and a footer where Create lesson and its status
-sit together. Create lesson submits the form through its `form` attribute, so
-the source panel's own forms never nest inside it.
-*/
 const OpenComposer = ({
   csrf,
   prompt,
@@ -1058,17 +997,10 @@ interface ReopenedDraftTargets {
   readonly setResult: (result: PublicGenerationResult | null) => void;
   readonly setPriorDraft: (result: PublicGenerationResult | null) => void;
   readonly setFailure: (failure: GenerationFailure | null) => void;
-  /** The reopened request is not the composer's last submission. */
   readonly forgetLastSubmission: () => void;
   readonly onUnauthorized: () => void;
 }
 
-/**
-Wires a draft link (`/workspace?draft=<id>`) into the composer's state. A new
-link clears what the composer showed; a loaded draft fills the objective and
-the result. A draft still `generating` has no result yet, so it surfaces as a
-pending id the composer explains once (no polling).
-*/
 const useReopenedDraft = (
   draftRequestId: string | undefined,
   targets: ReopenedDraftTargets
@@ -1105,10 +1037,6 @@ const useReopenedDraft = (
   };
 };
 
-/**
-A reopened draft that was still generating. It is a terminal notice: nothing
-refreshes on its own, and "Check again" reads the same link once more.
-*/
 const StoredDraftPending = ({
   requestId,
   onCheckAgain,
@@ -1145,38 +1073,24 @@ const TeacherLessonComposer = ({
   const [prompt, setPrompt] = useState("equivalent fractions for grade 4");
   const requestKeyReference = useRef("");
   const submittingReference = useRef(false);
-  // Mirrors the live session generation so a response that lands after the
-  // session changed (sign-out, expiry, renewal) is discarded instead of shown.
   const generationReference = useRef(generation);
   const [result, setResult] = useState<PublicGenerationResult | null>(null);
-  // #119 variant B: a ready draft survives a later moderation block, so the
-  // teacher keeps the approved work while revising the blocked request.
   const [priorDraft, setPriorDraft] = useState<PublicGenerationResult | null>(
     null
   );
   const [isGenerating, setIsGenerating] = useState(false);
   const [failure, setFailure] = useState<GenerationFailure | null>(null);
-  // The composer collapses to its summary once a draft has variants; Edit
-  // objective (or any recovery that needs the field) opens it again.
   const [isEditing, setIsEditing] = useState(false);
   const requestError = failure?.kind === "error" ? failure.message : null;
   const hasModerationFailure =
     failure?.kind === "error" && failure.code === REVISION_REQUIRED_CODE;
-  // #168 P0-2: on failure the inline status next to Create lesson receives
-  // focus, so the cause lands in view and in the screen reader's mouth. The
-  // moderation panel owns focus for its own path.
   const statusReference = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (hasText(requestError) && !hasModerationFailure) {
       statusReference.current?.focus();
     }
   }, [hasModerationFailure, requestError]);
-  // The reviewed source snapshot the next draft is grounded in (#114). Null
-  // keeps the prompt-only path the focused event composer relies on.
   const [boundSource, setBoundSource] = useState<BoundSource | null>(null);
-  // #119/#148: "Revise request" arms the link. The next submission carries it
-  // with a fresh operation key, so the revised prompt is a new request that
-  // names the blocked one. A ref keeps the composer from re-rendering on arm.
   const revisionTargetReference = useRef<string | null>(null);
   const context = getPromptContext(prompt);
 
@@ -1190,7 +1104,6 @@ const TeacherLessonComposer = ({
     setPriorDraft,
     setFailure,
     forgetLastSubmission: () => {
-      // The next Create starts a fresh operation key and arms no revision.
       requestKeyReference.current = "";
       revisionTargetReference.current = null;
     },
@@ -1209,7 +1122,6 @@ const TeacherLessonComposer = ({
     visibleResult.draft !== null;
 
   const openComposer = (): void => {
-    // The field must exist before it can take focus, so the open commits now.
     flushSync(() => {
       setIsEditing(true);
     });
@@ -1227,8 +1139,6 @@ const TeacherLessonComposer = ({
     retryOfRequestId?: string
   ): Promise<void> => {
     event?.preventDefault();
-    // No submission may race the stored-draft read: it would overwrite the
-    // composer the read is about to fill.
     if (submittingReference.current || isOpeningDraft) {
       return;
     }
@@ -1241,10 +1151,8 @@ const TeacherLessonComposer = ({
       retryOfRequestId === undefined
         ? (revisionTargetReference.current ?? undefined)
         : undefined;
-    // The armed link belongs to this submission only.
     revisionTargetReference.current = null;
 
-    // Browser crypto has no UUIDv7, and this key needs uniqueness only.
     const idempotencyKey = hasText(retryOfRequestId)
       ? crypto.randomUUID()
       : requestKeyReference.current || crypto.randomUUID();
@@ -1272,7 +1180,6 @@ const TeacherLessonComposer = ({
     const attempt = await postGenerationRequest(input, csrf);
 
     if (generationReference.current !== startedGeneration) {
-      // The session changed while this request was in flight; drop the result.
       stopSubmitting();
       return;
     }
@@ -1294,8 +1201,6 @@ const TeacherLessonComposer = ({
         break;
       }
       case "error": {
-        // A failed "Draft again" keeps the ready board on screen; the failure
-        // renders under the objective summary that started it.
         setResult((current) =>
           current?.state === READY_FOR_REVIEW_STATE ? current : null
         );
@@ -1303,8 +1208,6 @@ const TeacherLessonComposer = ({
         break;
       }
       default: {
-        // A failed "Draft again" keeps the ready board on screen; the failure
-        // renders under the objective summary that started it.
         setResult((current) =>
           current?.state === READY_FOR_REVIEW_STATE ? current : null
         );
@@ -1314,8 +1217,6 @@ const TeacherLessonComposer = ({
   };
 
   const draftAgain = (): void => {
-    // A fresh operation key makes this a new request, not a replay of the
-    // one already shown.
     requestKeyReference.current = "";
     void submitGeneration(undefined);
   };
@@ -1400,11 +1301,6 @@ const TeacherLessonComposer = ({
   );
 };
 
-/**
-The authenticated teacher studio. It renders the lesson composer against the
-session-bound HTTP seam; a `401` hands control back through `onUnauthorized` so
-the workspace route can hide private content.
-*/
 export const TeacherStudio = ({
   csrf,
   generation,

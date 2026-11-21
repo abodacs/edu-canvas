@@ -63,9 +63,6 @@ const MembershipPage = (): ReactElement => {
   const navigate = useNavigate();
   const { notice, statusReference, announce } = useAuthNotice();
 
-  // The handoff is same-tab module memory, so it can be resolved in the initial
-  // state instead of an effect. A full page load always starts with an empty
-  // store, so the server and the first client render agree.
   const [handoff, setHandoff] = useState<HandoffState>(() => {
     const stored = readPendingMembershipHandoff();
     if (!stored || Date.parse(stored.expiresAt) <= Date.now()) {
@@ -77,9 +74,6 @@ const MembershipPage = (): ReactElement => {
       memberships: stored.memberships,
     };
   });
-  // The first class is the choice the teacher came in with until they pick
-  // another; preselecting it keeps the submit enabled and matches the picker
-  // they were shown. A pending choice with no classes still needs a selection.
   const [selected, setSelected] = useState<string | null>(() => {
     if (handoff.phase !== "ready") {
       return null;
@@ -94,9 +88,6 @@ const MembershipPage = (): ReactElement => {
     }
   }, [handoff.phase]);
 
-  // This screen is a client-side step after the sign-in form, so the browser
-  // has removed the trigger and left focus on the body. Move it to the page so
-  // the next Tab continues from here; `#main` already has the focus style.
   useEffect(() => {
     document.querySelector<HTMLElement>("#main")?.focus();
   }, []);
@@ -161,8 +152,6 @@ const MembershipPage = (): ReactElement => {
     if (event.key !== "Enter" && event.key !== " ") {
       return;
     }
-    // Space on a different option moves the selection, as a native radio does.
-    // Enter — and Space on the current choice — continues.
     if (event.key === " " && event.currentTarget.value !== selected) {
       return;
     }

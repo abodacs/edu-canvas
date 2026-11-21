@@ -10,14 +10,8 @@ import type {
   SessionProjection,
 } from "@/shared/identity-contract";
 
-/**
-Channel every tab listens on so a sign-out or expiry hides private UI.
-*/
 export const authBroadcastChannelName = "edu-canvas-auth";
 
-/**
-Same-tab, in-memory store for the short-lived pending memberships after sign-in. It is never written to any browser storage: the pending authority itself lives in an HttpOnly cookie, and these labels only drive the choice screen for the tab that just signed in. The value lives in a mutable holder so this module keeps the single source of truth without reassigning a top-level binding.
-*/
 const pendingMembershipHandoff: { current: PendingMembershipHandoff | null } = {
   current: null,
 };
@@ -85,7 +79,6 @@ const contractFailure: AuthApiFailure = {
   message: "",
 };
 
-// The envelope may carry extra keys, so select the projection keys before a strict parse.
 const parseActiveProjection = (
   body: unknown
 ): ActiveSessionProjection | undefined => {
@@ -148,15 +141,11 @@ const jsonPost = async (
       "content-type": "application/json",
       [csrfHeaderName]: csrf,
     },
-    // A revocation request must outlive the navigation that follows it.
     keepalive: true,
     body: JSON.stringify(payload),
   });
 };
 
-/**
-GET /api/auth/context — mint the pre-auth challenge before any mutation.
-*/
 export const fetchAuthChallenge = async (): Promise<
   AuthApiResult<{ csrf: string }>
 > => {
@@ -172,9 +161,6 @@ export const fetchAuthChallenge = async (): Promise<
     : { ok: true, data: { csrf: body.csrf } };
 };
 
-/**
-POST /api/auth/sign-in — active projection, or a membership choice.
-*/
 export const submitSignIn = async (
   credentials: { readonly email: string; readonly password: string },
   csrf: string
@@ -189,9 +175,6 @@ export const submitSignIn = async (
     : { ok: false, error: contractFailure };
 };
 
-/**
-POST /api/auth/sign-up — always verification-pending, new or duplicate.
-*/
 export const submitSignUp = async (
   credentials: { readonly email: string; readonly password: string },
   csrf: string
@@ -206,9 +189,6 @@ export const submitSignUp = async (
     : { ok: false, error: contractFailure };
 };
 
-/**
-POST /api/auth/membership — consume the pending credential for one class.
-*/
 export const submitMembership = async (
   membershipId: string,
   csrf: string
@@ -223,9 +203,6 @@ export const submitMembership = async (
     : { ok: false, error: contractFailure };
 };
 
-/**
-GET /api/auth/session — safe projection plus a session-bound CSRF token.
-*/
 export const fetchSession = async (): Promise<
   AuthApiResult<{
     readonly projection: ActiveSessionProjection;
@@ -245,9 +222,6 @@ export const fetchSession = async (): Promise<
     : { ok: false, error: contractFailure };
 };
 
-/**
-POST /api/auth/continue — the only call that renews idle time.
-*/
 export const renewSession = async (
   csrf: string
 ): Promise<AuthApiResult<ContinueSessionProjection>> => {
@@ -261,9 +235,6 @@ export const renewSession = async (
     : { ok: false, error: contractFailure };
 };
 
-/**
-POST /api/auth/logout — revoke locally, then clear site data.
-*/
 export const endSession = async (
   csrf: string
 ): Promise<AuthApiResult<null>> => {
@@ -271,7 +242,6 @@ export const endSession = async (
   return result.ok ? { ok: true, data: null } : result;
 };
 
-// Hand the chosen-class list to /login/membership through tab memory only.
 export const readPendingMembershipHandoff = ():
   PendingMembershipHandoff | undefined =>
   pendingMembershipHandoff.current ?? undefined;
@@ -290,15 +260,12 @@ const noCleanup = (): void => {
   // Nothing was subscribed or scheduled, so there is nothing to release.
 };
 
-// Best-effort cross-tab signal; an absent BroadcastChannel is not a failure.
 export const publishAuthSignal = (message: AuthBroadcastMessage): void => {
   if (typeof BroadcastChannel === "undefined") {
     return;
   }
   try {
     const channel = new BroadcastChannel(authBroadcastChannelName);
-    // BroadcastChannel has no origin concept: the value travels only to this
-    // origin's other tabs, so a targetOrigin argument does not exist.
     // eslint-disable-next-line unicorn/require-post-message-target-origin -- BroadcastChannel takes no targetOrigin.
     channel.postMessage(message);
     channel.close();

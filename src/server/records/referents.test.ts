@@ -18,7 +18,10 @@ interface JsonSchemaNode {
 const jsonSchemaNodeSchema: z.ZodType<JsonSchemaNode> = z.object({
   type: z.string().optional(),
   properties: z
-    .record(z.string(), z.lazy(() => jsonSchemaNodeSchema))
+    .record(
+      z.string(),
+      z.lazy(() => jsonSchemaNodeSchema)
+    )
     .optional(),
   required: z.array(z.string()).optional(),
   items: z.lazy(() => jsonSchemaNodeSchema).optional(),

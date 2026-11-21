@@ -1,8 +1,5 @@
 import { z } from "zod";
 
-/**
- * A story plan is the forward learner narrative of one accepted prerequisite path. It is a pure projection: every beat is assembled from approved path or curriculum copy. The builder never calls a model, never reads the clock, and never invents a sentence. See issue #19.
- */
 export const STORY_PLAN_VERSION = "story-v1" as const;
 
 export const storyLanguageSchema = z.enum(["en", "ar"]);
@@ -54,14 +51,6 @@ export const storyPlanSchema = z.strictObject({
 export type StoryBeat = z.infer<typeof storyBeatSchema>;
 export type StoryPlan = z.infer<typeof storyPlanSchema>;
 
-/**
-The accepted path that a story plan retells.
-
-Structurally mirrors `ValidatedLearningPath` in the server layer. The shape is
-repeated rather than imported because `src/shared` must not depend on
-`src/server`; the compiler passes the real path straight through. If the server
-type gains a field a beat should show, add it here in the same change.
-*/
 export interface StoryPlanSource {
   readonly steps: readonly {
     readonly nodeId: string;
@@ -105,10 +94,6 @@ export class StoryPlanBuildError extends Error {
   }
 }
 
-/**
-The one place the story surface gets its own words. Role labels are chrome, not
-facts: a consumer renders `beat.roleLabel` instead of declaring a second table.
-*/
 const storyCopy = {
   en: {
     direction: "ltr",
@@ -137,12 +122,6 @@ const storyCopy = {
   }
 >;
 
-// The connection explanation is one clause of the approved path rationale. The
-// split keeps every word in place and only drops the leading premise, because
-// beat one already states it. The match runs on the raw approved string, so
-// the clause is an exact byte slice of stored copy even when the pack uses
-// double spaces or a line break; it is returned verbatim, never recased. When
-// no connective is present the whole rationale is used.
 const connectionPattern = {
   en: /\s(?:in order to|so that|because|so)\s/iu,
   ar: /\s(?:حتى|لكي)\s/u,
@@ -216,9 +195,6 @@ const buildBeatDrafts = (
     );
   }
 
-  // The hinge carries the approved connection clause. It happens on the target
-  // screen, so it shares that screen's purpose instead of inventing one. It has
-  // no approved path label, so its label is its role name.
   const hinge: BeatDraft = {
     role: "hinge",
     roleLabel: roles.hinge,

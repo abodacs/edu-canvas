@@ -41,8 +41,6 @@ const validInput: LessonGenerationInput = {
   difficulty: "on-level" as const,
 };
 
-// The draft generator and the acceptance review take a normalized request; the
-// generation command takes the raw input. They are different types now.
 const normalizedInput: NormalizedGenerationRequest = {
   ...validInput,
   grade: 4,

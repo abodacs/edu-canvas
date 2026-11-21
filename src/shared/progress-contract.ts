@@ -9,20 +9,11 @@ import {
   runStageValues,
 } from "./learner-contract";
 
-// The teacher progress contract (#8). `GET /api/teacher/progress` returns this
-// shape and the `/dashboard` page parses it again on arrival, so a renamed
-// field fails on both sides. The view is observational: it carries the stored
-// decision and attempt evidence only, never an answer key or a private field,
-// and every consumer labels it provisional.
-
 const identifierSchema = z
   .string()
   .trim()
   .regex(/^[A-Za-z0-9_-]{1,80}$/u, "This identifier is malformed.");
 
-/**
-One stored attempt as the teacher sees it. The pairs the learner chose and every answer relationship stay on the server; the ids of recorded assistance events are evidence, not content.
-*/
 export const progressAttemptSchema = z.strictObject({
   attemptId: identifierSchema,
   itemId: identifierSchema,
@@ -37,9 +28,6 @@ export const progressAttemptSchema = z.strictObject({
 
 export type ProgressAttempt = z.infer<typeof progressAttemptSchema>;
 
-/**
-The approved screen the run's assigned variant shows, read-only. The section is the learner-facing projection of the published lesson version, so the preview renders exactly what the learner was assigned.
-*/
 export const progressPreviewSchema = z.strictObject({
   lessonVersionId: identifierSchema,
   variantId: identifierSchema,
@@ -49,11 +37,6 @@ export const progressPreviewSchema = z.strictObject({
 
 export type ProgressPreview = z.infer<typeof progressPreviewSchema>;
 
-/**
-One run's results row: the stored decision verbatim, every attempt in order,
-and the approved-screen preview. The decision is the server's stored
-`next_activity`; the view never recomputes or rewrites it.
-*/
 export const progressRunSchema = z.strictObject({
   runId: identifierSchema,
   assignmentId: identifierSchema,

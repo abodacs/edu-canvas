@@ -57,9 +57,6 @@ export interface SessionCredentialReplacement {
   readonly providerCredentialsCiphertext: string;
 }
 
-/**
- * Identity persistence: bindings, membership, sessions, pending authentication, and trusted provisioning. Tenant-scoped reads and writes carry the authorization revision alongside the domain expectation so revocation committed first blocks a stale write.
- */
 export interface IdentityPersistence {
   findProviderBinding: (
     issuer: string,
@@ -106,16 +103,10 @@ export interface IdentityPersistence {
     consumedAt: string
   ) => Promise<boolean>;
 
-  /**
-   * Trusted provisioning writes. Invoked only by a deployment-managed provisioning principal or explicit test/local tooling; never a public web route. Conflicting rebinding and invalid cross-tenant references are rejected transactionally.
-   */
   createActor: (input: NewActorInput) => Promise<ActorRecord>;
   grantMembership: (input: NewMembershipInput) => Promise<MembershipRecord>;
   assignClass: (input: NewClassAssignmentInput) => Promise<void>;
   revokeMembership: (membershipId: MembershipId) => Promise<boolean>;
-  /**
-  Increment the actor revision and revoke every local session it opened.
-  */
   disableActor: (actorId: ActorId) => Promise<boolean>;
 
   appendProvisioningAudit: (entry: ProvisioningAuditEntry) => Promise<void>;
@@ -127,9 +118,6 @@ export interface NewActorInput {
   readonly isActive?: boolean;
 }
 
-/**
-The roster learner a student membership carries. Trusted provisioning materializes the learner's identity row with these fields when it is missing.
-*/
 export interface NewMembershipLearner {
   readonly id: LearnerId;
   readonly displayName: string;

@@ -1,13 +1,5 @@
 import { z } from "zod";
 
-/**
-Shared, browser-safe contract for bounded source snapshots (#114). The server
-delivery seam parses responses with these schemas; the studio renders the same
-gap vocabulary the server persisted. Raw extracted text is the teacher's own
-tenant-scoped material and is only returned for the single-snapshot review
-view, never in list projections.
-*/
-
 export const SOURCE_MAX_FILE_BYTES = 5 * 1024 * 1024;
 export const SOURCE_MAX_PDF_PAGES = 20;
 export const SOURCE_MAX_EXTRACTED_CHARS = 30_000;
@@ -25,13 +17,6 @@ export const sourceSnapshotStateValues = [
   "failed",
 ] as const;
 
-/**
-Three gap families stay distinguishable, per the issue contract: missing
-prerequisites, extraction faults (`scanned-page`, `broken-math`, `encoding`,
-`parser-fault`), and unverified external alignment. Upload snapshots always
-carry the alignment notice because no upload can claim a Learning Commons
-match.
-*/
 export const sourceGapCodeValues = [
   "missing-prerequisites",
   "scanned-page",
@@ -41,12 +26,6 @@ export const sourceGapCodeValues = [
   "unverified-external-alignment",
 ] as const;
 
-/**
-Named reasons a snapshot can fail with. Response-level rejections
-(`oversized-file`, `unsupported-format`, `encrypted` pre-scan) happen before a
-snapshot exists; the others finalize a `failed` snapshot the teacher can
-repair from.
-*/
 export const sourceFailureReasonValues = [
   "unsupported-format",
   "oversized-file",
@@ -159,13 +138,6 @@ export type CorrectedSourceTextInput = z.infer<
 >;
 export type SourceReviewInput = z.infer<typeof sourceReviewInputSchema>;
 
-/**
-Stable machine codes the source delivery seam rejects requests with, following
-the seam conventions in the generation contract (`INVALID_INPUT`-family 422,
-conflict-family 409, `NOT_FOUND` 404). `SOURCE_REJECTED` carries a named
-reason from `sourceFailureReasonValues` for rejections that happen before a
-snapshot exists.
-*/
 export const sourceRequestErrorCodeValues = [
   "SOURCE_INPUT_INVALID",
   "SOURCE_NOT_FOUND",

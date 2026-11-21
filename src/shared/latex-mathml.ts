@@ -1,10 +1,3 @@
-// #116 MathText: a bounded LaTeX subset parsed into a MathML descriptor tree.
-// The subset covers equivalent-fraction notation (\frac, basic operators,
-// digits, latin variables). Anything outside the subset fails closed so
-// untrusted markup never reaches the renderer. Pure and browser-safe: the
-// contract validates with it, the compiler produces the blocking diagnostic
-// with it, and the renderer maps the tree onto native MathML elements.
-
 export type MathMLNode =
   | { readonly kind: "row"; readonly children: readonly MathMLNode[] }
   | {
@@ -20,8 +13,6 @@ export type LatexMathResult =
   | { ok: true; root: MathMLNode }
   | { ok: false; code: "INVALID_MATH"; message: string };
 
-// Characters a MathText value may contain at all. The contract schema uses
-// this allowlist before any structural parsing happens.
 const allowedLatexCharacters = /^[A-Za-z0-9\s{}()[\]/+.=,<>×÷≤≥≠·\\-]+$/u;
 
 const commandNamePattern = /\\(?<name>[A-Za-z]+)/gu;
@@ -92,8 +83,6 @@ export const isAllowedLatexInput = (value: string): boolean => {
   return true;
 };
 
-// The parser helpers are mutually recursive: brace groups contain
-// sequences and sequences contain commands and groups.
 /* eslint-disable @typescript-eslint/no-use-before-define -- mutual recursion */
 
 interface ParseState {
@@ -113,7 +102,6 @@ const parseBraceGroup = (
   state: ParseState,
   depth: number
 ): ParseOutcome | { ok: true; nodes: MathMLNode[]; closed: boolean } => {
-  // Consume the opening brace before the group body.
   state.position += 1;
   const inner = parseSequence(state, depth + 1);
   if (!inner.ok) {
@@ -130,7 +118,6 @@ const parseCommand = (
   state: ParseState,
   depth: number
 ): ParseOutcome | { ok: true; nodes: MathMLNode[] } => {
-  // Consume the backslash before the command name.
   state.position += 1;
   const start = state.position;
   while (
@@ -255,8 +242,6 @@ const parseSequence = (state: ParseState, depth: number): ParseOutcome => {
     ? failure("Math text is empty after parsing.")
     : { ok: true, nodes };
 };
-
-/* eslint-enable @typescript-eslint/no-use-before-define -- mutual recursion */
 
 export const parseLatexToMathML = (input: string): LatexMathResult => {
   const state: ParseState = { input, position: 0 };

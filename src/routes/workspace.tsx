@@ -17,9 +17,6 @@ import { cn } from "@/lib/utilities";
 import { TeacherStudio } from "@/components/studio/teacher-studio";
 import type { ReactElement } from "react";
 
-/**
- * A neutral state that never renders private content. Used while the session is unresolved and while the server re-confirms it after a visibility return, reconnect, or back/forward navigation.
- */
 const WorkspaceStatus = ({
   title,
   message,
@@ -164,8 +161,6 @@ const WorkspacePage = (): ReactElement => {
     if (!isSignedOut) {
       return;
     }
-    // #168 P2-5: the landing page confirms the exit through its search
-    // parameter, so refreshes and shares never carry the banner.
     await navigate({ to: "/", replace: true, search: { signedOut: true } });
   };
 
@@ -229,8 +224,6 @@ const WorkspacePage = (): ReactElement => {
         id="workspace-content"
         ref={contentReference}
         className="workspace-content"
-        // Hidden from assistive tech and inert while the server re-confirms the
-        // session, so a stale view can never be read or acted on.
         inert={session.isRevalidating}
         aria-hidden={session.isRevalidating}
         tabIndex={-1}

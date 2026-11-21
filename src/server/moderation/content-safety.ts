@@ -1,17 +1,6 @@
 import { syntheticSeed } from "../seed-data";
 import type { ModerationCategory } from "@/shared/generation-contract";
 
-/**
-The deterministic safety seam every provider-boundary check goes through
-(#114; #132 owns the category contract). Generation screens prompts and
-generated content; grounding screens extracted and corrected source text
-before anything is persisted or sent onward.
-
-One code per boundary: `MODERATION_BLOCKED` means a local rule fired. A
-provider-side moderation refusal must carry its own code and never reuse this
-one.
-*/
-
 export const MODERATION_BLOCKED_CODE = "MODERATION_BLOCKED";
 
 export type ReportedModerationCategory = ModerationCategory | "none";
@@ -20,20 +9,12 @@ export interface ContentSafetyResult {
   allowed: boolean;
   category: ReportedModerationCategory;
   code: typeof MODERATION_BLOCKED_CODE | null;
-  /**
-  Fingerprint of the rule set that produced this decision. The current build does not persist it: the stored diagnostic schema is the public one, and the fingerprint must not reach the client. It is available to a caller that logs or measures a decision.
-  */
   ruleSetVersion: string;
 }
 
 export interface ContentSafety {
   checkPrompt: (prompt: string) => ContentSafetyResult;
   checkGeneratedContent: (content: unknown) => ContentSafetyResult;
-  /**
-  Source material (uploaded extraction or corrected text) is untrusted data,
-  never authority. Screening also catches personal data so a blocked source
-  never persists text and never reaches preview (UC5).
-  */
   checkSourceText: (text: string) => ContentSafetyResult;
 }
 
@@ -44,9 +25,6 @@ const unsafeMarkupPatterns: readonly RegExp[] = [
   /data\s*:\s*text\/html/iu,
 ];
 
-/**
-Instruction-override shapes. Kept narrow on purpose: a Grade 4 prompt may say "ignore the extra practice", so the rule needs an instruction target, not a bare verb. The word lists live in one place; each pattern allows zero, one, or two qualifiers between the verb and the target.
-*/
 const injectionVerbs = "ignore|disregard|forget|override|bypass";
 const injectionTargets =
   "instructions?|rules?|prompts?|guidelines?|guardrails?|restrictions?";
@@ -69,9 +47,6 @@ const promptInjectionPatterns: readonly RegExp[] = [
   /\b(?:reveal|print|show|repeat)\s+(?:your|the)\s+(?:system\s+)?(?:prompt|instructions?)\b/iu,
 ];
 
-/**
-Reviewed blocklist. Every entry is an unambiguous harm phrase, not a single word, so a fractions lesson cannot match it. Adding an entry requires a category test and a rule-set version change. Slur coverage is deliberately absent: it belongs to a provider moderation layer, not a committed word list.
-*/
 const harmfulContentPatterns: readonly RegExp[] = [
   /\b(?:child|minor|underage)\s+(?:porn(?:ography)?|sex(?:ual)?\s+(?:content|images?|acts?))\b/iu,
   /\bcsam\b/iu,
@@ -90,31 +65,16 @@ const harmfulContentPatterns: readonly RegExp[] = [
   /\b(?:hit|beat|punch|slap)\s+(?:a\s+)?(?:student|child|pupil)\b/iu,
 ];
 
-/**
-Bounded by RFC 5321 lengths. An unbounded local part re-scans from every word boundary and cost 884 ms on a 30 kB source; with the bound it costs under 15 ms.
-*/
 const emailPattern =
   /\b[\w.!#$%&'*+/=?^`{|}~-]{1,64}@[\w-]{1,63}(?:\.[\w-]{1,63})+\b/u;
 
 const phonePattern = /(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}\b/u;
 
-/**
-The digit lookahead keeps the identifier rule on values that carry a number.
-"Ask each student number their paper" must pass; "student id 4471" must block.
-*/
 const studentIdentifierPattern =
   /\b(?:student|pupil|learner|child)[\s_-]{0,3}(?:id|number|no\.?|#)[\s:=#-]{0,3}(?=[a-z0-9-]*\d)[a-z0-9-]{2,}\b/iu;
 
 const bareIdentifierPattern = /\bID[\s:=#]{0,3}\d{3,}\b/u;
 
-/**
-First names only. Surnames are excluded because many are occupation or common
-words ("Baker", "Green", "Brown", "King"), and blocking "a baker uses 1/2 cup"
-costs a teacher a revision. Nature and month names ("May", "June", "Willow",
-"Ruby") are excluded for the same reason. The bake-off in
-docs/hackathon/meta-global-2026/evidence/moderation-2026-10-31 records what
-this choice costs in recall.
-*/
 const reviewedFirstNames: readonly string[] = [
   "Aaliyah",
   "Abigail",
@@ -228,9 +188,6 @@ const reviewedNamePatterns: readonly RegExp[] = reviewedFirstNames.map(
   (name) => new RegExp(`\\b${escapeRegExp(name)}\\b`, "iu")
 );
 
-/**
-Structured shapes. A first name is not one of them, and that split matters: Grade 4 word problems are full of reviewed first names ("Emma has 3/4 of a cake"), so a generated lesson must not be blocked for teaching a fraction. Names are screened on teacher input and on source text, where a roster is the realistic risk.
-*/
 const structuralPersonalDataPatterns: readonly RegExp[] = [
   emailPattern,
   phonePattern,
@@ -249,9 +206,6 @@ interface CategoryRules {
   patterns: readonly RegExp[];
 }
 
-/**
-Order is the reported category. Personal data outranks markup, so a teacher sees the revision that matters most.
-*/
 const categoryRules: readonly CategoryRules[] = [
   { category: "personal-data", patterns: namedPersonalDataPatterns },
   { category: "harmful-content", patterns: harmfulContentPatterns },
@@ -264,9 +218,6 @@ const HASH_MULTIPLIER = 31;
 const HASH_WIDTH = 16;
 const RULE_SET_VERSION_PREFIX = "moderation-rules-v1";
 
-/**
-A rolling polynomial hash. It only needs to change when a rule changes, so a readable modulo loop beats a bitwise FNV here.
-*/
 const fingerprint = (value: string): string => {
   let hash = 0;
   for (let index = 0; index < value.length; index += 1) {

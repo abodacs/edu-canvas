@@ -8,11 +8,6 @@ import { createSupabaseIdentityProvider } from "./supabase";
 import type { IdentityProvider } from "./port";
 import type { ServerConfig } from "../../config";
 
-/**
- * Selects the provider behind the application-owned contract. The deterministic
- * provider is only reachable in development (config enforces the hosted
- * provider in preview and production), so it can never back a deployed request.
- */
 export const createConfiguredIdentityProvider = (
   config: ServerConfig
 ): IdentityProvider => {

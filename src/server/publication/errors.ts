@@ -10,10 +10,6 @@ export interface PublicationErrorOptions extends ErrorOptions {
   detail?: string;
 }
 
-/**
-A typed publication refusal. The delivery seam maps `code` and `status` to the
-wire shape; domain code never builds an HTTP response.
-*/
 export class PublicationError extends Error {
   readonly code: PublicationErrorCode;
   readonly status: number;

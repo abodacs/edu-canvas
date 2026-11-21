@@ -41,11 +41,6 @@ const createService = (): ReturnType<typeof createGenerationService> => {
   });
 };
 
-/**
-#223: the advisory reviewer is a separate composition. It uses the same
-persistence port and the same Meta configuration, but it has its own bound and
-never joins the generation request.
-*/
 const createAdvisoryReviewServiceFromConfig = (): AdvisoryReviewService => {
   const config = readServerConfig();
   if (config.metaApiKey === undefined) {
@@ -66,9 +61,6 @@ const createAdvisoryReviewServiceFromConfig = (): AdvisoryReviewService => {
 
 const resolveTeacher = resolveProtectedTeacher;
 
-/**
-Map a generation failure to its transport response. Typed domain errors carry their own code, curated message, and status from the shared seam contract; everything else keeps the generic fallback so no internal detail escapes.
-*/
 export const mapGenerationError = (error: unknown): Response => {
   if (error instanceof IdentityError) {
     return identityErrorJson(error);
@@ -104,9 +96,6 @@ const draftIdSchema = z
   .trim()
   .regex(/^[A-Za-z0-9_-]{1,80}$/u);
 
-/**
-POST /api/lessons/generate — owning teacher, mutation-protected.
-*/
 export const handleGenerateLessonRequest = async (
   request: Request
 ): Promise<Response> => {
@@ -133,9 +122,6 @@ export const handleGenerateLessonRequest = async (
   }
 };
 
-/**
-POST /api/lessons/:draftId/cancel — owning teacher, mutation-protected.
-*/
 export const handleCancelGenerationRequest = async (
   request: Request,
   draftId: string
@@ -164,11 +150,6 @@ export const handleCancelGenerationRequest = async (
 const advisoryUnavailableMessage =
   "The advisory review is temporarily unavailable. Try again later.";
 
-/**
-Map an advisory refusal or infrastructure failure to its transport response.
-The reviewer is optional, so an unavailable provider is a 503, not a draft
-failure.
-*/
 export const mapAdvisoryReviewError = (error: unknown): Response => {
   if (error instanceof IdentityError) {
     return identityErrorJson(error);
@@ -188,10 +169,6 @@ export const mapAdvisoryReviewError = (error: unknown): Response => {
   );
 };
 
-/**
-POST /api/lessons/:draftId/advisory-review — owning teacher, mutation-protected.
-Runs the bounded reviewer after `ready-for-review` and appends warnings only.
-*/
 export const handleRequestAdvisoryReview = async (
   request: Request,
   draftId: string
@@ -217,10 +194,6 @@ export const handleRequestAdvisoryReview = async (
   }
 };
 
-/**
-GET /api/lessons/:draftId/advisory-review — owning teacher, read-only.
-Returns the stored advisory result, or null when none was requested.
-*/
 export const handleReadAdvisoryReview = async (
   request: Request,
   draftId: string
@@ -249,12 +222,6 @@ export const handleReadAdvisoryReview = async (
   }
 };
 
-/**
-GET /api/lessons/:draftId — owning teacher, read-only. A read carries no
-mutation challenge, so it resolves the session without the forgery guard, the
-same way the review read does. Any draft outside the caller's scope, or one
-that does not exist, returns the same generic 403.
-*/
 export const handleReadGenerationRequest = async (
   request: Request,
   draftId: string

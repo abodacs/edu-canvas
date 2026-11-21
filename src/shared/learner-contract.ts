@@ -2,11 +2,6 @@ import { z } from "zod";
 
 import { languageValues } from "@/shared/generation-contract";
 
-// The published learner contract. `GET /api/learner/runs` and
-// `POST /api/learner/attempts` return these shapes, and the `/learn` page
-// parses them again on arrival, so a renamed field fails on both sides.
-// Storage schemas stay stricter and server-side.
-
 export const sectionKindValues = [
   "worked-example",
   "guided-practice",
@@ -102,8 +97,6 @@ export const learnerLessonSchema = z.strictObject({
   assignedVariantId: identifierSchema,
   assignedSectionId: identifierSchema,
   columns: learnerColumnsSchema.nullable(),
-  // #9: the pack's approved language decides the learner page's lang and dir.
-  // Null only for versions stored before approved copy existed.
   language: z.enum(languageValues).nullable(),
   sections: z.array(learnerSectionSchema).max(4),
   stage: z.enum(runStageValues),
@@ -162,11 +155,6 @@ export const learnerEvidenceSchema = z.strictObject({
 
 export type LearnerEvidence = z.infer<typeof learnerEvidenceSchema>;
 
-/**
-The private API error body. The `/learn` page reads the code to pick its
-recovery message; delivery may add fields, so unknown keys are stripped
-rather than rejected.
-*/
 export const learnerErrorResponseSchema = z.object({
   code: z.string().optional(),
 });

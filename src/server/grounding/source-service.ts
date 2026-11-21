@@ -44,10 +44,6 @@ import type {
 
 const MS_PER_HOUR = 3_600_000;
 
-/**
-An `extracting` snapshot left behind by a crashed process is marked failed
-after this long; live extractions finish in at most 10 seconds.
-*/
 const STALE_EXTRACTION_AFTER_MS = 60_000;
 
 const CORRECTED_TEXT_FORMAT = "markdown" as const;

@@ -3,9 +3,6 @@ import { z } from "zod";
 import { hashHexPattern } from "./hashes";
 import { recordLimits } from "./vocabulary";
 
-/**
- * Records use opaque text identifiers: UUIDv7 for new records, and the legacy fixture identifiers in the legacy decoders. The shape is deliberately wider than a UUID so a legacy label can still be read.
- */
 export const recordIdSchema = z
   .string()
   .trim()
