@@ -4,7 +4,6 @@ import type { ComponentProps, ElementType, ReactElement } from "react";
 
 interface CardProps extends ComponentProps<"div"> {
   readonly variant?: "default" | "lift";
-  /** The rendered element; a card is a container, so it carries no role. */
   readonly as?: ElementType;
 }
 

@@ -30,15 +30,6 @@ import type {
   VersionedCurriculumContext,
 } from "./semantic-validation-contract";
 
-/**
-#223: the async advisory-review service.
-
-It loads a stored `ready-for-review` record, resolves the pack-derived context,
-runs the bounded reviewer, and appends warning-only findings to a separate
-advisory field. It never changes the draft, the record state, the diagnostics,
-the gate snapshot, or an answer key, and a failed review is never written.
-*/
-
 export type AdvisoryReviewErrorCode =
   | "ADVISORY_REVIEW_FORBIDDEN"
   | "ADVISORY_REVIEW_NOT_READY"
@@ -51,10 +42,6 @@ const advisoryReviewErrorStatusByCode: Record<AdvisoryReviewErrorCode, number> =
     ADVISORY_REVIEW_STALE: 409,
   };
 
-/**
-A typed advisory refusal. The delivery seam owns the transport response; this
-module never builds HTTP.
-*/
 export class AdvisoryReviewError extends Error {
   readonly code: AdvisoryReviewErrorCode;
   readonly status: number;
@@ -79,10 +66,6 @@ export interface AdvisoryReviewServiceOptions {
   agent: AdvisoryReviewAgent;
   timeoutMs?: number;
   now?: () => string;
-  /**
-  Overridable for tests; production resolves the pack-derived context so the
-  reviewer reads the same curriculum facts the gate did.
-  */
   curriculumContext?: (
     input: LessonGenerationRecord["input"],
     tenantId: string
@@ -90,15 +73,10 @@ export interface AdvisoryReviewServiceOptions {
 }
 
 export interface AdvisoryReviewService {
-  /**
-  Run the bounded reviewer for an owned, ready-for-review draft and store a
-  warning-only result. A failure is reported and never written.
-  */
   review: (
     actor: TeacherActor,
     requestId: string
   ) => Promise<AdvisoryReviewRunResponse>;
-  /** Read the stored advisory result of an owned draft, if one exists. */
   read: (
     actor: TeacherActor,
     requestId: string
@@ -144,7 +122,6 @@ export const createAdvisoryReviewService = (
   ): Promise<LessonGenerationRecord> => {
     const record = await generation.readGeneration(actor.tenantId, requestId);
     if (!record || record.teacherId !== actor.actorId) {
-      // Never reveal whether another teacher's or tenant's draft exists.
       throw advisoryReviewError("ADVISORY_REVIEW_FORBIDDEN", forbiddenMessage);
     }
     return record;
@@ -177,7 +154,6 @@ export const createAdvisoryReviewService = (
     try {
       run = await runBoundedAdvisoryReview(agent, input, timeoutMs);
     } catch (error) {
-      // A slow or failed reviewer leaves the stored record untouched.
       return advisoryReviewRunResponseSchema.parse({
         status: "failed",
         failure: classifyAdvisoryReviewFailure(error),
@@ -193,7 +169,6 @@ export const createAdvisoryReviewService = (
       },
       reviewedAt: clock(),
       latencyMs: run.latencyMs,
-      // Warning-only by construction: the stored finding has no verdict field.
       findings: sanitizedRecommendations(run.recommendations),
     };
 

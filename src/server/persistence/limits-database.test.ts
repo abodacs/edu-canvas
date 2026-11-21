@@ -112,8 +112,6 @@ describe.skipIf(!isRunDatabaseTests)("shared generation limits", () => {
 
     const counts = await counterCounts(tenantId);
 
-    // Nine warm-ups plus one winner: the rejected transaction rolled back its
-    // provider-call increment instead of spending an eleventh call.
     expect(counts).toMatchObject({
       "teacher:generation-attempt": teacherLimit,
       "tenant:generation-attempt": teacherLimit,

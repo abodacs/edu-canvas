@@ -8,11 +8,6 @@ import {
 
 import type { LearnerActor, TeacherActor } from "./types";
 
-/**
- * Test-support actors mirror the synthetic identity fixture so tests can stand
- * in for a resolved session without provisioning the whole composition. They
- * live outside the production import graph; nothing in `src` imports them.
- */
 const defaultTeacherActor: TeacherActor = {
   actorId: parseActorId("actor_teacher_amira"),
   displayName: "Emily Carter",

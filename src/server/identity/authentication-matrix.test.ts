@@ -46,26 +46,6 @@ import type { IdentityPersistence } from "./persistence-port";
 import type { DeterministicAccount } from "./provider/deterministic";
 import type { IdentityProvider } from "./provider/port";
 
-/**
- * §12.2 "Authentication matrix — AT-01 to AT-38" of
- * `.scratch/tasks/98-login/98-authentication.md`, one named case per row.
- *
- * Every case drives the real HTTP handlers in `api.server.ts` (documents/JSON in,
- * status/cookie/header out) against the seeded identity persistence and the
- * deterministic provider, or against `createIdentityProvisioning` where the row
- * describes the trusted provisioning seam. No policy is stubbed: the only
- * substituted collaborators are a persistence that fails a store write, a
- * provider that reports a different subject, and lowered rate-limit counters.
- *
- * Rows whose surface is missing on this branch are `it.skipIf(true)`: the case
- * name still carries the row id, the body documents and asserts the required
- * behaviour so un-skipping it fails until the surface lands, and a comment names
- * exactly what is missing. The literal disabled-test form is unavailable: the
- * repository's `vitest/no-disabled-tests` and `sonarjs/no-skipped-tests` rules
- * reject it, and the autofixed placeholder is rejected by the vitest warning
- * rule.
- */
-
 const password = syntheticPasswordForTests;
 const issuer = syntheticProviderIssuer;
 
@@ -74,10 +54,6 @@ const amira = "amira.north@example.test";
 const lina = "lina.north@example.test";
 const unknownAddress = "nobody@example.test";
 
-/**
- * Development-mode cookie names, as `cookieNamesFor` derives them for
- * `APP_ENV=development`: `__Host-` prefixes require a secure context.
- */
 const localCookieNames = {
   session: "edu_canvas_session",
   pending: "edu_canvas_pending",
@@ -306,9 +282,6 @@ const selectMembership = async (input: {
 
 const curriculumTenantName = "Grade 4S · Synthetic Fractions";
 
-/**
-Signs the fixture teacher in and, since he also holds the curriculum classroom membership, completes the designed selection exactly like a production client. Defaults to the curriculum classroom; pass a class tenancy for rows that pin it.
-*/
 const signInAndSelect = async (
   dependencies: AuthDependencies,
   tenantName: string = curriculumTenantName
@@ -354,14 +327,7 @@ interface HarnessOptions {
   readonly accounts?: readonly DeterministicAccount[];
   readonly store?: SeededIdentityStore;
   readonly persistence?: IdentityPersistence;
-  /**
-   * `false` makes every provider call report `unavailable` (AT-19).
-   */
   readonly available?: boolean;
-  /**
-   * Provider-side session revocation never takes effect, while the local store
-   * stays healthy (AT-21).
-   */
   readonly signOutOutage?: boolean;
   readonly signInAttemptLimit?: number;
   readonly decorateProvider?: (provider: IdentityProvider) => IdentityProvider;
@@ -380,9 +346,6 @@ interface IdentityHarness {
 
 const credentialKey = Uint8Array.from({ length: 32 }, () => 7).toBase64();
 
-/**
- * Builds a real identity service over the seeded persistence and the deterministic provider, with a controllable clock and call counters. Used where a row needs an extra provider account, an outage, a failing store write, or a boundary instant the shared composition cannot express.
- */
 const createHarness = async (
   options: HarnessOptions = {}
 ): Promise<IdentityHarness> => {
@@ -498,13 +461,6 @@ const unverifiedAccount: DeterministicAccount = {
   emailVerified: false,
 };
 
-/**
- * Entries on this branch that can reject a server-owned identity override, or
- * that accept a provisioning principal, with the row's required error. Release
- * unit B (attempts, teacher decisions) and the provisioning seam have no HTTP
- * entry here, so each list is empty: the rows that need one assert the required
- * entry is present and therefore stay red until that surface lands.
- */
 const learnerOverrideGuardEntries: readonly string[] = [];
 const teacherLearnerOverrideGuardEntries: readonly string[] = [];
 const provisioningPrincipalEntries: readonly string[] = [];
@@ -603,8 +559,6 @@ describe("AT-05 to AT-08: membership selection", () => {
 
     expect(response.status).toBe(200);
     expect(body.status).toBe("membership-required");
-    // The fixture teachers also hold the curriculum classroom membership, so
-    // Amira's own list is now three tenancies.
     expect(
       body.memberships
         .map((membership) => membership.tenantName)
@@ -1208,10 +1162,6 @@ describe("AT-20 to AT-22: logout", () => {
     );
   });
 
-  // AT-23 is skipped: `handleLogout` never reads the request body and takes no
-  // target session id, so nothing rejects an override with 403. A logout carrying
-  // a foreign `sessionId` is answered 204 with the logout `Clear-Site-Data`
-  // header and only the presented credential is revoked.
   it.skipIf(true)(
     "AT-23 rejects a foreign session-id override on logout",
     async () => {
@@ -1352,10 +1302,6 @@ describe("AT-24 to AT-25: session credential and provider-subject integrity", ()
 });
 
 describe("AT-26 to AT-29: server-owned identity overrides", () => {
-  // AT-26 is skipped: no handler rejects a server-owned identity field with 403.
-  // The teacher-reachable protected mutation, POST /api/lessons/generate, rejects
-  // the unknown `actorId` field as 422 INVALID_INPUT through its strict schema, so
-  // the specified 403 cannot be produced. The body drives the real entry point.
   it.skipIf(true)("AT-26 rejects a teacher actorId override", async () => {
     const dependencies = await configuredDependencies();
     const signedIn = await signIn(dependencies, bilal);
@@ -1385,23 +1331,14 @@ describe("AT-26 to AT-29: server-owned identity overrides", () => {
     expect(response.status).toBe(403);
   });
 
-  // AT-27 is skipped: no learner-reachable protected endpoint exists on this
-  // branch, so a learner `actorId` override has no request to send and no 403 to
-  // assert. POST /api/attempts arrives with release unit B.
   it.skipIf(true)("AT-27 rejects a learner actorId override", () => {
     expect(learnerOverrideGuardEntries).toContain("/api/attempts");
   });
 
-  // AT-28 is skipped for the same reason as AT-27: the learner definition entry
-  // that carries a `learnerId` payload does not exist, so no override can be
-  // rejected.
   it.skipIf(true)("AT-28 rejects a learner learnerId override", () => {
     expect(learnerOverrideGuardEntries).toContain("/api/attempts");
   });
 
-  // AT-29 is skipped: no teacher surface takes a learner identity, and no
-  // override guard returns 403. POST /api/teacher-decisions arrives with release
-  // unit B.
   it.skipIf(true)(
     "AT-29 rejects a teacher learner-identity override outside an authorized reference",
     () => {
@@ -1448,9 +1385,6 @@ describe("AT-30 to AT-35: trusted provisioning", () => {
     ).toStrictEqual([["bindIdentity", "created", "deployment-provisioner"]]);
   });
 
-  // AT-31 is skipped: provisioning is an internal service seam (§5), not a web
-  // route, so a teacher request has no surface that could answer 403 before any
-  // binding or membership write.
   it.skipIf(true)(
     "AT-31 denies a teacher provisioning attempt without a write",
     () => {
@@ -1458,7 +1392,6 @@ describe("AT-30 to AT-35: trusted provisioning", () => {
     }
   );
 
-  // AT-32 is skipped for the same reason as AT-31.
   it.skipIf(true)(
     "AT-32 denies a learner provisioning attempt without a write",
     () => {
@@ -1466,8 +1399,6 @@ describe("AT-30 to AT-35: trusted provisioning", () => {
     }
   );
 
-  // AT-33 is skipped for the same reason as AT-31: there is no anonymous
-  // provisioning entry to answer 401 with zero writes.
   it.skipIf(true)(
     "AT-33 denies an anonymous provisioning attempt without a write",
     () => {
@@ -1475,11 +1406,6 @@ describe("AT-30 to AT-35: trusted provisioning", () => {
     }
   );
 
-  // AT-34 is skipped: the provisioning seam validates identifier formats but not
-  // tenant relations. `assignClass` accepted a grade 5B class into a grade 4A
-  // membership roster (the roster became ["class_north_4a", "class_south_9z"])
-  // instead of rejecting it, and `grantMembership` accepted a learner id from
-  // another tenant, so the required 403 with zero writes cannot be produced.
   it.skipIf(true)(
     "AT-34 rejects a mismatched tenant/class/learner relation without a write",
     async () => {

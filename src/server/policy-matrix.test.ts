@@ -66,35 +66,12 @@ import type {
 import type { SessionProjection } from "@/shared/identity-contract";
 import type { ReviewPack } from "@/shared/publication-contract";
 
-/**
- * Domain policy matrix PT-01..PT-57 (§12.1) plus the §12.3 concurrency barriers.
- *
- * Every row is asserted at the real delivery seam (`handleLessonPreviewRequest`,
- * `handleGenerateLessonRequest`, `handleCancelGenerationRequest`, `handleLogout`,
- * `resolveAuthDependencies`, `resolveRequestSession`) with real requests and
- * cookies, or through the real persistence conditional write
- * (`createSeededPersistence().saveGeneration` / `claimGeneration`) and the real
- * session revision checks (`createIdentityPersistence().revokeSession`,
- * `touchSession`, `rotateSessionCredentials`). The authorization policy is never
- * stubbed.
- *
- * Two kinds of row are deferred, and neither is faked:
- *   - the owning entry belongs to release unit B and has no handler in this
- *     branch (see `deferredUnitB`),
- *   - the entry exists but its transport response does not yet match §12.1 (see
- *     each row's `PRODUCTION GAP` comment).
- */
-
-// The delivery seams read process.env, so pin a valid production-shaped config
-// and replace the PostgreSQL composition with the in-memory test double below.
 vi.stubEnv(
   "DATABASE_URL",
   "postgresql://test:test@127.0.0.1:5432/edu_canvas_test"
 );
 vi.stubEnv("APP_ENV", "development");
 vi.stubEnv("META_API_KEY", "test-server-key");
-// CI sets AUTH_PROVIDER=supabase for the preview-shaped smoke job. The seams read
-// process.env, so without this pin the synthetic sessions never resolve here.
 vi.stubEnv("AUTH_PROVIDER", "deterministic");
 
 /* eslint-disable unicorn/single-line-block-comment-style -- Vite reads a dynamic import's chunkname only from a single-line block comment. */
@@ -161,7 +138,6 @@ vi.mock(
     };
   }
 );
-/* eslint-enable unicorn/single-line-block-comment-style */
 
 const password = "synthetic-pass-1";
 const northTenantId = "tenant_school_north";
@@ -182,21 +158,8 @@ const laterAt = "2026-10-28T09:05:00.000Z";
 const revokedAt = "2026-10-28T09:10:00.000Z";
 const absoluteAt = "2026-10-28T17:00:00.000Z";
 
-/**
- * Deferred rows are registered with `it.skipIf` rather than a disabled-test
- * modifier: the repo's vitest lint preset reports the skip modifier
- * (`vitest/no-disabled-tests`) and the pending-test modifier as errors, and it
- * errors on an empty test body too. `it.skipIf` is the conditional form this
- * repo already uses (`describe.skipIf(!isRunDatabaseTests)`); vitest still
- * reports these rows as skipped, so the deferral stays visible.
- */
 const isDeferred = true;
 
-/**
- * Rows whose owning protected entry is not implemented in this branch, with the
- * release-unit-B issue that owns them (§11: the issue stays open until the
- * handler exists). Each block below asserts its own row set.
- */
 const deferredUnitB = {
   readAssignment: {
     issue: "#6",
@@ -236,10 +199,6 @@ const errorBodySchema: z.ZodType<{ code?: string; message?: string }> =
     message: z.string().optional(),
   });
 
-/**
-A generation error body carries no success fields; success rows narrow through
-`publicGenerationResultSchema.parse` or the `requestId` marker.
-*/
 interface GenerationErrorBody {
   code?: string;
   message?: string;
@@ -254,8 +213,6 @@ const draftBodyOf = (
   return body;
 };
 
-// The session GET response carries the forgery challenge beside the
-// projection; the projection schema stays strict about its own shape.
 const projectionBodyOf = (payload: unknown): unknown => {
   if (typeof payload !== "object" || payload === null) {
     return payload;
@@ -350,9 +307,6 @@ const sessionChallenge = async (
   return body.csrf ?? "";
 };
 
-/**
-Completes the designed membership selection with the named tenant's membership.
-*/
 const selectTenantMembership = async (
   dependencies: AuthDependencies,
   signIn: Response,
@@ -383,9 +337,6 @@ const selectTenantMembership = async (
   );
 };
 
-/**
-A single-membership account (teacher or learner) signs in straight to a session. The fixture teachers also hold the curriculum classroom membership, so a teacher session completes the designed selection with the class tenancy these rows assert.
-*/
 const signInDirect = async (
   dependencies: AuthDependencies,
   email: string
@@ -404,9 +355,6 @@ const signInDirect = async (
   return { cookie, csrf: await sessionChallenge(dependencies, cookie) };
 };
 
-/**
-A multi-membership account selects the named tenant's membership.
-*/
 const signInForTenant = async (
   dependencies: AuthDependencies,
   tenantName: string
@@ -518,9 +466,6 @@ const readDraft = async (
   );
 };
 
-/**
-Generate through the real seam and fail loudly if the draft is not ready.
-*/
 const generateReadyDraft = async (
   dependencies: AuthDependencies,
   auth: MutationAuth,
@@ -590,8 +535,6 @@ const approveEveryScreen = async (
     .map((finding) => finding.code);
 
   for (const variant of review.draft.variants) {
-    // Approvals are independent rows but the helper keeps each request in
-    // order so a failure names the exact screen.
     // eslint-disable-next-line no-await-in-loop
     const approved = await approveTarget(dependencies, auth, {
       requestId,
@@ -707,10 +650,6 @@ const generatingRecord = (options: {
   };
 };
 
-/**
- * The claim lease must still be active for a write to land, so the expectation's
- * `leaseValidAfter` sits strictly before the record's `updatedAt`.
- */
 const expectationFor = (
   record: LessonGenerationRecord
 ): { attempt: number; updatedAt: string; leaseValidAfter: string } => {
@@ -737,8 +676,6 @@ const seedGeneratingDraft = async (options: {
       tenantId: northTenantId,
       teacherId: options.teacherId,
       idempotencyKey: `seeded-${options.requestId}`,
-      // The delivery seam cancels only inside the live claim lease, so a seeded
-      // draft must look freshly claimed.
       updatedAt: nowIso(),
     })
   );
@@ -768,8 +705,6 @@ const sessionInput = (
 };
 
 describe("protected domain policy matrix", () => {
-  // A fresh composition per test keeps the shared sign-in rate limiter from
-  // marching every case into 429; the seeded identity store stays cached.
   beforeEach(() => {
     resetConfiguredIdentityCache();
   });
@@ -1412,21 +1347,9 @@ describe("protected domain policy matrix", () => {
   });
 
   describe("domain policy matrix — rows the branch cannot satisfy yet", () => {
-    /**
-     * These entries exist, but the transport response does not match §12.1. Each
-     * skipped body holds the exact assertion the matrix requires (never a weakened
-     * one) so that fixing the named handler un-skips a real check. The observed
-     * value and the reproduction are on each `PRODUCTION GAP` comment.
-     */
-
     it.skipIf(isDeferred)(
       "PT-17 a teacher read environment outside scope (no scope referent)",
       () => {
-        // PRODUCTION GAP: the read-environment entry is GET /api/auth/session,
-        // which carries no client-selectable tenant or draft referent, so no
-        // cross-scope variant exists to deny. A foreign credential reaches 401,
-        // never the required 403. Nothing to assert until a scoped environment
-        // referent is declared.
         expect.hasAssertions();
       }
     );
@@ -1447,10 +1370,6 @@ describe("protected domain policy matrix", () => {
             key
           );
 
-        // PRODUCTION GAP: the service scopes the referent by owner, so the seam
-        // now surfaces its typed rejection as 404 DRAFT_NOT_FOUND (issue #115
-        // mapping). The §12 matrix requires the generic 403 for an out-of-scope
-        // referent; no row can assert that until the policy decision lands.
         expect({
           status: response.status,
           code: await errorCode(response),
@@ -1471,9 +1390,6 @@ describe("protected domain policy matrix", () => {
           dependencies
         );
 
-        // PRODUCTION GAP: observed 204 with the caller's own session revoked.
-        // `handleLogout` never reads the request body, so a target session id is
-        // ignored instead of returning 403 and leaving every session alive (§10).
         expect({
           status: response.status,
           code: await errorCode(response),
@@ -1484,9 +1400,6 @@ describe("protected domain policy matrix", () => {
     it.skipIf(isDeferred)(
       "PT-24 a learner read environment outside scope (no scope referent)",
       () => {
-        // PRODUCTION GAP: same structural gap as PT-17. The learner environment
-        // read is the session projection; it has no caller-selectable scope
-        // referent, so the required cross-scope 403 is unreachable.
         expect.hasAssertions();
       }
     );
@@ -1503,7 +1416,6 @@ describe("protected domain policy matrix", () => {
           dependencies
         );
 
-        // PRODUCTION GAP: observed 204, identical to PT-23.
         expect({
           status: response.status,
           code: await errorCode(response),
@@ -1525,10 +1437,6 @@ describe("protected domain policy matrix", () => {
           key
         );
 
-      // PRODUCTION GAP: observed 422 INVALID_INPUT. The strict
-      // `lessonGenerationInputSchema` rejects the extra field before §10's
-      // "role override returns 403 FORBIDDEN" rule can apply. The override grants
-      // no authority and writes no row, but the code differs.
       expect({
         status: response.status,
         code: await errorCode(response),
@@ -1550,7 +1458,6 @@ describe("protected domain policy matrix", () => {
           key
         );
 
-      // PRODUCTION GAP: observed 422 INVALID_INPUT, identical to PT-36.
       expect({
         status: response.status,
         code: await errorCode(response),
@@ -1572,8 +1479,6 @@ describe("protected domain policy matrix", () => {
           key
         );
 
-      // PRODUCTION GAP: the observed 403 comes from the learner role gate, not from an override check. With an allowed actor the same override is rejected as 422, so the row's named behavior is not what produces the required code.
-      // Kept skipped rather than reported as a real pass.
       expect({
         status: response.status,
         code: await errorCode(response),
@@ -1595,7 +1500,6 @@ describe("protected domain policy matrix", () => {
           key
         );
 
-      // PRODUCTION GAP: see PT-38.
       expect({
         status: response.status,
         code: await errorCode(response),
@@ -1620,10 +1524,6 @@ describe("protected domain policy matrix", () => {
             key
           );
 
-        // PRODUCTION GAP: observed 401 UNAUTHENTICATED. `buildActor` treats an
-        // inactive membership as a failed session, so membership revocation
-        // surfaces as an authentication boundary rather than the §6 PC-01
-        // 403 FORBIDDEN. No effect lands either way.
         expect({
           status: response.status,
           code: await errorCode(response),
@@ -1679,9 +1579,6 @@ describe("protected domain policy matrix", () => {
             foreignTenantDraft.requestId
           );
 
-        // PRODUCTION GAP: both observed 500 GENERATION_FAILED. The service scopes
-        // the read by tenant and owner and throws DRAFT_NOT_FOUND;
-        // `mapGenerationError` turns it into 500 instead of the §10 generic 403.
         expect({
           sameTenant: sameTenantResponse.status,
           foreignTenant: foreignTenantResponse.status,
@@ -1715,9 +1612,6 @@ describe("protected domain policy matrix", () => {
             key
           );
 
-        // PRODUCTION GAP: the seam now surfaces the input rejection explicitly as
-        // 422 GENERATION_INPUT_INVALID (issue #115 mapping). No row is created and
-        // no provider call happens, but the transport code is not the required 403.
         expect({
           status: response.status,
           code: await errorCode(response),
@@ -1742,9 +1636,6 @@ describe("protected domain policy matrix", () => {
             key
           );
 
-        // PRODUCTION GAP: observed 404 DRAFT_NOT_FOUND (see PT-18). This is the
-        // generate half of the §12 referent rule; the preview half is proven by
-        // PT-19, which returns the same generic 403 for both foreign referents.
         expect({
           status: response.status,
           code: await errorCode(response),
@@ -1754,12 +1645,6 @@ describe("protected domain policy matrix", () => {
     );
   });
 
-  /**
-   * Issue #115 (IC1) requires the unsupported-objective run through the same
-   * delivery boundary to yield an explicit rejection the teacher can read, with
-   * no persisted draft. The rows assert the transport contract directly:
-   * status, machine code, and the curated message the error type already owns.
-   */
   describe("generation delivery rejections (IC1)", () => {
     it("rejects an unsupported objective with an explicit 422 rejection and no persisted draft", async () => {
       const dependencies = await authDependencies();
@@ -1990,8 +1875,6 @@ describe("protected domain policy matrix", () => {
       storedVersion: approved.version.id,
     });
 
-    // The response must satisfy the published contract, not a local copy of it.
-    // A dropped field here is a 502 in the browser after a successful publish.
     expect(publicationPublishResultSchema.safeParse(body).success).toBeTruthy();
   });
 
@@ -2009,8 +1892,6 @@ describe("protected domain policy matrix", () => {
       draft.requestId
     );
 
-    // The body schemas are the boundary now, so an unknown key is a refusal
-    // rather than something an inner parse silently strips.
     const body: Record<string, unknown> = {
       requestId: draft.requestId,
       versionId: approved.version.id,
@@ -2183,12 +2064,6 @@ describe("protected domain policy matrix", () => {
   });
 
   describe("release unit B — protected entries absent from this branch", () => {
-    /**
-     * The specification keeps the owning issue open while a handler is missing
-     * (§11; §14 "absent handlers keep #98 open"). No endpoint is invented here; the
-     * blocks record the deferral and the rows each absent entry owns.
-     */
-
     it.skipIf(isDeferred)(
       "PT-05/PT-13/PT-21/PT-25/PT-48 read assignment entry (issue #6)",
       () => {

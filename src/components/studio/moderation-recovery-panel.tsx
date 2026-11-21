@@ -7,16 +7,11 @@ import { resolveModerationRecovery } from "./moderation-recovery";
 import type { ModerationRecoveryInput } from "./moderation-recovery";
 
 export interface ModerationRecoveryPanelProperties extends ModerationRecoveryInput {
-  // The blocked request's objective, exactly as the teacher wrote it.
   readonly objective: string;
   readonly hasEarlierDraft: boolean;
   readonly onRevise: () => void;
 }
 
-// The #119 blocked-by-moderation panel. It replaces the retry affordance: one
-// heading, the category reason, the preserved objective, the request
-// reference, and the single "Revise request" action. Focus moves to the
-// heading for a new request only; one live region repeats the visible reason.
 export const ModerationRecoveryPanel = ({
   objective,
   hasEarlierDraft,
@@ -28,8 +23,6 @@ export const ModerationRecoveryPanel = ({
   const headingReference = useRef<HTMLHeadingElement>(null);
   const announcementReference = useRef<HTMLOutputElement>(null);
   const announcedKeyReference = useRef<string | null>(null);
-  // A blocked result and the same-prompt error both open the panel; the error
-  // path has no request id, so the code stands in as the focus key.
   const focusKey = requestId ?? recovery.category ?? "moderation";
 
   useEffect(() => {
@@ -46,7 +39,6 @@ export const ModerationRecoveryPanel = ({
     announcedKeyReference.current = focusKey;
 
     if (region.textContent === recovery.reason) {
-      // Identical text produces no DOM change, so clear it for one frame.
       region.textContent = "";
       const frame = window.requestAnimationFrame(() => {
         region.textContent = recovery.reason;

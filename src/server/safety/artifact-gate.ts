@@ -37,11 +37,6 @@ interface RenderableArtifactBase {
   readonly policyVersion: string;
 }
 
-/**
- * A draft that cleared the gate. The module-private symbol makes an object
- * literal outside this module a type error; `gateArtifact` is the only
- * producer. A hard-blocked artifact never carries this brand.
- */
 export type RenderableArtifact =
   | (RenderableArtifactBase & {
       readonly kind: "lesson";
@@ -53,9 +48,6 @@ export type RenderableArtifact =
       readonly draft: FractionLessonDraft;
     });
 
-/**
- * Runtime proof of the brand. Type signatures keep callers honest at compile time; this guard stops a JavaScript caller from compiling a raw draft.
- */
 export const isRenderableArtifact = (
   value: unknown
 ): value is RenderableArtifact => {
@@ -67,9 +59,6 @@ export const isRenderableArtifact = (
   );
 };
 
-/**
- * A deterministic pre-render rejection produced by the A2UI compile guard or the payload validator it runs. The drafting context cannot import the preview compiler, so the compile seam maps its failure into this shape and the gate owns the verdict.
- */
 export interface ArtifactPreRenderFailure {
   code: string;
   field: string;
@@ -80,18 +69,12 @@ export interface ArtifactPreRenderFailure {
 interface ArtifactGateInputBase {
   structuralDiagnostics?: readonly GenerationDiagnostic[];
   preRenderFailures?: readonly ArtifactPreRenderFailure[];
-  /**
-   * Overrides the default policy. The result echoes the version it used, so a later derivation under a new policy never looks byte-identical.
-   */
   policyVersion?: string;
 }
 
 export interface LessonArtifactGateInput extends ArtifactGateInputBase {
   kind: "lesson";
   draft: ProviderLessonDraft;
-  /**
-  Absent when the draft gate blocked the artifact before a path was accepted.
-  */
   learningPath?: ValidatedLearningPath;
   report?: SemanticValidationReport;
 }
@@ -156,9 +139,6 @@ const canonicalize = (value: unknown): string => {
   return JSON.stringify(value);
 };
 
-/**
-One canonical JSON hash for the repository. The publication domain pins hashes that must compare byte-for-byte with the gate's artifact hash, so it imports this rather than repeating the canonicalizer.
-*/
 export const hashCanonicalJson = (value: unknown): string => {
   return createHash("sha256")
     .update(canonicalize(value), "utf-8")
@@ -206,9 +186,6 @@ const semanticFindings = (
     });
 };
 
-// Issue #28's recovery decision lives in one table (`recovery-policy.ts`):
-// executable or untrusted payloads are replaced, bounded infrastructure
-// failures are retried, and schema or relationship breaks are edited.
 const structuralFinding = (
   diagnostic: GenerationDiagnostic
 ): ArtifactGateFinding | null => {
@@ -234,9 +211,6 @@ const structuralFinding = (
   };
 };
 
-// The compile guard is fail-closed: any pre-render rejection is a hard block.
-// Unknown component, action, catalog, or payload is replaced; every schema,
-// id, relationship, or math break is edited; infrastructure is retried.
 const preRenderFinding = (
   failure: ArtifactPreRenderFailure
 ): ArtifactGateFinding => {
@@ -399,9 +373,6 @@ export const gateArtifact = (input: ArtifactGateInput): ArtifactGateResult => {
   }
 };
 
-/**
- * Serializes a renderable gate result into the evidence acceptance stores on the record. Hard-blocked results have no snapshot: they never persist.
- */
 export const snapshotArtifactGateResult = (
   result: ArtifactGateResult
 ): ArtifactGateSnapshot => {

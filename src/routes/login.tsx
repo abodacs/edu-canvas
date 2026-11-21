@@ -25,9 +25,6 @@ import type { AuthApiFailure } from "@/components/auth/auth-client";
 import type { AuthNotice } from "@/components/auth/auth-status";
 import type { ReactElement, SyntheticEvent } from "react";
 
-/**
-One message for every failed credential check; account existence stays private.
-*/
 const GENERIC_CREDENTIAL_MESSAGE =
   "Check your email address and password, then try again.";
 
@@ -109,10 +106,6 @@ const describeSignInFailure = (failure: AuthApiFailure): AuthNotice => {
 
 const LoginPage = (): ReactElement => {
   const navigate = useNavigate();
-  // `/login/membership` is a child of this route in the file-based tree, so this
-  // component owns the parent segment. It renders the sign-in card only on
-  // `/login` and hands the child route its own screen, without minting a second
-  // pre-auth challenge that would invalidate the pending one.
   const isMembershipRoute = useRouterState({
     select: (state) => state.location.pathname === "/login/membership",
   });
@@ -157,8 +150,6 @@ const LoginPage = (): ReactElement => {
       (nextEmailError !== null && nextEmailError !== "") ||
       nextPasswordError !== null
     ) {
-      // Focus waits for the commit that marks the field invalid, so the screen
-      // reader reads the error with the control instead of before it.
       focusAfterRender(
         nextEmailError !== null && nextEmailError !== ""
           ? emailRef
@@ -169,21 +160,15 @@ const LoginPage = (): ReactElement => {
 
     setIsPending(true);
     announce(null);
-    // A previous tab session may have left another account's class list here.
     clearPendingMembershipHandoff();
     const result = await submitSignIn({ email: trimmedEmail, password }, csrf);
 
     if (!result.ok) {
       setIsPending(false);
       announce(describeSignInFailure(result.error));
-      // The email stays in state, so it remains filled in after a failure.
       return;
     }
 
-    // Sign-in succeeded, so the submit is no longer pending whether the session
-    // is active or the caller must choose a class. This route stays mounted
-    // while `/login/membership` renders, so a stale flag would leave the form
-    // disabled after the teacher cancels the class choice.
     setIsPending(false);
 
     if (result.data.status === "active") {

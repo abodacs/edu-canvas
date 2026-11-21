@@ -17,9 +17,6 @@ import type {
 } from "../limits/contract";
 
 interface SeededGenerationLimitStoreOptions {
-  /**
-  Test-only overrides. Production reads `generationLimitPolicy` directly.
-  */
   readonly policy?: Partial<GenerationLimitPolicy>;
   readonly now?: () => number;
 }
@@ -39,9 +36,6 @@ const counterKey = (
 const leaseKey = (tenantId: string, teacherId: string): string =>
   `${tenantId}|${teacherId}`;
 
-// In-memory limit state for tests only. It mirrors the Postgres atomicity
-// rule: check every claim and the lease first, then apply, so a rejected
-// reservation leaves no partial increment.
 export const createSeededGenerationLimitStore = (
   options: SeededGenerationLimitStoreOptions = {}
 ): GenerationLimitStore & {
@@ -175,9 +169,6 @@ export const createSeededGenerationLimitStore = (
   };
 };
 
-// Test-support store with no practical ceiling. A suite that is not asserting
-// limit behavior should not fail because it generated more than ten drafts,
-// but it still exercises the same reservation code path.
 export const createUnboundedGenerationLimitStore = () => {
   return createSeededGenerationLimitStore({
     policy: {

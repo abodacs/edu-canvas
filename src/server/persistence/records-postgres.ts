@@ -96,12 +96,10 @@ export const createPostgresRecordBackend = (
       )
       .join(", ");
     const parameters = columns.map((column) => toParameter(values[column]));
-    // The conflict clause arbitrates every unique index on the table, so a
-    // concurrent writer's committed row makes the loser skip instead of
-    // aborting the transaction; the caller re-reads the winner's row.
-    const conflictSql = insertOptions?.onConflictDoNothing === true
-      ? " on conflict do nothing"
-      : "";
+    const conflictSql =
+      insertOptions?.onConflictDoNothing === true
+        ? " on conflict do nothing"
+        : "";
     try {
       await transaction.unsafe(
         `insert into "${table}" (${columnSql}) values (${valueSql})${conflictSql}`,
@@ -205,8 +203,6 @@ export const createPostgresRecordBackend = (
     ): Promise<T> => {
       const client = createSqlClient(databaseUrl);
       try {
-        // The explicit `Promise<T>` type argument resolves postgres.js's
-        // tuple-oriented `UnwrapPromiseArray` result to a plain `T`.
         return await client.begin<Promise<T>>(
           async (transaction) => await work(transaction)
         );

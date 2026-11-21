@@ -2,12 +2,6 @@ import { extractConnectionExplanation } from "@/shared/story-plan";
 import type { StoryLanguage } from "@/shared/story-plan";
 import type { Correctness } from "@/server/records/vocabulary";
 
-/**
- * #7 reveal report.
- *
- * A pure read over one stored submission and the private answer relationships.
- * It returns identities the learner already sent, never an answer they did not submit. The connection sentence is an exact slice of the approved rationale.
- */
 export const revealRuleVersion = "reveal-v1";
 
 export interface RevealItem {

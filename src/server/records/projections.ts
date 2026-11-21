@@ -40,12 +40,6 @@ import type {
 } from "./delivery";
 import type { LessonSection, LessonVersion } from "./authoring";
 
-/**
- * Explicit allowlists. A projection is constructed field by field, never by
- * deleting keys from a stored record, so a new private field cannot leak by
- * default. `contentHash`, `packageHash`, `privateAnswerDigest`, and
- * `privateAnswerRelationships` are absent from every projection.
- */
 export const teacherVersionProjectionSchema = z.strictObject({
   id: recordIdSchema,
   tenantId: recordIdSchema,
@@ -111,11 +105,6 @@ export type StudentLessonProjection = z.infer<
   typeof studentLessonProjectionSchema
 >;
 
-/**
-The learner section is constructed field by field. `variantId` stays on the
-record and never crosses this seam, so a new authoring field cannot leak by
-default.
-*/
 const projectLearnerSection = (section: {
   readonly id: string;
   readonly kind: LessonSection["kind"];
@@ -142,9 +131,6 @@ const projectLearnerSection = (section: {
   });
 };
 
-/**
-The one variant→section rule for the whole record layer. A version that links variants must resolve the assigned variant exactly; a v1 row without links falls back to the first section. The learner submit path reuses this instead of re-implementing it, so the read and write paths cannot disagree.
-*/
 export const assignedSection = (
   version: LessonVersion,
   assignedVariantId: string
@@ -161,8 +147,6 @@ export const assignedSection = (
   if (match) {
     return match;
   }
-  // A v1 row has no variant links at all, so the first section is the only
-  // answer it can give. A row that does link variants must resolve exactly.
   if (version.sections.some((section) => section.variantId !== undefined)) {
     throw recordError("INVALID_INPUT", {
       cause: new Error("The assigned variant has no section."),
@@ -258,9 +242,6 @@ const projectDecision = (decision: TeacherDecision) => {
   };
 };
 
-/**
- * Evidence identity excludes storage timestamps: their precision differs between drivers and they are not part of what the teacher decides on.
- */
 export const evidenceAttempts = (
   attempts: readonly LearnerAttempt[]
 ): readonly Record<string, unknown>[] => {
@@ -369,13 +350,6 @@ export const projectTeacherEvidence = (input: {
   });
 };
 
-/**
-#8: one run of the teacher progress read model. The stored decision crosses
-verbatim and the preview reuses the learner section projection, so the teacher
-sees the assigned screen and never an answer key. A version whose assigned
-section cannot be resolved yields a null preview instead of failing the whole
-dashboard.
-*/
 const projectProgressPreview = (
   version: LessonVersion | null,
   run: LearnerRun

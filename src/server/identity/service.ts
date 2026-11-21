@@ -48,9 +48,6 @@ export interface IdentityServiceOptions {
   readonly rateLimiter: RateLimiter;
   readonly now?: () => number;
   readonly clock?: () => string;
-  /**
-  Salt for rate-limit bucket digests; raw addresses and emails are never stored.
-  */
   readonly correlationSecret?: string;
   readonly signInAttemptLimit?: number;
   readonly sourceSignInLimit?: number;
@@ -170,7 +167,6 @@ export const createIdentityService = (
     try {
       return parseCredentials(options.cipher.decrypt(ciphertext));
     } catch {
-      // A missing rotation key invalidates the session rather than falling back.
       return undefined;
     }
   };
@@ -178,8 +174,6 @@ export const createIdentityService = (
   const buildActor = async (
     session: IdentitySessionRecord
   ): Promise<Actor | undefined> => {
-    // Independent reads share one round trip. Every verified request takes this
-    // path, so a serialized chain would add the full read latency each time.
     const [actorRecord, membership, tenantNameRecord] = await Promise.all([
       options.persistence.readActor(session.actorId),
       options.persistence.readMembership(session.membershipId),
@@ -280,9 +274,6 @@ export const createIdentityService = (
   const encryptCredentials = (credentials: EncryptedCredentials): string =>
     options.cipher.encrypt(JSON.stringify(credentials));
 
-  /**
-   * Refresh is internal to the adapter, never a browser endpoint. Only the worker that wins the revision check replaces encrypted credentials; a waiter re-reads the result, and an ambiguous failure ends the local session rather than reusing a credential of unknown state.
-   */
   const rotateCredentials = async (
     session: IdentitySessionRecord
   ): Promise<
@@ -303,8 +294,6 @@ export const createIdentityService = (
       current.providerCredentialsCiphertext !==
         session.providerCredentialsCiphertext
     ) {
-      // Another worker already replaced the credentials. Use its result instead
-      // of starting a second refresh.
       const replacement = readCredentials(
         current.providerCredentialsCiphertext
       );
@@ -340,8 +329,6 @@ export const createIdentityService = (
     });
 
     const latest = await options.persistence.readSession(current.sessionId);
-    // A logout that wins the revision check leaves the session revoked, and its
-    // late credentials are discarded rather than written back.
     if (
       latest === undefined ||
       (latest.revokedAt !== undefined && latest.revokedAt !== "")
@@ -409,8 +396,6 @@ export const createIdentityService = (
       return { status: "active", actor, session };
     }
 
-    // The provider no longer honours the access token. Try exactly one bounded
-    // refresh before ending the session.
     const refreshed = await rotateCredentials(session);
     if (refreshed.status === "unavailable") {
       return { status: "unavailable" };
@@ -509,9 +494,6 @@ export const createIdentityService = (
       const pendingCredential = createOpaqueCredential();
       const pendingExpiry = new Date(now() + pendingWindowMs);
       const expiresAt = pendingExpiry.toISOString();
-      // The hand-off list sorts deterministically (#168 P1-5): class name
-      // first, membership id as the tiebreak, so two consecutive sign-ins
-      // present the same order regardless of store insertion order.
       const memberships: readonly PendingMembershipOption[] = activeMemberships
         .toSorted((left, right) => {
           return (
@@ -564,7 +546,6 @@ export const createIdentityService = (
       if (outcome.status === "unavailable") {
         throw new IdentityError("AUTH_UNAVAILABLE");
       }
-      // New and duplicate addresses receive the same state (no enumeration).
       return { status: "verification-pending", email: outcome.email };
     },
 
@@ -628,7 +609,8 @@ export const createIdentityService = (
         providerSubject: pending.providerSubject,
         ...(pending.providerCredentialsCiphertext !== undefined &&
           pending.providerCredentialsCiphertext !== "" && {
-            providerCredentialsCiphertext: pending.providerCredentialsCiphertext,
+            providerCredentialsCiphertext:
+              pending.providerCredentialsCiphertext,
           }),
       });
     },
@@ -690,8 +672,6 @@ export const createIdentityService = (
         session.providerCredentialsCiphertext
       );
       if (credentials) {
-        // Best effort for this session only, never a global sign-out. A provider
-        // outage must not turn a completed local logout into a failure.
         try {
           await options.provider.signOut(credentials.accessToken);
         } catch {

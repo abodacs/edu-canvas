@@ -122,7 +122,6 @@ interface CookieNames {
 }
 
 const cookieNamesFor = (config: ServerConfig): CookieNames => {
-  // `__Host-` requires a secure context; development runs on plain HTTP.
   if (config.appEnv === "development") {
     return {
       session: "edu_canvas_session",
@@ -267,9 +266,6 @@ const sessionCredential = (
 ): { value: string | undefined; duplicate: boolean } =>
   singleCookie(request, cookieNamesFor(dependencies.config).session);
 
-/**
-GET /api/auth/context — establishes the pre-auth flow; no account data.
-*/
 export const handleAuthContext = async (
   _request: Request,
   dependencies: AuthDependencies
@@ -280,9 +276,6 @@ export const handleAuthContext = async (
   );
 };
 
-/**
-POST /api/auth/sign-up — teacher sign-up; identical state for duplicates.
-*/
 export const handleSignUp = async (
   request: Request,
   dependencies: AuthDependencies
@@ -348,9 +341,6 @@ const projectSignInOutcome = (
   );
 };
 
-/**
-POST /api/auth/sign-in
-*/
 export const handleSignIn = async (
   request: Request,
   dependencies: AuthDependencies
@@ -381,9 +371,6 @@ export const handleSignIn = async (
   }
 };
 
-/**
-POST /api/auth/membership — consume pending authority, rotate the credential.
-*/
 export const handleMembership = async (
   request: Request,
   dependencies: AuthDependencies
@@ -447,9 +434,6 @@ export const handleMembership = async (
   }
 };
 
-/**
-GET /api/auth/session — safe projection; no idle renewal.
-*/
 export const handleSession = async (
   request: Request,
   dependencies: AuthDependencies
@@ -494,9 +478,6 @@ export const handleSession = async (
   );
 };
 
-/**
-POST /api/auth/continue — the only action that renews idle time.
-*/
 export const handleContinue = async (
   request: Request,
   dependencies: AuthDependencies
@@ -510,11 +491,7 @@ export const handleContinue = async (
     request,
     dependencies
   );
-  if (
-    duplicate ||
-    credential === undefined ||
-    credential === ""
-  ) {
+  if (duplicate || credential === undefined || credential === "") {
     return errorResponse(new IdentityError("UNAUTHENTICATED"));
   }
 
@@ -546,9 +523,6 @@ export const handleContinue = async (
   });
 };
 
-/**
- * POST /api/auth/logout — local revocation first, then best-effort provider sign-out. Tolerates a missing credential. Accepts no target session id.
- */
 export const handleLogout = async (
   request: Request,
   dependencies: AuthDependencies
@@ -604,10 +578,6 @@ export const handleLogout = async (
   return responseWithCookies(null, clearedCookies, 204, headers);
 };
 
-/**
- * Resolve the caller's session for a protected delivery seam. Duplicate session
- * cookies are rejected outright (AT-25).
- */
 export const resolveRequestSession = async (
   request: Request,
   dependencies: AuthDependencies
@@ -621,10 +591,6 @@ export const resolveRequestSession = async (
     : await dependencies.identity.resolveSession(credential);
 };
 
-/**
- * Protected mutations require an exact trusted origin and a session-bound
- * forgery token before any credential work (PC-02, AT-15, AT-17).
- */
 export const guardProtectedMutation = (
   request: Request,
   dependencies: AuthDependencies,
@@ -634,7 +600,6 @@ export const guardProtectedMutation = (
   return originError ?? guardSessionChallenge(request, dependencies, sessionId);
 };
 
-// Resolve the caller's session as a verified teacher over an injected composition.
 export const resolveTeacherSession = async (
   request: Request,
   dependencies: AuthDependencies
@@ -658,7 +623,6 @@ export const resolveTeacherSession = async (
   };
 };
 
-// Fail closed on configuration, compose, then resolve the caller as a verified teacher.
 export const resolveTeacherActor = async (
   request: Request,
   config: ServerConfig = readServerConfig()
@@ -677,7 +641,6 @@ export const resolveTeacherActor = async (
   return await resolveTeacherSession(request, dependencies);
 };
 
-// Resolve the caller's session as a verified student over an injected composition.
 export const resolveLearnerSession = async (
   request: Request,
   dependencies: AuthDependencies
@@ -701,7 +664,6 @@ export const resolveLearnerSession = async (
   };
 };
 
-// Fail closed on configuration, compose, then resolve the caller as a verified student.
 export const resolveLearnerActor = async (
   request: Request,
   config: ServerConfig = readServerConfig()
@@ -723,11 +685,6 @@ export const resolveLearnerActor = async (
 export const identityErrorJson = (error: IdentityError): Response =>
   errorResponse(error);
 
-/**
-Full protected-mutation teacher resolution: session actor plus the origin and
-forgery guard. Delivery seams call this before any domain work; transport
-stays with the caller as a ready `Response`.
-*/
 export const resolveProtectedTeacher = async (
   request: Request,
   config: ServerConfig = readServerConfig()
@@ -749,9 +706,6 @@ export const resolveProtectedTeacher = async (
     : { ok: true, actor: resolved.actor };
 };
 
-/**
-Full protected-mutation learner resolution: the same origin and forgery guard as a teacher, then a student actor. #6 learner delivery calls this before any record work.
-*/
 export const resolveProtectedLearner = async (
   request: Request,
   config: ServerConfig = readServerConfig()
@@ -795,7 +749,6 @@ export const resolveAuthOrError = async (): Promise<
   }
 };
 
-// Bind one auth handler to the route contract. Every `/api/auth/*` route is this line.
 export const authRoute = (
   handler: (
     request: Request,

@@ -111,8 +111,6 @@ describe("standards pack schema", () => {
       },
     };
 
-    // A matching draft needs one target per source, so an asymmetric frame
-    // could never produce an acceptable draft.
     expect(() => standardsPackSchema.parse(asymmetric)).toThrow(
       /equal source and target/iu
     );

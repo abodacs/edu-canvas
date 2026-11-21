@@ -3,13 +3,6 @@ import {
   a2uiCatalogVersions,
 } from "@/shared/a2ui-contract";
 
-/**
- * The seeded foundation still ships synthetic curriculum, so the seed keeps its own browser-safe value shapes. The persistence seam and the seed read the same local types.
- *
- * #110: the fixture pins the live catalog. The identifier is imported from the
- * shared contract, not restated here, so one catalog identity serves the seed,
- * the compiler, and every reader.
- */
 export interface SeedCounts {
   tenants: number;
   identities: number;
@@ -128,9 +121,6 @@ export const assertSeedIntegrity = (): void => {
     throw new Error("Synthetic seed contains duplicate stable identifiers.");
   }
 
-  // #110: a fixture may pin any catalog the live contract publishes, and no
-  // other. `as const` rejects a bad literal at compile time; this rejects a
-  // widened or cast value before it reaches PostgreSQL.
   const { catalogVersion } = syntheticSeed.activityVersion;
   if (!(a2uiCatalogVersions as readonly string[]).includes(catalogVersion)) {
     throw new Error(

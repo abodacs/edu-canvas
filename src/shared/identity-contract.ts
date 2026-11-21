@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-// The forgery-token header, defined once for the client and the server guard.
 export const csrfHeaderName = "x-edu-canvas-csrf";
 
 export const identityRoleSchema = z.enum(["teacher", "student"]);

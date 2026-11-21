@@ -24,13 +24,6 @@ import { createRecordCommands } from "./records-commands";
 import type { ActivityOption } from "@/server/learner/decision";
 import type { Actor } from "../identity/types";
 
-/**
- * #8 database contract for the teacher progress read model. It gates itself on
- * RUN_DATABASE_TESTS and a configured DATABASE_URL, and proves the replay
- * (AC2), the refresh immutability (AC1), and the tenant/assignment boundaries
- * (AC3) against real PostgreSQL.
- */
-
 const databaseUrl = process.env.DATABASE_URL;
 const isRun =
   process.env.RUN_DATABASE_TESTS === "true" &&
@@ -348,8 +341,6 @@ const deleteFixture = async (fixture: Fixture): Promise<void> => {
   });
   try {
     await sql.begin(async (transaction) => {
-      // Test-only cleanup: immutable triggers block deletes, so the fixture
-      // removal runs with triggers suspended. Production never deletes these.
       await transaction`set session_replication_role = replica`;
       await transaction`select set_config('app.tenant_id', ${fixture.tenantId}, true)`;
       await transaction`delete from learner_attempts where tenant_id = ${fixture.tenantId}`;
@@ -554,8 +545,6 @@ describe.skipIf(!isRun)("teacher progress database contract", () => {
   });
 
   it("returns no run from another tenant to a foreign teacher (AC3)", async () => {
-    // The foreign teacher is a legitimate actor inside their own tenant, so
-    // the boundary is what the read returns: none of the main tenant's runs.
     const progress = await records.readTeacherProgress(fixture.foreignTeacher);
 
     expect(

@@ -9,9 +9,6 @@ interface SyntheticDataMarkerProps {
   readonly children?: ReactNode;
 }
 
-/**
-The visible notice that every record on screen is synthetic. Copies differ by place (the landing footer credits the provider, the illustration caption names the seed), so the sentence and the element are the caller's; the marker owns only the hook every surface shares.
-*/
 export const SyntheticDataMarker = ({
   variant = "inline",
   as: Tag = "span",

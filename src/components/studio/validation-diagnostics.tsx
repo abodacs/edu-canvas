@@ -9,9 +9,6 @@ import type {
 
 type RecoveryScope = "screen" | "flow";
 
-/**
- * The label states what the control does. Both regenerate actions request a new generation; they never claim to replace a single screen.
- */
 const recoveryLabel = (recovery: RecoveryAction): string => {
   switch (recovery) {
     case "edit": {
@@ -127,9 +124,6 @@ export interface ValidationDiagnosticsProperties {
   readonly onRecover: (action: RecoveryAction, variantId?: string) => void;
 }
 
-/**
- * The blocked-by-validation panel. It names the affected screen for every finding and offers one native action per finding, so Enter and Space work without a key handler. The single live region is written once per blocked request, never on a re-render.
- */
 export const ValidationDiagnostics = ({
   rollup,
   requestId,
@@ -162,7 +156,6 @@ export const ValidationDiagnostics = ({
     announcedKeyReference.current = currentAnnouncementKey;
 
     if (region.textContent === summary) {
-      // Identical text produces no DOM change, so clear it for one frame.
       region.textContent = "";
       const frame = window.requestAnimationFrame(() => {
         region.textContent = summary;

@@ -112,8 +112,6 @@ const metaBaseUrlSchema = z.string().refine((value) => {
   return url !== null && isAllowedMetaBaseUrl(url);
 }, "META_BASE_URL must use HTTPS, or HTTP for a local loopback test server.");
 
-// The provider receives a password and a service-role key, so a cleartext URL
-// would expose both to an on-path observer and could point at any host.
 const supabaseUrlSchema = z.string().refine((value) => {
   const url = parseUrl(value);
   return url !== null && isAllowedMetaBaseUrl(url);
@@ -134,9 +132,6 @@ const parseBoolean = (
     : { value: isFallback, invalid: true };
 };
 
-// A blank environment string counts as absent. `??` alone would pass "" through
-// when `||` was the previous behavior, so every read normalizes here first and
-// call sites fall back with `??`.
 const trimmedEnv = (value: string | undefined): string | undefined => {
   const trimmed = value?.trim();
   return trimmed === undefined || trimmed === "" ? undefined : trimmed;
@@ -271,7 +266,8 @@ const readMetaSettings = (
   issues: ConfigIssue[]
 ) => {
   const apiKey = trimmedEnv(environment.META_API_KEY);
-  const model = trimmedEnv(environment.META_MODEL) ?? "muse-spark-1.2-contributor";
+  const model =
+    trimmedEnv(environment.META_MODEL) ?? "muse-spark-1.2-contributor";
   const timeoutMs = readMetaTimeoutMs(environment.META_TIMEOUT_MS, issues);
   const requestedBaseUrl =
     trimmedEnv(environment.META_BASE_URL) ?? defaultMetaBaseUrl;
@@ -326,9 +322,6 @@ const readAuthProvider = (
     );
     return "supabase";
   }
-  // The deterministic provider accepts credentials committed to this repository.
-  // It must never authenticate a deployed request, so the gate lives here rather
-  // than in a comment on the factory.
   if (requested === "deterministic" && !isDevelopment) {
     pushIssue(
       issues,
@@ -445,8 +438,6 @@ const readAuthConfig = (
   const publicOrigin = readPublicOrigin(environment, isDevelopment, issues);
   const sessionSecret = readSessionSecret(environment, isDevelopment, issues);
   const credentialKey = readCredentialKey(environment, isDevelopment, issues);
-  // The cipher frames a payload as `${version}:${iv}:${tag}:${body}`, so a
-  // version containing the separator would make every session unreadable.
   const credentialKeyVersion =
     trimmedEnv(environment.AUTH_CREDENTIAL_KEY_VERSION) ?? "1";
   if (!/^[A-Za-z0-9_-]{1,32}$/u.test(credentialKeyVersion)) {
@@ -538,9 +529,10 @@ export const safeConfigSummary = (config: ServerConfig) => {
   return {
     appEnv: config.appEnv,
     syntheticDataOnly: config.syntheticDataOnly,
-    persistence: config.databaseUrl === undefined
-      ? "unconfigured"
-      : ("postgres" satisfies PersistenceKind),
+    persistence:
+      config.databaseUrl === undefined
+        ? "unconfigured"
+        : ("postgres" satisfies PersistenceKind),
     provider: { timeoutMs: config.metaTimeoutMs },
     auth: {
       provider: config.auth.provider,

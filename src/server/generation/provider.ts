@@ -39,12 +39,6 @@ export interface ProviderCurriculumContext {
   targetNodeId: string;
 }
 
-/**
- * The task the standards pack asks for (#221): the line the lesson must ask the
- * learner to perform, the two group labels the matching screen shows, and the
- * item counts the draft should carry. The prompt is built from this, and the
- * deterministic fixture builds its draft from the same values.
- */
 export type ProviderPromptFrame = StandardsPackPromptFrame;
 
 export interface ProviderReferenceContext {
@@ -60,22 +54,8 @@ export interface ProviderReferenceContext {
 export interface ProviderGenerationContext {
   correctionAttempt: boolean;
   diagnostics: readonly GenerationDiagnostic[];
-  /**
-   * Present whenever the request resolves a standards pack. A context without
-   * one keeps the fixture's seeded equivalent-fractions framing.
-   */
   promptFrame?: ProviderPromptFrame;
-  /**
-   * The pack's subject-correct relationships. The deterministic fixture builds
-   * its draft from these, so an offline run obeys the pack's own answer rule
-   * instead of always emitting equivalent-fraction pairs.
-   */
   examples?: readonly StandardsPackExample[];
-  /**
-   * The pack's answer rules. The prompt states the declared problems and the
-   * approved passage so a live provider call can satisfy the same rule the
-   * offline fixture and the validator apply.
-   */
   answerRules?: readonly AnswerRule[];
   curriculumContext?: ProviderCurriculumContext;
   referenceContext?: ProviderReferenceContext;
@@ -131,13 +111,6 @@ const localizedText = (
   arabic: string
 ) => (language === "ar" ? arabic : english);
 
-/**
-The fixture's own item copy. It stays the seeded equivalent-fractions pairs so a
-deterministic run reproduces the published demo lesson. Everything that names
-the task — the task line, both group labels and the item counts — comes from the
-pack's prompt frame, so an offline run describes the same task as a live
-provider call (#221).
-*/
 const fixturePairs = [
   { source: "1/2", target: "2/4" },
   { source: "2/3", target: "4/6" },
@@ -151,13 +124,8 @@ const fixturePairs = [
 
 const fixtureDecoys = ["2/3", "3/8"] as const;
 
-/** The structural validator caps a matching draft at 8 source items. */
 const maximumFixturePairs = fixturePairs.length;
 
-/**
-The frame the fixture follows when no pack frame reaches it: the seeded
-equivalent-fractions pack. A resolved pack context always supplies its own.
-*/
 const defaultFixtureFrame: ProviderPromptFrame =
   fractionEquivalencePack.promptFrame;
 
@@ -165,10 +133,6 @@ const resolveFixtureFrame = (
   context?: ProviderGenerationContext
 ): ProviderPromptFrame => context?.promptFrame ?? defaultFixtureFrame;
 
-/**
-The seeded path is the equivalent-fractions lesson. A resolved pack brings its
-own graph, so the fixture walks that pack's nodes instead of the seed's.
-*/
 const createLearningPath = (
   request: NormalizedGenerationRequest,
   curriculum?: ProviderCurriculumContext
@@ -230,17 +194,12 @@ interface FixtureVariantPlan {
   readonly kind: VariantKind;
   readonly sourceCount: number;
   readonly targetCount: number;
-  /** The fixture clamps this to the structural distractor cap. */
   readonly distractorCount: number;
   readonly title?: LocalizedCopy;
   readonly instructions?: LocalizedCopy;
   readonly extraHints?: readonly LocalizedCopy[];
 }
 
-/**
-The pack frame carries one language: English. An Arabic request keeps the
-fixture's own Arabic copy, so the deterministic lesson stays fully Arabic.
-*/
 const arabicFixtureCopy = {
   taskLine: "طابق كل كسر مع اسم آخر للجزء نفسه من الكل.",
   instructions: "تعليمات لمطابقة الكسور المكافئة",
@@ -366,23 +325,13 @@ const createVariant = (
   };
 };
 
-/** A variant two pairs wider than the frame's base, capped by the pair list. */
 const addPairs = (count: number, maximum: number): number => {
   return Math.min(count + 2, maximum);
 };
 
 export interface FixtureDraftOptions {
-  /**
-   * The pack frame the draft must follow. Defaults to the seeded
-   * equivalent-fractions frame.
-   */
   readonly frame?: ProviderPromptFrame;
-  /**
-   * The pack's subject-correct relationships. Defaults to the seeded
-   * equivalent-fractions pairs.
-   */
   readonly examples?: readonly StandardsPackExample[];
-  /** The resolved pack graph the learning path must walk. */
   readonly curriculum?: ProviderCurriculumContext;
 }
 
@@ -393,11 +342,6 @@ export const createEquivalentFractionsDraft = (
   const frame = options.frame ?? defaultFixtureFrame;
   const pairs = options.examples ?? fixturePairs;
   const maximumPairs = Math.min(pairs.length, maximumFixturePairs);
-  // The studio asks a teacher to choose between the two standard cards, so the
-  // fixture gives them different interaction structures, titles, and copy —
-  // otherwise the draft notes correctly flag them as duplicates (#168 P1-3).
-  // Item-count caps from the structural validator steer the shapes: a 3-item
-  // set carries no decoys (floor(3/4) = 0) and an 8-item set may carry two.
   const wideSourceCount = addPairs(frame.sourceItemCount, maximumPairs);
   const wideTargetCount = addPairs(frame.targetItemCount, maximumPairs);
   const widePairs = Math.min(wideSourceCount, wideTargetCount);
@@ -436,9 +380,6 @@ export const createEquivalentFractionsDraft = (
     pairs
   );
 
-  // The guided card carries the gentlest load: the frame's own pair count, no
-  // decoys, and an extra support move, so its structure visibly differs from
-  // practice.
   const scaffold = createVariant(
     request,
     frame,
@@ -462,8 +403,6 @@ export const createEquivalentFractionsDraft = (
     pairs
   );
 
-  // The review card adds the reasoning demand: two decoys and an
-  // explain-the-decoy instruction, while the correct pairs stay canonical.
   const review = createVariant(
     request,
     frame,
@@ -567,11 +506,6 @@ const findAnswerRule = <K extends AnswerRule["kind"]>(
   });
 };
 
-/**
- * The prompt states the pack's declared problems and approved passage so a
- * live provider call can produce relationships the pack's own answer rule can
- * verify. Answers are never included: the rule owns them.
- */
 const answerRuleInstruction = (
   answerRules: readonly AnswerRule[] | undefined
 ): string => {
@@ -592,13 +526,6 @@ const answerRuleInstruction = (
   return lines.filter((line) => line.length > 0).join("\n");
 };
 
-/**
- * The provider prompt is framed by the standards pack (#221). The task line,
- * both group labels, the item counts, the curator reference, and the answer
- * rule's declared problems or passage all come from the pack, so a 4.OA.A.3
- * lesson asks for word-problem → equation matching and a 4.NF.A.1 lesson keeps
- * its equivalent-fraction matching.
- */
 export const buildLessonPrompt = (
   request: NormalizedGenerationRequest,
   context: ProviderGenerationContext

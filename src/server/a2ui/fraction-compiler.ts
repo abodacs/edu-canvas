@@ -27,8 +27,6 @@ export interface CompiledFractionPreview {
 }
 
 export interface FractionPreviewCompileInput {
-  // The raw record draft. The trusted contract parses it here so a foreign
-  // or stale payload fails closed at the preview boundary.
   draft: unknown;
 }
 
@@ -180,11 +178,6 @@ const sectionMessages = (
   return messages;
 };
 
-/**
- * The raw fraction compiler is the test and differential-oracle seam. It
- * accepts an unattested draft, so production code must call
- * `compileFractionPreview`.
- */
 export const compileRawFractionPreview = (
   input: FractionPreviewCompileInput
 ): CompiledFractionPreview => {
@@ -199,8 +192,6 @@ export const compileRawFractionPreview = (
   const draft = parsed.data;
 
   for (const section of draft.sections) {
-    // The teacher-facing diagnostic names the section so the blocking state
-    // is repairable; publication stays blocked until the math is corrected.
     const math = parseLatexToMathML(section.stem);
     if (!math.ok) {
       throw new LessonPreviewCompileError(
@@ -235,10 +226,6 @@ export const compileRawFractionPreview = (
   };
 };
 
-/**
- * The production fraction compile seam. It accepts only the branded
- * renderable artifact that `gateArtifact` mints.
- */
 export const compileFractionPreview = (
   artifact: RenderableArtifact
 ): CompiledFractionPreview => {

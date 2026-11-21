@@ -16,12 +16,6 @@ interface AuthStatusProperties {
   readonly noticeRef?: Ref<HTMLDivElement>;
 }
 
-/**
-One announced outcome on an authentication surface. `Notice` is mounted with
-its content, so a new outcome arrives as a live region instead of filling an
-empty one. The host is the focus target for a server failure, which has no
-control to move to; client-side validation focuses the failing field instead.
-*/
 export const AuthStatus = ({
   notice,
   noticeRef,

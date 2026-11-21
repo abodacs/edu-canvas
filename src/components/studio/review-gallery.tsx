@@ -93,7 +93,6 @@ const ReverseApproval = ({
     </div>
   );
 };
-/* eslint-enable unicorn/prefer-default-parameters */
 
 export const ReviewGallery = ({
   review,

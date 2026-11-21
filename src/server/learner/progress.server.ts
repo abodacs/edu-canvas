@@ -38,9 +38,6 @@ export const progressErrorJson = (error: unknown): Response => {
       );
 };
 
-/**
-GET /api/teacher/progress — the signed-in teacher's read-only results view over committed attempts and the stored next-activity decisions. No body is accepted and nothing here mutates a record.
-*/
 export const handleTeacherProgressRequest = async (
   request: Request
 ): Promise<Response> => {

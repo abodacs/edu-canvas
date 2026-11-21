@@ -71,8 +71,6 @@ const withTenant = async <T>(
 ): Promise<T> => {
   const sql = createSqlClient(databaseUrl);
   try {
-    // The explicit `Promise<T>` type argument resolves postgres.js's
-    // tuple-oriented `UnwrapPromiseArray` result to a plain `T`.
     return await sql.begin<Promise<T>>(async (transaction) => {
       await transaction`select set_config('app.tenant_id', ${tenantId}, true)`;
       return await work(transaction);

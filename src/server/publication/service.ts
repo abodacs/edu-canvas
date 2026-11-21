@@ -54,8 +54,6 @@ export interface PublicationServiceOptions {
   now?: () => string;
 }
 
-// The result the wire contract publishes, derived from that one declaration so
-// the delivery seam, the client parse, and this type cannot drift apart.
 export type PublishOutcome = PublicationPublishResult;
 
 export interface PublicationService {
@@ -193,8 +191,6 @@ export const createPublicationService = (
   ): Promise<LessonGenerationRecord> => {
     const record = await generation.readGeneration(actor.tenantId, requestId);
     if (!record || record.teacherId !== actor.actorId) {
-      // A private mutation never reveals whether another teacher's or
-      // tenant's draft exists (PT-20, PT-28).
       throw publicationError("PUBLICATION_FORBIDDEN", forbiddenMessage);
     }
     return record;
@@ -232,8 +228,6 @@ export const createPublicationService = (
     }
   };
 
-  // A handler that already decoded the row passes the value down; decoding it
-  // again only re-validates a value this module produced.
   const projectReviewDecoded = async (
     actor: TeacherActor,
     version: PackVersionRecord,
@@ -310,8 +304,6 @@ export const createPublicationService = (
   ): Promise<ReviewPack> =>
     await projectReviewDecoded(actor, version, decodePackVersion(version));
 
-  // A retried publish returns what the first one wrote, including the canonical
-  // learner assignment, so a second click lands on the same lesson.
   const replayPublish = async (
     actor: TeacherActor,
     version: PackVersionRecord,
@@ -328,7 +320,6 @@ export const createPublicationService = (
     const learnerAssignmentId = receiptIds[2] ?? null;
     const learnerVariantId = receiptIds[3] ?? null;
     return publicationPublishResultSchema.parse({
-      // The replay branch runs before the decode, so it decodes here.
       review: await projectReview(actor, version),
       publicationId,
       assignmentId,
@@ -440,9 +431,6 @@ export const createPublicationService = (
         createdAt: clock(),
       });
     } catch (error) {
-      // A concurrent replay may have written the same receipt. The unique
-      // record it points at is the real idempotency guard; anything else is a
-      // real persistence failure and must surface.
       if (!(error instanceof PackUniqueViolationError)) {
         throw error;
       }
@@ -669,7 +657,6 @@ export const createPublicationService = (
 
     const learner = await packs.readLearner(actor.tenantId, input.learnerId);
     if (!learner) {
-      // A foreign roster is a referent deny, not an existence oracle (PT-29).
       throw publicationError(
         "PUBLICATION_FORBIDDEN",
         "That learner is not an active student in this tenant."
@@ -732,9 +719,6 @@ export const createPublicationService = (
       assignmentId = concurrent.id;
     }
 
-    // #6: the learner runtime reads the canonical model, so the publish also
-    // writes that chain. Without a reviewed source there is nothing to cite,
-    // and the pack stays publish-only.
     let learnerAssignmentId: string | null = null;
     const learnerVariantId = decoded.publicContent.variants[0]?.id ?? null;
     if (records && hasText(decoded.provenance.sourceSnapshotId)) {
@@ -754,10 +738,6 @@ export const createPublicationService = (
       learnerAssignmentId = bridged.assignmentId;
     }
 
-    // The receipt records what this operation did, so it is written last: a
-    // crash before it replays the whole publish (each write recovers through
-    // its own unique key), and a replay can return the canonical assignment
-    // instead of reporting the learner link as absent.
     const receiptIds = [
       publicationId,
       assignmentId,
@@ -774,10 +754,7 @@ export const createPublicationService = (
       receiptIds
     );
 
-    // The learner page opens the first bridged section, and the bridge maps
-    // variant i onto section i, so the first variant names what the page shows.
     return publicationPublishResultSchema.parse({
-      // The replay branch runs before the decode, so it decodes here.
       review: await projectReview(actor, version),
       publicationId,
       assignmentId,

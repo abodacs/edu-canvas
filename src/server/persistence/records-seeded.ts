@@ -59,16 +59,6 @@ const compareValues = (left: unknown, right: unknown): number => {
   return String(left) < String(right) ? -1 : 1;
 };
 
-/**
- * In-memory implementation of the record port. It enforces the same unique constraints as PostgreSQL and rolls the whole store back when the work throws. It is not restart-durable; PostgreSQL is the durability authority.
- */
-/**
-The seeded double rejects a column the real table does not have, so a mapper that
-invents a name fails in tests instead of in production. The column set comes from
-the schema; this file owns only the name-to-table binding, which `Record<
-RecordTableName, PgTable>` forces to be total. Tests reuse the binding to hold
-the record port's per-table settings against the same schema.
-*/
 export const tablesByStoredName = {
   actors,
   assignments,

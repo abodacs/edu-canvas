@@ -103,11 +103,6 @@ const reducer = (
 const sortedCodes = (codes: readonly string[]): string[] =>
   codes.toSorted((left, right) => left.localeCompare(right));
 
-/**
-The teacher curation surface (#5): gallery → screen review → publish
-confirmation. Every action goes through the publication seam; the component
-never computes approval or publication state locally.
-*/
 export const ReviewStudio = ({
   requestId,
   csrf,

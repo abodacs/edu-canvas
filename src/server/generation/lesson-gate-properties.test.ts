@@ -37,29 +37,17 @@ import type {
 import type { ProviderLessonDraft, ValidatedLearningPath } from "./types";
 import type { LessonLanguage } from "@/shared/generation-contract";
 
-// Property checks for the Validation & Safety gate. Run directly with
-// `pnpm verify:lesson-gate`; the operating skill lives in
-// .agents/skills/verify-lesson-gate. Break fixtures and expected verdicts
-// live in ./artifact-corpus.ts. The generators run thousands of cases, so the
-// default 5s test timeout is too tight when another worker is compiling.
 vi.setConfig({ testTimeout: 20_000 });
 
 const propertyOptions = () => {
   return {
     numRuns: Number(process.env.LESSON_GATE_RUNS ?? 200),
-    // Pinned so a counterexample reproduces byte-for-byte on rerun.
     seed: Number(process.env.LESSON_GATE_SEED ?? 12_345),
   };
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
-
-// ------------------------------------------------------------------
-// Draft gate: `validateProviderDraft` denies provider output that is
-// unsafe or malformed. The re-check below re-derives each rule the
-// gate implements; the properties hold the gate to it.
-// ------------------------------------------------------------------
 
 const executableCopyPatterns: RegExp[] = [
   /<\s*\/?(?:script|iframe|object|embed|style)/iu,
@@ -332,12 +320,6 @@ const checkAcceptedDraft = (
   return violations;
 };
 
-// ------------------------------------------------------------------
-// Learning path gate: `buildValidatedLearningPath` accepts a provider
-// proposal for a teacher preview. The context is built from a random
-// plan; the properties pin the accepted path to the context.
-// ------------------------------------------------------------------
-
 const pathPlanArb = integer({ min: 3, max: 6 }).chain((nodeCount) => {
   return array(boolean(), {
     minLength: qualifyingExtraPairs(nodeCount).length,
@@ -543,8 +525,6 @@ interface StoryMutationProbe {
   readonly expectedCode: string;
 }
 
-// #19: the story plan is a pure projection, so its only new rejections are a
-// path that cannot carry a beat and a path whose approved copy is blank.
 const storyMutationProbes: StoryMutationProbe[] = [
   {
     name: "a path with no approved prerequisite edge",
@@ -575,10 +555,6 @@ const buildAcceptedPath = (plan: PathPlan): ValidatedLearningPath => {
   });
 };
 
-// Every string a beat carries must be a substring of the accepted path copy,
-// because the connection clause is a slice of `rationale`. Role labels are
-// surface chrome, so they are the only other allowed source. The oracle reads
-// the path, never the story, so an invented sentence fails it.
 const storyViolations = (
   story: ReturnType<typeof buildStoryPlan>,
   path: ValidatedLearningPath

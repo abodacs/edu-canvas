@@ -25,8 +25,6 @@ const correct: readonly SubmittedPair[] = [
   { sourceId: "source-3", targetId: "target-3" },
 ];
 
-// A second expression of the published rule. It shares no code with the
-// implementation under test, so a slip in one shows up as a disagreement.
 const oracleScore = (
   answers: readonly PrivateAnswerRelationship[],
   pairs: readonly SubmittedPair[]

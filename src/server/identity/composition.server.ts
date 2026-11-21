@@ -26,11 +26,6 @@ const cacheKey = (config: ServerConfig): string => {
   );
 };
 
-/**
-Compose one identity instance over an explicit persistence port. Runtime
-composition goes through `createConfiguredIdentity`; tests call this with the
-in-memory identity store.
-*/
 export const buildConfiguredIdentity = async (
   config: ServerConfig,
   persistence: IdentityPersistence
@@ -72,9 +67,6 @@ export const buildConfiguredIdentity = async (
   };
 };
 
-/**
-The composition root is memoized per configuration identity. The deterministic provider keeps provider sessions in memory, so a fresh instance per request would forget them; the hosted adapter is stateless but memoizing it keeps one client.
-*/
 export const createConfiguredIdentity = async (
   config: ServerConfig = readServerConfig()
 ): Promise<ConfiguredIdentity> => {
@@ -91,19 +83,11 @@ export const createConfiguredIdentity = async (
   return await created;
 };
 
-/**
-Test-only: drop memoized instances so fixtures can be rebuilt.
-*/
 export const resetConfiguredIdentityCache = (): void => {
   configuredCache.clear();
   sharedRateLimiter.reset();
 };
 
-/**
-Test-only: clear the module-scoped limiter between files. Shared workers run
-every non-mocked file in one process, so sign-in attempts would otherwise
-accumulate across the suite and rate-limit unrelated files' fixtures.
-*/
 export const resetSharedRateLimiter = (): void => {
   sharedRateLimiter.reset();
 };

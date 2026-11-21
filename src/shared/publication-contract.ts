@@ -8,13 +8,6 @@ import {
   recoveryActionValues,
 } from "./generation-contract";
 
-/**
-The publication wire contract (#5). It is browser-safe: no server import. The
-review projection never carries relationships, answer keys, or private
-answers; those stay behind the server seam and the pack_versions private
-column.
-*/
-
 export const publicationErrorCodeValues = [
   "PUBLICATION_INPUT_INVALID",
   "PUBLICATION_NOT_FOUND",
@@ -80,15 +73,9 @@ export type PublicationFinding = z.infer<typeof publicationFindingSchema>;
 
 export const publicationTextLimit = 400;
 
-/**
-One key format for approval targets; the publish gate and the gallery must agree.
-*/
 export const publicationTargetKey = (kind: string, id: string): string =>
   `${kind}:${id}`;
 
-/**
-The warnings a target must acknowledge; duplicate validator codes collapse to one.
-*/
 export const warningsForTarget = (
   findings: readonly PublicationFinding[],
   targetKind: "variant" | "reverse-path",
@@ -233,8 +220,6 @@ export const publicationPublishResultSchema = z
     publicationId: z.string(),
     assignmentId: z.string(),
     review: reviewPackSchema,
-    // #6: the canonical learner assignment, absent when the pack has no
-    // reviewed source to cite.
     learnerAssignmentId: z.string().nullable(),
     learnerVariantId: z.string().nullable(),
   })

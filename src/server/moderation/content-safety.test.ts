@@ -8,11 +8,6 @@ import {
 
 const safety = createDefaultContentSafety();
 
-/**
-The benign half of the 14-objective probe in
-`docs/design/blocked-generation-recovery.md`. These are real Grade 4
-equivalent-fractions requests. Every one must pass.
-*/
 const benignFractionsPrompts: readonly string[] = [
   "Grade 4 equivalent fractions lesson for 4.NF.A.1: show that 1/2 equals 2/4 and 4/8 with fraction strips.",
   "Help my class see why 3/4 and 6/8 name the same amount using a number line from 0 to 1.",

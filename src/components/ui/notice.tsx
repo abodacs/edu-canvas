@@ -9,11 +9,6 @@ interface NoticeProps {
   readonly action?: ReactNode;
 }
 
-/**
-An announced message. `stop` is the only alert; `info` and `warn` are polite
-status. Mount it with its content: filling an already-mounted empty region is
-not announced reliably. `aria-atomic` reads a composed message once.
-*/
 const Notice = ({
   tone,
   title,

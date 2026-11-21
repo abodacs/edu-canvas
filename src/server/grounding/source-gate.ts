@@ -11,12 +11,6 @@ const addDays = (iso: string, days: number): string => {
   return date.toISOString();
 };
 
-/**
-Persistence-backed generation gate (#114 build-order unit 3). A source blocks
-generation unless it is complete, teacher-reviewed, and not expired. Generation
-throws `GENERATION_SOURCE_NOT_READY` before its claim, so a blocked source
-never burns an attempt.
-*/
 export const createPersistenceSourceGate = (
   persistence: SourcePersistence,
   clockNow: () => string = currentIso

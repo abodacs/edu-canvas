@@ -17,7 +17,6 @@ const pilotEntries = PILOT_STANDARD_REGISTRY.entries.filter((entry) => {
   return entry.kind === "pilot";
 });
 
-// The boundary matrix is a test expectation, not production registry data.
 const PILOT_BOUNDARY_ENTRIES = [
   {
     id: "unsupported-jurisdiction",
@@ -81,7 +80,6 @@ describe("pilot standard registry (issue 218)", () => {
     expect(codes).toStrictEqual(
       new Set(["4.NF.A.1", "4.NF.A.2", "3.NF.A.3", "4.OA.A.3"])
     );
-    // Product decision 2026-11-04: the pilot ships Multi-State only.
     expect(
       new Set(pilotEntries.map((entry) => entry.jurisdiction))
     ).toStrictEqual(new Set(["Multi-State"]));

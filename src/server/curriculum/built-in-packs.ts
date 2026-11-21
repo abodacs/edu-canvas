@@ -10,14 +10,6 @@ import type { StandardsPack } from "./standards-pack";
 
 const tenantId = sharedStandardsPackTenantId;
 
-/**
- * Today's seeded equivalent-fractions content expressed as a shared standards
- * pack. The graph, target node, catalog and standard identity mirror
- * `syntheticSeed`, so resolving this pack changes no observable verdict. The
- * pack is a template pinned to the shared tenant, not to the seeded tenant, so
- * a real signed-in classroom can resolve it without reading another tenant's
- * private data.
- */
 export const fractionEquivalencePack: StandardsPack = standardsPackSchema.parse(
   {
     tenantId,
@@ -85,11 +77,6 @@ export const fractionEquivalencePack: StandardsPack = standardsPackSchema.parse(
   }
 );
 
-/**
- * 4.OA.A.3 multistep word problems as a matching lesson: a two-node graph
- * (3.OA.D.8 → 4.OA.A.3) and a whole-number-expression answer rule. This is the
- * first pack whose standard is not equivalent fractions.
- */
 export const multistepWordProblemsPack: StandardsPack =
   standardsPackSchema.parse({
     tenantId,
@@ -216,29 +203,12 @@ export const multistepWordProblemsPack: StandardsPack =
     },
   });
 
-/**
- * The verbatim CCSS primary text for RI.5.2 (thecorestandards.org mirror, the
- * same source as the research record). The pack's content hash is computed
- * from exactly this string.
- */
 export const ri52PrimaryText =
   "Determine two or more main ideas of a text and explain how they are supported by key details; summarize the text.";
 
-/**
- * The short passage a learner matches against. It is 265 characters, inside
- * the 500-character A2UI Text cap, and every source detail the fixture uses
- * appears verbatim in it.
- */
 export const ri52Passage =
   "Bees carry pollen from one flower to the next. As they work, bees help plants make seeds. Farmers rent hives so their orchards produce more fruit. People depend on bees for food. Fewer wildflowers means bees have less to eat, so bees face threats to their survival.";
 
-/**
- * RI.5.2 (English Language Arts, Grade 5) as a matching lesson. Learning
- * Commons resolves the standard but returns zero components and zero
- * prerequisites for ELA, so the skills and the Grade 4 prerequisite node are
- * authored by hand from the primary text. The source kind and citation record
- * that provenance; the pack never claims a Learning Commons prerequisite.
- */
 export const ri52MainIdeaPack: StandardsPack = standardsPackSchema.parse({
   tenantId,
   id: "pack_ccss_ri_5_2_v1",

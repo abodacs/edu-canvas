@@ -112,10 +112,6 @@ export interface DecisionEvidenceHashInput {
   readonly assistanceEventIds: readonly string[];
 }
 
-/**
-#7: the first response only. Retries append evidence but never change this
-hash, so a re-derivation after attempt two returns the same decision.
-*/
 export const createDecisionEvidenceHash = (
   input: DecisionEvidenceHashInput
 ): string => {

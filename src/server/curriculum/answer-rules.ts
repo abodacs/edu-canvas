@@ -1,15 +1,5 @@
 import type { AnswerRule } from "./standards-pack";
 
-/**
- * The answer-rule evaluator. A standards pack declares how its responses may be
- * checked; this module turns one matching relationship plus that declaration
- * into a verified, mismatched, or unverified outcome. It is pure and holds no
- * pack or request state, so each rule kind is table-testable on its own.
- *
- * An unverified outcome always carries the rule's declared verdict. There is no
- * branch that returns a silent pass for a pair the rule could not decide.
- */
-
 export interface AnswerRulePair {
   source: string;
   target: string;
@@ -35,14 +25,8 @@ const wordTokenPattern = /[\p{L}\p{N}\p{M}]+/gu;
 const integerTokenPattern = /^\d$/u;
 const integerLiteralPattern = /^\d+$/u;
 const fractionPattern = /^(?<numerator>\d+)\s*\/\s*(?<denominator>\d+)$/u;
-// One letter, a blank box (□) or a question mark: how a teacher writes the unknown.
 const unknownSymbolPattern = /^(?:\p{L}|□|\?)$/u;
 
-/**
- * The comparison form for text a rule checks literally: case, whitespace, and
- * punctuation are folded, and the words are joined with one space. Rules that
- * match a phrase use the token list, so a word fragment never matches.
- */
 export const normalizeAnswerText = (value: string): string => {
   return (
     value.normalize("NFKC").toLowerCase().match(wordTokenPattern)?.join(" ") ??
@@ -110,11 +94,6 @@ export type WholeNumberEquationEvaluation =
 export type RemainderRounding = "up" | "down" | "nearest";
 
 export interface WholeNumberEquationOptions {
-  /**
-  Apply this rounding rule to a division with a remainder. Without it, a
-  remainder stays a non-integer result, so a pack that never declared a
-  remainder interpretation can never read one as a whole-number answer.
-  */
   readonly rounding?: RemainderRounding;
 }
 
@@ -144,10 +123,6 @@ const operatorFor = (character: string): Operator | undefined => {
   }
 };
 
-/**
- * A bounded tokenizer: integers, `+ - × ÷`, ASCII aliases, and parentheses.
- * Anything else makes the expression unreadable rather than executable.
- */
 const tokenizeExpression = (
   expression: string
 ): readonly ExpressionToken[] | undefined => {
@@ -271,10 +246,6 @@ const operatorPrecedence: Readonly<Record<Operator, number>> = {
   "÷": 2,
 };
 
-/**
- * Shunting-yard conversion keeps the parser iterative and bounded: no
- * recursion, no `eval`, and parentheses have exactly one meaning.
- */
 const toPostfix = (
   tokens: readonly ExpressionToken[]
 ): readonly ExpressionToken[] | undefined => {
@@ -369,11 +340,6 @@ const evaluatePostfix = (
     : { status: "invalid" };
 };
 
-/**
- * Parses `<expression> = <symbol>` and evaluates the expression with
- * whole-number arithmetic. A division that does not divide exactly is a
- * non-integer result, not a crash; it cannot equal a whole-number answer.
- */
 export const parseWholeNumberEquation = (
   target: string,
   options: WholeNumberEquationOptions = {}
@@ -410,8 +376,6 @@ export const parseWholeNumberEquation = (
     return evaluation;
   }
 
-  // A numeric right-hand side is part of the claim: `27 ÷ 4 = 6` is false even
-  // when rounding makes the expression itself evaluate to 7.
   return evaluation.value === claimedValue
     ? evaluation
     : { status: "contradiction" };
@@ -544,10 +508,6 @@ const evaluateTeacherReview = (
   };
 };
 
-/**
- * The rule registry. Each kind owns exactly one evaluator, so adding a kind
- * without a decision path fails typecheck rather than falling through.
- */
 const answerRuleEvaluators: {
   readonly [K in AnswerRule["kind"]]: (
     rule: Extract<AnswerRule, { kind: K }>,
@@ -584,11 +544,6 @@ export const evaluateAnswerRule = (
   }
 };
 
-/**
- * Collapses every declared rule to one decision for the pair. A definite
- * mismatch outranks every other outcome; otherwise the strictest unverified
- * verdict wins, so a rule that could not decide never reads as a pass.
- */
 export const evaluateAnswerRules = (
   rules: readonly AnswerRule[],
   pair: AnswerRulePair

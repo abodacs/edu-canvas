@@ -20,8 +20,6 @@ vi.mock(import("postgres"), async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
-    // The mocked default keeps the real namespace members so it still
-    // satisfies the module's export type; its callable behavior is the mock.
     default: Object.assign(postgresMock, actual.default),
   };
 });

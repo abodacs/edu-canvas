@@ -13,9 +13,6 @@ interface MembershipRadioProperties {
   readonly onActivateKey: (event: KeyboardEvent<HTMLInputElement>) => void;
 }
 
-// One option in a native radio group. Native radios supply a single tab stop,
-// roving arrow-key movement, and a label that is part of the hit target — and
-// they never expose an internal identifier, only the class and role.
 export const MembershipRadio = ({
   name,
   value,

@@ -52,7 +52,4 @@ const canonicalize = (value: unknown): string => {
   }
 };
 
-/**
- * Deterministic JSON for hashing: sorted object keys, preserved array order, explicit nulls. Undefined is rejected so an absent value cannot silently change a hash.
- */
 export const canonicalJson = (value: unknown): string => canonicalize(value);

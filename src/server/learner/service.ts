@@ -12,13 +12,6 @@ import type {
 } from "@/server/records/delivery";
 import type { Actor } from "@/server/identity/types";
 
-/**
- * #6: the learner runtime. Grading happens here, before the record write, so a client never carries a score and a rejected submission writes nothing. The record layer still owns the attempt, its receipt, and its run revision.
- *
- * #7: the same pass builds the reveal and the next-activity decision from
- * stored evidence. The decision is computed from the first response, so a
- * retry can add evidence without changing it.
- */
 export interface SubmitAttemptInput {
   readonly operationKey: string;
   readonly runId: string;
@@ -84,8 +77,6 @@ export const createLearnerService = (
     const outcome = decideNextActivity({
       assignedActivityId: context.run.assignedVariantId,
       independent,
-      // The run model has one stage. Guided evidence stays null until a
-      // multi-stage run exists, so the rule's guided rows are fixture-only.
       guided: null,
       activities: context.activities.map((activity) => {
         return {

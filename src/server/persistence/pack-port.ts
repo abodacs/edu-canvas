@@ -1,15 +1,5 @@
 import type { PublicationAction } from "@/shared/publication-contract";
 
-/**
-The generated-pack persistence port (#5). It stores immutable review versions,
-per-target approvals, the publication fact, the learner assignment, and
-actor-scoped receipts. Every method is tenant-scoped; callers pass the tenant
-resolved from the session, never a browser value.
-
-JSONB payloads stay `unknown` at this boundary: the publication domain parses
-them with its strict schemas before use.
-*/
-
 export interface PackVersionRecord {
   id: string;
   tenantId: string;
@@ -147,13 +137,7 @@ export interface PackPersistence {
     operationKey: string
   ) => Promise<PackReceiptRecord | undefined>;
   insertReceipt: (record: PackReceiptRecord) => Promise<void>;
-  /**
-   * Assignable learners: an active student identity with an active membership
-   * in the tenant. The records bridge refuses any other learner, so the
-   * publish screen and the publish check must use this same rule.
-   */
   listLearners: (tenantId: string) => Promise<PackLearner[]>;
-  /** One assignable learner, by the same rule as `listLearners`. */
   readLearner: (
     tenantId: string,
     learnerId: string

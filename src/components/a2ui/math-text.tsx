@@ -8,9 +8,6 @@ import type { MathMLNode } from "@/shared/latex-mathml";
 
 type MathTextComponent = Extract<A2UIComponent, { component: "MathText" }>;
 
-// MathML element names are not in the project's JSX intrinsic set, so the
-// tree mounts through createElement. React resolves the MathML namespace
-// from the <math> root, and every name here comes from the trusted parser.
 const renderMathMLNode = (node: MathMLNode, key: string): ReactNode => {
   switch (node.kind) {
     case "row": {
@@ -57,9 +54,6 @@ const renderMathMLNode = (node: MathMLNode, key: string): ReactNode => {
   }
 };
 
-// #116: MathText renders the trusted LaTeX subset as native MathML. Contract
-// validation blocks unparseable math upstream, so the fail-safe branch only
-// guards a defense-in-depth path and never renders foreign markup.
 export const MathText = ({
   component,
 }: {

@@ -5,11 +5,6 @@ const idMessage = "This identifier is malformed.";
 
 const baseId = () => z.string().trim().regex(idPattern, idMessage);
 
-/**
- * Semantic identifiers are distinct types. Brands stop a `TenantId` from being
- * passed where an `ActorId` is expected, so accidental substitution fails to
- * compile while deliberate tampering still fails the runtime ownership checks.
- */
 export const actorIdSchema = baseId().brand<"ActorId">();
 export type ActorId = z.infer<typeof actorIdSchema>;
 
@@ -25,11 +20,6 @@ export type ClassId = z.infer<typeof classIdSchema>;
 export const learnerIdSchema = baseId().brand<"LearnerId">();
 export type LearnerId = z.infer<typeof learnerIdSchema>;
 
-/**
- * A provider subject is the identity the provider issues for a user. It is not
- * an application actor: a parsed subject proves nothing until a provider
- * binding maps it to a server-owned `ActorId`.
- */
 export const providerSubjectSchema = z
   .string()
   .trim()
@@ -38,9 +28,6 @@ export const providerSubjectSchema = z
   .brand<"ProviderSubject">();
 export type ProviderSubject = z.infer<typeof providerSubjectSchema>;
 
-/**
-Parse a persisted or external value into a branded identifier, or throw.
-*/
 export const parseActorId = (value: string): ActorId =>
   actorIdSchema.parse(value);
 export const parseTenantId = (value: string): TenantId =>

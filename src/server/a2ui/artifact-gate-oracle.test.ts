@@ -20,11 +20,6 @@ import type {
 import type { ArtifactGateResult } from "@/server/safety/artifact-gate";
 import type { A2UICatalogVersion, A2UIMessage } from "@/shared/a2ui-contract";
 
-// Differential oracle for issue #28. It lives under `src/server/a2ui` because
-// the drafting context may not import preview compilation; the reverse
-// direction is allowed for test modules by the architecture harness. Every
-// fixture and expected verdict comes from `artifact-corpus.ts`.
-
 interface CompileOutcome {
   readonly kind: "accepted" | "rejected" | "refused";
   readonly code?: string;
@@ -106,9 +101,6 @@ const rawCompile = (entry: ArtifactCorpusCase): CompileOutcome => {
   return messageFailure(messages, catalogFor(entry)) ?? { kind: "accepted" };
 };
 
-/**
- * The enforced pipeline: a hard-blocked artifact has no renderable artifact, so the compile seam is never called. This is the branded rule, not a convention the oracle can skip.
- */
 const compileThroughGate = (
   entry: ArtifactCorpusCase,
   gate: ArtifactGateResult
@@ -297,10 +289,6 @@ describe("artifact gate differential oracle", () => {
         continue;
       }
 
-      // The compile guard only sees the rendered projection. A draft or
-      // semantic rule it cannot observe is stricter by design; every such
-      // case names the reason in the corpus table instead of weakening the
-      // gate to make the seams agree.
       if (
         entry.stricterThanCompile === undefined ||
         entry.stricterThanCompile === ""

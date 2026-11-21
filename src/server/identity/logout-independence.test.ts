@@ -49,8 +49,6 @@ describe("local logout independence", () => {
       password,
       sourceAddress: "203.0.113.111",
     });
-    // The fixture teachers also hold the curriculum classroom membership, so the
-    // harness completes the designed selection with it before anything else.
     const signedIn =
       signIn.status === "membership-required"
         ? await service.selectMembership({

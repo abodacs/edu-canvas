@@ -409,8 +409,6 @@ describe("record contracts", () => {
   });
 
   it("rejects the degenerate typeof values it cannot canonicalize", () => {
-    // The degenerate typeof branches share one rejection path; each keeps
-    // the canonicalizer total over unknown input.
     expect(() => canonicalJson(1n)).toThrow(/unsupported/u);
     expect(() => canonicalJson(undefined)).toThrow(/unsupported/u);
     expect(() => canonicalJson(Symbol("x"))).toThrow(/unsupported/u);

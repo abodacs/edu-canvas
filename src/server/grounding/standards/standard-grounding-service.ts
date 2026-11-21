@@ -19,10 +19,6 @@ export interface ResolveStandardGroundingCommand {
   readonly tenantId: string;
   readonly jurisdiction: string;
   readonly statementCode: string;
-  /**
-  A caller-scoped idempotency key. Repeating it with the same input returns the
-  stored row; reusing it for a different standard is a correctable error.
-  */
   readonly requestKey: string;
   readonly predecessorGroundingId?: string | null;
 }
@@ -80,15 +76,8 @@ const isRetryableFailure = (error: unknown): boolean => {
   return error instanceof StandardGroundingError && error.retryable;
 };
 
-/**
-The resolver owns the retry. One total deadline covers both attempts and every
-stage (standard → components → prerequisites). A caller cannot skip the retry
-or ask for a third one: a retryable transport failure is retried exactly once,
-and the second failure is the result the caller sees.
-*/
 type RaceOutcome<T> =
-  | { readonly done: true; readonly value: T }
-  | { readonly done: false };
+  { readonly done: true; readonly value: T } | { readonly done: false };
 
 const runWithOneRetry = async <T>(
   deadlineMs: number,
@@ -111,12 +100,13 @@ const runWithOneRetry = async <T>(
     }
     try {
       const outcome: RaceOutcome<T> = await Promise.race([
-        work(controller.signal).then(
-          (value): RaceOutcome<T> => ({ done: true, value })
-        ),
-        once(controller.signal, "abort").then(
-          (): RaceOutcome<T> => ({ done: false })
-        ),
+        work(controller.signal).then((value): RaceOutcome<T> => ({
+          done: true,
+          value,
+        })),
+        once(controller.signal, "abort").then((): RaceOutcome<T> => ({
+          done: false,
+        })),
       ]);
       if (!outcome.done) {
         throw resolutionTimeout();

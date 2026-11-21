@@ -3,12 +3,6 @@ import { generationRequestErrorCodeValues } from "@/shared/generation-contract";
 
 import type { GenerationRequestErrorCode } from "@/shared/generation-contract";
 
-/**
-Teacher-visible failure resolution for the generation delivery seam, kept out of the studio component so the mapping stays pure and testable.
-
-Identity-boundary codes keep their canned copy; generation seam codes carry a curated server message that is surfaced verbatim, and the seam code itself so the studio can choose the right panel.
-*/
-
 const ERROR_COPY = {
   rateLimited: "Too many requests right now. Wait a moment and try again.",
   unavailable:
@@ -17,15 +11,8 @@ const ERROR_COPY = {
   generic: "The draft could not be generated. Check the request and try again.",
 } as const;
 
-/**
-The canned fallback for failures that carry no curated seam message (network
-errors, unparsable payloads, unknown codes). One source of truth for the studio.
-*/
 export const GENERIC_GENERATION_FAILURE_MESSAGE = ERROR_COPY.generic;
 
-/**
-A resolved generation failure: the studio must re-authenticate, or show one teacher-ready message. A seam code identifies the refusal so the studio can open the matching panel; `null` means the payload carried no recognized code.
-*/
 export type GenerationFailure =
   | { readonly kind: "unauthorized" }
   | {
@@ -47,9 +34,6 @@ const readFailurePayload = (payload: unknown): FailurePayload => {
   return { code: typeof code === "string" ? code : null, message };
 };
 
-/**
-The generation delivery seam's own codes are exactly the shared contract's code list; their responses carry a curated, teacher-ready message the studio surfaces verbatim. Every other code keeps its canned copy.
-*/
 const SEAM_CODES: ReadonlySet<string> = new Set(
   generationRequestErrorCodeValues
 );
@@ -97,8 +81,6 @@ export const resolveFailure = (
   }
 
   if (status === 429 || code === "RATE_LIMITED") {
-    // #104: the server states the real retry window in its curated message.
-    // Surface it when present; keep the canned copy when it is absent.
     const curated = curatedMessageOf(code, message);
     return {
       kind: "error",

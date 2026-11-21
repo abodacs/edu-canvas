@@ -19,9 +19,7 @@ type ChipGroupProps =
 
 interface ChipProps {
   readonly value: string;
-  /** Toggle mode only. */
   readonly pressed?: boolean;
-  /** Toggle mode only: called with the next pressed state. */
   readonly onPressedChange?: (pressed: boolean) => void;
   readonly disabled?: boolean;
   readonly children: ReactNode;
@@ -38,12 +36,6 @@ type ChipGroupContextValue =
 
 const ChipGroupContext = createContext<ChipGroupContextValue | null>(null);
 
-/**
-A labelled group of chips. Radio mode is a fieldset of native radios that share
-one name (a `useId` fallback, so two groups never share it); toggle mode is a
-fieldset of `aria-pressed` buttons. A chip reads the mode from context and never
-sets its own role.
-*/
 const ChipGroup = (properties: ChipGroupProps): ReactElement => {
   const fallbackName = useId();
   const radioName = properties.mode === "radio" ? properties.name : undefined;

@@ -7,13 +7,7 @@ import type { AuthNotice } from "./auth-status";
 import type { AuthNoticeState } from "./use-auth-notice";
 
 export interface AuthChallengeOptions {
-  /**
-  False while a child route owns the pending credential.
-  */
   readonly enabled?: boolean;
-  /**
-  Copy for a sign-in form whose challenge could not be started.
-  */
   readonly unavailableNotice: Omit<AuthNotice, "actionLabel" | "onAction">;
 }
 
@@ -22,9 +16,6 @@ export interface AuthChallengeState extends AuthNoticeState {
   readonly unavailable: boolean;
 }
 
-/**
- * Mint the pre-auth challenge a sign-in or sign-up form must echo, and turn a failure into a retryable notice. Both forms behave identically here, so the pending state, the retry action, and the load-once rule live in one place.
- */
 export const useAuthChallenge = (
   options: AuthChallengeOptions
 ): AuthChallengeState => {
@@ -39,7 +30,6 @@ export const useAuthChallenge = (
     const result = await fetchAuthChallenge();
     if (result.ok) {
       setCsrf(result.data.csrf);
-      // A retry that succeeds replaces the failure it was recovering from.
       announce(null);
       return;
     }
@@ -59,9 +49,6 @@ export const useAuthChallenge = (
     loadReference.current = load;
   }, [load]);
 
-  // The loader is stable, so this re-fetches only when the route changes. It is
-  // invoked through the ref to keep the effect a subscription rather than a
-  // synchronous state write.
   useEffect(() => {
     if (!enabled) {
       return;

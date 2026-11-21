@@ -9,10 +9,6 @@ type FractionDiagramComponent = Extract<
   { component: "FractionDiagram" }
 >;
 
-// #116 focused slice: a simple bar of equal-sized wholes. The learner sets
-// the shaded count by keyboard alone (native arrows on the number input,
-// labeled step buttons); selection stays local per the fractions-v2 contract
-// and stage changes go through the server-authorized advanceStage action.
 export const FractionDiagram = ({
   component,
 }: {

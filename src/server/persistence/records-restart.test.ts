@@ -4,8 +4,7 @@ import { describe, expect, it } from "vitest";
 
 const databaseUrl = process.env.DATABASE_URL;
 const isEnabled = process.env.RUN_DATABASE_TESTS === "true";
-const isRun =
-  databaseUrl !== undefined && databaseUrl !== "" && isEnabled;
+const isRun = databaseUrl !== undefined && databaseUrl !== "" && isEnabled;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;

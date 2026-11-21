@@ -18,9 +18,6 @@ import type {
   StoredValidationResult,
 } from "./contracts";
 
-/**
- * #6: maps an approved pack onto the canonical record model and writes the chain the learner runtime reads. Every command is receipt-keyed, so a retried publish returns the same identifiers. The mapping is lossy by design: section bodies come from the approved instructions, and the objective hash pins the approved artifact.
- */
 const sectionKinds = [
   "worked-example",
   "guided-practice",
@@ -91,18 +88,12 @@ const buildSections = (content: StoredPublicContent) => {
       variantId: bounded(variant.id, recordLimits.idLength),
       title: bounded(variant.title, recordLimits.titleText),
       body: bounded(variant.instructions, recordLimits.bodyText),
-      // Every item the section renders, not only the source column: a reader
-      // that resolves an item against this list must find the targets too.
       itemIds: items.map((item) => item.id),
       items,
     };
   });
 };
 
-/**
-#176: the copy the reveal needs. Path copy is written once; variant copy is
-keyed by variant. Only fields with a learner consumer cross here.
-*/
 const buildApprovedCopy = (content: StoredPublicContent) => {
   return {
     schemaVersion: "approved-copy-v1" as const,
@@ -198,17 +189,6 @@ const buildRuleVersions = (source: PackBridgeSource) => {
   };
 };
 
-/**
-Names the one refusal the assign step makes about the learner.
-
-`records.assign` answers FORBIDDEN when the learner is not an active student
-with an active membership. The publish check applies the same rule up front,
-so this only fires when a membership changes mid-publish. It used to surface
-as a 503 "try again later", which hid the cause. Every other code keeps its
-existing path: a stale head or an outage is transient, and an invalid input or
-an idempotency conflict is a server fault, not something the teacher fixes by
-choosing another learner.
-*/
 export const learnerLinkFailure = (error: unknown): unknown => {
   if (!isRecordStoreError(error) || error.code !== "FORBIDDEN") {
     return error;
@@ -247,11 +227,6 @@ export const bridgePublishedPack = async (
   const packageHash = createPackageHash({ contentHash, privateAnswerDigest });
   const validationResultHash = createValidationResultHash(validationResult);
 
-  // One review is one lesson: the package is named after the generation
-  // request, which survives every revision, so a revised pack appends to the
-  // same chain instead of starting a second package. The append resolves the
-  // head itself; asking for it here would change the input on a retry and turn
-  // a replay into an idempotency conflict.
   const packageId = `pkg-${bounded(source.requestId, recordLimits.idLength)}`;
 
   const version = await records.appendVersion(actor, {
@@ -275,9 +250,6 @@ export const bridgePublishedPack = async (
       provider: source.provenance.provider,
       modelVersion: source.provenance.model,
       promptVersion: source.provenance.promptTemplateVersion,
-      // A teacher edit is recorded against the variant it changed; the record
-      // model names the section that variant became. Dropping the list left a
-      // reviewed lesson indistinguishable from an untouched draft.
       authoredEdits: source.provenance.authoredEdits
         .slice(0, recordLimits.editMax)
         .map((edit) => {

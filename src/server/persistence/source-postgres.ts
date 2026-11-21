@@ -229,8 +229,6 @@ export const createPostgresSourcePersistence = (
     },
 
     expireSnapshotsBefore: async (nowIso): Promise<number> => {
-      // The sweep runs as the table owner (RLS ENABLE, not FORCE) with no
-      // tenant context until #100 lands the least-privilege role split.
       return await withTenantDatabase(async (sql) => {
         const rows = await sql<{ id: string }[]>`
           delete from source_snapshots

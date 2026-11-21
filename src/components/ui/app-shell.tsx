@@ -18,9 +18,7 @@ export interface AppShellNavItem {
 
 export interface AppShellIdentity {
   readonly displayName: string;
-  /** Tenant and role, read as one line after the name. */
   readonly context: string;
-  /** Decorative; the name is the accessible text. */
   readonly initials: string;
 }
 
@@ -30,7 +28,6 @@ export interface AppShellCrumb {
 }
 
 export interface AppShellProps {
-  /** Primary destinations. An empty list renders no nav (signed-out and error states). */
   readonly nav?: readonly AppShellNavItem[];
   readonly identity?: AppShellIdentity | null;
   readonly onSignOut?: () => void;
@@ -90,8 +87,6 @@ const Crumbs = ({
                 <Link
                   className="app-crumbs__link"
                   to={crumb.to}
-                  // Exact, search included: an ancestor crumb on the same path
-                  // is never announced as the current page.
                   activeOptions={{ exact: true, includeSearch: true }}
                 >
                   {crumb.label}
@@ -105,11 +100,6 @@ const Crumbs = ({
   );
 };
 
-/**
-The signed-in chrome every app page shares: brand, primary nav, identity, sign-out, optional breadcrumbs, the page's single `<main id="main">`, and the synthetic-data caption.
-
-Invariant: a page that adopts the shell renders no `<main>` of its own. The skip link lives in `__root.tsx`, not here, so it is the document's first focusable element whether or not the page uses the shell.
-*/
 export const AppShell = ({
   nav = noNavigation,
   identity = null,

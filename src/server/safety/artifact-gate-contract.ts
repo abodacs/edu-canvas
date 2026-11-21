@@ -6,11 +6,6 @@ import {
 } from "@/shared/generation-contract";
 import type { RecoveryAction } from "@/shared/generation-contract";
 
-/**
- * A deterministic or semantic validator that produced a finding. `structural`
- * covers the draft gate and the A2UI compile guard; the other values keep the
- * semantic validator provenance.
- */
 export type ArtifactGateValidator =
   "structural" | (typeof semanticValidatorRoleValues)[number];
 
@@ -26,10 +21,6 @@ export interface ArtifactGateFinding {
   recovery: RecoveryAction;
 }
 
-/**
- * The serializable evidence acceptance persists beside a renderable artifact.
- * It never carries a renderable artifact: only `gateArtifact` mints that.
- */
 export interface ArtifactGateSnapshot {
   verdict: "pass" | "warning";
   recovery: RecoveryAction | null;

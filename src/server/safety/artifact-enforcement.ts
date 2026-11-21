@@ -42,9 +42,6 @@ export type StoredArtifactGateOutcome =
   | { ok: false; refusal: StoredArtifactGateRefusal };
 
 export interface StoredArtifactGateOptions {
-  /**
-   * Deterministic compile-guard rejections collected by the render seam. The gate owns their verdict; the compile seam only maps the failure.
-   */
   preRenderFailures?: readonly ArtifactPreRenderFailure[];
 }
 
@@ -72,9 +69,6 @@ const refusal = (
 const isFractionRecord = (record: LessonGenerationRecord): boolean =>
   record.provenance?.catalogVersion === FRACTIONS_CATALOG_VERSION;
 
-/**
- * Re-derives the gate from the stored artifact. Preview and Share call this; it never trusts the stored verdict alone.
- */
 export const deriveStoredArtifactGate = (
   record: LessonGenerationRecord,
   options: StoredArtifactGateOptions = {}
@@ -97,8 +91,6 @@ export const deriveStoredArtifactGate = (
     throw new Error("A lesson record cannot be gated without its draft.");
   }
 
-  // The gate hash covers the artifact's variants and validated learning path.
-  // The wrapper metadata (request, provenance, timestamps) stays outside it.
   const structural = validateProviderDraft(
     { variants: record.draft.variants },
     { expectedLanguage: record.input.language }
@@ -113,9 +105,6 @@ export const deriveStoredArtifactGate = (
   });
 };
 
-/**
- * Re-derives the gate and proves the stored snapshot still describes this artifact under the current policy. Returns the branded artifact only when the derivation is renderable.
- */
 export const gateStoredArtifact = (
   record: LessonGenerationRecord,
   options: StoredArtifactGateOptions = {}
@@ -198,10 +187,6 @@ export class ArtifactShareRejectedError extends Error {
   }
 }
 
-/**
- * Publication guard (#5): accepts only a snapshot that still passes, and
- * returns the branded renderable artifact. Idempotent and side-effect free.
- */
 export const assertShareable = (
   record: LessonGenerationRecord
 ): RenderableArtifact => {

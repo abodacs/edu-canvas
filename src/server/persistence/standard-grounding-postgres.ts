@@ -124,12 +124,6 @@ const malformedRow = (): Error => {
   return new Error("A stored standard grounding row is malformed.");
 };
 
-/**
- * Decode one persisted row. The JSON columns are provider-derived data, so a
- * corrupt or hand-edited row fails closed instead of being cast into a
- * plausible-looking record. This is exported as the row-decoding seam for the
- * malformed-row test; production calls it from every read path.
- */
 export const hydrateStandardGroundingRow = (
   row: GroundingRow
 ): StandardGroundingRecord => {

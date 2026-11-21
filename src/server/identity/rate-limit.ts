@@ -9,35 +9,21 @@ interface Bucket {
 }
 
 export interface RateLimiterOptions {
-  /**
-  Injectable clock for deterministic tests.
-  */
   readonly now?: () => number;
   readonly maxBuckets?: number;
 }
 
 export interface RateLimiter {
-  /**
-   * Consume one attempt from `key`. Atomic per key. Once `key` reaches `limit`
-   * inside `windowMs`, further attempts are rejected with a bounded retry hint.
-   * Counters are time-limited: the window resets, so no permanent lock exists.
-   */
   readonly consume: (
     key: string,
     limit: number,
     windowMs: number
   ) => RateLimitVerdict;
-  /**
-  Reset every counter. Test-only.
-  */
   readonly reset: () => void;
 }
 
 const defaultMaxBuckets = 10_000;
 
-// In-memory, process-local limiter (one Machine, AgDR-0007). A full table of live
-// counters refuses the new key rather than evicting one: evicting would let an
-// attacker clear a targeted account's throttle with enough distinct keys.
 export const createRateLimiter = (
   options: RateLimiterOptions = {}
 ): RateLimiter => {
@@ -95,12 +81,10 @@ export const createRateLimiter = (
   };
 };
 
-// A stable, non-reversible digest for a rate-limit bucket key. Not cryptographic.
 export const normalizedAccountDigest = (
   secret: string,
   email: string
 ): string => {
-  // FNV-1a over the normalized address; not cryptographic, only for bucketing.
   const normalized = email.trim().toLowerCase();
   let hash = 2_166_136_261;
   const digestInput = `${secret}:${normalized}`;

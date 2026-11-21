@@ -6,11 +6,6 @@ import type {
 } from "@/shared/source-contract";
 import type { SourceSnapshotRecord } from "./types";
 
-/**
-Public projections for source snapshots. The single-snapshot review view
-carries the extracted text (the teacher's own material); list projections
-never do.
-*/
 export const toPublicSourceSnapshot = (
   record: SourceSnapshotRecord,
   options: { readonly includeText: boolean }

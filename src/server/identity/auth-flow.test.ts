@@ -138,7 +138,6 @@ describe("membership selection over HTTP", () => {
       throw new TypeError("the sign-in response must carry a status");
     }
 
-    // Amira's fixture shape now includes the curriculum classroom membership.
     expect({
       status: response.status,
       bodyStatus: status,
@@ -175,8 +174,6 @@ describe("membership selection over HTTP", () => {
       actor: { tenantName: "Grade 5B · Ratio Reasoning" },
     });
     expect(cookieValue(selected, "edu_canvas_session")).toBeDefined();
-    // The rotated session cookie and the cleared pending cookie are separate
-    // headers; a browser would misread them as one joined value.
     expect(selected.headers.getSetCookie()).toHaveLength(2);
   });
 
@@ -220,8 +217,6 @@ describe("teacher sign-up over HTTP", () => {
     const fresh = await submit("brand.new.teacher@example.test");
     const taken = await submit("amira.north@example.test");
 
-    // Same state, shape, and cookie behaviour for a new and an already-registered
-    // address, so the response reveals nothing about existence.
     expect({
       freshStatus: fresh.status,
       takenStatus: taken.status,

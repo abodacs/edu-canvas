@@ -123,11 +123,6 @@ const reverseKeys = (value: unknown): unknown => {
   );
 };
 
-/**
-Key reversal only reorders members, so a reversed clone keeps the input's
-runtime shape; the original parameter type is recovered through this guard
-instead of an assertion.
-*/
 const isReorderedShape = <T>(value: unknown, reference: T): value is T =>
   value !== undefined && value !== null && reference !== undefined;
 
@@ -197,9 +192,6 @@ describe("artifact gate contract", () => {
   });
 
   it("keeps a warning artifact renderable and actionable", async () => {
-    // The fixture's standard variants are genuinely different now (#168), so
-    // the warning scenario constructs its own duplicate structure on purpose,
-    // with unique identifiers across the draft.
     const duplicateDraft = createEquivalentFractionsDraft(validInput());
     const [firstVariant] = duplicateDraft.variants;
     duplicateDraft.variants[1] = {

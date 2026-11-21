@@ -8,13 +8,6 @@ export type RecordValue =
 
 export type StoredRow = Record<string, unknown>;
 
-/**
-Every table the records boundary reads. Write operations only target the ten record tables; the identity, curriculum, and generation tables are read-only referents.
-
-The column sets live in `drizzle/schema.ts`, which owns the tables and the
-migration journal. `records-seeded.ts` binds each name to its table, and the
-binding is total by type, so a new table cannot be added here without one.
-*/
 export const recordTableNames = [
   "curated_references",
   "lesson_packages",

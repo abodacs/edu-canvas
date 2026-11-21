@@ -3,17 +3,11 @@ import type { LearnerAttemptResponse } from "@/shared/learner-contract";
 
 type Correctness = LearnerAttemptResponse["correctness"];
 
-/**
-#9: the learner page speaks one language at a time, chosen by the pack's
-approved language (the issue's default locus; there is no student toggle).
-Every fixed template the learner sees lives here, so the two languages cannot drift apart field by field. Approved copy from the pack is never translated.
-*/
 export interface LearnerCopy {
   readonly direction: "ltr" | "rtl";
   readonly headingFallback: string;
   readonly sourceHeadingFallback: string;
   readonly targetHeadingFallback: string;
-  /** The visible label a formed pair carries on both of its cards. Never a grade: nothing is checked until Done. */
   readonly pairBadge: (pairNumber: number) => string;
   readonly progress: (matched: number, total: number) => string;
   readonly submit: string;
@@ -120,15 +114,9 @@ const arabic: LearnerCopy = {
   unavailable: "النشاط غير متاح الآن. حاول مرة أخرى.",
 };
 
-/**
-A version stored before approved copy existed has no language; it keeps the document's English default.
-*/
 export const learnerCopyFor = (language: LessonLanguage | null): LearnerCopy =>
   language === "ar" ? arabic : english;
 
-/**
-The graded line, shared by the result panel and the live announcement.
-*/
 export const scoreLine = (
   copy: LearnerCopy,
   result: LearnerAttemptResponse

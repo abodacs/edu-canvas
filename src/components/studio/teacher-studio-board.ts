@@ -1,15 +1,8 @@
 import type { BadgeTone } from "@/components/ui/badge";
 import type { PublicGenerationResult } from "@/shared/generation-contract";
 
-/*
-The Studio board's pure rules: how notes group, what a ready variant's status
-pill says, and how the board names its count. Kept apart from the component so
-they are tested directly.
-*/
-
 type Diagnostics = PublicGenerationResult["diagnostics"];
 
-/** Two findings are the same note when code and message match. */
 const diagnosticKey = (diagnostic: Diagnostics[number]): string =>
   `${diagnostic.code}:${diagnostic.message}`;
 
@@ -51,11 +44,6 @@ export interface GroupedDiagnostic {
   readonly message: string;
 }
 
-/**
- * Identical findings across variants collapse into one note that names the
- * variants it describes, so a draft with structurally repeated variants never
- * prints the same sentence twice (#168 P1-1).
- */
 export const groupDiagnostics = (
   diagnostics: Diagnostics,
   variantNameById: ReadonlyMap<string, string>
@@ -92,7 +80,6 @@ export const groupDiagnostics = (
 
 const NUMBER_WORDS = ["No", "One", "Two", "Three", "Four", "Five", "Six"];
 
-/** "Four variants to review": the board heading names the real count. */
 export const boardHeading = (count: number): string => {
   const word = NUMBER_WORDS[count] ?? String(count);
   return `${word} variant${count === 1 ? "" : "s"} to review`;
@@ -103,10 +90,6 @@ export interface VariantStatus {
   readonly label: string;
 }
 
-/**
- * A ready variant's status pill. The words carry the meaning: a variant with
- * notes from the checks says how many, so tone is never the only signal.
- */
 export const variantStatus = (
   variantId: string,
   diagnostics: Diagnostics
@@ -127,14 +110,9 @@ export const variantStatus = (
   };
 };
 
-/** Cards are lettered A, B, C… so a note and a card can name each other. */
 export const variantLetter = (index: number): string =>
   String.fromCodePoint(FIRST_CARD_LETTER + index);
 
-/**
- * The line beside the board heading. Every variant in a ready draft passed the
- * gate; the line says how many carry notes, so it never contradicts a card.
- */
 export const readyCountLine = (
   variants: readonly { readonly id: string }[],
   diagnostics: Diagnostics

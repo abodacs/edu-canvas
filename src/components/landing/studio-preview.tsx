@@ -2,16 +2,6 @@ import type { ReactElement } from "react";
 
 import { SyntheticDataMarker } from "@/components/ui/synthetic-data-marker";
 
-/**
-The Studio window that floats on the landing scene, ported from the approved
-mock: one objective, four drafted variants, and the one authored moment —
-each verdict lands in order, with variant C blocked before preview.
-
-It is a static illustration of the seeded equivalent-fractions fixture
-(mirrors only public fixture content, like the reveal it replaces), so the
-check verdicts are hand-written copy, never server state.
-*/
-
 const StudioPreview = (): ReactElement => {
   return (
     <figure

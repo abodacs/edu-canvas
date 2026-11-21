@@ -7,13 +7,6 @@ import { purposeLabel, stageStatus } from "./purpose-copy";
 import type { ProgressAttempt, ProgressRun } from "@/shared/progress-contract";
 import type { ReactNode } from "react";
 
-/**
- * #8 teacher progress surfaces. Evidence-first and read-only: every string is
- * either stored server data rendered verbatim (the decision reason) or a fixed
- * local template. Nothing here recomputes, rewrites, or classifies a result,
- * and every screen labels the view observational, never a mastery diagnosis.
- */
-
 export const ProvisionalNotice = () => {
   return (
     <p className="progress-provisional" role="note">
@@ -113,9 +106,6 @@ const assistedCopy = (attempt: ProgressAttempt): string => {
     : "on their own";
 };
 
-/**
-The needs-you panel: the runs whose stored decision routed the learner to another supported example. Only stored decisions appear here; the panel owns the routing filter so callers cannot mislabel a run.
-*/
 export const NeedsYouPanel = ({
   runs,
   onOpen,
@@ -257,11 +247,6 @@ const AttemptRow = ({ attempt }: { readonly attempt: ProgressAttempt }) => {
   );
 };
 
-/**
-The per-run detail: attempts in order (first response, assistance, retries
-kept distinct), then the stored decision with its rule version and evidence
-hash, then the read-only preview of the assigned approved screen.
-*/
 export const RunDetail = ({ run }: { readonly run: ProgressRun }) => {
   return (
     <Card

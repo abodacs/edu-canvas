@@ -66,10 +66,6 @@ const createValidProviderDraft = () => {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-/**
-These tests plant malformed output on the first variant of an otherwise valid
-draft; the guards keep those plants on the draft's real objects.
-*/
 const firstVariantRecordOf = (draft: object): Record<string, unknown> => {
   if (!isRecord(draft) || !Array.isArray(draft.variants)) {
     throw new TypeError("the provider draft must carry a variants list");

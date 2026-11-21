@@ -28,7 +28,6 @@ describe("synthetic seed", () => {
     });
   });
 
-  // #110: the fixture and the live preview are one catalog identity.
   it("pins the live catalog the preview and renderer accept", () => {
     const { catalogVersion } = syntheticSeed.activityVersion;
 
@@ -49,9 +48,6 @@ describe("synthetic seed", () => {
     ).toStrictEqual(["prompt", "source", "targets"]);
   });
 
-  // Two seeded students once shared one display name, so the publish picker
-  // bound the identity without a membership and the film captured the wrong
-  // learner. Every student a teacher can see in one class has its own name.
   it("gives every seeded student in a class a distinct display name", () => {
     const students = [
       ...syntheticSeed.identities

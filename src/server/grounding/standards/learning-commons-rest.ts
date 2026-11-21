@@ -30,20 +30,11 @@ import type {
   StandardResolution,
 } from "./types";
 
-/**
-One provider response. The body stays `unknown` until this adapter parses it;
-neither a raw provider object nor an arbitrary URL fetch crosses the adapter.
-*/
 export interface ProviderResponse {
   readonly status: number;
   readonly body: unknown;
 }
 
-/**
- The one transport seam. Every method maps to a fixed Learning Commons REST path;
- a provider field can never select a URL. Pagination stays in the adapter so the
- transport has no loop of its own.
-*/
 export interface LearningCommonsTransport {
   readonly findFrameworks: (
     input: {
@@ -87,18 +78,6 @@ export interface LearningCommonsTransport {
 export const LEARNING_COMMONS_REST_ORIGIN =
   "https://api.learningcommons.org/knowledge-graph/v0";
 
-/**
- VERIFIED LIVE 2026-11-04. The pipeline and its responses are recorded in
- `docs/research/standards-generalization/live-matrix.json`:
- - `/standards-frameworks?jurisdiction=&academicSubject=` resolves a current
-   framework. The old `/academic-standards?statementCode=` call returns 422.
- - `/academic-standards?standardsFrameworkCaseIdentifierUUID=` scans standards;
-   the code can need pagination (California math has more than 1000 rows).
- - `/academic-standards/{uuid}/learning-components`
- - `/academic-standards/{uuid}/prerequisites` (the old `/progression` is 404)
- - `/academic-standards/{uuid}/crosswalks?jurisdiction=Multi-State` supplies the
-   CCSS match for a state standard with no direct prerequisites.
-*/
 const REST_PATHS = {
   frameworks: "/standards-frameworks",
   standards: "/academic-standards",
@@ -125,11 +104,6 @@ export const LEARNING_COMMONS_REST_LIMITS = {
   subresource: 100,
 } as const;
 
-/**
- Every provider loop has a page ceiling. A provider that keeps saying
- `hasMore: true` can spend the total ten-second deadline but can never keep the
- adapter in an unbounded loop.
-*/
 export const LEARNING_COMMONS_PAGE_BOUNDS = {
   frameworkPages: 2,
   frameworks: 4,
@@ -161,12 +135,6 @@ const readJsonBody = async (response: Response): Promise<unknown> => {
   }
 };
 
-/**
- The production transport. Every request goes to a fixed Learning Commons path;
- a provider field can never select a URL. The API key stays in the request
- header and is never logged. Redirects are errors so the key cannot follow a
- provider redirect to another host.
-*/
 export const createLearningCommonsRestTransport = (
   options: LearningCommonsRestTransportOptions
 ): LearningCommonsTransport => {
@@ -274,11 +242,6 @@ export interface LearningCommonsAdapterOptions {
   readonly now?: () => string;
 }
 
-/**
- * A provider failure keeps only the HTTP status, never the raw response body.
- * A payload can carry a standard's text, a token echo, or unrelated tenant data;
- * the error goes to logs and recovery.
- */
 const providerUnavailable = (status?: number): StandardGroundingError => {
   return new StandardGroundingError(
     status === undefined
@@ -303,18 +266,10 @@ const isClientFailure = (response: ProviderResponse): boolean => {
   return response.status >= 400 && response.status < 500;
 };
 
-/**
- A 4xx says the path or credential is wrong, not that the standard has no
- skills or prerequisites. It stays distinguishable from a genuine empty 200.
-*/
 const unsupportedEnvelope = (message: string): StandardGroundingGap => {
   return { code: "unsupported-envelope", message };
 };
 
-/**
- Provider shapes, verified live 2026-11-04. Every collection is `data[]` with a
- `pagination` object; extra provider keys are accepted but never retained.
-*/
 const paginationSchema = z
   .object({
     hasMore: z.boolean(),
@@ -345,9 +300,6 @@ const standardItemSchema = z
     jurisdiction: z.string().min(1),
     license: z.string().optional(),
     sourceLink: z.string().optional(),
-    // Framework pages include grouping rows (Domain, Grade Level) with a null
-    // statement code. They are real rows, not a malformed envelope, and never
-    // match an exact code.
     statementCode: z.string().min(1).nullable(),
     status: z.string().optional(),
   })
@@ -537,8 +489,6 @@ const entryForEnvelopeMiss = (
     kind: "boundary",
     jurisdiction: input.jurisdiction,
     statementCode: input.statementCode,
-    // Never borrow another envelope's subject. An unsupported jurisdiction has
-    // no registered facts, so the record says so.
     subject: envelope?.subject ?? "Unknown",
     grade: Number.isNaN(grade) ? 0 : grade,
     frameworkId: "unregistered",
@@ -768,12 +718,6 @@ const failureGap = (
   );
 };
 
-/**
- Resolve the current framework, then scan it for the exact statement code. The
- first current framework that carries the code wins; a repeated code inside one
- framework is ambiguous. Every loop is page-bounded, and a cap never becomes a
- claim of absence.
-*/
 type FrameworkMatchOutcome =
   | { readonly kind: "match"; readonly standard: StandardItem }
   | { readonly kind: "gap"; readonly gaps: readonly StandardGroundingGap[] };
@@ -905,12 +849,6 @@ const resolveFrameworkMatch = async (
   };
 };
 
-/**
- Standard → components → prerequisites, in one bounded pipeline. A zero-row
- answer is an explicit gap at every stage; the adapter never turns an empty
- provider answer into a confident one. A state standard with no direct
- prerequisite uses its best CCSS crosswalk, and the resolution says so.
-*/
 export const createLearningCommonsAdapter = (
   options: LearningCommonsAdapterOptions
 ): LearningCommonsAdapter => {

@@ -3,11 +3,6 @@ import { z } from "zod";
 import { componentIdSchema, safeTextSchema } from "@/shared/a2ui-contract";
 import { isAllowedLatexInput } from "@/shared/latex-mathml";
 
-// #116: authoring shape for a fractions-v2 lesson. Generation cannot emit
-// this draft yet (providerDraftSchema stays matching-domain); the fraction
-// compiler validates this contract at the preview boundary, and the provider
-// path that produces it lands with the broader U4 lane.
-
 const latexStemSchema = z
   .string()
   .trim()

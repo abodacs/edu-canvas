@@ -16,9 +16,6 @@ import type {
 } from "./persistence-port";
 import type { IdentityRole } from "./types";
 
-/**
- * Trusted provisioning principal. A deployment-managed principal or explicit test/local tooling invokes these; teacher and student web principals cannot.
- */
 export interface ProvisioningPrincipal {
   readonly principal: string;
   readonly requestId: string;

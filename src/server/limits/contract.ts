@@ -10,9 +10,6 @@ export const limitCounterKinds = [
 ] as const;
 export type LimitCounterKind = (typeof limitCounterKinds)[number];
 
-/**
-One counted thing: scope x kind x window. The counter is checked and incremented in the same conditional write, so a rejected request cannot leave a partial increment behind.
-*/
 export interface LimitCounterClaim {
   readonly scopeKind: LimitScopeKind;
   readonly scopeId: string;
@@ -32,9 +29,6 @@ export interface LimitCounter {
   readonly windowEnd: string;
 }
 
-/**
-At most one active generation per teacher. The holder names the attempt, so a worker that lost its claim cannot release someone else's lease. An expired lease is reclaimable; it is never a permanent lock.
-*/
 export interface ActiveGenerationLease {
   readonly tenantId: string;
   readonly teacherId: string;
@@ -49,13 +43,7 @@ export interface ProviderCallReservation {
   readonly sessionId: string;
   readonly requestId: string;
   readonly attemptNumber: number;
-  /**
-  A correction is a second provider call inside one generation attempt. It counts against the provider-call budget but not the attempt or authoring budgets.
-  */
   readonly correction: boolean;
-  /**
-  How long the lease stays reclaimable after a crash. The generation claim lease already owns this duration.
-  */
   readonly leaseTtlMs: number;
 }
 
@@ -68,9 +56,6 @@ export interface LeaseRelease {
 
 export interface LimitVerdict {
   readonly allowed: boolean;
-  /**
-  Zero when allowed. When limited, the wait until the window or lease really ends, so the 429 retry interval is honest rather than a fixed guess.
-  */
   readonly retryAfterMs: number;
   readonly limitedBy?: {
     readonly kind: LimitCounterKind | "active-generation";
@@ -81,15 +66,9 @@ export interface LimitVerdict {
 }
 
 export interface GenerationLimitStore {
-  /**
-  Atomically check every applicable counter and the active-generation lease, then increment and acquire. A limited verdict consumes nothing.
-  */
   reserveProviderCall: (
     input: ProviderCallReservation
   ) => Promise<LimitVerdict>;
-  /**
-  Release only the lease held by this attempt. Missing or foreign leases are a no-op.
-  */
   releaseGenerationLease: (input: LeaseRelease) => Promise<void>;
 }
 

@@ -1,0 +1,4 @@
+{
+  "note": "Ratchet ceiling for scripts/verify-comments.ts (AgDR-0019). Comment lines per file in src/; counts may only fall; regenerate with --update after a reduction.",
+  "files": {}
+}

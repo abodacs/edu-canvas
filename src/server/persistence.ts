@@ -18,12 +18,6 @@ import type {
   FoundationPersistenceOptions,
 } from "./persistence/types";
 
-/**
-PostgreSQL is the only runtime store. Every port below refuses an invalid
-configuration and a missing `DATABASE_URL` the same way, so a new port cannot
-quietly ship a different rule. In-memory doubles stay in `*-seeded.ts` modules
-and are reachable only from tests.
-*/
 const requireDatabaseUrl = (config: ServerConfig, port: string): string => {
   if (config.issues.length > 0) {
     throw new Error(`Cannot create ${port} persistence for invalid config.`);
@@ -36,9 +30,6 @@ const requireDatabaseUrl = (config: ServerConfig, port: string): string => {
   return config.databaseUrl;
 };
 
-/**
- * Identity persistence is a separate port from generation persistence: the identity boundary owns actors, bindings, memberships, and sessions, and the generation boundary owns drafts and attempts.
- */
 export const createIdentityPersistence = (
   config: ServerConfig,
   options: FoundationPersistenceOptions = {}
@@ -80,18 +71,9 @@ export const createFoundationPersistence = (
   return createPostgresPersistence(config.databaseUrl, options);
 };
 
-/**
-The generated-pack port (#5). It is separate from the foundation port so the
-publication context owns its tables and the generation context keeps its own
-record.
-*/
 export const createPackPersistence = (config: ServerConfig): PackPersistence =>
   createPostgresPackPersistence(requireDatabaseUrl(config, "pack"));
 
-/**
-Shared request-limit state (#104). The counters and leases must be visible to
-every application Machine, so this port is always PostgreSQL.
-*/
 export const createGenerationLimitStore = (
   config: ServerConfig
 ): GenerationLimitStore => {
@@ -100,9 +82,6 @@ export const createGenerationLimitStore = (
   );
 };
 
-/**
-The versioned-record port (#112).
-*/
 export const createRecordPersistence = (
   config: ServerConfig
 ): RecordPersistence => {
@@ -113,10 +92,6 @@ export const createRecordPersistence = (
   );
 };
 
-/**
-The Learning Commons standard-grounding port (#218). It is append-only and
-tenant scoped; the in-memory double stays a test module.
-*/
 export const createStandardGroundingPersistence = (
   config: ServerConfig
 ): StandardGroundingPersistence => {

@@ -23,17 +23,6 @@ import {
 import { runDatabaseMigrations } from "../../scripts/database-migrate-runtime.mjs";
 import type { LessonGenerationInput } from "@/shared/generation-contract";
 
-// #110 round trip: migrate an empty database, seed it from scratch, read the
-// persisted catalog identity back, and render the fixture through the same
-// reader and renderer the live preview uses. The unit tests prove the seed
-// matches the contract in memory; this proves the identity survives
-// persistence and still resolves to a catalog a reader accepts.
-//
-// A scratch database rather than the shared test database: the round trip has
-// to observe the row the current seed writes, and `activity_versions` is
-// inserted with `on conflict do nothing`, so a database seeded before this
-// change keeps the retired identifier by design.
-
 const databaseUrl = process.env.DATABASE_URL;
 const isEnabled = process.env.RUN_DATABASE_TESTS === "true";
 const isRun = Boolean(databaseUrl) && isEnabled;

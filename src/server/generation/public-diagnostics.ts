@@ -11,9 +11,6 @@ import type {
 } from "@/shared/generation-contract";
 import type { GenerationDiagnostic } from "./types";
 
-/**
- * A branch-new payload for a diagnostic that failed the public scrub. The teacher still sees that a check fired and what to do; the private detail stays on the server.
- */
 const SAFE_FINDING_MESSAGE =
   "This draft needs a teacher review before it can continue.";
 
@@ -35,9 +32,6 @@ const unsafePublicTextPatterns: readonly RegExp[] = [
 const isUnsafePublicText = (value: string): boolean =>
   unsafePublicTextPatterns.some((pattern) => pattern.test(value));
 
-/**
- * Normalizes teacher-facing copy and replaces it when it carries an answer key, a secret, a token, raw provider text, or a student identifier.
- */
 export const scrubPublicMessage = (message: string): string => {
   const normalized = message.trim().replaceAll(/\s+/gu, " ");
   return !normalized ||
@@ -153,10 +147,6 @@ export interface PublicDiagnosticsPayload {
   rollup: PublicDiagnosticsRollup;
 }
 
-/**
- * The public diagnostics seam: per-screen findings plus a flow-level roll-up.
- * It scrubs private detail and gives every finding exactly one recovery action.
- */
 export const toPublicDiagnosticsPayload = (
   diagnostics: readonly GenerationDiagnostic[]
 ): PublicDiagnosticsPayload => {

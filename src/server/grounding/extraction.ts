@@ -14,14 +14,6 @@ import type {
   SourceFileFormat,
 } from "@/shared/source-contract";
 
-/**
-Bounded extraction runner (#114 build-order unit 2). The parse always runs in
-a `worker_threads` worker capped at 128 MiB with a 10 s abort deadline — the
-measured unpdf prototype (parser-eval in .scratch) stays inside both.
-
-The worker is created from an eval script that imports unpdf by the module URL resolved here, so the server bundle keeps one statically imported copy of unpdf while the parse itself stays off the main thread. No temporary files exist at any point: bytes are passed in memory and dropped with the worker.
-*/
-
 export type ExtractionOutcome =
   | { readonly ok: true; readonly pages: readonly string[] }
   | {
@@ -84,9 +76,6 @@ const isStringArray = (value: unknown): value is string[] =>
 
 export interface BoundedExtraction {
   readonly promise: Promise<ExtractionOutcome>;
-  /**
-  Cancels the extraction by terminating the worker; safe to call twice.
-  */
   readonly cancel: () => void;
 }
 

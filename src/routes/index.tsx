@@ -12,10 +12,6 @@ import { cn } from "@/lib/utilities";
 import { ClosingScene, HeroScene } from "@/components/landing/scene";
 import { StudioPreview } from "@/components/landing/studio-preview";
 
-/**
-The sign-out hand-off lands on `?signedOut=1` (#168 P2-5), so the exit is
-confirmed by the page itself and refreshes or shares never carry the banner.
-*/
 const handOffSearch = (
   search: Record<string, unknown>
 ): { signedOut?: boolean } =>
@@ -214,8 +210,6 @@ const strokeProps = {
 } as const;
 
 const TeacherHome = (): ReactElement => {
-  // #168 P1-4: once the tab's session resolves as active, the header and the
-  // hero hand the teacher their workspace instead of advertising a sign-in.
   const session = useAuthSession();
   const hasActiveSession =
     session.phase === "active" && session.projection !== null;

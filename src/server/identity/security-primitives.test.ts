@@ -145,8 +145,6 @@ describe("rate limiter", () => {
       limiter.consume(`key-${index}`, 10, 1000);
     }
 
-    // The table is full of live counters, so the new key is refused instead of
-    // clearing a live throttle. It is bounded, and it fails closed.
     expect(limiter.consume("fresh", 10, 1000).allowed).toBeFalsy();
   });
 
@@ -162,7 +160,6 @@ describe("rate limiter", () => {
 
     expect(limiter.consume("victim@example.test", 2, 1000).allowed).toBeFalsy();
 
-    // Distinct keys from an attacker must not reset the victim's counter.
     for (const key of ["a", "b", "c", "d", "e"]) {
       limiter.consume(key, 10, 1000);
     }
@@ -185,8 +182,6 @@ describe("rate limiter", () => {
   });
 
   it("derives a stable, non-reversible account digest", () => {
-    // A pinned value, so a changed mixer cannot pass the relative assertions
-    // below. Rate-limit buckets are keyed by this digest.
     expect(normalizedAccountDigest("edu-canvas", "teacher@school.test")).toBe(
       "h5bt2o"
     );

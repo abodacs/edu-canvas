@@ -6,15 +6,6 @@ import type { variantKindValues } from "@/shared/generation-contract";
 import type { NextActivityPurpose } from "@/shared/learner-contract";
 import type { AssistanceState, Correctness } from "@/server/records/vocabulary";
 
-/**
- * #7 deterministic next-activity rule.
- *
- * The rule is a checked-in table. The version string embeds a digest of the table, so a changed row without a changed version fails the unit test. The function reads no clock, no client input, and no database.
- */
-
-/**
-The purposes this rule can decide. The canonical vocabulary lives in the shared contract; the teacher's own choice never comes from this function.
-*/
 export type RulePurpose = Exclude<NextActivityPurpose, "teacher-choice">;
 
 export type ActivityKind = (typeof variantKindValues)[number];
@@ -31,13 +22,7 @@ export interface ResponseEvidence {
 
 export interface DecisionEvidence {
   readonly assignedActivityId: string;
-  /**
-  The first response on the assigned activity. Null when nothing is stored.
-  */
   readonly independent: ResponseEvidence | null;
-  /**
-  The first response on guided practice. Null until a stage model exists.
-  */
   readonly guided: ResponseEvidence | null;
   readonly activities: readonly ActivityOption[];
 }
@@ -101,11 +86,6 @@ const digestOfRows = (): string => {
     .digest("hex");
 };
 
-/**
-The version moves whenever a row moves. Prose rows carry no executable
-predicates on purpose: `decideNextActivity` is the one reader, and the unit
-test fires each row through it.
-*/
 export const decisionRuleVersion = `next-activity-rule-${digestOfRows().slice(0, 12)}`;
 
 export const decisionRuleDigest = digestOfRows();
@@ -179,9 +159,6 @@ export const decideNextActivity = (
   );
 };
 
-/**
-The one assisted-response rule for the whole decision pass. The submit path and the replay read it from here, so they cannot disagree.
-*/
 export const wasAssisted = (evidence: {
   readonly assistanceState: AssistanceState;
   readonly assistanceEventIds: readonly string[];
@@ -192,9 +169,6 @@ export const wasAssisted = (evidence: {
   );
 };
 
-/**
- * #8 replay evidence: the fields the submit pass reads, as they persist. One attempt in ordinal order.
- */
 export interface PersistedAttemptEvidence {
   readonly itemId: string;
   readonly correctness: Correctness;
@@ -205,17 +179,11 @@ export interface PersistedAttemptEvidence {
 export interface NextActivityReplayInput {
   readonly runId: string;
   readonly assignedActivityId: string;
-  /**
-  The item ids of the assigned variant's section; the first response is the first persisted attempt inside them.
-  */
   readonly sectionItemIds: readonly string[];
   readonly attempts: readonly PersistedAttemptEvidence[];
   readonly activities: readonly ActivityOption[];
 }
 
-/**
-The decision fields a fresh pass over the persisted evidence must produce. `null` when no attempt covers the assigned section: the pass runs with a submission, so a run without one can carry no rule decision.
-*/
 export interface NextActivityReplay {
   readonly activityId: string | null;
   readonly purpose: RulePurpose;
@@ -224,9 +192,6 @@ export interface NextActivityReplay {
   readonly evidenceHash: string;
 }
 
-/**
- * #8: the deterministic replay of the submit-time decision pass (src/server/learner/service.ts) from persisted rows only. Reads no clock, no client input, and no database.
- */
 export const replayNextActivity = (
   input: NextActivityReplayInput
 ): NextActivityReplay | null => {

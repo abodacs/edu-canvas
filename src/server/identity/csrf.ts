@@ -5,9 +5,6 @@ const challengeBytes = 24;
 const encode = (bytes: Uint8Array): string =>
   bytes.toBase64({ alphabet: "base64url", omitPadding: true });
 
-/**
-A fresh pre-authentication challenge value, bound to a same-browser cookie.
-*/
 export const createPreAuthChallenge = (): string =>
   encode(randomBytes(challengeBytes));
 
@@ -20,9 +17,6 @@ const areEqualBytes = (left: string, right: string): boolean => {
   );
 };
 
-/**
- * A session-bound forgery token. Recomputable from the session id and the server secret, so it is stateless and cannot be reused for another session.
- */
 export const createSessionChallenge = (
   secret: string,
   sessionId: string
@@ -39,10 +33,6 @@ export const isSessionChallengeValid = (
 ): boolean =>
   areEqualBytes(createSessionChallenge(secret, sessionId), provided);
 
-/**
- * Validate the configured public origin exactly. Arbitrary forwarded headers
- * are never trusted; the browser's `Origin` must equal the configured origin.
- */
 export const isTrustedOrigin = (
   origin: string | null,
   configuredOrigin: string

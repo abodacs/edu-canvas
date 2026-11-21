@@ -332,10 +332,6 @@ describe("fractions-v2 catalog contract", () => {
     });
   });
 
-  // #110: `edu-canvas-matching-v0` is a retired fixture identifier, not a
-  // second catalog. A record that still carries it gets the documented
-  // fail-closed diagnostic instead of rendering under a catalog no reader
-  // publishes; the identifier is never aliased to `matching-v1`.
   it("fails closed on the retired fixture catalog identifier", () => {
     const retiredCatalogId =
       "https://edu-canvas.app/a2ui/v0.9.1/catalogs/edu-canvas-matching-v0";

@@ -291,7 +291,6 @@ describe.skipIf(!isRunDatabaseTests)("PostgreSQL persistence parity", () => {
     const fixtures = [tenants.primary, tenants.secondary];
     for (const fixture of fixtures) {
       if (fixture !== undefined) {
-        // Fixtures are removed one at a time against the same database.
         // eslint-disable-next-line no-await-in-loop
         await deleteTenantFixture(fixture);
       }

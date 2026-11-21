@@ -9,9 +9,6 @@ export interface WindowBounds {
   readonly retryAfterMs: number;
 }
 
-/**
-UTC-aligned window boundaries. The bounds are derived from the store's clock, so two application instances agree on the window even when their process clocks drift a little.
-*/
 export const windowBounds = (
   window: LimitWindow,
   nowMs: number
@@ -28,9 +25,6 @@ export const windowBounds = (
   };
 };
 
-/**
-The counters one provider call must reserve. A correction adds only a provider call; a first call adds the attempt and authoring budgets plus the lease.
-*/
 export const counterClaimsFor = (
   input: ProviderCallReservation,
   policy: GenerationLimitPolicy

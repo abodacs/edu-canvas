@@ -83,9 +83,6 @@ const actorFor = (fixture: RecordFixture, kind: ActorKind): Actor => {
       return fixture.revokedStudent;
     }
     case "none": {
-      // The records command layer rejects an absent actor at runtime with
-      // UNAUTHENTICATED, but its parameter type does not model the absence.
-      // The absent caller therefore arrives from an unpopulated actor list.
       const absentActors: readonly Actor[] = [];
       return absentActors[0];
     }
@@ -275,9 +272,6 @@ const cases: PolicyCase[] = rawCases.map((policyCase, index) => {
   };
 });
 
-/**
- * Focused-slice policy matrix: 11 implemented actions × role, cross-tenant, revocation, and unauthenticated cases. The design's StoreMatch, InvalidateMatch, and StoreBlocked rows belong to the deferred grounding and matching contract and are not implemented here.
- */
 describe("record policy matrix", () => {
   it.each(cases)("$tag $description", async (policyCase) => {
     const { fixture, call } = await prepareCall(

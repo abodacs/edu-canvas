@@ -21,11 +21,6 @@ interface PasswordControlProperties {
   readonly onValueChange: (value: string) => void;
 }
 
-/**
-The input plus its reveal toggle. `Field` clones this element and passes the
-id and ARIA wiring down, so the label, help and error ids reach the real input
-while the toggle stays inside the control row.
-*/
 const PasswordControl = ({
   id,
   "aria-describedby": describedBy,
@@ -102,16 +97,9 @@ interface PasswordFieldProperties {
   readonly required?: boolean;
   readonly disabled?: boolean;
   readonly inputRef?: Ref<HTMLInputElement>;
-  /** A field-level action, such as "Forgot password?". */
   readonly action?: ReactNode;
 }
 
-/**
- * A password field on the shared `Field` primitive: one label, one control,
- * an optional help line and an error that marks the input invalid. The
- * reveal toggle is a real button with `aria-pressed`, so paste and password
- * managers keep working and the input never loses its name.
- */
 export const PasswordField = ({
   label,
   name,

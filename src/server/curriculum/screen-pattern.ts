@@ -1,10 +1,5 @@
 import type { StandardsPack } from "./standards-pack";
 
-/**
- * The interaction shape a standards pack permits. A request for a pattern the
- * pack does not list is refused with a named diagnostic; it never falls back
- * to the pack's first pattern or to generic matching.
- */
 export type ScreenPattern = StandardsPack["allowedScreenPatterns"][number];
 
 export interface ScreenPatternRefusal {

@@ -32,11 +32,6 @@ const progressRevisionSchema = z
   .min(0)
   .max(recordLimits.revisionMax);
 
-/**
-`"current"` means "whatever the package's head is now". A writer that has no
-stale-read expectation uses it, so the same intent produces the same input on a
-retry — which is what makes the operation receipt replay instead of conflicting.
-*/
 export const appendHeadRevisionSchema = z.union([
   progressRevisionSchema,
   z.literal("current"),
@@ -227,11 +222,6 @@ export interface ReferentDescriptor {
 
 const lessonVersionContent = "lesson-version-content" satisfies ReferentTable;
 
-/**
- * Every scope-qualified reference a write input can carry. The referent sweep
- * test derives the `*Id` fields from the input schemas and fails when one is
- * missing here, so a new unchecked reference cannot ship.
- */
 export const writeInputSchemas = {
   "store-grounding": storeGroundingInputSchema,
   "append-version": appendVersionInputSchema,
@@ -245,11 +235,6 @@ export const writeInputSchemas = {
 
 export type WriteAction = keyof typeof writeInputSchemas;
 
-/**
- * Every scope-qualified reference a write input can carry. The referent sweep
- * test derives the `*Id` fields from the input schemas and fails when one is
- * missing here, so a new unchecked reference cannot ship.
- */
 export const writeInputReferents: Record<
   WriteAction,
   readonly ReferentDescriptor[]

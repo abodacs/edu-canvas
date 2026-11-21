@@ -106,15 +106,6 @@ const isUniqueViolation = (error: unknown): boolean => {
 
 const STANDARD_FK_DETAIL = "Key (tenant_id, standard_id)=";
 
-/**
- * The classroom cannot claim any draft until its standards table has a row for
- * the requested objective; the typed signal lives in `../generation/types` so
- * both seams share it. Detection is duck-typed like `isUniqueViolation`, so no
- * driver type crosses the backend seam. The signal matches the PG error
- * `detail` (`Key (tenant_id, standard_id)=… is not present in table
- * "standards"`), not the constraint name: generated FK names drift across
- * migration rewrites (#168 P0-2, #112).
- */
 const isMissingStandardDetail = (detail: string): boolean =>
   detail.startsWith(STANDARD_FK_DETAIL) && detail.includes("standards");
 
@@ -161,9 +152,6 @@ export const createGenerationPersistence = <TTransaction>(
           );
         } catch (error) {
           if (isStandardForeignKeyViolation(error)) {
-            // The classroom cannot claim any draft until its standard row
-            // exists; surface it as the typed signal instead of a raw driver
-            // error.
             throw new StandardNotConfiguredError();
           }
           if (
@@ -263,8 +251,6 @@ export const createGenerationPersistence = <TTransaction>(
         }
 
         for (const attempt of record.attempts) {
-          // Attempt history must be written in order on one transaction
-          // connection, so the writes stay sequential.
           // eslint-disable-next-line no-await-in-loop
           await backend.upsertAttempt(transaction, record, attempt);
         }

@@ -11,18 +11,6 @@ import { createIdentityProvisioning } from "./provisioning";
 import type { IdentityPersistence } from "./persistence-port";
 import type { DeterministicAccount } from "./provider/deterministic";
 
-/**
- * Synthetic identity fixture for explicit local development and tests. Two
- * classes plus the curriculum-owning synthetic class, two teachers in one
- * class, two class assignments, and six learners, per the spec's fixture
- * requirement (the classroom membership the focused generation gate signs in
- * through was added for issue #115; the demo-tenant learner was added for
- * issue #5 so a published pack has a real assignment referent). It is invoked
- * only by the development
- * composition and by tests; it can never supply authority to a deployed
- * request because the deterministic provider is unreachable outside
- * development (config forces the hosted provider elsewhere).
- */
 export const syntheticProviderIssuer = "deterministic-local";
 
 const syntheticPassword = "synthetic-pass-1";
@@ -83,8 +71,6 @@ export const syntheticPasswordForTests = syntheticPassword;
 const principal = "synthetic-fixture";
 
 const fixture = {
-  // One tenant row carries one class until #99 lands a real class object, so
-  // the fixture names read as classes, not schools.
   tenants: {
     north: {
       id: "tenant_school_north",
@@ -218,9 +204,6 @@ export interface SyntheticLearner {
   readonly tenantId: string;
 }
 
-/**
-The learner directory the seeded pack store assigns against. Derived from the same fixture so a membership and an assignment referent cannot drift.
-*/
 export const syntheticLearnerDirectory: readonly SyntheticLearner[] = (() => {
   const learners: SyntheticLearner[] = [];
   for (const membership of fixture.memberships) {
@@ -235,19 +218,11 @@ export const syntheticLearnerDirectory: readonly SyntheticLearner[] = (() => {
   return learners;
 })();
 
-/**
- * Idempotent: provisioning operations are safe to replay. Running the fixture twice leaves one actor, membership, and binding per entry.
- */
 export const ensureSyntheticIdentityFixture = async (
   persistence: IdentityPersistence
 ): Promise<void> => {
   const provisioning = createIdentityProvisioning({ persistence });
 
-  // Sequential, not Promise.all: several memberships share one tenant row,
-  // and concurrent grant calls race on the tenant insert's second unique
-  // index (slug), which `on conflict (id)` does not arbitrate. One loser
-  // failed the whole fixture, and the composition cache then held the
-  // rejected promise for the process lifetime (delegation pack case s0-smoke).
   for (const [index, account] of syntheticAccounts.entries()) {
     const actor = fixture.actors[index];
     if (actor === undefined) {

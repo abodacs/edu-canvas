@@ -53,14 +53,7 @@ export interface CompiledLessonPreview {
 }
 
 export interface LessonPreviewCompileErrorOptions extends ErrorOptions {
-  /**
-   * The artifact field the teacher can correct. The refusal names it instead
-   * of a generic `preview` field.
-   */
   field?: string;
-  /**
-   * The screen that produced the rejection, when the throw site knows it.
-   */
   variantId?: string;
 }
 
@@ -129,17 +122,12 @@ const action = (
       name,
       context: {
         surfaceId,
-        ...(itemId !== undefined &&
-          itemId !== "" && { itemId }),
+        ...(itemId !== undefined && itemId !== "" && { itemId }),
       },
     },
   };
 };
 
-// #19: the story is compiled into the existing catalog components. The action
-// sentence restates the matching surface's approved action set (selectSource,
-// selectTarget); no new component or action is added. Every other story string
-// comes from the plan, so this table holds no role or beat copy.
 const storySurfaceCopy = {
   en: {
     learnerAction: "Select a source card, then a target card.",
@@ -167,8 +155,6 @@ const storyComponents = (
     const labelId = `${beat.id}-label`;
     const narrativeId = `${beat.id}-narrative`;
     const transitionId = `${beat.id}-transition`;
-    // The hinge has no approved path label, so its label is its role name and a
-    // second line would only repeat the role. Every other beat names its node.
     const isRoleRepeated = beat.label === beat.roleLabel;
 
     return [
@@ -394,12 +380,6 @@ const previewMessagesForVariant = (
   return messages;
 };
 
-/**
- * The compile seam owns one error contract: the preview server feeds every
- * `LessonPreviewCompileError` back into the gate as a pre-render refusal. A
- * story that cannot be built is therefore translated here, so it reaches the
- * teacher as a named refusal instead of an unhandled failure.
- */
 const buildStoryForInput = (input: LessonPreviewCompileInput): StoryPlan => {
   try {
     return buildStoryPlan({
@@ -418,10 +398,6 @@ const buildStoryForInput = (input: LessonPreviewCompileInput): StoryPlan => {
   }
 };
 
-/**
- * The raw compiler is the test and differential-oracle seam. It accepts an
- * unattested draft, so production code must call `compileLessonPreview`.
- */
 export const compileRawLessonPreview = (
   input: LessonPreviewCompileInput
 ): CompiledLessonPreview => {
@@ -467,11 +443,6 @@ export const compileRawLessonPreview = (
   };
 };
 
-/**
- * The production compile seam. It accepts only the branded renderable
- * artifact that `gateArtifact` mints, so preview can never compile a draft the
- * safety gate refused.
- */
 export const compileLessonPreview = (
   artifact: RenderableArtifact,
   metadata: LessonPreviewMetadata

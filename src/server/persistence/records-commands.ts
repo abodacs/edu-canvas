@@ -111,23 +111,10 @@ export interface LessonReadResult {
   readonly runRevision: number;
 }
 
-/**
- * #6: the server-only facts a grader needs for one item. The answer
- * relationships never leave the server, and the run revision pins the write.
- */
 export interface AttemptContext {
   readonly run: LearnerRun;
-  /**
-  The section assigned to the run's variant. The submitted item must belong to it.
-  */
   readonly section: LessonSection;
-  /**
-  Every required pair in that section, not only the submitted item.
-  */
   readonly relationships: readonly PrivateAnswerRelationship[];
-  /**
-  The approved copy of the version, when the row has it. The caller resolves the assigned variant's feedback with the run it already has.
-  */
   readonly approvedCopy: LessonVersion["approvedCopy"];
   readonly activities: readonly {
     readonly variantId: string;
@@ -136,11 +123,6 @@ export interface AttemptContext {
   readonly attempts: readonly LearnerAttempt[];
 }
 
-/**
-The record model's command surface. Each method takes the input type its own schema declares, so a caller builds a valid input or fails to compile.
-
-The implementation still parses at the store edge. A TypeScript type is erased at runtime, and this module is the last software gate before SQL, so the parse is the guard rather than a duplicate of the caller's check.
-*/
 export interface RecordPersistence {
   readonly kind: "seeded-demo" | "postgres";
   check: () => Promise<boolean>;
@@ -203,7 +185,6 @@ const learnerActions: ReadonlySet<WriteAction> = new Set([
   "record-attempt",
 ]);
 
-// #6: the default retry allowance for one matching item.
 const attemptLimitPerItem = 3;
 
 const nowIso = (): string => {
@@ -358,13 +339,6 @@ const mapAssignment = (row: StoredRow): Assignment => {
   });
 };
 
-/**
-#176/#7 tolerant reader: a v1 run stored `{ targetId }` before the decision
-carried its rule version and evidence hash. That shape cannot be upgraded
-without inventing evidence, so it reads as "no decision yet" and waits for the
-next saved choice. Any other unreadable value throws: a corrupt decision row
-must not silently become "the teacher is still choosing".
-*/
 const isLegacyDecisionShape = (value: unknown): boolean => {
   return (
     typeof value === "object" &&
@@ -375,8 +349,6 @@ const isLegacyDecisionShape = (value: unknown): boolean => {
 };
 
 const readStoredNextActivity = (value: unknown): NextActivity =>
-  // A legacy `{ targetId }` row reads as "no decision yet"; anything else
-  // must parse or the row is corrupt.
   isLegacyDecisionShape(value) ? null : nextActivitySchema.parse(value);
 
 const mapRun = (row: StoredRow): LearnerRun => {
@@ -465,9 +437,6 @@ interface AppendLineage {
   readonly parentVersionId: string | null;
 }
 
-/**
-A stated revision must match the head; a current-head append adopts it. Either way the row records an ordinal, a kind, and a parent that are true of the chain at the moment of the write, and the caller that owns no stale-read expectation does not have to guess them.
-*/
 const resolveAppendLineage = (
   input: AppendVersionInput,
   head: AppendHead
@@ -589,9 +558,6 @@ export const createRecordCommands = <TTransaction>(
       readonly resultIds: readonly string[];
     }>
   ): Promise<RecordMutationResult> => {
-    // The policy matrix drives unauthenticated rows through an absent actor,
-    // so the absence check is load-bearing even though the parameter type
-    // says otherwise.
     if (actor === undefined || actor === null) {
       throw recordError("UNAUTHENTICATED");
     }
@@ -637,9 +603,6 @@ export const createRecordCommands = <TTransaction>(
         }
 
         const result = await perform(transaction, input);
-        // Two concurrent writers for the same operation key can both pass the
-        // receipt lookup; the loser skips this insert and reads back the
-        // winner's committed receipt, whose result ids are the replay truth.
         await backend.insert(
           transaction,
           "operation_receipts",
@@ -962,7 +925,10 @@ export const createRecordCommands = <TTransaction>(
       );
     }
 
-    if (input.generationRequestId !== null && input.generationRequestId !== "") {
+    if (
+      input.generationRequestId !== null &&
+      input.generationRequestId !== ""
+    ) {
       const request = await requireRow(transaction, "lesson_draft_requests", {
         tenant_id: actor.tenantId,
         id: input.generationRequestId,
@@ -973,7 +939,6 @@ export const createRecordCommands = <TTransaction>(
     }
 
     for (const conceptId of input.conceptIds) {
-      // Sequential reads keep the transaction ordered and stop at the first foreign referent.
       // eslint-disable-next-line no-await-in-loop
       const concept = await requireRow(transaction, "prerequisite_nodes", {
         tenant_id: actor.tenantId,
@@ -1332,9 +1297,6 @@ export const createRecordCommands = <TTransaction>(
           updatedAt: clock(),
         });
 
-        // The surface double-fires its start request (React strict mode in
-        // development, an impatient double-click in production); a concurrent
-        // writer's committed run must win over this transaction's new id.
         await backend.insert(
           transaction,
           "learner_runs",
@@ -1470,10 +1432,7 @@ export const createRecordCommands = <TTransaction>(
           throw recordError("INVALID_INPUT");
         }
 
-        if (
-          input.priorAttemptId !== null &&
-          input.priorAttemptId !== ""
-        ) {
+        if (input.priorAttemptId !== null && input.priorAttemptId !== "") {
           const prior = await requireRow(transaction, "learner_attempts", {
             tenant_id: actor.tenantId,
             id: input.priorAttemptId,
@@ -1507,8 +1466,6 @@ export const createRecordCommands = <TTransaction>(
           run_id: run.id,
           item_id: input.itemId,
         });
-        // #6: a completed submission consumes one of three attempts. A replay
-        // never reaches this check because the receipt resolves first.
         if (existing.length >= attemptLimitPerItem) {
           throw recordError("ATTEMPT_LIMIT_REACHED");
         }
@@ -1552,11 +1509,6 @@ export const createRecordCommands = <TTransaction>(
           created_at: attempt.createdAt,
         });
 
-        // #7: the stored decision stands until none exists. The service
-        // computes its draft from the first response, so a retry appends
-        // evidence but never rewrites the stored decision or the stage. A
-        // teacher pause stores no decision on purpose (pause ⇒ NULL), so a
-        // paused stage keeps that choice standing too.
         const isDecisionMissing =
           run.nextActivity === null && run.stage !== "paused";
         const nextActivity =
@@ -1859,8 +1811,6 @@ export const createRecordCommands = <TTransaction>(
       if (!section.itemIds.includes(parsed.itemId)) {
         throw recordError("INVALID_INPUT");
       }
-      // #7: one response covers the section. The reveal names every required
-      // pair, so grading and classification read the same answer set.
       const sectionItemIds = new Set(section.itemIds);
       const relationships = version.privateAnswerRelationships.filter(
         (relationship) => sectionItemIds.has(relationship.itemId)
@@ -1891,12 +1841,6 @@ export const createRecordCommands = <TTransaction>(
     });
   };
 
-  /**
-   * #8: the teacher progress read model. Only runs on assignments this actor
-   * assigned, inside the actor's tenant, reach the projection; other tenants'
-   * rows are filtered out before mapping. Read-only: nothing here writes or
-   * revises history.
-   */
   const readTeacherProgress = async (
     actor: Actor
   ): Promise<TeacherProgressResponse> => {

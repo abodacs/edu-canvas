@@ -75,9 +75,6 @@ const invalidInput = (): Response => {
   );
 };
 
-/**
-POST /api/publications/review — open or resume the review of a ready draft.
-*/
 export const handleOpenReviewRequest = async (
   request: Request
 ): Promise<Response> => {
@@ -104,9 +101,6 @@ export const handleOpenReviewRequest = async (
   }
 };
 
-/**
-GET /api/publications/review?requestId=… — read the persisted review state.
-*/
 export const handleReadReviewRequest = async (
   request: Request
 ): Promise<Response> => {
@@ -136,9 +130,6 @@ export const handleReadReviewRequest = async (
   }
 };
 
-/**
-POST /api/publications/approvals — approve one screen or the reverse path.
-*/
 export const handleApproveRequest = async (
   request: Request
 ): Promise<Response> => {
@@ -162,9 +153,6 @@ export const handleApproveRequest = async (
   }
 };
 
-/**
-POST /api/publications/revisions — edit a screen and create a new revision.
-*/
 export const handleReviseRequest = async (
   request: Request
 ): Promise<Response> => {
@@ -188,9 +176,6 @@ export const handleReviseRequest = async (
   }
 };
 
-/**
-POST /api/publications — the explicit publish confirmation.
-*/
 export const handlePublishRequest = async (
   request: Request
 ): Promise<Response> => {
@@ -207,9 +192,6 @@ export const handlePublishRequest = async (
   }
 
   try {
-    // The service returns the published result already parsed by
-    // `publicationPublishResultSchema`; re-typing it here dropped two fields
-    // and every successful publish failed the client parse.
     const outcome = await createService().publish(resolved.actor, parsed.data);
     return noStoreJson(outcome, 201);
   } catch (error) {
@@ -217,9 +199,6 @@ export const handlePublishRequest = async (
   }
 };
 
-/**
-GET /api/publications/versions/:versionId/preview — SSE render of an edited revision. The gate is re-derived before anything is compiled.
-*/
 const renderReviewPreview = async (
   actor: Parameters<PublicationService["compileVersionPreview"]>[0],
   versionId: string,

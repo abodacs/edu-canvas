@@ -12,11 +12,6 @@ import type {
   SourceGap,
 } from "@/shared/source-contract";
 
-/**
-Pure ingestion decisions (#114 build-order unit 2). No I/O, no parser: every
-rejection class is decided here so tests can pin each named reason.
-*/
-
 export type IngestionDecision<Value> =
   | { readonly ok: true; readonly value: Value }
   | { readonly ok: false; readonly reason: SourceFailureReason };
@@ -25,11 +20,6 @@ const PDF_SIGNATURE = "%PDF-";
 const PDF_ENCRYPT_MARKER = "/Encrypt";
 const SHA_256 = "SHA-256";
 
-/**
-Encrypted PDFs carry `/Encrypt` in the trailer. Scanning the tail keeps the
-pre-parse rejection cheap and avoids matching the literal inside content
-streams.
-*/
 const PDF_TRAILER_SCAN_BYTES = 2048;
 
 const LATIN1_DECODER = new TextDecoder("latin1");
@@ -37,10 +27,6 @@ const UTF8_FATAL_DECODER = new TextDecoder("utf-8", { fatal: true });
 
 type PageClass = "scanned" | "encoding" | "broken-math" | "clean";
 
-/**
-A page whose extracted text is mostly non-letters is suspected broken math:
-fraction bars and glyphs survive extraction as isolated symbols. Conservative on purpose; the gap message says "suspected" and names the pages.
-*/
 const BROKEN_MATH_TEXT_DENSITY = 0.5;
 const REPLACEMENT_CHARACTER = "\u{FFFD}";
 const BROKEN_MATH_CLASS = "broken-math";

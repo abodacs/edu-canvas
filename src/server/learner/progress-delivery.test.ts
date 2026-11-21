@@ -9,10 +9,6 @@ import {
   progressErrorJson,
 } from "./progress.server";
 
-// The handler composes from process.env; pin a hermetic config. Session
-// resolution itself is stubbed here because this suite proves the transport
-// contract only — the real role/tenant/assignment policy is proven against the
-// records seam in progress.test.ts and by the identity matrix suites.
 vi.stubEnv("APP_ENV", "development");
 vi.stubEnv(
   "DATABASE_URL",

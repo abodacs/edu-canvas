@@ -1,11 +1,5 @@
 import type { ModerationCategory } from "@/shared/generation-contract";
 
-/**
-#119: the teacher-facing copy for a moderation block. One source of truth for the panel; the reason names the category, never the matched phrase, a provider reason, or an internal diagnostic code.
-
-The copy never says "try again", "retry", "resubmit", or "same request": moderation copy must not offer the unchanged request a second time.
-*/
-
 export const MODERATION_RECOVERY_TITLE = "Let’s reshape that request.";
 
 export const REVISE_REQUEST_LABEL = "Revise request";
@@ -60,9 +54,6 @@ export interface ModerationRecovery {
   readonly actionLabel: string;
 }
 
-/**
-Build the panel model. A missing category keeps the generic sentence and hides the category reference, so an older server or the same-prompt error path still renders a complete panel.
-*/
 export const resolveModerationRecovery = (
   input: ModerationRecoveryInput = {}
 ): ModerationRecovery => {

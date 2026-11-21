@@ -94,8 +94,6 @@ const runRecommendationAgent = async (
   for (let attempt = 1; attempt <= options.maxAttempts; attempt += 1) {
     const controller = new AbortController();
     try {
-      // Retries are sequential by design: each attempt must settle before the
-      // next one starts, and the previous attempt is aborted first.
       // eslint-disable-next-line no-await-in-loop
       return await withTimeout(
         agent.review(cloneSemanticValidationInput(input), controller.signal),
@@ -104,7 +102,6 @@ const runRecommendationAgent = async (
     } catch (error) {
       lastError = error;
       if (attempt < options.maxAttempts && options.retryDelayMs > 0) {
-        // Back off before the next sequential attempt.
         // eslint-disable-next-line no-await-in-loop
         await delay(options.retryDelayMs);
       }

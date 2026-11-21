@@ -36,11 +36,6 @@ export interface AdvisoryReviewAgentRun {
   latencyMs: number;
 }
 
-/**
-One bound owns both the provider call and the wait, so the aborted signal and
-the timeout always agree about when the review is over. Exported so the measured
-run uses the production bound instead of a second copy of it.
-*/
 export const runBoundedAdvisoryReview = async (
   agent: AdvisoryReviewAgent,
   input: SemanticValidationInput,
@@ -71,10 +66,6 @@ const failureMessage = (
     : "The advisory review could not complete. The draft is unchanged.";
 };
 
-/**
-The single failure classification for the service and the measured run, so a
-report never labels the same failure two ways.
-*/
 export const classifyAdvisoryReviewFailure = (
   error: unknown
 ): AdvisoryReviewFailure => {

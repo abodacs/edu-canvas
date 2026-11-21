@@ -1,6 +1,3 @@
-// Picker copy. A teacher picks a class; "school" survives only where it names
-// the administrator. The class is the tenant row until #99, and that mapping
-// is recorded in `src/server/identity/GLOSSARY.md`.
 export const membershipCopy = {
   eyebrow: "One more step",
   heading: "Choose your class",

@@ -24,9 +24,6 @@ const issuer = syntheticProviderIssuer;
 const fixturePassword = syntheticPasswordForTests;
 const curriculumTenantName = "Grade 4S · Synthetic Fractions";
 
-/**
-The curriculum classroom membership is the designed default for harnesses that need an active session; the fixture teachers hold it next to their class tenancies.
-*/
 const curriculumMembershipOption = (
   memberships: readonly PendingMembershipOption[]
 ): PendingMembershipOption | undefined => {
@@ -252,8 +249,6 @@ describe("membership selection", () => {
       return;
     }
 
-    // The fixture teachers also hold the curriculum classroom membership, so
-    // Amira's own list is now three tenancies.
     expect(outcome.memberships).toHaveLength(3);
     expect(
       outcome.memberships

@@ -18,9 +18,6 @@ export interface AuthSessionState {
   readonly projection: ActiveSessionProjection | null;
   readonly csrf: string | null;
   readonly generation: string | null;
-  /**
-  True while the server is re-confirming the session; private UI stays hidden.
-  */
   readonly isRevalidating: boolean;
   readonly wasExpired: boolean;
   readonly isSigningOut: boolean;
@@ -30,18 +27,9 @@ export interface AuthSessionState {
   ) => void;
   readonly markExpired: () => void;
   readonly revalidate: () => void;
-  /**
-  Resolves true only when revocation was confirmed or was never needed.
-  */
   readonly signOut: () => Promise<boolean>;
 }
 
-/**
- * Owns the authenticated session for one tab. Every read goes through
- * `GET /api/auth/session`, which never renews idle time, so polling, refreshes,
- * visibility returns, and reconnects all leave the server deadline untouched.
- * A monotonic epoch drops late responses from a superseded request, and a broadcast hides private content in every tab on sign-out or expiry.
- */
 export const useAuthSession = (): AuthSessionState => {
   const [phase, setPhase] = useState<AuthPhase>("loading");
   const [projection, setProjection] = useState<ActiveSessionProjection | null>(
@@ -75,7 +63,6 @@ export const useAuthSession = (): AuthSessionState => {
     const result = await fetchSession();
 
     if (epoch.current !== requestEpoch) {
-      // A newer request already resolved; this late response is discarded.
       return;
     }
 
@@ -93,8 +80,6 @@ export const useAuthSession = (): AuthSessionState => {
       result.error.code === "UNAUTHENTICATED" ||
       result.error.code === "FORBIDDEN"
     ) {
-      // A never-signed-in visitor is not an expired one: only a session that
-      // previously loaded and then vanished counts as an expiry.
       clear(hadSession.current);
       return;
     }
@@ -184,8 +169,6 @@ export const useAuthSession = (): AuthSessionState => {
       return true;
     }
 
-    // The credential is HttpOnly, so only a server response can clear it. Re-read
-    // the truth instead of showing a signed-out page over a live session.
     setIsSigningOut(false);
     await load();
     return false;

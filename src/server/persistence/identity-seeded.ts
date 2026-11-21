@@ -13,11 +13,6 @@ import type {
   ProviderBindingRecord,
 } from "../identity/types";
 
-/**
- * The in-memory identity store. The caller owns it (the same module-level store
- * pattern `src/server/persistence.ts` uses for generation) so a seeded
- * deployment and its tests share one deterministic repository.
- */
 export interface SeededIdentityStore {
   readonly actors: Map<string, ActorRecord>;
   readonly providerBindings: Map<string, ProviderBindingRecord>;

@@ -6,17 +6,10 @@ import { cn } from "@/lib/utilities";
 const brandTagline = "teaching, returned to its origin";
 
 interface BrandMarkProperties {
-  /** Show the tagline under the name (public pages). */
   readonly withTagline?: boolean;
   readonly className?: string;
 }
 
-/**
-The Scholé lockup: a stoa glyph and the name, linking home.
-
-The link's accessible name is its visible text, so speech-input users can say
-what they see; the glyph is decorative.
-*/
 export const BrandMark = ({
   withTagline = false,
   className,

@@ -400,22 +400,14 @@ const grantMembership = async (
   transaction: SqlTransaction,
   input: NewMembershipInput
 ): Promise<MembershipRecord> => {
-  // Trusted provisioning must stay insert-if-missing: a grant creates the
-  // tenant a fresh database lacks, but never renames or rebrands a row that
-  // already exists.
   await transaction`
     insert into tenants (id, slug, name, synthetic_data_only)
     values (${input.tenantId}, ${input.tenantId}, ${input.tenantName}, true)
     on conflict (id) do nothing
   `;
 
-  // A fresh tenant needs its own standards rows before it can claim any
-  // generation; the insert-if-missing write stays inside the grant
-  // transaction so no tenant exists without the built-in catalogue (#225).
   await provisionTenantStandards(transaction, input.tenantId);
 
-  // A materialized roster learner is a student identity and carries the real
-  // roster fields, so teacher-facing surfaces never render a raw machine id.
   if (input.learner) {
     await transaction`
       insert into identities (id, tenant_id, role, display_name, demo_handle, is_active)
@@ -553,10 +545,6 @@ const createProviderBinding = async (
 ): Promise<ProviderBindingRecord> => {
   return await withDatabase(databaseUrl, async (sql) => {
     return await sql.begin(async (transaction) => {
-      // `on conflict do nothing` rather than catching the unique violation:
-      // postgres.js rethrows the first query error out of `begin` even when it
-      // is caught, so a caught constraint error would escape as a raw driver
-      // error instead of the application conflict.
       const inserted = await transaction<ProviderBindingRow[]>`
         insert into provider_bindings (
           provider_issuer,
@@ -587,8 +575,6 @@ const createProviderBinding = async (
         limit 1
       `;
       const [pair] = existing;
-      // Replaying the same binding is idempotent; any other conflict is
-      // rejected so a provider subject cannot be rebound to another actor.
       if (pair !== undefined && pair.actor_id === binding.actorId) {
         return bindingFromRow(pair);
       }
