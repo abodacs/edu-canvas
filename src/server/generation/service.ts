@@ -341,6 +341,8 @@ const storedRequestHash = (
 const generationCallKey = (tenantId: string, requestId: string): string =>
   `${tenantId}:${requestId}`;
 
+const inFlightCalls = new Map<string, AbortController>();
+
 const buildProviderContext = (
   curriculum: ReturnType<typeof resolveCurriculumContext>,
   isCorrectionAttempt: boolean,
@@ -413,7 +415,6 @@ export const createGenerationService = (options: GenerationServiceOptions) => {
       return date.toISOString();
     });
   const requestIdFactory = options.requestIdFactory ?? (() => createId());
-  const inFlightCalls = new Map<string, AbortController>();
 
   const writeExpectation = (
     record: LessonGenerationRecord,

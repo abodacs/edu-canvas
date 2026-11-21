@@ -82,6 +82,7 @@ export const mapGenerationError = (error: unknown): Response => {
         : { "retry-after": String(retryAfterSeconds) }
     );
   }
+  console.error("[generation] unhandled failure", error);
   return noStoreJson(
     {
       code: "GENERATION_FAILED",
