@@ -259,8 +259,10 @@ export const handleLessonPreviewRequest = async (
       signal: request.signal,
     });
   } catch (error) {
-    return error instanceof LessonPreviewCompileError
-      ? sseError("PREVIEW_BLOCKED", previewBlockedMessage, 422)
-      : sseError("PREVIEW_UNAVAILABLE", previewUnavailableMessage, 503);
+    if (error instanceof LessonPreviewCompileError) {
+      return sseError("PREVIEW_BLOCKED", previewBlockedMessage, 422);
+    }
+    console.error("[preview] unhandled failure", error);
+    return sseError("PREVIEW_UNAVAILABLE", previewUnavailableMessage, 503);
   }
 };
